@@ -1,11 +1,18 @@
 import React from "react";
 
-import { LayoutDashboard, Package } from "lucide-react";
+import {
+  ClipboardList,
+  LayoutDashboard,
+  Package,
+  PieChart,
+  ScrollText,
+  Store,
+  UserRound,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import StyledLinks from "@/components/StyledLinks";
 
 const Sidebar = () => {
-
   const links = [
     {
       name: "Templates",
@@ -19,27 +26,27 @@ const Sidebar = () => {
     },
     {
       name: "Sales Order",
-      icon: <Package size={16} />,
+      icon: <ClipboardList size={16} />,
       path: "/sales-order",
     },
     {
       name: "Purchase Order",
-      icon: <Package size={16} />,
+      icon: <ScrollText size={16} />,
       path: "/purchase-order",
     },
     {
       name: "Client",
-      icon: <Package size={16} />,
+      icon: <UserRound size={16} />,
       path: "/client",
     },
     {
       name: "Vendor",
-      icon: <Package size={16} />,
+      icon: <Store size={16} />,
       path: "/vendor",
     },
     {
       name: "Insights",
-      icon: <Package size={16} />,
+      icon: <PieChart size={16} />,
       path: "/insights",
     },
   ];
