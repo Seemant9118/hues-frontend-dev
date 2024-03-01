@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
       </div>
       <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5">
         <Sidebar />
-        <main className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4">
+        <main className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4 overflow-y-auto">
           {children}
         </main>
       </section>
