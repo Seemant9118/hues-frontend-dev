@@ -54,7 +54,7 @@ const Sidebar = () => {
   return (
     <div className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4 flex flex-col gap-2">
       {links.map((link) => (
-        <StyledLinks link={link} />
+        <StyledLinks key={link.name} link={link} />
       ))}
     </div>
   );
