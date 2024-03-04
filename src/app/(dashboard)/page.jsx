@@ -69,8 +69,8 @@ export default function Home() {
             </div>
           </SubHeader>
           <div className="grid grid-cols-4 gap-2">
-            {templates.map((template) => (
-              <TemplateCard {...template} />
+            {templates.map((template, idx) => (
+              <TemplateCard {...template} key={idx} />
             ))}
           </div>
         </Wrapper>

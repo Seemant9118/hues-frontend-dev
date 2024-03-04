@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button.jsx";
+import Wrapper from "@/components/Wrapper";
 
 const ViewTemplate = ({ params }) => {
   return (
@@ -22,8 +23,8 @@ const ViewTemplate = ({ params }) => {
         <div className="flex flex-col gap-1">
           <p className="text-sm text-[#A5ABBD] font-bold">Description</p>
           <p className="text-[#363940] font-medium">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
+            Lorem Ipsum is simply dummy text of the printing and typesetting
+            industry. Lorem Ipsum has been the industry&apos;s standard dummy text
             ever since the 1500s, when an unknown printer took a galley of type
             and scrambled it to make a type specimen book
           </p>
@@ -33,8 +34,8 @@ const ViewTemplate = ({ params }) => {
           <TemplateInfo label={"Batch Id"} value={"#5F01"} />
           <TemplateInfo label={"Expiry"} value={"22/02/2015"} />
           <TemplateInfo label={"Weight (gms)"} value={"4560"} />
-          <TemplateInfo label={"Length"} value={"45’"} />
-          <TemplateInfo label={"Breadth (cms)"} value={"5’"} />
+          <TemplateInfo label={"Length"} value={"45&apos;"} />
+          <TemplateInfo label={"Breadth (cms)"} value={"5&apos;"} />
           <TemplateInfo label={"Height (cms)"} value={"1460"} />
           <TemplateInfo label={"Rate"} value={"450"} />
           <TemplateInfo label={"Units"} value={"450"} />
