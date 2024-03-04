@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('satoshi.css');
+@import url("satoshi.css");
 
 @layer base {
   :root {
@@ -59,6 +59,31 @@
   }
 }
 
-body{
-  font-family: 'Satoshi-Variable'!important;
+body {
+  font-family: "Satoshi-Variable" !important;
+}
+
+.scrollBarStyles::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+/* Track */
+
+.scrollBarStyles::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: white;
+}
+
+/* Handle */
+body::-webkit-scrollbar-thumb,
+.scrollBarStyles::-webkit-scrollbar-thumb {
+  border-radius: 0.5rem;
+  background: #dadce0;
+}
+
+/* Handle on hover */
+body::-webkit-scrollbar-thumb:hover,
+.scrollBarStyles::-webkit-scrollbar-thumb:hover {
+  background: #c6c7c9;
 }
