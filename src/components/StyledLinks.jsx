@@ -11,7 +11,7 @@ const StyledLinks = ({ link }) => {
       href={link.path}
       className={cn(
         "w-full  border-none text-xs gap-2 flex items-center  p-4 rounded-xl",
-        pathname === link.path
+        pathname === link.path && pathname.includes(link.path)
           ? "text-[#288AF9] bg-[#288AF91A]"
           : "text-[#A5ABBD] bg-transparent"
       )}
