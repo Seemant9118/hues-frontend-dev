@@ -1,38 +1,23 @@
 "use client";
+import AddProduct from "@/components/AddProduct";
+import SubHeader from "@/components/Sub-header";
+import TemplateCard from "@/components/TemplateCard";
+import Wrapper from "@/components/Wrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PackageOpen, Upload } from "lucide-react";
+import { Layers2, PackageOpen, Upload } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
 export default function Home() {
   const [file, setFile] = useState(null);
-  const [product, setProduct] = useState({
-    product_name: "",
-    company_name: "",
-    description: "",
-    batch: "",
-    expiry: "",
-    weight: "",
-    length: "",
-    bredth: "",
-    height: "",
-    components: "",
-    application: "",
-    rate: "",
-    units: "",
-    hsn_code: "",
-    gst: "",
-    gst_value: "",
-    amount: "",
-  });
-
-  const onChange = () => {};
+  const [isAdding, setIsAdding] = useState(false);
+  const [templates, setTemplates] = useState([]);
 
   return (
     <>
-      {!file ? (
+      {templates.length === 0 && !isAdding && (
         <div className="flex flex-col justify-center items-center gap-2 h-full">
           <PackageOpen className="text-neutral-500" />
           <p className="text-neutral-500">
@@ -51,142 +36,45 @@ export default function Home() {
           <input
             onChange={(e) => {
               setFile(true);
+              setIsAdding(true);
             }}
             id="template"
             type="file"
             className="sr-only"
           />
         </div>
-      ) : (
-        <div className="flex flex-col gap-2 h-full overflow-y-auto">
-          <h2 className="text-zinc-900 font-bold text-2xl">Product Template</h2>
-          <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name="Product Name"
-              id="product_name"
-              onChange={onChange}
-              value={product.product_name}
-            />
-            <InputWithLabel
-              name="Company Name"
-              id="company_name"
-              onChange={onChange}
-              value={product.company_name}
-            />
+      )}
+      {isAdding && (
+        <AddProduct
+          onCancel={() => setIsAdding(false)}
+          onSubmit={(newProduct) => {
+            setTemplates((prev) => [...prev, newProduct]);
+            setIsAdding(false);
+          }}
+          name={"Product Template"}
+        />
+      )}
+      {!isAdding && templates.length !== 0 && (
+        <Wrapper>
+          <SubHeader name={"Templates"}>
+            <div className="flex items-center justify-center gap-4">
+              <Button variant={"blue_outline"} size="sm">
+                <Upload size={14} />
+                Upload Template
+              </Button>
+              <Button variant={"blue_outline"} size="sm">
+                <Layers2 size={14} />
+                Add Template
+              </Button>
+            </div>
+          </SubHeader>
+          <div className="grid grid-cols-4 gap-2">
+            {templates.map((template) => (
+              <TemplateCard {...template} />
+            ))}
           </div>
-          <InputWithLabel
-            name="Description"
-            id="description"
-            onChange={onChange}
-            value={product.description}
-          />
-          <div className="grid grid-cols-3 gap-2.5">
-            <InputWithLabel
-              name="Batch"
-              id="batch"
-              onChange={onChange}
-              value={product.batch}
-            />
-            <InputWithLabel
-              name="batch"
-              id="weight"
-              onChange={onChange}
-              value={product.weight}
-            />
-            <InputWithLabel
-              name="weight (gms)"
-              id="weight"
-              onChange={onChange}
-              value={product.weight}
-            />
-            <InputWithLabel
-              name="length"
-              id="length"
-              onChange={onChange}
-              value={product.length}
-            />
-            <InputWithLabel
-              name="bredth (cms)"
-              id="bredth"
-              onChange={onChange}
-              value={product.bredth}
-            />
-            <InputWithLabel
-              name="height (cms)"
-              id="height"
-              onChange={onChange}
-              value={product.height}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name="components"
-              id="components"
-              onChange={onChange}
-              value={product.components}
-            />
-            <InputWithLabel
-              name="application"
-              id="application"
-              onChange={onChange}
-              value={product.application}
-            />
-            <InputWithLabel
-              name="rate"
-              id="rate"
-              onChange={onChange}
-              value={product.rate}
-            />
-            <InputWithLabel
-              name="units"
-              id="units"
-              onChange={onChange}
-              value={product.units}
-            />
-            <InputWithLabel
-              name="hsn code"
-              id="hsn_code"
-              onChange={onChange}
-              value={product.hsn_code}
-            />
-            <InputWithLabel
-              name="gst (%)"
-              id="gst"
-              onChange={onChange}
-              value={product.gst}
-            />
-            <InputWithLabel
-              name="gst value"
-              id="gst_value"
-              onChange={onChange}
-              value={product.gst_value}
-            />
-            <InputWithLabel
-              name="amount"
-              id="amount"
-              onChange={onChange}
-              value={product.amount}
-            />
-          </div>
-          <div className="h-[1px] bg-neutral-300 mt-6"></div>
-
-          <div className="flex justify-end items-center gap-4 py-5">
-            <Button variant={"outline"}>Cancel</Button>
-            <Button>Add Template</Button>
-          </div>
-        </div>
+        </Wrapper>
       )}
     </>
   );
 }
-
-const InputWithLabel = ({ name, id, onChange, value }) => {
-  return (
-    <div className="flex flex-col gap-2">
-      <Label className="capitalize" htmlFor={id}>
-        {name}
-      </Label>
-      <Input className="rounded" value={value} onChange={onChange} id={id} />
-    </div>
-  );
-};
