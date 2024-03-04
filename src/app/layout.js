@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`bg-[#F6F9FF] flex flex-col gap-5 max-h-screen overflow-y-auto`}
+        className={`bg-[#F6F9FF] flex flex-col gap-5 min-h-screen max-h-screen`}
       >
         {children}
       </body>

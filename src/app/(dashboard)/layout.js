@@ -8,9 +8,9 @@ export default function RootLayout({ children }) {
       <div className="flex px-10 items-center">
         <h3 className="text-2xl font-bold text-[#121212]">Profile</h3>
       </div>
-      <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5">
+      <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5 max-h-full overflow-y-auto relative scrollBarStyles">
         <Sidebar />
-        <main className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4 overflow-y-auto">
+        <main className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4 overflow-y-auto scrollBarStyles">
           {children}
         </main>
       </section>
