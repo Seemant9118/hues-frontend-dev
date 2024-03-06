@@ -13,6 +13,7 @@ import { DataTable } from "@/components/table/data-table";
 import Wrapper from "./Wrapper";
 import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
+import SuccessModal from "./Modals/SuccessModal";
 
 const CreateSales = ({ onCancel, name }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
@@ -133,7 +134,9 @@ const CreateSales = ({ onCancel, name }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <Button onClick={() => {}}>{name}</Button>
+        <SuccessModal>
+          <Button onClick={() => {}}>{name}</Button>
+        </SuccessModal>
       </div>
     </Wrapper>
   );
