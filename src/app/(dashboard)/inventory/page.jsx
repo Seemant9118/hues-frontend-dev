@@ -51,6 +51,7 @@ const InventoryPage = () => {
             setIsAdding(false);
           }}
           name={"Add Product"}
+          cta={"Product"}
         />
       )}
     </>

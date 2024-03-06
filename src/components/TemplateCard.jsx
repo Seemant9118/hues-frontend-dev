@@ -1,11 +1,20 @@
 import Image from "next/image";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, MessageSquareText, Trash2 } from "lucide-react";
+import Link from "next/link";
 
-const TemplateCard = () => {
+const TemplateCard = ({ onViewFormClick, onDelete, viewResponseClick }) => {
   return (
-    <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles">
+    <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
+      <Button
+        variant="grey"
+        onClick={() => viewResponseClick()}
+        className="absolute top-3 right-3"
+      >
+        <MessageSquareText size={14} />
+        <p>12 Responses</p>
+      </Button>
       <Image src={"/Word_png.png"} alt="Template" height={60} width={65} />
       <div className="">
         <p className="text-neutral-300 text-sm font-bold">Template Name</p>
@@ -13,14 +22,18 @@ const TemplateCard = () => {
       </div>
       <div className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]">
         <Button
+          asChild
           variant={"blue_outline"}
           size="sm"
           className="text-xs gap-1 p-1.5"
         >
-          <Eye size={16} />
-          View Template
+          <Link href={"/template/Template One"}>
+            <Eye size={16} />
+            View Template
+          </Link>
         </Button>
         <Button
+          onClick={onViewFormClick}
           variant={"blue_outline"}
           size="sm"
           className="text-xs gap-1 p-1.5 "
@@ -29,6 +42,7 @@ const TemplateCard = () => {
           View Form
         </Button>
         <Button
+          onClick={onDelete}
           variant="ghost"
           size="icon"
           className="text-neutral-500 hover:text-black "

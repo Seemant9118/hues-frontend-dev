@@ -18,10 +18,10 @@ const Header = () => {
       </Link>
       <div className="flex items-center gap-4">
         <Button variant={"link"} size={"icon"}>
-          <Bell className="text-[#A5ABBD]" />
+          <Bell className="text-grey" />
         </Button>
         <Button variant={"link"} size={"icon"}>
-          <UserCircle className="text-[#A5ABBD]" />
+          <UserCircle className="text-grey" />
         </Button>
       </div>
     </div>

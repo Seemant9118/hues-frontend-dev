@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FolderUp, PlusCircle } from "lucide-react";
 import React, { useState } from "react";
 import { SalesColumns } from "./SalesColumns";
+import CreateSales from "@/components/CreateSales";
 
 const SalesOrder = () => {
   const [orders, setOrders] = useState([
@@ -20,35 +21,57 @@ const SalesOrder = () => {
       status: "Paid",
     },
   ]);
+  const [isCreatingSales, setIsCreatingSales] = useState(false);
 
   return (
-    <Wrapper>
-      <SubHeader name={"Sales Orders"}>
-        <div className="flex items-center justify-center gap-4">
-          <Button
-            variant={"blue_outline"}
-            className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"
-            size="sm"
-          >
-            <FolderUp size={14} />
-            Export
-          </Button>
-          <Button variant={"blue_outline"} size="sm">
-            <PlusCircle size={14} />
-            Create Sales
-          </Button>
-          <Button
-            // onClick={() => setIsAdding(true)}
-            variant={"blue_outline"}
-            size="sm"
-          >
-            <PlusCircle size={14} />
-            Create Invoice
-          </Button>
-        </div>
-      </SubHeader>
-      <DataTable columns={SalesColumns} data={orders} />
-    </Wrapper>
+    <>
+      {!isCreatingSales && (
+        <Wrapper>
+          <SubHeader name={"Sales Orders"}>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant={"blue_outline"}
+                className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"
+                size="sm"
+              >
+                <FolderUp size={14} />
+                Export
+              </Button>
+              <Button
+                onClick={() => setIsCreatingSales(true)}
+                variant={"blue_outline"}
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Create Sales
+              </Button>
+              <Button
+                onClick={() => setIsCreatingSales(true)}
+                // onClick={() => setIsAdding(true)}
+                variant={"blue_outline"}
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Create Invoice
+              </Button>
+            </div>
+          </SubHeader>
+          <DataTable columns={SalesColumns} data={orders} />
+        </Wrapper>
+      )}
+      {isCreatingSales && (
+        <CreateSales
+          name="Create Sales"
+          onCancel={() => setIsCreatingSales(false)}
+        />
+      )}
+      {isCreatingInvoice && (
+        <CreateSales
+          name="Create Invoice"
+          onCancel={() => setIsCreatingInvoice(false)}
+        />
+      )}
+    </>
   );
 };
 

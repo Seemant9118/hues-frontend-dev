@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import InputWithLabel from "./InputWithLabel";
 
-
-const AddProduct = ({ name, onSubmit, onCancel }) => {
+const AddProduct = ({ name, onSubmit, onCancel, cta }) => {
   const [product, setProduct] = useState({
     product_name: "",
     company_name: "",
@@ -151,7 +150,7 @@ const AddProduct = ({ name, onSubmit, onCancel }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <Button onClick={() => onSubmit(product)}>Add Template</Button>
+        <Button onClick={() => onSubmit(product)}>Add {cta}</Button>
       </div>
     </form>
   );
