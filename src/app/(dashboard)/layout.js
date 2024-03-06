@@ -6,7 +6,7 @@ export default function RootLayout({ children }) {
     <>
       <Header />
       <div className="flex px-10 items-center">
-        <h3 className="text-2xl font-bold text-[#121212]">Profile</h3>
+        <h3 className="text-2xl font-bold text-darkText">Profile</h3>
       </div>
       <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5 max-h-full overflow-y-auto relative scrollBarStyles">
         <Sidebar />

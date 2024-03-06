@@ -21,7 +21,7 @@ const ViewTemplate = ({ params }) => {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-[#A5ABBD] font-bold">Description</p>
+          <p className="text-sm text-grey font-bold">Description</p>
           <p className="text-[#363940] font-medium">
             Lorem Ipsum is simply dummy text of the printing and typesetting
             industry. Lorem Ipsum has been the industry&apos;s standard dummy text
@@ -66,7 +66,7 @@ export default ViewTemplate;
 function TemplateInfo({ label, value }) {
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-sm text-[#A5ABBD] font-bold">{label}</p>
+      <p className="text-sm text-grey font-bold">{label}</p>
       <p className="text-[#363940] font-bold">{value}</p>
     </div>
   );
