@@ -22,10 +22,11 @@ const SalesOrder = () => {
     },
   ]);
   const [isCreatingSales, setIsCreatingSales] = useState(false);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
   return (
     <>
-      {!isCreatingSales && (
+      {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
           <SubHeader name={"Sales Orders"}>
             <div className="flex items-center justify-center gap-4">
@@ -46,7 +47,7 @@ const SalesOrder = () => {
                 Create Sales
               </Button>
               <Button
-                onClick={() => setIsCreatingSales(true)}
+                onClick={() => setIsCreatingInvoice(true)}
                 // onClick={() => setIsAdding(true)}
                 variant={"blue_outline"}
                 size="sm"
@@ -59,13 +60,13 @@ const SalesOrder = () => {
           <DataTable columns={SalesColumns} data={orders} />
         </Wrapper>
       )}
-      {isCreatingSales && (
+      {isCreatingSales && !isCreatingInvoice && (
         <CreateSales
           name="Create Sales"
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
-      {isCreatingInvoice && (
+      {isCreatingInvoice && !isCreatingSales && (
         <CreateSales
           name="Create Invoice"
           onCancel={() => setIsCreatingInvoice(false)}
