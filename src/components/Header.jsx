@@ -1,9 +1,12 @@
+'use client';
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Bell, UserCircle } from "lucide-react";
 
 const Header = () => {
+  const router = useRouter();
   return (
     <div className="px-10 py-5 shadow-[0_4px_6px_0_#3288ED1A] flex items-center justify-between bg-white">
       <Link href={"/"}>
@@ -21,7 +24,7 @@ const Header = () => {
           <Bell className="text-grey" />
         </Button>
         <Button variant={"link"} size={"icon"}>
-          <UserCircle className="text-grey" />
+          <UserCircle className="text-grey" onClick={() => router.push('/login')}/>
         </Button>
       </div>
     </div>
