@@ -1,6 +1,7 @@
 import React from "react";
 
 import {
+  Gauge,
   ClipboardList,
   LayoutDashboard,
   Package,
@@ -15,9 +16,14 @@ import StyledLinks from "@/components/StyledLinks";
 const Sidebar = () => {
   const links = [
     {
+      name: "Dashboard",
+      icon: <Gauge size={16} />,
+      path: "/",
+    },
+    {
       name: "Templates",
       icon: <LayoutDashboard size={16} />,
-      path: "/",
+      path: "/template",
     },
     {
       name: "Inventory",
