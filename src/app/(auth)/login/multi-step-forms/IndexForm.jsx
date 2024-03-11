@@ -11,19 +11,19 @@ export default function IndexForm({ setCurrStep }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
 
   const [formDataWithDigi, setFormDataWithDigi] = useState({
-    adharNumber:'',
+    adhaarNumber: '',
   });
   const [formDataWithMob, setFormDataWithMob] = useState({
-    phoneNumber:'',
+    mobileNumber: '',
   });
-  const [errorMsg, setErroMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
 
   const handleSwitchLoginMethod = () => {
     setLoginWithThirdParty(!loginWithThirdParty);
-    setErroMsg('');
-    setFormDataWithDigi({adharNumber:''});
-    setFormDataWithMob({phoneNumber:''})
+    setErrorMsg('');
+    setFormDataWithDigi({ adhaarNumber: '' });
+    setFormDataWithMob({ mobileNumber: '' })
   };
 
   const handleChange = (e) => {
@@ -37,24 +37,24 @@ export default function IndexForm({ setCurrStep }) {
   const handleSubmitFormWithDigi = (e) => {
     e.preventDefault();
     // handle validation
-    if (formDataWithDigi.adharNumber.length === 12) {
+    if (formDataWithDigi.adhaarNumber.length === 12) {
       console.log(formDataWithDigi);
       setCurrStep(3)
     }
     else {
-      setErroMsg('*Please write valid Adhar Number');
+      setErrorMsg('*Please write valid Adhar Number');
     }
   };
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
     // handle validation
-    if (formDataWithMob.phoneNumber.length === 10) {
+    if (formDataWithMob.mobileNumber.length === 10) {
       console.log(formDataWithMob);
       setCurrStep(2)
     }
     else {
-      setErroMsg('*Please write valid Phone Number');
+      setErrorMsg('*Please write valid Mobile Number');
     }
   };
 
@@ -73,11 +73,11 @@ export default function IndexForm({ setCurrStep }) {
             htmlFor="adhar-number"
             className="text-[#414656] font-medium"
           >
-            Adhar Number*
+            Adhar Number <span className="text-red-600">*</span>
           </Label>
 
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <Input className={cn("focus:font-bold")} type="tel" placeholder="Adhar Number*" name="adharNumber" onChange={handleChange} value={formDataWithDigi.adharNumber} required />
+            <Input className={cn("focus:font-bold")} type="tel" placeholder="Adhar Number" name="adhaarNumber" onChange={handleChange} value={formDataWithDigi.adhaarNumber} required />
             <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">@</span>
           </div>
           {errorMsg && <span className="text-red-600 text-sm w-full px-1 font-semibold">{errorMsg}</span>}
@@ -95,10 +95,10 @@ export default function IndexForm({ setCurrStep }) {
             htmlFor="mobile-number"
             className="text-[#414656] font-medium"
           >
-            Mobile Number*
+            Mobile Number <span className="text-red-600">*</span>
           </Label>
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <Input type="text" name="phoneNumber" placeholder="Phone Number" className="focus:font-bold" onChange={handleChange} value={formDataWithMob.phoneNumber} required />
+            <Input type="text" name="mobileNumber" placeholder="Mobile Number" className="focus:font-bold" onChange={handleChange} value={formDataWithMob.mobileNumber} required />
             <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
           {errorMsg && <span className="text-red-600 text-sm w-full px-1 font-semibold">{errorMsg}</span>}
