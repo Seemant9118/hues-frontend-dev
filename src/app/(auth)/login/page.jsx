@@ -29,16 +29,13 @@ export default function Login() {
             {/* Body */}
             <div className="h-[92vh] flex justify-center items-center">
                 {/* Login Form - Step 1 */}
-                {currStep === 1 && <IndexForm setCurrStep={setCurrStep} />}
+                {currStep === 1 && <IndexForm currStep={currStep} setCurrStep={setCurrStep} />}
 
                 {/* Login Form - Step 2 - If logIn with Mobile - OTPVerificationForm*/}
-                {currStep === 2 && <OTPVerificationForm setCurrStep={setCurrStep} />}
+                {currStep === 2 && <OTPVerificationForm currStep={currStep} setCurrStep={setCurrStep} />}
 
                 {/* Login Form - Step 3 - Final Profile Details form */}
-                {
-                    currStep === 3 && <ProfileDetailForm setCurrStep={setCurrStep} />
-                }
-
+                {currStep === 3 && <ProfileDetailForm currStep={currStep} setCurrStep={setCurrStep} />}
             </div>
         </>
     );

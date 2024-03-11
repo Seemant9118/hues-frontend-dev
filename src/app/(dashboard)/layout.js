@@ -1,8 +1,10 @@
 "use client";
+import React from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { UserProvider } from "@/context/UserContext";
 import { usePathname } from "next/navigation";
+
 
 export default function RootLayout({ children }) {
   const pathName = usePathname();

@@ -46,15 +46,6 @@ const SalesOrder = () => {
                 <PlusCircle size={14} />
                 Create Sales
               </Button>
-              <Button
-                onClick={() => setIsCreatingInvoice(true)}
-                // onClick={() => setIsAdding(true)}
-                variant={"blue_outline"}
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Create Invoice
-              </Button>
             </div>
           </SubHeader>
           <DataTable columns={SalesColumns} data={orders} />

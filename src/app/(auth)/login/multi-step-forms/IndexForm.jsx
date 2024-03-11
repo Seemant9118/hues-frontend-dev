@@ -1,16 +1,31 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function IndexForm({ setCurrStep }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
+  const [formDataWithDigi, setFormDataWithDigi] = useState({});
 
-  const handleChange = () => {
+
+  const handleSwitchLoginMethod = () => {
     setLoginWithThirdParty(!loginWithThirdParty);
   };
+
+  const handleChange = (e) => {
+    let name = e.name;
+    let value = e.value;
+    setFormDataWithDigi(values => ({ ...values, [name]: value }));
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(formDataWithDigi);
+    setCurrStep(3)
+  }
 
   return (
     <div className="border border-[#E1E4ED] p-10 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md">
@@ -21,59 +36,49 @@ export default function IndexForm({ setCurrStep }) {
         One account for all things <span className="font-bold">Hues</span>
       </p>
       {loginWithThirdParty ? (
-        <>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label
-              htmlFor="adhar-number"
-              className="text-[#414656] font-medium"
-            >
-              Adhar Number*
-            </Label>
-            <div className="border-2 rounded py-2 px-4 hover:border-gray-600 flex items-center gap-1">
-              <input
-                className="w-full  border-none focus:outline-none focus:font-bold"
-                type="tel"
-                placeholder="Adhar Number*"
-              />
-              <span className="text-[#3F5575] font-bold">@</span>
-            </div>
-          </div>
-          <div
-            className="w-full border-2 py-2 px-4 gap-1 rounded flex justify-center font-bold hover:border-[#5532E8] text-[#8f8f8f] hover:text-[#5532E8] hover:cursor-pointer grayscale hover:grayscale-0"
-            onClick={() => setCurrStep(3)}
+
+        <form onSubmit={handleSubmit} className="grid w-full max-w-sm items-center gap-1.5">
+          <Label
+            htmlFor="adhar-number"
+            className="text-[#414656] font-medium"
           >
-            <Image src={"/digi-icon.png"} width={25} height={20} />
-            <button>Login with Digilocker</button>
+            Adhar Number*
+          </Label>
+          <div className="hover:border-gray-600 flex items-center gap-1 relative">
+            <Input className="focus:font-bold" type="tel" placeholder="Adhar Number*" name="adharNumber" onChange={handleChange} value={formDataWithDigi.name } required />
+            <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">@</span>
           </div>
-        </>
+          <Button variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded">
+            <Image src={"/digi-icon.png"} width={25} height={20} />
+            Login with Digilocker
+          </Button>
+        </form>
+
+
       ) : (
-        <>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label
-              htmlFor="mobile-number"
-              className="text-[#414656] font-medium"
-            >
-              Mobile Number*
-            </Label>
-            <div className="border-2 rounded py-2 px-4 hover:border-gray-600 flex items-center gap-1">
-              <input
-                className="w-full  border-none focus:outline-none focus:font-bold"
-                type="tel"
-                placeholder="+91 0987654321"
-              />
-              <span className=" text-[#3F5575] font-bold">
-                <Phone />
-              </span>
-            </div>
+
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          setCurrStep(2)
+        }} className="grid w-full max-w-sm items-center gap-1.5">
+          <Label
+            htmlFor="mobile-number"
+            className="text-[#414656] font-medium"
+          >
+            Mobile Number*
+          </Label>
+          <div className="hover:border-gray-600 flex items-center gap-1 relative">
+            <Input type="tel" name="phoneNumber" placeholder="Phone Number" className="focus:font-bold" required />
+            <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
           <Button
-            className="w-full py-2 px-4 gap-1 rounded flex justify-center font-bold text-white hover:cursor-pointer bg-[#288AF9] hover:bg-[#3e7fc9]"
+            className="w-full rounded font-bold text-white hover:cursor-pointer"
             onClick={() => setCurrStep(2)}
           >
             <Image src={"/smartphone.png"} width={15} height={5} />
             Login with Mobile
           </Button>
-        </>
+        </form>
       )}
 
       {/* signup redirection */}
@@ -85,22 +90,25 @@ export default function IndexForm({ setCurrStep }) {
       </div>
 
       {/* log in with google redirection */}
-      <div className="w-full py-2 px-4 gap-1 rounded flex justify-center font-bold text-[#414656] hover:cursor-pointer bg-[#f5f4f4] hover:bg-[#e8e7e7]">
+      <Button className="w-full rounded font-bold text-[#414656] hover:cursor-pointer bg-[#f5f4f4] hover:bg-[#e8e7e7]">
         <Image src={"/google-icon.png"} width={25} height={20} />
-        <button>Login with Google</button>
-      </div>
+        Login with Google
+      </Button>
 
       {/* button handler on the basis of current login method Digilocker/Mobile */}
       {loginWithThirdParty ? (
-        <div className="w-full py-2 px-4 gap-1 rounded flex justify-center font-bold text-white hover:cursor-pointer bg-[#288AF9] hover:bg-[#3e7fc9]">
+        <Button
+          className="w-full rounded font-bold text-white hover:cursor-pointer"
+          onClick={handleSwitchLoginMethod}
+        >
           <Image src={"/smartphone.png"} width={15} height={5} />
-          <button onClick={handleChange}>Login with Mobile</button>
-        </div>
+          Login with Mobile
+        </Button>
       ) : (
-        <div className="w-full border-2 py-2 px-4 gap-1 rounded flex justify-center font-bold hover:border-[#5532E8] text-[#8f8f8f] hover:text-[#5532E8] hover:cursor-pointer grayscale hover:grayscale-0">
+        <Button variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded" onClick={handleSwitchLoginMethod}>
           <Image src={"/digi-icon.png"} width={25} height={20} />
-          <button onClick={handleChange}>Login with Digilocker</button>
-        </div>
+          Login with Digilocker
+        </Button>
       )}
     </div>
   );
