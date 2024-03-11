@@ -6,7 +6,7 @@ import { Phone, CreditCard } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-export default function ProfileDetailForm({ params }) {
+export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
   console.log(params);
   const router = useRouter();
   const query = useSearchParams();
@@ -45,20 +45,38 @@ export default function ProfileDetailForm({ params }) {
         </div>
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-          Mobile Number*
-        </Label>
-        <div className="relative">
-          <Input
-            required={true}
-            className="focus:font-bold"
-            type="tel"
-            placeholder="+91 987654321"
-          />
-          <Phone className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+      {isThirdPartyLogin && (
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
+            Mobile Number*
+          </Label>
+          <div className="relative">
+            <Input
+              required={true}
+              className="focus:font-bold"
+              type="tel"
+              placeholder="+91 987654321"
+            />
+            <Phone className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          </div>
         </div>
-      </div>
+      )}
+      {!isThirdPartyLogin && (
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
+            Aadhaar Number*
+          </Label>
+          <div className="relative">
+            <Input
+              required={true}
+              className="focus:font-bold"
+              type="text"
+              placeholder="1111-1111-1111"
+            />
+            <Phone className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          </div>
+        </div>
+      )}
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="dob" className="text-[#414656] font-medium">
@@ -90,10 +108,7 @@ export default function ProfileDetailForm({ params }) {
           </span>
         </div>
       </div>
-      <Button
-        type="submit"
-        className="w-full"
-      >
+      <Button type="submit" className="w-full">
         Submit Details
       </Button>
     </form>

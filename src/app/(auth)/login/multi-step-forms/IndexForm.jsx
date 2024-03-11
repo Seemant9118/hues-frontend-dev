@@ -6,26 +6,26 @@ import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function IndexForm({ setCurrStep }) {
+export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
   const [formDataWithDigi, setFormDataWithDigi] = useState({});
 
-
   const handleSwitchLoginMethod = () => {
     setLoginWithThirdParty(!loginWithThirdParty);
+    setIsThirdPartyLogin(!loginWithThirdParty);
   };
 
   const handleChange = (e) => {
-    let name = e.name;
-    let value = e.value;
-    setFormDataWithDigi(values => ({ ...values, [name]: value }));
-  }
+    let name = e.target.name;
+    let value = e.target.value;
+    setFormDataWithDigi((values) => ({ ...values, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formDataWithDigi);
-    setCurrStep(3)
-  }
+    setCurrStep(3);
+  };
 
   return (
     <div className="border border-[#E1E4ED] p-10 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md">
@@ -36,39 +36,54 @@ export default function IndexForm({ setCurrStep }) {
         One account for all things <span className="font-bold">Hues</span>
       </p>
       {loginWithThirdParty ? (
-
-        <form onSubmit={handleSubmit} className="grid w-full max-w-sm items-center gap-1.5">
-          <Label
-            htmlFor="adhar-number"
-            className="text-[#414656] font-medium"
-          >
-            Adhar Number*
+        <form
+          onSubmit={handleSubmit}
+          className="grid w-full max-w-sm items-center gap-1.5"
+        >
+          <Label htmlFor="adhar-number" className="text-[#414656] font-medium">
+            Aadhaar Number*
           </Label>
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <Input className="focus:font-bold" type="tel" placeholder="Adhar Number*" name="adharNumber" onChange={handleChange} value={formDataWithDigi.name } required />
-            <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">@</span>
+            <Input
+              className="focus:font-bold"
+              type="tel"
+              placeholder="Aadhaar Number*"
+              name="aadhaarNumber"
+              onChange={handleChange}
+              value={formDataWithDigi.name}
+              required
+            />
+            <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">
+              @
+            </span>
           </div>
-          <Button variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded">
+          <Button
+            variant="outline"
+            className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded"
+          >
             <Image src={"/digi-icon.png"} width={25} height={20} />
             Login with Digilocker
           </Button>
         </form>
-
-
       ) : (
-
-        <form onSubmit={(e) => {
-          e.preventDefault()
-          setCurrStep(2)
-        }} className="grid w-full max-w-sm items-center gap-1.5">
-          <Label
-            htmlFor="mobile-number"
-            className="text-[#414656] font-medium"
-          >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setCurrStep(2);
+          }}
+          className="grid w-full max-w-sm items-center gap-1.5"
+        >
+          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
             Mobile Number*
           </Label>
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <Input type="tel" name="phoneNumber" placeholder="Phone Number" className="focus:font-bold" required />
+            <Input
+              type="tel"
+              name="phoneNumber"
+              placeholder="Phone Number"
+              className="focus:font-bold"
+              required
+            />
             <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
           <Button
@@ -105,7 +120,11 @@ export default function IndexForm({ setCurrStep }) {
           Login with Mobile
         </Button>
       ) : (
-        <Button variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded" onClick={handleSwitchLoginMethod}>
+        <Button
+          variant="outline"
+          className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded"
+          onClick={handleSwitchLoginMethod}
+        >
           <Image src={"/digi-icon.png"} width={25} height={20} />
           Login with Digilocker
         </Button>
