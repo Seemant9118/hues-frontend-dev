@@ -20,10 +20,10 @@ const Header = () => {
         />
       </Link>
       <div className="flex items-center gap-4">
-        <Button variant={"link"} size={"icon"}>
+        <Button variant={"link"} size={"icon"} className="your-notification">
           <Bell className="text-grey" />
         </Button>
-        <Button variant={"link"} size={"icon"}>
+        <Button variant={"link"} size={"icon"} className="your-profile">
           <UserCircle className="text-grey" onClick={() => router.push('/login')}/>
         </Button>
       </div>

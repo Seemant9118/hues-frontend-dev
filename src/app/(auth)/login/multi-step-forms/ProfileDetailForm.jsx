@@ -23,19 +23,17 @@ export default function ProfileDetailForm() {
       </p>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="pan-number" className="text-[#414656] font-medium">
-          PAN Card Details*
+        <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
+          PAN Details*
         </Label>
-        <div className="border-2 rounded py-2 px-4 hover:border-gray-600 flex items-center gap-1">
-          <input
+        <div className="relative">
+          <Input
             required={true}
-            className="w-full  border-none focus:outline-none focus:font-bold"
-            type="tel"
-            placeholder="PAN Number*"
+            className="focus:font-bold"
+            type="text"
+            placeholder="FGHJ1456T"
           />
-          <span className="text-[#3F5575] font-bold">
-            <CreditCard />
-          </span>
+          <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
       </div>
 
@@ -43,16 +41,14 @@ export default function ProfileDetailForm() {
         <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
           Mobile Number*
         </Label>
-        <div className="border-2 rounded py-2 px-4 hover:border-gray-600 flex items-center gap-1">
-          <input
+        <div className="relative">
+          <Input
             required={true}
-            className="w-full  border-none focus:outline-none focus:font-bold"
+            className="focus:font-bold"
             type="tel"
             placeholder="+91 987654321"
           />
-          <span className="text-[#3F5575] font-bold">
-            <Phone />
-          </span>
+          <Phone className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
       </div>
 
@@ -60,10 +56,10 @@ export default function ProfileDetailForm() {
         <Label htmlFor="dob" className="text-[#414656] font-medium">
           Date of Birth*
         </Label>
-        <div className="border-2 rounded py-2 px-4 hover:border-gray-600 flex items-center gap-1">
+        <div className="border rounded-[6px] py-2 pl-2 pr-1 flex items-center gap-1">
           <input
             required={true}
-            className="w-full  border-none focus:outline-none focus:font-bold"
+            className="w-full border-none focus:outline-none focus:font-bold text-[#3F5575] text-sm"
             type="date"
             placeholder="28 / 06 / 2002"
           />
@@ -74,10 +70,10 @@ export default function ProfileDetailForm() {
         <Label htmlFor="email" className="text-[#414656] font-medium">
           Email Address*
         </Label>
-        <div className="hover:border-gray-600 flex items-center gap-1 relative">
+        <div className="relative">
           <Input
             required={true}
-            className="rounded-[6px]"
+            className="focus:font-bold"
             type="email"
             placeholder="patrick@gmail.com*"
           />
@@ -86,11 +82,9 @@ export default function ProfileDetailForm() {
           </span>
         </div>
       </div>
-
       <Button
         type="submit"
-        className="w-full "
-        // className="w-full py-2 px-5 gap-1 rounded flex justify-center font-bold text-white hover:cursor-pointer bg-[#A5ABBD] hover:bg-[#288AF9]"
+        className="w-full"
       >
         Submit Details
       </Button>
