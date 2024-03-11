@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 export default function IndexForm({ setCurrStep }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
+
   const [formDataWithDigi, setFormDataWithDigi] = useState({
     adharNumber:'',
   });
@@ -142,4 +143,4 @@ export default function IndexForm({ setCurrStep }) {
       )}
     </div>
   );
-}
+};
