@@ -53,8 +53,8 @@ const AddModal = ({ type }) => {
               value={""}
             />
             <InputWithLabel
-              name="GST"
-              id="gst"
+              name="PAN"
+              id="pan"
               onChange={() => {}}
               value={""}
             />

@@ -9,6 +9,9 @@ import {
   ScrollText,
   Store,
   UserRound,
+  ReceiptText,
+  ReceiptIndianRupee,
+  BadgeIndianRupee,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StyledLinks from "@/components/StyledLinks";
@@ -39,6 +42,23 @@ const Sidebar = () => {
       name: "Purchase Order",
       icon: <ScrollText size={16} />,
       path: "/purchase-orders",
+    },
+    {
+      name: "Invoice",
+      icon: <ReceiptText size={16} />,
+      path: "/invoice",
+      subTab: [
+        {
+          name: "Sale Invoices",
+          icon: <BadgeIndianRupee  size={16}/>,
+          path: "/invoice/sales-invoices"
+        },
+        {
+          name: "Purchase Invoices",
+          icon: <ReceiptIndianRupee size={16}/>,
+          path: "/invoice/purchases-invoices"
+        },
+      ],
     },
     {
       name: "Client",

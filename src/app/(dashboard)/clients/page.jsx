@@ -19,6 +19,7 @@ const ClientPage = () => {
       email: "johndoe@gmail.com",
       gst: "44",
     },
+    
   ]);
   return (
     <Wrapper>

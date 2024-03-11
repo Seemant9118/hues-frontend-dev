@@ -32,7 +32,7 @@ export default function Home() {
         <div className="flex flex-col justify-center items-center gap-2 h-full">
           <PackageOpen className="text-neutral-500" />
           <p className="text-neutral-500">
-            No Product Uploaded Yet. Click on buttons below.
+            No Templates Uploaded Yet. Click on buttons below.
           </p>
           <Button
             asChild
