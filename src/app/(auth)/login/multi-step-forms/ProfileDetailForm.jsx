@@ -1,18 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LocalStorageService } from "@/lib/utils";
 import { Phone, CreditCard } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
-export default function ProfileDetailForm() {
+export default function ProfileDetailForm({ params }) {
+  console.log(params);
   const router = useRouter();
+  const query = useSearchParams();
+  const login = (e) => {
+    e.preventDefault();
+    const redirectPath = query.get("redirect") || "/"; // Default to the homepage if no redirect path is provided
+    toast.success("Login Successfull.");
+    LocalStorageService.set("token", "123");
+    router.push(redirectPath);
+  };
 
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        router.push("/");
-      }}
+      onSubmit={login}
       className="border border-[#E1E4ED] p-10 px-5 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md"
     >
       <h1 className="w-full text-2xl text-[#414656] font-bold text-center">
