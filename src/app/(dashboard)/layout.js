@@ -17,13 +17,10 @@ export default function RootLayout({ children }) {
       </div>
       <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5 max-h-full overflow-y-auto relative scrollBarStyles">
         <Sidebar />
-        {pathName === "/" ? (
-          children
-        ) : (
-          <main className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4 overflow-y-auto scrollBarStyles">
-            {children}
-          </main>
-        )}
+        <main className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-4 overflow-y-auto scrollBarStyles">
+          {children}
+        </main>
+
       </section>
     </UserProvider>
   );

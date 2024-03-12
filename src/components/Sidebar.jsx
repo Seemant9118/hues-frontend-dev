@@ -34,12 +34,12 @@ const Sidebar = () => {
       path: "/inventory",
     },
     {
-      name: "Sales Order",
+      name: "Sales",
       icon: <ClipboardList size={16} />,
       path: "/sales-orders",
     },
     {
-      name: "Purchase Order",
+      name: "Purchase",
       icon: <ScrollText size={16} />,
       path: "/purchase-orders",
     },

@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
+import ShareModal from "./Modals/ShareModal";
 
 export const Columns = [
   {
@@ -90,7 +91,8 @@ export const Columns = [
             >
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem>Share</DropdownMenuItem>
+            
+            <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
             <DropdownMenuItem>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

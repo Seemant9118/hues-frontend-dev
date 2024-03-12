@@ -46,6 +46,12 @@ export const SalesColumns = [
     ),
   },
   {
+    accessorKey: "type",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="TYPE" />
+    ),
+  },
+  {
     accessorKey: "orders",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ORDERS" />
@@ -70,7 +76,7 @@ export const SalesColumns = [
   {
     accessorKey: "gst",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="GST (%)" />
+      <DataTableColumnHeader column={column} title="GST %" />
     ),
   },
   {

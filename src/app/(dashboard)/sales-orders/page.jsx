@@ -13,10 +13,11 @@ const SalesOrder = () => {
     {
       date: "12/02/2024",
       items: "Starbucks",
+      type: "sent",
       orders: "Starbucks Cold Brew Product",
       customers: "Cody",
       price: "40",
-      gst: "5",
+      gst:"44",
       amount: "2500",
       status: "Paid",
     },

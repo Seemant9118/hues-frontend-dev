@@ -13,6 +13,7 @@ const PurchaseOrders = () => {
     {
       date: "12/02/2024",
       item: "Starbucks",
+      type: "recieved",
       orders: "Starbucks Cold Brew Product",
       vendors: "R&T Pharma Private. Limited.",
       delivery_date: "02/05/12",

@@ -1,13 +1,19 @@
+"use client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
-import { Phone, CreditCard } from "lucide-react";
+import { Phone, CreditCard , Calendar} from "lucide-react";
+import DatePicker from "react-datepicker";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import "react-datepicker/dist/react-datepicker.css";
+
 export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
-  console.log(params);
+  // console.log(params);
+  const [startDate, setStartDate] = useState('');
   const router = useRouter();
   const query = useSearchParams();
   const login = (e) => {
@@ -82,13 +88,9 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         <Label htmlFor="dob" className="text-[#414656] font-medium">
           Date of Birth <span className="text-red-600">*</span>
         </Label>
-        <div className="border rounded-[6px] py-2 pl-2 pr-1 flex items-center gap-1">
-          <input
-            required={true}
-            className="w-full border-none focus:outline-none focus:font-bold text-[#3F5575] text-sm"
-            type="date"
-            placeholder="28 / 06 / 2002"
-          />
+        <div className="border rounded-[6px] py-2 pl-2 pr-1 flex items-center relative focus:outline focus:outline-blue-500">
+          <DatePicker placeholderText="20/08/1999" selected={startDate} onChange={(date) => setStartDate(date)} className="w-[370px] focus:outline-none"/>
+          <Calendar className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
       </div>
 

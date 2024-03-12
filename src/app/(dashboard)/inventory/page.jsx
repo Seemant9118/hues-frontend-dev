@@ -7,6 +7,7 @@ import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Check,
+  Download,
   FileEdit,
   Layers2,
   Trash2,
@@ -80,7 +81,7 @@ const InventoryPage = () => {
             name="file"
             types={["xls", "csv"]}
           >
-            <div className=" min-w-[700px] grow px-5 py-10 flex gap-3 justify-between items-center rounded border-2 border-sky-300 border-dashed border-spacing-3 cursor-pointer">
+            <div className="min-w-[700px] grow px-5 py-10 mb-2 flex gap-3 justify-between items-center rounded border-2 border-sky-300 border-dashed border-spacing-3 cursor-pointer">
               <div className="flex items-center gap-4">
                 <UploadCloud className="text-sky-500" size={40} />
                 <div className="flex flex-col gap-1 ">
@@ -90,6 +91,9 @@ const InventoryPage = () => {
                   <p className="text-grey text-xs font-normal">
                     File size no more than 10MB
                   </p>
+                  <p className="text-sky-500 text-xs font-normal">
+                    Supported File formats : .csv | .xls
+                  </p>
                 </div>
               </div>
               <Button variant="blue_outline">
@@ -97,6 +101,11 @@ const InventoryPage = () => {
                 Select From Local
               </Button>
             </div>
+            <Button variant="outline" className="w-full">
+              <Download />
+              Download Sample Format
+            </Button>
+
           </FileUploader>
           {files.map((file, idx) => (
             <div
