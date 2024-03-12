@@ -21,7 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 
 import { Button } from "@/components/ui/button";
-import { Layers2 } from "lucide-react";
+import { Layers2 ,Fingerprint} from "lucide-react";
 
 import InputWithLabel from "@/components/InputWithLabel";
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
@@ -33,7 +33,10 @@ const AddModal = ({ type }) => {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant={"blue_outline"} size="sm">
-          <Layers2 size={14} />
+        {
+          type === 'Save GST Credentials' ? <Fingerprint size={14}/> : <Layers2 size={14}/>
+        }
+        
           {type}
         </Button>
       </DialogTrigger>
