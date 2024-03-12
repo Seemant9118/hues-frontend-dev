@@ -38,6 +38,12 @@ export const PurchaseColumns = [
     ),
   },
   {
+    accessorKey: "type",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="TYPE" />
+    ),
+  },
+  {
     accessorKey: "orders",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PURCHASE ORDERS" />
