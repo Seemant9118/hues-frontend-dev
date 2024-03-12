@@ -5,26 +5,58 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
-  const [formDataWithDigi, setFormDataWithDigi] = useState({});
+
+  const [formDataWithDigi, setFormDataWithDigi] = useState({
+    adhaarNumber: '',
+  });
+  const [formDataWithMob, setFormDataWithMob] = useState({
+    mobileNumber: '',
+  });
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSwitchLoginMethod = () => {
     setLoginWithThirdParty(!loginWithThirdParty);
+    setErrorMsg('');
+    setFormDataWithDigi({ adhaarNumber: '' });
+    setFormDataWithMob({ mobileNumber: '' })
     setIsThirdPartyLogin(!loginWithThirdParty);
+
   };
 
   const handleChange = (e) => {
     let name = e.target.name;
-    let value = e.target.value;
-    setFormDataWithDigi((values) => ({ ...values, [name]: value }));
+    let value = e.target.value
+    setFormDataWithDigi(values => ({ ...values, [name]: value }));
+    setFormDataWithMob(values => ({ ...values, [name]: value }));
+
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmitFormWithDigi = (e) => {
     e.preventDefault();
-    console.log(formDataWithDigi);
-    setCurrStep(3);
+    // handle validation
+    if (formDataWithDigi.adhaarNumber.length === 12) {
+      console.log(formDataWithDigi);
+      setCurrStep(3)
+    }
+    else {
+      setErrorMsg('*Please write valid Adhar Number');
+    }
+  };
+
+  const handleSubmitFormWithMob = (e) => {
+    e.preventDefault();
+    // handle validation
+    if (formDataWithMob.mobileNumber.length === 10) {
+      console.log(formDataWithMob);
+      setCurrStep(2)
+    }
+    else {
+      setErrorMsg('*Please write valid Mobile Number');
+    }
   };
 
   return (
@@ -36,61 +68,50 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
         One account for all things <span className="font-bold">Hues</span>
       </p>
       {loginWithThirdParty ? (
-        <form
-          onSubmit={handleSubmit}
-          className="grid w-full max-w-sm items-center gap-1.5"
-        >
-          <Label htmlFor="adhar-number" className="text-[#414656] font-medium">
-            Aadhaar Number*
-          </Label>
-          <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <Input
-              className="focus:font-bold"
-              type="tel"
-              placeholder="Aadhaar Number*"
-              name="aadhaarNumber"
-              onChange={handleChange}
-              value={formDataWithDigi.name}
-              required
-            />
-            <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">
-              @
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded"
+
+
+        <form onSubmit={handleSubmitFormWithDigi} className="grid w-full max-w-sm items-center gap-1.5">
+          <Label
+            htmlFor="adhar-number"
+            className="text-[#414656] font-medium"
           >
-            <Image src={"/digi-icon.png"} width={25} height={20} />
+            Adhar Number <span className="text-red-600">*</span>
+
+          </Label>
+
+          <div className="hover:border-gray-600 flex items-center gap-1 relative">
+
+            <Input className={cn("focus:font-bold")} type="tel" placeholder="Adhar Number" name="adhaarNumber" onChange={handleChange} value={formDataWithDigi.adhaarNumber} required />
+            <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">@</span>
+          </div>
+          {errorMsg && <span className="text-red-600 text-sm w-full px-1 font-semibold">{errorMsg}</span>}
+          <Button type="submit" variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded">
+            <Image src={"/digi-icon.png"} alt="digi-icon" width={25} height={20} />
+
             Login with Digilocker
           </Button>
         </form>
       ) : (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setCurrStep(2);
-          }}
-          className="grid w-full max-w-sm items-center gap-1.5"
-        >
-          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-            Mobile Number*
+
+
+        <form onSubmit={handleSubmitFormWithMob} className="grid w-full max-w-sm items-center gap-1.5">
+          <Label
+            htmlFor="mobile-number"
+            className="text-[#414656] font-medium"
+          >
+            Mobile Number <span className="text-red-600">*</span>
           </Label>
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <Input
-              type="tel"
-              name="phoneNumber"
-              placeholder="Phone Number"
-              className="focus:font-bold"
-              required
-            />
+            <Input type="text" name="mobileNumber" placeholder="Mobile Number" className="focus:font-bold" onChange={handleChange} value={formDataWithMob.mobileNumber} required />
+
             <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
-          <Button
+          {errorMsg && <span className="text-red-600 text-sm w-full px-1 font-semibold">{errorMsg}</span>}
+
+          <Button type="submit"
             className="w-full rounded font-bold text-white hover:cursor-pointer"
-            onClick={() => setCurrStep(2)}
           >
-            <Image src={"/smartphone.png"} width={15} height={5} />
+            <Image src={"/smartphone.png"} alt="smartph-icon" width={15} height={5} />
             Login with Mobile
           </Button>
         </form>
@@ -106,7 +127,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
 
       {/* log in with google redirection */}
       <Button className="w-full rounded font-bold text-[#414656] hover:cursor-pointer bg-[#f5f4f4] hover:bg-[#e8e7e7]">
-        <Image src={"/google-icon.png"} width={25} height={20} />
+        <Image src={"/google-icon.png"} alt="google-icon" width={25} height={20} />
         Login with Google
       </Button>
 
@@ -116,19 +137,15 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
           className="w-full rounded font-bold text-white hover:cursor-pointer"
           onClick={handleSwitchLoginMethod}
         >
-          <Image src={"/smartphone.png"} width={15} height={5} />
+          <Image src={"/smartphone.png"} alt="smartPh-icon" width={15} height={5} />
           Login with Mobile
         </Button>
       ) : (
-        <Button
-          variant="outline"
-          className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded"
-          onClick={handleSwitchLoginMethod}
-        >
-          <Image src={"/digi-icon.png"} width={25} height={20} />
+        <Button variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded" onClick={handleSwitchLoginMethod}>
+          <Image src={"/digi-icon.png"} alt="digi-icon" width={25} height={20} />
           Login with Digilocker
         </Button>
       )}
     </div>
   );
-}
+};

@@ -32,7 +32,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-          PAN Details*
+          PAN Details <span className="text-red-600">*</span>
         </Label>
         <div className="relative">
           <Input
@@ -48,7 +48,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       {isThirdPartyLogin && (
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-            Mobile Number*
+            Mobile Number  <span className="text-red-600">*</span>
           </Label>
           <div className="relative">
             <Input
@@ -80,7 +80,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="dob" className="text-[#414656] font-medium">
-          Date of Birth*
+          Date of Birth <span className="text-red-600">*</span>
         </Label>
         <div className="border rounded-[6px] py-2 pl-2 pr-1 flex items-center gap-1">
           <input
@@ -94,7 +94,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="email" className="text-[#414656] font-medium">
-          Email Address*
+          Email Address <span className="text-red-600">*</span>
         </Label>
         <div className="relative">
           <Input
@@ -113,4 +113,4 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       </Button>
     </form>
   );
-}
+};
