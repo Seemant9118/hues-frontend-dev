@@ -1,6 +1,10 @@
-
 "use client";
 import DashCard from "../../components/ui/DashCard";
+import SubHeader from "@/components/Sub-header";
+import AddModal from "@/components/Modals/AddModal";
+
+import { KeySquare } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const dashBoardData = [
@@ -12,13 +16,28 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex justify-between">
-      {
-        dashBoardData.map((cardItem) => (
-          <DashCard key={cardItem.id} title={cardItem.title} numbers={cardItem.numbers} growth={cardItem.growth} />
-        ))
-      }
-    </div>
+    <>
+      <SubHeader name={"Dashboard"} className="mb-5">
+        <div className="flex items-center justify-center gap-4">
+          {/* <Button
+           
+            variant={"blue_outline"}
+            size="sm"
+          >
+            <KeySquare size={14}/>
+            Save Credentials
+          </Button> */}
+          <AddModal type={"Save Credentials"} />
+        </div>
+      </SubHeader>
 
+      <div className="flex flex-wrap gap-2">
+        {
+          dashBoardData.map((cardItem) => (
+            <DashCard key={cardItem.id} title={cardItem.title} numbers={cardItem.numbers} growth={cardItem.growth} />
+          ))
+        }
+      </div>
+    </>
   );
 }
