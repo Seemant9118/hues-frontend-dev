@@ -7,23 +7,54 @@ import { Button } from "@/components/ui/button";
 import { FolderUp, PlusCircle } from "lucide-react";
 import { PurchaseColumns } from "./PurchaseColumns";
 import CreateSales from "@/components/CreateSales";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
 
 const PurchaseOrders = () => {
   const [purchases, setPurchases] = useState([
-    {
-      date: "12/02/2024",
-      item: "Starbucks",
-      type: "recieved",
-      orders: "Starbucks Cold Brew Product",
-      vendors: "R&T Pharma Private. Limited.",
-      delivery_date: "02/05/12",
-      amount: "2500",
-      status: "Paid",
-    },
+    // {
+    //   date: "12/02/2024",
+    //   item: "Starbucks",
+    //   type: "recieved",
+    //   orders: "Starbucks Cold Brew Product",
+    //   vendors: "R&T Pharma Private. Limited.",
+    //   delivery_date: "02/05/12",
+    //   amount: "2500",
+    //   status: "Paid",
+    // },
   ]);
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
 
+  const PurchaseEmptyStageData = {
+    heading: 'Empower Your Purchasing Decisions',
+    desc: `Elevate your procurement with our Purchases feature, designed to bring flexibility and security
+    to your buying process. Navigate through bids and offers with ease, engage in digital
+    negotiations, and solidify your purchases with dual digital signatures. Our platform ensures
+    every transaction is transparent, recorded, and perfectly aligned with your procurement needs`,
+    subHeading: 'User Sections',
+    subItems: [
+      {
+        id: 1, itemhead: `Place Bids: :`, item: `Initiate bids on products from prospective sellers' catalogs, taking control of your
+        purchasing.`
+      },
+      {
+        id: 2, itemhead: `Receive Offers:`, item: ` Explore offers from sellers, expanding your options with products that match
+        your criteria.`
+      },
+      {
+        id: 3, itemhead: `Negotiate Terms:`, item: ` Utilize the review option to negotiate on price, quantity, and grade, with each
+        step securely signed digitally.`
+      },
+      {
+        id: 4, itemhead: `Confirm Purchases: `, item: `Finalize transactions with mutual digital signatures, cementing your
+        purchase agreements.`
+      },
+      {
+        id: 5, itemhead: `Review History: `, item: `Keep track of all negotiation steps through the order history, ensuring clarity
+        and accountability in every deal`
+      },
+    ]
+  };
   return (
     <>
       {!isCreatingPurchase && (
@@ -48,7 +79,11 @@ const PurchaseOrders = () => {
               </Button>
             </div>
           </SubHeader>
-          <DataTable columns={PurchaseColumns} data={purchases} />
+          {
+            purchases.length === 0 ? <EmptyStageComponent heading={PurchaseEmptyStageData.heading} desc={PurchaseEmptyStageData.desc} subHeading={PurchaseEmptyStageData.subHeading} subItems={PurchaseEmptyStageData.subItems} /> :
+              <DataTable columns={PurchaseColumns} data={purchases} />
+
+          }
         </Wrapper>
       )}
       {isCreatingPurchase && (
