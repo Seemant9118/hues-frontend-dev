@@ -7,7 +7,7 @@ import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default function IndexForm({ setCurrStep }) {
+export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
 
   const [formDataWithDigi, setFormDataWithDigi] = useState({
@@ -18,20 +18,21 @@ export default function IndexForm({ setCurrStep }) {
   });
   const [errorMsg, setErrorMsg] = useState('');
 
-
   const handleSwitchLoginMethod = () => {
     setLoginWithThirdParty(!loginWithThirdParty);
     setErrorMsg('');
     setFormDataWithDigi({ adhaarNumber: '' });
     setFormDataWithMob({ mobileNumber: '' })
+    setIsThirdPartyLogin(!loginWithThirdParty);
+
   };
 
   const handleChange = (e) => {
     let name = e.target.name;
     let value = e.target.value
-
     setFormDataWithDigi(values => ({ ...values, [name]: value }));
     setFormDataWithMob(values => ({ ...values, [name]: value }));
+
   };
 
   const handleSubmitFormWithDigi = (e) => {
@@ -68,27 +69,30 @@ export default function IndexForm({ setCurrStep }) {
       </p>
       {loginWithThirdParty ? (
 
+
         <form onSubmit={handleSubmitFormWithDigi} className="grid w-full max-w-sm items-center gap-1.5">
           <Label
             htmlFor="adhar-number"
             className="text-[#414656] font-medium"
           >
             Adhar Number <span className="text-red-600">*</span>
+
           </Label>
 
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
+
             <Input className={cn("focus:font-bold")} type="tel" placeholder="Adhar Number" name="adhaarNumber" onChange={handleChange} value={formDataWithDigi.adhaarNumber} required />
             <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">@</span>
           </div>
           {errorMsg && <span className="text-red-600 text-sm w-full px-1 font-semibold">{errorMsg}</span>}
           <Button type="submit" variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded">
             <Image src={"/digi-icon.png"} alt="digi-icon" width={25} height={20} />
+
             Login with Digilocker
           </Button>
         </form>
-
-
       ) : (
+
 
         <form onSubmit={handleSubmitFormWithMob} className="grid w-full max-w-sm items-center gap-1.5">
           <Label
@@ -99,6 +103,7 @@ export default function IndexForm({ setCurrStep }) {
           </Label>
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
             <Input type="text" name="mobileNumber" placeholder="Mobile Number" className="focus:font-bold" onChange={handleChange} value={formDataWithMob.mobileNumber} required />
+
             <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
           {errorMsg && <span className="text-red-600 text-sm w-full px-1 font-semibold">{errorMsg}</span>}
