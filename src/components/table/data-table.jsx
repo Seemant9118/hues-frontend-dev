@@ -50,7 +50,7 @@ export function DataTable({ columns, data, page }) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead className="shrink-0" key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
