@@ -17,7 +17,7 @@ const ClientPage = () => {
         "Akshya Nagar 1st Block 1st Cross, Rammurthy nagar, Bangalore-560016",
       phone: "+91 98765 43210",
       email: "johndoe@gmail.com",
-      gst: "44",
+      pan: "FFGH1456T",
     },
     
   ]);
@@ -25,7 +25,7 @@ const ClientPage = () => {
     <Wrapper>
       <SubHeader name={"Client List"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Client"} />
+          <AddModal type={"Add Client"} />
         </div>
       </SubHeader>
       <DataTable columns={ClientsColumns} data={clients} />

@@ -9,7 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit3, MoreVertical, Trash2 } from "lucide-react";
+import { Edit3, MoreVertical } from "lucide-react";
+
 
 export const ClientsColumns = [
   {
@@ -61,6 +62,10 @@ export const ClientsColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PHONE" />
     ),
+    cell: ({ row }) => {
+      const phone = row.original.phone;
+      return <p className="flex-shrink-0">{phone}</p>;
+    },
   },
   {
     accessorKey: "email",
@@ -69,9 +74,9 @@ export const ClientsColumns = [
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: "pan",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="GST (%)" />
+      <DataTableColumnHeader column={column} title="PAN" />
     ),
   },
   {
@@ -91,6 +96,7 @@ export const ClientsColumns = [
               <Edit3 size={12} />
               Edit
             </DropdownMenuItem>
+          
 
             <ConfirmAction />
           </DropdownMenuContent>

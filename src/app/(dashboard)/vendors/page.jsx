@@ -14,14 +14,14 @@ const VendorsPage = () => {
         "Akshya Nagar 1st Block 1st Cross, Rammurthy nagar, Bangalore-560016",
       phone: "+91 98765 43210",
       email: "johndoe@gmail.com",
-      gst: "44",
+      pan: "FFGH1456T",
     },
   ]);
   return (
     <Wrapper>
       <SubHeader name={"Vendor List"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Vendor"} />
+          <AddModal type={"Add Vendor"} />
         </div>
       </SubHeader>
       <DataTable columns={VendorsColumns} data={vendors} />

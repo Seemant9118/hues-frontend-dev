@@ -62,9 +62,9 @@ export const VendorsColumns = [
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: "pan",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="GST (%)" />
+      <DataTableColumnHeader column={column} title="PAN" />
     ),
   },
   {
