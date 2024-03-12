@@ -70,7 +70,7 @@ export function DataTable({ columns, data, page }) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell) =>  (
                     <TableCell key={cell.id} className="shrink-0 max-w-xl ">
                       {flexRender(
                         cell.column.columnDef.cell,

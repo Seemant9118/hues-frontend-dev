@@ -8,23 +8,33 @@ import { FolderUp, PlusCircle } from "lucide-react";
 import { PurchaseColumns } from "./PurchaseColumns";
 import CreateSales from "@/components/CreateSales";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const PurchaseOrders = () => {
   const [purchases, setPurchases] = useState([
-    // {
-    //   date: "12/02/2024",
-    //   item: "Starbucks",
-    //   type: "recieved",
-    //   orders: "Starbucks Cold Brew Product",
-    //   vendors: "R&T Pharma Private. Limited.",
-    //   delivery_date: "02/05/12",
-    //   amount: "2500",
-    //   status: "Paid",
-    // },
+    {
+      date: "12/02/2024",
+      item: "Starbucks",
+      type: "offer",
+      orders: "Starbucks Cold Brew Product",
+      vendors: "R&T Pharma Private. Limited.",
+      delivery_date: "02/05/12",
+      amount: "2500",
+      status: "Paid",
+    },
   ]);
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
-
+  const [istype, setIsType] = useState({
+    type: '',
+  });
+  
   const PurchaseEmptyStageData = {
     heading: 'Empower Your Purchasing Decisions',
     desc: `Elevate your procurement with our Purchases feature, designed to bring flexibility and security
@@ -55,12 +65,31 @@ const PurchaseOrders = () => {
       },
     ]
   };
+
+  
+
   return (
     <>
       {!isCreatingPurchase && (
         <Wrapper>
           <SubHeader name={"Purchase Orders"}>
             <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-4">
+                <Select
+                  value={istype.type}
+                  onValueChange={(value) =>
+                    setIsType((prev) => ({ ...prev, type: value }))
+                  }
+                >
+                  <SelectTrigger className="max-w-xs gap-5">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bid">Bid</SelectItem>
+                    <SelectItem value="offer">offer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 variant={"blue_outline"}
                 className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"

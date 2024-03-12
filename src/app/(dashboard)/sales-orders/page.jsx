@@ -9,20 +9,44 @@ import { SalesColumns } from "./SalesColumns";
 import CreateSales from "@/components/CreateSales";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 const SalesOrder = () => {
   const [orders, setOrders] = useState([
-    // {
-    //   date: "12/02/2024",
-    //   items: "Starbucks",
-    //   type: "sent",
-    //   orders: "Starbucks Cold Brew Product",
-    //   customers: "Cody",
-    //   price: "40",
-    //   gst: "44",
-    //   amount: "2500",
-    //   status: "Paid",
-    // },
+    {
+      date: "12/02/2024",
+      items: "Starbucks",
+      type: "Bid",
+      orders: "Starbucks Cold Brew Product",
+      customers: "Cody",
+      price: "40",
+      gst: "44",
+      amount: "2500",
+      status: "Paid",
+    },
+    {
+      date: "12/02/2024",
+      items: "Starbucks",
+      type: "offer",
+      orders: "Starbucks Cold Brew Product",
+      customers: "Cody",
+      price: "40",
+      gst: "44",
+      amount: "2500",
+      status: "Paid",
+    },
   ]);
+
+  const [istype, setIsType] = useState({
+    type: '',
+  });
+
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
@@ -60,6 +84,22 @@ const SalesOrder = () => {
         <Wrapper>
           <SubHeader name={"Sales Orders"}>
             <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-4">
+                <Select
+                  value={istype.type}
+                  onValueChange={(value) =>
+                    setIsType((prev) => ({ ...prev, type: value }))
+                  }
+                >
+                  <SelectTrigger className="max-w-xs gap-5">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bid">Bid</SelectItem>
+                    <SelectItem value="offer">offer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 variant={"blue_outline"}
                 className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"

@@ -23,12 +23,12 @@ const InventoryPage = () => {
 
   const [products, setProducts] = useState([
     // {
-    //   name: "Brand: Crocin",
-    //   code: "#HUESGT45",
-    //   description:
-    //     "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
-    //   category: "Business Planning",
-    //   quantity: "44",
+    // name: "Brand: Crocin",
+    // code: "#HUESGT45",
+    // description:
+    //   "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
+    // category: "Business Planning",
+    // quantity: "44",
     // },
   ]);
   console.log(products.length);
@@ -88,10 +88,9 @@ const InventoryPage = () => {
             </div>
           </SubHeader>
           {
-            products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
-              :
-              <DataTable columns={Columns} data={products} />
+            products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} /> : <DataTable columns={Columns} data={products} />
           }
+
         </Wrapper>
       )}
       {isAdding && (
@@ -100,8 +99,8 @@ const InventoryPage = () => {
           onSubmit={(newProduct) => {
             setIsAdding(false);
           }}
-          name={"Add Product"}
-          cta={"Product"}
+      name={"Add Product"}
+      cta={"Product"}
         />
       )}
       {isUploading && (
