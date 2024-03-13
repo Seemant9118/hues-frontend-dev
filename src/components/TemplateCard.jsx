@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, MessageSquareText, Trash2 } from "lucide-react";
 import Link from "next/link";
 
-const TemplateCard = ({ onViewFormClick, onDelete, viewResponseClick }) => {
+const TemplateCard = ({ onViewFormClick, onDelete, viewResponseClick , name}) => {
   return (
     <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
       <Button
@@ -18,19 +18,19 @@ const TemplateCard = ({ onViewFormClick, onDelete, viewResponseClick }) => {
       <Image src={"/Word_png.png"} alt="Template" height={60} width={65} />
       <div className="">
         <p className="text-neutral-300 text-sm font-bold">Template Name</p>
-        <p className="text-[#363940] text-base font-bold">Crocin Capsule</p>
+        <p className="text-[#363940] text-base font-bold">{name}</p>
       </div>
       <div className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]">
         <Button
-          asChild
+          // asChild
           variant={"blue_outline"}
           size="sm"
           className="text-xs gap-1 p-1.5"
         >
-          <Link href={"/template/Template One"}>
+          {/* <Link href={"/template/Template One"}> */}
             <Eye size={16} />
             View Template
-          </Link>
+          {/* </Link> */}
         </Button>
         <Button
           onClick={onViewFormClick}

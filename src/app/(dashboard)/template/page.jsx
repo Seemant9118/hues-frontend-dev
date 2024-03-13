@@ -7,6 +7,7 @@ import { ResponseColumns } from "@/components/columns/ResponseColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   Eye,
   Layers2,
@@ -26,40 +27,69 @@ export default function Home() {
   const [templates, setTemplates] = useState([]);
   const [viewForm, setViewForm] = useState(false);
   const [viewResponses, setViewResponses] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const templateEmptyStageData = {
-    heading: 'Elevate Your Data Management',
+    heading: "Elevate Your Data Management",
     desc: `Unlock efficiency and precision with Templates: a dynamic suite designed for every business
     need. From Contracts to Consent Artifacts, Onboarding Forms, Declarations, and Undertakings,
     streamline your workflow with customizable, digitally-signable templates. Ensure compliance,
     clarity, and security in every document. Elevate your data collection and document management
     to new heights—effortlessly.`,
-    subHeading: 'User Sections',
+    subHeading: "User Sections",
     subItems: [
       {
-        id: 1, itemhead: `Customize to Perfection:`, item: `Tailor templates with specific placeholders for data points, ensuring
-      each document perfectly aligns with your needs`},
+        id: 1,
+        itemhead: `Customize to Perfection:`,
+        item: `Tailor templates with specific placeholders for data points, ensuring
+      each document perfectly aligns with your needs`,
+      },
       {
-        id: 2, itemhead: `Share Seamlessly: `, item: `Distribute your custom forms effortlessly to your audience, streamlining the
-      data collection process`},
+        id: 2,
+        itemhead: `Share Seamlessly: `,
+        item: `Distribute your custom forms effortlessly to your audience, streamlining the
+      data collection process`,
+      },
       {
-        id: 3, itemhead: `Secure with Signatures:`, item: ` Enhance document integrity by adding mandatory digital signatures,
-      with options for multiple signatories`},
+        id: 3,
+        itemhead: `Secure with Signatures:`,
+        item: ` Enhance document integrity by adding mandatory digital signatures,
+      with options for multiple signatories`,
+      },
       {
-        id: 4, itemhead: `Save and Reuse: `, item: `Store templates for future use, optimizing your workflow and saving valuable
-      time.`},
+        id: 4,
+        itemhead: `Save and Reuse: `,
+        item: `Store templates for future use, optimizing your workflow and saving valuable
+      time.`,
+      },
       {
-        id: 5, itemhead: `Ensure Compliance: `, item: `Rest assured that every template meets your compliance requirements,
-      with every use and every signature`},
-    ]
+        id: 5,
+        itemhead: `Ensure Compliance: `,
+        item: `Rest assured that every template meets your compliance requirements,
+      with every use and every signature`,
+      },
+    ],
   };
 
+  const fileHandler = (e) => {
+    const uploadedFile = e.target.files[0]; // Get the first file
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      setTemplates((prev) => [...prev, { name: uploadedFile.name }]);
+      toast.success("Template Added Successfully.");
+    }
+  };
   return (
     <>
       {templates.length === 0 && !isAdding && (
         <>
           <SubHeader name="Templates" />
-          <EmptyStageComponent heading={templateEmptyStageData.heading} desc={templateEmptyStageData.desc} subHeading={templateEmptyStageData.subHeading} subItems={templateEmptyStageData.subItems} />
+          <EmptyStageComponent
+            heading={templateEmptyStageData.heading}
+            desc={templateEmptyStageData.desc}
+            subHeading={templateEmptyStageData.subHeading}
+            subItems={templateEmptyStageData.subItems}
+          />
 
           <div className="flex flex-col justify-center items-center gap-2">
             <PackageOpen className="text-neutral-500" />
@@ -77,19 +107,12 @@ export default function Home() {
               </label>
             </Button>
             <input
-              onChange={(e) => {
-                setFile(true);
-                setTemplates((prev) => [...prev, { name: "" }]);
-                toast.success("Templated Added Successfully.");
-                // setViewForm(true);
-                // setIsAdding(true);
-              }}
+              onChange={fileHandler}
               id="template"
               type="file"
               className="sr-only"
             />
           </div>
-
         </>
       )}
       {viewForm && (
@@ -115,12 +138,7 @@ export default function Home() {
                 </label>
               </Button>
               <input
-                onChange={(e) => {
-                  setFile(true);
-                  setTemplates((prev) => [...prev, { name: "" }]);
-                  toast.success("Templated Added Successfully.");
-                  // setIsAdding(true);
-                }}
+                onChange={fileHandler}
                 id="template"
                 type="file"
                 className="sr-only"
@@ -141,6 +159,7 @@ export default function Home() {
                 viewResponseClick={() => {
                   setViewForm(false);
                   setViewResponses(true);
+                  setSelectedTemplate(template);
                 }}
                 onDelete={() => {
                   setTemplates((prev) => {
@@ -150,7 +169,7 @@ export default function Home() {
                   });
                   toast.success("Templated Deleted Successfully.");
                 }}
-                onViewTemplateClick={() => { }}
+                onViewTemplateClick={() => {}}
                 onViewFormClick={() => setViewForm(true)}
                 {...template}
                 key={idx}
@@ -165,10 +184,8 @@ export default function Home() {
             <div className="flex items-center gap-4 ">
               <Image src={"/Word_png.png"} alt="image" height={70} width={60} />
               <div className="grid gap-2">
-                <p className="text-grey font-bold text-sm">
-                  Template Name
-                </p>
-                <p className=" font-bold text-sm">Crocin Capsule</p>
+                <p className="text-grey font-bold text-sm">Template Name</p>
+                <p className=" font-bold text-sm">{selectedTemplate.name}</p>
               </div>
               <Button variant="grey" className="ml-20">
                 <MessageSquareText size={14} />
@@ -176,17 +193,19 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex items-center gap-4">
-              <Button
-                asChild
-                variant={"blue_outline"}
-                size="sm"
-                className="text-xs gap-1 p-1.5"
-              >
-                <Link href={"/template/Template One"}>
-                  <Eye size={16} />
-                  View Template
-                </Link>
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant={"blue_outline"}
+                    size="sm"
+                    className="text-xs gap-1 p-1.5"
+                  >
+                    <Eye size={16} />
+                    View Template
+                  </Button>
+                </DialogTrigger>
+                <DialogContent></DialogContent>
+              </Dialog>
               <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
@@ -202,12 +221,18 @@ export default function Home() {
           <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
           <div className="flex justify-end items-center gap-4 mt-auto">
-            <Button onClick={() => { }} variant={"grey"} size="icon">
+            <Button onClick={() => {}} variant={"grey"} size="icon">
               <Trash2 />
             </Button>
-            <Button variant={"outline"} className="" onClick={() => {
-              setViewResponses(false)
-            }}>Close</Button>
+            <Button
+              variant={"outline"}
+              className=""
+              onClick={() => {
+                setViewResponses(false);
+              }}
+            >
+              Close
+            </Button>
           </div>
         </Wrapper>
       )}
