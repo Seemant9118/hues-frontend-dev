@@ -3,8 +3,14 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, MessageSquareText, Trash2 } from "lucide-react";
 import Link from "next/link";
+import ViewTemplate from "@/app/(dashboard)/template/ViewTemplate";
 
-const TemplateCard = ({ onViewFormClick, onDelete, viewResponseClick , name}) => {
+const TemplateCard = ({
+  onViewFormClick,
+  onDelete,
+  viewResponseClick,
+  name,
+}) => {
   return (
     <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
       <Button
@@ -21,17 +27,7 @@ const TemplateCard = ({ onViewFormClick, onDelete, viewResponseClick , name}) =>
         <p className="text-[#363940] text-base font-bold">{name}</p>
       </div>
       <div className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]">
-        <Button
-          // asChild
-          variant={"blue_outline"}
-          size="sm"
-          className="text-xs gap-1 p-1.5"
-        >
-          {/* <Link href={"/template/Template One"}> */}
-            <Eye size={16} />
-            View Template
-          {/* </Link> */}
-        </Button>
+        <ViewTemplate />
         <Button
           onClick={onViewFormClick}
           variant={"blue_outline"}

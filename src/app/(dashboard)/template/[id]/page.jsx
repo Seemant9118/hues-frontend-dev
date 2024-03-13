@@ -16,14 +16,14 @@ const ViewTemplate = ({ params }) => {
   };
 
   return (
-    <Wrapper id="divToPrint">
-      <div className="flex items-center gap-2.5">
+    <Wrapper id="divToPrint" className={"absolute left-[-999999999px]"}>
+      {/* <div className="flex items-center gap-2.5">
         <h2 className="text-zinc-900 font-bold text-2xl">Templates</h2>
         <p className="text-neutral-300 text-xl font-bold ">/</p>
         <p className="text-blue-500 font-bold text-sm">
           {params?.id.replaceAll("%20", " ")}
         </p>
-      </div>
+      </div> */}
       <div className="flex flex-col gap-4 grow">
         <div className="grid grid-cols-2 gap-5">
           <TemplateInfo label={"Template Name"} value={"Crocin Capsule"} />

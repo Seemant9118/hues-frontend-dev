@@ -20,6 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import ViewTemplate from "./ViewTemplate";
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -193,19 +194,7 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex items-center gap-4">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant={"blue_outline"}
-                    size="sm"
-                    className="text-xs gap-1 p-1.5"
-                  >
-                    <Eye size={16} />
-                    View Template
-                  </Button>
-                </DialogTrigger>
-                <DialogContent></DialogContent>
-              </Dialog>
+              <ViewTemplate />
               <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
