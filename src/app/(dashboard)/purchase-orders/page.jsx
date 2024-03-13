@@ -18,6 +18,30 @@ import CreateOrder from "@/components/CreateOrder";
 
 const PurchaseOrders = () => {
   const [purchases, setPurchases] = useState([]);
+  /*
+[
+    {
+      date: "12/02/2024",
+      item: "Starbucks",
+      type: "offer",
+      orders: "Starbucks Cold Brew Product",
+      vendors: "R&T Pharma Private. Limited.",
+      delivery_date: "02/05/12",
+      amount: "2500",
+      status: "Paid",
+    },
+    {
+      date: "12/02/2024",
+      item: "Starbucks",
+      type: "Bid",
+      orders: "Starbucks Cold Brew Product",
+      vendors: "R&T Pharma Private. Limited.",
+      delivery_date: "02/05/12",
+      amount: "2500",
+      status: "Paid",
+    },
+  ]
+ */
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
   const [istype, setIsType] = useState("All");
@@ -62,8 +86,6 @@ const PurchaseOrders = () => {
       },
     ],
   };
-
-
 
   return (
     <>
@@ -125,10 +147,6 @@ const PurchaseOrders = () => {
       {isCreatingPurchase && (
         <CreateOrder
           name="Create Purchase"
-          onSubmit={(newPurchases) =>
-            setPurchases(purchase => [...purchase, newPurchases])
-          }
-          setIsCreatingPurchase={setIsCreatingPurchase}
           onCancel={() => setIsCreatingPurchase(false)}
           onSubmit={(newOrder) => {
             setPurchases((prev) => [...prev, newOrder]);
