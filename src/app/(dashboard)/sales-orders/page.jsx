@@ -43,9 +43,7 @@ const SalesOrder = () => {
     },
   ]);
 
-  const [istype, setIsType] = useState({
-    type: '',
-  });
+  const [istype, setIsType] = useState('All');
 
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
@@ -78,6 +76,7 @@ const SalesOrder = () => {
     ]
   };
 
+
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && (
@@ -88,13 +87,14 @@ const SalesOrder = () => {
                 <Select
                   value={istype.type}
                   onValueChange={(value) =>
-                    setIsType((prev) => ({ ...prev, type: value }))
+                    setIsType(value)
                   }
                 >
                   <SelectTrigger className="max-w-xs gap-5">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="All">All</SelectItem>
                     <SelectItem value="Bid">Bid</SelectItem>
                     <SelectItem value="offer">offer</SelectItem>
                   </SelectContent>
@@ -120,7 +120,10 @@ const SalesOrder = () => {
           </SubHeader>
           {
             orders.length === 0 ? <EmptyStageComponent heading={SaleEmptyStageData.heading} desc={SaleEmptyStageData.desc} subHeading={SaleEmptyStageData.subHeading} subItems={SaleEmptyStageData.subItems} /> :
-              <DataTable columns={SalesColumns} data={orders} />
+              <DataTable columns={SalesColumns} data={orders.filter((order) => {
+                if (istype === "All" || istype === "") return true;
+                return order.type === istype;
+              })} />
           }
 
         </Wrapper>

@@ -28,13 +28,21 @@ const PurchaseOrders = () => {
       amount: "2500",
       status: "Paid",
     },
+    {
+      date: "12/02/2024",
+      item: "Starbucks",
+      type: "Bid",
+      orders: "Starbucks Cold Brew Product",
+      vendors: "R&T Pharma Private. Limited.",
+      delivery_date: "02/05/12",
+      amount: "2500",
+      status: "Paid",
+    },
   ]);
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
-  const [istype, setIsType] = useState({
-    type: '',
-  });
-  
+  const [istype, setIsType] = useState('All');
+
   const PurchaseEmptyStageData = {
     heading: 'Empower Your Purchasing Decisions',
     desc: `Elevate your procurement with our Purchases feature, designed to bring flexibility and security
@@ -66,7 +74,7 @@ const PurchaseOrders = () => {
     ]
   };
 
-  
+
 
   return (
     <>
@@ -78,13 +86,14 @@ const PurchaseOrders = () => {
                 <Select
                   value={istype.type}
                   onValueChange={(value) =>
-                    setIsType((prev) => ({ ...prev, type: value }))
+                    setIsType(value)
                   }
                 >
                   <SelectTrigger className="max-w-xs gap-5">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="All">All</SelectItem>
                     <SelectItem value="Bid">Bid</SelectItem>
                     <SelectItem value="offer">offer</SelectItem>
                   </SelectContent>
@@ -110,7 +119,10 @@ const PurchaseOrders = () => {
           </SubHeader>
           {
             purchases.length === 0 ? <EmptyStageComponent heading={PurchaseEmptyStageData.heading} desc={PurchaseEmptyStageData.desc} subHeading={PurchaseEmptyStageData.subHeading} subItems={PurchaseEmptyStageData.subItems} /> :
-              <DataTable columns={PurchaseColumns} data={purchases} />
+              <DataTable columns={PurchaseColumns} data={purchases.filter((purchase) => {
+                if (istype === "All" || istype === "") return true;
+                return purchase.type === istype;
+              })} />
 
           }
         </Wrapper>
