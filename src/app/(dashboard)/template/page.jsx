@@ -6,6 +6,7 @@ import Wrapper from "@/components/Wrapper";
 import { ResponseColumns } from "@/components/columns/ResponseColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
   Eye,
   Layers2,
@@ -26,37 +27,70 @@ export default function Home() {
   const [viewForm, setViewForm] = useState(false);
   const [viewResponses, setViewResponses] = useState(false);
 
+  const templateEmptyStageData = {
+    heading: 'Elevate Your Data Management',
+    desc: `Unlock efficiency and precision with Templates: a dynamic suite designed for every business
+    need. From Contracts to Consent Artifacts, Onboarding Forms, Declarations, and Undertakings,
+    streamline your workflow with customizable, digitally-signable templates. Ensure compliance,
+    clarity, and security in every document. Elevate your data collection and document management
+    to new heights—effortlessly.`,
+    subHeading: 'User Sections',
+    subItems: [
+      {
+        id: 1, itemhead: `Customize to Perfection:`, item: `Tailor templates with specific placeholders for data points, ensuring
+      each document perfectly aligns with your needs`},
+      {
+        id: 2, itemhead: `Share Seamlessly: `, item: `Distribute your custom forms effortlessly to your audience, streamlining the
+      data collection process`},
+      {
+        id: 3, itemhead: `Secure with Signatures:`, item: ` Enhance document integrity by adding mandatory digital signatures,
+      with options for multiple signatories`},
+      {
+        id: 4, itemhead: `Save and Reuse: `, item: `Store templates for future use, optimizing your workflow and saving valuable
+      time.`},
+      {
+        id: 5, itemhead: `Ensure Compliance: `, item: `Rest assured that every template meets your compliance requirements,
+      with every use and every signature`},
+    ]
+  };
+
   return (
     <>
       {templates.length === 0 && !isAdding && (
-        <div className="flex flex-col justify-center items-center gap-2 h-full">
-          <PackageOpen className="text-neutral-500" />
-          <p className="text-neutral-500">
-            No Templates Uploaded Yet. Click on buttons below.
-          </p>
-          <Button
-            asChild
-            variant={"secondary"}
-            className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
-          >
-            <label htmlFor="template">
-              <Upload />
-              Add Template
-            </label>
-          </Button>
-          <input
-            onChange={(e) => {
-              setFile(true);
-              setTemplates((prev) => [...prev, { name: "" }]);
-              toast.success("Templated Added Successfully.");
-              // setViewForm(true);
-              // setIsAdding(true);
-            }}
-            id="template"
-            type="file"
-            className="sr-only"
-          />
-        </div>
+        <>
+          <SubHeader name="Templates" />
+          <EmptyStageComponent heading={templateEmptyStageData.heading} desc={templateEmptyStageData.desc} subHeading={templateEmptyStageData.subHeading} subItems={templateEmptyStageData.subItems} />
+
+          <div className="flex flex-col justify-center items-center gap-2">
+            <PackageOpen className="text-neutral-500" />
+            <p className="text-neutral-500">
+              No Templates Uploaded Yet. Click on buttons below.
+            </p>
+            <Button
+              asChild
+              variant={"secondary"}
+              className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
+            >
+              <label htmlFor="template">
+                <Upload />
+                Add Template
+              </label>
+            </Button>
+            <input
+              onChange={(e) => {
+                setFile(true);
+                setTemplates((prev) => [...prev, { name: "" }]);
+                toast.success("Templated Added Successfully.");
+                // setViewForm(true);
+                // setIsAdding(true);
+              }}
+              id="template"
+              type="file"
+              className="sr-only"
+            />
+          </div>
+
+        </>
       )}
       {viewForm && (
         <AddProduct
@@ -116,7 +150,7 @@ export default function Home() {
                   });
                   toast.success("Templated Deleted Successfully.");
                 }}
-                onViewTemplateClick={() => {}}
+                onViewTemplateClick={() => { }}
                 onViewFormClick={() => setViewForm(true)}
                 {...template}
                 key={idx}
@@ -168,7 +202,7 @@ export default function Home() {
           <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
           <div className="flex justify-end items-center gap-4 mt-auto">
-            <Button onClick={() => {}} variant={"grey"} size="icon">
+            <Button onClick={() => { }} variant={"grey"} size="icon">
               <Trash2 />
             </Button>
             <Button variant={"outline"} className="" onClick={() => {

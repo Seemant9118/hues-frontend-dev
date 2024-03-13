@@ -1,5 +1,6 @@
 "use client";
 import AddProduct from "@/components/AddProduct";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { Columns } from "@/components/columns";
@@ -19,22 +20,37 @@ import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 
 const InventoryPage = () => {
-  const [products, setProducts] = useState([
-    {
-      name: "Brand: Crocin",
-      code: "#HUESGT45",
-      description:
-        "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
-      category: "Business Planning",
-      quantity: "44",
-    },
-  ]);
+
+  const [products, setProducts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
 
   const handleChange = async (file) => {
     setFiles((prev) => [...prev, file]);
+  };
+
+  const InventoryEmptyStageData = {
+    heading: 'Elevate Your Inventory Management',
+    desc: `Transform your stock handling with precision and ease. Our Inventory Feature revolutionizes
+    how you manage, edit, and secure your product listings. With digital signatures and seamless
+    sharing, ensure every item is perfectly cataloged and compliant.`,
+    subHeading: 'User Sections',
+    subItems: [
+      {
+        id: 1, itemhead: `Bulk Upload & Edit:`, item: `Quickly upload detailed product information and fine-tune as needed`
+      },
+      {
+        id: 2, itemhead: `Seamless Addition:`, item: `Add items individually to keep your inventory fresh and accurate`
+      },
+      {
+        id: 3, itemhead: `Secure with Digital Signatures:`, item: `Authenticate your inventory, ensuring integrity and compliance`
+      },
+      {
+        id: 4, itemhead: `Effortless Sharing: `, item: `Share your digitally signed inventory in PDF format, ready for external use`
+      },
+
+    ]
   };
 
   return (
@@ -61,7 +77,12 @@ const InventoryPage = () => {
               </Button>
             </div>
           </SubHeader>
-          <DataTable columns={Columns} data={products} />
+          {
+            products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
+              :
+              <DataTable columns={Columns} data={products} />
+          }
+
         </Wrapper>
       )}
       {isAdding && (
@@ -69,6 +90,7 @@ const InventoryPage = () => {
           onCancel={() => setIsAdding(false)}
           onSubmit={(newProduct) => {
             setIsAdding(false);
+            setProducts(products => [...products, newProduct]);
           }}
           name={"Add Product"}
           cta={"Product"}

@@ -27,7 +27,7 @@ export default function Home() {
             <KeySquare size={14}/>
             Save Credentials
           </Button> */}
-          <AddModal type={"Save Credentials"} />
+          <AddModal type={"Save GST Credentials"} />
         </div>
       </SubHeader>
 

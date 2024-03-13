@@ -38,13 +38,13 @@ export const Columns = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "product_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ITEM NAME" />
     ),
   },
   {
-    accessorKey: "code",
+    accessorKey: "hsn_code",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="CODE" />
     ),
@@ -60,13 +60,13 @@ export const Columns = [
     },
   },
   {
-    accessorKey: "category",
+    accessorKey: "components",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="CATEGORY" />
     ),
   },
   {
-    accessorKey: "quantity",
+    accessorKey: "units",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="QUANTITY" />
     ),

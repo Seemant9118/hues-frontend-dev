@@ -1,8 +1,5 @@
-import React, { useState } from "react";
-import Wrapper from "@/components/Wrapper";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import InputWithLabel from "./InputWithLabel";
 
@@ -27,10 +24,21 @@ const AddProduct = ({ name, onSubmit, onCancel, cta }) => {
     amount: "",
   });
 
-  const onChange = () => {};
+  const onChange = (e) => {
+    const { id, value } = e.target;
+    setProduct(values => ({ ...values, [id]: value }));
+  };
+
+  useEffect(() => {
+    console.log(product)
+  }, [product]);
+
   return (
     <form
-      onSubmit={() => onSubmit(product)}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(product);
+      }}
       className={cn(
         "flex flex-col gap-4 h-full overflow-y-auto p-2 grow scrollBarStyles"
       )}
@@ -64,31 +72,31 @@ const AddProduct = ({ name, onSubmit, onCancel, cta }) => {
           value={product.batch}
         />
         <InputWithLabel
-          name="expiry"
+          name="Expiry"
           id="expiry"
           onChange={onChange}
           value={product.expiry}
         />
         <InputWithLabel
-          name="weight (gms)"
+          name="Weight (cms)"
           id="weight"
           onChange={onChange}
           value={product.weight}
         />
         <InputWithLabel
-          name="length"
+          name="Length"
           id="length"
           onChange={onChange}
           value={product.length}
         />
         <InputWithLabel
-          name="bredth (cms)"
+          name="Bredth (cms)"
           id="bredth"
           onChange={onChange}
           value={product.bredth}
         />
         <InputWithLabel
-          name="height (cms)"
+          name="Height (cms)"
           id="height"
           onChange={onChange}
           value={product.height}
@@ -96,49 +104,49 @@ const AddProduct = ({ name, onSubmit, onCancel, cta }) => {
       </div>
       <div className="grid grid-cols-2 gap-2.5">
         <InputWithLabel
-          name="components"
+          name="Components"
           id="components"
           onChange={onChange}
           value={product.components}
         />
         <InputWithLabel
-          name="application"
+          name="Application"
           id="application"
           onChange={onChange}
           value={product.application}
         />
         <InputWithLabel
-          name="rate"
+          name="Rate"
           id="rate"
           onChange={onChange}
           value={product.rate}
         />
         <InputWithLabel
-          name="units"
+          name="Units"
           id="units"
           onChange={onChange}
           value={product.units}
         />
         <InputWithLabel
-          name="hsn code"
+          name="HSN Code"
           id="hsn_code"
           onChange={onChange}
           value={product.hsn_code}
         />
         <InputWithLabel
-          name="gst (%)"
+          name="GST (%)"
           id="gst"
           onChange={onChange}
           value={product.gst}
         />
         <InputWithLabel
-          name="gst value"
+          name="GST Value"
           id="gst_value"
           onChange={onChange}
           value={product.gst_value}
         />
         <InputWithLabel
-          name="amount"
+          name="Amount"
           id="amount"
           onChange={onChange}
           value={product.amount}

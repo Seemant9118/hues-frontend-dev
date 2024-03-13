@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Check, CheckCircle, CheckCircle2, Trash2 } from "lucide-react";
 
-const SuccessModal = ({ children }) => {
+const SuccessModal = ({ children,name }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -21,7 +21,7 @@ const SuccessModal = ({ children }) => {
         <div>
           <h3 className="text-2xl font-bold leading-8">Congratulations</h3>
           <p className="font-medium text-grey">
-            Your purchase has been successfully created.
+            Your {name} has been successfully created.
           </p>
         </div>
       </DialogContent>
