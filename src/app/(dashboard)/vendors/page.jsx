@@ -8,16 +8,7 @@ import { VendorsColumns } from "./VendorsColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 
 const VendorsPage = () => {
-  const [vendors, setVendors] = useState([
-    // {
-    //   name: "IQ IDEAS",
-    //   address:
-    //     "Akshya Nagar 1st Block 1st Cross, Rammurthy nagar, Bangalore-560016",
-    //   phone: "+91 98765 43210",
-    //   email: "johndoe@gmail.com",
-    //   pan: "FFGH1456T",
-    // },
-  ]);
+  const [vendors, setVendors] = useState([]);
 
   const VendorsEmptyStageData = {
     heading: 'Optimize Your Vendor Relationships',
@@ -50,7 +41,9 @@ const VendorsPage = () => {
     <Wrapper>
       <SubHeader name={"Vendor List"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Add Vendor"} />
+          <AddModal type={"Add Vendor"} onSubmit={(newVendors) =>
+            setVendors(vendors => [...vendors, newVendors])
+          } />
         </div>
       </SubHeader>
       {
