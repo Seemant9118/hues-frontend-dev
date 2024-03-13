@@ -1,10 +1,22 @@
+"use client";
 import React from "react";
 import { Button } from "@/components/ui/button.jsx";
 import Wrapper from "@/components/Wrapper";
-
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 const ViewTemplate = ({ params }) => {
+  const printDocument = () => {
+    const input = document.getElementById("divToPrint");
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF();
+      pdf.addImage(imgData, "PNG", 0, 0);
+      pdf.save("Template.pdf");
+    });
+  };
+
   return (
-    <Wrapper>
+    <Wrapper id="divToPrint">
       <div className="flex items-center gap-2.5">
         <h2 className="text-zinc-900 font-bold text-2xl">Templates</h2>
         <p className="text-neutral-300 text-xl font-bold ">/</p>
@@ -24,9 +36,9 @@ const ViewTemplate = ({ params }) => {
           <p className="text-sm text-grey font-bold">Description</p>
           <p className="text-[#363940] font-medium">
             Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry&apos;s standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book
+            industry. Lorem Ipsum has been the industry&apos;s standard dummy
+            text ever since the 1500s, when an unknown printer took a galley of
+            type and scrambled it to make a type specimen book
           </p>
         </div>
 
@@ -54,6 +66,13 @@ const ViewTemplate = ({ params }) => {
           </Button>
           <Button size="sm" className="bg-red-500 text-white hover:bg-red-600">
             Delete
+          </Button>
+          <Button
+            onClick={printDocument}
+            size="sm"
+            className="bg-red-500 text-white hover:bg-red-600"
+          >
+            Download PDF
           </Button>
         </div>
       </div>
