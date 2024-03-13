@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Select,
@@ -15,7 +16,7 @@ import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
 
-const CreateSales = ({ onCancel, setIsCreatingSales,setIsCreatingPurchase, onSubmit, name }) => {
+const CreateOrder = ({ onCancel, onSubmit, name }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
   const [order, setOrder] = useState({
     customer: "",
@@ -26,8 +27,6 @@ const CreateSales = ({ onCancel, setIsCreatingSales,setIsCreatingPurchase, onSub
     amount: "",
     type: "",
   });
-
-  console.log(order);
 
   return (
     <Wrapper>
@@ -154,16 +153,12 @@ const CreateSales = ({ onCancel, setIsCreatingSales,setIsCreatingPurchase, onSub
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <SuccessModal name="order">
-          <Button onClick={(e) => {
-            onSubmit(order);
-            onCancel(setIsCreatingSales(true));
-            // onCancel(setIsCreatingPurchase(true));
-          }}>{name}</Button>
+        <SuccessModal onClose={() => onSubmit(order)}>
+          <Button>{name}</Button>
         </SuccessModal>
       </div>
     </Wrapper>
   );
 };
 
-export default CreateSales;
+export default CreateOrder;

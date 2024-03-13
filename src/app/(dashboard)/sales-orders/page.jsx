@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CloudFog, FolderUp, PlusCircle } from "lucide-react";
 import React, { useState } from "react";
 import { SalesColumns } from "./SalesColumns";
-import CreateSales from "@/components/CreateSales";
+import CreateOrder from "@/components/CreateOrder";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 
 import {
@@ -19,52 +19,58 @@ import {
 
 const SalesOrder = () => {
   const [orders, setOrders] = useState([]);
-  const [istype, setIsType] = useState('All');
+  const [istype, setIsType] = useState("All");
 
   const [isCreatingSales, setIsCreatingSales] = useState(false);
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
   const SaleEmptyStageData = {
-    heading: 'Revolutionize Your Sales Process',
+    heading: "Revolutionize Your Sales Process",
     desc: `Dive into a seamless sales experience with our Orders feature, where flexibility meets security.
     Whether it's through bids from eager buyers or offers you initiate, our platform empowers you to
     negotiate and finalize deals with digital precision. Every step, from counter-bids to confirmation,
     is securely signed and recorded, ensuring a transparent and efficient transaction process.`,
-    subHeading: 'User Sections',
+    subHeading: "User Sections",
     subItems: [
       {
-        id: 1, itemhead: `Receive Bids:`, item: ` Engage with prospective buyers as they bid on your catalog items`
+        id: 1,
+        itemhead: `Receive Bids:`,
+        item: ` Engage with prospective buyers as they bid on your catalog items`,
       },
       {
-        id: 2, itemhead: `Make Offers:`, item: ` Proactively offer your catalog to potential buyers, inviting orders`
+        id: 2,
+        itemhead: `Make Offers:`,
+        item: ` Proactively offer your catalog to potential buyers, inviting orders`,
       },
       {
-        id: 3, itemhead: `Negotiate: Use`, item: ` the review option to negotiate on price, quantity, and grade with digital
-        signatures for each step`
+        id: 3,
+        itemhead: `Negotiate: Use`,
+        item: ` the review option to negotiate on price, quantity, and grade with digital
+        signatures for each step`,
       },
       {
-        id: 4, itemhead: `Confirm Orders:`, item: ` Seal the deal with dual digital signatures, finalizing the order with confidence`
+        id: 4,
+        itemhead: `Confirm Orders:`,
+        item: ` Seal the deal with dual digital signatures, finalizing the order with confidence`,
       },
       {
-        id: 5, itemhead: `Track History: `, item: `Access the negotiation history for each order, ensuring transparency and
-        accountability.`
+        id: 5,
+        itemhead: `Track History: `,
+        item: `Access the negotiation history for each order, ensuring transparency and
+        accountability.`,
       },
-    ]
+    ],
   };
-
 
   return (
     <>
-      {!isCreatingSales && !isCreatingInvoice && (
+      {!isCreatingSales && (
         <Wrapper>
           <SubHeader name={"Sales Orders"}>
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
                   value={istype.type}
-                  onValueChange={(value) =>
-                    setIsType(value)
-                  }
+                  onValueChange={(value) => setIsType(value)}
                 >
                   <SelectTrigger className="max-w-xs gap-5">
                     <SelectValue placeholder="All" />
@@ -94,29 +100,33 @@ const SalesOrder = () => {
               </Button>
             </div>
           </SubHeader>
-          {
-            orders.length === 0 ? <EmptyStageComponent heading={SaleEmptyStageData.heading} desc={SaleEmptyStageData.desc} subHeading={SaleEmptyStageData.subHeading} subItems={SaleEmptyStageData.subItems} /> :
-              <DataTable columns={SalesColumns} data={orders.filter((order) => {
+          {orders.length === 0 ? (
+            <EmptyStageComponent
+              heading={SaleEmptyStageData.heading}
+              desc={SaleEmptyStageData.desc}
+              subHeading={SaleEmptyStageData.subHeading}
+              subItems={SaleEmptyStageData.subItems}
+            />
+          ) : (
+            <DataTable
+              columns={SalesColumns}
+              data={orders.filter((order) => {
                 if (istype === "All" || istype === "") return true;
                 return order.type === istype;
-              })} />
-          }
+              })}
+            />
+          )}
         </Wrapper>
       )}
-      {isCreatingSales && !isCreatingInvoice && (
-        <CreateSales
+      {isCreatingSales && (
+        <CreateOrder
           name="Create Sales"
-          onSubmit={(newOrders) =>
-            setOrders(orders => [...orders, newOrders])
-          }
-          setIsCreatingSales={setIsCreatingSales}
+          onSubmit={(newOrder) => {
+            setOrders((prev) => [...prev, newOrder]);
+            setIsCreatingSales(false);
+          }}
           onCancel={() => setIsCreatingSales(false)}
-        />
-      )}
-      {isCreatingInvoice && !isCreatingSales && (
-        <CreateSales
-          name="Create Invoice"
-          onCancel={() => setIsCreatingInvoice(false)}
+          setIsCreatingSales={setIsCreatingSales}
         />
       )}
     </>

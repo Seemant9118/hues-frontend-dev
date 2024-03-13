@@ -7,7 +7,7 @@ import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
 import { Layers2 } from "lucide-react";
-import CreateSales from "@/components/CreateSales";
+import CreateOrder from "@/components/CreateOrder";
 
 export default function Invoice() {
   const [products, setProducts] = useState([
@@ -45,7 +45,8 @@ export default function Invoice() {
       )}
       {/* Generate Modal Handling */}
       {isAdding && (
-        <CreateSales
+        <CreateOrder
+          onSubmit={() => {}}
           name="Create Invoice"
           onCancel={() => setIsAdding(false)}
         />

@@ -1,13 +1,12 @@
 "use client";
-import AddProduct from "@/components/AddProduct";
-import CreateSales from "@/components/CreateSales";
+import CreateOrder from "@/components/CreateOrder";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { Columns } from "@/components/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Layers2 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function PurchaseInvoices() {
   const [products, setProducts] = useState([
@@ -45,7 +44,8 @@ export default function PurchaseInvoices() {
       )}
       {/* Generate Modal Handling */}
       {isAdding && (
-        <CreateSales
+        <CreateOrder
+          onSubmit={() => {}}
           name="Create Invoice"
           onCancel={() => setIsAdding(false)}
         />
