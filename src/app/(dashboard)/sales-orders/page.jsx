@@ -3,7 +3,7 @@ import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { FolderUp, PlusCircle } from "lucide-react";
+import { CloudFog, FolderUp, PlusCircle } from "lucide-react";
 import React, { useState } from "react";
 import { SalesColumns } from "./SalesColumns";
 import CreateSales from "@/components/CreateSales";
@@ -18,31 +18,7 @@ import {
 } from "@/components/ui/select";
 
 const SalesOrder = () => {
-  const [orders, setOrders] = useState([
-    {
-      date: "12/02/2024",
-      items: "Starbucks",
-      type: "Bid",
-      orders: "Starbucks Cold Brew Product",
-      customers: "Cody",
-      price: "40",
-      gst: "44",
-      amount: "2500",
-      status: "Paid",
-    },
-    {
-      date: "12/02/2024",
-      items: "Starbucks",
-      type: "offer",
-      orders: "Starbucks Cold Brew Product",
-      customers: "Cody",
-      price: "40",
-      gst: "44",
-      amount: "2500",
-      status: "Paid",
-    },
-  ]);
-
+  const [orders, setOrders] = useState([]);
   const [istype, setIsType] = useState('All');
 
   const [isCreatingSales, setIsCreatingSales] = useState(false);
@@ -125,12 +101,15 @@ const SalesOrder = () => {
                 return order.type === istype;
               })} />
           }
-
         </Wrapper>
       )}
       {isCreatingSales && !isCreatingInvoice && (
         <CreateSales
           name="Create Sales"
+          onSubmit={(newOrders) =>
+            setOrders(orders => [...orders, newOrders])
+          }
+          setIsCreatingSales={setIsCreatingSales}
           onCancel={() => setIsCreatingSales(false)}
         />
       )}

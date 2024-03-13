@@ -15,7 +15,7 @@ import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
 
-const CreateSales = ({ onCancel, name }) => {
+const CreateSales = ({ onCancel, setIsCreatingSales, onSubmit, name }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
   const [order, setOrder] = useState({
     customer: "",
@@ -24,7 +24,11 @@ const CreateSales = ({ onCancel, name }) => {
     quantity: "",
     gst: "",
     amount: "",
+    type: "",
   });
+
+  console.log(order);
+
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
@@ -42,6 +46,22 @@ const CreateSales = ({ onCancel, name }) => {
           <SelectContent>
             <SelectItem value="Customer 1">Customer 1</SelectItem>
             <SelectItem value="Customer 2">Customer 2</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Label>Select Type</Label>
+        <Select
+          value={order.type}
+          onValueChange={(value) =>
+            setOrder((prev) => ({ ...prev, type: value }))
+          }
+        >
+          <SelectTrigger className="max-w-xs">
+            <SelectValue placeholder="Select Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Bid">Bid</SelectItem>
+            <SelectItem value="offer">offer</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -134,8 +154,11 @@ const CreateSales = ({ onCancel, name }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <SuccessModal>
-          <Button onClick={() => {}}>{name}</Button>
+        <SuccessModal name="order">
+          <Button onClick={(e) => {
+            onSubmit(order);
+            onCancel(setIsCreatingSales(true));
+          }}>{name}</Button>
         </SuccessModal>
       </div>
     </Wrapper>

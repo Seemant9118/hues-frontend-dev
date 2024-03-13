@@ -40,7 +40,7 @@ export const SalesColumns = [
     ),
   },
   {
-    accessorKey: "items",
+    accessorKey: "item",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ITEMS" />
     ),
@@ -62,13 +62,13 @@ export const SalesColumns = [
     },
   },
   {
-    accessorKey: "customers",
+    accessorKey: "customer",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="CUSTOMERS" />
     ),
   },
   {
-    accessorKey: "price",
+    accessorKey: "amount",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PRICE" />
     ),

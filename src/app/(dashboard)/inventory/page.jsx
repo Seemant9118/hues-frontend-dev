@@ -21,17 +21,7 @@ import { FileUploader } from "react-drag-drop-files";
 
 const InventoryPage = () => {
 
-  const [products, setProducts] = useState([
-    // {
-    // name: "Brand: Crocin",
-    // code: "#HUESGT45",
-    // description:
-    //   "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
-    // category: "Business Planning",
-    // quantity: "44",
-    // },
-  ]);
-  console.log(products.length);
+  const [products, setProducts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
@@ -88,7 +78,9 @@ const InventoryPage = () => {
             </div>
           </SubHeader>
           {
-            products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} /> : <DataTable columns={Columns} data={products} />
+            products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
+              :
+              <DataTable columns={Columns} data={products} />
           }
 
         </Wrapper>
@@ -98,9 +90,10 @@ const InventoryPage = () => {
           onCancel={() => setIsAdding(false)}
           onSubmit={(newProduct) => {
             setIsAdding(false);
+            setProducts(products => [...products, newProduct]);
           }}
-      name={"Add Product"}
-      cta={"Product"}
+          name={"Add Product"}
+          cta={"Product"}
         />
       )}
       {isUploading && (
