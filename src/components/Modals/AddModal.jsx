@@ -36,9 +36,21 @@ const AddModal = ({ type, onSubmit }) => {
     email: "",
     pan: ""
   });
+  const [errorMsg, setErrorMsg] = useState('*Please filled all required details before submit');
 
-  // console.log(modalData);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    !errorMsg && onSubmit(modalData);
+    setModalData({
+      name: "",
+      vendor: "",
+      address: "",
+      phone: "",
+      email: "",
+      pan: ""
+    });
+  }
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -52,75 +64,100 @@ const AddModal = ({ type, onSubmit }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>{type}</DialogTitle>
-        <div className="flex flex-col gap-4">
-          <InputWithLabel
-            name="Enter Name"
-            id="name"
-            onChange={(e) => setModalData((prev) => ({ ...prev, name: e.target.value }))}
-            value={modalData.name}
-          />
-          {
-            type === 'Add Client' && (
-              <div className="flex flex-col gap-1">
-                <Label>Select Vendor</Label>
-                <Select
-                  value={modalData.vendor}
-                  onValueChange={(value) =>
-                    setModalData((prev) => ({ ...prev, vendor: value }))
-                  }
-                >
-                  <SelectTrigger className="w-full rounded">
-                    <SelectValue placeholder="Select Vendor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Vendor 1">Vendor 1</SelectItem>
-                    <SelectItem value="Vendor 2">Vendor 2</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )
-          }
-          <InputWithLabel
-            name="Add Address"
-            id="address"
-            onChange={(e) => setModalData((prev) => ({ ...prev, address: e.target.value }))}
-            value={modalData.address}
-          />
-          <InputWithLabel
-            name="Email"
-            id="email"
-            onChange={(e) => setModalData((prev) => ({ ...prev, email: e.target.value }))}
-            value={modalData.email}
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <InputWithLabel
-              name="Phone"
-              id="phone"
-              onChange={(e) => setModalData((prev) => ({ ...prev, phone: e.target.value }))}
-              value={modalData.phone}
-            />
-            <InputWithLabel
-              name="PAN"
-              id="pan"
-              onChange={(e) => setModalData((prev) => ({ ...prev, pan: e.target.value }))}
-              value={modalData.pan}
-            />
-          </div>
-        </div>
-        <div className="h-[1px] bg-neutral-300"></div>
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-4">
 
-        <div className="flex justify-end items-center gap-4 mt-auto">
-          <DialogClose asChild>
-            <Button onClick={() => { }} variant={"outline"}>
-              Cancel
-            </Button>
-          </DialogClose>
-          <DialogClose>
-            <Button onClick={() => {onSubmit(modalData); setModalData(''); }}>{type}</Button>
-          </DialogClose>
-        </div>
+            <span className="text-red-500">{errorMsg && errorMsg}</span>
+
+            <InputWithLabel
+              name="Enter Name"
+              required={true}
+              id="name"
+              onChange={(e) => {
+                setModalData((prev) => ({ ...prev, name: e.target.value }))
+                e.target.value === "" ? setErrorMsg('*Please filled required details - Name') : setErrorMsg('');
+              }}
+              value={modalData.name}
+            />
+            {
+              type === 'Add Client' && (
+                <div className="flex flex-col gap-1">
+                  <Label>Select Vendor</Label>
+                  <Select
+                    value={modalData.vendor}
+                    onValueChange={(value) =>
+                      setModalData((prev) => ({ ...prev, vendor: value }))
+                    }
+                    required={true}
+                  >
+                    <SelectTrigger className="w-full rounded">
+                      <SelectValue placeholder="Select Vendor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Vendor 1">Vendor 1</SelectItem>
+                      <SelectItem value="Vendor 2">Vendor 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )
+            }
+            <InputWithLabel
+              name="Add Address"
+              id="address"
+              required={true}
+              onChange={(e) => setModalData((prev) => ({ ...prev, address: e.target.value }))}
+              value={modalData.address}
+            />
+            <InputWithLabel
+              name="Email"
+              id="email"
+              required={true}
+              onChange={(e) => setModalData((prev) => ({ ...prev, email: e.target.value }))}
+              value={modalData.email}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <InputWithLabel
+                name="Phone"
+                id="phone"
+                required={true}
+                onChange={(e) => setModalData((prev) => ({ ...prev, phone: e.target.value }))}
+                value={modalData.phone}
+              />
+              <InputWithLabel
+                name="PAN"
+                id="pan"
+                required={true}
+
+                onChange={(e) => setModalData((prev) => ({ ...prev, pan: e.target.value }))}
+                value={modalData.pan}
+              />
+            </div>
+          </div>
+          <div className="h-[1px] bg-neutral-300"></div>
+
+          <div className="flex justify-end items-center gap-4 mt-3">
+            <DialogClose asChild>
+              <Button onClick={() => {
+                setModalData({
+                  name: "",
+                  vendor: "",
+                  address: "",
+                  phone: "",
+                  email: "",
+                  pan: ""
+                });
+              }} variant={"outline"}>
+                Cancel
+              </Button>
+            </DialogClose>
+
+            <Button type="submit">{type}</Button>
+
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
+
   );
 };
 
