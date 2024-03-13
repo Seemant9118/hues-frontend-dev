@@ -15,7 +15,7 @@ import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
 
-const CreateSales = ({ onCancel, setIsCreatingSales, onSubmit, name }) => {
+const CreateSales = ({ onCancel, setIsCreatingSales,setIsCreatingPurchase, onSubmit, name }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
   const [order, setOrder] = useState({
     customer: "",
@@ -158,6 +158,7 @@ const CreateSales = ({ onCancel, setIsCreatingSales, onSubmit, name }) => {
           <Button onClick={(e) => {
             onSubmit(order);
             onCancel(setIsCreatingSales(true));
+            // onCancel(setIsCreatingPurchase(true));
           }}>{name}</Button>
         </SuccessModal>
       </div>

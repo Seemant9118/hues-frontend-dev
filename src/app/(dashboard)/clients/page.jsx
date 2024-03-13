@@ -10,18 +10,7 @@ import { ClientsColumns } from "./ClientsColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 
 const ClientPage = () => {
-  const [clients, setClients] = useState([
-    // {
-    //   name: "John Doe",
-    //   vendor: "Origami Pvt. Ltd.",
-    //   address:
-    //     "Akshya Nagar 1st Block 1st Cross, Rammurthy nagar, Bangalore-560016",
-    //   phone: "+91 98765 43210",
-    //   email: "johndoe@gmail.com",
-    //   pan: "FFGH1456T",
-    // },
-
-  ]);
+  const [clients, setClients] = useState([]);
   const ClientsEmptyStageData = {
     heading: 'Streamline Your Client Management',
     desc: `Maximize your client relationships with our Clients feature, a tool designed to seamlessly
@@ -53,7 +42,9 @@ const ClientPage = () => {
     <Wrapper>
       <SubHeader name={"Client List"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Add Client"} />
+          <AddModal type={"Add Client"} onSubmit={(newClient) =>
+            setClients(clients => [...clients, newClient])
+          } />
         </div>
       </SubHeader>
       {

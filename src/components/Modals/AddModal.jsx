@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -21,22 +21,32 @@ import {
 import { Label } from "@/components/ui/label";
 
 import { Button } from "@/components/ui/button";
-import { Layers2 ,Fingerprint} from "lucide-react";
+import { Layers2, Fingerprint } from "lucide-react";
 
 import InputWithLabel from "@/components/InputWithLabel";
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 
 
-const AddModal = ({ type }) => {
+const AddModal = ({ type, onSubmit }) => {
+  const [modalData, setModalData] = useState({
+    name: "",
+    vendor: "",
+    address: "",
+    phone: "",
+    email: "",
+    pan: ""
+  });
+
+  // console.log(modalData);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant={"blue_outline"} size="sm">
-        {
-          type === 'Save GST Credentials' ? <Fingerprint size={14}/> : <Layers2 size={14}/>
-        }
-        
+          {
+            type === 'Save GST Credentials' ? <Fingerprint size={14} /> : <Layers2 size={14} />
+          }
+
           {type}
         </Button>
       </DialogTrigger>
@@ -46,20 +56,25 @@ const AddModal = ({ type }) => {
           <InputWithLabel
             name="Enter Name"
             id="name"
-            onChange={() => { }}
-            value={""}
+            onChange={(e) => setModalData((prev) => ({ ...prev, name: e.target.value }))}
+            value={modalData.name}
           />
           {
             type === 'Add Client' && (
               <div className="flex flex-col gap-1">
                 <Label>Select Vendor</Label>
-                <Select >
+                <Select
+                  value={modalData.vendor}
+                  onValueChange={(value) =>
+                    setModalData((prev) => ({ ...prev, vendor: value }))
+                  }
+                >
                   <SelectTrigger className="w-full rounded">
                     <SelectValue placeholder="Select Vendor" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Customer 1">Vendor 1</SelectItem>
-                    <SelectItem value="Customer 2">Vendor 2</SelectItem>
+                    <SelectItem value="Vendor 1">Vendor 1</SelectItem>
+                    <SelectItem value="Vendor 2">Vendor 2</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -68,27 +83,27 @@ const AddModal = ({ type }) => {
           <InputWithLabel
             name="Add Address"
             id="address"
-            onChange={() => { }}
-            value={""}
+            onChange={(e) => setModalData((prev) => ({ ...prev, address: e.target.value }))}
+            value={modalData.address}
           />
           <InputWithLabel
             name="Email"
             id="email"
-            onChange={() => { }}
-            value={""}
+            onChange={(e) => setModalData((prev) => ({ ...prev, email: e.target.value }))}
+            value={modalData.email}
           />
           <div className="grid grid-cols-2 gap-4">
             <InputWithLabel
               name="Phone"
               id="phone"
-              onChange={() => { }}
-              value={""}
+              onChange={(e) => setModalData((prev) => ({ ...prev, phone: e.target.value }))}
+              value={modalData.phone}
             />
             <InputWithLabel
               name="PAN"
               id="pan"
-              onChange={() => { }}
-              value={""}
+              onChange={(e) => setModalData((prev) => ({ ...prev, pan: e.target.value }))}
+              value={modalData.pan}
             />
           </div>
         </div>
@@ -100,7 +115,9 @@ const AddModal = ({ type }) => {
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={() => { }}>{type}</Button>
+          <DialogClose>
+            <Button onClick={() => {onSubmit(modalData); setModalData(''); }}>{type}</Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
