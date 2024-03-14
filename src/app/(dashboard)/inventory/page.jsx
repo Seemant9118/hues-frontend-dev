@@ -1,5 +1,5 @@
 "use client";
-import AddProduct from "@/components/AddProduct";
+import AddItem from "@/components/AddItem";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
@@ -14,6 +14,7 @@ import {
   Trash2,
   Upload,
   UploadCloud,
+  CircleFadingPlus,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -72,8 +73,8 @@ const InventoryPage = () => {
                 variant={"blue_outline"}
                 size="sm"
               >
-                <Layers2 size={14} />
-                Add Product
+                <CircleFadingPlus size={14} />
+                Add Item
               </Button>
             </div>
           </SubHeader>
@@ -86,14 +87,14 @@ const InventoryPage = () => {
         </Wrapper>
       )}
       {isAdding && (
-        <AddProduct
+        <AddItem
           onCancel={() => setIsAdding(false)}
           onSubmit={(newProduct) => {
             setIsAdding(false);
             setProducts(products => [...products, newProduct]);
           }}
-          name={"Add Product"}
-          cta={"Product"}
+          name={"Add Item"}
+          cta={"Item"}
         />
       )}
       {isUploading && (

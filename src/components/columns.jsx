@@ -38,6 +38,12 @@ export const Columns = [
     enableHiding: false,
   },
   {
+    accessorKey: "type",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ITEM TYPE" />
+    ),
+  },
+  {
     accessorKey: "product_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ITEM NAME" />
@@ -60,15 +66,21 @@ export const Columns = [
     },
   },
   {
-    accessorKey: "components",
+    accessorKey: "rate",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="CATEGORY" />
+      <DataTableColumnHeader column={column} title="RATE" />
     ),
   },
   {
-    accessorKey: "units",
+    accessorKey: "gst",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="QUANTITY" />
+      <DataTableColumnHeader column={column} title="GST" />
+    ),
+  },
+  {
+    accessorKey: "amount",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Amount" />
     ),
   },
   {

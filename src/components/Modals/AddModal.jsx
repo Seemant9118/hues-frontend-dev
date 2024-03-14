@@ -100,7 +100,7 @@ const AddModal = ({ type, onSubmit }) => {
                     value={modalData.pass}
                   />
                   <InputWithLabel
-                    name="GST"
+                    name="GST No."
                     type="tel"
                     id="gst"
                     required={true}
