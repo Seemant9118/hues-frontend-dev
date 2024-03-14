@@ -1,13 +1,13 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const InputWithLabel = ({ name, id, onChange, value,required }) => {
+const InputWithLabel = ({ name, id, onChange, value,type,required }) => {
   return (
     <div className="flex flex-col gap-2">
       <Label className="capitalize" htmlFor={id}>
         {name}
       </Label>
-      <Input className="rounded" value={value} onChange={onChange} id={id} required={required} />
+      <Input className="rounded" type={type} value={value} onChange={onChange} id={id} required={required} />
     </div>
   );
 };
