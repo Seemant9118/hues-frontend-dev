@@ -19,6 +19,7 @@ import CreateOrder from "@/components/CreateOrder";
 const PurchaseOrders = () => {
   const [purchases, setPurchases] = useState([]);
 
+
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
   const [istype, setIsType] = useState("All");
 
@@ -98,7 +99,7 @@ const PurchaseOrders = () => {
                 size="sm"
               >
                 <PlusCircle size={14} />
-                Create Purchase
+                Create Bid
               </Button>
             </div>
           </SubHeader>
@@ -122,7 +123,7 @@ const PurchaseOrders = () => {
       )}
       {isCreatingPurchase && (
         <CreateOrder
-          name="Create Purchase"
+          name="Create Bid"
           onCancel={() => setIsCreatingPurchase(false)}
           onSubmit={(newOrder) => {
             setPurchases((prev) => [...prev, newOrder]);

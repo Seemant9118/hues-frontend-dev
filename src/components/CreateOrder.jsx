@@ -25,8 +25,8 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
     quantity: "",
     gst: "",
     amount: "",
-    type: "",
   });
+
 
   return (
     <Wrapper>
@@ -45,22 +45,6 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
           <SelectContent>
             <SelectItem value="Customer 1">Customer 1</SelectItem>
             <SelectItem value="Customer 2">Customer 2</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Label>Select Type</Label>
-        <Select
-          value={order.type}
-          onValueChange={(value) =>
-            setOrder((prev) => ({ ...prev, type: value }))
-          }
-        >
-          <SelectTrigger className="max-w-xs">
-            <SelectValue placeholder="Select Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Bid">Bid</SelectItem>
-            <SelectItem value="offer">offer</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -153,7 +137,8 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <SuccessModal onClose={() => onSubmit(order)}>
+
+        <SuccessModal onClose={() => onSubmit(order,name=="Create Offer"?order.type="offer":order.type="Bid")}>
           <Button>{name}</Button>
         </SuccessModal>
       </div>

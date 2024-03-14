@@ -48,7 +48,7 @@ export const SalesColumns = [
   {
     accessorKey: "type",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="TYPE" />
+      <DataTableColumnHeader column={column} title="TYPE"/>
     ),
   },
   {
