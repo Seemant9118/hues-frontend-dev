@@ -70,7 +70,7 @@ export const VendorsColumns = [
   {
     accessorKey: "gst",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="GST" />
+      <DataTableColumnHeader column={column} title="GST No." />
     ),
   },
   {
