@@ -68,6 +68,12 @@ export const VendorsColumns = [
     ),
   },
   {
+    accessorKey: "gst",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="GST" />
+    ),
+  },
+  {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {

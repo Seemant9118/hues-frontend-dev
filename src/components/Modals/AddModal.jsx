@@ -30,11 +30,11 @@ import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 const AddModal = ({ type, onSubmit }) => {
   const [modalData, setModalData] = useState({
     name: "",
-    vendor: "",
     address: "",
     phone: "",
     email: "",
-    pan: ""
+    pan: "",
+    gst: "",
   });
   const [errorMsg, setErrorMsg] = useState('*Please filled all required details before submit');
 
@@ -44,11 +44,11 @@ const AddModal = ({ type, onSubmit }) => {
     !errorMsg && onSubmit(modalData);
     setModalData({
       name: "",
-      vendor: "",
       address: "",
       phone: "",
       email: "",
-      pan: ""
+      pan: "",
+      gst: "",
     });
   }
   return (
@@ -79,28 +79,6 @@ const AddModal = ({ type, onSubmit }) => {
               }}
               value={modalData.name}
             />
-            {
-              type === 'Add Client' && (
-                <div className="flex flex-col gap-1">
-                  <Label>Select Vendor</Label>
-                  <Select
-                    value={modalData.vendor}
-                    onValueChange={(value) =>
-                      setModalData((prev) => ({ ...prev, vendor: value }))
-                    }
-                    required={true}
-                  >
-                    <SelectTrigger className="w-full rounded">
-                      <SelectValue placeholder="Select Vendor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Vendor 1">Vendor 1</SelectItem>
-                      <SelectItem value="Vendor 2">Vendor 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )
-            }
             <InputWithLabel
               name="Add Address"
               id="address"
@@ -127,11 +105,17 @@ const AddModal = ({ type, onSubmit }) => {
                 name="PAN"
                 id="pan"
                 required={true}
-
                 onChange={(e) => setModalData((prev) => ({ ...prev, pan: e.target.value }))}
                 value={modalData.pan}
               />
             </div>
+            <InputWithLabel
+              name="GST"
+              id="gst"
+              required={true}
+              onChange={(e) => setModalData((prev) => ({ ...prev, gst: e.target.value }))}
+              value={modalData.gst}
+            />
           </div>
           <div className="h-[1px] bg-neutral-300"></div>
 
@@ -140,11 +124,11 @@ const AddModal = ({ type, onSubmit }) => {
               <Button onClick={() => {
                 setModalData({
                   name: "",
-                  vendor: "",
                   address: "",
                   phone: "",
                   email: "",
-                  pan: ""
+                  pan: "",
+                  gst: "",
                 });
               }} variant={"outline"}>
                 Cancel
@@ -152,7 +136,6 @@ const AddModal = ({ type, onSubmit }) => {
             </DialogClose>
 
             <Button type="submit">{type}</Button>
-
           </div>
         </form>
       </DialogContent>
