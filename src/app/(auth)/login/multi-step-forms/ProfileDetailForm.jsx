@@ -1,19 +1,18 @@
 "use client";
-import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
-import { Phone, CreditCard , Calendar} from "lucide-react";
-import DatePicker from "react-datepicker";
+import { Phone, CreditCard, Calendar } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import Tooltips from "@/components/Tooltips";
+
 
 import "react-datepicker/dist/react-datepicker.css";
 
 export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
-  // console.log(params);
-  const [startDate, setStartDate] = useState('');
   const router = useRouter();
   const query = useSearchParams();
   const login = (e) => {
@@ -37,8 +36,8 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       </p>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-          PAN Details <span className="text-red-600">*</span>
+        <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
+          PAN Details <span className="text-red-600">*</span>  <Tooltips content="PAN Details necessary to your profile" />
         </Label>
         <div className="relative">
           <Input
@@ -53,8 +52,8 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
       {isThirdPartyLogin && (
         <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-            Mobile Number  <span className="text-red-600">*</span>
+          <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
+            Mobile Number  <span className="text-red-600">*</span> <Tooltips content="Mobile number necessary to your profile" />
           </Label>
           <div className="relative">
             <Input
@@ -69,8 +68,8 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       )}
       {!isThirdPartyLogin && (
         <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-            Aadhaar Number*
+          <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
+            Aadhaar Number <span className="text-red-600">*</span> <Tooltips content="Aadhaar necessary to your profile" />
           </Label>
           <div className="relative">
             <Input
@@ -85,18 +84,15 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       )}
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="dob" className="text-[#414656] font-medium">
-          Date of Birth <span className="text-red-600">*</span>
+        <Label htmlFor="dob" className="text-[#414656] font-medium flex items-center gap-1">
+          Date of Birth <span className="text-red-600">*</span> <Tooltips content="DOB necessary to your profile" />
         </Label>
-        <div className="border rounded-[6px] py-2 pl-2 pr-1 flex items-center relative focus:outline focus:outline-blue-500">
-          <DatePicker placeholderText="20/08/1999" selected={startDate} onChange={(date) => setStartDate(date)} className="w-[370px] focus:outline-none"/>
-          <Calendar className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
-        </div>
+        <Input required={true} className="focus:font-bold flex flex-col px-2 text-[#3F5575]" type="date" />
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="email" className="text-[#414656] font-medium">
-          Email Address <span className="text-red-600">*</span>
+        <Label htmlFor="email" className="text-[#414656] font-medium flex items-center gap-1">
+          Email Address <span className="text-red-600">*</span> <Tooltips content="Email ID necessary to your profile" />
         </Label>
         <div className="relative">
           <Input

@@ -11,7 +11,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
 
   const [formDataWithDigi, setFormDataWithDigi] = useState({
-    adhaarNumber: '',
+    aadhaarNumber: '',
   });
   const [formDataWithMob, setFormDataWithMob] = useState({
     mobileNumber: '',
@@ -21,7 +21,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const handleSwitchLoginMethod = () => {
     setLoginWithThirdParty(!loginWithThirdParty);
     setErrorMsg('');
-    setFormDataWithDigi({ adhaarNumber: '' });
+    setFormDataWithDigi({ aadhaarNumber: '' });
     setFormDataWithMob({ mobileNumber: '' })
     setIsThirdPartyLogin(!loginWithThirdParty);
 
@@ -33,7 +33,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
 
     setFormDataWithDigi(values => ({ ...values, [name]: value }));
     // handle validation
-    formDataWithDigi.adhaarNumber.length !== 11 ? setErrorMsg('*Please write valid Adhaar Number') : setErrorMsg('');
+    formDataWithDigi.aadhaarNumber.length !== 11 ? setErrorMsg('*Please write valid Aadhaar Number') : setErrorMsg('');
   };
 
   const handleChangeMobLogin = (e) => {
@@ -47,7 +47,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
 
   const handleSubmitFormWithDigi = (e) => {
     e.preventDefault();
-    if(!errorMsg) {
+    if (!errorMsg) {
       console.log(formDataWithDigi);
       setCurrStep(3);
     }
@@ -55,7 +55,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
-    if(!errorMsg) {
+    if (!errorMsg) {
       console.log(formDataWithMob);
       setCurrStep(2);
     }
@@ -77,13 +77,13 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
             htmlFor="adhar-number"
             className="text-[#414656] font-medium"
           >
-            Adhaar Number <span className="text-red-600">*</span>
+            Aadhaar Number <span className="text-red-600">*</span>
 
           </Label>
 
           <div className="hover:border-gray-600 flex items-center gap-1 relative">
 
-            <Input className={cn("focus:font-bold")} type="tel" placeholder="Adhaar Number" name="adhaarNumber" onChange={handleChangeDigiLogin} value={formDataWithDigi.adhaarNumber} required />
+            <Input className={cn("focus:font-bold")} type="tel" placeholder="Aadhaar Number" name="aadhaarNumber" onChange={handleChangeDigiLogin} value={formDataWithDigi.aadhaarNumber} required />
             <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">@</span>
           </div>
 
