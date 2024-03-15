@@ -32,26 +32,15 @@ const InventoryPage = () => {
   };
 
   const InventoryEmptyStageData = {
-    heading: 'Elevate Your Inventory Management',
-    desc: `Transform your stock handling with precision and ease. Our Inventory Feature revolutionizes
-    how you manage, edit, and secure your product listings. With digital signatures and seamless
-    sharing, ensure every item is perfectly cataloged and compliant.`,
-    subHeading: 'User Sections',
+    heading: `Revolutionize stock management with secure, editable, and shareable product listings for
+    perfect cataloging.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1, itemhead: `Bulk Upload & Edit:`, item: `Quickly upload detailed product information and fine-tune as needed`
-      },
-      {
-        id: 2, itemhead: `Seamless Addition:`, item: `Add items individually to keep your inventory fresh and accurate`
-      },
-      {
-        id: 3, itemhead: `Secure with Digital Signatures:`, item: `Authenticate your inventory, ensuring integrity and compliance`
-      },
-      {
-        id: 4, itemhead: `Effortless Sharing: `, item: `Share your digitally signed inventory in PDF format, ready for external use`
-      },
-
-    ]
+      { id: 1, subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.` },
+      { id: 2, subItemtitle: `Effortlessly add items for fresh, accurate inventory.` },
+      { id: 3, subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.` },
+      { id: 4, subItemtitle: `Share digitally signed inventory easily in PDF format.` },
+    ],
   };
 
   return (

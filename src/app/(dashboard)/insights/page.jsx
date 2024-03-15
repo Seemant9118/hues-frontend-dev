@@ -5,62 +5,16 @@ import React from "react";
 const InsightsPage = () => {
 
   const InsightEmptyStageData = {
-    heading: 'Unlock Powerful Business Insights',
-    desc: `Harness the power of your financial data with our Insights feature, designed to illuminate the
-    path towards informed business decisions. Dive deep into analyses of sales, purchases, capital
-    structure, and more, transforming raw data into actionable intelligence. Share these insights
-    securely, fostering collaboration and strategic planning across your business network`,
-    subHeading: 'User Sections',
+    heading: `Transform financial data into actionable intelligence with Insights, enhancing decision-making
+    and secure collaboration.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1, itemhead: `Analyze Financial Activity: `, item: `Explore comprehensive analyses of your sales, purchases, capital
-        structure, and financial infusions.`
-      },
-      {
-        id: 2, itemhead: `Share Insights:`, item: ` Securely share your financial insights with other users, ensuring collaborative
-        analysis with explicit consent`
-      },
-      {
-        id: 3, itemhead: `Drive Decisions:`, item: ` Utilize these insights to guide your business decisions, applying a blend of
-        knowledge, information, and analysis for strategic action`
-      },
-      {
-        id: 4, itemhead: ` Foster Collaboration: `, item: `Enhance decision-making processes by sharing and discussing insights,
-        promoting a culture of informed decision-making`
-      },
-    ],
-    moreInsight: [
-      {
-        moreInsighthead: 'Data Management',
-        moreInsightsubHead: ["Templates - Forms, Contracts", "Analytics - Data, Analytic"],
-      },
-      {
-        moreInsighthead: 'Consent Management',
-        moreInsightsubHead: ["Templates - Forms, Contracts", "Analytics - Data, Analytic"],
-      },
-      {
-        moreInsighthead: 'Inventory Management',
-        moreInsightsubHead: ["Templates - Forms, Contracts", "Analytics - Data, Analytic"],
-      },
-      {
-        moreInsighthead: `Order Management - Orders`,
-        moreInsightsubHead: ["Sales - Bid, Offer", "Purchases - Bid, Offer"],
-      },
-      {
-        moreInsighthead: 'Invoices',
-        moreInsightsubHead: ["Sales", "Purchases"],
-      },
-      {
-        moreInsighthead: 'Payment Management -',
-        moreInsightsubHead: ["Payments - Advices (receipts), Notes"],
-      },
-      {
-        moreInsighthead: 'Relationship Management ',
-        moreInsightsubHead: ["Clients", "Vendors"],
-      },
+      { id: 1, subItemtitle: `Analyze sales, purchases, assets, liabilities, and capital structure comprehensively.` },
+      { id: 2, subItemtitle: `Securely share financial insights for collaborative analysis with consent.` },
+      { id: 3, subItemtitle: `Guide decisions with insights blending knowledge, information, and analysis.` },
+      { id: 4, subItemtitle: `Promote informed decision-making through shared insights and collaboration.` },
     ],
   };
-
 
 
   return (
