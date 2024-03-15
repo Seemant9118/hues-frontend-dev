@@ -20,7 +20,6 @@ import {
 const SalesOrder = () => {
   const [orders, setOrders] = useState([]);
   const [istype, setIsType] = useState("All");
-
   const [isCreatingSales, setIsCreatingSales] = useState(false);
 
   const SaleEmptyStageData = {
@@ -96,7 +95,7 @@ const SalesOrder = () => {
                 size="sm"
               >
                 <PlusCircle size={14} />
-                Create Sales
+                Create Offer
               </Button>
             </div>
           </SubHeader>
@@ -120,13 +119,12 @@ const SalesOrder = () => {
       )}
       {isCreatingSales && (
         <CreateOrder
-          name="Create Sales"
+          name="Create Offer"
           onSubmit={(newOrder) => {
             setOrders((prev) => [...prev, newOrder]);
             setIsCreatingSales(false);
           }}
           onCancel={() => setIsCreatingSales(false)}
-          setIsCreatingSales={setIsCreatingSales}
         />
       )}
     </>

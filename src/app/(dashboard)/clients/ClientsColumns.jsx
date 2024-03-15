@@ -42,12 +42,6 @@ export const ClientsColumns = [
     ),
   },
   {
-    accessorKey: "vendor",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="VENDOR" />
-    ),
-  },
-  {
     accessorKey: "address",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ADDRESS" />
@@ -77,6 +71,12 @@ export const ClientsColumns = [
     accessorKey: "pan",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PAN" />
+    ),
+  },
+  {
+    accessorKey: "gst",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="GST No." />
     ),
   },
   {

@@ -24,12 +24,12 @@ const Sidebar = () => {
       path: "/",
     },
     {
-      name: "Templates",
+      name: "Template",
       icon: <LayoutDashboard size={16} />,
       path: "/template",
     },
     {
-      name: "Inventory",
+      name: "Inventories",
       icon: <Package size={16} />,
       path: "/inventory",
     },
@@ -39,12 +39,12 @@ const Sidebar = () => {
       path: "/sales-orders",
     },
     {
-      name: "Purchase",
+      name: "Purchases",
       icon: <ScrollText size={16} />,
       path: "/purchase-orders",
     },
     {
-      name: "Invoice",
+      name: "Invoices",
       icon: <ReceiptText size={16} />,
       path: "/invoice",
       subTab: [
@@ -61,12 +61,12 @@ const Sidebar = () => {
       ],
     },
     {
-      name: "Client",
+      name: "Clients",
       icon: <UserRound size={16} />,
       path: "/clients",
     },
     {
-      name: "Vendor",
+      name: "Vendors",
       icon: <Store size={16} />,
       path: "/vendors",
     },

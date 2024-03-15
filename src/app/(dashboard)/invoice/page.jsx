@@ -1,5 +1,5 @@
 "use client";
-import AddProduct from "@/components/AddProduct";
+import AddProduct from "@/components/AddItem";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { Columns } from "@/components/columns";
