@@ -12,30 +12,15 @@ import EmptyStageComponent from "@/components/EmptyStageComponent";
 const ClientPage = () => {
   const [clients, setClients] = useState([]);
   const ClientsEmptyStageData = {
-    heading: 'Streamline Your Client Management',
-    desc: `Maximize your client relationships with our Clients feature, a tool designed to seamlessly
-    integrate your customer data into your sales process. By adding clients with comprehensive
-    details, you unlock a streamlined pathway to offer your inventory directly, ensuring they have full
-    visibility on your catalog with the ease and efficiency your business deserves.`,
-    subHeading: 'User Sections',
+    heading: `Streamline sales with our Clients feature, integrating customer data for direct inventory offers
+    and full catalog visibility.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1, itemhead: `Add Clients:`, item: ` Easily input client details such as name, address, mobile number, email, and PAN
-        to your database`
-      },
-      {
-        id: 2, itemhead: `Seamless Sales Integration:`, item: ` Directly offer your inventory to enlisted clients, providing them
-        with full access to product details, prices, and descriptions`
-      },
-      {
-        id: 3, itemhead: `Enhance Visibility:`, item: ` Ensure your clients always have the latest information on your offerings,
-        fostering transparency and trust.`
-      },
-      {
-        id: 4, itemhead: `Streamlined Access:`, item: ` Clients listed gain automatic access to your catalog, simplifying the sales
-        process and enhancing user experience.`
-      },
-    ]
+      { id: 1, subItemtitle: `Easily add client details to your database.` },
+      { id: 2, subItemtitle: `Offer inventory directly to clients with full product access.` },
+      { id: 3, subItemtitle: `Keep clients updated, fostering transparency and trust.` },
+      { id: 4, subItemtitle: `Listed clients get automatic catalog access, simplifying sales.` },
+    ],
   };
 
   return (

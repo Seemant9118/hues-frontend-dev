@@ -11,31 +11,15 @@ const VendorsPage = () => {
   const [vendors, setVendors] = useState([]);
 
   const VendorsEmptyStageData = {
-    heading: 'Optimize Your Vendor Relationships',
-    desc: `Elevate your procurement strategy with our Vendors feature, crafted to enrich your purchasing
-    process. Add vendors effortlessly, ensuring you have immediate access to their catalogs,
-    complete with detailed product information. This integration not only simplifies your procurement
-    but also enhances transparency and efficiency, making every transaction smoother and more
-    informed.`,
-    subHeading: 'User Sections',
+    heading: `Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
+    catalogs for efficient transactions.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1, itemhead: ` Register Vendors: `, item: `Input essential details like name, address, mobile number, email, and PAN
-        for each vendor.`
-      },
-      {
-        id: 2, itemhead: `Access Catalogs:`, item: `  Gain automatic access to vendor catalogs, showcasing prices, descriptions,
-        and more, directly within your purchasing workflow`
-      },
-      {
-        id: 3, itemhead: `Streamline Purchases: `, item: `Leverage the full visibility of vendor offerings to make informed bids
-        and purchases, enhancing your procurement process`
-      },
-      {
-        id: 4, itemhead: `Build Stronger Connections: `, item: ` Foster robust relationships with vendors by engaging with their
-        complete product range, tailored to your business needs`
-      },
-    ]
+      { id: 1, subItemtitle: `Register vendors with essential details easily.` },
+      { id: 2, subItemtitle: `Automatically access vendor catalogs within your purchasing workflow.` },
+      { id: 3, subItemtitle: `Leverage vendor visibility for informed bids and streamlined purchases` },
+      { id: 4, subItemtitle: `Foster robust vendor relationships with tailored product engagement.` },
+    ],
   };
   return (
     <Wrapper>

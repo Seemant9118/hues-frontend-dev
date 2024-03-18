@@ -31,44 +31,15 @@ export default function Home() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const templateEmptyStageData = {
-    heading: "Elevate Your Data Management",
-    desc: `Unlock efficiency and precision with Templates: a dynamic suite designed for every business
-    need. From Contracts to Consent Artifacts, Onboarding Forms, Declarations, and Undertakings,
-    streamline your workflow with customizable, digitally-signable templates. Ensure compliance,
-    clarity, and security in every document. Elevate your data collection and document management
-    to new heights—effortlessly.`,
-    subHeading: "User Sections",
+    heading: `Streamline workflows with customizable, secure, digitally-signable templates for all business
+    needs.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1,
-        itemhead: `Customize to Perfection:`,
-        item: `Tailor templates with specific placeholders for data points, ensuring
-      each document perfectly aligns with your needs`,
-      },
-      {
-        id: 2,
-        itemhead: `Share Seamlessly: `,
-        item: `Distribute your custom forms effortlessly to your audience, streamlining the
-      data collection process`,
-      },
-      {
-        id: 3,
-        itemhead: `Secure with Signatures:`,
-        item: ` Enhance document integrity by adding mandatory digital signatures,
-      with options for multiple signatories`,
-      },
-      {
-        id: 4,
-        itemhead: `Save and Reuse: `,
-        item: `Store templates for future use, optimizing your workflow and saving valuable
-      time.`,
-      },
-      {
-        id: 5,
-        itemhead: `Ensure Compliance: `,
-        item: `Rest assured that every template meets your compliance requirements,
-      with every use and every signature`,
-      },
+      { id: 1, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },
+      { id: 2, subItemtitle: `Effortlessly distribute custom forms for streamlined data collection` },
+      { id: 3, subItemtitle: `Ensure document integrity with mandatory digital signatures.` },
+      { id: 4, subItemtitle: `Optimize workflow by storing templates for future use.` },
+      { id: 5, subItemtitle: `Guarantee compliance with every template use and signature ` },
     ],
   };
 
@@ -170,7 +141,7 @@ export default function Home() {
                   });
                   toast.success("Templated Deleted Successfully.");
                 }}
-                onViewTemplateClick={() => {}}
+                onViewTemplateClick={() => { }}
                 onViewFormClick={() => setViewForm(true)}
                 {...template}
                 key={idx}
@@ -210,7 +181,7 @@ export default function Home() {
           <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
           <div className="flex justify-end items-center gap-4 mt-auto">
-            <Button onClick={() => {}} variant={"grey"} size="icon">
+            <Button onClick={() => { }} variant={"grey"} size="icon">
               <Trash2 />
             </Button>
             <Button

@@ -23,40 +23,15 @@ const SalesOrder = () => {
   const [isCreatingSales, setIsCreatingSales] = useState(false);
 
   const SaleEmptyStageData = {
-    heading: "Revolutionize Your Sales Process",
-    desc: `Dive into a seamless sales experience with our Orders feature, where flexibility meets security.
-    Whether it's through bids from eager buyers or offers you initiate, our platform empowers you to
-    negotiate and finalize deals with digital precision. Every step, from counter-bids to confirmation,
-    is securely signed and recorded, ensuring a transparent and efficient transaction process.`,
-    subHeading: "User Sections",
+    heading: `Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
+    signatures.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1,
-        itemhead: `Receive Bids:`,
-        item: ` Engage with prospective buyers as they bid on your catalog items`,
-      },
-      {
-        id: 2,
-        itemhead: `Make Offers:`,
-        item: ` Proactively offer your catalog to potential buyers, inviting orders`,
-      },
-      {
-        id: 3,
-        itemhead: `Negotiate: Use`,
-        item: ` the review option to negotiate on price, quantity, and grade with digital
-        signatures for each step`,
-      },
-      {
-        id: 4,
-        itemhead: `Confirm Orders:`,
-        item: ` Seal the deal with dual digital signatures, finalizing the order with confidence`,
-      },
-      {
-        id: 5,
-        itemhead: `Track History: `,
-        item: `Access the negotiation history for each order, ensuring transparency and
-        accountability.`,
-      },
+      { id: 1, subItemtitle: `Initiate sales and deals by placing bids or making offers.` },
+      { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
+      { id: 3, subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.` },
+      { id: 4, subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.` },
+      { id: 5, subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. ` },
     ],
   };
 

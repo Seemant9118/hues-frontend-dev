@@ -24,43 +24,14 @@ const PurchaseOrders = () => {
   const [istype, setIsType] = useState("All");
 
   const PurchaseEmptyStageData = {
-    heading: "Empower Your Purchasing Decisions",
-    desc: `Elevate your procurement with our Purchases feature, designed to bring flexibility and security
-    to your buying process. Navigate through bids and offers with ease, engage in digital
-    negotiations, and solidify your purchases with dual digital signatures. Our platform ensures
-    every transaction is transparent, recorded, and perfectly aligned with your procurement needs`,
-    subHeading: "User Sections",
+    heading: `Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
+    transparency and ease.`,
+    subHeading: "Features",
     subItems: [
-      {
-        id: 1,
-        itemhead: `Place Bids: :`,
-        item: `Initiate bids on products from prospective sellers' catalogs, taking control of your
-        purchasing.`,
-      },
-      {
-        id: 2,
-        itemhead: `Receive Offers:`,
-        item: ` Explore offers from sellers, expanding your options with products that match
-        your criteria.`,
-      },
-      {
-        id: 3,
-        itemhead: `Negotiate Terms:`,
-        item: ` Utilize the review option to negotiate on price, quantity, and grade, with each
-        step securely signed digitally.`,
-      },
-      {
-        id: 4,
-        itemhead: `Confirm Purchases: `,
-        item: `Finalize transactions with mutual digital signatures, cementing your
-        purchase agreements.`,
-      },
-      {
-        id: 5,
-        itemhead: `Review History: `,
-        item: `Keep track of all negotiation steps through the order history, ensuring clarity
-        and accountability in every deal`,
-      },
+      { id: 1, subItemtitle: `Engage vendors with bids or receive offers on a unified platform.` },
+      { id: 2, subItemtitle: `Securely negotiate and finalize purchases with digital signatures.` },
+      { id: 3, subItemtitle: `Generate and organize invoices automatically or manually for precise tracking` },
+      { id: 4, subItemtitle: `Streamline internal and external financial processes with easy payment advice.` },
     ],
   };
 
