@@ -61,23 +61,28 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
       <h2 className="text-zinc-900 font-bold text-2xl">{name}</h2>
 
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-4 ">
-          <Label className="flex-shrink-0">Select Item Type</Label>
-          <Select
-            value={item.type}
-            onValueChange={(value) =>
-              setItem((prev) => ({ ...prev, type: value }))
-            }
-          >
-            <SelectTrigger className="max-w-xs gap-5">
-              <SelectValue placeholder="Select Item Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Goods">Goods</SelectItem>
-              <SelectItem value="Services">Services</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {
+          cta === "Item" && (
+            <div className="flex flex-col gap-4 ">
+              <Label className="flex-shrink-0">Select Item Type</Label>
+              <Select
+                value={item.type}
+                onValueChange={(value) =>
+                  setItem((prev) => ({ ...prev, type: value }))
+                }
+              >
+                <SelectTrigger className="max-w-xs gap-5">
+                  <SelectValue placeholder="Select Item Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Goods">Goods</SelectItem>
+                  <SelectItem value="Services">Services</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )
+        }
+
       </div>
 
       {/* mandatory data fields */}
