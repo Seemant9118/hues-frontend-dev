@@ -12,12 +12,15 @@ import CreateOrder from "@/components/CreateOrder";
 export default function Invoice() {
   const [products, setProducts] = useState([
     {
-      name: "Brand: Crocin",
-      code: "#HUESGT45",
+      type:"Type",
+      product_name: "Brand: Crocin",
+      hsn_code: "#HUESGT45",
       description:
         "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
       category: "Business Planning",
-      quantity: "44",
+      rate: "44",
+      gst:"HFSK6468T",
+      amount:"23899"
     },
   ]);
 
