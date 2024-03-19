@@ -11,20 +11,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-
 import { Button } from "@/components/ui/button";
 import { Layers2, Fingerprint } from "lucide-react";
 
 import InputWithLabel from "@/components/InputWithLabel";
-import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
+
 
 
 const AddModal = ({ type, onSubmit }) => {
@@ -38,7 +29,7 @@ const AddModal = ({ type, onSubmit }) => {
     pan: "",
     gst: "",
   });
-  const [errorMsg, setErrorMsg] = useState('*Please filled all required details before submit');
+  const [errorMsg, setErrorMsg] = useState('*Please fill all required details before submit');
 
 
   const handleSubmit = (e) => {
@@ -84,7 +75,7 @@ const AddModal = ({ type, onSubmit }) => {
                     onChange={
                       (e) => {
                         setModalData((prev) => ({ ...prev, id: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Please filled required details - user id') : setErrorMsg('');
+                        e.target.value === "" ? setErrorMsg('*Please fill required details - user id') : setErrorMsg('');
                       }}
                     value={modalData.id}
                   />
@@ -118,7 +109,7 @@ const AddModal = ({ type, onSubmit }) => {
                     onChange={
                       (e) => {
                         setModalData((prev) => ({ ...prev, name: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Please filled required details - Name') : setErrorMsg('');
+                        e.target.value === "" ? setErrorMsg('*Please fill required details - Name') : setErrorMsg('');
                       }}
                     value={modalData.name}
                   />

@@ -34,6 +34,7 @@ export default function Home() {
           <AddModal type={"Save GST Credentials"} />
         </div>
       </SubHeader>
+    
 
       <EmptyStageComponent heading={dashBoardEmptyStagedata.heading} subHeading={dashBoardEmptyStagedata.subHeading} subItems={dashBoardEmptyStagedata.subItems} />
 

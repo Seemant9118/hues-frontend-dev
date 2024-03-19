@@ -1,5 +1,5 @@
 "use client";
-import AddProduct from "@/components/AddItem";
+import AddItem from "@/components/AddItem";
 import SubHeader from "@/components/Sub-header";
 import TemplateCard from "@/components/TemplateCard";
 import Wrapper from "@/components/Wrapper";
@@ -88,7 +88,7 @@ export default function Home() {
         </>
       )}
       {viewForm && (
-        <AddProduct
+        <AddItem
           onCancel={() => setViewForm(false)}
           onSubmit={(newProduct) => {
             setTemplates((prev) => [...prev, newProduct]);

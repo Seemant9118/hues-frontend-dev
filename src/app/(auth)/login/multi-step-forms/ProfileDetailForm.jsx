@@ -1,18 +1,17 @@
 "use client";
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
-import { Phone, CreditCard, Calendar } from "lucide-react";
+import DatePickers from '@/components/DatePickers';
+import { Phone, CreditCard, CalendarDays } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Tooltips from "@/components/Tooltips";
 
-
-import "react-datepicker/dist/react-datepicker.css";
-
 export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
+  const [startDate, setStartDate] = useState('');
   const router = useRouter();
   const query = useSearchParams();
   const login = (e) => {
@@ -87,7 +86,11 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         <Label htmlFor="dob" className="text-[#414656] font-medium flex items-center gap-1">
           Date of Birth <span className="text-red-600">*</span> <Tooltips content="DOB necessary to your profile" />
         </Label>
-        <Input required={true} className="focus:font-bold flex flex-col px-2 text-[#3F5575]" type="date" />
+
+        <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+          <DatePickers />
+          <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
+        </div>
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -101,7 +104,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
             type="email"
             placeholder="patrick@gmail.com*"
           />
-          <span className="text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2">
+          <span className="text-[#3F5575] text-xl font-bold absolute top-1/2 right-2 -translate-y-1/2">
             @
           </span>
         </div>
