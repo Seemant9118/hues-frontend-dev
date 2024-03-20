@@ -25,7 +25,7 @@ const ViewTemplate = () => {
           className="text-xs gap-1 p-1.5"
         >
           <Eye size={16} />
-          View Template
+          Template
         </Button>
       </DialogTrigger>
       <DialogContent>
