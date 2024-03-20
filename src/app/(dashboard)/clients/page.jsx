@@ -25,9 +25,9 @@ const ClientPage = () => {
 
   return (
     <Wrapper>
-      <SubHeader name={"Client List"}>
+      <SubHeader name={"Clients"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Add Client"} onSubmit={(newClient) =>
+          <AddModal type={"Add Client"} cta="Add" modalHead="Client" onSubmit={(newClient) =>
             setClients(clients => [...clients, newClient])
           } />
         </div>

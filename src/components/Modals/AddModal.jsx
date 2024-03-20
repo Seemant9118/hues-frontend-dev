@@ -61,7 +61,6 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
           {
             type === 'Save GST Credentials' ? <Fingerprint size={14} /> : <Layers2 size={14} />
           }
-
           {cta}
         </Button>
       </DialogTrigger>
@@ -126,7 +125,7 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
                 :
                 <>
                   <InputWithLabel
-                    name="Enter Name"
+                    name="Name"
                     type="text"
                     required={true}
                     id="name"
@@ -138,7 +137,7 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
                     value={modalData.name}
                   />
                   <InputWithLabel
-                    name="Add Address"
+                    name="Address"
                     type="text"
                     id="address"
                     required={true}
@@ -172,10 +171,9 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
                     />
                   </div>
                   <InputWithLabel
-                    name="GST No."
+                    name="Goods and Service Tax number"
                     type="tel"
                     id="gst"
-                    required={true}
                     onChange={(e) => setModalData((prev) => ({ ...prev, gst: e.target.value }))}
                     value={modalData.gst}
                   />
