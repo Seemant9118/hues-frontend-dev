@@ -16,12 +16,13 @@ import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
 
-const CreateOrder = ({ onCancel, onSubmit, name }) => {
+const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
   const [order, setOrder] = useState({
     customer: "",
+    type:"",
     item: "",
-    unit_price: "",
+    price: "",
     quantity: "",
     gst: "",
     amount: "",
@@ -32,7 +33,7 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
     <Wrapper>
       <SubHeader name={name}></SubHeader>
       <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
-        <Label>Select Customer</Label>
+        <Label>Client</Label>
         <Select
           value={order.customer}
           onValueChange={(value) =>
@@ -40,18 +41,18 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
           }
         >
           <SelectTrigger className="max-w-xs">
-            <SelectValue placeholder="Select Customer" />
+            <SelectValue placeholder="Add New" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Customer 1">Customer 1</SelectItem>
-            <SelectItem value="Customer 2">Customer 2</SelectItem>
+            <SelectItem value="Customer 1">Client 1</SelectItem>
+            <SelectItem value="Customer 2">Client 2</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="p-4 rounded-sm border-neutral-200 border flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4 ">
           <div className="flex items-center gap-4">
-            <Label className="flex-shrink-0">Select Item</Label>
+            <Label className="flex-shrink-0">Item</Label>
             <Select
               value={order.item}
               onValueChange={(value) =>
@@ -81,20 +82,20 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
             />
           </div>
           <div className="flex items-center gap-4">
-            <Label>Unit Price:</Label>
+            <Label>Price:</Label>
             <Input
-              value={order.unit_price}
+              value={order.price}
               onChange={(e) =>
                 setOrder((prev) => ({
                   ...prev,
-                  unit_price: e.target.value,
+                  price: e.target.value,
                 }))
               }
               className="max-w-20"
             />
           </div>
           <div className="flex items-center gap-4">
-            <Label>GST:</Label>
+            <Label>GST (%) :</Label>
             <Input
               value={order.gst}
               onChange={(e) =>
@@ -107,7 +108,7 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
             />
           </div>
           <div className="flex items-center gap-4">
-            <Label>Total Amount:</Label>
+            <Label>Amount:</Label>
             <Input
               value={order.amount}
               onChange={(e) =>
@@ -126,7 +127,7 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
             onClick={() => setCreatedOrders((prev) => [...prev, order])}
             variant="blue_outline"
           >
-            Add Item
+            Add 
           </Button>
         </div>
       </div>
@@ -138,7 +139,7 @@ const CreateOrder = ({ onCancel, onSubmit, name }) => {
           Cancel
         </Button>
 
-        <SuccessModal onClose={() => onSubmit(order,name=="Create Offer"?order.type="offer":order.type="Bid")}>
+        <SuccessModal onClose={() => onSubmit(order, cta == "offer" ? order.type = "Offer" : order.type = "Bid")}>
           <Button>{name}</Button>
         </SuccessModal>
       </div>
