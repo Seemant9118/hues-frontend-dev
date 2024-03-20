@@ -1,9 +1,9 @@
 
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 
-
-const DashCard = ({ title, numbers, growth }) => {
+const DashCard = ({ title, numbers, growth, icon }) => {
     return (
         <div className="border w-56 h-28 p-5 flex flex-col shadow-md rounded-md bg-white hover:cursor-pointer hover:shadow-lg">
             <div className="flex gap-1 items-center justify-between">
@@ -18,6 +18,7 @@ const DashCard = ({ title, numbers, growth }) => {
                     )
                 }
             </div>
+            <div className="flex justify-end text-blue-500"><Link href="/insights">{icon}</Link></div>
 
         </div>
     );

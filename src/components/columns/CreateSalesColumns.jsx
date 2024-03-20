@@ -12,9 +12,9 @@ export const CreateSalesColumns = [
     ),
   },
   {
-    accessorKey: "unit_price",
+    accessorKey: "price",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="UNIT PRICE" />
+      <DataTableColumnHeader column={column} title="PRICE" />
     ),
   },
   {

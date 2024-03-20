@@ -15,6 +15,7 @@ import {
   PackageOpen,
   Trash2,
   Upload,
+  FileCog
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,19 +56,8 @@ export default function Home() {
     <>
       {templates.length === 0 && !isAdding && (
         <>
-          <SubHeader name="Templates" />
-          <EmptyStageComponent
-            heading={templateEmptyStageData.heading}
-            desc={templateEmptyStageData.desc}
-            subHeading={templateEmptyStageData.subHeading}
-            subItems={templateEmptyStageData.subItems}
-          />
-
-          <div className="flex flex-col justify-center items-center gap-2">
-            <PackageOpen className="text-neutral-500" />
-            <p className="text-neutral-500">
-              No Templates Uploaded Yet. Click on buttons below.
-            </p>
+          <div className="flex justify-between">
+            <SubHeader name="Templates" />
             <Button
               asChild
               variant={"secondary"}
@@ -84,6 +74,17 @@ export default function Home() {
               type="file"
               className="sr-only"
             />
+          </div>
+
+          <EmptyStageComponent
+            heading={templateEmptyStageData.heading}
+            desc={templateEmptyStageData.desc}
+            subHeading={templateEmptyStageData.subHeading}
+            subItems={templateEmptyStageData.subItems}
+          />
+
+          <div className="flex  justify-center ">
+            <PackageOpen className="text-neutral-500" />
           </div>
         </>
       )}
@@ -105,8 +106,8 @@ export default function Home() {
             <div className="flex items-center justify-center gap-4">
               <Button variant={"blue_outline"} asChild size="sm">
                 <label htmlFor="template">
-                  <Upload size={14} />
-                  Upload Template
+                  <FileCog size={14} />
+                  Custom
                 </label>
               </Button>
               <input
@@ -128,6 +129,7 @@ export default function Home() {
           <div className="grid grid-cols-4 gap-2">
             {templates.map((template, idx) => (
               <TemplateCard
+                fileType={file.type.replace(/(.*)\//g, '')}
                 viewResponseClick={() => {
                   setViewForm(false);
                   setViewResponses(true);

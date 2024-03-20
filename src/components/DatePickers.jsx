@@ -14,8 +14,10 @@ export default function DatePickers() {
 
     return (
         <DatePicker
+            required
             className="w-[360px] focus:outline-none absolute top-1/2 -translate-y-2/3 z-20 bg-transparent cursor-pointer"
-            placeholderText="mm/dd/yyyy"
+            placeholderText="DD/MM/YYYY"
+            dateFormat="dd/MM/yyyy"
             popperPlacement="top-right"
             renderCustomHeader={({ date, changeYear, changeMonth, decreaseMonth, increaseMonth, prevMonthButtonDisabled, nextMonthButtonDisabled }) => (
                 <div style={{ margin: 10, display: "flex", justifyContent: "center" }}>
@@ -42,7 +44,7 @@ export default function DatePickers() {
                         }
                     >
                         {months.map((option) => (
-                            <option key={option} value={option}  className="text-sm">
+                            <option key={option} value={option} className="text-sm">
                                 {option}
                             </option>
                         ))}

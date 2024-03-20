@@ -52,12 +52,12 @@ export const SalesColumns = [
     ),
   },
   {
-    accessorKey: "orders",
+    accessorKey: "quantity",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ORDERS" />
     ),
     cell: ({ row }) => {
-      const description = row.original.orders;
+      const description = row.original.quantity;
       return <p className="truncate">{description}</p>;
     },
   },
@@ -68,7 +68,7 @@ export const SalesColumns = [
     ),
   },
   {
-    accessorKey: "amount",
+    accessorKey: "price",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PRICE" />
     ),

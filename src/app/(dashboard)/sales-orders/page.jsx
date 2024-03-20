@@ -39,7 +39,7 @@ const SalesOrder = () => {
     <>
       {!isCreatingSales && (
         <Wrapper>
-          <SubHeader name={"Sales Orders"}>
+          <SubHeader name={"Sales"}>
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
@@ -51,8 +51,10 @@ const SalesOrder = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Bid">Bid</SelectItem>
-                    <SelectItem value="offer">offer</SelectItem>
+                    <SelectItem value="Bid">Bids</SelectItem>
+                    <SelectItem value="offer">Offers</SelectItem>
+                    <SelectItem value="invoice">Invoices</SelectItem>
+
                   </SelectContent>
                 </Select>
               </div>
@@ -70,7 +72,7 @@ const SalesOrder = () => {
                 size="sm"
               >
                 <PlusCircle size={14} />
-                Create Offer
+                Offer
               </Button>
             </div>
           </SubHeader>
@@ -94,7 +96,8 @@ const SalesOrder = () => {
       )}
       {isCreatingSales && (
         <CreateOrder
-          name="Create Offer"
+          name="Create"
+          cta="offer"
           onSubmit={(newOrder) => {
             setOrders((prev) => [...prev, newOrder]);
             setIsCreatingSales(false);

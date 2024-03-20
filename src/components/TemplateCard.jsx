@@ -10,22 +10,33 @@ const TemplateCard = ({
   onDelete,
   viewResponseClick,
   name,
+  fileType
 }) => {
+
   return (
     <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
+      <div className="flex flex-col">
+        <p className="text-neutral-300 text-sm font-bold">Template Name</p>
+        <div className="text-[#363940] text-base font-bold flex">
+          <p className="truncate">{name}</p>
+          <p>.{fileType}</p>
+        </div>
+      </div>
       <Button
         variant="grey"
         onClick={() => viewResponseClick()}
-        className="absolute top-3 right-3"
+        className="absolute top-20 right-3 border"
       >
         <MessageSquareText size={14} />
-        <p>12 Responses</p>
+        <p>12 Contracts</p>
       </Button>
-      <Image src={"/Word_png.png"} alt="Template" height={60} width={65} />
-      <div className="">
-        <p className="text-neutral-300 text-sm font-bold">Template Name</p>
-        <p className="text-[#363940] text-base font-bold">{name}</p>
-      </div>
+      {
+        fileType === "pdf" ?
+          <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
+          :
+          <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
+      }
+
       <div className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]">
         <ViewTemplate />
         <Button
@@ -35,7 +46,7 @@ const TemplateCard = ({
           className="text-xs gap-1 p-1.5 "
         >
           <Eye size={16} />
-          View Form
+          Form
         </Button>
         <Button
           onClick={onDelete}

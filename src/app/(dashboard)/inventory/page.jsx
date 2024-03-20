@@ -98,24 +98,24 @@ const InventoryPage = () => {
                 <UploadCloud className="text-sky-500" size={40} />
                 <div className="flex flex-col gap-1 ">
                   <p className=" text-darkText font-medium text-xs">
-                    Select a file or drag and drop here
-                  </p>
-                  <p className="text-grey text-xs font-normal">
-                    File size no more than 10MB
+                    Drag & Drop or Select a File (Max 10MB,<span className="text-sky-500 font-bold"> .csv/.xls Formats</span> )
                   </p>
                   <p className="text-sky-500 text-xs font-normal">
-                    Supported File formats : .csv | .xls
+                    Note - Trade Enabled for eSigned Inventories Only.
                   </p>
+                  {/* <p className="text-sky-500 text-xs font-normal">
+                    Supported File formats : .csv | .xls
+                  </p> */}
                 </div>
               </div>
               <Button variant="blue_outline">
                 <Upload />
-                Select From Local
+                Select
               </Button>
             </div>
             <Button variant="outline" className="w-full">
               <Download />
-              Download Sample Format
+              Sample
             </Button>
 
           </FileUploader>
