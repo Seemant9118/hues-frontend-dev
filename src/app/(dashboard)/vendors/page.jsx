@@ -23,9 +23,9 @@ const VendorsPage = () => {
   };
   return (
     <Wrapper>
-      <SubHeader name={"Vendor List"}>
+      <SubHeader name={"Vendors"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Add Vendor"} onSubmit={(newVendors) =>
+          <AddModal type={"Add Vendor"} cta="Add" modalHead="Vendor" onSubmit={(newVendors) =>
             setVendors(vendors => [...vendors, newVendors])
           } />
         </div>
