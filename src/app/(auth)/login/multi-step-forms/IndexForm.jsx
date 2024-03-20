@@ -24,7 +24,6 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
     setFormDataWithDigi({ aadhaarNumber: '' });
     setFormDataWithMob({ mobileNumber: '' })
     setIsThirdPartyLogin(!loginWithThirdParty);
-
   };
 
   const handleChangeDigiLogin = (e) => {
@@ -33,7 +32,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
 
     setFormDataWithDigi(values => ({ ...values, [name]: value }));
     // handle validation
-    formDataWithDigi.aadhaarNumber.length !== 11 ? setErrorMsg('*Please write valid Aadhaar Number') : setErrorMsg('');
+    formDataWithDigi.aadhaarNumber.length !== 11 ? setErrorMsg('*Please enter a valid UIDAI Aadhaar Number') : setErrorMsg('');
   };
 
   const handleChangeMobLogin = (e) => {
@@ -64,10 +63,10 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   return (
     <div className="border border-[#E1E4ED] p-10 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md">
       <h1 className="w-full text-3xl text-[#414656] font-bold text-center">
-        Welcome to HuesERP!
+        Welcome to Hues!
       </h1>
       <p className="w-full text-xl text-[#414656] text-center">
-        One account for all things <span className="font-bold">Hues</span>
+        One account for all things <span className="font-bold">Paraphernalia</span>
       </p>
       {loginWithThirdParty ? (
 
