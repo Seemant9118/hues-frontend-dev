@@ -20,7 +20,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
   const [order, setOrder] = useState({
     customer: "",
-    type:"",
+    type: "",
     item: "",
     price: "",
     quantity: "",
@@ -31,9 +31,9 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
 
   return (
     <Wrapper>
-      <SubHeader name={name}></SubHeader>
+      <SubHeader name="Create"></SubHeader>
       <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
-        <Label>Client</Label>
+        <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
         <Select
           value={order.customer}
           onValueChange={(value) =>
@@ -44,8 +44,19 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
             <SelectValue placeholder="Add New" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Customer 1">Client 1</SelectItem>
-            <SelectItem value="Customer 2">Client 2</SelectItem>
+            {
+              cta == "offer" ?
+                <>
+                  <SelectItem value="Client 1">Client 1</SelectItem>
+                  <SelectItem value="Client 2">Client 2</SelectItem>
+                </>
+                :
+                <>
+                  <SelectItem value="Vendor 1">Vendor 1</SelectItem>
+                  <SelectItem value="Vendor 2">Vendor 2</SelectItem>
+                </>
+            }
+
           </SelectContent>
         </Select>
       </div>
@@ -127,7 +138,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
             onClick={() => setCreatedOrders((prev) => [...prev, order])}
             variant="blue_outline"
           >
-            Add 
+            Add
           </Button>
         </div>
       </div>
@@ -140,7 +151,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
         </Button>
 
         <SuccessModal onClose={() => onSubmit(order, cta == "offer" ? order.type = "Offer" : order.type = "Bid")}>
-          <Button>{name}</Button>
+          <Button>Create</Button>
         </SuccessModal>
       </div>
     </Wrapper>

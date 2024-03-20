@@ -39,7 +39,7 @@ const PurchaseOrders = () => {
     <>
       {!isCreatingPurchase && (
         <Wrapper>
-          <SubHeader name={"Purchase Orders"}>
+          <SubHeader name={"Purchases"}>
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
@@ -51,8 +51,10 @@ const PurchaseOrders = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Bid">Bid</SelectItem>
-                    <SelectItem value="offer">offer</SelectItem>
+                    <SelectItem value="Bid">Bids</SelectItem>
+                    <SelectItem value="offer">Offers</SelectItem>
+                    <SelectItem value="invoice">Invoices</SelectItem>
+
                   </SelectContent>
                 </Select>
               </div>
@@ -70,7 +72,7 @@ const PurchaseOrders = () => {
                 size="sm"
               >
                 <PlusCircle size={14} />
-                Create Bid
+                 Bid
               </Button>
             </div>
           </SubHeader>
@@ -94,7 +96,8 @@ const PurchaseOrders = () => {
       )}
       {isCreatingPurchase && (
         <CreateOrder
-          name="Create Bid"
+          
+          cta="bid"
           onCancel={() => setIsCreatingPurchase(false)}
           onSubmit={(newOrder) => {
             setPurchases((prev) => [...prev, newOrder]);

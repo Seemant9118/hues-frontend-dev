@@ -44,27 +44,27 @@ export const PurchaseColumns = [
     ),
   },
   {
-    accessorKey: "orders",
+    accessorKey: "quantity",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PURCHASE ORDERS" />
     ),
     cell: ({ row }) => {
-      const description = row.original.orders;
+      const description = row.original.quantity;
       return <p className="truncate">{description}</p>;
     },
   },
   {
-    accessorKey: "vendors",
+    accessorKey: "customer",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="VENDORS" />
     ),
   },
-  {
-    accessorKey: "delivery_date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="DELIVERY DATE" />
-    ),
-  },
+  // {
+  //   accessorKey: "delivery_date",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="DELIVERY DATE" />
+  //   ),
+  // },
   {
     accessorKey: "status",
     header: ({ column }) => (
