@@ -10,7 +10,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-
+// import InputWithLabel from "./InputWithLabel";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Layers2, Fingerprint } from "lucide-react";
 
@@ -18,7 +26,7 @@ import InputWithLabel from "@/components/InputWithLabel";
 
 
 
-const AddModal = ({ type, onSubmit }) => {
+const AddModal = ({ type, cta, onSubmit, modalHead }) => {
   const [modalData, setModalData] = useState({
     id: "",
     pass: "",
@@ -29,7 +37,7 @@ const AddModal = ({ type, onSubmit }) => {
     pan: "",
     gst: "",
   });
-  const [errorMsg, setErrorMsg] = useState('*Please fill all required details before submit');
+  const [errorMsg, setErrorMsg] = useState('*Mandatory Information');
 
 
   const handleSubmit = (e) => {
@@ -54,11 +62,11 @@ const AddModal = ({ type, onSubmit }) => {
             type === 'Save GST Credentials' ? <Fingerprint size={14} /> : <Layers2 size={14} />
           }
 
-          {type}
+          {cta}
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>{type}</DialogTitle>
+        <DialogTitle>{modalHead}</DialogTitle>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
 
@@ -68,14 +76,14 @@ const AddModal = ({ type, onSubmit }) => {
               type === "Save GST Credentials" ?
                 <>
                   <InputWithLabel
-                    name="User ID"
+                    name="Username"
                     type="text"
                     required={true}
                     id="id"
                     onChange={
                       (e) => {
                         setModalData((prev) => ({ ...prev, id: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Please fill required details - user id') : setErrorMsg('');
+                        e.target.value === "" ? setErrorMsg('*Mandatory Information - username') : setErrorMsg('');
                       }}
                     value={modalData.id}
                   />
@@ -87,15 +95,31 @@ const AddModal = ({ type, onSubmit }) => {
                     onChange={
                       (e) => {
                         setModalData((prev) => ({ ...prev, pass: e.target.value }))
+                        e.target.value === "" ? setErrorMsg('*Mandatory Information - password') : setErrorMsg('');
                       }}
                     value={modalData.pass}
                   />
+                  <div className="flex flex-col gap-4">
+                    <Label className="flex-shrink-0">Available Agencies</Label>
+                    <Select className="rounded">
+                      <SelectTrigger className="gap-5">
+                        <SelectValue placeholder="Select Agencies" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="agency1">Agency 1</SelectItem>
+                        <SelectItem value="agency2">Agency 2</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <InputWithLabel
-                    name="GST No."
+                    name="Goods and Service Tax number"
                     type="tel"
                     id="gst"
                     required={true}
-                    onChange={(e) => setModalData((prev) => ({ ...prev, gst: e.target.value }))}
+                    onChange={(e) => {
+                      setModalData((prev) => ({ ...prev, gst: e.target.value }))
+                      e.target.value === "" ? setErrorMsg('*Mandatory Information - GST No.') : setErrorMsg('');
+                    }}
                     value={modalData.gst}
                   />
                 </>
@@ -179,7 +203,7 @@ const AddModal = ({ type, onSubmit }) => {
               </Button>
             </DialogClose>
 
-            <Button type="submit">{type}</Button>
+            <Button type="submit">{type === "Save GST Credentials" ? "Save" : type}</Button>
           </div>
         </form>
       </DialogContent>
