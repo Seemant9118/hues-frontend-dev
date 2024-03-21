@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 
 import { Label } from "@/components/ui/label";
+import { LocalStorageService } from "@/lib/utils";
 
 const AddItem = ({ name, onSubmit, onCancel, cta }) => {
 
@@ -25,7 +26,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
     rate: "",
     gst: "",
     amount: "",
-    type: "Goods",
+    type: "goods",
     // optional data
     batch: "",
     expiry: "",
@@ -64,8 +65,12 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
         {
           cta === "Item" && (
             <div className="flex flex-col gap-4 ">
-              <Label className="flex-shrink-0">Select Item Type</Label>
+              <div>
+                <Label className="flex-shrink-0">Select Item Type</Label> <span className="text-red-600">*</span>
+              </div>
+
               <Select
+                required
                 value={item.type}
                 onValueChange={(value) =>
                   setItem((prev) => ({ ...prev, type: value }))
@@ -75,8 +80,8 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
                   <SelectValue placeholder="Select Item Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Goods">Goods</SelectItem>
-                  <SelectItem value="Services">Services</SelectItem>
+                  <SelectItem value="goods">Goods</SelectItem>
+                  <SelectItem value="services">Services</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -87,7 +92,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
 
       {/* mandatory data fields */}
       {
-        item.type == "Goods" || item.type == "" ?
+        item.type == "goods" || item.type == "" ?
           // for goods
           (<>
             <div className="grid grid-cols-2 gap-2.5">
@@ -213,25 +218,25 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
       </div>
       <div className="grid grid-cols-4 gap-2.5">
         <InputWithLabel
-          name="Weight (cms)"
+          name="Weight (kg)"
           id="weight"
           onChange={onChange}
           value={item.weight}
         />
         <InputWithLabel
-          name="Length"
+          name="Length (cm)"
           id="length"
           onChange={onChange}
           value={item.length}
         />
         <InputWithLabel
-          name="Bredth (cms)"
+          name="Bredth (cm)"
           id="bredth"
           onChange={onChange}
           value={item.bredth}
         />
         <InputWithLabel
-          name="Height (cms)"
+          name="Height (cm)"
           id="height"
           onChange={onChange}
           value={item.height}
@@ -250,7 +255,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <Button onClick={() => onSubmit(item)}>Add {cta}</Button>
+        <Button type="submit">Add {cta}</Button>
       </div>
     </form>
   );

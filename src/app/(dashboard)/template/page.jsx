@@ -15,13 +15,22 @@ import {
   PackageOpen,
   Trash2,
   Upload,
-  FileCog
+  FileCog,
+  FileCheck,
+  FileText,
+  KeySquare,
+  DatabaseZap,
+  ShieldCheck,
+  Search
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import ViewTemplate from "./ViewTemplate";
+import InputWithLabel from "@/components/InputWithLabel";
+import { Input } from "@/components/ui/input";
+
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -32,15 +41,15 @@ export default function Home() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const templateEmptyStageData = {
-    heading: `Streamline workflows with customizable, secure, digitally-signable templates for all business
-    needs.`,
+    heading: `~"Streamline workflows with customizable, secure, digitally-signable templates for all business
+    needs."`,
     subHeading: "Features",
     subItems: [
-      { id: 1, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },
-      { id: 2, subItemtitle: `Effortlessly distribute custom forms for streamlined data collection` },
-      { id: 3, subItemtitle: `Ensure document integrity with mandatory digital signatures.` },
-      { id: 4, subItemtitle: `Optimize workflow by storing templates for future use.` },
-      { id: 5, subItemtitle: `Guarantee compliance with every template use and signature ` },
+      { id: 1, icon: <FileCheck size={14} />, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },
+      { id: 2, icon: <FileText size={14} />, subItemtitle: `Effortlessly distribute custom forms for streamlined data collection` },
+      { id: 3, icon: <KeySquare size={14} />, subItemtitle: `Ensure document integrity with mandatory digital signatures.` },
+      { id: 4, icon: <DatabaseZap size={14} />, subItemtitle: `Optimize workflow by storing templates for future use.` },
+      { id: 5, icon: <ShieldCheck size={14} />, subItemtitle: `Guarantee compliance with every template use and signature ` },
     ],
   };
 
@@ -48,10 +57,11 @@ export default function Home() {
     const uploadedFile = e.target.files[0]; // Get the first file
     if (uploadedFile) {
       setFile(uploadedFile);
-      setTemplates((prev) => [...prev, { name: uploadedFile.name }]);
+      setTemplates((prev) => [...prev, { name: uploadedFile.name, type: uploadedFile.type.replace(/(.*)\//g, '') === "pdf" ? "pdf" : "xlsx" }]);
       toast.success("Template Added Successfully.");
     }
   };
+
   return (
     <>
       {templates.length === 0 && !isAdding && (
@@ -83,9 +93,6 @@ export default function Home() {
             subItems={templateEmptyStageData.subItems}
           />
 
-          <div className="flex  justify-center ">
-            <PackageOpen className="text-neutral-500" />
-          </div>
         </>
       )}
       {viewForm && (
@@ -104,10 +111,16 @@ export default function Home() {
         <Wrapper>
           <SubHeader name={"Templates"}>
             <div className="flex items-center justify-center gap-4">
+              <div className="relative">
+                <Input
+                  placeholder="Search"
+                />
+                <Search className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white" size={16} />
+              </div>
               <Button variant={"blue_outline"} asChild size="sm">
                 <label htmlFor="template">
-                  <FileCog size={14} />
-                  Custom
+                  <Upload size={14} />
+                  Upload Template
                 </label>
               </Button>
               <input
@@ -116,20 +129,20 @@ export default function Home() {
                 type="file"
                 className="sr-only"
               />
-              <Button
+              {/* <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
                 size="sm"
               >
                 <Layers2 size={14} />
                 Add Template
-              </Button>
+              </Button> */}
+
             </div>
           </SubHeader>
           <div className="grid grid-cols-4 gap-2">
             {templates.map((template, idx) => (
               <TemplateCard
-                fileType={file.type.replace(/(.*)\//g, '')}
                 viewResponseClick={() => {
                   setViewForm(false);
                   setViewResponses(true);
@@ -150,54 +163,62 @@ export default function Home() {
               />
             ))}
           </div>
-        </Wrapper>
-      )}
-      {viewResponses && (
-        <Wrapper>
-          <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
-            <div className="flex items-center gap-4 ">
-              <Image src={"/Word_png.png"} alt="image" height={70} width={60} />
-              <div className="grid gap-2">
-                <p className="text-grey font-bold text-sm">Template Name</p>
-                <p className=" font-bold text-sm">{selectedTemplate.name}</p>
+        </Wrapper >
+      )
+      }
+      {
+        viewResponses && (
+          <Wrapper>
+            <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
+              <div className="flex items-center gap-4 ">
+                {
+                  selectedTemplate?.type.replace(/(.*)\//g, '') === "pdf" ?
+                    <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
+                    :
+                    <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
+                }
+                <div className="grid gap-2">
+                  <p className="text-grey font-bold text-sm">Template Name</p>
+                  <p className=" font-bold text-sm">{selectedTemplate.name}</p>
+                </div>
+                <Button variant="grey" className="ml-20">
+                  <MessageSquareText size={14} />
+                  <p>12 Contracts</p>
+                </Button>
               </div>
-              <Button variant="grey" className="ml-20">
-                <MessageSquareText size={14} />
-                <p>12 Responses</p>
-              </Button>
+              <div className="flex items-center gap-4">
+                <ViewTemplate />
+                <Button
+                  onClick={() => setViewForm(true)}
+                  variant={"blue_outline"}
+                  size="sm"
+                  className="text-xs gap-1 p-1.5 "
+                >
+                  <Eye size={16} />
+                  View Form
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <ViewTemplate />
-              <Button
-                onClick={() => setViewForm(true)}
-                variant={"blue_outline"}
-                size="sm"
-                className="text-xs gap-1 p-1.5 "
-              >
-                <Eye size={16} />
-                View Form
-              </Button>
-            </div>
-          </div>
-          <DataTable columns={ResponseColumns} data={[]} />
-          <div className="h-[1px] bg-neutral-300 mt-auto"></div>
+            <DataTable columns={ResponseColumns} data={[]} />
+            <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
-          <div className="flex justify-end items-center gap-4 mt-auto">
-            <Button onClick={() => { }} variant={"grey"} size="icon">
-              <Trash2 />
-            </Button>
-            <Button
-              variant={"outline"}
-              className=""
-              onClick={() => {
-                setViewResponses(false);
-              }}
-            >
-              Close
-            </Button>
-          </div>
-        </Wrapper>
-      )}
+            <div className="flex justify-end items-center gap-4 mt-auto">
+              <Button onClick={() => { }} variant={"grey"} size="icon">
+                <Trash2 />
+              </Button>
+              <Button
+                variant={"outline"}
+                className=""
+                onClick={() => {
+                  setViewResponses(false);
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          </Wrapper>
+        )
+      }
     </>
   );
 }

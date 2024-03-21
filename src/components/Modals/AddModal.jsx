@@ -74,6 +74,18 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
             {
               type === "Save GST Credentials" ?
                 <>
+                  <div className="flex flex-col gap-4">
+                    <Label className="flex-shrink-0">Agency</Label>
+                    <Select className="rounded">
+                      <SelectTrigger className="gap-5">
+                        <SelectValue placeholder="Select Agency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="agency1">GST</SelectItem>
+                        {/* <SelectItem value="agency2">Agency 2</SelectItem> */}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <InputWithLabel
                     name="Username"
                     type="text"
@@ -98,19 +110,8 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
                       }}
                     value={modalData.pass}
                   />
-                  <div className="flex flex-col gap-4">
-                    <Label className="flex-shrink-0">Available Agencies</Label>
-                    <Select className="rounded">
-                      <SelectTrigger className="gap-5">
-                        <SelectValue placeholder="Select Agencies" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="agency1">Agency 1</SelectItem>
-                        <SelectItem value="agency2">Agency 2</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <InputWithLabel
+
+                  {/* <InputWithLabel
                     name="Goods and Service Tax number"
                     type="tel"
                     id="gst"
@@ -120,7 +121,7 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
                       e.target.value === "" ? setErrorMsg('*Mandatory Information - GST No.') : setErrorMsg('');
                     }}
                     value={modalData.gst}
-                  />
+                  /> */}
                 </>
                 :
                 <>

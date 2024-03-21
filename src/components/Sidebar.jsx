@@ -12,6 +12,8 @@ import {
   ReceiptText,
   ReceiptIndianRupee,
   BadgeIndianRupee,
+  Boxes,
+  HandPlatter
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StyledLinks from "@/components/StyledLinks";
@@ -31,7 +33,19 @@ const Sidebar = () => {
     {
       name: "Inventories",
       icon: <Package size={16} />,
-      path: "/inventory",
+      path: "/inventory/goods",
+      subTab: [
+        {
+          name: "Goods",
+          icon: <Boxes size={16} />,
+          path: "/inventory/goods"
+        },
+        {
+          name: "Services",
+          icon: <HandPlatter size={16} />,
+          path: "/inventory/services"
+        },
+      ],
     },
     {
       name: "Sales",
@@ -50,12 +64,12 @@ const Sidebar = () => {
       subTab: [
         {
           name: "Sale Invoices",
-          icon: <BadgeIndianRupee  size={16}/>,
+          icon: <BadgeIndianRupee size={16} />,
           path: "/invoice/sales-invoices"
         },
         {
           name: "Purchase Invoices",
-          icon: <ReceiptIndianRupee size={16}/>,
+          icon: <ReceiptIndianRupee size={16} />,
           path: "/invoice/purchases-invoices"
         },
       ],

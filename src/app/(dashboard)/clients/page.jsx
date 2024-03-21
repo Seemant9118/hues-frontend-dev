@@ -12,8 +12,8 @@ import EmptyStageComponent from "@/components/EmptyStageComponent";
 const ClientPage = () => {
   const [clients, setClients] = useState([]);
   const ClientsEmptyStageData = {
-    heading: `Streamline sales with our Clients feature, integrating customer data for direct inventory offers
-    and full catalog visibility.`,
+    heading: `~"Streamline sales with our Clients feature, integrating customer data for direct inventory offers
+    and full catalog visibility."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Easily add client details to your database.` },

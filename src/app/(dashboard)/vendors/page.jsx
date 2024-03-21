@@ -11,8 +11,8 @@ const VendorsPage = () => {
   const [vendors, setVendors] = useState([]);
 
   const VendorsEmptyStageData = {
-    heading: `Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
-    catalogs for efficient transactions.`,
+    heading: `~"Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
+    catalogs for efficient transactions."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Register vendors with essential details easily.` },
