@@ -15,13 +15,17 @@ import {
   PackageOpen,
   Trash2,
   Upload,
-  FileCog
+  FileCog,
+  Search
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import ViewTemplate from "./ViewTemplate";
+import InputWithLabel from "@/components/InputWithLabel";
+import { Input } from "@/components/ui/input";
+
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -102,10 +106,16 @@ export default function Home() {
         <Wrapper>
           <SubHeader name={"Templates"}>
             <div className="flex items-center justify-center gap-4">
+              <div className="relative">
+                <Input
+                  placeholder="Search"
+                />
+                <Search className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white" size={16} />
+              </div>
               <Button variant={"blue_outline"} asChild size="sm">
                 <label htmlFor="template">
-                  <FileCog size={14} />
-                  Custom
+                  <Upload size={14} />
+                  Upload Template
                 </label>
               </Button>
               <input
@@ -114,14 +124,18 @@ export default function Home() {
                 type="file"
                 className="sr-only"
               />
-              <Button
+
+
+
+              {/* <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
                 size="sm"
               >
                 <Layers2 size={14} />
                 Add Template
-              </Button>
+              </Button> */}
+
             </div>
           </SubHeader>
           <div className="grid grid-cols-4 gap-2">
@@ -147,59 +161,62 @@ export default function Home() {
               />
             ))}
           </div>
-        </Wrapper>
-      )}
-      {viewResponses && (
-        <Wrapper>
-          <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
-            <div className="flex items-center gap-4 ">
-              {
-                selectedTemplate?.type.replace(/(.*)\//g, '') === "pdf" ?
-                  <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
-                  :
-                  <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
-              }
-              <div className="grid gap-2">
-                <p className="text-grey font-bold text-sm">Template Name</p>
-                <p className=" font-bold text-sm">{selectedTemplate.name}</p>
+        </Wrapper >
+      )
+      }
+      {
+        viewResponses && (
+          <Wrapper>
+            <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
+              <div className="flex items-center gap-4 ">
+                {
+                  selectedTemplate?.type.replace(/(.*)\//g, '') === "pdf" ?
+                    <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
+                    :
+                    <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
+                }
+                <div className="grid gap-2">
+                  <p className="text-grey font-bold text-sm">Template Name</p>
+                  <p className=" font-bold text-sm">{selectedTemplate.name}</p>
+                </div>
+                <Button variant="grey" className="ml-20">
+                  <MessageSquareText size={14} />
+                  <p>12 Contracts</p>
+                </Button>
               </div>
-              <Button variant="grey" className="ml-20">
-                <MessageSquareText size={14} />
-                <p>12 Contracts</p>
-              </Button>
+              <div className="flex items-center gap-4">
+                <ViewTemplate />
+                <Button
+                  onClick={() => setViewForm(true)}
+                  variant={"blue_outline"}
+                  size="sm"
+                  className="text-xs gap-1 p-1.5 "
+                >
+                  <Eye size={16} />
+                  View Form
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <ViewTemplate />
-              <Button
-                onClick={() => setViewForm(true)}
-                variant={"blue_outline"}
-                size="sm"
-                className="text-xs gap-1 p-1.5 "
-              >
-                <Eye size={16} />
-                View Form
-              </Button>
-            </div>
-          </div>
-          <DataTable columns={ResponseColumns} data={[]} />
-          <div className="h-[1px] bg-neutral-300 mt-auto"></div>
+            <DataTable columns={ResponseColumns} data={[]} />
+            <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
-          <div className="flex justify-end items-center gap-4 mt-auto">
-            <Button onClick={() => { }} variant={"grey"} size="icon">
-              <Trash2 />
-            </Button>
-            <Button
-              variant={"outline"}
-              className=""
-              onClick={() => {
-                setViewResponses(false);
-              }}
-            >
-              Close
-            </Button>
-          </div>
-        </Wrapper>
-      )}
+            <div className="flex justify-end items-center gap-4 mt-auto">
+              <Button onClick={() => { }} variant={"grey"} size="icon">
+                <Trash2 />
+              </Button>
+              <Button
+                variant={"outline"}
+                className=""
+                onClick={() => {
+                  setViewResponses(false);
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          </Wrapper>
+        )
+      }
     </>
   );
 }
