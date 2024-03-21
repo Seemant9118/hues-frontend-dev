@@ -34,7 +34,7 @@ export default function Home() {
       </SubHeader>
 
 
-      <EmptyStageComponent heading={dashBoardEmptyStagedata.heading} subHeading={dashBoardEmptyStagedata.subHeading} subItems={dashBoardEmptyStagedata.subItems} />
+      {/* <EmptyStageComponent heading={dashBoardEmptyStagedata.heading} subHeading={dashBoardEmptyStagedata.subHeading} subItems={dashBoardEmptyStagedata.subItems} /> */}
 
       <div className="flex flex-wrap gap-2">
         {
