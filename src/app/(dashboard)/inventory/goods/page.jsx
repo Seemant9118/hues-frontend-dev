@@ -18,12 +18,15 @@ import {
     CircleFadingPlus,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
+import { LocalStorageService } from "@/lib/utils";
+
 
 function Goods() {
     const [products, setProducts] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
+
     const [isUploading, setisUploading] = useState(false);
     const [files, setFiles] = useState([]);
 
@@ -42,6 +45,17 @@ function Goods() {
             { id: 4, subItemtitle: `Share digitally signed inventory easily in PDF format.` },
         ],
     };
+
+
+
+    useEffect(() => {
+        const filteredData = () => {
+            const products = LocalStorageService.get("products");
+            setProducts(products);
+        }
+        filteredData();
+    }, []);
+    console.log(products)
 
     return (
         <>
@@ -70,12 +84,8 @@ function Goods() {
                     {
                         products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
                             :
-                            <DataTable columns={GoodsColumns} data={products.filter((product) => {
-                                if (product.type == "Goods") return product.type;
-                                return null;
-                            })} />
+                            <DataTable columns={GoodsColumns} data={products.filter((product)=> product.type === "goods")} />
                     }
-
                 </Wrapper>
             )}
             {isAdding && (
@@ -83,11 +93,11 @@ function Goods() {
                     onCancel={() => setIsAdding(false)}
                     onSubmit={(newProduct) => {
                         setIsAdding(false);
-                        setProducts(products => [...products, newProduct]);
+                        if (newProduct.type === "goods") setProducts(products => [...products, newProduct]);
+                        LocalStorageService.set("products", [...products, newProduct]);
                     }}
                     name={"Add Item"}
                     cta={"Item"}
-
                 />
             )}
             {isUploading && (

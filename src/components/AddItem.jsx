@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 
 import { Label } from "@/components/ui/label";
+import { LocalStorageService } from "@/lib/utils";
 
 const AddItem = ({ name, onSubmit, onCancel, cta }) => {
 
@@ -25,7 +26,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
     rate: "",
     gst: "",
     amount: "",
-    type: "Goods",
+    type: "goods",
     // optional data
     batch: "",
     expiry: "",
@@ -79,8 +80,8 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
                   <SelectValue placeholder="Select Item Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Goods">Goods</SelectItem>
-                  <SelectItem value="Services">Services</SelectItem>
+                  <SelectItem value="goods">Goods</SelectItem>
+                  <SelectItem value="services">Services</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -91,7 +92,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
 
       {/* mandatory data fields */}
       {
-        item.type == "Goods" || item.type == "" ?
+        item.type == "goods" || item.type == "" ?
           // for goods
           (<>
             <div className="grid grid-cols-2 gap-2.5">
@@ -254,7 +255,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <Button onClick={() => onSubmit(item)}>Add {cta}</Button>
+        <Button type="submit">Add {cta}</Button>
       </div>
     </form>
   );

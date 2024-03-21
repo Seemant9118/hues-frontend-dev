@@ -18,7 +18,6 @@ const StyledLinks = ({ link }) => {
             : "text-grey bg-transparent"
         )}
       >
-
         {link.icon}
         {link.name}
       </Link>
