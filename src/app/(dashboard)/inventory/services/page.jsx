@@ -78,9 +78,10 @@ function Services() {
                         </div>
                     </SubHeader>
                     {
-                        products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
-                            :
+                        products ?
                             <DataTable columns={ServicesColumns} data={products.filter((product) => product.type === "services")} />
+                            :
+                            <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
                     }
 
                 </Wrapper>

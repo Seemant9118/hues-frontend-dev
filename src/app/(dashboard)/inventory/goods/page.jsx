@@ -82,9 +82,10 @@ function Goods() {
                         </div>
                     </SubHeader>
                     {
-                        products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
+                        products ?
+                            <DataTable columns={GoodsColumns} data={products.filter((product) => product.type === "goods")} />
                             :
-                            <DataTable columns={GoodsColumns} data={products.filter((product)=> product.type === "goods")} />
+                            <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
                     }
                 </Wrapper>
             )}
