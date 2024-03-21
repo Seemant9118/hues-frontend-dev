@@ -213,25 +213,25 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
       </div>
       <div className="grid grid-cols-4 gap-2.5">
         <InputWithLabel
-          name="Weight (cms)"
+          name="Weight (kg)"
           id="weight"
           onChange={onChange}
           value={item.weight}
         />
         <InputWithLabel
-          name="Length"
+          name="Length (cm)"
           id="length"
           onChange={onChange}
           value={item.length}
         />
         <InputWithLabel
-          name="Bredth (cms)"
+          name="Bredth (cm)"
           id="bredth"
           onChange={onChange}
           value={item.bredth}
         />
         <InputWithLabel
-          name="Height (cms)"
+          name="Height (cm)"
           id="height"
           onChange={onChange}
           value={item.height}
