@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Font files can be colocated inside of `app`
 export const metadata = {
-  title: "HUES",
+  title: "Hues! ~ AI for .. All",
   description: "HUES DASHBOARD",
 };
 
