@@ -101,7 +101,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
                 required={true}
                 onChange={onChange}
                 value={item.product_name}
-              /> 
+              />
               <InputWithLabel
                 name="Manufacturer's Name"
                 id="manufacturer_name"
