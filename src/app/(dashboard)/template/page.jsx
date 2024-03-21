@@ -16,6 +16,11 @@ import {
   Trash2,
   Upload,
   FileCog,
+  FileCheck,
+  FileText,
+  KeySquare,
+  DatabaseZap,
+  ShieldCheck,
   Search
 } from "lucide-react";
 import Image from "next/image";
@@ -40,11 +45,11 @@ export default function Home() {
     needs."`,
     subHeading: "Features",
     subItems: [
-      { id: 1, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },
-      { id: 2, subItemtitle: `Effortlessly distribute custom forms for streamlined data collection` },
-      { id: 3, subItemtitle: `Ensure document integrity with mandatory digital signatures.` },
-      { id: 4, subItemtitle: `Optimize workflow by storing templates for future use.` },
-      { id: 5, subItemtitle: `Guarantee compliance with every template use and signature ` },
+      { id: 1, icon: <FileCheck size={14} />, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },
+      { id: 2, icon: <FileText size={14} />, subItemtitle: `Effortlessly distribute custom forms for streamlined data collection` },
+      { id: 3, icon: <KeySquare size={14} />, subItemtitle: `Ensure document integrity with mandatory digital signatures.` },
+      { id: 4, icon: <DatabaseZap size={14} />, subItemtitle: `Optimize workflow by storing templates for future use.` },
+      { id: 5, icon: <ShieldCheck size={14} />, subItemtitle: `Guarantee compliance with every template use and signature ` },
     ],
   };
 
