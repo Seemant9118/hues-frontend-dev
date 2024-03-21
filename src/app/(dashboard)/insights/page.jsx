@@ -5,8 +5,8 @@ import React from "react";
 const InsightsPage = () => {
 
   const InsightEmptyStageData = {
-    heading: `Transform financial data into actionable intelligence with Insights, enhancing decision-making
-    and secure collaboration.`,
+    heading: `~"Transform financial data into actionable intelligence with Insights, enhancing decision-making
+    and secure collaboration."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Analyze sales, purchases, assets, liabilities, and capital structure comprehensively.` },

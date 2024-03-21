@@ -36,8 +36,8 @@ export default function Home() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const templateEmptyStageData = {
-    heading: `Streamline workflows with customizable, secure, digitally-signable templates for all business
-    needs.`,
+    heading: `~"Streamline workflows with customizable, secure, digitally-signable templates for all business
+    needs."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },

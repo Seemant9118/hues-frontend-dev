@@ -32,8 +32,8 @@ const InventoryPage = () => {
   };
 
   const InventoryEmptyStageData = {
-    heading: `Revolutionize stock management with secure, editable, and shareable product listings for
-    perfect cataloging.`,
+    heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
+    perfect cataloging."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.` },

@@ -24,8 +24,8 @@ const PurchaseOrders = () => {
   const [istype, setIsType] = useState("All");
 
   const PurchaseEmptyStageData = {
-    heading: `Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
-    transparency and ease.`,
+    heading: `~"Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
+    transparency and ease."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Engage vendors with bids or receive offers on a unified platform.` },
@@ -72,7 +72,7 @@ const PurchaseOrders = () => {
                 size="sm"
               >
                 <PlusCircle size={14} />
-                 Bid
+                Bid
               </Button>
             </div>
           </SubHeader>
@@ -96,7 +96,7 @@ const PurchaseOrders = () => {
       )}
       {isCreatingPurchase && (
         <CreateOrder
-          
+
           cta="bid"
           onCancel={() => setIsCreatingPurchase(false)}
           onSubmit={(newOrder) => {

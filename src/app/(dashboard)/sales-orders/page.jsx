@@ -23,8 +23,8 @@ const SalesOrder = () => {
   const [isCreatingSales, setIsCreatingSales] = useState(false);
 
   const SaleEmptyStageData = {
-    heading: `Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
-    signatures.`,
+    heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
+    signatures."`,
     subHeading: "Features",
     subItems: [
       { id: 1, subItemtitle: `Initiate sales and deals by placing bids or making offers.` },
