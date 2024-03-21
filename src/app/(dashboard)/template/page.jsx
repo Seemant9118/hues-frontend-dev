@@ -124,9 +124,6 @@ export default function Home() {
                 type="file"
                 className="sr-only"
               />
-
-
-
               {/* <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
