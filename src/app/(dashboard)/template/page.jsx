@@ -48,10 +48,11 @@ export default function Home() {
     const uploadedFile = e.target.files[0]; // Get the first file
     if (uploadedFile) {
       setFile(uploadedFile);
-      setTemplates((prev) => [...prev, { name: uploadedFile.name }]);
+      setTemplates((prev) => [...prev, { name: uploadedFile.name, type: uploadedFile.type.replace(/(.*)\//g, '') === "pdf" ? "pdf" : "xlsx" }]);
       toast.success("Template Added Successfully.");
     }
   };
+
   return (
     <>
       {templates.length === 0 && !isAdding && (
@@ -83,9 +84,6 @@ export default function Home() {
             subItems={templateEmptyStageData.subItems}
           />
 
-          <div className="flex  justify-center ">
-            <PackageOpen className="text-neutral-500" />
-          </div>
         </>
       )}
       {viewForm && (
@@ -129,7 +127,6 @@ export default function Home() {
           <div className="grid grid-cols-4 gap-2">
             {templates.map((template, idx) => (
               <TemplateCard
-                fileType={file.type.replace(/(.*)\//g, '')}
                 viewResponseClick={() => {
                   setViewForm(false);
                   setViewResponses(true);
@@ -156,14 +153,19 @@ export default function Home() {
         <Wrapper>
           <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
             <div className="flex items-center gap-4 ">
-              <Image src={"/Word_png.png"} alt="image" height={70} width={60} />
+              {
+                selectedTemplate?.type.replace(/(.*)\//g, '') === "pdf" ?
+                  <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
+                  :
+                  <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
+              }
               <div className="grid gap-2">
                 <p className="text-grey font-bold text-sm">Template Name</p>
                 <p className=" font-bold text-sm">{selectedTemplate.name}</p>
               </div>
               <Button variant="grey" className="ml-20">
                 <MessageSquareText size={14} />
-                <p>12 Responses</p>
+                <p>12 Contracts</p>
               </Button>
             </div>
             <div className="flex items-center gap-4">

@@ -10,8 +10,10 @@ const TemplateCard = ({
   onDelete,
   viewResponseClick,
   name,
-  fileType
+  type,
 }) => {
+
+  const getfileExtension = type.replace(/(.*)\//g, '');
 
   return (
     <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
@@ -19,7 +21,7 @@ const TemplateCard = ({
         <p className="text-neutral-300 text-sm font-bold">Template Name</p>
         <div className="text-[#363940] text-base font-bold flex">
           <p className="truncate">{name}</p>
-          <p>.{fileType}</p>
+          <p>.{getfileExtension === "pdf" ? getfileExtension : ""}</p>
         </div>
       </div>
       <Button
@@ -31,7 +33,7 @@ const TemplateCard = ({
         <p>12 Contracts</p>
       </Button>
       {
-        fileType === "pdf" ?
+        getfileExtension === "pdf" ?
           <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
           :
           <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
