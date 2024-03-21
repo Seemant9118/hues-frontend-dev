@@ -64,8 +64,12 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
         {
           cta === "Item" && (
             <div className="flex flex-col gap-4 ">
-              <Label className="flex-shrink-0">Select Item Type</Label>
+              <div>
+                <Label className="flex-shrink-0">Select Item Type</Label> <span className="text-red-600">*</span>
+              </div>
+
               <Select
+                required
                 value={item.type}
                 onValueChange={(value) =>
                   setItem((prev) => ({ ...prev, type: value }))
@@ -97,7 +101,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
                 required={true}
                 onChange={onChange}
                 value={item.product_name}
-              />
+              /> 
               <InputWithLabel
                 name="Manufacturer's Name"
                 id="manufacturer_name"
