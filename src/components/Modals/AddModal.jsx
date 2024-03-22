@@ -24,9 +24,7 @@ import { Layers2, Fingerprint } from "lucide-react";
 
 import InputWithLabel from "@/components/InputWithLabel";
 
-
-
-const AddModal = ({ type, cta, onSubmit, modalHead }) => {
+const AddModal = ({ type, cta, onSubmit, modalHead, className }) => {
   const [modalData, setModalData] = useState({
     id: "",
     pass: "",
@@ -37,8 +35,7 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
     pan: "",
     gst: "",
   });
-  const [errorMsg, setErrorMsg] = useState('*Mandatory Information');
-
+  const [errorMsg, setErrorMsg] = useState("*Mandatory Information");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -53,14 +50,16 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
       pan: "",
       gst: "",
     });
-  }
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={"blue_outline"} size="sm">
-          {
-            type === 'Save GST Credentials' ? <Fingerprint size={14} /> : <Layers2 size={14} />
-          }
+        <Button variant={"blue_outline"} size="sm" className={className}>
+          {type === "Save GST Credentials" ? (
+            <Fingerprint size={14} />
+          ) : (
+            <Layers2 size={14} />
+          )}
           {cta}
         </Button>
       </DialogTrigger>
@@ -68,50 +67,50 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
         <DialogTitle>{modalHead}</DialogTitle>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
-
             <span className="text-red-500">{errorMsg && errorMsg}</span>
 
-            {
-              type === "Save GST Credentials" ?
-                <>
-                  <div className="flex flex-col gap-4">
-                    <Label className="flex-shrink-0">Agency</Label>
-                    <Select className="rounded">
-                      <SelectTrigger className="gap-5">
-                        <SelectValue placeholder="Select Agency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="agency1">GST</SelectItem>
-                        {/* <SelectItem value="agency2">Agency 2</SelectItem> */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <InputWithLabel
-                    name="Username"
-                    type="text"
-                    required={true}
-                    id="id"
-                    onChange={
-                      (e) => {
-                        setModalData((prev) => ({ ...prev, id: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Mandatory Information - username') : setErrorMsg('');
-                      }}
-                    value={modalData.id}
-                  />
-                  <InputWithLabel
-                    name="Password"
-                    type="password"
-                    required={true}
-                    id="id"
-                    onChange={
-                      (e) => {
-                        setModalData((prev) => ({ ...prev, pass: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Mandatory Information - password') : setErrorMsg('');
-                      }}
-                    value={modalData.pass}
-                  />
+            {type === "Save GST Credentials" ? (
+              <>
+                <div className="flex flex-col gap-4">
+                  <Label className="flex-shrink-0">Agency</Label>
+                  <Select className="rounded">
+                    <SelectTrigger className="gap-5">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="agency1">GST</SelectItem>
+                      {/* <SelectItem value="agency2">Agency 2</SelectItem> */}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <InputWithLabel
+                  name="Username"
+                  type="text"
+                  required={true}
+                  id="id"
+                  onChange={(e) => {
+                    setModalData((prev) => ({ ...prev, id: e.target.value }));
+                    e.target.value === ""
+                      ? setErrorMsg("*Mandatory Information - username")
+                      : setErrorMsg("");
+                  }}
+                  value={modalData.id}
+                />
+                <InputWithLabel
+                  name="Password"
+                  type="password"
+                  required={true}
+                  id="id"
+                  onChange={(e) => {
+                    setModalData((prev) => ({ ...prev, pass: e.target.value }));
+                    e.target.value === ""
+                      ? setErrorMsg("*Mandatory Information - password")
+                      : setErrorMsg("");
+                  }}
+                  value={modalData.pass}
+                />
 
-                  {/* <InputWithLabel
+                {/* <InputWithLabel
                     name="Goods and Service Tax number"
                     type="tel"
                     id="gst"
@@ -122,92 +121,113 @@ const AddModal = ({ type, cta, onSubmit, modalHead }) => {
                     }}
                     value={modalData.gst}
                   /> */}
-                </>
-                :
-                <>
+              </>
+            ) : (
+              <>
+                <InputWithLabel
+                  name="Name"
+                  type="text"
+                  required={true}
+                  id="name"
+                  onChange={(e) => {
+                    setModalData((prev) => ({ ...prev, name: e.target.value }));
+                    e.target.value === ""
+                      ? setErrorMsg("*Please fill required details - Name")
+                      : setErrorMsg("");
+                  }}
+                  value={modalData.name}
+                />
+                <InputWithLabel
+                  name="Address"
+                  type="text"
+                  id="address"
+                  required={true}
+                  onChange={(e) =>
+                    setModalData((prev) => ({
+                      ...prev,
+                      address: e.target.value,
+                    }))
+                  }
+                  value={modalData.address}
+                />
+                <InputWithLabel
+                  name="Email"
+                  type="email"
+                  id="email"
+                  required={true}
+                  onChange={(e) =>
+                    setModalData((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  value={modalData.email}
+                />
+                <div className="grid grid-cols-2 gap-4">
                   <InputWithLabel
-                    name="Name"
-                    type="text"
-                    required={true}
-                    id="name"
-                    onChange={
-                      (e) => {
-                        setModalData((prev) => ({ ...prev, name: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Please fill required details - Name') : setErrorMsg('');
-                      }}
-                    value={modalData.name}
-                  />
-                  <InputWithLabel
-                    name="Address"
-                    type="text"
-                    id="address"
-                    required={true}
-                    onChange={(e) => setModalData((prev) => ({ ...prev, address: e.target.value }))}
-                    value={modalData.address}
-                  />
-                  <InputWithLabel
-                    name="Email"
-                    type="email"
-                    id="email"
-                    required={true}
-                    onChange={(e) => setModalData((prev) => ({ ...prev, email: e.target.value }))}
-                    value={modalData.email}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <InputWithLabel
-                      name="Phone"
-                      type="tel"
-                      id="phone"
-                      required={true}
-                      onChange={(e) => setModalData((prev) => ({ ...prev, phone: e.target.value }))}
-                      value={modalData.phone}
-                    />
-                    <InputWithLabel
-                      name="PAN"
-                      type="tel"
-                      id="pan"
-                      required={true}
-                      onChange={(e) => setModalData((prev) => ({ ...prev, pan: e.target.value }))}
-                      value={modalData.pan}
-                    />
-                  </div>
-                  <InputWithLabel
-                    name="Goods and Service Tax number"
+                    name="Phone"
                     type="tel"
-                    id="gst"
-                    onChange={(e) => setModalData((prev) => ({ ...prev, gst: e.target.value }))}
-                    value={modalData.gst}
+                    id="phone"
+                    required={true}
+                    onChange={(e) =>
+                      setModalData((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
+                    value={modalData.phone}
                   />
-                </>
-            }
+                  <InputWithLabel
+                    name="PAN"
+                    type="tel"
+                    id="pan"
+                    required={true}
+                    onChange={(e) =>
+                      setModalData((prev) => ({ ...prev, pan: e.target.value }))
+                    }
+                    value={modalData.pan}
+                  />
+                </div>
+                <InputWithLabel
+                  name="Goods and Service Tax number"
+                  type="tel"
+                  id="gst"
+                  onChange={(e) =>
+                    setModalData((prev) => ({ ...prev, gst: e.target.value }))
+                  }
+                  value={modalData.gst}
+                />
+              </>
+            )}
           </div>
 
           <div className="h-[1px] bg-neutral-300"></div>
 
           <div className="flex justify-end items-center gap-4 mt-3">
             <DialogClose asChild>
-              <Button onClick={() => {
-                setModalData({
-                  id: "",
-                  pass: "",
-                  name: "",
-                  address: "",
-                  phone: "",
-                  email: "",
-                  pan: "",
-                  gst: "",
-                });
-              }} variant={"outline"}>
+              <Button
+                onClick={() => {
+                  setModalData({
+                    id: "",
+                    pass: "",
+                    name: "",
+                    address: "",
+                    phone: "",
+                    email: "",
+                    pan: "",
+                    gst: "",
+                  });
+                }}
+                variant={"outline"}
+              >
                 Cancel
               </Button>
             </DialogClose>
 
-            <Button type="submit">{type === "Save GST Credentials" ? "Save" : type}</Button>
+            <Button type="submit">
+              {type === "Save GST Credentials" ? "Save" : type}
+            </Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog >
-
+    </Dialog>
   );
 };
 

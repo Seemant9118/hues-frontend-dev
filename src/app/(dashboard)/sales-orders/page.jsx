@@ -3,7 +3,7 @@ import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { CloudFog, FolderUp, PlusCircle } from "lucide-react";
+import { CloudFog, DatabaseZap, FileCheck, FileText, FolderUp, KeySquare, PlusCircle } from "lucide-react";
 import React, { useState } from "react";
 import { SalesColumns } from "./SalesColumns";
 import CreateOrder from "@/components/CreateOrder";
@@ -21,23 +21,40 @@ const SalesOrder = () => {
   const [orders, setOrders] = useState([]);
   const [istype, setIsType] = useState("All");
   const [isCreatingSales, setIsCreatingSales] = useState(false);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
     signatures."`,
     subHeading: "Features",
     subItems: [
-      { id: 1, subItemtitle: `Initiate sales and deals by placing bids or making offers.` },
-      { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
-      { id: 3, subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.` },
-      { id: 4, subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.` },
-      { id: 5, subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. ` },
+      {
+        id: 1,
+        icon: <FileCheck size={14} />,
+        subItemtitle: `Initiate sales and deals by receiving bids or making offers.`,
+      },
+      // { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
+      {
+        id: 3,
+        icon: <FileText size={14} />,
+        subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.`,
+      },
+      {
+        id: 4,
+        icon: <KeySquare size={14} />,
+        subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.`,
+      },
+      {
+        id: 5,
+        icon: <DatabaseZap size={14} />,
+        subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. `,
+      },
     ],
   };
 
   return (
     <>
-      {!isCreatingSales && (
+      {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
           <SubHeader name={"Sales"}>
             <div className="flex items-center justify-center gap-4">
@@ -54,7 +71,6 @@ const SalesOrder = () => {
                     <SelectItem value="Bid">Bids</SelectItem>
                     <SelectItem value="offer">Offers</SelectItem>
                     <SelectItem value="invoice">Invoices</SelectItem>
-
                   </SelectContent>
                 </Select>
               </div>
@@ -73,6 +89,14 @@ const SalesOrder = () => {
               >
                 <PlusCircle size={14} />
                 Offer
+              </Button>
+              <Button
+                onClick={() => setIsCreatingInvoice(true)}
+                variant={"blue_outline"}
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Invoice
               </Button>
             </div>
           </SubHeader>
@@ -94,15 +118,26 @@ const SalesOrder = () => {
           )}
         </Wrapper>
       )}
-      {isCreatingSales && (
+      {isCreatingSales && !isCreatingInvoice && (
         <CreateOrder
-          name="Create"
+          name="Offer"
           cta="offer"
           onSubmit={(newOrder) => {
             setOrders((prev) => [...prev, newOrder]);
             setIsCreatingSales(false);
           }}
           onCancel={() => setIsCreatingSales(false)}
+        />
+      )}
+      {isCreatingInvoice && (
+        <CreateOrder
+          name="Invoice"
+          cta="offer"
+          onSubmit={(newOrder) => {
+            setOrders((prev) => [...prev, newOrder]);
+            setIsCreatingInvoice(false);
+          }}
+          onCancel={() => setIsCreatingInvoice(false)}
         />
       )}
     </>

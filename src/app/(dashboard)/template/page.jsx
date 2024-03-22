@@ -21,7 +21,7 @@ import {
   KeySquare,
   DatabaseZap,
   ShieldCheck,
-  Search
+  Search,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,7 +30,6 @@ import { toast } from "sonner";
 import ViewTemplate from "./ViewTemplate";
 import InputWithLabel from "@/components/InputWithLabel";
 import { Input } from "@/components/ui/input";
-
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -45,11 +44,31 @@ export default function Home() {
     needs."`,
     subHeading: "Features",
     subItems: [
-      { id: 1, icon: <FileCheck size={14} />, subItemtitle: `Tailor documents with customizable placeholders for perfect alignment` },
-      { id: 2, icon: <FileText size={14} />, subItemtitle: `Effortlessly distribute custom forms for streamlined data collection` },
-      { id: 3, icon: <KeySquare size={14} />, subItemtitle: `Ensure document integrity with mandatory digital signatures.` },
-      { id: 4, icon: <DatabaseZap size={14} />, subItemtitle: `Optimize workflow by storing templates for future use.` },
-      { id: 5, icon: <ShieldCheck size={14} />, subItemtitle: `Guarantee compliance with every template use and signature ` },
+      {
+        id: 1,
+        icon: <FileCheck size={14} />,
+        subItemtitle: `Tailor documents with customizable placeholders for perfect alignment.`,
+      },
+      {
+        id: 2,
+        icon: <FileText size={14} />,
+        subItemtitle: `Effortlessly distribute custom forms for streamlined data collection.`,
+      },
+      {
+        id: 3,
+        icon: <KeySquare size={14} />,
+        subItemtitle: `Ensure document integrity with mandatory digital signatures.`,
+      },
+      {
+        id: 4,
+        icon: <DatabaseZap size={14} />,
+        subItemtitle: `Optimize workflow by storing templates for future use.`,
+      },
+      {
+        id: 5,
+        icon: <ShieldCheck size={14} />,
+        subItemtitle: `Guarantee compliance with every template use and signature. `,
+      },
     ],
   };
 
@@ -57,7 +76,14 @@ export default function Home() {
     const uploadedFile = e.target.files[0]; // Get the first file
     if (uploadedFile) {
       setFile(uploadedFile);
-      setTemplates((prev) => [...prev, { name: uploadedFile.name, type: uploadedFile.type.replace(/(.*)\//g, '') === "pdf" ? "pdf" : "xlsx" }]);
+      setTemplates((prev) => [
+        ...prev,
+        {
+          name: uploadedFile.name,
+          type:
+            uploadedFile.type.replace(/(.*)\//g, "") === "pdf" ? "pdf" : "xlsx",
+        },
+      ]);
       toast.success("Template Added Successfully.");
     }
   };
@@ -66,18 +92,20 @@ export default function Home() {
     <>
       {templates.length === 0 && !isAdding && (
         <>
-          <div className="flex justify-between">
-            <SubHeader name="Templates" />
-            <Button
-              asChild
-              variant={"secondary"}
-              className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
-            >
-              <label htmlFor="template">
-                <Upload />
-                Add Template
-              </label>
-            </Button>
+          <div className="flex justify-between items-center">
+            <SubHeader name="Templates" className={"justify-between w-full"}>
+              <Button
+                asChild
+                variant={"secondary"}
+                className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
+              >
+                <label htmlFor="template">
+                  <Upload />
+                  Upload
+                </label>
+              </Button>
+            </SubHeader>
+
             <input
               onChange={fileHandler}
               id="template"
@@ -92,7 +120,6 @@ export default function Home() {
             subHeading={templateEmptyStageData.subHeading}
             subItems={templateEmptyStageData.subItems}
           />
-
         </>
       )}
       {viewForm && (
@@ -112,10 +139,11 @@ export default function Home() {
           <SubHeader name={"Templates"}>
             <div className="flex items-center justify-center gap-4">
               <div className="relative">
-                <Input
-                  placeholder="Search"
+                <Input placeholder="Search" />
+                <Search
+                  className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white"
+                  size={16}
                 />
-                <Search className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white" size={16} />
               </div>
               <Button variant={"blue_outline"} asChild size="sm">
                 <label htmlFor="template">
@@ -137,7 +165,6 @@ export default function Home() {
                 <Layers2 size={14} />
                 Add Template
               </Button> */}
-
             </div>
           </SubHeader>
           <div className="grid grid-cols-4 gap-2">
@@ -156,69 +183,75 @@ export default function Home() {
                   });
                   toast.success("Templated Deleted Successfully.");
                 }}
-                onViewTemplateClick={() => { }}
+                onViewTemplateClick={() => {}}
                 onViewFormClick={() => setViewForm(true)}
                 {...template}
                 key={idx}
               />
             ))}
           </div>
-        </Wrapper >
-      )
-      }
-      {
-        viewResponses && (
-          <Wrapper>
-            <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
-              <div className="flex items-center gap-4 ">
-                {
-                  selectedTemplate?.type.replace(/(.*)\//g, '') === "pdf" ?
-                    <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
-                    :
-                    <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
-                }
-                <div className="grid gap-2">
-                  <p className="text-grey font-bold text-sm">Template Name</p>
-                  <p className=" font-bold text-sm">{selectedTemplate.name}</p>
-                </div>
-                <Button variant="grey" className="ml-20">
-                  <MessageSquareText size={14} />
-                  <p>12 Contracts</p>
-                </Button>
+        </Wrapper>
+      )}
+      {viewResponses && (
+        <Wrapper>
+          <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
+            <div className="flex items-center gap-4 ">
+              {selectedTemplate?.type.replace(/(.*)\//g, "") === "pdf" ? (
+                <Image
+                  src={"/pdf_png.png"}
+                  alt="Template"
+                  height={55}
+                  width={60}
+                />
+              ) : (
+                <Image
+                  src={"/csv_png.png"}
+                  alt="Template"
+                  height={55}
+                  width={60}
+                />
+              )}
+              <div className="grid gap-2">
+                <p className="text-grey font-bold text-sm">Template Name</p>
+                <p className=" font-bold text-sm">{selectedTemplate.name}</p>
               </div>
-              <div className="flex items-center gap-4">
-                <ViewTemplate />
-                <Button
-                  onClick={() => setViewForm(true)}
-                  variant={"blue_outline"}
-                  size="sm"
-                  className="text-xs gap-1 p-1.5 "
-                >
-                  <Eye size={16} />
-                  View Form
-                </Button>
-              </div>
-            </div>
-            <DataTable columns={ResponseColumns} data={[]} />
-            <div className="h-[1px] bg-neutral-300 mt-auto"></div>
-
-            <div className="flex justify-end items-center gap-4 mt-auto">
-              <Button onClick={() => { }} variant={"grey"} size="icon">
-                <Trash2 />
+              <Button variant="grey" className="ml-20">
+                <MessageSquareText size={14} />
+                <p>12 Contracts</p>
               </Button>
+            </div>
+            <div className="flex items-center gap-4">
+              <ViewTemplate />
               <Button
-                variant={"outline"}
-                className=""
-                onClick={() => {
-                  setViewResponses(false);
-                }}
+                onClick={() => setViewForm(true)}
+                variant={"blue_outline"}
+                size="sm"
+                className="text-xs gap-1 p-1.5 "
               >
-                Close
+                <Eye size={16} />
+                View Form
               </Button>
             </div>
-          </Wrapper>
-        )
-      }
+          </div>
+          <DataTable columns={ResponseColumns} data={[]} />
+          <div className="h-[1px] bg-neutral-300 mt-auto"></div>
+
+          <div className="flex justify-end items-center gap-4 mt-auto">
+            <Button onClick={() => {}} variant={"grey"} size="icon">
+              <Trash2 />
+            </Button>
+            <Button
+              variant={"outline"}
+              className=""
+              onClick={() => {
+                setViewResponses(false);
+              }}
+            >
+              Close
+            </Button>
+          </div>
+        </Wrapper>
+      )}
     </>
   );
 }

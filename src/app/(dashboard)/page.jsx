@@ -29,7 +29,7 @@ export default function Home() {
     <>
       <SubHeader name={"Dashboard"} className="mb-5">
         <div className="flex items-center justify-center gap-4">
-          <AddModal type="Save GST Credentials" cta="Password Manager" modalHead="One-Time Setup for Future Convenience" />
+          <AddModal type="Save GST Credentials" cta="Password Manager" modalHead="One-time setup for future convenience" />
         </div>
       </SubHeader>
 

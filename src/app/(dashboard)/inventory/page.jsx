@@ -15,13 +15,16 @@ import {
   Upload,
   UploadCloud,
   CircleFadingPlus,
+  FileCheck,
+  FileText,
+  KeySquare,
+  DatabaseZap,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 
 const InventoryPage = () => {
-
   const [products, setProducts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setisUploading] = useState(false);
@@ -36,10 +39,26 @@ const InventoryPage = () => {
     perfect cataloging."`,
     subHeading: "Features",
     subItems: [
-      { id: 1, subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.` },
-      { id: 2, subItemtitle: `Effortlessly add items for fresh, accurate inventory.` },
-      { id: 3, subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.` },
-      { id: 4, subItemtitle: `Share digitally signed inventory easily in PDF format.` },
+      {
+        id: 1,
+        icon: <FileCheck size={14} />,
+        subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.`,
+      },
+      {
+        id: 2,
+        icon: <FileText size={14} />,
+        subItemtitle: `Effortlessly add items for fresh, accurate inventory.`,
+      },
+      {
+        id: 3,
+        icon: <KeySquare size={14} />,
+        subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.`,
+      },
+      {
+        id: 4,
+        icon: <DatabaseZap size={14} />,
+        subItemtitle: `Share digitally signed inventory easily in PDF format.`,
+      },
     ],
   };
 
@@ -55,7 +74,7 @@ const InventoryPage = () => {
                 size="sm"
               >
                 <Upload size={14} />
-                Upload List
+                Upload
               </Button>
               <Button
                 onClick={() => setIsAdding(true)}
@@ -63,16 +82,20 @@ const InventoryPage = () => {
                 size="sm"
               >
                 <CircleFadingPlus size={14} />
-                Add Item
+                Add
               </Button>
             </div>
           </SubHeader>
-          {
-            products.length === 0 ? <EmptyStageComponent heading={InventoryEmptyStageData.heading} desc={InventoryEmptyStageData.desc} subHeading={InventoryEmptyStageData.subHeading} subItems={InventoryEmptyStageData.subItems} />
-              :
-              <DataTable columns={Columns} data={products} />
-          }
-
+          {products.length === 0 ? (
+            <EmptyStageComponent
+              heading={InventoryEmptyStageData.heading}
+              desc={InventoryEmptyStageData.desc}
+              subHeading={InventoryEmptyStageData.subHeading}
+              subItems={InventoryEmptyStageData.subItems}
+            />
+          ) : (
+            <DataTable columns={Columns} data={products} />
+          )}
         </Wrapper>
       )}
       {isAdding && (
@@ -80,7 +103,7 @@ const InventoryPage = () => {
           onCancel={() => setIsAdding(false)}
           onSubmit={(newProduct) => {
             setIsAdding(false);
-            setProducts(products => [...products, newProduct]);
+            setProducts((products) => [...products, newProduct]);
           }}
           name={"Add Item"}
           cta={"Item"}
@@ -98,7 +121,12 @@ const InventoryPage = () => {
                 <UploadCloud className="text-sky-500" size={40} />
                 <div className="flex flex-col gap-1 ">
                   <p className=" text-darkText font-medium text-xs">
-                    Drag & Drop or Select a File (Max 10MB,<span className="text-sky-500 font-bold"> .csv/.xls Formats</span> )
+                    Drag & Drop or Select a File (Max 10MB,
+                    <span className="text-sky-500 font-bold">
+                      {" "}
+                      .csv/.xls Formats
+                    </span>{" "}
+                    )
                   </p>
                   <p className="text-sky-500 text-xs font-normal">
                     Note - Trade Enabled for eSigned Inventories Only.
@@ -117,7 +145,6 @@ const InventoryPage = () => {
               <Download />
               Sample
             </Button>
-
           </FileUploader>
           {files.map((file, idx) => (
             <div

@@ -4,7 +4,7 @@ import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { FolderUp, PlusCircle } from "lucide-react";
+import { DatabaseZap, FileCheck, FolderUp, KeySquare, PlusCircle, ShieldCheck } from "lucide-react";
 import { PurchaseColumns } from "./PurchaseColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
@@ -19,8 +19,8 @@ import CreateOrder from "@/components/CreateOrder";
 const PurchaseOrders = () => {
   const [purchases, setPurchases] = useState([]);
 
-
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [istype, setIsType] = useState("All");
 
   const PurchaseEmptyStageData = {
@@ -28,16 +28,32 @@ const PurchaseOrders = () => {
     transparency and ease."`,
     subHeading: "Features",
     subItems: [
-      { id: 1, subItemtitle: `Engage vendors with bids or receive offers on a unified platform.` },
-      { id: 2, subItemtitle: `Securely negotiate and finalize purchases with digital signatures.` },
-      { id: 3, subItemtitle: `Generate and organize invoices automatically or manually for precise tracking` },
-      { id: 4, subItemtitle: `Streamline internal and external financial processes with easy payment advice.` },
+      {
+        id: 1,
+        icon: <KeySquare size={14} />,
+        subItemtitle: `Engage vendors with bids or receive offers on a unified platform.`,
+      },
+      {
+        id: 2,
+        icon: <DatabaseZap size={14} />,
+        subItemtitle: `Securely negotiate and finalize purchases with digital signatures.`,
+      },
+      {
+        id: 3,
+        icon: <ShieldCheck size={14} />,
+        subItemtitle: `Generate and organize invoices automatically or manually for precise tracking.`,
+      },
+      {
+        id: 4,
+        icon: <FileCheck size={14} />,
+        subItemtitle: `Streamline internal and external financial processes with easy payment advice.`,
+      },
     ],
   };
 
   return (
     <>
-      {!isCreatingPurchase && (
+      {!isCreatingPurchase && !isCreatingInvoice && (
         <Wrapper>
           <SubHeader name={"Purchases"}>
             <div className="flex items-center justify-center gap-4">
@@ -54,7 +70,6 @@ const PurchaseOrders = () => {
                     <SelectItem value="Bid">Bids</SelectItem>
                     <SelectItem value="offer">Offers</SelectItem>
                     <SelectItem value="invoice">Invoices</SelectItem>
-
                   </SelectContent>
                 </Select>
               </div>
@@ -73,6 +88,14 @@ const PurchaseOrders = () => {
               >
                 <PlusCircle size={14} />
                 Bid
+              </Button>
+              <Button
+                onClick={() => setIsCreatingInvoice(true)}
+                variant={"blue_outline"}
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Invoice
               </Button>
             </div>
           </SubHeader>
@@ -94,14 +117,26 @@ const PurchaseOrders = () => {
           )}
         </Wrapper>
       )}
-      {isCreatingPurchase && (
+      {isCreatingPurchase && !isCreatingInvoice && (
         <CreateOrder
-
+          name={"Bid"}
           cta="bid"
           onCancel={() => setIsCreatingPurchase(false)}
           onSubmit={(newOrder) => {
             setPurchases((prev) => [...prev, newOrder]);
             setIsCreatingPurchase(false);
+          }}
+        />
+      )}
+      {!isCreatingPurchase && isCreatingInvoice && (
+        <CreateOrder
+          type="purchase"
+          name={"Invoice"}
+          cta="Invoice"
+          onCancel={() => setIsCreatingInvoice(false)}
+          onSubmit={(newOrder) => {
+            setPurchases((prev) => [...prev, newOrder]);
+            setIsCreatingInvoice(false);
           }}
         />
       )}

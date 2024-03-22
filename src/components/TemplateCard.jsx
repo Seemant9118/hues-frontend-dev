@@ -13,31 +13,34 @@ const TemplateCard = ({
   type,
 }) => {
 
-  const getfileExtension = type.replace(/(.*)\//g, '');
+  const getfileExtension = type.replace(/(.*)\//g, "");
 
   return (
     <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
-      <div className="flex flex-col">
-        <p className="text-neutral-300 text-sm font-bold">Template Name</p>
+      <div className="flex items-center justify-between gap-2">
+        {/* <p className="text-neutral-300 text-sm font-bold">Template Name</p> */}
         <div className="text-[#363940] text-base font-bold flex">
-          <p className="truncate">{name}</p>
-          <p>.{getfileExtension === "pdf" ? getfileExtension : ""}</p>
+          <p className="truncate">
+            {name.substring(0, 10)}
+            {name.length > 10 && "..."}
+          </p>
         </div>
       </div>
-      <Button
-        variant="grey"
-        onClick={() => viewResponseClick()}
-        className="absolute top-20 right-3 border"
-      >
-        <MessageSquareText size={14} />
-        <p>12 Contracts</p>
-      </Button>
-      {
-        getfileExtension === "pdf" ?
+      <div className="flex items-center justify-between gap-3">
+        {getfileExtension === "pdf" ? (
           <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
-          :
+        ) : (
           <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
-      }
+        )}
+        <Button
+          variant="grey"
+          onClick={() => viewResponseClick()}
+          className="border"
+        >
+          <MessageSquareText size={14} />
+          <p>12 Contracts</p>
+        </Button>
+      </div>
 
       <div className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]">
         <ViewTemplate />

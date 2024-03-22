@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Select,
@@ -15,8 +14,10 @@ import Wrapper from "./Wrapper";
 import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
+import { Plus } from "lucide-react";
+import AddModal from "./Modals/AddModal";
 
-const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
+const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
   const [createdOrders, setCreatedOrders] = useState([]);
   const [order, setOrder] = useState({
     customer: "",
@@ -28,10 +29,9 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
     amount: "",
   });
 
-
   return (
     <Wrapper>
-      <SubHeader name="Create"></SubHeader>
+      <SubHeader name={name}></SubHeader>
       <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
         <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
         <Select
@@ -41,22 +41,41 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
           }
         >
           <SelectTrigger className="max-w-xs">
-            <SelectValue placeholder="Add New" />
+            <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
-            {
-              cta == "offer" ?
-                <>
-                  <SelectItem value="Client 1">Client 1</SelectItem>
-                  <SelectItem value="Client 2">Client 2</SelectItem>
-                </>
-                :
-                <>
-                  <SelectItem value="Vendor 1">Vendor 1</SelectItem>
-                  <SelectItem value="Vendor 2">Vendor 2</SelectItem>
-                </>
-            }
-
+            {/* <SelectItem value="add-new"> */}
+            {type === "sales" && (
+              <AddModal
+                className={"w-full border-none"}
+                type={"Add"}
+                cta="Add New"
+                modalHead="Client"
+                onSubmit={(newClient) => {}}
+              />
+            )}
+            {type === "purchase" && (
+              <AddModal
+                className={"w-full border-none"}
+                type={"Add"}
+                cta="Add New"
+                modalHead="Vendor"
+                onSubmit={(newVendor) => {}}
+              />
+            )}
+            {/* <span className="text-blue-500">+</span> Add New */}
+            {/* </SelectItem> */}
+            {cta == "offer" ? (
+              <>
+                <SelectItem value="Client 1">Client 1</SelectItem>
+                <SelectItem value="Client 2">Client 2</SelectItem>
+              </>
+            ) : (
+              <>
+                <SelectItem value="Vendor 1">Vendor 1</SelectItem>
+                <SelectItem value="Vendor 2">Vendor 2</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -71,7 +90,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
               }
             >
               <SelectTrigger className="max-w-xs gap-5">
-                <SelectValue placeholder="Select Item" />
+                <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Item 1">Item 1</SelectItem>
@@ -150,7 +169,14 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta }) => {
           Cancel
         </Button>
 
-        <SuccessModal onClose={() => onSubmit(order, cta == "offer" ? order.type = "Offer" : order.type = "Bid")}>
+        <SuccessModal
+          onClose={() =>
+            onSubmit(
+              order,
+              cta == "offer" ? (order.type = "Offer") : (order.type = "Bid")
+            )
+          }
+        >
           <Button>Create</Button>
         </SuccessModal>
       </div>

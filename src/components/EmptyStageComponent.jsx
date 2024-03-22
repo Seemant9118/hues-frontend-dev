@@ -5,7 +5,7 @@ const EmptyStageComponent = ({ heading, subHeading, subItems }) => {
         <div className="p-5 my-5 flex flex-col justify-center gap-2 rounded-md  bg-gray-100">
             <h1 className="text-sm font-bold italic">{heading}</h1>
             <div className="px-2 flex flex-col gap-1">
-                <h2 className="text-sm font-bold">{subHeading} : </h2>
+                {/* <h2 className="text-sm font-bold">{subHeading} : </h2> */}
                 <ul className="text-sm flex flex-col gap-2 px-6 text-neutral-500">
                     {
                         subItems?.map((subItem) => (

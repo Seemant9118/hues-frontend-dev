@@ -33,11 +33,11 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         className="border border-[#E1E4ED] p-10 px-5 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md"
       >
         <h1 className="w-full text-2xl text-[#414656] font-bold text-center">
-          Complete Your Profile: Unlock Hues
+          Complete your profile: unlock Hues
         </h1>
-        <p className="w-full text-xl text-[#414656] text-center">
+        {/* <p className="w-full text-xl text-[#414656] text-center">
           One account for all things <span className="font-bold">Hues</span>
-        </p>
+        </p> */}
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">

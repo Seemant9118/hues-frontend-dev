@@ -26,7 +26,7 @@ const Sidebar = () => {
       path: "/",
     },
     {
-      name: "Template",
+      name: "Templates",
       icon: <LayoutDashboard size={16} />,
       path: "/template",
     },
@@ -57,23 +57,23 @@ const Sidebar = () => {
       icon: <ScrollText size={16} />,
       path: "/purchase-orders",
     },
-    {
-      name: "Invoices",
-      icon: <ReceiptText size={16} />,
-      path: "/invoice",
-      subTab: [
-        {
-          name: "Sale Invoices",
-          icon: <BadgeIndianRupee size={16} />,
-          path: "/invoice/sales-invoices"
-        },
-        {
-          name: "Purchase Invoices",
-          icon: <ReceiptIndianRupee size={16} />,
-          path: "/invoice/purchases-invoices"
-        },
-      ],
-    },
+    // {
+    //   name: "Invoices",
+    //   icon: <ReceiptText size={16} />,
+    //   path: "/invoice",
+    //   subTab: [
+    //     {
+    //       name: "Sale Invoices",
+    //       icon: <BadgeIndianRupee size={16} />,
+    //       path: "/invoice/sales-invoices"
+    //     },
+    //     {
+    //       name: "Purchase Invoices",
+    //       icon: <ReceiptIndianRupee size={16} />,
+    //       path: "/invoice/purchases-invoices"
+    //     },
+    //   ],
+    // },
     {
       name: "Clients",
       icon: <UserRound size={16} />,
