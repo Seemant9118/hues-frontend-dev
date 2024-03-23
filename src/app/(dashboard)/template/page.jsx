@@ -130,7 +130,7 @@ export default function Home() {
             setViewForm(false);
             toast.success("Templated Added Successfully.");
           }}
-          name={"Product Template"}
+          name={"Product"}
           cta={"Template"}
         />
       )}
@@ -148,7 +148,7 @@ export default function Home() {
               <Button variant={"blue_outline"} asChild size="sm">
                 <label htmlFor="template">
                   <Upload size={14} />
-                  Upload Template
+                  Upload
                 </label>
               </Button>
               <input
