@@ -78,7 +78,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
             )}
           </SelectContent>
         </Select>
-        {name === "Invoice" && (
+        {/* {name === "Invoice" && (
           <>
             <Label>Order</Label>
             <Select
@@ -97,7 +97,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
               </SelectContent>
             </Select>
           </>
-        )}
+        )} */}
       </div>
       <div className="p-4 rounded-sm border-neutral-200 border flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4 ">
