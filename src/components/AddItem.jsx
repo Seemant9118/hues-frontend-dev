@@ -32,7 +32,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
     expiry: "",
     weight: "",
     length: "",
-    bredth: "",
+    breadth: "",
     height: "",
     application: "",
     units: "",
@@ -66,7 +66,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
           cta === "Item" && (
             <div className="flex flex-col gap-4 ">
               <div>
-                <Label className="flex-shrink-0">Select Item Type</Label> <span className="text-red-600">*</span>
+                <Label className="flex-shrink-0">Type</Label> <span className="text-red-600">*</span>
               </div>
 
               <Select
@@ -230,10 +230,10 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
           value={item.length}
         />
         <InputWithLabel
-          name="Bredth (cm)"
-          id="bredth"
+          name="Breadth (cm)"
+          id="breadth"
           onChange={onChange}
-          value={item.bredth}
+          value={item.breadth}
         />
         <InputWithLabel
           name="Height (cm)"
@@ -249,13 +249,13 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
         value={item.application}
       />
 
-      <div className="h-[1px] bg-neutral-300 mt-6"></div>
+      <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
-      <div className="flex justify-end items-center gap-4 py-5 mt-auto">
+      <div className="flex justify-end items-center gap-4 ">
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <Button type="submit">Add {cta}</Button>
+        <Button type="submit">Add</Button>
       </div>
     </form>
   );

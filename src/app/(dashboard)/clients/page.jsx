@@ -44,7 +44,7 @@ const ClientPage = () => {
       <SubHeader name={"Clients"}>
         <div className="flex items-center justify-center gap-4">
           <AddModal
-            type={"Add Client"}
+            type={"Add"}
             cta="Add"
             modalHead="Client"
             onSubmit={(newClient) =>

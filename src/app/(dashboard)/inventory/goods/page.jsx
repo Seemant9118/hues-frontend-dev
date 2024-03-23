@@ -122,7 +122,7 @@ function Goods() {
               setProducts((products) => [...products, newProduct]);
             LocalStorageService.set("products", [...products, newProduct]);
           }}
-          name={"Add Item"}
+          name={"Item"}
           cta={"Item"}
         />
       )}

@@ -91,7 +91,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
           <Button type="submit" variant="outline" className="w-full text-[#5532E8] font-bold border-[#5532E8] hover:text-[#5532E8] rounded">
             <Image src={"/digi-icon.png"} alt="digi-icon" width={25} height={20} />
 
-            Login with Digilocker
+            Login with DigiLocker
           </Button>
         </form>
       ) : (
@@ -124,7 +124,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
       <div className="w-full py-2 px-4 flex justify-center gap-1 font-bold text-[#414656]">
         Not a Hues subscriber yet?{" "}
         <span className="text-[#288AF9] hover:underline hover:cursor-pointer">
-          Sign-Up
+          Sign-up
         </span>
       </div>
 

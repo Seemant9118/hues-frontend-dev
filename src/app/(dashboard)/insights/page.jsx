@@ -34,7 +34,7 @@ const InsightsPage = () => {
 
   return (
     <div>
-      <SubHeader name="Insight" />
+      <SubHeader name="Insights" />
       <EmptyStageComponent
         heading={InsightEmptyStageData.heading}
         desc={InsightEmptyStageData.desc}

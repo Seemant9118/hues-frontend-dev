@@ -78,6 +78,26 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
             )}
           </SelectContent>
         </Select>
+        {name === "Invoice" && (
+          <>
+            <Label>Order</Label>
+            <Select
+              value={order.customer}
+              onValueChange={(value) =>
+                setOrder((prev) => ({ ...prev, customer: value }))
+              }
+            >
+              <SelectTrigger className="max-w-xs">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Ex Item 1">External Item</SelectItem>
+                <SelectItem value="Item 2">Internal Item 1</SelectItem>
+                <SelectItem value="Item 3">Internal Item 2</SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        )}
       </div>
       <div className="p-4 rounded-sm border-neutral-200 border flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4 ">

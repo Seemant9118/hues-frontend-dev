@@ -43,7 +43,7 @@ const VendorsPage = () => {
       <SubHeader name={"Vendors"}>
         <div className="flex items-center justify-center gap-4">
           <AddModal
-            type={"Add Vendor"}
+            type={"Add"}
             cta="Add"
             modalHead="Vendor"
             onSubmit={(newVendors) =>
