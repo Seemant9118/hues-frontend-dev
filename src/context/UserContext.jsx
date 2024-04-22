@@ -1,3 +1,4 @@
+"use client";
 import { LocalStorageService } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -7,13 +8,13 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [userProfile, setUserProfile] = useState(null);
-
+  const [profile, setProfile] = useState(null);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
     const token = LocalStorageService.get("token");
     const profile = LocalStorageService.get("user_profile");
+
     if (!token) {
       router.push(`/login?redirect=${pathname}`);
     }
@@ -28,7 +29,7 @@ export const UserProvider = ({ children }) => {
   //   };
 
   return (
-    <UserContext.Provider value={{ userProfile, setUserProfile }}>
+    <UserContext.Provider value={{ profile, setProfile }}>
       {token ? children : null}
     </UserContext.Provider>
   );
