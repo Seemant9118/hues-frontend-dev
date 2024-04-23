@@ -25,6 +25,9 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { LocalStorageService } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { goods_api } from "@/api/inventories/goods/goods";
+import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
 
 function Goods() {
   const [products, setProducts] = useState([]);
@@ -32,6 +35,12 @@ function Goods() {
 
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
+
+  const {isPending,data,error} = useQuery({
+    queryKey:[goods_api.getAllProductGoods.endpointKey],
+    queryFn: () => GetAllProductGoods(),
+  });
+
 
   const handleChange = async (file) => {
     setFiles((prev) => [...prev, file]);
@@ -101,7 +110,7 @@ function Goods() {
           {products ? (
             <DataTable
               columns={GoodsColumns}
-              data={products.filter((product) => product.type === "goods")}
+              data={data.data.data}
             />
           ) : (
             <EmptyStageComponent

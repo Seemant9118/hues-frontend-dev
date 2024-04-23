@@ -52,13 +52,13 @@ export const ClientsColumns = [
     },
   },
   {
-    accessorKey: "phone",
+    accessorKey: "mobileNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PHONE" />
     ),
     cell: ({ row }) => {
-      const phone = row.original.phone;
-      return <p className="flex-shrink-0">{phone}</p>;
+      const mobile_number = row.original.mobileNumber;
+      return <p className="flex-shrink-0">{mobile_number}</p>;
     },
   },
   {
@@ -68,13 +68,13 @@ export const ClientsColumns = [
     ),
   },
   {
-    accessorKey: "pan",
+    accessorKey: "panNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PAN" />
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: "gstNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST No." />
     ),

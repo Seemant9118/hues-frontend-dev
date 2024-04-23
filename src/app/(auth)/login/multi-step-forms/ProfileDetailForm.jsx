@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
 import DatePickers from '@/components/DatePickers';
-import { Phone, CreditCard, CalendarDays, Cross } from "lucide-react";
+import { Phone, CreditCard, CalendarDays, Cross, Info } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Tooltips from "@/components/Tooltips";
@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { Oval } from "react-loader-spinner";
 import { useUser } from "@/context/UserContext";
+
 
 export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
@@ -37,6 +38,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       toast.success("Your Profile Completed!");
       // after successfully log in redirect to homepage
       router.push('/');
+      LocalStorageService.set("enterprise_Id",data.data.data.user.enterpriseId);
     },
     onError: (error) => {
       toast.error("Oops, Something went wrong!");
@@ -85,7 +87,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
-            Username <span className="text-red-600">*</span>  <Tooltips content="Your full Name" />
+            Username <span className="text-red-600">*</span>  <Tooltips trigger={<Info size={12} />} content="Your full Name" />
           </Label>
           <div className="relative">
             <Input
@@ -103,7 +105,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
-            Permanent Account Number <span className="text-red-600">*</span>  <Tooltips content="PAN: Your universal legal identifier for all government and financial interactions on Hues." />
+            Permanent Account Number <span className="text-red-600">*</span>  <Tooltips trigger={<Info size={12} />} content="PAN: Your universal legal identifier for all government and financial interactions on Hues." />
           </Label>
           <div className="relative">
             <Input
@@ -138,7 +140,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         {!isThirdPartyLogin && (
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
-              Aadhaar Number <span className="text-red-600">*</span> <Tooltips content="Aadhaar necessary to your profile" />
+              Aadhaar Number <span className="text-red-600">*</span> <Tooltips trigger={<Info size={12} />} content="Aadhaar necessary to your profile" />
             </Label>
             <div className="relative">
               <Input
@@ -157,7 +159,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="dob" className="text-[#414656] font-medium flex items-center gap-1">
-            Date of Birth <span className="text-red-600">*</span> <Tooltips content="Hues requires age verification for secure transactions, ensuring a trustworthy user experience." />
+            Date of Birth <span className="text-red-600">*</span> <Tooltips trigger={<Info size={12} />} content="Hues requires age verification for secure transactions, ensuring a trustworthy user experience." />
           </Label>
 
           <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -168,7 +170,7 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="email" className="text-[#414656] font-medium flex items-center gap-1">
-            Email Address <span className="text-red-600">*</span> <Tooltips content="Your email: The gateway to important Hues communications and document deliveries." />
+            Email Address <span className="text-red-600">*</span> <Tooltips trigger={<Info size={12} />} content="Your email: The gateway to important Hues communications and document deliveries." />
           </Label>
           <div className="relative">
             <Input

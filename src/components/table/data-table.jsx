@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/table/DataTablePagination";
 
-export function DataTable({ columns, data, page }) {
+export function DataTable({ columns, data,page }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 

@@ -4,9 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Bell, UserCircle } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { LocalStorageService } from "@/lib/utils";
+
+
 
 const Header = () => {
   const router = useRouter();
+
+  const logout = () => {
+    LocalStorageService.clear();
+    router.push("/login");
+  }
+
   return (
     <div className="px-10 py-5 shadow-[0_4px_6px_0_#3288ED1A] flex items-center justify-between bg-white">
       <Link href={"/"}>
@@ -23,9 +37,20 @@ const Header = () => {
         <Button variant={"link"} size={"icon"} className="your-notification">
           <Bell className="text-grey" />
         </Button>
-        <Button variant={"link"} size={"icon"} className="your-profile">
-          <UserCircle className="text-grey" onClick={() => router.push('/login')}/>
-        </Button>
+
+        <Popover>
+          <PopoverTrigger>
+            <Button variant={"link"} size={"icon"} className="your-profile">
+              <UserCircle className="text-grey" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent >
+            <ul className="hover:bg-slate-300 hover:cursor-pointer w-full p-2 rounded-lg">
+              <li onClick={logout}>Logout</li>
+            </ul>
+          </PopoverContent>
+        </Popover>
+
       </div>
     </div>
   );

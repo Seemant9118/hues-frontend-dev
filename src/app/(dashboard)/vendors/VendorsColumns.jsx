@@ -50,7 +50,7 @@ export const VendorsColumns = [
     },
   },
   {
-    accessorKey: "phone",
+    accessorKey: "mobileNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PHONE" />
     ),
@@ -62,13 +62,13 @@ export const VendorsColumns = [
     ),
   },
   {
-    accessorKey: "pan",
+    accessorKey: "panNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PAN" />
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: "gstNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST No." />
     ),

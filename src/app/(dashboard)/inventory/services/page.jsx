@@ -25,12 +25,20 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { LocalStorageService } from "@/lib/utils";
+import { services_api } from "@/api/inventories/services/services";
+import { GetAllProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
+import { useQuery } from "@tanstack/react-query";
 
 function Services() {
   const [products, setProducts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
+
+  const {isPending,data,error} = useQuery({
+    queryKey:[services_api.getAllProductServices.endpointKey],
+    queryFn: () => GetAllProductServices(),
+  });
 
   const handleChange = async (file) => {
     setFiles((prev) => [...prev, file]);

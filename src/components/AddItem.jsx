@@ -17,6 +17,8 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
 
   const [item, setItem] = useState({
     // mandatory data
+    enterprise_id: "",
+    template_id: "",
     product_name: "",
     manufacturer_name: "",
     service_name: "",
@@ -24,7 +26,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
     hsn_code: "",
     sac: "",
     rate: "",
-    gst: "",
+    gst_percentage: "",
     amount: "",
     type: "goods",
     // optional data
@@ -40,10 +42,25 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
   });
 
 
+
+
   const onChange = (e) => {
     const { id, value } = e.target;
     setItem(values => ({ ...values, [id]: value }));
   };
+
+  const handleSubmit = (e) => {
+    if (item.type === "goods") {
+      // goodsdata
+      const { service_name, sac, type, units, ...goodsData } = item;
+      // mutate goods
+      return ;
+    }
+
+    // servicesdata
+    const { product_name, manufacturer_name, hsn_code, type, units, ...servicesData } = item;
+    // mutate service
+  }
 
   // useEffect(() => {
   //   console.log(item)
@@ -92,7 +109,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
 
       {/* mandatory data fields */}
       {
-        item.type == "goods" || item.type == "" ?
+        item.type == "goods" ?
           // for goods
           (<>
             <div className="grid grid-cols-2 gap-2.5">
@@ -135,10 +152,10 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
               />
               <InputWithLabel
                 name="GST (%)"
-                id="gst"
+                id="gst_percentage"
                 required={true}
                 onChange={onChange}
-                value={item.gst}
+                value={item.gst_percentage}
               />
               <InputWithLabel
                 name="Amount"
@@ -255,7 +272,7 @@ const AddItem = ({ name, onSubmit, onCancel, cta }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-        <Button type="submit">Add</Button>
+        <Button type="submit">Add </Button>
       </div>
     </form>
   );

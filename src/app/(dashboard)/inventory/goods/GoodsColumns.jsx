@@ -78,7 +78,7 @@ export const GoodsColumns = [
         ),
     },
     {
-        accessorKey: "gst",
+        accessorKey: "gst_percentage",
         header: ({ column }) => (
             <DataTableColumnHeader column={column} title="GST (%)" />
         ),
