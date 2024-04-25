@@ -9,7 +9,10 @@ import React, { useState } from "react";
 import { ClientsColumns } from "./ClientsColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import { useQuery } from "@tanstack/react-query";
-import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import {
+  CreateEnterpriseUser,
+  GetEnterpriseUsers,
+} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import { LocalStorageService } from "@/lib/utils";
 
@@ -52,17 +55,25 @@ const ClientPage = () => {
       }),
     select: (data) => data.data.data,
   });
-  
+
   let formattedData = [];
-  if(data) {
-    formattedData = data.flatMap((user) => user.mappedEnterprise);
+  if (data) {
+    formattedData = data.flatMap((user) => ({
+      ...user.mappedEnterprise,
+      userId: user.id,
+    }));
   }
 
   return (
     <Wrapper>
       <SubHeader name={"Clients"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Add Client"} cta="client" btnName="Add" />
+          <AddModal
+            type={"Add Client"}
+            cta="client"
+            btnName="Add"
+            mutationFunc={CreateEnterpriseUser}
+          />
         </div>
       </SubHeader>
       {formattedData.length !== 0 ? (

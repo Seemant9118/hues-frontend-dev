@@ -1,7 +1,7 @@
 export const services_api = {
     // 1. get all ProductGoods 
     getAllProductServices: {
-        endpoint: `/api/v1/inventory/services/getservices`,
+        endpoint: `/api/v1/inventory/services/getservices/`,
         endpointKey: "get_all_productservices"
     },
     // 2. get ProductGoods through id

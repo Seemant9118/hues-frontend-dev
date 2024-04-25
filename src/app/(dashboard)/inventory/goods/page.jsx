@@ -4,7 +4,7 @@ import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { Columns } from "@/components/columns";
-import { GoodsColumns } from "./GoodsColumns";
+import { useGoodsColumns } from "./GoodsColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,20 +27,22 @@ import { FileUploader } from "react-drag-drop-files";
 import { LocalStorageService } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { goods_api } from "@/api/inventories/goods/goods";
-import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
+import {
+  CreateProductGoods,
+  DeleteProductGoods,
+  GetAllProductGoods,
+  UpdateProductGoods,
+} from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
+import EditItem from "@/components/EditItem";
 
 function Goods() {
-  const [products, setProducts] = useState([]);
-  const [isAdding, setIsAdding] = useState(false);
+  const enpterpriseId = LocalStorageService.get("enterprise_Id");
 
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [goodsToEdit, setGoodsToEdit] = useState(null);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
-
-  const {isPending,data,error} = useQuery({
-    queryKey:[goods_api.getAllProductGoods.endpointKey],
-    queryFn: () => GetAllProductGoods(),
-  });
-
 
   const handleChange = async (file) => {
     setFiles((prev) => [...prev, file]);
@@ -74,18 +76,17 @@ function Goods() {
     ],
   };
 
-  useEffect(() => {
-    const filteredData = () => {
-      const products = LocalStorageService.get("products");
-      setProducts(products);
-    };
-    filteredData();
-  }, []);
-  console.log(products);
+  const { data, isLoading, isSuccess, error } = useQuery({
+    queryKey: [goods_api.getAllProductGoods.endpointKey],
+    queryFn: () => GetAllProductGoods(enpterpriseId),
+    select: (data) => data.data.data,
+  });
+
+  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
     <>
-      {!isAdding && !isUploading && (
+      {!isAdding && !isUploading && !isEditing && (
         <Wrapper>
           <SubHeader name={"Goods"}>
             <div className="flex items-center justify-center gap-4">
@@ -107,11 +108,8 @@ function Goods() {
               </Button>
             </div>
           </SubHeader>
-          {products ? (
-            <DataTable
-              columns={GoodsColumns}
-              data={data.data.data}
-            />
+          {data ? (
+            <DataTable columns={GoodsColumns} data={data} />
           ) : (
             <EmptyStageComponent
               heading={InventoryEmptyStageData.heading}
@@ -122,19 +120,26 @@ function Goods() {
           )}
         </Wrapper>
       )}
+
       {isAdding && (
         <AddItem
-          onCancel={() => setIsAdding(false)}
-          onSubmit={(newProduct) => {
-            setIsAdding(false);
-            if (newProduct.type === "goods")
-              setProducts((products) => [...products, newProduct]);
-            LocalStorageService.set("products", [...products, newProduct]);
-          }}
+          setIsAdding={setIsAdding}
+          mutationFunc={CreateProductGoods}
           name={"Item"}
           cta={"Item"}
         />
       )}
+
+      {isEditing && (
+        <EditItem
+          setIsEditing={setIsEditing}
+          goodsToEdit={goodsToEdit}
+          setGoodsToEdit={setGoodsToEdit}
+          mutationFunc={UpdateProductGoods}
+          queryKey={[goods_api.getAllProductGoods.endpointKey]}
+        />
+      )}
+
       {isUploading && (
         <Wrapper className={"justify-start items-center"}>
           <FileUploader

@@ -9,7 +9,10 @@ import EmptyStageComponent from "@/components/EmptyStageComponent";
 import { BookUser, Settings, Eye, HeartHandshake } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import {
+  CreateEnterpriseUser,
+  GetEnterpriseUsers,
+} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
 
 const VendorsPage = () => {
@@ -55,25 +58,33 @@ const VendorsPage = () => {
 
   let formattedData = [];
   if (data) {
-    formattedData = data.flatMap((user) => user.mappedEnterprise);
+    formattedData = data.flatMap((user) => ({
+      ...user.mappedEnterprise,
+      userId: user.id,
+    }));
   }
 
   return (
     <Wrapper>
       <SubHeader name={"Vendors"}>
         <div className="flex items-center justify-center gap-4">
-          <AddModal type={"Add Vendor"} cta="vendor" btnName="Add" />
+          <AddModal
+            type={"Add Vendor"}
+            cta="vendor"
+            btnName="Add"
+            mutationFunc={CreateEnterpriseUser}
+          />
         </div>
       </SubHeader>
-      {formattedData.length === 0 ? (
+      {formattedData.length !== 0 ? (
+        <DataTable columns={VendorsColumns} data={formattedData} />
+      ) : (
         <EmptyStageComponent
           heading={VendorsEmptyStageData.heading}
           desc={VendorsEmptyStageData.desc}
           subHeading={VendorsEmptyStageData.subHeading}
           subItems={VendorsEmptyStageData.subItems}
         />
-      ) : (
-        <DataTable columns={VendorsColumns} data={formattedData} />
       )}
     </Wrapper>
   );

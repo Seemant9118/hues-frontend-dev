@@ -4,7 +4,7 @@ import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { Columns } from "@/components/columns";
-import { ServicesColumns } from "./ServicesColumns";
+import { useServicesColumns } from "./ServicesColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,37 +21,28 @@ import {
   FileCheck,
   DatabaseZap,
 } from "lucide-react";
-import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { LocalStorageService } from "@/lib/utils";
 import { services_api } from "@/api/inventories/services/services";
-import { GetAllProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
+import { CreateProductServices, GetAllProductServices, UpdateProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { useQuery } from "@tanstack/react-query";
+import EditItem from "@/components/EditItem";
+
 
 function Services() {
-  const [products, setProducts] = useState([]);
+  const enpterpriseId = LocalStorageService.get("enterprise_Id");
+
   const [isAdding, setIsAdding] = useState(false);
+  const [isEditing,setIsEditing] = useState(false);
+  const [servicesToEdit,setServicesToEdit] = useState(null);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
 
-  const {isPending,data,error} = useQuery({
-    queryKey:[services_api.getAllProductServices.endpointKey],
-    queryFn: () => GetAllProductServices(),
-  });
-
+  
   const handleChange = async (file) => {
     setFiles((prev) => [...prev, file]);
   };
-
-  useEffect(() => {
-    const filteredData = () => {
-      const products = LocalStorageService.get("products");
-      setProducts(products || []);
-    };
-    filteredData();
-  }, []);
-  // console.log(products)
 
   const InventoryEmptyStageData = {
     heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
@@ -81,9 +72,18 @@ function Services() {
     ],
   };
 
+
+  const { data, isLoading, isSuccess, error } = useQuery({
+    queryKey: [services_api.getAllProductServices.endpointKey],
+    queryFn: () => GetAllProductServices(enpterpriseId),
+    select: (data) => data.data.data,
+  });
+
+ const ServicesColumns = useServicesColumns(setIsEditing,setServicesToEdit);
+
   return (
     <>
-      {!isAdding && !isUploading && (
+      {!isAdding && !isUploading && !isEditing && (
         <Wrapper>
           <SubHeader name={"Services"}>
             <div className="flex items-center justify-center gap-4">
@@ -105,11 +105,8 @@ function Services() {
               </Button>
             </div>
           </SubHeader>
-          {products ? (
-            <DataTable
-              columns={ServicesColumns}
-              data={products.filter((product) => product.type === "services")}
-            />
+          {data ? (
+            <DataTable columns={ServicesColumns} data={data} />
           ) : (
             <EmptyStageComponent
               heading={InventoryEmptyStageData.heading}
@@ -122,17 +119,23 @@ function Services() {
       )}
       {isAdding && (
         <AddItem
-          onCancel={() => setIsAdding(false)}
-          onSubmit={(newProduct) => {
-            setIsAdding(false);
-            if (newProduct.type === "services")
-              setProducts((products) => [...products, newProduct]);
-            LocalStorageService.set("products", [...products, newProduct]);
-          }}
+          setIsAdding={setIsAdding}
+          mutationFunc={CreateProductServices}
           name={"Item"}
           cta={"Item"}
         />
       )}
+      {isEditing && (
+        <EditItem
+          setIsEditing={setIsEditing}
+          servicesToEdit={servicesToEdit}
+          setServicesToEdit={setServicesToEdit}
+          mutationFunc={UpdateProductServices}
+          queryKey={[services_api.getAllProductServices.endpointKey]}
+        />
+      )
+
+      }
       {isUploading && (
         <Wrapper className={"justify-start items-center"}>
           <FileUploader
