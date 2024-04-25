@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Layers2, Fingerprint } from "lucide-react";
 import InputWithLabel from "@/components/InputWithLabel";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CreateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
@@ -47,7 +47,7 @@ const AddModal = ({ type, cta, modalHead, onSubmit, btnName }) => {
     user_type: cta,
   });
   const [errorMsg, setErrorMsg] = useState("*Mandatory Information");
-
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data) => CreateEnterpriseUser(data),
     onSuccess: () => {
@@ -56,17 +56,6 @@ const AddModal = ({ type, cta, modalHead, onSubmit, btnName }) => {
           ? "Client Added Successfully"
           : "Vendor Added Successfully"
       );
-    },
-    onError: (error) => {
-      toast.error("Something went wrong");
-    },
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!errorMsg) {
-      mutation.mutate(enterpriseData);
-      setOpen((prev) => !prev);
       setEnterPriseData({
         enterprise_id: "",
         name: "",
@@ -78,6 +67,21 @@ const AddModal = ({ type, cta, modalHead, onSubmit, btnName }) => {
         gst_number: "",
         user_type: "",
       });
+
+      setOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error("Something went wrong");
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!errorMsg) {
+      mutation.mutate(enterpriseData);
     }
   };
 

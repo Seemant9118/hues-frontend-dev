@@ -5,12 +5,11 @@ import Image from "next/image";
 import IndexForm from "./multi-step-forms/IndexForm";
 import ProfileDetailForm from "./multi-step-forms/ProfileDetailForm";
 import OTPVerificationForm from "./multi-step-forms/OTPVerificationForm";
-
+import CompleteKyc from "./multi-step-forms/CompleteKyc";
 
 export default function Login() {
   const [currStep, setCurrStep] = useState(1);
   const [isThirdPartyLogin, setIsThirdPartyLogin] = useState(false);
-
 
   return (
     <>
@@ -51,6 +50,7 @@ export default function Login() {
             setCurrStep={setCurrStep}
           />
         )}
+        {currStep === 4 && <CompleteKyc />}
       </div>
     </>
   );

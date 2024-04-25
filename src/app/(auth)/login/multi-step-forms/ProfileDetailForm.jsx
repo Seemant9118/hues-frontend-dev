@@ -1,35 +1,35 @@
 "use client";
-import { useState } from "react";
+import DatePickers from "@/components/DatePickers";
+import Tooltips from "@/components/Tooltips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
-import DatePickers from '@/components/DatePickers';
-import { Phone, CreditCard, CalendarDays, Cross, Info } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-import Tooltips from "@/components/Tooltips";
-import { Check, X, CheckCircle, CheckCircle2, Trash2, UserRound } from "lucide-react";
-import moment from "moment";
-import { useMutation } from "@tanstack/react-query";
 import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
+import { useMutation } from "@tanstack/react-query";
+import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
+import moment from "moment";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Oval } from "react-loader-spinner";
-import { useUser } from "@/context/UserContext";
+import { toast } from "sonner";
 
-
-export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
-
+export default function ProfileDetailForm({
+  setCurrStep,
+  params,
+  isThirdPartyLogin,
+}) {
   const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
-  
-  const [date, setDate] = useState(moment(new Date()).format('DD-MM-YYYY'));
+
+  const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
   const [userData, setUserData] = useState({
     user_id: userId,
     name: "",
     email: "",
     aadhaar_number: "",
     date_of_birth: date.toString(),
-    pan_number: ""
+    pan_number: "",
   });
 
   const mutation = useMutation({
@@ -37,13 +37,17 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
     onSuccess: (data) => {
       toast.success("Your Profile Completed!");
       // after successfully log in redirect to homepage
-      router.push('/');
-      LocalStorageService.set("enterprise_Id",data.data.data.user.enterpriseId);
+      // router.push('/');
+      LocalStorageService.set(
+        "enterprise_Id",
+        data.data.data.user.enterpriseId
+      );
+      setCurrStep(4);
     },
     onError: (error) => {
       toast.error("Oops, Something went wrong!");
-    }
-  })
+    },
+  });
 
   const handleChange = (e) => {
     let name = e.target.name;
@@ -51,23 +55,22 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
     // aadhaar_number with masked 'x' value
     if (name == "aadhaar_number") {
-      const maskedValue = 'xxxxxxxx';
+      const maskedValue = "xxxxxxxx";
       if (value.length <= 8) {
         const newValue = maskedValue.slice(0, value.length);
-        setUserData(values => ({ ...values, [name]: newValue }));
+        setUserData((values) => ({ ...values, [name]: newValue }));
       } else {
         const newValue = maskedValue.slice(0, value.length) + value.slice(8);
-        setUserData(values => ({ ...values, [name]: newValue }));
+        setUserData((values) => ({ ...values, [name]: newValue }));
       }
       return;
     }
 
-    setUserData(values => ({ ...values, [name]: value }));
-  }
+    setUserData((values) => ({ ...values, [name]: value }));
+  };
 
   const login = (e) => {
     e.preventDefault();
-    
     mutation.mutate(userData);
   };
 
@@ -84,10 +87,13 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
           One account for all things <span className="font-bold">Hues</span>
         </p> */}
 
-
         <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
-            Username <span className="text-red-600">*</span>  <Tooltips trigger={<Info size={12} />} content="Your full Name" />
+          <Label
+            htmlFor="mobile-number"
+            className="text-[#414656] font-medium flex items-center gap-1"
+          >
+            Username <span className="text-red-600">*</span>{" "}
+            <Tooltips trigger={<Info size={12} />} content="Your full Name" />
           </Label>
           <div className="relative">
             <Input
@@ -104,8 +110,15 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
-            Permanent Account Number <span className="text-red-600">*</span>  <Tooltips trigger={<Info size={12} />} content="PAN: Your universal legal identifier for all government and financial interactions on Hues." />
+          <Label
+            htmlFor="mobile-number"
+            className="text-[#414656] font-medium flex items-center gap-1"
+          >
+            Permanent Account Number <span className="text-red-600">*</span>{" "}
+            <Tooltips
+              trigger={<Info size={12} />}
+              content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
+            />
           </Label>
           <div className="relative">
             <Input
@@ -139,8 +152,15 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         )} */}
         {!isThirdPartyLogin && (
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="mobile-number" className="text-[#414656] font-medium flex items-center gap-1">
-              Aadhaar Number <span className="text-red-600">*</span> <Tooltips trigger={<Info size={12} />} content="Aadhaar necessary to your profile" />
+            <Label
+              htmlFor="mobile-number"
+              className="text-[#414656] font-medium flex items-center gap-1"
+            >
+              Aadhaar Number <span className="text-red-600">*</span>{" "}
+              <Tooltips
+                trigger={<Info size={12} />}
+                content="Aadhaar necessary to your profile"
+              />
             </Label>
             <div className="relative">
               <Input
@@ -158,19 +178,36 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
         )}
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="dob" className="text-[#414656] font-medium flex items-center gap-1">
-            Date of Birth <span className="text-red-600">*</span> <Tooltips trigger={<Info size={12} />} content="Hues requires age verification for secure transactions, ensuring a trustworthy user experience." />
+          <Label
+            htmlFor="dob"
+            className="text-[#414656] font-medium flex items-center gap-1"
+          >
+            Date of Birth <span className="text-red-600">*</span>{" "}
+            <Tooltips
+              trigger={<Info size={12} />}
+              content="Hues requires age verification for secure transactions, ensuring a trustworthy user experience."
+            />
           </Label>
 
           <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-            <DatePickers selected={date} onChange={date => setDate(moment(date).format('DD-MM-YYYY'))} />
+            <DatePickers
+              selected={date}
+              onChange={(date) => setDate(moment(date).format("DD-MM-YYYY"))}
+            />
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="email" className="text-[#414656] font-medium flex items-center gap-1">
-            Email Address <span className="text-red-600">*</span> <Tooltips trigger={<Info size={12} />} content="Your email: The gateway to important Hues communications and document deliveries." />
+          <Label
+            htmlFor="email"
+            className="text-[#414656] font-medium flex items-center gap-1"
+          >
+            Email Address <span className="text-red-600">*</span>{" "}
+            <Tooltips
+              trigger={<Info size={12} />}
+              content="Your email: The gateway to important Hues communications and document deliveries."
+            />
           </Label>
           <div className="relative">
             <Input
@@ -188,19 +225,19 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
           </div>
         </div>
         <Button type="submit" className="w-full">
-          {
-            mutation.isPending ?
-              <Oval
-                visible={true}
-                height="20"
-                width="20"
-                color="#fff"
-                ariaLabel="oval-loading"
-                wrapperStyle={{}}
-                wrapperClass=""
-              /> :
-              'Submit'
-          }
+          {mutation.isPending ? (
+            <Oval
+              visible={true}
+              height="20"
+              width="20"
+              color="#fff"
+              ariaLabel="oval-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          ) : (
+            "Submit"
+          )}
         </Button>
       </form>
 
@@ -218,4 +255,4 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
       </div> */}
     </>
   );
-};
+}
