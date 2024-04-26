@@ -26,11 +26,11 @@ const AddModal = ({
   mutationFunc,
   userData,
   userId,
-  setIsMenuOpen,
 }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const [open, setOpen] = useState(false);
+  
 
   const [enterpriseData, setEnterPriseData] = useState(
     btnName !== "Edit"
@@ -99,7 +99,6 @@ const AddModal = ({
       }
 
       toast.success("Edited Successfully");
-      setIsMenuOpen((prev) => !prev);
       setOpen((prev) => !prev);
       setEnterPriseData({
         enterprise_id: "",

@@ -108,7 +108,7 @@ function Goods() {
               </Button>
             </div>
           </SubHeader>
-          {data ? (
+          {data && data.length !== 0 ? (
             <DataTable columns={GoodsColumns} data={data} />
           ) : (
             <EmptyStageComponent

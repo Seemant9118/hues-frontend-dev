@@ -105,7 +105,7 @@ function Services() {
               </Button>
             </div>
           </SubHeader>
-          {data ? (
+          {data && data.length !== 0  ? (
             <DataTable columns={ServicesColumns} data={data} />
           ) : (
             <EmptyStageComponent

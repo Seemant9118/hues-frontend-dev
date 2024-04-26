@@ -1,4 +1,5 @@
 "use client";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import AddModal from "@/components/Modals/AddModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DeleteEnterpriseUser, UpdateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { Edit3, MoreHorizontal, MoreVertical, Trash2 } from "lucide-react";
-import { useState } from "react";
+
 
 export const VendorsColumns = [
   {
@@ -83,10 +84,9 @@ export const VendorsColumns = [
     cell: ({ row }) => {
       const id = row.original.userId;
       const name = row.original.name;
-      const [isMenuOpen, setIsMenuOpen] = useState(false);
 
       return (
-        <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
@@ -100,13 +100,12 @@ export const VendorsColumns = [
               mutationFunc={UpdateEnterpriseUser}
               userData={row.original}
               userId={row.original.userId}
-              setIsMenuOpen={setIsMenuOpen}
             />
             <ConfirmAction
               name={name}
               id={id}
+              mutationKey={enterprise_user.getEnterpriseUsers.endpointKey}
               mutationFunc={DeleteEnterpriseUser}
-              setIsMenuOpen={setIsMenuOpen}
             />
           </DropdownMenuContent>
         </DropdownMenu>

@@ -28,7 +28,6 @@ const ConfirmAction = ({ name, id,mutationKey, mutationFunc }) => {
     onSuccess: () => {
       toast.success("Deleted successfully");
       setOpen((prev) => !prev);
-      // setIsMenuOpen((prev) => !prev);
       queryClient.invalidateQueries({
         queryKey: [mutationKey],
       });
