@@ -5,30 +5,29 @@ export function getTemplates() {
   return APIinstance.get(template_api.getTemplates.endpoint);
 }
 
-export function getTemplate({ id }) {
+export function getTemplate(id) {
   return APIinstance.get(template_api.getTemplate.endpoint + `${id}`);
 }
 
-export function uploadTemplate({ data }) {
-  return APIinstance.post(template_api.uploadTemplate.endpoint, data);
+export function uploadTemplate(data, id) {
+  return APIinstance.post(template_api.uploadTemplate.endpoint + `${id}`, data);
 }
 
-export function updateTemplate({ id, data }) {
+export function updateTemplate(data, id) {
   return APIinstance.put(template_api.updateTemplate.endpoint + `${id}`, data);
 }
 
-export function deleteTemplate({ id }) {
+export function deleteTemplate(id) {
   return APIinstance.delete(template_api.deleteTemplate.endpoint + `${id}`);
 }
 
-export function createFormResponse({ data }) {
+export function createFormResponse(data) {
   return APIinstance.post(template_api.createFormResponse.endpoint, data);
 }
 
-export function updateFormResponse({ id, data }) {
+export function updateFormResponse(data, id) {
   return APIinstance.put(
     template_api.updateFormResponse.endpoint + `${id}`,
     data
   );
 }
-

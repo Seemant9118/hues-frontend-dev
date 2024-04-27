@@ -7,25 +7,25 @@ export const template_api = {
 
   // 2. get template by id
   getTemplate: {
-    endpoint: `/api/v1/template/form/get/{id}`,
+    endpoint: `/api/v1/template/form/get/`,
     endpointKey: "get_template",
   },
 
   // 3. Upload template
   uploadTemplate: {
-    endpoint: `/api/v1/template/form/upload`,
+    endpoint: `/api/v1/template/form/upload/?enterprise_id=`,
     endpointKey: "upload_template",
   },
 
   // 4. update template
   updateTemplate: {
-    endpoint: `/api/v1/template/form/update/{id}`,
+    endpoint: `/api/v1/template/form/update/`,
     endpointKey: "update_template",
   },
 
   // 5. delete template
   deleteTemplate: {
-    endpoint: `/api/v1/template/form/delete/{id}`,
+    endpoint: `/api/v1/template/form/delete/`,
     endpointKey: "delete_template",
   },
 
@@ -37,7 +37,7 @@ export const template_api = {
 
   //   7. update form response
   updateFormResponse: {
-    endpoint: `/api/v1/template/formresponse/update/{id}`,
+    endpoint: `/api/v1/template/formresponse/update/`,
     endpointKey: "update_form_response",
   },
 };
