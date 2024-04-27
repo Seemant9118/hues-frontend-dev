@@ -30,7 +30,7 @@ const TemplateCard = ({
         {getfileExtension === "pdf" ? (
           <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
         ) : (
-          <Image src={"/csv_png.png"} alt="Template" height={55} width={60} />
+          <Image src={"/xlsx_png.png"} alt="Template" height={55} width={60} />
         )}
         <Button
           variant="grey"
