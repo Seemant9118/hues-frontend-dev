@@ -25,21 +25,24 @@ import React, { useState, useEffect } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { LocalStorageService } from "@/lib/utils";
 import { services_api } from "@/api/inventories/services/services";
-import { CreateProductServices, GetAllProductServices, UpdateProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
+import {
+  CreateProductServices,
+  GetAllProductServices,
+  UpdateProductServices,
+} from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { useQuery } from "@tanstack/react-query";
 import EditItem from "@/components/EditItem";
-
+import Loading from "@/components/Loading";
 
 function Services() {
   const enpterpriseId = LocalStorageService.get("enterprise_Id");
 
   const [isAdding, setIsAdding] = useState(false);
-  const [isEditing,setIsEditing] = useState(false);
-  const [servicesToEdit,setServicesToEdit] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [servicesToEdit, setServicesToEdit] = useState(null);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
 
-  
   const handleChange = async (file) => {
     setFiles((prev) => [...prev, file]);
   };
@@ -72,14 +75,13 @@ function Services() {
     ],
   };
 
-
   const { data, isLoading, isSuccess, error } = useQuery({
     queryKey: [services_api.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enpterpriseId),
     select: (data) => data.data.data,
   });
 
- const ServicesColumns = useServicesColumns(setIsEditing,setServicesToEdit);
+  const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
 
   return (
     <>
@@ -105,25 +107,26 @@ function Services() {
               </Button>
             </div>
           </SubHeader>
-          {data && data.length !== 0  ? (
-            <DataTable columns={ServicesColumns} data={data} />
-          ) : (
-            <EmptyStageComponent
-              heading={InventoryEmptyStageData.heading}
-              desc={InventoryEmptyStageData.desc}
-              subHeading={InventoryEmptyStageData.subHeading}
-              subItems={InventoryEmptyStageData.subItems}
-            />
-          )}
+
+          {isLoading && <Loading />}
+
+          {!isLoading &&
+            isSuccess &&
+            (data && data.length !== 0 ? (
+              <DataTable columns={ServicesColumns} data={data} />
+            ) : (
+              <EmptyStageComponent
+                heading={InventoryEmptyStageData.heading}
+                desc={InventoryEmptyStageData.desc}
+                subHeading={InventoryEmptyStageData.subHeading}
+                subItems={InventoryEmptyStageData.subItems}
+              />
+            ))}
+            
         </Wrapper>
       )}
       {isAdding && (
-        <AddItem
-          setIsAdding={setIsAdding}
-          mutationFunc={CreateProductServices}
-          name={"Item"}
-          cta={"Item"}
-        />
+        <AddItem setIsAdding={setIsAdding} name={"Item"} cta={"Item"} />
       )}
       {isEditing && (
         <EditItem
@@ -133,9 +136,7 @@ function Services() {
           mutationFunc={UpdateProductServices}
           queryKey={[services_api.getAllProductServices.endpointKey]}
         />
-      )
-
-      }
+      )}
       {isUploading && (
         <Wrapper className={"justify-start items-center"}>
           <FileUploader

@@ -93,7 +93,7 @@ const AddModal = ({
     mutationFn: (data) => mutationFunc(data, userId),
     onSuccess: (data) => {
       if (!data.data.status) {
-        console.log(this.onError);
+        // console.log(this.onError);
         this.onError();
         return;
       }

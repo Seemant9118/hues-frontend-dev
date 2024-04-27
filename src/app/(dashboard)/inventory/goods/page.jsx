@@ -34,6 +34,8 @@ import {
   UpdateProductGoods,
 } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
 import EditItem from "@/components/EditItem";
+import { Oval } from "react-loader-spinner";
+import Loading from "@/components/Loading";
 
 function Goods() {
   const enpterpriseId = LocalStorageService.get("enterprise_Id");
@@ -108,26 +110,26 @@ function Goods() {
               </Button>
             </div>
           </SubHeader>
-          {data && data.length !== 0 ? (
-            <DataTable columns={GoodsColumns} data={data} />
-          ) : (
-            <EmptyStageComponent
-              heading={InventoryEmptyStageData.heading}
-              desc={InventoryEmptyStageData.desc}
-              subHeading={InventoryEmptyStageData.subHeading}
-              subItems={InventoryEmptyStageData.subItems}
-            />
-          )}
+
+          {isLoading && <Loading />}
+
+          {!isLoading &&
+            isSuccess &&
+            (data && data.length !== 0 ? (
+              <DataTable columns={GoodsColumns} data={data} />
+            ) : (
+              <EmptyStageComponent
+                heading={InventoryEmptyStageData.heading}
+                desc={InventoryEmptyStageData.desc}
+                subHeading={InventoryEmptyStageData.subHeading}
+                subItems={InventoryEmptyStageData.subItems}
+              />
+            ))}
         </Wrapper>
       )}
 
       {isAdding && (
-        <AddItem
-          setIsAdding={setIsAdding}
-          mutationFunc={CreateProductGoods}
-          name={"Item"}
-          cta={"Item"}
-        />
+        <AddItem setIsAdding={setIsAdding} name={"Item"} cta={"Item"} />
       )}
 
       {isEditing && (

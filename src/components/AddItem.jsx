@@ -19,7 +19,8 @@ import { CreateProductServices } from "@/services/Inventories_Services/Services_
 import { goods_api } from "@/api/inventories/goods/goods";
 import { services_api } from "@/api/inventories/services/services";
 
-const AddItem = ({ name, onCancel, cta, setIsAdding, mutationFunc }) => {
+const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
+
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const user_id = LocalStorageService.get("user_profile");
@@ -48,7 +49,7 @@ const AddItem = ({ name, onCancel, cta, setIsAdding, mutationFunc }) => {
   });
 
   const mutationGoods = useMutation({
-    mutationFn: mutationFunc,
+    mutationFn: item.type === "goods" ? CreateProductGoods : CreateProductServices,
     onSuccess: () => {
       toast.success("Product Goods Added Successfully");
       setItem({
@@ -86,7 +87,7 @@ const AddItem = ({ name, onCancel, cta, setIsAdding, mutationFunc }) => {
   });
 
   const mutationServices = useMutation({
-    mutationFn: CreateProductServices,
+    mutationFn: item.type === "goods" ? CreateProductGoods : CreateProductServices,
     onSuccess: () => {
       toast.success("Product Services Added Successfully");
       setItem({
@@ -125,11 +126,28 @@ const AddItem = ({ name, onCancel, cta, setIsAdding, mutationFunc }) => {
 
   const onChange = (e) => {
     const { id, value } = e.target;
+    // validation input value
+    if (
+      id === "rate" ||
+      id === "gst_percentage" ||
+      id === "amount" ||
+      id === "weight" ||
+      id === "height" ||
+      id === "length" ||
+      id === "breadth"
+    ) {
+      if (!isNaN(value)) {
+        setItem((values) => ({ ...values, [id]: value }));
+      }
+      return;
+    }
+
     setItem((values) => ({ ...values, [id]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     if (item.type === "goods") {
       // goodsdata
       const { service_name, SAC, type, units, ...goodsData } = item;

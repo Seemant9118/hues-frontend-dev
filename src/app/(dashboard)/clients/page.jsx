@@ -15,6 +15,8 @@ import {
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import { LocalStorageService } from "@/lib/utils";
+import { Oval } from "react-loader-spinner";
+import Loading from "@/components/Loading";
 
 const ClientPage = () => {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
@@ -46,7 +48,7 @@ const ClientPage = () => {
     ],
   };
 
-  const { isPending, error, data, isSuccess } = useQuery({
+  const { isLoading, error, data, isSuccess } = useQuery({
     queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
     queryFn: () =>
       GetEnterpriseUsers({
@@ -59,7 +61,7 @@ const ClientPage = () => {
   let formattedData = [];
   if (data) {
     formattedData = data.flatMap((user) => ({
-      ...user.mappedEnterprise,
+      ...user.mappedUserEnterprise,
       userId: user.id,
     }));
   }
@@ -76,16 +78,21 @@ const ClientPage = () => {
           />
         </div>
       </SubHeader>
-      {formattedData.length !== 0 ? (
-        <DataTable columns={ClientsColumns} data={formattedData} />
-      ) : (
-        <EmptyStageComponent
-          heading={ClientsEmptyStageData.heading}
-          desc={ClientsEmptyStageData.desc}
-          subHeading={ClientsEmptyStageData.subHeading}
-          subItems={ClientsEmptyStageData.subItems}
-        />
-      )}
+
+      {isLoading && <Loading />}
+
+      {!isLoading &&
+        isSuccess &&
+        (formattedData.length !== 0 ? (
+          <DataTable columns={ClientsColumns} data={formattedData} />
+        ) : (
+          <EmptyStageComponent
+            heading={ClientsEmptyStageData.heading}
+            desc={ClientsEmptyStageData.desc}
+            subHeading={ClientsEmptyStageData.subHeading}
+            subItems={ClientsEmptyStageData.subItems}
+          />
+        ))}
     </Wrapper>
   );
 };
