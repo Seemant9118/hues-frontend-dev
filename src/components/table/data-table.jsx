@@ -21,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/table/DataTablePagination";
-import { Oval } from "react-loader-spinner";
 
 export function DataTable({ columns, data, page }) {
   const [sorting, setSorting] = React.useState([]);

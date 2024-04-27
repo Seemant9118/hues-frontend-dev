@@ -14,7 +14,6 @@ import {
   GetEnterpriseUsers,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
-import { Oval } from "react-loader-spinner";
 import Loading from "@/components/Loading";
 
 const VendorsPage = () => {

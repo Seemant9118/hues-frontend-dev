@@ -15,7 +15,6 @@ import {
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import { LocalStorageService } from "@/lib/utils";
-import { Oval } from "react-loader-spinner";
 import Loading from "@/components/Loading";
 
 const ClientPage = () => {
