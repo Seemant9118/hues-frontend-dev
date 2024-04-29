@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { userVerifyOtp } from "@/services/User_Auth_Service/UserAuthServices";
 import { toast } from "sonner";
+
 import { useEffect, useState } from "react";
-import { Oval } from "react-loader-spinner";
 import { LocalStorageService } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
 import Script from "next/script";
+import Loading from "@/components/Loading";
+
 
 function Slot(props) {
   return (
@@ -62,61 +64,47 @@ export default function OTPVerificationForm({ setCurrStep }) {
   };
 
   return (
-    <>
-      <form
-        onSubmit={handleVerifiyOTP}
-        className="border border-[#E1E4ED] p-10 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md"
-      >
-        <h1 className="w-full text-3xl text-[#414656] font-bold text-center">
-          Welcome to HuesERP!
-        </h1>
-        <p className="w-full text-xl text-[#414656] text-center">
-          One account for all things <span className="font-bold">Hues</span>
-        </p>
-        <h2 className="w-full font-bold text-2xl">Verify OTP</h2>
-        <p className="w-full text-sm">
-          A one time password has been sent to{" "}
-          <span className="text-[#414656] font-bold">+91 9876 54310</span>
-        </p>
+    <form
+      onSubmit={handleVerifiyOTP}
+      className="border border-[#E1E4ED] p-10 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md"
+    >
+      <h1 className="w-full text-3xl text-[#414656] font-bold text-center">
+        Welcome to HuesERP!
+      </h1>
+      <p className="w-full text-xl text-[#414656] text-center">
+        One account for all things <span className="font-bold">Hues</span>
+      </p>
+      <h2 className="w-full font-bold text-2xl">Verify OTP</h2>
+      <p className="w-full text-sm">
+        A one time password has been sent to{" "}
+        <span className="text-[#414656] font-bold">+91 9876 54310</span>
+      </p>
 
-        <OTPInput
-          name="otp"
-          onChange={handleChangeOtp}
-          maxLength={4}
-          value={otp}
-          containerClassName="group flex items-center has-[:disabled]:opacity-30"
-          render={({ slots }) => (
-            <div className="flex gap-4 ">
-              {slots.map((slot, idx) => (
-                <Slot key={idx} {...slot} />
-              ))}
-            </div>
-          )}
-        />
+      <OTPInput
+        name="otp"
+        onChange={handleChangeOtp}
+        maxLength={4}
+        value={otp}
+        containerClassName="group flex items-center has-[:disabled]:opacity-30"
+        render={({ slots }) => (
+          <div className="flex gap-4 ">
+            {slots.map((slot, idx) => (
+              <Slot key={idx} {...slot} />
+            ))}
+          </div>
+        )}
+      />
 
-        <p className="w-full text-sm text-[#A5ABBD] flex items-center gap-2">
-          Waiting for resend OTP{" "}
-          <span className="font-semibold flex items-center gap-1">
-            <Clock5 size={15} />
-            00:54
-          </span>
-        </p>
-        <Button type="Submit" className="w-full">
-          {mutation.isPending ? (
-            <Oval
-              visible={true}
-              height="20"
-              width="20"
-              color="#fff"
-              ariaLabel="oval-loading"
-              wrapperStyle={{}}
-              wrapperClass=""
-            />
-          ) : (
-            "Submit"
-          )}
-        </Button>
-      </form>
-    </>
+      <p className="w-full text-sm text-[#A5ABBD] flex items-center gap-2">
+        Waiting for resend OTP{" "}
+        <span className="font-semibold flex items-center gap-1">
+          <Clock5 size={15} />
+          00:54
+        </span>
+      </p>
+      <Button type="Submit" className="w-full">
+        {mutation.isPending ? <Loading /> : "Submit"}
+      </Button>
+    </form>
   );
 }

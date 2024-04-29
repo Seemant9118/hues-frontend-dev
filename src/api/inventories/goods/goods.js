@@ -1,7 +1,7 @@
 export const goods_api = {
     // 1. get all ProductGoods 
     getAllProductGoods: {
-        endpoint: `/api/v1/inventory/productgoods/getgoods`,
+        endpoint: `/api/v1/inventory/productgoods/getgoods/`,
         endpointKey: "get_all_productgoods"
     },
     // 2. get ProductGoods through id

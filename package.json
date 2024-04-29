@@ -33,7 +33,6 @@
     "react-datepicker": "^6.3.0",
     "react-dom": "^18",
     "react-drag-drop-files": "^2.3.10",
-    "react-loader-spinner": "^6.1.6",
     "sonner": "^1.4.3",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7"

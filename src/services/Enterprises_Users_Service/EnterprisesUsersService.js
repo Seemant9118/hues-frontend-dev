@@ -17,8 +17,8 @@ export function GetEnterpriseUser(enterprise_id) {
 }
 
 // 4. edit specific enterprises user through id
-export function UpdateEnterpriseUser(enterprise_id) {
-    return APIinstance.put(enterprise_user.updateEnterpriseUser.endpoint + `${enterprise_id}`);
+export function UpdateEnterpriseUser(data,enterprise_id) {
+    return APIinstance.put(enterprise_user.updateEnterpriseUser.endpoint + `${enterprise_id}`,data);
 }
 
 // 5. delete specific enterprises user through id

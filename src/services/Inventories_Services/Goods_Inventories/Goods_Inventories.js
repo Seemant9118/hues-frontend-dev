@@ -1,8 +1,8 @@
 import { goods_api } from "@/api/inventories/goods/goods";
 import { APIinstance } from "@/services";
 
-export const GetAllProductGoods = () => {
-    return APIinstance.get(goods_api.getAllProductGoods.endpoint);
+export const GetAllProductGoods = (id) => {
+    return APIinstance.get(goods_api.getAllProductGoods.endpoint + `${id}`);
 }
 
 export const GetProductGoods = (id) => {
@@ -13,8 +13,8 @@ export const CreateProductGoods = (data) => {
     return APIinstance.post(goods_api.createProductGoods.endpoint,data);
 }
 
-export const UpdateProductGoods = (id) => {
-    return APIinstance.put(goods_api.updateProductGoods.endpoint+`${id}`);
+export const UpdateProductGoods = (data,id) => {
+    return APIinstance.put(goods_api.updateProductGoods.endpoint+`${id}`,data);
 }
 
 export const DeleteProductGoods = (id) => {

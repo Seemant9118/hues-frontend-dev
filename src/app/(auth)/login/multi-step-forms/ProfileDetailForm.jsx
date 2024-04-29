@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
+import { useRouter, useSearchParams } from "next/navigation";
+import Tooltips from "@/components/Tooltips";
 import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
@@ -14,6 +16,8 @@ import { useState } from "react";
 import { Oval } from "react-loader-spinner";
 import { toast } from "sonner";
 
+import { useUser } from "@/context/UserContext";
+import Loading from "@/components/Loading";
 export default function ProfileDetailForm({
   setCurrStep,
   params,
@@ -36,13 +40,12 @@ export default function ProfileDetailForm({
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
       toast.success("Your Profile Completed!");
-      // after successfully log in redirect to homepage
-      // router.push('/');
       LocalStorageService.set(
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
       setCurrStep(4);
+
     },
     onError: (error) => {
       toast.error("Oops, Something went wrong!");
@@ -225,19 +228,7 @@ export default function ProfileDetailForm({
           </div>
         </div>
         <Button type="submit" className="w-full">
-          {mutation.isPending ? (
-            <Oval
-              visible={true}
-              height="20"
-              width="20"
-              color="#fff"
-              ariaLabel="oval-loading"
-              wrapperStyle={{}}
-              wrapperClass=""
-            />
-          ) : (
-            "Submit"
-          )}
+          {mutation.isPending ? <Loading /> : "Submit"}
         </Button>
       </form>
 
