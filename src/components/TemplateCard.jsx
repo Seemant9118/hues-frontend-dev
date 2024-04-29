@@ -12,7 +12,6 @@ const TemplateCard = ({
   name,
   type,
 }) => {
-
   const getfileExtension = type.replace(/(.*)\//g, "");
 
   return (

@@ -30,18 +30,23 @@ import { toast } from "sonner";
 import ViewTemplate from "./ViewTemplate";
 import InputWithLabel from "@/components/InputWithLabel";
 import { Input } from "@/components/ui/input";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { template_api } from "@/api/templates_api/template_api";
-import { getTemplates } from "@/services/Template_Services/Template_Services";
+import {
+  getTemplates,
+  uploadTemplate,
+} from "@/services/Template_Services/Template_Services";
+import { LocalStorageService } from "@/lib/utils";
 
 export default function Home() {
+  const enterpriseId = LocalStorageService.get("enterprise_Id");
+
   const [file, setFile] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [viewForm, setViewForm] = useState(false);
   const [viewResponses, setViewResponses] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-
 
   const templateEmptyStageData = {
     heading: `~"Streamline workflows with customizable, secure, digitally-signable templates for all business
@@ -76,10 +81,31 @@ export default function Home() {
     ],
   };
 
+  const uploadFileMutation = useMutation({
+    mutationFn: (file) => uploadTemplate(file, enterpriseId),
+    onSuccess: () => {
+      toast.success("Template Added Successfully.");
+      setFile(null);
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
+
+  const { isLoading, data, error } = useQuery({
+    queryKey: [template_api.getTemplates.endpointKey],
+    queryFn: getTemplates,
+    select:(data) => data.data.data
+  });
+
+
+  console.log(data); // for testing
+
   const fileHandler = (e) => {
     const uploadedFile = e.target.files[0]; // Get the first file
     if (uploadedFile) {
       setFile(uploadedFile);
+
       setTemplates((prev) => [
         ...prev,
         {
@@ -88,21 +114,17 @@ export default function Home() {
             uploadedFile.type.replace(/(.*)\//g, "") === "pdf" ? "pdf" : "xlsx",
         },
       ]);
-      toast.success("Template Added Successfully.");
+
+      const formData = new FormData();
+      formData.append("file",uploadedFile);
+
+      uploadFileMutation.mutate(formData);
     }
   };
 
-  const {isLoading, data, error} = useQuery({
-    queryKey:[template_api.getTemplates.endpointKey],
-    queryFn: getTemplates,    
-  });
-
-  console.log(data); // for testing 
-
-
   return (
     <>
-      {templates.length === 0 && !isAdding && (
+      {data?.length === 0 && !isAdding && (
         <>
           <div className="flex justify-between items-center">
             <SubHeader name="Templates" className={"justify-between w-full"}>
@@ -134,6 +156,7 @@ export default function Home() {
           />
         </>
       )}
+
       {viewForm && (
         <AddItem
           onCancel={() => setViewForm(false)}
@@ -146,7 +169,8 @@ export default function Home() {
           cta={"Template"}
         />
       )}
-      {!isAdding && !viewForm && !viewResponses && templates.length !== 0 && (
+
+      {!isAdding && !viewForm && !viewResponses && data?.length !== 0 && (
         <Wrapper>
           <SubHeader name={"Templates"}>
             <div className="flex items-center justify-center gap-4">
@@ -180,7 +204,7 @@ export default function Home() {
             </div>
           </SubHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-            {templates.map((template, idx) => (
+            {templates?.map((template, idx) => (
               <TemplateCard
                 viewResponseClick={() => {
                   setViewForm(false);
@@ -217,7 +241,7 @@ export default function Home() {
                 />
               ) : (
                 <Image
-                  src={"/csv_png.png"}
+                  src={"/xlsx_png.png"}
                   alt="Template"
                   height={55}
                   width={60}
