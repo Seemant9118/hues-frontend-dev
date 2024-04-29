@@ -1,36 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import InputWithLabel from "@/components/InputWithLabel";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogClose,
-  DialogDescription,
-  DialogFooter,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Layers2, Fingerprint, Edit3 } from "lucide-react";
-import InputWithLabel from "@/components/InputWithLabel";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { CreateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Edit3, Layers2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
-const AddModal = ({
-  type,
-  cta,
-  btnName,
-  mutationFunc,
-  userData,
-  userId,
-}) => {
-  const queryClient = useQueryClient();
+const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const [open, setOpen] = useState(false);
-  
 
   const [enterpriseData, setEnterPriseData] = useState(
     btnName !== "Edit"
@@ -121,8 +108,6 @@ const AddModal = ({
       toast.error("Something went wrong");
     },
   });
-
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
