@@ -1,12 +1,12 @@
 "use client";
 import { user_Auth } from "@/api/user_auth/Users";
+import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { LocalStorageService } from "@/lib/utils";
 import "@/services/Digio";
 import { createKYCRequest } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { Oval } from "react-loader-spinner";
 const CompleteKyc = () => {
   const router = useRouter();
   // const [digio, setDigio] = useState(null);
@@ -86,15 +86,7 @@ const CompleteKyc = () => {
 
       <Button type="submit" className="w-full">
         {isPending ? (
-          <Oval
-            visible={true}
-            height="20"
-            width="20"
-            color="#fff"
-            ariaLabel="oval-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
-          />
+          <Loading />
         ) : (
           <>
             Verify KYC with <span className="text-blue-700">digio</span>

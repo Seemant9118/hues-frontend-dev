@@ -1,6 +1,6 @@
 export default (function () {
   "use strict";
-
+  if (typeof window === "undefined") return;
   var CONSTANTS = {
     VERSION: "11.0",
     ENVIRONMENTS: {
