@@ -10,210 +10,262 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-// import InputWithLabel from "./InputWithLabel";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Layers2, Fingerprint } from "lucide-react";
-
+import { Layers2, Fingerprint, Edit3 } from "lucide-react";
 import InputWithLabel from "@/components/InputWithLabel";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { CreateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { LocalStorageService } from "@/lib/utils";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 
-
-
-const AddModal = ({ type, cta, onSubmit, modalHead }) => {
-
+const AddModal = ({
+  type,
+  cta,
+  btnName,
+  mutationFunc,
+  userData,
+  userId,
+}) => {
+  const queryClient = useQueryClient();
+  const enterpriseId = LocalStorageService.get("enterprise_Id");
   const [open, setOpen] = useState(false);
-  const [modalData, setModalData] = useState({
-    id: "",
-    pass: "",
-    name: "",
-    address: "",
-    phone: "",
-    email: "",
-    pan: "",
-    gst: "",
-  });
-  const [errorMsg, setErrorMsg] = useState('*Mandatory Information');
+  
 
+  const [enterpriseData, setEnterPriseData] = useState(
+    btnName !== "Edit"
+      ? {
+          enterprise_id: enterpriseId,
+          name: "",
+          address: "",
+          country_code: "+91",
+          mobile_number: "",
+          email: "",
+          pan_number: "",
+          gst_number: "",
+          user_type: cta,
+        }
+      : {
+          enterprise_id: enterpriseId,
+          name: userData.name,
+          address: userData.address,
+          country_code: "+91",
+          mobile_number: userData.mobileNumber,
+          email: userData.email,
+          pan_number: userData.panNumber,
+          gst_number: userData.gstNumber,
+          user_type: cta,
+        }
+  );
+
+  const [errorMsg, setErrorMsg] = useState("*Mandatory Information");
+
+  const mutation = useMutation({
+    mutationFn: mutationFunc,
+    onSuccess: () => {
+      toast.success(
+        cta == "client"
+          ? "Client Added Successfully"
+          : "Vendor Added Successfully"
+      );
+      setOpen((prev) => !prev);
+      setEnterPriseData({
+        enterprise_id: enterpriseId,
+        name: "",
+        address: "",
+        country_code: "+91",
+        mobile_number: "",
+        email: "",
+        pan_number: "",
+        gst_number: "",
+        user_type: cta,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error("Something went wrong");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data) => mutationFunc(data, userId),
+    onSuccess: (data) => {
+      if (!data.data.status) {
+        // console.log(this.onError);
+        this.onError();
+        return;
+      }
+
+      toast.success("Edited Successfully");
+      setOpen((prev) => !prev);
+      setEnterPriseData({
+        enterprise_id: "",
+        name: "",
+        address: "",
+        country_code: "",
+        mobile_number: "",
+        email: "",
+        pan_number: "",
+        gst_number: "",
+        user_type: "",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error("Something went wrong");
+    },
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    !errorMsg && onSubmit(modalData);
-    setModalData({
-      id: "",
-      pass: "",
-      name: "",
-      address: "",
-      phone: "",
-      email: "",
-      pan: "",
-      gst: "",
-    });
-    !errorMsg && setOpen(prev => !prev);
-  }
+    if (!errorMsg) {
+      if (btnName !== "Edit") {
+        mutation.mutate(enterpriseData);
+        return;
+      }
+      updateMutation.mutate(enterpriseData);
+    }
+  };
 
   return (
-
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"blue_outline"} size="sm">
-          {
-            type === 'Save GST Credentials' ? <Fingerprint size={14} /> : <Layers2 size={14} />
-          }
-          {cta}
-        </Button>
+        {btnName === "Edit" ? (
+          <div className="flex items-center justify-center rounded-sm  px-2 py-1.5 hover:cursor-pointer hover:bg-slate-100 gap-2 w-full">
+            <Edit3 size={12} />
+            Edit{" "}
+          </div>
+        ) : (
+          <Button variant={"blue_outline"} size="sm">
+            <Layers2 size={14} />
+            {btnName}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>{modalHead}</DialogTitle>
+        <DialogTitle>{cta.toUpperCase()}</DialogTitle>
+
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
-
             <span className="text-red-500">{errorMsg && errorMsg}</span>
-
-            {
-              type === "Save GST Credentials" ?
-                <>
-                  <div className="flex flex-col gap-4">
-                    <Label className="flex-shrink-0">Agency</Label>
-                    <Select className="rounded">
-                      <SelectTrigger className="gap-5">
-                        <SelectValue placeholder="Select Agency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="agency1">GST</SelectItem>
-                        {/* <SelectItem value="agency2">Agency 2</SelectItem> */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <InputWithLabel
-                    name="Username"
-                    type="text"
-                    required={true}
-                    id="id"
-                    onChange={
-                      (e) => {
-                        setModalData((prev) => ({ ...prev, id: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Mandatory Information - username') : setErrorMsg('');
-                      }}
-                    value={modalData.id}
-                  />
-                  <InputWithLabel
-                    name="Password"
-                    type="password"
-                    required={true}
-                    id="id"
-                    onChange={
-                      (e) => {
-                        setModalData((prev) => ({ ...prev, pass: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Mandatory Information - password') : setErrorMsg('');
-                      }}
-                    value={modalData.pass}
-                  />
-
-                  {/* <InputWithLabel
-                    name="Goods and Service Tax number"
-                    type="tel"
-                    id="gst"
-                    required={true}
-                    onChange={(e) => {
-                      setModalData((prev) => ({ ...prev, gst: e.target.value }))
-                      e.target.value === "" ? setErrorMsg('*Mandatory Information - GST No.') : setErrorMsg('');
-                    }}
-                    value={modalData.gst}
-                  /> */}
-                </>
-                :
-                <>
-                  <InputWithLabel
-                    name="Name"
-                    type="text"
-                    required={true}
-                    id="name"
-                    onChange={
-                      (e) => {
-                        setModalData((prev) => ({ ...prev, name: e.target.value }))
-                        e.target.value === "" ? setErrorMsg('*Please fill required details - Name') : setErrorMsg('');
-                      }}
-                    value={modalData.name}
-                  />
-                  <InputWithLabel
-                    name="Address"
-                    type="text"
-                    id="address"
-                    required={true}
-                    onChange={(e) => setModalData((prev) => ({ ...prev, address: e.target.value }))}
-                    value={modalData.address}
-                  />
-                  <InputWithLabel
-                    name="Email"
-                    type="email"
-                    id="email"
-                    required={true}
-                    onChange={(e) => setModalData((prev) => ({ ...prev, email: e.target.value }))}
-                    value={modalData.email}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <InputWithLabel
-                      name="Phone"
-                      type="tel"
-                      id="phone"
-                      required={true}
-                      onChange={(e) => setModalData((prev) => ({ ...prev, phone: e.target.value }))}
-                      value={modalData.phone}
-                    />
-                    <InputWithLabel
-                      name="PAN"
-                      type="tel"
-                      id="pan"
-                      required={true}
-                      onChange={(e) => setModalData((prev) => ({ ...prev, pan: e.target.value }))}
-                      value={modalData.pan}
-                    />
-                  </div>
-                  <InputWithLabel
-                    name="Goods and Service Tax number"
-                    type="tel"
-                    id="gst"
-                    onChange={(e) => setModalData((prev) => ({ ...prev, gst: e.target.value }))}
-                    value={modalData.gst}
-                  />
-                </>
-            }
+            <InputWithLabel
+              name="Name"
+              type="text"
+              required={true}
+              id="name"
+              onChange={(e) => {
+                setEnterPriseData((prev) => ({
+                  ...prev,
+                  name: e.target.value,
+                }));
+                e.target.value === ""
+                  ? setErrorMsg("*Please fill required details - Name")
+                  : setErrorMsg("");
+              }}
+              value={enterpriseData.name}
+            />
+            <InputWithLabel
+              name="Address"
+              type="text"
+              id="address"
+              required={true}
+              onChange={(e) =>
+                setEnterPriseData((prev) => ({
+                  ...prev,
+                  address: e.target.value,
+                }))
+              }
+              value={enterpriseData.address}
+            />
+            <InputWithLabel
+              name="Email"
+              type="email"
+              id="email"
+              required={true}
+              onChange={(e) =>
+                setEnterPriseData((prev) => ({
+                  ...prev,
+                  email: e.target.value,
+                }))
+              }
+              value={enterpriseData.email}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <InputWithLabel
+                name="Phone"
+                type="tel"
+                id="mobile_number"
+                required={true}
+                onChange={(e) =>
+                  setEnterPriseData((prev) => ({
+                    ...prev,
+                    mobile_number: e.target.value,
+                  }))
+                }
+                value={enterpriseData.mobile_number}
+              />
+              <InputWithLabel
+                name="PAN"
+                type="tel"
+                id="pan_number"
+                required={true}
+                onChange={(e) =>
+                  setEnterPriseData((prev) => ({
+                    ...prev,
+                    pan_number: e.target.value,
+                  }))
+                }
+                value={enterpriseData.pan_number}
+              />
+            </div>
+            <InputWithLabel
+              name="Goods and Service Tax number"
+              type="tel"
+              id="gst_number"
+              onChange={(e) =>
+                setEnterPriseData((prev) => ({
+                  ...prev,
+                  gst_number: e.target.value,
+                }))
+              }
+              value={enterpriseData.gst_number}
+            />
           </div>
 
           <div className="h-[1px] bg-neutral-300"></div>
 
           <div className="flex justify-end items-center gap-4 mt-3">
             <DialogClose asChild>
-              <Button onClick={() => {
-                setModalData({
-                  id: "",
-                  pass: "",
-                  name: "",
-                  address: "",
-                  phone: "",
-                  email: "",
-                  pan: "",
-                  gst: "",
-                });
-                setOpen(prev => !prev);
-              }} variant={"outline"}>
+              <Button
+                onClick={() => {
+                  setEnterPriseData({
+                    enterprise_id: "",
+                    name: "",
+                    address: "",
+                    country_code: "",
+                    mobile_number: "",
+                    email: "",
+                    pan_number: "",
+                    gst_number: "",
+                    user_type: "",
+                  });
+                  setOpen((prev) => !prev);
+                }}
+                variant={"outline"}
+              >
                 Cancel
               </Button>
             </DialogClose>
 
-            <Button type="submit">{type === "Save GST Credentials" ? "Save" : type}</Button>
+            <Button type="submit">{btnName === "Edit" ? "Edit" : type}</Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog >
-
+    </Dialog>
   );
 };
 

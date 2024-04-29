@@ -1,4 +1,7 @@
 "use client";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import AddModal from "@/components/Modals/AddModal";
+import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,7 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DeleteEnterpriseUser, UpdateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { Edit3, MoreHorizontal, MoreVertical, Trash2 } from "lucide-react";
+
 
 export const VendorsColumns = [
   {
@@ -50,7 +55,7 @@ export const VendorsColumns = [
     },
   },
   {
-    accessorKey: "phone",
+    accessorKey: "mobileNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PHONE" />
     ),
@@ -62,13 +67,13 @@ export const VendorsColumns = [
     ),
   },
   {
-    accessorKey: "pan",
+    accessorKey: "panNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PAN" />
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: "gstNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST No." />
     ),
@@ -77,6 +82,9 @@ export const VendorsColumns = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
+      const id = row.original.userId;
+      const name = row.original.name;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -86,14 +94,19 @@ export const VendorsColumns = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="max-w-fit">
-            <DropdownMenuItem className="gap-2 justify-center cursor-pointer text-zinc-900">
-              <Edit3 size={12} />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 justify-center text-red-500 cursor-pointer">
-              <Trash2 size={12} />
-              Delete
-            </DropdownMenuItem>
+            <AddModal
+              cta="vendor"
+              btnName="Edit"
+              mutationFunc={UpdateEnterpriseUser}
+              userData={row.original}
+              userId={row.original.userId}
+            />
+            <ConfirmAction
+              name={name}
+              id={id}
+              mutationKey={enterprise_user.getEnterpriseUsers.endpointKey}
+              mutationFunc={DeleteEnterpriseUser}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       );

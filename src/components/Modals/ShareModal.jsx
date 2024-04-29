@@ -17,7 +17,7 @@ const ShareModal = ({ currLink }) => {
             <DialogTrigger asChild>
                 <button
                     className={cn(
-                        "hover:bg-accent w-full cursor-pointer relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none"
+                        "hover:bg-accent w-full cursor-pointer relative flex select-none items-center justify-center rounded-sm px-2 py-1.5 text-sm outline-none"
                     )}
                 >
                     Share

@@ -30,6 +30,9 @@ import { toast } from "sonner";
 import ViewTemplate from "./ViewTemplate";
 import InputWithLabel from "@/components/InputWithLabel";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { template_api } from "@/api/templates_api/template_api";
+import { getTemplates } from "@/services/Template_Services/Template_Services";
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -38,6 +41,7 @@ export default function Home() {
   const [viewForm, setViewForm] = useState(false);
   const [viewResponses, setViewResponses] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+
 
   const templateEmptyStageData = {
     heading: `~"Streamline workflows with customizable, secure, digitally-signable templates for all business
@@ -87,6 +91,14 @@ export default function Home() {
       toast.success("Template Added Successfully.");
     }
   };
+
+  const {isLoading, data, error} = useQuery({
+    queryKey:[template_api.getTemplates.endpointKey],
+    queryFn: getTemplates,    
+  });
+
+  console.log(data); // for testing 
+
 
   return (
     <>
