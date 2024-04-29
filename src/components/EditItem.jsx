@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { CreateProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { goods_api } from "@/api/inventories/goods/goods";
 import { services_api } from "@/api/inventories/services/services";
+import DatePickers from "./DatePickers";
+
 
 const EditItem = ({
   setIsEditing,
@@ -295,6 +297,8 @@ const EditItem = ({
           onChange={onChange}
           value={item.expiry}
         />
+
+
       </div>
       <div className="grid grid-cols-4 gap-2.5">
         <InputWithLabel

@@ -18,13 +18,17 @@ import { toast } from "sonner";
 import { CreateProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { goods_api } from "@/api/inventories/goods/goods";
 import { services_api } from "@/api/inventories/services/services";
+import DatePickers from "./DatePickers";
+import { CalendarDays } from "lucide-react";
+import moment from "moment";
 
-const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
-
+const AddItem = ({ name, onCancel, cta }) => {
+  
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const user_id = LocalStorageService.get("user_profile");
 
+  const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
   const [item, setItem] = useState({
     enterprise_id: enterpriseId,
     template_id: user_id,
@@ -39,7 +43,7 @@ const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
     amount: "",
     type: "goods",
     batch: "",
-    expiry: "",
+    expiry: date.toString(),
     weight: "",
     length: "",
     breadth: "",
@@ -49,37 +53,14 @@ const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
   });
 
   const mutationGoods = useMutation({
-    mutationFn: item.type === "goods" ? CreateProductGoods : CreateProductServices,
+    mutationFn:
+      item.type === "goods" ? CreateProductGoods : CreateProductServices,
     onSuccess: () => {
       toast.success("Product Goods Added Successfully");
-      setItem({
-        // mandatory data
-        enterprise_id: enterpriseId,
-        template_id: user_id,
-        product_name: "",
-        manufacturer_name: "",
-        service_name: "",
-        description: "",
-        hsn_code: "",
-        SAC: "",
-        rate: "",
-        gst_percentage: "",
-        amount: "",
-        type: "goods",
-        // optional data
-        batch: "",
-        expiry: "",
-        weight: "",
-        length: "",
-        breadth: "",
-        height: "",
-        applications: "",
-        units: "",
-      });
       queryClient.invalidateQueries({
         queryKey: [goods_api.getAllProductGoods.endpointKey],
       });
-      setIsAdding((prev) => !prev);
+      onCancel();
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -87,37 +68,14 @@ const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
   });
 
   const mutationServices = useMutation({
-    mutationFn: item.type === "goods" ? CreateProductGoods : CreateProductServices,
+    mutationFn:
+      item.type === "goods" ? CreateProductGoods : CreateProductServices,
     onSuccess: () => {
       toast.success("Product Services Added Successfully");
-      setItem({
-        // mandatory data
-        enterprise_id: enterpriseId,
-        template_id: user_id,
-        product_name: "",
-        manufacturer_name: "",
-        service_name: "",
-        description: "",
-        hsn_code: "",
-        SAC: "",
-        rate: "",
-        gst_percentage: "",
-        amount: "",
-        type: "services",
-        // optional data
-        batch: "",
-        expiry: "",
-        weight: "",
-        length: "",
-        breadth: "",
-        height: "",
-        applications: "",
-        units: "",
-      });
       queryClient.invalidateQueries({
         queryKey: [services_api.getAllProductServices.endpointKey],
       });
-      setIsAdding((prev) => !prev);
+      onCancel();
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -147,7 +105,7 @@ const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (item.type === "goods") {
       // goodsdata
       const { service_name, SAC, type, units, ...goodsData } = item;
@@ -328,13 +286,33 @@ const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
           onChange={onChange}
           value={item.batch}
         />
-        <InputWithLabel
+        {/* <InputWithLabel
           name="Expiry"
           id="expiry"
           required={item.type === "goods" || item.type === "services"}
           onChange={onChange}
           value={item.expiry}
-        />
+        /> */}
+
+
+        <div className="grid w-full items-center gap-1.5">
+          <Label
+            htmlFor="dob"
+            className="text-[#414656] font-medium flex items-center gap-1"
+          >
+            Expiry <span className="text-red-600">*</span>
+          </Label>
+
+          <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+            <DatePickers
+              selected={date}
+              onChange={(date) => setDate(moment(date).format("DD-MM-YYYY"))}
+            />
+            <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
+          </div>
+        </div>
+
+
       </div>
       <div className="grid grid-cols-4 gap-2.5">
         <InputWithLabel
@@ -379,14 +357,15 @@ const AddItem = ({ name, onCancel, cta, setIsAdding }) => {
       <div className="flex justify-end items-center gap-4 ">
         <Button
           onClick={() => {
-            setIsAdding((prev) => !prev);
-            setItem(null);
+            onCancel();
           }}
           variant={"outline"}
         >
           Cancel
         </Button>
-        <Button type="submit">Add</Button>
+        <Button type="submit" disabled={cta === "Template"}>
+          Add
+        </Button>
       </div>
     </form>
   );

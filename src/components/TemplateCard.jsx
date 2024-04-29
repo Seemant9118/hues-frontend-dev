@@ -11,9 +11,11 @@ const TemplateCard = ({
   viewResponseClick,
   name,
   type,
+  templateUrl,
 }) => {
+  // const getfileExtension = type.replace(/(.*)\//g, "");
 
-  const getfileExtension = type.replace(/(.*)\//g, "");
+
 
   return (
     <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
@@ -21,17 +23,18 @@ const TemplateCard = ({
         {/* <p className="text-neutral-300 text-sm font-bold">Template Name</p> */}
         <div className="text-[#363940] text-base font-bold flex">
           <p className="truncate">
-            {name.substring(0, 10)}
-            {name.length > 10 && "..."}
+            {templateUrl.substring(0, 10)}
+            {templateUrl.length > 10 && "..."}
           </p>
         </div>
       </div>
       <div className="flex items-center justify-between gap-3">
-        {getfileExtension === "pdf" ? (
+        {/* {getfileExtension === "pdf" ? (
           <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
         ) : (
           <Image src={"/xlsx_png.png"} alt="Template" height={55} width={60} />
-        )}
+        )} */}
+        <Image src={"/xlsx_png.png"} alt="Template" height={55} width={60} />
         <Button
           variant="grey"
           onClick={() => viewResponseClick()}
@@ -58,6 +61,7 @@ const TemplateCard = ({
           variant="ghost"
           size="icon"
           className="text-neutral-500 hover:text-black "
+          disabled={true}
         >
           <Trash2 size={12} />
         </Button>

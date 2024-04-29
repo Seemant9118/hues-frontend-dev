@@ -13,7 +13,7 @@ export const template_api = {
 
   // 3. Upload template
   uploadTemplate: {
-    endpoint: `/api/v1/template/form/upload/?enterprise_id=`,
+    endpoint: `/api/v1/template/form/upload?enterprise_id=`,
     endpointKey: "upload_template",
   },
 

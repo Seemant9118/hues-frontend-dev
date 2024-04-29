@@ -122,11 +122,15 @@ function Services() {
                 subItems={InventoryEmptyStageData.subItems}
               />
             ))}
-            
         </Wrapper>
       )}
       {isAdding && (
-        <AddItem setIsAdding={setIsAdding} name={"Item"} cta={"Item"} />
+        <AddItem
+          setIsAdding={setIsAdding}
+          name={"Item"}
+          cta={"Item"}
+          onCancel={() => setIsAdding(false)}
+        />
       )}
       {isEditing && (
         <EditItem
