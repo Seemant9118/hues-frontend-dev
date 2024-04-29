@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { userVerifyOtp } from "@/services/User_Auth_Service/UserAuthServices";
 import { toast } from "sonner";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { LocalStorageService } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
+import Script from "next/script";
 import Loading from "@/components/Loading";
+
 
 function Slot(props) {
   return (

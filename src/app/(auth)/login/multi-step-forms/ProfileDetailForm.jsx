@@ -1,29 +1,28 @@
 "use client";
-import { useState } from "react";
+import DatePickers from "@/components/DatePickers";
+import Tooltips from "@/components/Tooltips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
-import DatePickers from "@/components/DatePickers";
-import { Phone, CreditCard, CalendarDays, Cross, Info } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import Tooltips from "@/components/Tooltips";
-import {
-  Check,
-  X,
-  CheckCircle,
-  CheckCircle2,
-  Trash2,
-  UserRound,
-} from "lucide-react";
-import moment from "moment";
-import { useMutation } from "@tanstack/react-query";
 import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
+import { useMutation } from "@tanstack/react-query";
+import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
+import moment from "moment";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Oval } from "react-loader-spinner";
+import { toast } from "sonner";
+
 import { useUser } from "@/context/UserContext";
 import Loading from "@/components/Loading";
-
-export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
+export default function ProfileDetailForm({
+  setCurrStep,
+  params,
+  isThirdPartyLogin,
+}) {
   const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
 
@@ -41,12 +40,12 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
       toast.success("Your Profile Completed!");
-      // after successfully log in redirect to homepage
-      router.push("/");
       LocalStorageService.set(
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
+      setCurrStep(4);
+
     },
     onError: (error) => {
       toast.error("Oops, Something went wrong!");
@@ -75,7 +74,6 @@ export default function ProfileDetailForm({ params, isThirdPartyLogin }) {
 
   const login = (e) => {
     e.preventDefault();
-
     mutation.mutate(userData);
   };
 

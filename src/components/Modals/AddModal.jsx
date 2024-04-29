@@ -59,7 +59,7 @@ const AddModal = ({
   );
 
   const [errorMsg, setErrorMsg] = useState("*Mandatory Information");
-
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: mutationFunc,
     onSuccess: () => {
@@ -68,6 +68,7 @@ const AddModal = ({
           ? "Client Added Successfully"
           : "Vendor Added Successfully"
       );
+
       setOpen((prev) => !prev);
       setEnterPriseData({
         enterprise_id: enterpriseId,
@@ -111,6 +112,7 @@ const AddModal = ({
         gst_number: "",
         user_type: "",
       });
+
       queryClient.invalidateQueries({
         queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
       });
@@ -119,6 +121,8 @@ const AddModal = ({
       toast.error("Something went wrong");
     },
   });
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
