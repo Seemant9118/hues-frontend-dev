@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import ViewTemplate from "./ViewTemplate";
 import InputWithLabel from "@/components/InputWithLabel";
 import { Input } from "@/components/ui/input";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { template_api } from "@/api/templates_api/template_api";
 import {
   getTemplates,
@@ -40,6 +40,7 @@ import { LocalStorageService } from "@/lib/utils";
 
 export default function Home() {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const queryClient = useQueryClient();
 
   const [file, setFile] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -86,6 +87,7 @@ export default function Home() {
     onSuccess: () => {
       toast.success("Template Added Successfully.");
       setFile(null);
+      queryClient.invalidateQueries([template_api.getTemplates.endpointKey]);
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -204,7 +206,7 @@ export default function Home() {
             </div>
           </SubHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-            {templates?.map((template, idx) => (
+            {data?.map((template, idx) => (
               <TemplateCard
                 viewResponseClick={() => {
                   setViewForm(false);
