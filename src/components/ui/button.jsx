@@ -21,6 +21,8 @@ const buttonVariants = cva(
         blue_outline:
           "text-[#288AF9] border-[#288AF9] border underline-offset-4 hover:bg-blue-500/10",
         grey: "p-2 rounded-sm gap-2 bg-[#A5ABBD26] text-grey text-xs font-bold",
+        warning:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground text-[#CE9D0C]",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -15,9 +15,15 @@ export function userVerifyOtp(data) {
 export function userUpdate(data) {
   return APIinstance.put(user_Auth.updateUser.endpoint, data);
 }
+
 // 4. Create KYC Request
 export function createKYCRequest(id) {
   return APIinstance.post(user_Auth.createKYC.endpoint, {
     user_id: id,
   });
+}
+
+// 5. check KYC status
+export function checkKYCstatus(data) {
+  return APIinstance.post(user_Auth.statucKYC.endpoint, data);
 }
