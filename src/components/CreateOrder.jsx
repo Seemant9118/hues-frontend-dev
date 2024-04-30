@@ -47,7 +47,8 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
             {/* <SelectItem value="add-new"> */}
             {type === "sales" && (
               <AddModal
-                className={"w-full border-none"}
+                btnName="Add Client"
+                className="w-full"
                 type={"Add"}
                 cta="Add New"
                 modalHead="Client"
@@ -56,6 +57,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
             )}
             {type === "purchase" && (
               <AddModal
+                btnName="Add Vendor"
                 className={"w-full border-none"}
                 type={"Add"}
                 cta="Add New"
@@ -193,7 +195,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
           onClose={() =>
             onSubmit(
               order,
-              cta == "offer" ? (order.type = "Offer") : (order.type = "Bid")
+              cta == "offer" ? (order.type = "offer") : (order.type = "Bid")
             )
           }
         >

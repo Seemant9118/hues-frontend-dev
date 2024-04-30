@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button.jsx";
 import Wrapper from "@/components/Wrapper";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+
 const ViewTemplate = ({ params }) => {
   const printDocument = () => {
     const input = document.getElementById("divToPrint");
