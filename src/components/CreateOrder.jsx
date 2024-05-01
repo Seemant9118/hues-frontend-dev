@@ -14,32 +14,103 @@ import Wrapper from "./Wrapper";
 import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
-import { Plus } from "lucide-react";
+import { CloudFog, Plus } from "lucide-react";
 import AddModal from "./Modals/AddModal";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { LocalStorageService } from "@/lib/utils";
+import { goods_api } from "@/api/inventories/goods/goods";
+import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
 
-const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
-  const [createdOrders, setCreatedOrders] = useState([]);
-  const [order, setOrder] = useState({
-    customer: "",
-    type: "",
-    item: "",
-    price: "",
-    quantity: "",
-    gst: "",
-    amount: "",
+const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
+  const enterpriseId = LocalStorageService.get("enterprise_Id");
+
+  // client/vendor fetching
+  const { data: customerData } = useQuery({
+    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+    queryFn: GetEnterpriseUsers({
+      user_type: "client",
+      enterprise_id: enterpriseId,
+    }),
+    select: (customerData) => customerData.data.data,
   });
+  let formattedData = [];
+  if (customerData) {
+    formattedData = customerData.flatMap((user) => ({
+      ...user.mappedUserEnterprise,
+      userId: user.id,
+    }));
+  }
+
+  // // goods fetching
+  const { data: goodsData } = useQuery({
+    queryKey: [goods_api.getAllProductGoods.endpointKey],
+    queryFn: GetAllProductGoods,
+    select: (goodsData) => goodsData.data.data,
+  });
+
+  const [createdOrders, setCreatedOrders] = useState([]);
+  // const [order, setOrder] = useState({
+  //   customer: "",
+  //   type: "",
+  //   item: "",
+  //   price: "",
+  //   quantity: "",
+  //   gst: "",
+  //   amount: "",
+  // });
+
+  const [order, setOrder] = useState({
+    seller_enterprise_id: enterpriseId,
+    buyer_enterperise_id: null,
+    gst_amount: 2124,
+    amount: 13924, // total amount + gst amount
+    order_type: "PURCHASE",
+    order_items: [
+      {
+        product_type: "GOODS",
+        product_id: 2,
+        quantity: 2,
+        unit_price: 5900,
+        gst_per_unit: 1062,
+        total_amount: 13924, /// total amount + gst amount
+        total_gst_amount: 2124,
+      },
+    ],
+  });
+
+  const handleChangeOrder = (e) => {
+    let { name, value } = e.target;
+    console.log(order);
+    setOrder((values) => ({ ...values, [name]: value }));
+  };
+
+  //   {
+  //     "seller_enterprise_id": 1,
+  //     "buyer_enterperise_id": 1,
+  //     "gst_amount": 2124,
+  //     "amount": 13924, // total amount + gst amount
+  //     "order_type": "PURCHASE",
+  //     "order_items": [
+  //         {
+  //             "product_type": "GOODS",
+  //             "product_id": 2,
+  //             "quantity": 2,
+  //             "unit_price": 5900,
+  //             "gst_per_unit": 1062,
+  //             "total_amount": 13924, /// total amount + gst amount
+  //             "total_gst_amount": 2124
+  //         }
+  //     ]
+  // }
 
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
       <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
         <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
-        <Select
-          value={order.customer}
-          onValueChange={(value) =>
-            setOrder((prev) => ({ ...prev, customer: value }))
-          }
-        >
+        <Select>
           <SelectTrigger className="max-w-xs">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
@@ -69,8 +140,16 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
             {/* </SelectItem> */}
             {cta == "offer" ? (
               <>
-                <SelectItem value="Client 1">Client 1</SelectItem>
-                <SelectItem value="Client 2">Client 2</SelectItem>
+                {formattedData?.map((client) => (
+                  <SelectItem
+                    key={client.id}
+                    name="buyer_enterperise_id"
+                    value={client.id}
+                    onValueChange={handleChangeOrder}
+                  >
+                    {client.name}
+                  </SelectItem>
+                ))}
               </>
             ) : (
               <>
@@ -115,8 +194,11 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Item 1">Item 1</SelectItem>
-                <SelectItem value="Item 2">Item 2</SelectItem>
+                {goodsData?.map((goods) => (
+                  <SelectItem key={goods.id} value={goods.productName}>
+                    {goods.productName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

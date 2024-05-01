@@ -35,19 +35,6 @@ export const useSalesColumns = (setIsOrderView) => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ORDER ID" />
       ),
-      cell: ({ row }) => {
-        return (
-          <Button
-            variant="ghost"
-            className="text-sm"
-            onClick={() => {
-              setIsOrderView((prev) => !prev);
-            }}
-          >
-            #44444
-          </Button>
-        );
-      },
     },
     {
       accessorKey: "date",

@@ -1,9 +1,11 @@
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import OfferPrice from "@/components/Modals/OfferPrice";
 import SuccessModal from "@/components/Modals/SuccessModal";
+import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { Check, RotateCw } from "lucide-react";
+
+import { Check, Info, RotateCw } from "lucide-react";
 
 export const OrderColumns = [
   {
@@ -36,7 +38,13 @@ export const OrderColumns = [
     cell: ({ row }) => {
       const status = row.original.status;
 
-      let statusText, statusColor, statusBG, statusBorder, btnName, actionBtn;
+      let statusText,
+        statusColor,
+        statusBG,
+        statusBorder,
+        btnName,
+        actionBtn,
+        tooltip;
       switch (status) {
         case "Accepted":
           statusText = "Accepted";
@@ -57,6 +65,7 @@ export const OrderColumns = [
           statusBG = "#F8BA051A";
           statusBorder = "#F8BA05";
           actionBtn = "action";
+          tooltip = <Tooltips trigger={<Info size={14} />} isContentShow="true"/>;
           break;
         default:
           return null;
@@ -65,14 +74,14 @@ export const OrderColumns = [
       return (
         <div className="flex justify-between items-center">
           <div
-            className="w-24 p-1 flex justify-center items-center font-bold border rounded"
+            className="w-24 p-1 flex justify-center items-center font-bold border rounded gap-1"
             style={{
               color: statusColor,
               backgroundColor: statusBG,
               border: statusBorder,
             }}
           >
-            {statusText}
+            {statusText} {tooltip}
           </div>
 
           {btnName && <OfferPrice btnName={btnName} />}

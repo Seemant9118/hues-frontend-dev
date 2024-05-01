@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Wrapper from "@/components/Wrapper";
 import SubHeader from "@/components/Sub-header";
@@ -5,7 +7,7 @@ import { OrderColumns } from "./OrderColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 
-const ViewOrder = (setIsOrderView) => {
+const ViewOrder = () => {
   const items = [
     {
       item: "Crocin ",

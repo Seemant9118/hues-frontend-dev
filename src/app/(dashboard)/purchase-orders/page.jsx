@@ -4,7 +4,14 @@ import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { DatabaseZap, FileCheck, FolderUp, KeySquare, PlusCircle, ShieldCheck } from "lucide-react";
+import {
+  DatabaseZap,
+  FileCheck,
+  FolderUp,
+  KeySquare,
+  PlusCircle,
+  ShieldCheck,
+} from "lucide-react";
 import { PurchaseColumns } from "./PurchaseColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
@@ -119,6 +126,7 @@ const PurchaseOrders = () => {
       )}
       {isCreatingPurchase && !isCreatingInvoice && (
         <CreateOrder
+          type="purchase"
           name={"Bid"}
           cta="bid"
           onCancel={() => setIsCreatingPurchase(false)}
