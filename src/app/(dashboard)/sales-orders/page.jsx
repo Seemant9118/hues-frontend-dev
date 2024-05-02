@@ -16,7 +16,6 @@ import React, { useState } from "react";
 import { useSalesColumns } from "./SalesColumns";
 import CreateOrder from "@/components/CreateOrder";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
-
 import {
   Select,
   SelectContent,
@@ -26,10 +25,14 @@ import {
 } from "@/components/ui/select";
 import ViewOrder from "./[order_id]/page";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { order_api } from "@/api/order_api/order_api";
+import { GetSales } from "@/services/Orders_Services/Orders_Services";
+import { LocalStorageService } from "@/lib/utils";
 
 const SalesOrder = () => {
   const router = useRouter();
-  
+  const enterprise_id = LocalStorageService.get("enterprise_Id");
 
   const [orders, setOrders] = useState([]);
   const [istype, setIsType] = useState("All");
@@ -37,8 +40,6 @@ const SalesOrder = () => {
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isOrderView, setIsOrderView] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
-
-
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -75,9 +76,15 @@ const SalesOrder = () => {
     router.push(`/sales-orders/${row.id}`);
   };
 
+  const { data } = useQuery({
+    queryKey: [order_api.getSales.endpointKey],
+    queryFn: () => GetSales(enterprise_id),
+    select: (data) => data.data.data,
+  });
+
   return (
     <>
-      {!isCreatingSales && !isCreatingInvoice && !isOrderView && (
+      {!isCreatingSales && !isCreatingInvoice && data && (
         <Wrapper>
           <SubHeader name={"Sales"}>
             <div className="flex items-center justify-center gap-4">
@@ -123,7 +130,7 @@ const SalesOrder = () => {
               </Button>
             </div>
           </SubHeader>
-          {orders.length === 0 ? (
+          {data?.length === 0 ? (
             <EmptyStageComponent
               heading={SaleEmptyStageData.heading}
               desc={SaleEmptyStageData.desc}
@@ -134,7 +141,7 @@ const SalesOrder = () => {
             <DataTable
               columns={SalesColumns}
               onRowClick={onRowClick}
-              data={orders.filter((order) => {
+              data={data.filter((order) => {
                 if (istype === "All" || istype === "") return true;
                 return order.type === istype;
               })}
@@ -171,9 +178,9 @@ const SalesOrder = () => {
           />
         )}
 
-      {isOrderView && !isCreatingInvoice && !isCreatingSales && (
+      {/* {isOrderView && !isCreatingInvoice && !isCreatingSales && (
         <ViewOrder setIsOrderView={setIsOrderView} />
-      )}
+      )} */}
     </>
   );
 };
