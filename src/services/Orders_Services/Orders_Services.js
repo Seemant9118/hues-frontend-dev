@@ -1,8 +1,8 @@
 import { order_api } from "@/api/order_api/order_api";
 import { APIinstance } from "@/services";
-import { ApiError } from "next/dist/server/api-utils";
 
-export const CreateOrder = (data) => {
+
+export const CreateOrderService = (data) => {
   return APIinstance.post(order_api.createOrder.endpoint, data);
 };
 
