@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -14,7 +14,6 @@ import Wrapper from "./Wrapper";
 import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
-import { CloudFog, Plus } from "lucide-react";
 import AddModal from "./Modals/AddModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
@@ -28,36 +27,35 @@ import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
 import { toast } from "sonner";
 import { order_api } from "@/api/order_api/order_api";
 
-const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
+const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();
-
   const enterpriseId = LocalStorageService.get("enterprise_Id");
+
   const [selectedItem, setSelectedItem] = useState({
     product_name: "",
     product_type: "",
     product_id: "",
-    quantity: "",
-    unit_price: "",
-    gst_per_unit: "",
-    total_amount: "", // total amount + gst amount
-    total_gst_amount: "",
+    quantity: null,
+    unit_price: null,
+    gst_per_unit: null,
+    total_amount: null,
+    total_gst_amount: null,
   });
-
   const [order, setOrder] = useState(
     cta == "offer"
       ? {
           seller_enterprise_id: enterpriseId,
-          buyer_enterperise_id: "",
-          gst_amount: "",
-          amount: "", // total amount + gst amount
+          buyer_enterperise_id: null,
+          gst_amount: null,
+          amount: null,
           order_type: "SALES",
           order_items: [],
         }
       : {
-          seller_enterprise_id: enterpriseId,
-          buyer_enterperise_id: "",
-          gst_amount: "",
-          amount: "", // total amount + gst amount
+          seller_enterprise_id: null,
+          buyer_enterperise_id: enterpriseId,
+          gst_amount: null,
+          amount: null,
           order_type: "PURCHASE",
           order_items: [],
         }
@@ -113,11 +111,11 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
   const formattedServicesData =
     servicesData?.map((service) => ({
       ...service,
-      product_type: "SERVICES",
+      product_type: "SERVICE",
       product_name: service.serviceName,
     })) || [];
 
-  const itemData = formattedGoodsData.concat(formattedServicesData);
+  const itemData = formattedGoodsData.concat(formattedServicesData); // both goods & services concatinated
 
   // mutation - create order
   const orderMutation = useMutation({
@@ -129,7 +127,10 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
           : "Purchase Order Created Successfully"
       );
       queryClient.invalidateQueries({
-        queryKey: [order_api.getSales.endpointKey],
+        queryKey:
+          cta === "offer"
+            ? [order_api.getSales.endpointKey]
+            : [order_api.getPurchases.endpointKey],
       });
     },
     onError: () => {
@@ -137,7 +138,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
     },
   });
 
-  const handleCreateOrder = () => {
+  const handleSetTotalAmt = () => {
     const totalAmount = order.order_items.reduce((totalAmt, orderItem) => {
       return totalAmt + orderItem.total_amount;
     }, 0);
@@ -146,14 +147,18 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
       return totalGst + orderItem2.total_gst_amount;
     }, 0);
 
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      amount: totalAmount,
-      gst_amount: totalGstAmt,
-    }));
+    return { totalAmount, totalGstAmt };
+  };
 
-    // posting the data
-    // orderMutation.mutate(order);
+  // handling submit fn
+  const handleSubmit = () => {
+    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+
+    orderMutation.mutate({
+      ...order,
+      amount: parseFloat(totalAmount.toFixed(2)),
+      gst_amount: parseFloat(totalGstAmt.toFixed(2)),
+    });
   };
 
   return (
@@ -163,15 +168,17 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
         <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
         <Select
           defaultValue=""
-          onValueChange={(value) =>
-            setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
-          }
+          onValueChange={(value) => {
+            cta === "offer"
+              ? setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
+              : setOrder((prev) => ({ ...prev, seller_enterprise_id: value }));
+          }}
         >
           <SelectTrigger className="max-w-xs">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
-            {/* <SelectItem value="add-new"> */}
+            {/* if expected client is not in the list add a new client */}
             {type === "sales" && (
               <AddModal
                 btnName="Add Client"
@@ -182,6 +189,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
                 onSubmit={(newClient) => {}}
               />
             )}
+            {/* if expected vendor is not in the list add a new vendor */}
             {type === "purchase" && (
               <AddModal
                 btnName="Add Vendor"
@@ -192,8 +200,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
                 onSubmit={(newVendor) => {}}
               />
             )}
-            {/* <span className="text-blue-500">+</span> Add New */}
-            {/* </SelectItem> */}
+
             {cta == "offer" ? (
               <>
                 {formattedData?.map((client) => (
@@ -213,6 +220,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
             )}
           </SelectContent>
         </Select>
+
         {/* {name === "Invoice" && (
           <>
             <Label>Order</Label>
@@ -250,7 +258,7 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
                   product_id: value,
                   product_type: selectedItemData.product_type,
                   product_name: selectedItemData.product_name,
-                  unit_price: selectedItemData.rate,
+                  unit_price: selectedItemData.amount,
                   gst_per_unit: selectedItemData.gstPercentage,
                 }));
               }}
@@ -280,15 +288,16 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
             <Input
               value={selectedItem.quantity}
               onChange={(e) => {
-                const AmtPerUnit = e.target.value * selectedItem.unit_price;
-                // (selectedItem.total_amount * selectedItem.gst_per_unit) / 100;
-                const GstAmt = (AmtPerUnit * selectedItem.gst_per_unit) / 100;
-                const totalAmtWithGst = AmtPerUnit + GstAmt;
-
+                const totalAmt = parseFloat(
+                  (e.target.value * selectedItem.unit_price).toFixed(2)
+                ); // totalAmt excluding gst
+                const GstAmt = parseFloat(
+                  (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2)
+                ); // total gstAmt
                 setSelectedItem((prev) => ({
                   ...prev,
-                  quantity: e.target.value,
-                  total_amount: totalAmtWithGst,
+                  quantity: Number(e.target.value),
+                  total_amount: totalAmt,
                   total_gst_amount: GstAmt,
                 }));
               }}
@@ -336,7 +345,10 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
           </Button>
         </div>
       </div>
+
+      {/* selected itme table */}
       <DataTable data={order.order_items} columns={createSalesColumns} />
+
       <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
       <div className="flex justify-end items-center gap-4 ">
@@ -346,14 +358,16 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type }) => {
 
         <SuccessModal
           onClose={() => {
-            orderMutation.mutate(order);
-            // onSubmit(
-            //   order,
-            //   cta == "offer" ? (order.type = "offer") : (order.type = "Bid")
-            // );
+            onCancel();
           }}
         >
-          <Button onClick={handleCreateOrder}>Create</Button>
+          <Button
+            onClick={
+              handleSubmit // invoke handle submit fn
+            }
+          >
+            Create
+          </Button>
         </SuccessModal>
       </div>
     </Wrapper>

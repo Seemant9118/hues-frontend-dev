@@ -3,11 +3,19 @@
 import React from "react";
 import Wrapper from "@/components/Wrapper";
 import SubHeader from "@/components/Sub-header";
-import { OrderColumns } from "./OrderColumns";
+import { useOrderColumns } from "./useOrderColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { order_api } from "@/api/order_api/order_api";
+import { OrderDetails } from "@/services/Orders_Services/Orders_Services";
+import Loading from "@/components/Loading";
 
 const ViewOrder = () => {
+  const router = useRouter();
+  const params = useParams();
+
   const items = [
     {
       item: "Crocin ",
@@ -28,19 +36,40 @@ const ViewOrder = () => {
       status: "Negotiation",
     },
   ];
+
+  const OrderColumns = useOrderColumns();
+
+  const { isLoading, data } = useQuery({
+    queryKey: [order_api.getOrderDetails.endpointKey],
+    queryFn: () => OrderDetails(params.order_id),
+    select: (data) => data.data.data,
+  });
+
   return (
     <Wrapper className="relative">
-      <SubHeader name={"ORDER ID: #" + 4444}></SubHeader>
-      <DataTable columns={OrderColumns} data={items}></DataTable>
+      {isLoading && !data && <Loading />}
 
-      <div className="absolute bottom-0 right-0">
-        <div className="flex justify-end">
-          <Button variant="grey" className="w-32" onClick={() => {}}>
-            {" "}
-            Close{" "}
-          </Button>
-        </div>
-      </div>
+      {!isLoading && data && (
+        <>
+          <SubHeader name={"ORDER ID: #" + params.order_id}></SubHeader>
+          <DataTable columns={OrderColumns} data={data.orderItems}></DataTable>
+
+          <div className="absolute bottom-0 right-0">
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                className="w-32"
+                onClick={() => {
+                  router.push("/sales-orders");
+                }}
+              >
+                {" "}
+                Close{" "}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </Wrapper>
   );
 };

@@ -26,8 +26,10 @@ import { order_api } from "@/api/order_api/order_api";
 import { GetPurchases } from "@/services/Orders_Services/Orders_Services";
 import { useQuery } from "@tanstack/react-query";
 import { LocalStorageService } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const PurchaseOrders = () => {
+  const router = useRouter();
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
   const [purchases, setPurchases] = useState([]);
@@ -133,7 +135,7 @@ const PurchaseOrders = () => {
             <DataTable
               columns={PurchaseColumns}
               onRowClick={onRowClick}
-              data={purchases.filter((purchase) => {
+              data={data.filter((purchase) => {
                 if (istype === "All" || istype === "") return true;
                 return purchase.type === istype;
               })}

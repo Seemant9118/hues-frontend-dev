@@ -16,7 +16,7 @@ export const order_api = {
   },
   //   4. Get Order Details
   getOrderDetails: {
-    endpoint: `/order/getorders/details/`,
+    endpoint: `/order/getordersdetails/`,
     endpointKey: "get_order_details",
   },
   //   5 . Delete Order

@@ -76,15 +76,16 @@ const SalesOrder = () => {
     router.push(`/sales-orders/${row.id}`);
   };
 
-  const { data } = useQuery({
+  const { data, isSuccess } = useQuery({
     queryKey: [order_api.getSales.endpointKey],
     queryFn: () => GetSales(enterprise_id),
     select: (data) => data.data.data,
   });
+  // console.log(data)
 
   return (
     <>
-      {!isCreatingSales && !isCreatingInvoice && data && (
+      {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
           <SubHeader name={"Sales"}>
             <div className="flex items-center justify-center gap-4">
@@ -138,14 +139,13 @@ const SalesOrder = () => {
               subItems={SaleEmptyStageData.subItems}
             />
           ) : (
-            <DataTable
-              columns={SalesColumns}
-              onRowClick={onRowClick}
-              data={data.filter((order) => {
-                if (istype === "All" || istype === "") return true;
-                return order.type === istype;
-              })}
-            />
+            isSuccess && (
+              <DataTable
+                columns={SalesColumns}
+                onRowClick={onRowClick}
+                data={data}
+              />
+            )
           )}
         </Wrapper>
       )}

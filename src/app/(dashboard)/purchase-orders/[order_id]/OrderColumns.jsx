@@ -13,30 +13,35 @@ export const OrderColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ITEMS" />
     ),
+    cell: ({ row }) => {
+      const productType = row.original.productType;
+      const name =
+        productType === "GOODS"
+          ? row.original.productDetails.productName
+          : row.original.productDetails.serviceName;
+      return name;
+    },
   },
   {
     accessorKey: "quantity",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="QUANTITY" />
     ),
-    cell: ({ row }) => {
-      const description = row.original.quantity;
-      return <p className="truncate">{description}</p>;
-    },
   },
   {
-    accessorKey: "price",
+    accessorKey: "totalAmount",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PRICE" />
     ),
   },
   {
-    accessorKey: "status",
+    accessorKey: "negotiationStatus",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="STATUS" />
     ),
     cell: ({ row }) => {
-      const status = row.original.status;
+      const status = row.original.negotiationStatus;
+      const offerDetails = row.original;
 
       let statusText,
         statusColor,
@@ -46,20 +51,20 @@ export const OrderColumns = [
         actionBtn,
         tooltip;
       switch (status) {
-        case "Accepted":
+        case "ACCEPTED":
           statusText = "Accepted";
           statusColor = "#39C06F";
           statusBG = "#39C06F1A";
           statusBorder = "#39C06F";
           break;
-        case "New":
+        case "NEW":
           statusText = "New";
           statusColor = "#1863B7";
           statusBG = "#1863B71A";
           statusBorder = "#1863B7";
           btnName = "Offer Price";
           break;
-        case "Negotiation":
+        case "NEGOTIATION":
           statusText = "Negotiation";
           statusColor = "#F8BA05";
           statusBG = "#F8BA051A";
@@ -86,7 +91,9 @@ export const OrderColumns = [
             {statusText} {tooltip}
           </div>
 
-          {btnName && <OfferPrice btnName={btnName} />}
+          {btnName && (
+            <OfferPrice btnName={btnName} offerDetails={offerDetails} />
+          )}
 
           {actionBtn && (
             <div className="flex items-center gap-1">
