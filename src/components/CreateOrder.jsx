@@ -17,7 +17,10 @@ import SuccessModal from "./Modals/SuccessModal";
 import AddModal from "./Modals/AddModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import {
+  CreateEnterpriseUser,
+  GetEnterpriseUsers,
+} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
 import { goods_api } from "@/api/inventories/goods/goods";
 import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
@@ -26,6 +29,7 @@ import { GetAllProductServices } from "@/services/Inventories_Services/Services_
 import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
 import { toast } from "sonner";
 import { order_api } from "@/api/order_api/order_api";
+import Loading from "./Loading";
 
 const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();
@@ -161,6 +165,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     });
   };
 
+
+
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
@@ -181,23 +187,19 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             {/* if expected client is not in the list add a new client */}
             {type === "sales" && (
               <AddModal
-                btnName="Add Client"
-                className="w-full"
-                type={"Add"}
-                cta="Add New"
-                modalHead="Client"
-                onSubmit={(newClient) => {}}
+                type={"Add Client"}
+                cta="client"
+                btnName="Add"
+                mutationFunc={CreateEnterpriseUser}
               />
             )}
             {/* if expected vendor is not in the list add a new vendor */}
             {type === "purchase" && (
               <AddModal
-                btnName="Add Vendor"
-                className={"w-full border-none"}
-                type={"Add"}
-                cta="Add New"
-                modalHead="Vendor"
-                onSubmit={(newVendor) => {}}
+                type={"Add Vendor"}
+                cta="vendor"
+                btnName="Add"
+                mutationFunc={CreateEnterpriseUser}
               />
             )}
 
@@ -362,6 +364,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           }}
         >
           <Button
+            disabled={!selectedItem && !order}
             onClick={
               handleSubmit // invoke handle submit fn
             }
@@ -371,6 +374,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         </SuccessModal>
       </div>
     </Wrapper>
+    
   );
 };
 

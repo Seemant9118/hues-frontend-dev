@@ -3,7 +3,7 @@
 import React from "react";
 import Wrapper from "@/components/Wrapper";
 import SubHeader from "@/components/Sub-header";
-import { OrderColumns } from "./OrderColumns";
+import { useOrderColumns } from "./useOrderColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
@@ -41,6 +41,8 @@ const ViewOrder = () => {
     queryFn: () => OrderDetails(params.order_id),
     select: (data) => data.data.data,
   });
+
+  const OrderColumns = useOrderColumns();
 
   return (
     <Wrapper className="relative">

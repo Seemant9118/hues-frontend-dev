@@ -13,7 +13,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import React, { useState } from "react";
-import { useSalesColumns } from "./SalesColumns";
+import { useSalesColumns } from "./useSalesColumns";
 import CreateOrder from "@/components/CreateOrder";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
@@ -81,13 +81,12 @@ const SalesOrder = () => {
     queryFn: () => GetSales(enterprise_id),
     select: (data) => data.data.data,
   });
-  // console.log(data)
 
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
-          <SubHeader name={"Sales"}>
+          <SubHeader name={"Sales"} className="bg-white z-10">
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
@@ -141,8 +140,8 @@ const SalesOrder = () => {
           ) : (
             isSuccess && (
               <DataTable
-                columns={SalesColumns}
                 onRowClick={onRowClick}
+                columns={SalesColumns}
                 data={data}
               />
             )
@@ -155,10 +154,6 @@ const SalesOrder = () => {
           type="sales"
           name="Offer"
           cta="offer"
-          onSubmit={(newOrder) => {
-            setOrders((prev) => [...prev, newOrder]);
-            setIsCreatingSales(false);
-          }}
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
@@ -170,17 +165,9 @@ const SalesOrder = () => {
           <CreateOrder
             name="Invoice"
             cta="offer"
-            onSubmit={(newOrder) => {
-              setOrders((prev) => [...prev, newOrder]);
-              setIsCreatingInvoice(false);
-            }}
             onCancel={() => setIsCreatingInvoice(false)}
           />
         )}
-
-      {/* {isOrderView && !isCreatingInvoice && !isCreatingSales && (
-        <ViewOrder setIsOrderView={setIsOrderView} />
-      )} */}
     </>
   );
 };

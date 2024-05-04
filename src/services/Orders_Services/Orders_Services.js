@@ -1,7 +1,6 @@
 import { order_api } from "@/api/order_api/order_api";
 import { APIinstance } from "@/services";
 
-
 export const CreateOrderService = (data) => {
   return APIinstance.post(order_api.createOrder.endpoint, data);
 };
@@ -31,4 +30,16 @@ export const GetNegotiationDetails = (orderId, itemId) => {
     order_api.getNegotiationDetails.endpoint +
       `?order_id=${orderId}&item_id=${itemId}`
   );
+};
+
+export const AccpetRejectNegotiation = (data) => {
+  return APIinstance.post(order_api.acceptRejectNegotiation.endpoint, data);
+};
+
+export const getSalesInvoices = (id) => {
+  return APIinstance.get(order_api.getSalesInvoice.endpoint + `${id}`);
+};
+
+export const getPurchaseInvoices = (id) => {
+  return APIinstance.get(order_api.getPurchaseInvoice.endpoint + `${id}`);
 };

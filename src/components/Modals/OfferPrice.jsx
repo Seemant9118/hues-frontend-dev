@@ -9,30 +9,34 @@ import {
 import { Button } from "@/components/ui/button";
 import InputWithLabel from "../InputWithLabel";
 import { RotateCw } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { LocalStorageService } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateNegotiation } from "@/services/Orders_Services/Orders_Services";
 import { toast } from "sonner";
 import { order_api } from "@/api/order_api/order_api";
+import moment from "moment";
 
 const OfferPrice = ({ btnName, offerDetails }) => {
   const params = useParams();
   const userId = LocalStorageService.get("user_profile");
-  const enterpriseId = LocalStorageService.get("enterprise_id");
   const queryClient = useQueryClient();
+  const pathName = usePathname();
+  const isSales = pathName.includes("sales-orders");
+  const date = moment(new Date()).format("DD-MM-YYYY");
 
   const [open, setOpen] = useState(false);
 
   const [bidOffer, setBidOffer] = useState({
     order_id: Number(params.order_id),
     order_item_id: offerDetails.id,
-    price_type: "OFFER",
+    price_type: isSales ? "OFFER" : "BID",
     createdBy: userId,
-    date: "30/03/2024/",
-    status: "OFFER_SUBMITTED",
+    date: date,
+    status: isSales ? "OFFER_SUBMITTED" : "BID_SUBMITTED",
     price: "",
   });
+  console.log(bidOffer);
 
   const changeOfferMutation = useMutation({
     mutationFn: (data) => CreateNegotiation(data),
@@ -94,7 +98,7 @@ const OfferPrice = ({ btnName, offerDetails }) => {
             <InputWithLabel
               name="Price"
               id="price"
-              value={offerDetails?.totalAmount}
+              value={"₹"+offerDetails?.totalAmount}
               disabled={true}
             />
             <InputWithLabel
@@ -116,9 +120,7 @@ const OfferPrice = ({ btnName, offerDetails }) => {
             >
               Cancel
             </Button>
-            <Button className="w-32" onClick={handleSubmitOffer}>
-              Change Offer
-            </Button>
+            <Button onClick={handleSubmitOffer}>Create Offer Price</Button>
           </div>
         </div>
       </DialogContent>

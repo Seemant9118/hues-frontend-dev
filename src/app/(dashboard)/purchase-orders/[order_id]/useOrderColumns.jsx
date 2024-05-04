@@ -1,7 +1,6 @@
-"use client";
-
 import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
+import ConfirmAction from "@/components/Modals/ConfirmAction";
 import OfferPrice from "@/components/Modals/OfferPrice";
 import SuccessModal from "@/components/Modals/SuccessModal";
 import Tooltips from "@/components/Tooltips";
@@ -12,11 +11,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Check, Info, RotateCw } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export const useOrderColumns = () => {
   const params = useParams();
   const order_id = params.order_id;
   const queryClient = useQueryClient();
+
 
   const mutationAccept = useMutation({
     mutationFn: (data) => AccpetRejectNegotiation(data),
@@ -30,13 +32,14 @@ export const useOrderColumns = () => {
   });
 
   const handleAcceptNegotiation = (row) => {
-
+    // console.log(isAcceptedStatus);
     mutationAccept.mutate({
       order_id: order_id,
       item_id: row.id,
       status: "ACCEPTED",
     });
   };
+
   return [
     {
       accessorKey: "item",
@@ -47,8 +50,8 @@ export const useOrderColumns = () => {
         const productType = row.original.productType;
         const name =
           productType === "GOODS"
-            ? row.original.productDetails.productName
-            : row.original.productDetails.serviceName;
+            ? row.original?.productDetails?.productName
+            : row.original?.productDetails?.serviceName;
         return name;
       },
     },
@@ -111,7 +114,11 @@ export const useOrderColumns = () => {
             statusBorder = "#F8BA05";
             actionBtn = "action";
             tooltip = (
-              <Tooltips trigger={<Info size={14} />} isContentShow="true" />
+              <Tooltips
+                trigger={<Info size={14} />}
+                isContentShow="true"
+                offerDetails={offerDetails}
+              />
             );
             break;
           default:
