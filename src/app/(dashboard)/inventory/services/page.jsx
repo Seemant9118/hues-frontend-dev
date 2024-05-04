@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { FileUploader } from "react-drag-drop-files";
-import { LocalStorageService } from "@/lib/utils";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import { services_api } from "@/api/inventories/services/services";
 import {
   CreateProductServices,
@@ -90,6 +90,16 @@ function Services() {
           <SubHeader name={"Services"}>
             <div className="flex items-center justify-center gap-4">
               <Button
+                variant={"export"}
+                size="sm"
+                onClick={() =>
+                  exportTableToExcel("services table", "services_list")
+                }
+              >
+                <Upload size={14} />
+                Export
+              </Button>
+              <Button
                 onClick={() => setisUploading(true)}
                 variant={"blue_outline"}
                 size="sm"
@@ -113,7 +123,11 @@ function Services() {
           {!isLoading &&
             isSuccess &&
             (data && data.length !== 0 ? (
-              <DataTable columns={ServicesColumns} data={data} />
+              <DataTable
+                id={"services table"}
+                columns={ServicesColumns}
+                data={data}
+              />
             ) : (
               <EmptyStageComponent
                 heading={InventoryEmptyStageData.heading}

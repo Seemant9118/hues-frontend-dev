@@ -11,6 +11,7 @@ import {
   FolderUp,
   KeySquare,
   PlusCircle,
+  Upload,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useSalesColumns } from "./SalesColumns";
@@ -28,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { order_api } from "@/api/order_api/order_api";
 import { GetSales } from "@/services/Orders_Services/Orders_Services";
-import { LocalStorageService } from "@/lib/utils";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 
 const SalesOrder = () => {
   const router = useRouter();
@@ -106,11 +107,12 @@ const SalesOrder = () => {
                 </Select>
               </div>
               <Button
+                onClick={() => exportTableToExcel("sale-orders", "sales_list")}
                 variant={"blue_outline"}
                 className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"
                 size="sm"
               >
-                <FolderUp size={14} />
+                <Upload size={14} />
                 Export
               </Button>
               <Button
@@ -141,6 +143,7 @@ const SalesOrder = () => {
           ) : (
             isSuccess && (
               <DataTable
+                id={"sale-orders"}
                 columns={SalesColumns}
                 onRowClick={onRowClick}
                 data={data}

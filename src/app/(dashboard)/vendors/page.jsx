@@ -1,20 +1,26 @@
 "use client";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
+import Loading from "@/components/Loading";
 import AddModal from "@/components/Modals/AddModal";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
-import React, { useState } from "react";
-import { VendorsColumns } from "./VendorsColumns";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import { BookUser, Settings, Eye, HeartHandshake, Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { Button } from "@/components/ui/button";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import {
   CreateEnterpriseUser,
   GetEnterpriseUsers,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { LocalStorageService } from "@/lib/utils";
-import Loading from "@/components/Loading";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BookUser,
+  Eye,
+  HeartHandshake,
+  Settings,
+  Upload
+} from "lucide-react";
+import { VendorsColumns } from "./VendorsColumns";
 
 const VendorsPage = () => {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
@@ -69,8 +75,16 @@ const VendorsPage = () => {
     <Wrapper>
       <SubHeader name={"Vendors"}>
         <div className="flex items-center justify-center gap-4">
+          <Button
+            variant={"export"}
+            size="sm"
+            onClick={() => exportTableToExcel("vendor table", "vendors_list")}
+          >
+            <Upload size={14} />
+            Export
+          </Button>
           <AddModal
-            type={"Add Vendor"}
+            type={"Add"}
             cta="vendor"
             btnName="Add"
             mutationFunc={CreateEnterpriseUser}
@@ -78,12 +92,16 @@ const VendorsPage = () => {
         </div>
       </SubHeader>
 
-      {isLoading && <Loading/>}
+      {isLoading && <Loading />}
 
       {!isLoading &&
         isSuccess &&
         (formattedData.length !== 0 ? (
-          <DataTable columns={VendorsColumns} data={formattedData} />
+          <DataTable
+            id={"vendor table"}
+            columns={VendorsColumns}
+            data={formattedData}
+          />
         ) : (
           <EmptyStageComponent
             heading={VendorsEmptyStageData.heading}

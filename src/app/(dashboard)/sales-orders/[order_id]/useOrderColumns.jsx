@@ -51,9 +51,10 @@ export const useOrderColumns = () => {
         const order_id = params.order_id;
         const item_id = row.original.id;
         const productType = row.original.productType;
-        const Item_Name = productType === "GOODS"
-        ? row.original.productDetails.productName
-        : row.original.productDetails.serviceName;
+        const Item_Name =
+          productType === "GOODS"
+            ? row.original.productDetails.productName
+            : row.original.productDetails.serviceName;
         const totalAmt = row.original.productDetails.totalAmt;
 
         let statusText,
@@ -94,7 +95,7 @@ export const useOrderColumns = () => {
         return (
           <div className="flex justify-between items-center">
             <div
-              className="w-24 p-1 flex justify-center items-center font-bold border rounded gap-1"
+              className="max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
               style={{
                 color: statusColor,
                 backgroundColor: statusBG,
@@ -105,12 +106,20 @@ export const useOrderColumns = () => {
             </div>
 
             {btnName && (
-              <OfferPrice btnName={btnName} offerDetails={offerDetails} offeredPrice={totalAmt}/>
+              <OfferPrice
+                btnName={btnName}
+                offerDetails={offerDetails}
+                offeredPrice={totalAmt}
+              />
             )}
 
             {actionBtn && (
               <div className="flex items-center gap-1">
-                <ChangeOfferPrice Item_Name={Item_Name} order_id={order_id}  item_id={item_id}/>
+                <ChangeOfferPrice
+                  Item_Name={Item_Name}
+                  order_id={order_id}
+                  item_id={item_id}
+                />
                 <SuccessModal cta="offer-confirmation" onClose={() => {}}>
                   <Button className="bg-green-600 hover:bg-green-700">
                     <Check size={24} strokeWidth={3} />

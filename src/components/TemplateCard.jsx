@@ -61,13 +61,16 @@ const TemplateCard = ({
         </Button>
       </div>
 
-      <div className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]">
+      <div
+        // className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]"
+        className="flex justify-between items-center"
+      >
         <ViewTemplate
           url={templateUrl}
           id={id}
           signatureBoxPlacement={signatureBoxPlacement}
         />
-        <Button
+        {/* <Button
           onClick={onViewFormClick}
           variant={"blue_outline"}
           size="sm"
@@ -75,12 +78,13 @@ const TemplateCard = ({
         >
           <Eye size={16} />
           Form
-        </Button>
+        </Button> */}
         <Button
-          onClick={mutate}
+          // onClick={mutate}
+          disabled={true}
           variant="ghost"
           size="icon"
-          className="text-neutral-500 hover:text-black "
+          className="text-neutral-500 hover:text-black"
         >
           {isPending ? <Loading /> : <Trash2 size={12} />}
         </Button>

@@ -4,17 +4,16 @@ import { order_api } from "@/api/order_api/order_api";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import { Info, MoreVertical } from "lucide-react";
 import moment from "moment";
-import { Button } from "@/components/ui/button";
 
 export const useSalesColumns = () => {
   return [
@@ -142,7 +141,7 @@ export const useSalesColumns = () => {
 
         return (
           <div
-            className="w-24 p-1 flex justify-center items-center font-bold border rounded gap-1"
+            className=" max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
             style={{
               color: statusColor,
               backgroundColor: statusBG,
@@ -176,10 +175,11 @@ export const useSalesColumns = () => {
       cell: ({ row }) => {
         const id = row.original.id;
         const name = "order";
-
+        const status = row.original.negotiationStatus;
+        if (status === "NEGOTIATION") return null;
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
                 <MoreVertical className="h-4 w-4" />

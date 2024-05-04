@@ -19,7 +19,7 @@ import { DeleteEnterpriseUser } from "@/services/Enterprises_Users_Service/Enter
 import { toast } from "sonner";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 
-const ConfirmAction = ({ name, id,mutationKey, mutationFunc }) => {
+const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -39,7 +39,7 @@ const ConfirmAction = ({ name, id,mutationKey, mutationFunc }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
         <button
           className={cn(
             "gap-2 w-full justify-center text-red-500 hover:bg-red-100 cursor-pointer relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
