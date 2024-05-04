@@ -108,9 +108,7 @@ export const PurchaseColumns = [
           statusBG = "#F8BA051A";
           statusBorder = "#F8BA05";
           actionBtn = "action";
-          tooltip = (
-            <Tooltips trigger={<Info size={14} />} isContentShow="true" />
-          );
+
           break;
         default:
           return null;

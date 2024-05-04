@@ -81,7 +81,7 @@ const SalesOrder = () => {
     queryFn: () => GetSales(enterprise_id),
     select: (data) => data.data.data,
   });
-  // console.log(data)
+
 
   return (
     <>
@@ -155,10 +155,6 @@ const SalesOrder = () => {
           type="sales"
           name="Offer"
           cta="offer"
-          onSubmit={(newOrder) => {
-            setOrders((prev) => [...prev, newOrder]);
-            setIsCreatingSales(false);
-          }}
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
@@ -170,17 +166,10 @@ const SalesOrder = () => {
           <CreateOrder
             name="Invoice"
             cta="offer"
-            onSubmit={(newOrder) => {
-              setOrders((prev) => [...prev, newOrder]);
-              setIsCreatingInvoice(false);
-            }}
             onCancel={() => setIsCreatingInvoice(false)}
           />
         )}
 
-      {/* {isOrderView && !isCreatingInvoice && !isCreatingSales && (
-        <ViewOrder setIsOrderView={setIsOrderView} />
-      )} */}
     </>
   );
 };

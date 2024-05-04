@@ -36,4 +36,22 @@ export const order_api = {
     endpoint: `/order/negotiation/negotiationdetails`,
     endpointKey: "get_negotiation_details",
   },
+
+  // 8. accept/reject negotiation
+  acceptRejectNegotiation: {
+    endpoint: `/order/negotiation/updatestatus`,
+    endpointKey: "get_accept_reject_negotiation",
+  },
+
+  // 9. get Sales Invoice
+  getSalesInvoice: {
+    endpoint: `/order/salesinvoices/`,
+    endpointKey: "get_sales_invoice",
+  },
+
+  // 10. get Purchase Invoice
+  getPurchaseInvoice: {
+    endpoint: `/order/purchaseinvoices/`,
+    endpointKey: "get_purchase_invoice",
+  },
 };

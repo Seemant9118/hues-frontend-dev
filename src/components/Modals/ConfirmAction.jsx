@@ -19,7 +19,7 @@ import { DeleteEnterpriseUser } from "@/services/Enterprises_Users_Service/Enter
 import { toast } from "sonner";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 
-const ConfirmAction = ({ name, id,mutationKey, mutationFunc }) => {
+const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -66,7 +66,14 @@ const ConfirmAction = ({ name, id,mutationKey, mutationFunc }) => {
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={() => mutation.mutate(id)}>Delete</Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropogation();
+              mutation.mutate(id);
+            }}
+          >
+            Delete
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

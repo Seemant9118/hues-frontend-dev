@@ -132,9 +132,6 @@ export const useSalesColumns = () => {
             statusBG = "#F8BA051A";
             statusBorder = "#F8BA05";
             actionBtn = "action";
-            tooltip = (
-              <Tooltips trigger={<Info size={14} />} isContentShow="true" />
-            );
             break;
           default:
             return null;
@@ -176,7 +173,7 @@ export const useSalesColumns = () => {
       cell: ({ row }) => {
         const id = row.original.id;
         const name = "order";
-
+        
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

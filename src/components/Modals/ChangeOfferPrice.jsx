@@ -12,9 +12,15 @@ import { RotateCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { order_api } from "@/api/order_api/order_api";
 import { GetNegotiationDetails } from "@/services/Orders_Services/Orders_Services";
+import { useParams } from "next/navigation";
 import Loading from "../Loading";
+import { Input } from "../ui/input";
 
-const ChangeOfferPrice = ({ Item_Name, order_id, item_id, offeredPrice }) => {
+const ChangeOfferPrice = ({ offerDetails }) => {
+  const params = useParams();
+  const order_id = params.order_id;
+  const item_id = offerDetails.id;
+
   const [open, setOpen] = useState(false);
   const { isLoading, data } = useQuery({
     queryKey: [order_api.getNegotiationDetails.endpointKey],
@@ -39,31 +45,51 @@ const ChangeOfferPrice = ({ Item_Name, order_id, item_id, offeredPrice }) => {
             <InputWithLabel
               name="Item"
               id="name"
-              value={Item_Name}
+              value={
+                offerDetails?.productType === "GOODS"
+                  ? offerDetails?.productDetails?.productName
+                  : offerDetails?.productDetails?.serviceName
+              }
               disabled={true}
             />
 
-            {data.map((negotiatioItem) => (
-              <div key={negotiatioItem.id} className="flex flex-col gap-2 ">
+            {data.map((negotiationItem) => (
+              <div key={negotiationItem.id} className="flex flex-col gap-2 ">
                 <span className="text-[#3288ED] text-xs">
-                  {negotiatioItem.date}
+                  {negotiationItem.date}
                 </span>
                 <div className="grid grid-cols-2 px-10 gap-2">
                   <div className="flex flex-col">
                     <span className="font-bold">Offered Price</span>
                     <span className="font-bold text-slate-700">
-                      {offeredPrice}
+                    ₹{offerDetails.totalAmount}
                     </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="font-bold">Your Price</span>
                     <span className="font-bold text-slate-700">
-                      {negotiatioItem.price}
+                    ₹{negotiationItem.price}
                     </span>
+                  </div>
+                </div>
+                {/* input fields */}
+                <div className="grid grid-cols-2 gap-2 px-10">
+                  <div>
+                    <span className="font-bold">Offered Price</span>
+                    <Input
+                      name="offeredPrice"
+                      value={"₹"+negotiationItem.price}
+                      disabled={true}
+                    />
+                  </div>
+                  <div>
+                    <span className="font-bold">Your Price</span>
+                    <Input name="offeredPrice" />
                   </div>
                 </div>
               </div>
             ))}
+
             <div className="border "></div>
 
             <div className="flex justify-end items-center gap-2">
