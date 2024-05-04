@@ -1,8 +1,8 @@
 import { template_api } from "@/api/templates_api/template_api";
 import { APIinstance } from "@/services";
 
-export function getTemplates() {
-  return APIinstance.get(template_api.getTemplates.endpoint);
+export function getTemplates(id) {
+  return APIinstance.get(template_api.getTemplates.endpoint + `/${id}`);
 }
 
 export function getTemplate(id) {
@@ -30,4 +30,9 @@ export function updateFormResponse(data, id) {
     template_api.updateFormResponse.endpoint + `${id}`,
     data
   );
+}
+export function getDocument(urlString) {
+  return APIinstance.post(template_api.getS3Document.endpoint, {
+    urlString,
+  });
 }
