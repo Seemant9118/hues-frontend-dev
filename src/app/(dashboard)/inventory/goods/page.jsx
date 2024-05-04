@@ -1,40 +1,34 @@
 "use client";
+import { goods_api } from "@/api/inventories/goods/goods";
 import AddItem from "@/components/AddItem";
+import EditItem from "@/components/EditItem";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
+import Loading from "@/components/Loading";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
-import { Columns } from "@/components/columns";
-import { useGoodsColumns } from "./GoodsColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
+import {
+  GetAllProductGoods,
+  UpdateProductGoods
+} from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
+import { useQuery } from "@tanstack/react-query";
 import {
   Check,
-  Download,
-  FileEdit,
-  Layers2,
-  Trash2,
-  Upload,
-  UploadCloud,
   CircleFadingPlus,
   DatabaseZap,
-  KeySquare,
-  FileText,
+  Download,
   FileCheck,
+  FileText,
+  KeySquare,
+  Trash2,
+  Upload,
+  UploadCloud
 } from "lucide-react";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
-import { LocalStorageService } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { goods_api } from "@/api/inventories/goods/goods";
-import {
-  CreateProductGoods,
-  DeleteProductGoods,
-  GetAllProductGoods,
-  UpdateProductGoods,
-} from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import EditItem from "@/components/EditItem";
-import Loading from "@/components/Loading";
+import { useGoodsColumns } from "./GoodsColumns";
 
 function Goods() {
   const enpterpriseId = LocalStorageService.get("enterprise_Id");
@@ -92,6 +86,16 @@ function Goods() {
           <SubHeader name={"Goods"}>
             <div className="flex items-center justify-center gap-4">
               <Button
+                variant={"export"}
+                size="sm"
+                onClick={() =>
+                  exportTableToExcel("goods table", "goods_list")
+                }
+              >
+                <Upload size={14} />
+                Export
+              </Button>
+              <Button
                 onClick={() => setisUploading(true)}
                 variant={"blue_outline"}
                 size="sm"
@@ -115,7 +119,11 @@ function Goods() {
           {!isLoading &&
             isSuccess &&
             (data && data.length !== 0 ? (
-              <DataTable columns={GoodsColumns} data={data} />
+              <DataTable
+                id={"goods table"}
+                columns={GoodsColumns}
+                data={data}
+              />
             ) : (
               <EmptyStageComponent
                 heading={InventoryEmptyStageData.heading}

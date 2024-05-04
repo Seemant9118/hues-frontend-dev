@@ -11,6 +11,7 @@ import {
   KeySquare,
   PlusCircle,
   ShieldCheck,
+  Upload,
 } from "lucide-react";
 import { usePurchaseColumns } from "./usePurchaseColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
@@ -25,7 +26,7 @@ import CreateOrder from "@/components/CreateOrder";
 import { order_api } from "@/api/order_api/order_api";
 import { GetPurchases } from "@/services/Orders_Services/Orders_Services";
 import { useQuery } from "@tanstack/react-query";
-import { LocalStorageService } from "@/lib/utils";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const PurchaseOrders = () => {
@@ -80,7 +81,7 @@ const PurchaseOrders = () => {
 
   return (
     <>
-      {!isCreatingPurchase && !isCreatingInvoice && data && (
+      {!isCreatingPurchase && data && (
         <Wrapper>
           <SubHeader name={"Purchases"}>
             <div className="flex items-center justify-center gap-4">
@@ -101,11 +102,14 @@ const PurchaseOrders = () => {
                 </Select>
               </div>
               <Button
+                onClick={() =>
+                  exportTableToExcel("purchase-orders", "purchases_list", false)
+                }
                 variant={"blue_outline"}
                 className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"
                 size="sm"
               >
-                <FolderUp size={14} />
+                <Upload size={14} />
                 Export
               </Button>
               <Button
@@ -134,16 +138,15 @@ const PurchaseOrders = () => {
               subItems={PurchaseEmptyStageData.subItems}
             />
           ) : (
-            isSuccess && (
-              <DataTable
-                columns={PurchaseColumns}
-                onRowClick={onRowClick}
-                data={data.filter((purchase) => {
-                  if (istype === "All" || istype === "") return true;
-                  return purchase.type === istype;
-                })}
-              />
-            )
+            <DataTable
+              id={"purchase-orders"}
+              columns={PurchaseColumns}
+              onRowClick={onRowClick}
+              data={data.filter((purchase) => {
+                if (istype === "All" || istype === "") return true;
+                return purchase.type === istype;
+              })}
+            />
           )}
         </Wrapper>
       )}
@@ -159,18 +162,6 @@ const PurchaseOrders = () => {
           }}
         />
       )}
-      {/* {!isCreatingPurchase && isCreatingInvoice && (
-        <CreateOrder
-          type="purchase"
-          name={"Invoice"}
-          cta="Invoice"
-          onCancel={() => setIsCreatingInvoice(false)}
-          onSubmit={(newOrder) => {
-            setPurchases((prev) => [...prev, newOrder]);
-            setIsCreatingInvoice(false);
-          }}
-        />
-      )} */}
     </>
   );
 };

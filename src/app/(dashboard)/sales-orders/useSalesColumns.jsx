@@ -167,7 +167,7 @@ export const useSalesColumns = () => {
 
         return (
           <div
-            className="w-24 p-1 flex justify-center items-center font-bold border rounded gap-1"
+            className="max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
             style={{
               color: statusColor,
               backgroundColor: statusBG,
@@ -201,7 +201,8 @@ export const useSalesColumns = () => {
       cell: ({ row }) => {
         const id = row.original.id;
         const name = "order";
-
+        const status = row.original.negotiationStatus;
+        if (status === "NEGOTIATION") return null;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

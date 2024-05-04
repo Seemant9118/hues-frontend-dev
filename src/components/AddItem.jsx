@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { goods_api } from "@/api/inventories/goods/goods";
+import { services_api } from "@/api/inventories/services/services";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import InputWithLabel from "./InputWithLabel";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,20 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { LocalStorageService } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { LocalStorageService, cn } from "@/lib/utils";
 import { CreateProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import { toast } from "sonner";
 import { CreateProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
-import { goods_api } from "@/api/inventories/goods/goods";
-import { services_api } from "@/api/inventories/services/services";
-import DatePickers from "./DatePickers";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 import moment from "moment";
+import { useState } from "react";
+import { toast } from "sonner";
+import DatePickers from "./DatePickers";
+import InputWithLabel from "./InputWithLabel";
 
 const AddItem = ({ name, onCancel, cta }) => {
-  
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const user_id = LocalStorageService.get("user_profile");
@@ -294,7 +292,6 @@ const AddItem = ({ name, onCancel, cta }) => {
           value={item.expiry}
         /> */}
 
-
         <div className="grid w-full items-center gap-1.5">
           <Label
             htmlFor="dob"
@@ -311,35 +308,33 @@ const AddItem = ({ name, onCancel, cta }) => {
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
         </div>
-
-
       </div>
       <div className="grid grid-cols-4 gap-2.5">
         <InputWithLabel
           name="Weight (kg)"
           id="weight"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.weight}
         />
         <InputWithLabel
           name="Length (cm)"
           id="length"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.length}
         />
         <InputWithLabel
           name="Breadth (cm)"
           id="breadth"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.breadth}
         />
         <InputWithLabel
           name="Height (cm)"
           id="height"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.height}
         />

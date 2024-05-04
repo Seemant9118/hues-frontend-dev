@@ -39,7 +39,7 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
         <button
           className={cn(
             "gap-2 w-full justify-center text-red-500 hover:bg-red-100 cursor-pointer relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"

@@ -40,3 +40,30 @@ export class LocalStorageService {
     localStorage.clear();
   }
 }
+export function exportTableToExcel(
+  tableID,
+  filename = "exported_table",
+  excludeLast = true
+) {
+  const table = document.getElementById(tableID);
+  const rows = table.getElementsByTagName("tr");
+  const csvData = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = [],
+      cols = rows[i].querySelectorAll("td, th");
+    for (let j = 0; j < cols.length - excludeLast ? 1 : 0; j++) {
+      row.push(cols[j].innerText);
+    }
+    csvData.push(row.join(","));
+  }
+
+  const csvContent = "data:text/csv;charset=utf-8," + csvData.join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", filename + ".csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

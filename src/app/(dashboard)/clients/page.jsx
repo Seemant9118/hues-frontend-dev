@@ -1,21 +1,20 @@
 "use client";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
+import Loading from "@/components/Loading";
 import AddModal from "@/components/Modals/AddModal";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { Layers2, UserPlus, Key, BookCheck, BookUser } from "lucide-react";
-import React, { useState } from "react";
-import { ClientsColumns } from "./ClientsColumns";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import { useQuery } from "@tanstack/react-query";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import {
   CreateEnterpriseUser,
   GetEnterpriseUsers,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import { LocalStorageService } from "@/lib/utils";
-import Loading from "@/components/Loading";
+import { useQuery } from "@tanstack/react-query";
+import { BookCheck, BookUser, Key, Upload, UserPlus } from "lucide-react";
+import { ClientsColumns } from "./ClientsColumns";
 
 const ClientPage = () => {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
@@ -69,8 +68,16 @@ const ClientPage = () => {
     <Wrapper>
       <SubHeader name={"Clients"}>
         <div className="flex items-center justify-center gap-4">
+          <Button
+            variant={"export"}
+            size="sm"
+            onClick={() => exportTableToExcel("client table", "clients_list")}
+          >
+            <Upload size={14} />
+            Export
+          </Button>
           <AddModal
-            type={"Add Client"}
+            type={"Add"}
             cta="client"
             btnName="Add"
             mutationFunc={CreateEnterpriseUser}
@@ -83,7 +90,11 @@ const ClientPage = () => {
       {!isLoading &&
         isSuccess &&
         (formattedData.length !== 0 ? (
-          <DataTable columns={ClientsColumns} data={formattedData} />
+          <DataTable
+            id={"client table"}
+            columns={ClientsColumns}
+            data={formattedData}
+          />
         ) : (
           <EmptyStageComponent
             heading={ClientsEmptyStageData.heading}

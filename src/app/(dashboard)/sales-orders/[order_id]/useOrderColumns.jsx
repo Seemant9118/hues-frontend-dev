@@ -121,7 +121,7 @@ export const useOrderColumns = () => {
         return (
           <div className="flex justify-between items-center">
             <div
-              className="w-24 p-1 flex justify-center items-center font-bold border rounded gap-1"
+              className="max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
               style={{
                 color: statusColor,
                 backgroundColor: statusBG,

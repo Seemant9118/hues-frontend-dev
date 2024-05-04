@@ -1,21 +1,11 @@
 "use client";
+import { order_api } from "@/api/order_api/order_api";
+import CreateOrder from "@/components/CreateOrder";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import {
-  CloudFog,
-  DatabaseZap,
-  FileCheck,
-  FileText,
-  FolderUp,
-  KeySquare,
-  PlusCircle,
-} from "lucide-react";
-import React, { useState } from "react";
-import { useSalesColumns } from "./useSalesColumns";
-import CreateOrder from "@/components/CreateOrder";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
   Select,
   SelectContent,
@@ -23,12 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import ViewOrder from "./[order_id]/page";
-import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { order_api } from "@/api/order_api/order_api";
+import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import { GetSales } from "@/services/Orders_Services/Orders_Services";
-import { LocalStorageService } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import {
+  DatabaseZap,
+  FileCheck,
+  FileText,
+  KeySquare,
+  PlusCircle,
+  Upload
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useSalesColumns } from "./useSalesColumns";
 
 const SalesOrder = () => {
   const router = useRouter();
@@ -105,11 +103,12 @@ const SalesOrder = () => {
                 </Select>
               </div>
               <Button
+                onClick={() => exportTableToExcel("sale-orders", "sales_list")}
                 variant={"blue_outline"}
                 className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"
                 size="sm"
               >
-                <FolderUp size={14} />
+                <Upload size={14} />
                 Export
               </Button>
               <Button
@@ -140,8 +139,9 @@ const SalesOrder = () => {
           ) : (
             isSuccess && (
               <DataTable
-                onRowClick={onRowClick}
+                id={"sale-orders"}
                 columns={SalesColumns}
+                onRowClick={onRowClick}
                 data={data}
               />
             )
