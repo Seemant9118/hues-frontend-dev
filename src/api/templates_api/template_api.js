@@ -42,7 +42,7 @@ export const template_api = {
   },
   //   9. Get Uploaded Document from s3
   getS3Document: {
-    endpoint: `/api/v1/template/form/gets3link/`,
+    endpoint: `/template/form/gets3link/`,
     endpointKey: "get s3 document",
   },
 };
