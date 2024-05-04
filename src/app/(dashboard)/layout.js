@@ -1,16 +1,39 @@
 "use client";
-import React from "react";
+import React, { use, useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { UserProvider } from "@/context/UserContext";
 import VerifyDetail from "@/components/VerifyDetail";
+import { LocalStorageService } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { user_Auth } from "@/api/user_auth/Users";
+import { checkKYCstatus } from "@/services/User_Auth_Service/UserAuthServices";
+import { Button } from "@/components/ui/button";
+import KYCnotificationCard from "@/components/KYCnotificationCard";
 
 export default function DashBoardLayout({ children }) {
+  const userId = LocalStorageService.get("user_profile");
+  const [isExpireKYC, setExpireKYC] = useState(false); // condional KYCnotification component popUp
+
+  const { data } = useQuery({
+    queryKey: [user_Auth.statucKYC.endpointKey],
+    queryFn: () => checkKYCstatus({ user_id: userId }),
+    select: (data) => data.data.data,
+  });
+
   return (
     <UserProvider>
       <Header />
       {/* Veridy Detail component - digilocker flow */}
-      {/* <VerifyDetail /> */}
+      {/* {data?.userKyc.kycStatus === "KYC_APPROVAL_PENDING" && (
+        <VerifyDetail
+          submittedDetails={data.userKyc.profile_diff.submitted_details}
+          kycDetails={data.userKyc.profile_diff.kyc_fetch_details}
+        />
+      )} */}
+
+      {/* Notification KYC status */}
+      {/* <KYCnotificationCard isExpireKYC={isExpireKYC} /> */}
 
       <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5 max-h-full overflow-y-auto relative scrollBarStyles">
         <Sidebar />

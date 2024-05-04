@@ -4,7 +4,14 @@ import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { DatabaseZap, FileCheck, FolderUp, KeySquare, PlusCircle, ShieldCheck } from "lucide-react";
+import {
+  DatabaseZap,
+  FileCheck,
+  FolderUp,
+  KeySquare,
+  PlusCircle,
+  ShieldCheck,
+} from "lucide-react";
 import { PurchaseColumns } from "./PurchaseColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
@@ -15,8 +22,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CreateOrder from "@/components/CreateOrder";
+import { order_api } from "@/api/order_api/order_api";
+import { GetPurchases } from "@/services/Orders_Services/Orders_Services";
+import { useQuery } from "@tanstack/react-query";
+import { LocalStorageService } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const PurchaseOrders = () => {
+  const router = useRouter();
+  const enterprise_id = LocalStorageService.get("enterprise_Id");
+
   const [purchases, setPurchases] = useState([]);
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
@@ -51,9 +66,19 @@ const PurchaseOrders = () => {
     ],
   };
 
+  const onRowClick = (row) => {
+    router.push(`/purchase-orders/${row.id}`);
+  };
+
+  const { data } = useQuery({
+    queryKey: [order_api.getPurchases.endpointKey],
+    queryFn: () => GetPurchases(enterprise_id),
+    select: (data) => data.data.data,
+  });
+
   return (
     <>
-      {!isCreatingPurchase && !isCreatingInvoice && (
+      {!isCreatingPurchase && !isCreatingInvoice && data && (
         <Wrapper>
           <SubHeader name={"Purchases"}>
             <div className="flex items-center justify-center gap-4">
@@ -99,7 +124,7 @@ const PurchaseOrders = () => {
               </Button>
             </div>
           </SubHeader>
-          {purchases.length === 0 ? (
+          {data?.length === 0 ? (
             <EmptyStageComponent
               heading={PurchaseEmptyStageData.heading}
               desc={PurchaseEmptyStageData.desc}
@@ -109,7 +134,8 @@ const PurchaseOrders = () => {
           ) : (
             <DataTable
               columns={PurchaseColumns}
-              data={purchases.filter((purchase) => {
+              onRowClick={onRowClick}
+              data={data.filter((purchase) => {
                 if (istype === "All" || istype === "") return true;
                 return purchase.type === istype;
               })}
@@ -119,6 +145,7 @@ const PurchaseOrders = () => {
       )}
       {isCreatingPurchase && !isCreatingInvoice && (
         <CreateOrder
+          type="purchase"
           name={"Bid"}
           cta="bid"
           onCancel={() => setIsCreatingPurchase(false)}

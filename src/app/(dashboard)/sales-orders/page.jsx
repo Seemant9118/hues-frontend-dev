@@ -3,12 +3,19 @@ import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import { CloudFog, DatabaseZap, FileCheck, FileText, FolderUp, KeySquare, PlusCircle } from "lucide-react";
+import {
+  CloudFog,
+  DatabaseZap,
+  FileCheck,
+  FileText,
+  FolderUp,
+  KeySquare,
+  PlusCircle,
+} from "lucide-react";
 import React, { useState } from "react";
-import { SalesColumns } from "./SalesColumns";
+import { useSalesColumns } from "./SalesColumns";
 import CreateOrder from "@/components/CreateOrder";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
-
 import {
   Select,
   SelectContent,
@@ -16,12 +23,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ViewOrder from "./[order_id]/page";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { order_api } from "@/api/order_api/order_api";
+import { GetSales } from "@/services/Orders_Services/Orders_Services";
+import { LocalStorageService } from "@/lib/utils";
 
 const SalesOrder = () => {
+  const router = useRouter();
+  const enterprise_id = LocalStorageService.get("enterprise_Id");
+
   const [orders, setOrders] = useState([]);
   const [istype, setIsType] = useState("All");
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [isOrderView, setIsOrderView] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -51,6 +69,19 @@ const SalesOrder = () => {
       },
     ],
   };
+
+  const SalesColumns = useSalesColumns(setIsOrderView);
+
+  const onRowClick = (row) => {
+    router.push(`/sales-orders/${row.id}`);
+  };
+
+  const { data, isSuccess } = useQuery({
+    queryKey: [order_api.getSales.endpointKey],
+    queryFn: () => GetSales(enterprise_id),
+    select: (data) => data.data.data,
+  });
+  // console.log(data)
 
   return (
     <>
@@ -100,7 +131,7 @@ const SalesOrder = () => {
               </Button>
             </div>
           </SubHeader>
-          {orders.length === 0 ? (
+          {data?.length === 0 ? (
             <EmptyStageComponent
               heading={SaleEmptyStageData.heading}
               desc={SaleEmptyStageData.desc}
@@ -108,18 +139,20 @@ const SalesOrder = () => {
               subItems={SaleEmptyStageData.subItems}
             />
           ) : (
-            <DataTable
-              columns={SalesColumns}
-              data={orders.filter((order) => {
-                if (istype === "All" || istype === "") return true;
-                return order.type === istype;
-              })}
-            />
+            isSuccess && (
+              <DataTable
+                columns={SalesColumns}
+                onRowClick={onRowClick}
+                data={data}
+              />
+            )
           )}
         </Wrapper>
       )}
-      {isCreatingSales && !isCreatingInvoice && (
+
+      {isCreatingSales && !isCreatingInvoice && !isOrderView && (
         <CreateOrder
+          type="sales"
           name="Offer"
           cta="offer"
           onSubmit={(newOrder) => {
@@ -129,17 +162,25 @@ const SalesOrder = () => {
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
-      {isCreatingInvoice && (
-        <CreateOrder
-          name="Invoice"
-          cta="offer"
-          onSubmit={(newOrder) => {
-            setOrders((prev) => [...prev, newOrder]);
-            setIsCreatingInvoice(false);
-          }}
-          onCancel={() => setIsCreatingInvoice(false)}
-        />
-      )}
+
+      {isCreatingInvoice &&
+        !isCreatingSales &&
+        !isOrderView &
+        (
+          <CreateOrder
+            name="Invoice"
+            cta="offer"
+            onSubmit={(newOrder) => {
+              setOrders((prev) => [...prev, newOrder]);
+              setIsCreatingInvoice(false);
+            }}
+            onCancel={() => setIsCreatingInvoice(false)}
+          />
+        )}
+
+      {/* {isOrderView && !isCreatingInvoice && !isCreatingSales && (
+        <ViewOrder setIsOrderView={setIsOrderView} />
+      )} */}
     </>
   );
 };

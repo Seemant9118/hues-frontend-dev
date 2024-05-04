@@ -8,26 +8,158 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { CreateSalesColumns } from "@/components/columns/CreateSalesColumns";
+import { useCreateSalesColumns } from "@/components/columns/useCreateSalesColumns";
 import { DataTable } from "@/components/table/data-table";
 import Wrapper from "./Wrapper";
 import SubHeader from "./Sub-header";
 import { Button } from "./ui/button";
 import SuccessModal from "./Modals/SuccessModal";
-import { Plus } from "lucide-react";
 import AddModal from "./Modals/AddModal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { LocalStorageService } from "@/lib/utils";
+import { goods_api } from "@/api/inventories/goods/goods";
+import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
+import { services_api } from "@/api/inventories/services/services";
+import { GetAllProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
+import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
+import { toast } from "sonner";
+import { order_api } from "@/api/order_api/order_api";
 
-const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
-  const [createdOrders, setCreatedOrders] = useState([]);
-  const [order, setOrder] = useState({
-    customer: "",
-    type: "",
-    item: "",
-    price: "",
-    quantity: "",
-    gst: "",
-    amount: "",
+const CreateOrder = ({ onCancel, name, cta, type }) => {
+  const queryClient = useQueryClient();
+  const enterpriseId = LocalStorageService.get("enterprise_Id");
+
+  const [selectedItem, setSelectedItem] = useState({
+    product_name: "",
+    product_type: "",
+    product_id: "",
+    quantity: null,
+    unit_price: null,
+    gst_per_unit: null,
+    total_amount: null,
+    total_gst_amount: null,
   });
+  const [order, setOrder] = useState(
+    cta == "offer"
+      ? {
+          seller_enterprise_id: enterpriseId,
+          buyer_enterperise_id: null,
+          gst_amount: null,
+          amount: null,
+          order_type: "SALES",
+          order_items: [],
+        }
+      : {
+          seller_enterprise_id: null,
+          buyer_enterperise_id: enterpriseId,
+          gst_amount: null,
+          amount: null,
+          order_type: "PURCHASE",
+          order_items: [],
+        }
+  );
+
+  const createSalesColumns = useCreateSalesColumns(setOrder);
+
+  // client/vendor fetching
+  const { data: customerData } = useQuery({
+    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+    queryFn: () =>
+      GetEnterpriseUsers(
+        cta === "offer"
+          ? {
+              user_type: "client",
+              enterprise_id: enterpriseId,
+            }
+          : {
+              user_type: "vendor",
+              enterprise_id: enterpriseId,
+            }
+      ),
+    select: (customerData) => customerData.data.data,
+  });
+  let formattedData = [];
+  if (customerData) {
+    formattedData = customerData.flatMap((user) => ({
+      ...user.mappedUserEnterprise,
+      userId: user.id,
+    }));
+  }
+
+  // goods fetching
+  const { data: goodsData } = useQuery({
+    queryKey: [goods_api.getAllProductGoods.endpointKey],
+    queryFn: () => GetAllProductGoods(enterpriseId),
+    select: (goodsData) => goodsData.data.data,
+  });
+  const formattedGoodsData =
+    goodsData?.map((good) => ({
+      ...good,
+      product_type: "GOODS",
+      product_name: good.productName,
+    })) || [];
+
+  // services fetching
+  const { data: servicesData } = useQuery({
+    queryKey: [services_api.getAllProductServices.endpointKey],
+    queryFn: () => GetAllProductServices(enterpriseId),
+    select: (servicesData) => servicesData.data.data,
+  });
+
+  const formattedServicesData =
+    servicesData?.map((service) => ({
+      ...service,
+      product_type: "SERVICE",
+      product_name: service.serviceName,
+    })) || [];
+
+  const itemData = formattedGoodsData.concat(formattedServicesData); // both goods & services concatinated
+
+  // mutation - create order
+  const orderMutation = useMutation({
+    mutationFn: CreateOrderService,
+    onSuccess: () => {
+      toast.success(
+        cta === "offer"
+          ? "Sales Order Created Successfully"
+          : "Purchase Order Created Successfully"
+      );
+      queryClient.invalidateQueries({
+        queryKey:
+          cta === "offer"
+            ? [order_api.getSales.endpointKey]
+            : [order_api.getPurchases.endpointKey],
+      });
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
+
+  const handleSetTotalAmt = () => {
+    const totalAmount = order.order_items.reduce((totalAmt, orderItem) => {
+      return totalAmt + orderItem.total_amount;
+    }, 0);
+
+    const totalGstAmt = order.order_items.reduce((totalGst, orderItem2) => {
+      return totalGst + orderItem2.total_gst_amount;
+    }, 0);
+
+    return { totalAmount, totalGstAmt };
+  };
+
+  // handling submit fn
+  const handleSubmit = () => {
+    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+
+    orderMutation.mutate({
+      ...order,
+      amount: parseFloat(totalAmount.toFixed(2)),
+      gst_amount: parseFloat(totalGstAmt.toFixed(2)),
+    });
+  };
 
   return (
     <Wrapper>
@@ -35,27 +167,32 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
       <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
         <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
         <Select
-          value={order.customer}
-          onValueChange={(value) =>
-            setOrder((prev) => ({ ...prev, customer: value }))
-          }
+          defaultValue=""
+          onValueChange={(value) => {
+            cta === "offer"
+              ? setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
+              : setOrder((prev) => ({ ...prev, seller_enterprise_id: value }));
+          }}
         >
           <SelectTrigger className="max-w-xs">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
-            {/* <SelectItem value="add-new"> */}
+            {/* if expected client is not in the list add a new client */}
             {type === "sales" && (
               <AddModal
-                className={"w-full border-none"}
+                btnName="Add Client"
+                className="w-full"
                 type={"Add"}
                 cta="Add New"
                 modalHead="Client"
                 onSubmit={(newClient) => {}}
               />
             )}
+            {/* if expected vendor is not in the list add a new vendor */}
             {type === "purchase" && (
               <AddModal
+                btnName="Add Vendor"
                 className={"w-full border-none"}
                 type={"Add"}
                 cta="Add New"
@@ -63,21 +200,27 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
                 onSubmit={(newVendor) => {}}
               />
             )}
-            {/* <span className="text-blue-500">+</span> Add New */}
-            {/* </SelectItem> */}
+
             {cta == "offer" ? (
               <>
-                <SelectItem value="Client 1">Client 1</SelectItem>
-                <SelectItem value="Client 2">Client 2</SelectItem>
+                {formattedData?.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
               </>
             ) : (
               <>
-                <SelectItem value="Vendor 1">Vendor 1</SelectItem>
-                <SelectItem value="Vendor 2">Vendor 2</SelectItem>
+                {formattedData?.map((vendor) => (
+                  <SelectItem key={vendor.id} value={vendor.id}>
+                    {vendor.name}
+                  </SelectItem>
+                ))}
               </>
             )}
           </SelectContent>
         </Select>
+
         {/* {name === "Invoice" && (
           <>
             <Label>Order</Label>
@@ -104,84 +247,108 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
           <div className="flex items-center gap-4">
             <Label className="flex-shrink-0">Item</Label>
             <Select
-              value={order.item}
-              onValueChange={(value) =>
-                setOrder((prev) => ({ ...prev, item: value }))
-              }
+              defaultValue={selectedItem.product_id}
+              onValueChange={(value) => {
+                const selectedItemData = itemData?.find(
+                  (item) => value === item.id
+                );
+
+                setSelectedItem((prev) => ({
+                  ...prev,
+                  product_id: value,
+                  product_type: selectedItemData.product_type,
+                  product_name: selectedItemData.product_name,
+                  unit_price: selectedItemData.amount,
+                  gst_per_unit: selectedItemData.gstPercentage,
+                }));
+              }}
             >
               <SelectTrigger className="max-w-xs gap-5">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Item 1">Item 1</SelectItem>
-                <SelectItem value="Item 2">Item 2</SelectItem>
+                {itemData?.map((item) => (
+                  <SelectItem
+                    disabled={
+                      !!order.order_items.find(
+                        (itemO) => itemO.product_id === item.id
+                      )
+                    }
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.product_name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center gap-4">
             <Label>Quantity:</Label>
             <Input
-              value={order.quantity}
-              onChange={(e) =>
-                setOrder((prev) => ({
+              value={selectedItem.quantity}
+              onChange={(e) => {
+                const totalAmt = parseFloat(
+                  (e.target.value * selectedItem.unit_price).toFixed(2)
+                ); // totalAmt excluding gst
+                const GstAmt = parseFloat(
+                  (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2)
+                ); // total gstAmt
+                setSelectedItem((prev) => ({
                   ...prev,
-                  quantity: e.target.value,
-                }))
-              }
+                  quantity: Number(e.target.value),
+                  total_amount: totalAmt,
+                  total_gst_amount: GstAmt,
+                }));
+              }}
               className="max-w-20"
             />
           </div>
+
           <div className="flex items-center gap-4">
             <Label>Price:</Label>
-            <Input
-              value={order.price}
-              onChange={(e) =>
-                setOrder((prev) => ({
-                  ...prev,
-                  price: e.target.value,
-                }))
-              }
-              className="max-w-20"
-            />
+            <Input value={selectedItem.unit_price} className="max-w-20" />
           </div>
+
           <div className="flex items-center gap-4">
             <Label>GST (%) :</Label>
-            <Input
-              value={order.gst}
-              onChange={(e) =>
-                setOrder((prev) => ({
-                  ...prev,
-                  gst: e.target.value,
-                }))
-              }
-              className="max-w-20"
-            />
+            <Input value={selectedItem.gst_per_unit} className="max-w-20" />
           </div>
+
           <div className="flex items-center gap-4">
             <Label>Amount:</Label>
-            <Input
-              value={order.amount}
-              onChange={(e) =>
-                setOrder((prev) => ({
-                  ...prev,
-                  amount: e.target.value,
-                }))
-              }
-              className="max-w-20"
-            />
+            <Input value={selectedItem.total_amount} className="max-w-20" />
           </div>
         </div>
         <div className="flex items-center justify-end gap-4">
           <Button variant="outline">Cancel</Button>
           <Button
-            onClick={() => setCreatedOrders((prev) => [...prev, order])}
+            onClick={() => {
+              setOrder((prev) => ({
+                ...prev,
+                order_items: [...prev.order_items, selectedItem],
+              }));
+              setSelectedItem({
+                product_name: "",
+                product_type: "",
+                product_id: "",
+                quantity: "",
+                unit_price: "",
+                gst_per_unit: "",
+                total_amount: "", // total amount + gst amount
+                total_gst_amount: "",
+              });
+            }}
             variant="blue_outline"
           >
             Add
           </Button>
         </div>
       </div>
-      <DataTable data={createdOrders} columns={CreateSalesColumns} />
+
+      {/* selected itme table */}
+      <DataTable data={order.order_items} columns={createSalesColumns} />
+
       <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
       <div className="flex justify-end items-center gap-4 ">
@@ -190,14 +357,17 @@ const CreateOrder = ({ onCancel, onSubmit, name, cta, type = "sales" }) => {
         </Button>
 
         <SuccessModal
-          onClose={() =>
-            onSubmit(
-              order,
-              cta == "offer" ? (order.type = "Offer") : (order.type = "Bid")
-            )
-          }
+          onClose={() => {
+            onCancel();
+          }}
         >
-          <Button>Create</Button>
+          <Button
+            onClick={
+              handleSubmit // invoke handle submit fn
+            }
+          >
+            Create
+          </Button>
         </SuccessModal>
       </div>
     </Wrapper>

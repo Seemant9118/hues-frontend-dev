@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const InputWithLabel = ({ name, id, onChange, value, type, required }) => {
+const InputWithLabel = ({ name, id, onChange, value, type, required,disabled }) => {
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={id}>
@@ -14,6 +14,7 @@ const InputWithLabel = ({ name, id, onChange, value, type, required }) => {
         onChange={onChange}
         id={id}
         required={required}
+        disabled={disabled}
       />
     </div>
   );

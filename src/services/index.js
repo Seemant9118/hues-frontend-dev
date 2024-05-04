@@ -6,7 +6,6 @@ export const APIinstance = axios.create({
 });
 
 
-
 // axios interceptor
 APIinstance.interceptors.request.use(
     (request) => {

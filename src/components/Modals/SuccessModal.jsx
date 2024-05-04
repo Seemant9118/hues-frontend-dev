@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { Check, CheckCircle, CheckCircle2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-const SuccessModal = ({ children, onClose }) => {
+const SuccessModal = ({ children, cta, onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog
@@ -29,9 +29,9 @@ const SuccessModal = ({ children, onClose }) => {
           <Check />
         </div>
         <div>
-          <h3 className="text-2xl font-bold leading-8">Congratulations</h3>
+          <h3 className="text-2xl font-bold leading-8">{cta === "offer-confirmation" ? "Offer Accepted": "Congratulations"}</h3>
           <p className="font-medium text-grey">
-            Your order has been successfully created.
+            {cta === "offer-confirmation" ? "Your accepted your offer from Micheal Clark" : "Your order has been successfully created"}
           </p>
         </div>
       </DialogContent>

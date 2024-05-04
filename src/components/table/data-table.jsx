@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/table/DataTablePagination";
 
-export function DataTable({ columns, data, page }) {
+export function DataTable({ columns, data, page, onRowClick }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
@@ -69,6 +69,9 @@ export function DataTable({ columns, data, page }) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={
+                    onRowClick ? () => onRowClick(row.original) : () => {}
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="shrink-0 max-w-xl ">
