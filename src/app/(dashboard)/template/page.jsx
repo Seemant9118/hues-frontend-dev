@@ -1,42 +1,36 @@
 "use client";
+import { template_api } from "@/api/templates_api/template_api";
 import AddItem from "@/components/AddItem";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import TemplateCard from "@/components/TemplateCard";
 import Wrapper from "@/components/Wrapper";
 import { ResponseColumns } from "@/components/columns/ResponseColumns";
 import { DataTable } from "@/components/table/data-table";
+import ViewTemplate from "@/components/templates/ViewTemplate";
 import { Button } from "@/components/ui/button";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-  Eye,
-  Layers2,
-  MessageSquareText,
-  PackageOpen,
-  Trash2,
-  Upload,
-  FileCog,
-  FileCheck,
-  FileText,
-  KeySquare,
-  DatabaseZap,
-  ShieldCheck,
-  Search,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import ViewTemplate from "./ViewTemplate";
-import InputWithLabel from "@/components/InputWithLabel";
 import { Input } from "@/components/ui/input";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { template_api } from "@/api/templates_api/template_api";
+import { LocalStorageService } from "@/lib/utils";
 import {
   getTemplates,
   uploadTemplate,
 } from "@/services/Template_Services/Template_Services";
-import { LocalStorageService } from "@/lib/utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  DatabaseZap,
+  Eye,
+  FileCheck,
+  FileText,
+  KeySquare,
+  MessageSquareText,
+  Search,
+  ShieldCheck,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Home() {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
@@ -94,12 +88,12 @@ export default function Home() {
     },
   });
 
-  const { isLoading, data, error } = useQuery({
+  const { isLoading, data, error, isSuccess } = useQuery({
     queryKey: [template_api.getTemplates.endpointKey],
-    queryFn: getTemplates,
-    select:(data) => data.data.data
+    queryFn: () => getTemplates(enterpriseId),
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
   });
-
 
   console.log(data); // for testing
 
@@ -118,7 +112,7 @@ export default function Home() {
       ]);
 
       const formData = new FormData();
-      formData.append("file",uploadedFile);
+      formData.append("file", uploadedFile);
 
       uploadFileMutation.mutate(formData);
     }
@@ -206,27 +200,28 @@ export default function Home() {
             </div>
           </SubHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-            {data?.map((template, idx) => (
-              <TemplateCard
-                viewResponseClick={() => {
-                  setViewForm(false);
-                  setViewResponses(true);
-                  setSelectedTemplate(template);
-                }}
-                onDelete={() => {
-                  setTemplates((prev) => {
-                    const updated = [...prev];
-                    updated.splice(idx, 1);
-                    return updated;
-                  });
-                  toast.success("Templated Deleted Successfully.");
-                }}
-                onViewTemplateClick={() => {}}
-                onViewFormClick={() => setViewForm(true)}
-                {...template}
-                key={idx}
-              />
-            ))}
+            {isSuccess &&
+              data?.map((template, idx) => (
+                <TemplateCard
+                  viewResponseClick={() => {
+                    setViewForm(false);
+                    setViewResponses(true);
+                    setSelectedTemplate(template);
+                  }}
+                  onDelete={() => {
+                    setTemplates((prev) => {
+                      const updated = [...prev];
+                      updated.splice(idx, 1);
+                      return updated;
+                    });
+                    toast.success("Templated Deleted Successfully.");
+                  }}
+                  onViewTemplateClick={() => {}}
+                  onViewFormClick={() => setViewForm(true)}
+                  {...template}
+                  key={idx}
+                />
+              ))}
           </div>
         </Wrapper>
       )}
@@ -234,32 +229,31 @@ export default function Home() {
         <Wrapper>
           <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
             <div className="flex items-center gap-4 ">
-              {selectedTemplate?.type.replace(/(.*)\//g, "") === "pdf" ? (
-                <Image
-                  src={"/pdf_png.png"}
-                  alt="Template"
-                  height={55}
-                  width={60}
-                />
-              ) : (
-                <Image
-                  src={"/xlsx_png.png"}
-                  alt="Template"
-                  height={55}
-                  width={60}
-                />
-              )}
+              {/* {selectedTemplate?.type.replace(/(.*)\//g, "") === "pdf" ? ( */}
+              <Image
+                src={"/pdf_png.png"}
+                alt="Template"
+                height={55}
+                width={60}
+              />
+              {/* // ) : (
+              //   <Image
+              //     src={"/xlsx_png.png"}
+              //     alt="Template"
+              //     height={55}
+              //     width={60}
+              //   />
+              // )} */}
               <div className="grid gap-2">
                 <p className="text-grey font-bold text-sm">Template Name</p>
                 <p className=" font-bold text-sm">{selectedTemplate.name}</p>
               </div>
               <Button variant="grey" className="ml-20">
                 <MessageSquareText size={14} />
-                <p>12 Contracts</p>
+                <p>0 Contracts</p>
               </Button>
             </div>
             <div className="flex items-center gap-4">
-              <ViewTemplate />
               <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
@@ -274,7 +268,7 @@ export default function Home() {
           <DataTable columns={ResponseColumns} data={[]} />
           <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 
-          <div className="flex justify-end items-center gap-4 mt-auto">
+          <div className="flex justify-end items-center gap-4">
             <Button onClick={() => {}} variant={"grey"} size="icon">
               <Trash2 />
             </Button>
