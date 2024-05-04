@@ -4,18 +4,41 @@ import { order_api } from "@/api/order_api/order_api";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuTrigger
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import { Info, MoreVertical } from "lucide-react";
 import moment from "moment";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { LocalStorageService } from "@/lib/utils";
 
 export const useSalesColumns = () => {
+  const enterprise_id = LocalStorageService.get("enterprise_Id");
+
+  const { data } = useQuery({
+    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+    queryFn: (data) =>
+      GetEnterpriseUsers({
+        user_type: "client",
+        enterprise_id: enterprise_id,
+      }),
+    select: (data) => data.data.data,
+  });
+  let formattedData = [];
+  if (data) {
+    formattedData = data.flatMap((user) => ({
+      ...user.mappedUserEnterprise,
+    }));
+  }
+
   return [
     {
       id: "select",
@@ -83,6 +106,12 @@ export const useSalesColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),
+      cell: ({ row }) => {
+        const findData = formattedData.find(
+          (fData) => fData.id === row.original.buyerEnterpriseId
+        );
+        return <div>{findData?.name}</div>;
+      },
     },
     // {
     //   accessorKey: "price",
@@ -131,9 +160,6 @@ export const useSalesColumns = () => {
             statusBG = "#F8BA051A";
             statusBorder = "#F8BA05";
             actionBtn = "action";
-            tooltip = (
-              <Tooltips trigger={<Info size={14} />} isContentShow="true" />
-            );
             break;
           default:
             return null;
@@ -141,7 +167,7 @@ export const useSalesColumns = () => {
 
         return (
           <div
-            className=" max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
+            className="max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
             style={{
               color: statusColor,
               backgroundColor: statusBG,
@@ -179,7 +205,7 @@ export const useSalesColumns = () => {
         if (status === "NEGOTIATION") return null;
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
                 <MoreVertical className="h-4 w-4" />

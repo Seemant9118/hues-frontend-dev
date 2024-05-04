@@ -1,22 +1,11 @@
 "use client";
+import { order_api } from "@/api/order_api/order_api";
+import CreateOrder from "@/components/CreateOrder";
+import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
-import {
-  CloudFog,
-  DatabaseZap,
-  FileCheck,
-  FileText,
-  FolderUp,
-  KeySquare,
-  PlusCircle,
-  Upload,
-} from "lucide-react";
-import React, { useState } from "react";
-import { useSalesColumns } from "./SalesColumns";
-import CreateOrder from "@/components/CreateOrder";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
   Select,
   SelectContent,
@@ -24,12 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import ViewOrder from "./[order_id]/page";
-import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { order_api } from "@/api/order_api/order_api";
-import { GetSales } from "@/services/Orders_Services/Orders_Services";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
+import { GetSales } from "@/services/Orders_Services/Orders_Services";
+import { useQuery } from "@tanstack/react-query";
+import {
+  DatabaseZap,
+  FileCheck,
+  FileText,
+  KeySquare,
+  PlusCircle,
+  Upload
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useSalesColumns } from "./useSalesColumns";
 
 const SalesOrder = () => {
   const router = useRouter();
@@ -82,13 +79,12 @@ const SalesOrder = () => {
     queryFn: () => GetSales(enterprise_id),
     select: (data) => data.data.data,
   });
-  // console.log(data)
 
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
-          <SubHeader name={"Sales"}>
+          <SubHeader name={"Sales"} className="bg-white z-10">
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
@@ -158,10 +154,6 @@ const SalesOrder = () => {
           type="sales"
           name="Offer"
           cta="offer"
-          onSubmit={(newOrder) => {
-            setOrders((prev) => [...prev, newOrder]);
-            setIsCreatingSales(false);
-          }}
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
@@ -173,17 +165,9 @@ const SalesOrder = () => {
           <CreateOrder
             name="Invoice"
             cta="offer"
-            onSubmit={(newOrder) => {
-              setOrders((prev) => [...prev, newOrder]);
-              setIsCreatingInvoice(false);
-            }}
             onCancel={() => setIsCreatingInvoice(false)}
           />
         )}
-
-      {/* {isOrderView && !isCreatingInvoice && !isCreatingSales && (
-        <ViewOrder setIsOrderView={setIsOrderView} />
-      )} */}
     </>
   );
 };

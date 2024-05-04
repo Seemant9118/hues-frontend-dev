@@ -7,9 +7,9 @@ import Wrapper from "@/components/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/services/Orders_Services/Orders_Services";
-import { useQuery } from "@tanstack/react-query";
+import { useOrderColumns } from "./useOrderColumns";
 import { useParams, useRouter } from "next/navigation";
-import { OrderColumns } from "./OrderColumns";
+import { useQuery } from "@tanstack/react-query";
 
 const ViewOrder = () => {
   const router = useRouter();
@@ -40,6 +40,8 @@ const ViewOrder = () => {
     queryFn: () => OrderDetails(params.order_id),
     select: (data) => data.data.data,
   });
+
+  const OrderColumns = useOrderColumns();
 
   return (
     <Wrapper className="relative">

@@ -66,7 +66,13 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={() => mutation.mutate(id)}>Delete</Button>
+          <Button
+            onClick={(e) => {
+              mutation.mutate(id);
+            }}
+          >
+            Delete
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

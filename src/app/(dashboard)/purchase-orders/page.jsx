@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Upload,
 } from "lucide-react";
-import { PurchaseColumns } from "./PurchaseColumns";
+import { usePurchaseColumns } from "./usePurchaseColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
   Select,
@@ -71,7 +71,9 @@ const PurchaseOrders = () => {
     router.push(`/purchase-orders/${row.id}`);
   };
 
-  const { data } = useQuery({
+  const PurchaseColumns = usePurchaseColumns();
+
+  const { data, isSuccess } = useQuery({
     queryKey: [order_api.getPurchases.endpointKey],
     queryFn: () => GetPurchases(enterprise_id),
     select: (data) => data.data.data,
@@ -118,6 +120,14 @@ const PurchaseOrders = () => {
                 <PlusCircle size={14} />
                 Bid
               </Button>
+              {/* <Button
+                onClick={() => setIsCreatingInvoice(true)}
+                variant={"blue_outline"}
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Invoice
+              </Button> */}
             </div>
           </SubHeader>
           {data?.length === 0 ? (
