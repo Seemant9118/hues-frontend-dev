@@ -12,7 +12,7 @@ import {
   PlusCircle,
   ShieldCheck,
 } from "lucide-react";
-import { PurchaseColumns } from "./PurchaseColumns";
+import { usePurchaseColumns } from "./usePurchaseColumns";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
   Select,
@@ -70,7 +70,9 @@ const PurchaseOrders = () => {
     router.push(`/purchase-orders/${row.id}`);
   };
 
-  const { data } = useQuery({
+  const PurchaseColumns = usePurchaseColumns();
+
+  const { data, isSuccess } = useQuery({
     queryKey: [order_api.getPurchases.endpointKey],
     queryFn: () => GetPurchases(enterprise_id),
     select: (data) => data.data.data,
@@ -114,14 +116,14 @@ const PurchaseOrders = () => {
                 <PlusCircle size={14} />
                 Bid
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => setIsCreatingInvoice(true)}
                 variant={"blue_outline"}
                 size="sm"
               >
                 <PlusCircle size={14} />
                 Invoice
-              </Button>
+              </Button> */}
             </div>
           </SubHeader>
           {data?.length === 0 ? (
@@ -132,14 +134,16 @@ const PurchaseOrders = () => {
               subItems={PurchaseEmptyStageData.subItems}
             />
           ) : (
-            <DataTable
-              columns={PurchaseColumns}
-              onRowClick={onRowClick}
-              data={data.filter((purchase) => {
-                if (istype === "All" || istype === "") return true;
-                return purchase.type === istype;
-              })}
-            />
+            isSuccess && (
+              <DataTable
+                columns={PurchaseColumns}
+                onRowClick={onRowClick}
+                data={data.filter((purchase) => {
+                  if (istype === "All" || istype === "") return true;
+                  return purchase.type === istype;
+                })}
+              />
+            )
           )}
         </Wrapper>
       )}
@@ -155,7 +159,7 @@ const PurchaseOrders = () => {
           }}
         />
       )}
-      {!isCreatingPurchase && isCreatingInvoice && (
+      {/* {!isCreatingPurchase && isCreatingInvoice && (
         <CreateOrder
           type="purchase"
           name={"Invoice"}
@@ -166,7 +170,7 @@ const PurchaseOrders = () => {
             setIsCreatingInvoice(false);
           }}
         />
-      )}
+      )} */}
     </>
   );
 };

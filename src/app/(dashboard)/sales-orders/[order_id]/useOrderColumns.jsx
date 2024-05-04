@@ -1,15 +1,42 @@
 "use client";
 
+import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import OfferPrice from "@/components/Modals/OfferPrice";
 import SuccessModal from "@/components/Modals/SuccessModal";
 import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
+import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Services";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Check, Info, RotateCw } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export const useOrderColumns = () => {
+  const params = useParams();
+  const order_id = params.order_id;
+  const queryClient = useQueryClient();
+
+  const mutationAccept = useMutation({
+    mutationFn: (data) => AccpetRejectNegotiation(data),
+    onSuccess: () => {
+      toast.success("Accepted current negotiation Price");
+      queryClient.invalidateQueries([order_api.getOrderDetails.endpointKey]);
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
+
+  const handleAcceptNegotiation = (row) => {
+
+    mutationAccept.mutate({
+      order_id: order_id,
+      item_id: row.id,
+      status: "ACCEPTED",
+    });
+  };
   return [
     {
       accessorKey: "item",
@@ -111,11 +138,13 @@ export const useOrderColumns = () => {
             {actionBtn && (
               <div className="flex items-center gap-1">
                 <ChangeOfferPrice offerDetails={offerDetails} />
-                <SuccessModal cta="offer-confirmation" onClose={() => {}}>
-                  <Button className="bg-green-600 hover:bg-green-700">
-                    <Check size={24} strokeWidth={3} />
-                  </Button>
-                </SuccessModal>
+
+                <Button
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => handleAcceptNegotiation(offerDetails)}
+                >
+                  <Check size={24} strokeWidth={3} />
+                </Button>
               </div>
             )}
           </div>

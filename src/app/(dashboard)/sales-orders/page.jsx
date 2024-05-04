@@ -13,7 +13,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import React, { useState } from "react";
-import { useSalesColumns } from "./SalesColumns";
+import { useSalesColumns } from "./useSalesColumns";
 import CreateOrder from "@/components/CreateOrder";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import {
@@ -82,12 +82,11 @@ const SalesOrder = () => {
     select: (data) => data.data.data,
   });
 
-
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
-          <SubHeader name={"Sales"}>
+          <SubHeader name={"Sales"} className="bg-white z-10">
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
@@ -141,8 +140,8 @@ const SalesOrder = () => {
           ) : (
             isSuccess && (
               <DataTable
-                columns={SalesColumns}
                 onRowClick={onRowClick}
+                columns={SalesColumns}
                 data={data}
               />
             )
@@ -169,7 +168,6 @@ const SalesOrder = () => {
             onCancel={() => setIsCreatingInvoice(false)}
           />
         )}
-
     </>
   );
 };

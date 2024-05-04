@@ -15,8 +15,30 @@ import {
 import { Info, MoreVertical } from "lucide-react";
 import moment from "moment";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { LocalStorageService } from "@/lib/utils";
 
 export const useSalesColumns = () => {
+  const enterprise_id = LocalStorageService.get("enterprise_Id");
+
+  const { data } = useQuery({
+    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
+    queryFn: (data) =>
+      GetEnterpriseUsers({
+        user_type: "client",
+        enterprise_id: enterprise_id,
+      }),
+    select: (data) => data.data.data,
+  });
+  let formattedData = [];
+  if (data) {
+    formattedData = data.flatMap((user) => ({
+      ...user.mappedUserEnterprise,
+    }));
+  }
+
   return [
     {
       id: "select",
@@ -84,6 +106,12 @@ export const useSalesColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),
+      cell: ({ row }) => {
+        const findData = formattedData.find(
+          (fData) => fData.id === row.original.buyerEnterpriseId
+        );
+        return <div>{findData?.name}</div>;
+      },
     },
     // {
     //   accessorKey: "price",
@@ -173,7 +201,7 @@ export const useSalesColumns = () => {
       cell: ({ row }) => {
         const id = row.original.id;
         const name = "order";
-        
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -68,7 +68,6 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
           </DialogClose>
           <Button
             onClick={(e) => {
-              e.stopPropogation();
               mutation.mutate(id);
             }}
           >

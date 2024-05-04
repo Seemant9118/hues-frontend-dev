@@ -1,3 +1,4 @@
+import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import OfferPrice from "@/components/Modals/OfferPrice";
@@ -6,7 +7,7 @@ import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Services";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Check, Info, RotateCw } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -16,28 +17,27 @@ import { toast } from "sonner";
 export const useOrderColumns = () => {
   const params = useParams();
   const order_id = params.order_id;
-  const [offerDetails, setOfferDetails] = useState({});
-  const item_id = offerDetails.id;
+  const queryClient = useQueryClient();
 
-  const [isAcceptedStatus, setIsAcceptedStatus] = useState({
-    order_id: order_id,
-    item_id: item_id,
-    status: "ACCEPTED",
-  });
 
   const mutationAccept = useMutation({
     mutationFn: (data) => AccpetRejectNegotiation(data),
     onSuccess: () => {
       toast.success("Accepted current negotiation Price");
+      queryClient.invalidateQueries([order_api.getOrderDetails.endpointKey]);
     },
     onError: () => {
       toast.error("Something went wrong");
     },
   });
 
-  const handleAcceptNegotiation = () => {
-    console.log(isAcceptedStatus);
-    // mutationAccept.mutate(isAcceptedStatus);
+  const handleAcceptNegotiation = (row) => {
+    // console.log(isAcceptedStatus);
+    mutationAccept.mutate({
+      order_id: order_id,
+      item_id: row.id,
+      status: "ACCEPTED",
+    });
   };
 
   return [
@@ -84,7 +84,7 @@ export const useOrderColumns = () => {
       ),
       cell: ({ row }) => {
         const status = row.original.negotiationStatus;
-        setOfferDetails(row.original);
+        const offerDetails = row.original;
 
         let statusText,
           statusColor,
@@ -148,7 +148,7 @@ export const useOrderColumns = () => {
 
                 <Button
                   className="bg-green-600 hover:bg-green-700"
-                  onClick={handleAcceptNegotiation}
+                  onClick={() => handleAcceptNegotiation(offerDetails)}
                 >
                   <Check size={24} strokeWidth={3} />
                 </Button>
