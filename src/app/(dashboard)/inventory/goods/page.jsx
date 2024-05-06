@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import {
   GetAllProductGoods,
-  UpdateProductGoods
+  UpdateProductGoods,
 } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -24,7 +24,7 @@ import {
   KeySquare,
   Trash2,
   Upload,
-  UploadCloud
+  UploadCloud,
 } from "lucide-react";
 import { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
@@ -88,9 +88,7 @@ function Goods() {
               <Button
                 variant={"export"}
                 size="sm"
-                onClick={() =>
-                  exportTableToExcel("goods table", "goods_list")
-                }
+                onClick={() => exportTableToExcel("goods table", "goods_list")}
               >
                 <Upload size={14} />
                 Export
@@ -186,6 +184,7 @@ function Goods() {
                 Select
               </Button>
             </div>
+
             <Button variant="outline" className="w-full">
               <Download />
               Sample

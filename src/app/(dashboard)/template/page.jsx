@@ -23,6 +23,7 @@ import {
   FileText,
   KeySquare,
   MessageSquareText,
+  Plus,
   Search,
   ShieldCheck,
   Trash2,
@@ -130,8 +131,8 @@ export default function Home() {
                 className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
               >
                 <label htmlFor="template">
-                  <Upload />
-                  Upload
+                  <Plus size={20}/>
+                  Create
                 </label>
               </Button>
             </SubHeader>

@@ -85,13 +85,7 @@ const CompleteKyc = () => {
       </h1>
 
       <Button type="submit" className="w-full">
-        {isPending ? (
-          <Loading />
-        ) : (
-          <>
-            Verify KYC with <span className="text-blue-700">digio</span>
-          </>
-        )}
+        {isPending ? <Loading /> : <>Start KYC</>}
       </Button>
     </form>
   );

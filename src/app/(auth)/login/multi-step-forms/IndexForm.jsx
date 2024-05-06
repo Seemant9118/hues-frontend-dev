@@ -17,6 +17,10 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
     mutationFn: (data) => userGenerateOtp(data),
     onSuccess: (data) => {
       LocalStorageService.set("user_profile", data.data.data.userId);
+      LocalStorageService.set(
+        "user_mobile_number",
+        formDataWithMob.mobile_number
+      );
       toast.success(data.data.message);
       setCurrStep(2);
     },
@@ -61,7 +65,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
     setFormDataWithMob((values) => ({ ...values, [name]: value }));
     // handle validation
     formDataWithMob.mobile_number.length !== 9
-      ? setErrorMsg("*Please write valid Mobile Number")
+      ? setErrorMsg("*Please enter a valid mobile number")
       : setErrorMsg("");
   };
 
@@ -99,11 +103,14 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
           Mobile Number <span className="text-red-600">*</span>
         </Label>
         <div className="hover:border-gray-600 flex items-center gap-1 relative">
+          <span className="absolute left-1 font-semibold text-gray-600 text-sm">
+            +91
+          </span>
           <Input
             type="text"
             name="mobile_number"
             placeholder="Mobile Number"
-            className="focus:font-bold"
+            className="focus:font-bold px-8"
             onChange={handleChangeMobLogin}
             value={formDataWithMob.mobile_number}
             required

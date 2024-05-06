@@ -189,7 +189,7 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement }) => {
           className="text-xs gap-1 p-1.5"
         >
           <Eye size={16} />
-          Template
+          View
         </Button>
       </SheetTrigger>
       <SheetContent className={`min-w-[40%]`}>
