@@ -49,7 +49,7 @@ const Button = React.forwardRef(
         ref={ref}
         onClick={(e) => {
           e.stopPropagation();
-          onClick(e);
+          onClick && onClick(e);
         }}
         {...props}
       />
