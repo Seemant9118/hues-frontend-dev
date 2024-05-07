@@ -20,7 +20,6 @@ import { goods_api } from "@/api/inventories/goods/goods";
 import { services_api } from "@/api/inventories/services/services";
 import DatePickers from "./DatePickers";
 
-
 const EditItem = ({
   setIsEditing,
   goodsToEdit,
@@ -220,14 +219,15 @@ const EditItem = ({
               onChange={onChange}
               value={item.gst_percentage}
             />
-            <InputWithLabel
-              name="Amount"
-              id="amount"
-              required={true}
-              onChange={onChange}
-              value={item.amount}
-            />
+            <InputWithLabel name="Quantity" id="quantity" required={true} />
           </div>
+          <InputWithLabel
+            name="Amount"
+            id="amount"
+            required={true}
+            onChange={onChange}
+            value={item.amount}
+          />
         </>
       ) : (
         // for services
@@ -270,14 +270,15 @@ const EditItem = ({
               onChange={onChange}
               value={item.gst_percentage}
             />
-            <InputWithLabel
-              name="Amount"
-              id="amount"
-              required={true}
-              onChange={onChange}
-              value={item.amount}
-            />
+            <InputWithLabel name="Quantity" id="quantity" required={true} />
           </div>
+          <InputWithLabel
+            name="Amount"
+            id="amount"
+            required={true}
+            onChange={onChange}
+            value={item.amount}
+          />
         </>
       )}
 
@@ -286,46 +287,44 @@ const EditItem = ({
         <InputWithLabel
           name="Batch"
           id="batch"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.batch}
         />
         <InputWithLabel
           name="Expiry"
           id="expiry"
-          required={item.type === "goods" || item.type === "services"}
+          // required={item.type === "goods" || item.type === "services"}
           onChange={onChange}
           value={item.expiry}
         />
-
-
       </div>
       <div className="grid grid-cols-4 gap-2.5">
         <InputWithLabel
           name="Weight (kg)"
           id="weight"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.weight}
         />
         <InputWithLabel
           name="Length (cm)"
           id="length"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.length}
         />
         <InputWithLabel
           name="Breadth (cm)"
           id="breadth"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.breadth}
         />
         <InputWithLabel
           name="Height (cm)"
           id="height"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.height}
         />
@@ -333,7 +332,7 @@ const EditItem = ({
       <InputWithLabel
         name="Application"
         id="applications"
-        required={item.type == "goods" || item.type === "services"}
+        // required={item.type == "goods" || item.type === "services"}
         onChange={onChange}
         value={item.applications}
       />

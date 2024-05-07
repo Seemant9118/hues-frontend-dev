@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import DatePickers from "./DatePickers";
 import InputWithLabel from "./InputWithLabel";
 import { usePathname } from "next/navigation";
+import ErrorBox from "./ErrorBox";
 
 const AddItem = ({ name, onCancel, cta }) => {
   const queryClient = useQueryClient();
@@ -29,6 +30,7 @@ const AddItem = ({ name, onCancel, cta }) => {
   const pathname = usePathname();
   const isGoods = pathname.includes("goods");
 
+  const [errorMsg, setErrorMsg] = useState({});
   const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
   const [item, setItem] = useState({
     enterprise_id: enterpriseId,
@@ -41,6 +43,7 @@ const AddItem = ({ name, onCancel, cta }) => {
     SAC: "",
     rate: "",
     gst_percentage: "",
+    quantity: "",
     amount: "",
     type: isGoods ? "goods" : "services",
     batch: "",
@@ -53,6 +56,52 @@ const AddItem = ({ name, onCancel, cta }) => {
     units: "",
   });
 
+  const validation = (item) => {
+    let error = {};
+
+    // productName
+    if (item.product_name === "") {
+      error.product_name = "*Required Product Name";
+    }
+    // manufacturerName
+    if (item.manufacturer_name === "") {
+      error.manufacturer_name = "*Required Manufacturer Name";
+    }
+    //  serviceName
+    if (item.service_name === "") {
+      error.service_name = "*Required Service Name";
+    }
+    // description
+    if (item.description === "") {
+      error.description = "*Required Description";
+    }
+    // HSN
+    if (item.hsn_code === "") {
+      error.hsn_code = "*Required HSN Code";
+    }
+    // SAC
+    if (item.SAC === "") {
+      error.SAC = "*Required SAC";
+    }
+    // rate
+    if (item.rate === "") {
+      error.rate = "*Required Rate";
+    }
+    // gst_percentage
+    if (item.gst_percentage === "") {
+      error.gst_percentage = "*Required GST (%)";
+    }
+    // quantity
+    if (item.quantity === "") {
+      error.quantity = "*Required Quantity";
+    }
+    // amount
+    if (item.amount === "") {
+      error.amount = "*Required Amount";
+    }
+    return error;
+  };
+
   const mutationGoods = useMutation({
     mutationFn:
       item.type === "goods" ? CreateProductGoods : CreateProductServices,
@@ -63,8 +112,8 @@ const AddItem = ({ name, onCancel, cta }) => {
       });
       onCancel();
     },
-    onError: () => {
-      toast.error("Something went wrong");
+    onError: (error) => {
+      toast.error(error.response.data.message || "Something went wrong!");
     },
   });
 
@@ -78,13 +127,14 @@ const AddItem = ({ name, onCancel, cta }) => {
       });
       onCancel();
     },
-    onError: () => {
-      toast.error("Something went wrong");
+    onError: (error) => {
+      toast.error(error.response.data.message || "Something went wrong");
     },
   });
 
   const onChange = (e) => {
     const { id, value } = e.target;
+
     // validation input value
     if (
       id === "rate" ||
@@ -110,8 +160,13 @@ const AddItem = ({ name, onCancel, cta }) => {
     if (item.type === "goods") {
       // goodsdata
       const { service_name, SAC, type, units, ...goodsData } = item;
-      // mutate goods
-      mutationGoods.mutate(goodsData);
+      const isError = validation(goodsData);
+      if (Object.keys(isError).length === 0) {
+        // mutate goods
+        setErrorMsg({});
+        mutationGoods.mutate(goodsData);
+      }
+      setErrorMsg(isError);
       return;
     }
     // servicesdata
@@ -128,8 +183,13 @@ const AddItem = ({ name, onCancel, cta }) => {
       height,
       ...servicesData
     } = item;
-    // mutate service
-    mutationServices.mutate(servicesData);
+    const isError = validation(servicesData);
+    if (Object.keys(isError).length === 0) {
+      // mutate service
+      setErrorMsg({});
+      mutationServices.mutate(servicesData);
+    }
+    setErrorMsg(isError);
   };
 
   return (
@@ -173,122 +233,177 @@ const AddItem = ({ name, onCancel, cta }) => {
         // for goods
         <>
           <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name="Product Name"
-              id="product_name"
-              required={true}
-              onChange={onChange}
-              value={item.product_name}
-            />
-            <InputWithLabel
-              name="Manufacturer's Name"
-              id="manufacturer_name"
-              required={true}
-              onChange={onChange}
-              value={item.manufacturer_name}
-            />
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Product Name"
+                id="product_name"
+                required={true}
+                onChange={onChange}
+                value={item.product_name}
+              />
+              {errorMsg?.product_name && (
+                <ErrorBox msg={errorMsg.product_name} />
+              )}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Manufacturer's Name"
+                id="manufacturer_name"
+                required={true}
+                onChange={onChange}
+                value={item.manufacturer_name}
+              />
+              {errorMsg?.manufacturer_name && (
+                <ErrorBox msg={errorMsg.manufacturer_name} />
+              )}
+            </div>
           </div>
-          <InputWithLabel
-            name="Description"
-            id="description"
-            required={true}
-            onChange={onChange}
-            value={item.description}
-          />
+          <div className="flex flex-col">
+            <InputWithLabel
+              name="Description"
+              id="description"
+              required={true}
+              onChange={onChange}
+              value={item.description}
+            />
+            {errorMsg?.description && <ErrorBox msg={errorMsg.description} />}
+          </div>
           <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name="HSN Code"
-              id="hsn_code"
-              required={true}
-              onChange={onChange}
-              value={item.hsn_code}
-            />
-            <InputWithLabel
-              name="Rate"
-              id="rate"
-              required={true}
-              onChange={onChange}
-              value={item.rate}
-            />
-            <InputWithLabel
-              name="GST (%)"
-              id="gst_percentage"
-              required={true}
-              onChange={onChange}
-              value={item.gst_percentage}
-            />
-            <InputWithLabel
-              name="Quantity"
-              id="quantity"
-              required={true}
-              // onChange={onChange}
-              // value={item.amount}
-            />
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="HSN Code"
+                id="hsn_code"
+                required={true}
+                onChange={onChange}
+                value={item.hsn_code}
+              />
+              {errorMsg?.hsn_code && <ErrorBox msg={errorMsg.hsn_code} />}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Rate"
+                id="rate"
+                required={true}
+                onChange={onChange}
+                value={item.rate}
+              />
+              {errorMsg?.rate && <ErrorBox msg={errorMsg.rate} />}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="GST (%)"
+                id="gst_percentage"
+                required={true}
+                onChange={onChange}
+                value={item.gst_percentage}
+              />
+              {errorMsg?.gst_percentage && (
+                <ErrorBox msg={errorMsg.gst_percentage} />
+              )}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Quantity"
+                id="quantity"
+                required={true}
+                onChange={onChange}
+                value={item.quantity}
+              />
+              {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
+            </div>
           </div>
-          <InputWithLabel
-            name="Amount"
-            id="amount"
-            required={true}
-            onChange={onChange}
-            value={item.amount}
-          />
+          <div className="flex flex-col">
+            <InputWithLabel
+              name="Amount"
+              id="amount"
+              required={true}
+              onChange={onChange}
+              value={item.amount}
+            />
+            {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
+          </div>
         </>
       ) : (
         // for services
         <>
           <div className="grid grid-cols-2 gap-2.5">
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Service Name"
+                id="service_name"
+                required={true}
+                onChange={onChange}
+                value={item.service_name}
+              />
+              {errorMsg?.service_name && (
+                <ErrorBox msg={errorMsg.service_name} />
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col">
             <InputWithLabel
-              name="Service Name"
-              id="service_name"
+              name="Description"
+              id="description"
               required={true}
               onChange={onChange}
-              value={item.service_name}
+              value={item.description}
             />
+            {errorMsg?.description && <ErrorBox msg={errorMsg.description} />}
           </div>
-          <InputWithLabel
-            name="Description"
-            id="description"
-            required={true}
-            onChange={onChange}
-            value={item.description}
-          />
           <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name="SAC"
-              id="SAC"
-              required={true}
-              onChange={onChange}
-              value={item.SAC}
-            />
-            <InputWithLabel
-              name="Rate"
-              id="rate"
-              required={true}
-              onChange={onChange}
-              value={item.rate}
-            />
-            <InputWithLabel
-              name="GST (%)"
-              id="gst_percentage"
-              required={true}
-              onChange={onChange}
-              value={item.gst_percentage}
-            />
-            <InputWithLabel
-              name="Quantity"
-              id="quantity"
-              required={true}
-              // onChange={onChange}
-              // value={item.amount}
-            />
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="SAC"
+                id="SAC"
+                required={true}
+                onChange={onChange}
+                value={item.SAC}
+              />
+              {errorMsg?.SAC && <ErrorBox msg={errorMsg.SAC} />}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Rate"
+                id="rate"
+                required={true}
+                onChange={onChange}
+                value={item.rate}
+              />
+              {errorMsg?.rate && <ErrorBox msg={errorMsg.rate} />}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="GST (%)"
+                id="gst_percentage"
+                required={true}
+                onChange={onChange}
+                value={item.gst_percentage}
+              />
+              {errorMsg?.gst_percentage && (
+                <ErrorBox msg={errorMsg.gst_percentage} />
+              )}
+            </div>
+            <div className="flex flex-col">
+              <InputWithLabel
+                name="Quantity"
+                id="quantity"
+                required={true}
+                onChange={onChange}
+                value={item.quantity}
+              />
+              {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
+            </div>
           </div>
-          <InputWithLabel
-            name="Amount"
-            id="amount"
-            required={true}
-            onChange={onChange}
-            value={item.amount}
-          />
+          <div className="flex flex-col">
+            <InputWithLabel
+              name="Amount"
+              id="amount"
+              required={true}
+              onChange={onChange}
+              value={item.amount}
+            />
+            {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
+          </div>
         </>
       )}
 

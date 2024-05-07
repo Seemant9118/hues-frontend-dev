@@ -137,8 +137,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             : [order_api.getPurchases.endpointKey],
       });
     },
-    onError: () => {
-      toast.error("Something went wrong");
+    onError: (error) => {
+      toast.error(error.response.data.message || "Something went wrong");
     },
   });
 
@@ -164,8 +164,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       gst_amount: parseFloat(totalGstAmt.toFixed(2)),
     });
   };
-
-
 
   return (
     <Wrapper>
@@ -374,7 +372,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         </SuccessModal>
       </div>
     </Wrapper>
-    
   );
 };
 

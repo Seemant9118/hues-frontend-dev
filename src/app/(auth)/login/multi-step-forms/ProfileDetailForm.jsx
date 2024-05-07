@@ -54,6 +54,7 @@ export default function ProfileDetailForm({
     let error = {};
     const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
     // name validation
     if (userData.name === "") {
       error.name = "*Required Full Name";
@@ -92,6 +93,7 @@ export default function ProfileDetailForm({
     let name = e.target.name;
     let value = e.target.value;
 
+    // pan validation
     if (name === "pan_number") {
       const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
       if (!pan_pattern.test(value)) {
@@ -132,6 +134,7 @@ export default function ProfileDetailForm({
     const isAnyError = validation(userData);
 
     if (Object.keys(isAnyError).length === 0) {
+      setErrorMsg({});
       mutation.mutate(userData);
     }
     setErrorMsg(isAnyError);
@@ -171,11 +174,7 @@ export default function ProfileDetailForm({
             />
             <UserRound className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
-          {errorMsg?.name && (
-            <p className="text-red-600 text-xs font-semibold">
-              {errorMsg?.name}
-            </p>
-          )}
+          {errorMsg?.name && <ErrorBox msg={errorMsg?.name} />}
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -201,11 +200,7 @@ export default function ProfileDetailForm({
             />
             <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
-          {errorMsg?.pan_number && (
-            <p className="text-red-600 text-xs font-semibold">
-              {errorMsg?.pan_number}
-            </p>
-          )}
+          {errorMsg?.pan_number && <ErrorBox msg={errorMsg?.pan_number} />}
         </div>
 
         {/* {isThirdPartyLogin && (
@@ -249,9 +244,7 @@ export default function ProfileDetailForm({
               <Phone className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
             </div>
             {errorMsg?.aadhaar_number && (
-              <p className="text-red-600 text-xs font-semibold">
-                {errorMsg?.aadhaar_number}
-              </p>
+              <ErrorBox msg={errorMsg?.aadhaar_number} />
             )}
           </div>
         )}
@@ -276,9 +269,7 @@ export default function ProfileDetailForm({
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
           {errorMsg?.date_of_birth && (
-            <p className="text-red-600 text-xs font-semibold">
-              {errorMsg?.date_of_birth}
-            </p>
+            <ErrorBox msg={errorMsg?.date_of_birth} />
           )}
         </div>
 
@@ -307,11 +298,7 @@ export default function ProfileDetailForm({
               @
             </span>
           </div>
-          {errorMsg?.email && (
-            <p className="text-red-600 text-xs font-semibold">
-              {errorMsg?.email}
-            </p>
-          )}
+          {errorMsg?.email && <ErrorBox msg={errorMsg?.email} />}
         </div>
         <Button type="submit" className="w-full">
           {mutation.isPending ? <Loading /> : "Submit"}
