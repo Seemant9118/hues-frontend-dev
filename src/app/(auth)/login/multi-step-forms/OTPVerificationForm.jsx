@@ -14,7 +14,6 @@ import { useUser } from "@/context/UserContext";
 import Script from "next/script";
 import Loading from "@/components/Loading";
 
-
 function Slot(props) {
   return (
     <div
@@ -36,8 +35,18 @@ function Slot(props) {
 }
 
 export default function OTPVerificationForm({ setCurrStep }) {
+  const [startFrom, setStartFrom] = useState(90);
   const [otp, setOtp] = useState();
   const userId = LocalStorageService.get("user_profile");
+  const userMobileNumber = LocalStorageService.get("user_mobile_number");
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStartFrom((prevStartFrom) => prevStartFrom - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  });
 
   const mutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
@@ -77,7 +86,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
       <h2 className="w-full font-bold text-2xl">Verify OTP</h2>
       <p className="w-full text-sm">
         A one time password has been sent to{" "}
-        <span className="text-[#414656] font-bold">+91 9876 54310</span>
+        <span className="text-[#414656] font-bold">+91 {userMobileNumber}</span>
       </p>
 
       <OTPInput
@@ -96,10 +105,16 @@ export default function OTPVerificationForm({ setCurrStep }) {
       />
 
       <p className="w-full text-sm text-[#A5ABBD] flex items-center gap-2">
-        Waiting for resend OTP{" "}
+        Resend OTP in :{" "}
         <span className="font-semibold flex items-center gap-1">
-          <Clock5 size={15} />
-          00:54
+          {startFrom >= 0 ? (
+            <p className="flex items-center gap-1">
+              <Clock5 size={15} />
+              00:{startFrom}s
+            </p>
+          ) : (
+            <Button variant="outline" disabled>Resend</Button>
+          )}
         </span>
       </p>
       <Button type="Submit" className="w-full">

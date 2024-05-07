@@ -29,21 +29,21 @@ export default function Home() {
   return (
     <>
       <SubHeader name={"Dashboard"} className="mb-5">
-        <div className="flex items-center justify-center gap-4">
+        {/* <div className="flex items-center justify-center gap-4">
           <AddCredentialsModal type="Save GST Credentials" modalHead="One-time setup for future convenience" btnName="Password Manager"/>
-        </div>
+        </div> */}
       </SubHeader>
 
 
-      {/* <EmptyStageComponent heading={dashBoardEmptyStagedata.heading} subHeading={dashBoardEmptyStagedata.subHeading} subItems={dashBoardEmptyStagedata.subItems} /> */}
+      <EmptyStageComponent heading={dashBoardEmptyStagedata.heading} subHeading={dashBoardEmptyStagedata.subHeading} subItems={dashBoardEmptyStagedata.subItems} />
 
-      <div className="flex flex-wrap gap-2">
+      {/* <div className="flex flex-wrap gap-2">
         {
           dashBoardData.map((cardItem) => (
             <DashCard key={cardItem.id} title={cardItem.title} numbers={cardItem.numbers} growth={cardItem.growth} icon={cardItem.icon}/>
           ))
         }
-      </div>
+      </div> */}
     </>
   );
 }

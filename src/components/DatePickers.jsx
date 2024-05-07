@@ -6,7 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 export default function DatePickers() {
     const [startDate, setStartDate] = useState('');
-    const years = Array.from({ length: new Date().getFullYear() - 1989 }, (_, i) => 1990 + i);
+    const years = Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) => 1950 + i);
     const months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -14,7 +14,7 @@ export default function DatePickers() {
 
     return (
         <DatePicker
-            required
+            
             className="w-[360px] focus:outline-none absolute top-1/2 -translate-y-2/3 z-20 bg-transparent cursor-pointer"
             placeholderText="DD/MM/YYYY"
             dateFormat="dd/MM/yyyy"

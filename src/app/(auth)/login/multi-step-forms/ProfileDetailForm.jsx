@@ -9,17 +9,18 @@ import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
 import moment from "moment";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import Loading from "@/components/Loading";
+import ErrorBox from "@/components/ErrorBox";
+
 export default function ProfileDetailForm({
   setCurrStep,
   params,
   isThirdPartyLogin,
 }) {
-  const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
 
   const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
@@ -31,6 +32,8 @@ export default function ProfileDetailForm({
     date_of_birth: date.toString(),
     pan_number: "",
   });
+
+  const [errorMsg, setErrorMsg] = useState({});
 
   const mutation = useMutation({
     mutationFn: (data) => userUpdate(data),
@@ -47,12 +50,69 @@ export default function ProfileDetailForm({
     },
   });
 
+  const validation = (userData) => {
+    let error = {};
+    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    // name validation
+    if (userData.name === "") {
+      error.name = "*Required Full Name";
+    }
+
+    // pan validation
+    if (userData.pan_number === "") {
+      error.pan_number = "*Required PAN Number";
+    } else if (!pan_pattern.test(userData.pan_number)) {
+      error.pan_number = "* Please write valid PAN Number";
+    }
+
+    // Aadhaar validation
+    if (userData.aadhaar_number === "") {
+      error.aadhaar_number = "* Required Aadhaar Number";
+    } else if (userData.aadhaar_number.length !== 12) {
+      error.aadhaar_number = "* Please enter a valid 12-digit Aadhar Number";
+    }
+
+    // date_of_birth validation
+    if (userData.date_of_birth === "") {
+      error.date_of_birth = "*Required Date of Birth";
+    }
+
+    // email validation
+    if (userData.email === "") {
+      error.email = "*Required Email";
+    } else if (!email_pattern.test(userData.email)) {
+      error.email = "*Email is not corrected format";
+    }
+
+    return error;
+  };
+
   const handleChange = (e) => {
     let name = e.target.name;
     let value = e.target.value;
 
+    if (name === "pan_number") {
+      const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+      if (!pan_pattern.test(value)) {
+        // Reset error message if PAN is valid
+        setErrorMsg({
+          ...errorMsg,
+          pan_number: "",
+        });
+        setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
+      } else {
+        // Set error message if PAN is invalid
+        setErrorMsg({
+          ...errorMsg,
+          pan_number: "*Please write valid PAN",
+        });
+      }
+      return;
+    }
+
     // aadhaar_number with masked 'x' value
-    if (name == "aadhaar_number") {
+    if (name === "aadhaar_number") {
       const maskedValue = "xxxxxxxx";
       if (value.length <= 8) {
         const newValue = maskedValue.slice(0, value.length);
@@ -69,14 +129,19 @@ export default function ProfileDetailForm({
 
   const login = (e) => {
     e.preventDefault();
-    mutation.mutate(userData);
+    const isAnyError = validation(userData);
+
+    if (Object.keys(isAnyError).length === 0) {
+      mutation.mutate(userData);
+    }
+    setErrorMsg(isAnyError);
   };
 
   return (
     <>
       <form
         onSubmit={login}
-        className="border border-[#E1E4ED] py-10 px-5 flex flex-col justify-center items-center gap-3 h-[500px] w-[450px] bg-white z-20 rounded-md"
+        className="border border-[#E1E4ED] py-10 px-5 flex flex-col justify-center items-center gap-3 min-h-[500px] w-[450px] bg-white z-20 rounded-md"
       >
         <h1 className="w-full text-2xl text-[#414656] font-bold text-center">
           Complete your profile: unlock Hues
@@ -90,21 +155,27 @@ export default function ProfileDetailForm({
             htmlFor="mobile-number"
             className="text-[#414656] font-medium flex items-center gap-1"
           >
-            Username <span className="text-red-600">*</span>{" "}
+            Full Name <span className="text-red-600">*</span>{" "}
             <Tooltips trigger={<Info size={12} />} content="Your full Name" />
           </Label>
+
           <div className="relative">
             <Input
-              required={true}
+              // required={true}
               className="focus:font-bold"
               type="text"
-              placeholder="Username"
+              placeholder="Full Name"
               name="name"
               value={userData.name}
               onChange={handleChange}
             />
             <UserRound className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
+          {errorMsg?.name && (
+            <p className="text-red-600 text-xs font-semibold">
+              {errorMsg?.name}
+            </p>
+          )}
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -120,7 +191,7 @@ export default function ProfileDetailForm({
           </Label>
           <div className="relative">
             <Input
-              required={true}
+              // required={true}
               className="focus:font-bold"
               type="text"
               placeholder="FGHJ1456T"
@@ -130,6 +201,11 @@ export default function ProfileDetailForm({
             />
             <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
           </div>
+          {errorMsg?.pan_number && (
+            <p className="text-red-600 text-xs font-semibold">
+              {errorMsg?.pan_number}
+            </p>
+          )}
         </div>
 
         {/* {isThirdPartyLogin && (
@@ -154,7 +230,7 @@ export default function ProfileDetailForm({
               htmlFor="mobile-number"
               className="text-[#414656] font-medium flex items-center gap-1"
             >
-              Aadhaar Number <span className="text-red-600">*</span>{" "}
+              Aadhaar Number <span className="text-red-600 ">*</span>{" "}
               <Tooltips
                 trigger={<Info size={12} />}
                 content="Aadhaar necessary to your profile"
@@ -162,7 +238,7 @@ export default function ProfileDetailForm({
             </Label>
             <div className="relative">
               <Input
-                required={true}
+                // required={true}
                 className="focus:font-bold"
                 type="text"
                 placeholder="1111-1111-1111"
@@ -172,6 +248,11 @@ export default function ProfileDetailForm({
               />
               <Phone className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
             </div>
+            {errorMsg?.aadhaar_number && (
+              <p className="text-red-600 text-xs font-semibold">
+                {errorMsg?.aadhaar_number}
+              </p>
+            )}
           </div>
         )}
 
@@ -194,6 +275,11 @@ export default function ProfileDetailForm({
             />
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
+          {errorMsg?.date_of_birth && (
+            <p className="text-red-600 text-xs font-semibold">
+              {errorMsg?.date_of_birth}
+            </p>
+          )}
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -209,9 +295,9 @@ export default function ProfileDetailForm({
           </Label>
           <div className="relative">
             <Input
-              required={true}
+              // required={true}
               className="focus:font-bold"
-              type="email"
+              type="text"
               placeholder="patrick@gmail.com*"
               name="email"
               value={userData.email}
@@ -221,6 +307,11 @@ export default function ProfileDetailForm({
               @
             </span>
           </div>
+          {errorMsg?.email && (
+            <p className="text-red-600 text-xs font-semibold">
+              {errorMsg?.email}
+            </p>
+          )}
         </div>
         <Button type="submit" className="w-full">
           {mutation.isPending ? <Loading /> : "Submit"}

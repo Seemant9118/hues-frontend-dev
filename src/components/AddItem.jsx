@@ -20,11 +20,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import DatePickers from "./DatePickers";
 import InputWithLabel from "./InputWithLabel";
+import { usePathname } from "next/navigation";
 
 const AddItem = ({ name, onCancel, cta }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const user_id = LocalStorageService.get("user_profile");
+  const pathname = usePathname();
+  const isGoods = pathname.includes("goods");
 
   const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
   const [item, setItem] = useState({
@@ -39,7 +42,7 @@ const AddItem = ({ name, onCancel, cta }) => {
     rate: "",
     gst_percentage: "",
     amount: "",
-    type: "goods",
+    type: isGoods ? "goods" : "services",
     batch: "",
     expiry: date.toString(),
     weight: "",
@@ -171,7 +174,7 @@ const AddItem = ({ name, onCancel, cta }) => {
         <>
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Product Name (Brand)"
+              name="Product Name"
               id="product_name"
               required={true}
               onChange={onChange}
@@ -215,20 +218,27 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.gst_percentage}
             />
             <InputWithLabel
-              name="Amount"
-              id="amount"
+              name="Quantity"
+              id="quantity"
               required={true}
-              onChange={onChange}
-              value={item.amount}
+              // onChange={onChange}
+              // value={item.amount}
             />
           </div>
+          <InputWithLabel
+            name="Amount"
+            id="amount"
+            required={true}
+            onChange={onChange}
+            value={item.amount}
+          />
         </>
       ) : (
         // for services
         <>
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Service Name (Brand)"
+              name="Service Name"
               id="service_name"
               required={true}
               onChange={onChange}
@@ -265,13 +275,20 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.gst_percentage}
             />
             <InputWithLabel
-              name="Amount"
-              id="amount"
+              name="Quantity"
+              id="quantity"
               required={true}
-              onChange={onChange}
-              value={item.amount}
+              // onChange={onChange}
+              // value={item.amount}
             />
           </div>
+          <InputWithLabel
+            name="Amount"
+            id="amount"
+            required={true}
+            onChange={onChange}
+            value={item.amount}
+          />
         </>
       )}
 
@@ -280,7 +297,7 @@ const AddItem = ({ name, onCancel, cta }) => {
         <InputWithLabel
           name="Batch"
           id="batch"
-          required={item.type == "goods"}
+          // required={item.type == "goods"}
           onChange={onChange}
           value={item.batch}
         />
@@ -297,7 +314,7 @@ const AddItem = ({ name, onCancel, cta }) => {
             htmlFor="dob"
             className="text-[#414656] font-medium flex items-center gap-1"
           >
-            Expiry <span className="text-red-600">*</span>
+            Expiry
           </Label>
 
           <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -342,7 +359,7 @@ const AddItem = ({ name, onCancel, cta }) => {
       <InputWithLabel
         name="Application"
         id="applications"
-        required={item.type == "goods" || item.type === "services"}
+        // required={item.type == "goods" || item.type === "services"}
         onChange={onChange}
         value={item.applications}
       />
