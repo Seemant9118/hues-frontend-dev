@@ -157,7 +157,7 @@ function Goods() {
           <FileUploader
             handleChange={handleChange}
             name="file"
-            types={["xls", "csv"]}
+            types={["xlsx", "csv"]}
           >
             <div className="min-w-[700px] grow px-5 py-10 mb-2 flex gap-3 justify-between items-center rounded border-2 border-sky-300 border-dashed border-spacing-3 cursor-pointer">
               <div className="flex items-center gap-4">
@@ -184,12 +184,17 @@ function Goods() {
                 Select
               </Button>
             </div>
+          </FileUploader>
 
-            <Button variant="outline" className="w-full">
+          <Button asChild variant="outline" className="w-full max-w-[700px]">
+            <a
+              download={"/Hues_inventory_sample_goods.xlsx"}
+              href="/Hues_inventory_sample_goods.xlsx"
+            >
               <Download />
               Sample
-            </Button>
-          </FileUploader>
+            </a>
+          </Button>
           {files.map((file, idx) => (
             <div
               key={idx}

@@ -187,11 +187,16 @@ function Services() {
                 Select
               </Button>
             </div>
-            <Button variant="outline" className="w-full">
+          </FileUploader>
+          <Button asChild variant="outline" className="w-full max-w-[700px]">
+            <a
+              download={"/Hues_inventory_sample_services.xlsx"}
+              href="/Hues_inventory_sample_services.xlsx"
+            >
               <Download />
               Sample
-            </Button>
-          </FileUploader>
+            </a>
+          </Button>
           {files.map((file, idx) => (
             <div
               key={idx}
