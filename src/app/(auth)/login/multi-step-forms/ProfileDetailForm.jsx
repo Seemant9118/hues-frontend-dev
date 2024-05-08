@@ -43,6 +43,7 @@ export default function ProfileDetailForm({
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
+      LocalStorageService.set("user_name", userData.name);
       setCurrStep(4);
     },
     onError: (error) => {
@@ -64,14 +65,14 @@ export default function ProfileDetailForm({
     if (userData.pan_number === "") {
       error.pan_number = "*Required PAN Number";
     } else if (!pan_pattern.test(userData.pan_number)) {
-      error.pan_number = "* Please write valid PAN Number";
+      error.pan_number = "* Please provide valid PAN Number";
     }
 
     // Aadhaar validation
     if (userData.aadhaar_number === "") {
       error.aadhaar_number = "* Required Aadhaar Number";
-    } else if (userData.aadhaar_number.length !== 12) {
-      error.aadhaar_number = "* Please enter a valid 12-digit Aadhar Number";
+    } else if (userData.aadhaar_number.length !== 4) {
+      error.aadhaar_number = "* Please enter a last 4 digit of Aadhaar Number";
     }
 
     // date_of_birth validation
@@ -83,7 +84,7 @@ export default function ProfileDetailForm({
     if (userData.email === "") {
       error.email = "*Required Email";
     } else if (!email_pattern.test(userData.email)) {
-      error.email = "*Email is not corrected format";
+      error.email = "*Please provide valid email";
     }
 
     return error;
@@ -115,16 +116,22 @@ export default function ProfileDetailForm({
 
     // aadhaar_number with masked 'x' value
     if (name === "aadhaar_number") {
-      const maskedValue = "xxxxxxxx";
-      if (value.length <= 8) {
-        const newValue = maskedValue.slice(0, value.length);
-        setUserData((values) => ({ ...values, [name]: newValue }));
-      } else {
-        const newValue = maskedValue.slice(0, value.length) + value.slice(8);
-        setUserData((values) => ({ ...values, [name]: newValue }));
+      if (value.length != 5) {
+        setUserData((values) => ({ ...values, [name]: value }));
       }
       return;
     }
+    // if (name === "aadhaar_number") {
+    //   const maskedValue = "xxxxxxxx";
+    //   if (value.length <= 8) {
+    //     const newValue = maskedValue.slice(0, value.length);
+    //     setUserData((values) => ({ ...values, [name]: newValue }));
+    //   } else {
+    //     const newValue = maskedValue.slice(0, value.length) + value.slice(8);
+    //     setUserData((values) => ({ ...values, [name]: newValue }));
+    //   }
+    //   return;
+    // }
 
     setUserData((values) => ({ ...values, [name]: value }));
   };
@@ -232,11 +239,14 @@ export default function ProfileDetailForm({
               />
             </Label>
             <div className="relative">
+              <span className="absolute text-gray-500 top-1/2 left-3 -translate-y-1/2">
+                xxxx-xxxx-
+              </span>
               <Input
                 // required={true}
-                className="focus:font-bold"
+                className="focus:font-bold px-20"
                 type="text"
-                placeholder="1111-1111-1111"
+                placeholder="____"
                 name="aadhaar_number"
                 value={userData.aadhaar_number}
                 onChange={handleChange}

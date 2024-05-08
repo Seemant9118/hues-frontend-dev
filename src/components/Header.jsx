@@ -13,6 +13,7 @@ import { LocalStorageService } from "@/lib/utils";
 
 const Header = () => {
   const router = useRouter();
+  const username = LocalStorageService.get("user_name");
 
   const logout = () => {
     LocalStorageService.clear();
@@ -32,9 +33,9 @@ const Header = () => {
         />
       </Link>
       <div className="flex items-center gap-4">
-        <Button variant={"link"} size={"icon"} className="your-notification">
+        {/* <Button variant={"link"} size={"icon"} className="your-notification">
           <Bell className="text-grey" />
-        </Button>
+        </Button> */}
 
         <Popover>
           <PopoverTrigger asChild>
@@ -42,8 +43,11 @@ const Header = () => {
               <UserCircle className="text-grey" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="max-w-[100px] p-1">
-            <Button onClick={logout} className="w-full">Logout</Button>
+          <PopoverContent className="max-w-[150px] p-1 m-2">
+            <span className="text-xs my-2 flex justify-center items-center font-bold truncate">{username.toUpperCase()}</span>
+            <Button onClick={logout} className="w-full">
+              Logout
+            </Button>
             {/* <ul className="hover:bg-slate-300 hover:cursor-pointer w-full p-2 rounded-lg">
               <li onClick={logout}>Logout</li>
             </ul> */}

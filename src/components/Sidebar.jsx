@@ -84,11 +84,11 @@ const Sidebar = () => {
       icon: <Store size={16} />,
       path: "/vendors",
     },
-    {
-      name: "Insights",
-      icon: <PieChart size={16} />,
-      path: "/insights",
-    },
+    // {
+    //   name: "Insights",
+    //   icon: <PieChart size={16} />,
+    //   path: "/insights",
+    // },
   ];
 
   return (

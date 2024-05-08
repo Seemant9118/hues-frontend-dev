@@ -103,7 +103,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
           Mobile Number <span className="text-red-600">*</span>
         </Label>
         <div className="hover:border-gray-600 flex items-center gap-1 relative">
-          <span className="absolute left-1 font-semibold text-gray-600 text-sm">
+          <span className="absolute left-1.5 font-semibold text-gray-600 text-sm">
             +91
           </span>
           <Input
