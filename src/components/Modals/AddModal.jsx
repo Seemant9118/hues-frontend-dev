@@ -14,11 +14,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit3, Layers2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import ErrorBox from "../ErrorBox";
 
 const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
+  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
-  const [open, setOpen] = useState(false);
 
+  const [open, setOpen] = useState(false);
   const [enterpriseData, setEnterPriseData] = useState(
     btnName !== "Edit"
       ? {
@@ -44,9 +46,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
           user_type: cta,
         }
   );
+  const [errorMsg, setErrorMsg] = useState({});
 
-  const [errorMsg, setErrorMsg] = useState("*Mandatory Information");
-  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: mutationFunc,
     onSuccess: () => {
@@ -105,19 +106,72 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
       });
     },
     onError: (error) => {
-      toast.error("Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     },
   });
 
+  // validation
+  const validation = (enterpriseData) => {
+    let error = {};
+    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
+    if (enterpriseData.name === "") {
+      error.name = "*Required Name";
+    }
+
+    if (enterpriseData.address === "") {
+      error.address = "*Required Address";
+    }
+
+    if (enterpriseData.mobile_number === "") {
+      error.mobile_number = "*Required Phone";
+    } else if (enterpriseData.mobile_number.length !== 10) {
+      error.mobile_number = "*Please enter a valid mobile number";
+    }
+
+    if (enterpriseData.email === "") {
+      error.email = "*Required Email";
+    } else if (!email_pattern.test(enterpriseData.email)) {
+      error.email = "*Please provide valid email";
+    }
+
+    if (enterpriseData.pan_number === "") {
+      error.pan_number = "*Required PAN";
+    } else if (!pan_pattern.test(enterpriseData.pan_number)) {
+      error.pan_number = "* Please provide valid PAN Number";
+    }
+
+    if (enterpriseData.gst_number === "") {
+      error.gst_number = "*Required GST IN";
+    }
+
+    return error;
+  };
+
+  const handleEditSubmit = (e) => {
+    console.log("handleEditSubmit");
+    e.preventDefault();
+    const isError = validation(enterpriseData);
+
+    if (Object.keys(isError).length === 0) {
+      updateMutation.mutate(enterpriseData);
+      setErrorMsg({});
+      return;
+    }
+    setErrorMsg(isError);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!errorMsg) {
-      if (btnName !== "Edit") {
-        mutation.mutate(enterpriseData);
-        return;
-      }
-      updateMutation.mutate(enterpriseData);
+    const isError = validation(enterpriseData);
+
+    if (Object.keys(isError).length === 0) {
+      mutation.mutate(enterpriseData);
+      setErrorMsg({});
+      return;
     }
+    setErrorMsg(isError);
   };
 
   return (
@@ -138,91 +192,111 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
       <DialogContent>
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}>
           <div className="flex flex-col gap-4">
-            <span className="text-red-500">{errorMsg && errorMsg}</span>
-            <InputWithLabel
-              name="Name"
-              type="text"
-              required={true}
-              id="name"
-              onChange={(e) => {
-                setEnterPriseData((prev) => ({
-                  ...prev,
-                  name: e.target.value,
-                }));
-                e.target.value === ""
-                  ? setErrorMsg("*Please fill required details - Name")
-                  : setErrorMsg("");
-              }}
-              value={enterpriseData.name}
-            />
-            <InputWithLabel
-              name="Address"
-              type="text"
-              id="address"
-              required={true}
-              onChange={(e) =>
-                setEnterPriseData((prev) => ({
-                  ...prev,
-                  address: e.target.value,
-                }))
-              }
-              value={enterpriseData.address}
-            />
-            <InputWithLabel
-              name="Email"
-              type="email"
-              id="email"
-              required={true}
-              onChange={(e) =>
-                setEnterPriseData((prev) => ({
-                  ...prev,
-                  email: e.target.value,
-                }))
-              }
-              value={enterpriseData.email}
-            />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
               <InputWithLabel
-                name="Phone"
-                type="tel"
-                id="mobile_number"
+                name="Name"
+                type="text"
                 required={true}
-                onChange={(e) =>
+                id="name"
+                onChange={(e) => {
                   setEnterPriseData((prev) => ({
                     ...prev,
-                    mobile_number: e.target.value,
-                  }))
-                }
-                value={enterpriseData.mobile_number}
+                    name: e.target.value,
+                  }));
+                  e.target.value === ""
+                    ? setErrorMsg("*Please fill required details - Name")
+                    : setErrorMsg("");
+                }}
+                value={enterpriseData.name}
               />
-              <InputWithLabel
-                name="PAN"
-                type="tel"
-                id="pan_number"
-                required={true}
-                onChange={(e) =>
-                  setEnterPriseData((prev) => ({
-                    ...prev,
-                    pan_number: e.target.value,
-                  }))
-                }
-                value={enterpriseData.pan_number}
-              />
+              {errorMsg.name && <ErrorBox msg={errorMsg.name} />}
             </div>
-            <InputWithLabel
-              name="Goods and Service Tax number"
-              type="tel"
-              id="gst_number"
-              onChange={(e) =>
-                setEnterPriseData((prev) => ({
-                  ...prev,
-                  gst_number: e.target.value,
-                }))
-              }
-              value={enterpriseData.gst_number}
-            />
+            <div className="flex flex-col gap-1">
+              <InputWithLabel
+                name="Address"
+                type="text"
+                id="address"
+                required={true}
+                onChange={(e) =>
+                  setEnterPriseData((prev) => ({
+                    ...prev,
+                    address: e.target.value,
+                  }))
+                }
+                value={enterpriseData.address}
+              />
+              {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
+            </div>
+            <div className="flex flex-col gap-1">
+              <InputWithLabel
+                name="Email"
+                type="text"
+                id="email"
+                required={true}
+                onChange={(e) =>
+                  setEnterPriseData((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }))
+                }
+                value={enterpriseData.email}
+              />
+              {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <InputWithLabel
+                  name="Phone"
+                  type="tel"
+                  id="mobile_number"
+                  required={true}
+                  onChange={(e) =>
+                    setEnterPriseData((prev) => ({
+                      ...prev,
+                      mobile_number: e.target.value,
+                    }))
+                  }
+                  value={enterpriseData.mobile_number}
+                />
+                {errorMsg.mobile_number && (
+                  <ErrorBox msg={errorMsg.mobile_number} />
+                )}
+              </div>
+              <div className="flex flex-col gap-1">
+                <InputWithLabel
+                  name="PAN"
+                  type="tel"
+                  id="pan_number"
+                  required={true}
+                  onChange={(e) =>
+                    setEnterPriseData((prev) => ({
+                      ...prev,
+                      pan_number: e.target.value,
+                    }))
+                  }
+                  value={enterpriseData.pan_number}
+                />
+                {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <InputWithLabel
+                name="GST IN"
+                type="tel"
+                id="gst_number"
+                required={true}
+                onChange={(e) =>
+                  setEnterPriseData((prev) => ({
+                    ...prev,
+                    gst_number: e.target.value,
+                  }))
+                }
+                value={enterpriseData.gst_number}
+              />
+              {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />}
+            </div>
           </div>
 
           <div className="h-[1px] bg-neutral-300"></div>
@@ -231,18 +305,21 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
             <DialogClose asChild>
               <Button
                 onClick={() => {
-                  setEnterPriseData({
-                    enterprise_id: "",
-                    name: "",
-                    address: "",
-                    country_code: "",
-                    mobile_number: "",
-                    email: "",
-                    pan_number: "",
-                    gst_number: "",
-                    user_type: "",
-                  });
-                  setOpen((prev) => !prev);
+                  setErrorMsg({});
+                  if (btnName !== "Edit") {
+                    setEnterPriseData({
+                      enterprise_id: "",
+                      name: "",
+                      address: "",
+                      country_code: "",
+                      mobile_number: "",
+                      email: "",
+                      pan_number: "",
+                      gst_number: "",
+                      user_type: "",
+                    });
+                  }
+                  setOpen(false);
                 }}
                 variant={"outline"}
               >
