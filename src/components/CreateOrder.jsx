@@ -30,11 +30,13 @@ import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
 import { toast } from "sonner";
 import { order_api } from "@/api/order_api/order_api";
 import Loading from "./Loading";
+import ErrorBox from "./ErrorBox";
 
 const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get("enterprise_Id");
 
+  const [errorMsg, setErrorMsg] = useState({});
   const [selectedItem, setSelectedItem] = useState({
     product_name: "",
     product_type: "",
@@ -130,6 +132,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           ? "Sales Order Created Successfully"
           : "Purchase Order Created Successfully"
       );
+      onCancel();
       queryClient.invalidateQueries({
         queryKey:
           cta === "offer"
@@ -141,6 +144,53 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       toast.error(error.response.data.message || "Something went wrong");
     },
   });
+
+  // validations
+  const validation = ({ order, selectedItem }) => {
+    let error = {};
+
+    if (cta == "offer") {
+      if (order?.buyer_enterperise_id == null) {
+        error.buyer_enterperise_id = "*Please select a client";
+      }
+      if (order?.order_item?.length === 0) {
+        error.order_item = "*Please add atleast one item to create order";
+      }
+      if (selectedItem.quantity === null) {
+        error.quantity = "*Required Quantity";
+      }
+      if (selectedItem.unit_price === null) {
+        error.unit_price = "*Required Price";
+      }
+      if (selectedItem.gst_per_unit === null) {
+        error.gst_per_unit = "*Required GST (%)";
+      }
+      if (selectedItem.total_amount === null) {
+        error.total_amount = "*Required Amount";
+      }
+    } else {
+      if (order?.seller_enterprise_id == null) {
+        error.seller_enterprise_id = "*Please select a vendor";
+      }
+      if (order?.order_item?.length === 0) {
+        error.order_item = "*Please add atleast one item to create order";
+      }
+      if (selectedItem.quantity === null) {
+        error.quantity = "*Required Quantity";
+      }
+      if (selectedItem.unit_price === null) {
+        error.unit_price = "*Required Price";
+      }
+      if (selectedItem.gst_per_unit === null) {
+        error.gst_per_unit = "*Required GST (%)";
+      }
+      if (selectedItem.total_amount === null) {
+        error.total_amount = "*Required Amount";
+      }
+    }
+
+    return error;
+  };
 
   const handleSetTotalAmt = () => {
     const totalAmount = order.order_items.reduce((totalAmt, orderItem) => {
@@ -157,12 +207,18 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+    const isError = validation({ order: order, selectedItem: selectedItem });
 
-    orderMutation.mutate({
-      ...order,
-      amount: parseFloat(totalAmount.toFixed(2)),
-      gst_amount: parseFloat(totalGstAmt.toFixed(2)),
-    });
+    if (Object.keys(isError).length === 0) {
+      orderMutation.mutate({
+        ...order,
+        amount: parseFloat(totalAmount.toFixed(2)),
+        gst_amount: parseFloat(totalGstAmt.toFixed(2)),
+      });
+      setErrorMsg({});
+    }
+    console.log(isError);
+    setErrorMsg(isError);
   };
 
   return (
@@ -170,57 +226,68 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       <SubHeader name={name}></SubHeader>
       <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
         <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
-        <Select
-          defaultValue=""
-          onValueChange={(value) => {
-            cta === "offer"
-              ? setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
-              : setOrder((prev) => ({ ...prev, seller_enterprise_id: value }));
-          }}
-        >
-          <SelectTrigger className="max-w-xs">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            {/* if expected client is not in the list add a new client */}
-            {type === "sales" && (
-              <AddModal
-                type={"Add Client"}
-                cta="client"
-                btnName="Add"
-                mutationFunc={CreateEnterpriseUser}
-              />
-            )}
-            {/* if expected vendor is not in the list add a new vendor */}
-            {type === "purchase" && (
-              <AddModal
-                type={"Add Vendor"}
-                cta="vendor"
-                btnName="Add"
-                mutationFunc={CreateEnterpriseUser}
-              />
-            )}
+        <div className="flex flex-col gap-1">
+          <Select
+            defaultValue=""
+            onValueChange={(value) => {
+              cta === "offer"
+                ? setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
+                : setOrder((prev) => ({
+                    ...prev,
+                    seller_enterprise_id: value,
+                  }));
+            }}
+          >
+            <SelectTrigger className="max-w-xs">
+              <SelectValue placeholder="Select" />
+            </SelectTrigger>
+            <SelectContent>
+              {/* if expected client is not in the list add a new client */}
+              {type === "sales" && (
+                <AddModal
+                  type={"Add Client"}
+                  cta="client"
+                  btnName="Add"
+                  mutationFunc={CreateEnterpriseUser}
+                />
+              )}
+              {/* if expected vendor is not in the list add a new vendor */}
+              {type === "purchase" && (
+                <AddModal
+                  type={"Add Vendor"}
+                  cta="vendor"
+                  btnName="Add"
+                  mutationFunc={CreateEnterpriseUser}
+                />
+              )}
 
-            {cta == "offer" ? (
-              <>
-                {formattedData?.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
-                  </SelectItem>
-                ))}
-              </>
-            ) : (
-              <>
-                {formattedData?.map((vendor) => (
-                  <SelectItem key={vendor.id} value={vendor.id}>
-                    {vendor.name}
-                  </SelectItem>
-                ))}
-              </>
-            )}
-          </SelectContent>
-        </Select>
-
+              {cta == "offer" ? (
+                <>
+                  {formattedData?.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {formattedData?.map((vendor) => (
+                    <SelectItem key={vendor.id} value={vendor.id}>
+                      {vendor.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+          {cta === "offer"
+            ? errorMsg.buyer_enterperise_id && (
+                <ErrorBox msg={errorMsg.buyer_enterperise_id} />
+              )
+            : errorMsg.seller_enterprise_id && (
+                <ErrorBox msg={errorMsg.seller_enterprise_id} />
+              )}
+        </div>
         {/* {name === "Invoice" && (
           <>
             <Label>Order</Label>
@@ -246,78 +313,97 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         <div className="flex items-center justify-between gap-4 ">
           <div className="flex items-center gap-4">
             <Label className="flex-shrink-0">Item</Label>
-            <Select
-              defaultValue={selectedItem.product_id}
-              onValueChange={(value) => {
-                const selectedItemData = itemData?.find(
-                  (item) => value === item.id
-                );
+            <div className="flex flex-col gap-1">
+              <Select
+                // defaultValue={selectedItem.product_id}
+                onValueChange={(value) => {
+                  const selectedItemData = itemData?.find(
+                    (item) => value === item.id
+                  );
 
-                setSelectedItem((prev) => ({
-                  ...prev,
-                  product_id: value,
-                  product_type: selectedItemData.product_type,
-                  product_name: selectedItemData.product_name,
-                  unit_price: selectedItemData.amount,
-                  gst_per_unit: selectedItemData.gstPercentage,
-                }));
-              }}
-            >
-              <SelectTrigger className="max-w-xs gap-5">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                {itemData?.map((item) => (
-                  <SelectItem
-                    disabled={
-                      !!order.order_items.find(
-                        (itemO) => itemO.product_id === item.id
-                      )
-                    }
-                    key={item.id}
-                    value={item.id}
-                  >
-                    {item.product_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  setSelectedItem((prev) => ({
+                    ...prev,
+                    product_id: value,
+                    product_type: selectedItemData.product_type,
+                    product_name: selectedItemData.product_name,
+                    unit_price: selectedItemData.amount,
+                    gst_per_unit: selectedItemData.gstPercentage,
+                  }));
+                }}
+              >
+                <SelectTrigger className="max-w-xs gap-5">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {itemData?.map((item) => (
+                    <SelectItem
+                      disabled={
+                        !!order.order_items.find(
+                          (itemO) => itemO.product_id === item.id
+                        )
+                      }
+                      key={item.id}
+                      value={item.id}
+                    >
+                      {item.product_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* {errorMsg.name && <ErrorBox msg={errorMsg.name} />} */}
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Label>Quantity:</Label>
-            <Input
-              value={selectedItem.quantity}
-              onChange={(e) => {
-                const totalAmt = parseFloat(
-                  (e.target.value * selectedItem.unit_price).toFixed(2)
-                ); // totalAmt excluding gst
-                const GstAmt = parseFloat(
-                  (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2)
-                ); // total gstAmt
-                setSelectedItem((prev) => ({
-                  ...prev,
-                  quantity: Number(e.target.value),
-                  total_amount: totalAmt,
-                  total_gst_amount: GstAmt,
-                }));
-              }}
-              className="max-w-20"
-            />
+            <div className="flex flex-col gap-1">
+              <Input
+                value={selectedItem.quantity}
+                onChange={(e) => {
+                  const totalAmt = parseFloat(
+                    (e.target.value * selectedItem.unit_price).toFixed(2)
+                  ); // totalAmt excluding gst
+                  const GstAmt = parseFloat(
+                    (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2)
+                  ); // total gstAmt
+                  setSelectedItem((prev) => ({
+                    ...prev,
+                    quantity: Number(e.target.value),
+                    total_amount: totalAmt,
+                    total_gst_amount: GstAmt,
+                  }));
+                }}
+                className="max-w-20"
+              />
+              {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
             <Label>Price:</Label>
-            <Input value={selectedItem.unit_price} className="max-w-20" />
+            <div className="flex flex-col gap-1">
+              <Input value={selectedItem.unit_price} className="max-w-20" />
+              {errorMsg.unit_price && <ErrorBox msg={errorMsg.unit_price} />}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
             <Label>GST (%) :</Label>
-            <Input value={selectedItem.gst_per_unit} className="max-w-20" />
+            <div className="flex flex-col gap-1">
+              <Input value={selectedItem.gst_per_unit} className="max-w-20" />
+              {errorMsg.gst_per_unit && (
+                <ErrorBox msg={errorMsg.gst_per_unit} />
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
             <Label>Amount:</Label>
-            <Input value={selectedItem.total_amount} className="max-w-20" />
+            <div className="flex flex-col gap-1">
+              <Input value={selectedItem.total_amount} className="max-w-20" />
+              {errorMsg.total_amount && (
+                <ErrorBox msg={errorMsg.total_amount} />
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center justify-end gap-4">
@@ -338,6 +424,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                 total_amount: "", // total amount + gst amount
                 total_gst_amount: "",
               });
+              setErrorMsg({});
             }}
             variant="blue_outline"
           >
@@ -355,21 +442,19 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         <Button onClick={onCancel} variant={"outline"}>
           Cancel
         </Button>
-
-        <SuccessModal
+        {/* <SuccessModal
           onClose={() => {
             onCancel();
           }}
+        > */}
+        <Button
+          onClick={
+            handleSubmit // invoke handle submit fn
+          }
         >
-          <Button
-            disabled={!selectedItem && !order}
-            onClick={
-              handleSubmit // invoke handle submit fn
-            }
-          >
-            Create
-          </Button>
-        </SuccessModal>
+          Create
+        </Button>
+        {/* </SuccessModal> */}
       </div>
     </Wrapper>
   );
