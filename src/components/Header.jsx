@@ -13,7 +13,6 @@ import { LocalStorageService } from "@/lib/utils";
 
 const Header = () => {
   const router = useRouter();
-  const username = LocalStorageService.get("user_name");
 
   const logout = () => {
     LocalStorageService.clear();
@@ -44,7 +43,6 @@ const Header = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="max-w-[150px] p-1 m-2">
-            <span className="text-xs my-2 flex justify-center items-center font-bold truncate">{username.toUpperCase()}</span>
             <Button onClick={logout} className="w-full">
               Logout
             </Button>

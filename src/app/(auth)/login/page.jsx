@@ -50,7 +50,7 @@ export default function Login() {
             setCurrStep={setCurrStep}
           />
         )}
-        {currStep === 4 && <CompleteKyc />}
+        {/* {currStep === 4 && <CompleteKyc />} */}
       </div>
     </>
   );

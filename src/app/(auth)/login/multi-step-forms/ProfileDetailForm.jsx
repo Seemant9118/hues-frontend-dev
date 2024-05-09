@@ -15,21 +15,23 @@ import { toast } from "sonner";
 
 import Loading from "@/components/Loading";
 import ErrorBox from "@/components/ErrorBox";
+import Link from "next/link";
 
 export default function ProfileDetailForm({
   setCurrStep,
   params,
   isThirdPartyLogin,
 }) {
+  const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
 
-  const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
+  const [date, setDate] = useState(moment(new Date()));
   const [userData, setUserData] = useState({
     user_id: userId,
     name: "",
     email: "",
-    aadhaar_number: "",
-    date_of_birth: date.toString(),
+    // aadhaar_number: "",
+    date_of_birth: moment(new Date()).format("DD-MM-YYYY"),
     pan_number: "",
   });
 
@@ -43,11 +45,10 @@ export default function ProfileDetailForm({
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
-      LocalStorageService.set("user_name", userData.name);
-      setCurrStep(4);
+      // setCurrStep(4);
     },
     onError: (error) => {
-      toast.error("Oops, Something went wrong!");
+      toast.error(error.response.data.message || "Oops, Something went wrong!");
     },
   });
 
@@ -69,11 +70,11 @@ export default function ProfileDetailForm({
     }
 
     // Aadhaar validation
-    if (userData.aadhaar_number === "") {
-      error.aadhaar_number = "* Required Aadhaar Number";
-    } else if (userData.aadhaar_number.length !== 4) {
-      error.aadhaar_number = "* Please enter a last 4 digit of Aadhaar Number";
-    }
+    // if (userData.aadhaar_number === "") {
+    //   error.aadhaar_number = "* Required Aadhaar Number";
+    // } else if (userData.aadhaar_number.length !== 4) {
+    //   error.aadhaar_number = "* Please enter a last 4 digit of Aadhaar Number";
+    // }
 
     // date_of_birth validation
     if (userData.date_of_birth === "") {
@@ -97,41 +98,22 @@ export default function ProfileDetailForm({
     // pan validation
     if (name === "pan_number") {
       const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-      if (!pan_pattern.test(value)) {
+      if (!pan_pattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "",
+          pan_number: "* Please provide valid PAN Number",
         });
-        setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "*Please write valid PAN",
+          pan_number: "",
         });
       }
+      setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
       return;
     }
-
-    // aadhaar_number with masked 'x' value
-    if (name === "aadhaar_number") {
-      if (value.length != 5) {
-        setUserData((values) => ({ ...values, [name]: value }));
-      }
-      return;
-    }
-    // if (name === "aadhaar_number") {
-    //   const maskedValue = "xxxxxxxx";
-    //   if (value.length <= 8) {
-    //     const newValue = maskedValue.slice(0, value.length);
-    //     setUserData((values) => ({ ...values, [name]: newValue }));
-    //   } else {
-    //     const newValue = maskedValue.slice(0, value.length) + value.slice(8);
-    //     setUserData((values) => ({ ...values, [name]: newValue }));
-    //   }
-    //   return;
-    // }
 
     setUserData((values) => ({ ...values, [name]: value }));
   };
@@ -142,7 +124,9 @@ export default function ProfileDetailForm({
 
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
-      mutation.mutate(userData);
+      // mutation.mutate(userData);
+      console.log(userData);
+      console.log(date);
     }
     setErrorMsg(isAnyError);
   };
@@ -226,7 +210,7 @@ export default function ProfileDetailForm({
             </div>
           </div>
         )} */}
-        {!isThirdPartyLogin && (
+        {/* {!isThirdPartyLogin && (
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="mobile-number"
@@ -257,7 +241,7 @@ export default function ProfileDetailForm({
               <ErrorBox msg={errorMsg?.aadhaar_number} />
             )}
           </div>
-        )}
+        )} */}
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label
@@ -274,7 +258,13 @@ export default function ProfileDetailForm({
           <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
             <DatePickers
               selected={date}
-              onChange={(date) => setDate(moment(date).format("DD-MM-YYYY"))}
+              onChange={(date) => {
+                setDate(moment(date));
+                setUserData((prevUserData) => ({
+                  ...prevUserData,
+                  date_of_birth: moment(date).format("DD-MM-YYYY"),
+                }));
+              }}
             />
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
@@ -313,6 +303,13 @@ export default function ProfileDetailForm({
         <Button type="submit" className="w-full">
           {mutation.isPending ? <Loading /> : "Submit"}
         </Button>
+
+        <Link
+          href="/"
+          className="text-sm underline text-slate-700 w-full flex justify-center items-center"
+        >
+          Skip for Now
+        </Link>
       </form>
 
       {/* <div className="border">
