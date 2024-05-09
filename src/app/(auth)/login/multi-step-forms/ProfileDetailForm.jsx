@@ -124,8 +124,8 @@ export default function ProfileDetailForm({
 
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
-      // mutation.mutate(userData);
-      console.log(userData);
+      mutation.mutate(userData);
+      // console.log(userData);
       console.log(date);
     }
     setErrorMsg(isAnyError);
