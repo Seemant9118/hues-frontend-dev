@@ -326,7 +326,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                     product_id: value,
                     product_type: selectedItemData.product_type,
                     product_name: selectedItemData.product_name,
-                    unit_price: selectedItemData.amount,
+                    unit_price: selectedItemData.rate,
                     gst_per_unit: selectedItemData.gstPercentage,
                   }));
                 }}

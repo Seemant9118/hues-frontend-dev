@@ -167,29 +167,29 @@ const AddItem = ({ name, onCancel, cta }) => {
         mutationGoods.mutate(goodsData);
       }
       setErrorMsg(isError);
-      return;
+    } else {
+      // servicesdata
+      const {
+        product_name,
+        manufacturer_name,
+        hsn_code,
+        type,
+        units,
+        batch,
+        weight,
+        length,
+        breadth,
+        height,
+        ...servicesData
+      } = item;
+      const isError = validation(servicesData);
+      if (Object.keys(isError).length === 0) {
+        // mutate service
+        setErrorMsg({});
+        mutationServices.mutate(servicesData);
+      }
+      setErrorMsg(isError);
     }
-    // servicesdata
-    const {
-      product_name,
-      manufacturer_name,
-      hsn_code,
-      type,
-      units,
-      batch,
-      weight,
-      length,
-      breadth,
-      height,
-      ...servicesData
-    } = item;
-    const isError = validation(servicesData);
-    if (Object.keys(isError).length === 0) {
-      // mutate service
-      setErrorMsg({});
-      mutationServices.mutate(servicesData);
-    }
-    setErrorMsg(isError);
   };
 
   return (
