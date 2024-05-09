@@ -9,8 +9,9 @@ import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
 import moment from "moment";
+import dayjs from "dayjs";
 import { redirect, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import Loading from "@/components/Loading";
@@ -24,28 +25,37 @@ export default function ProfileDetailForm({
 }) {
   const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  const [date, setDate] = useState(moment(new Date()));
   const [userData, setUserData] = useState({
     user_id: userId,
     name: "",
     email: "",
-    // aadhaar_number: "",
-    date_of_birth: moment(new Date()).format("DD-MM-YYYY"),
+    date_of_birth: "",
     pan_number: "",
   });
 
   const [errorMsg, setErrorMsg] = useState({});
 
+  useEffect(() => {
+    setUserData((prevUserData) => ({
+      ...prevUserData,
+      date_of_birth: selectedDate
+        ? moment(selectedDate).format("DD/MM/YYYY")
+        : "", // Update dynamically
+    }));
+  }, [selectedDate]);
+
   const mutation = useMutation({
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
-      toast.success("Your Profile Completed!");
+      toast.success("Your Profile Completed & Verified");
       LocalStorageService.set(
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
       // setCurrStep(4);
+      router.push("/");
     },
     onError: (error) => {
       toast.error(error.response.data.message || "Oops, Something went wrong!");
@@ -77,9 +87,9 @@ export default function ProfileDetailForm({
     // }
 
     // date_of_birth validation
-    if (userData.date_of_birth === "") {
-      error.date_of_birth = "*Required Date of Birth";
-    }
+    // if (userData.date_of_birth === "") {
+    //   error.date_of_birth = "*Required Date of Birth";
+    // }
 
     // email validation
     if (userData.email === "") {
@@ -125,8 +135,7 @@ export default function ProfileDetailForm({
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
       mutation.mutate(userData);
-      // console.log(userData);
-      console.log(date);
+      console.log(userData);
     }
     setErrorMsg(isAnyError);
   };
@@ -256,7 +265,8 @@ export default function ProfileDetailForm({
           </Label>
 
           <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-            <DatePickers
+            {/* <DatePickers
+              value={date}
               selected={date}
               onChange={(date) => {
                 setDate(moment(date));
@@ -265,6 +275,11 @@ export default function ProfileDetailForm({
                   date_of_birth: moment(date).format("DD-MM-YYYY"),
                 }));
               }}
+            /> */}
+            <DatePickers
+              selected={selectedDate}
+              dateFormat="dd/MM/yyyy"
+              onChange={(date) => setSelectedDate(date)}
             />
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
