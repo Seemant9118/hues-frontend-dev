@@ -61,12 +61,13 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const handleChangeMobLogin = (e) => {
     let name = e.target.name;
     let value = e.target.value;
-
-    setFormDataWithMob((values) => ({ ...values, [name]: value }));
     // handle validation
-    formDataWithMob.mobile_number.length !== 9
-      ? setErrorMsg("*Please enter a valid mobile number")
-      : setErrorMsg("");
+    if (value.length !== 10) {
+      setErrorMsg("*Please enter a 10 - digit mobile number");
+    } else {
+      setErrorMsg("");
+    }
+    setFormDataWithMob((values) => ({ ...values, [name]: value }));
   };
 
   // const handleSubmitFormWithDigi = (e) => {
