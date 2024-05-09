@@ -98,32 +98,34 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
       {/* login with mobile */}
       <form
         onSubmit={handleSubmitFormWithMob}
-        className="grid w-full max-w-sm items-center gap-1.5"
+        className="grid w-full max-w-sm items-center gap-3.5"
       >
-        <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
-          Mobile Number <span className="text-red-600">*</span>
-        </Label>
-        <div className="hover:border-gray-600 flex items-center gap-1 relative">
-          <span className="absolute left-1.5 font-semibold text-gray-600 text-sm">
-            +91
-          </span>
-          <Input
-            type="text"
-            name="mobile_number"
-            placeholder="Mobile Number"
-            className="focus:font-bold px-8"
-            onChange={handleChangeMobLogin}
-            value={formDataWithMob.mobile_number}
-            required
-          />
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
+            Mobile Number <span className="text-red-600">*</span>
+          </Label>
+          <div className="hover:border-gray-600 flex items-center gap-1 relative">
+            <span className="absolute left-1.5 font-semibold text-gray-600 text-sm">
+              +91
+            </span>
+            <Input
+              type="text"
+              name="mobile_number"
+              placeholder="Mobile Number"
+              className="focus:font-bold px-8"
+              onChange={handleChangeMobLogin}
+              value={formDataWithMob.mobile_number}
+              required
+            />
 
-          <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
+            <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
+          </div>
+          {errorMsg && (
+            <span className="text-red-600 text-sm w-full px-1 font-semibold">
+              {errorMsg}
+            </span>
+          )}
         </div>
-        {errorMsg && (
-          <span className="text-red-600 text-sm w-full px-1 font-semibold">
-            {errorMsg}
-          </span>
-        )}
 
         <Button
           type="submit"
