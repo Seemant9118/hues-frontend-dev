@@ -157,18 +157,20 @@ const AddItem = ({ name, onCancel, cta }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    let isError = {};
+
     if (item.type === "goods") {
-      // goodsdata
+      // Extract goods data
       const { service_name, SAC, type, units, ...goodsData } = item;
-      const isError = validation(goodsData);
+      isError = validation(goodsData);
+
+      // If no validation errors, mutate goods
       if (Object.keys(isError).length === 0) {
-        // mutate goods
         setErrorMsg({});
         mutationGoods.mutate(goodsData);
       }
-      setErrorMsg(isError);
     } else {
-      // servicesdata
+      // Extract services data
       const {
         product_name,
         manufacturer_name,
@@ -182,14 +184,17 @@ const AddItem = ({ name, onCancel, cta }) => {
         height,
         ...servicesData
       } = item;
-      const isError = validation(servicesData);
+      isError = validation(servicesData);
+
+      // If no validation errors, mutate service
       if (Object.keys(isError).length === 0) {
-        // mutate service
         setErrorMsg({});
         mutationServices.mutate(servicesData);
       }
-      setErrorMsg(isError);
     }
+
+    // Set error messages if there are any
+    setErrorMsg(isError);
   };
 
   return (
