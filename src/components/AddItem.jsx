@@ -16,7 +16,7 @@ import { CreateProductServices } from "@/services/Inventories_Services/Services_
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import DatePickers from "./DatePickers";
 import InputWithLabel from "./InputWithLabel";
@@ -29,9 +29,10 @@ const AddItem = ({ name, onCancel, cta }) => {
   const user_id = LocalStorageService.get("user_profile");
   const pathname = usePathname();
   const isGoods = pathname.includes("goods");
+  console.log(isGoods);
 
   const [errorMsg, setErrorMsg] = useState({});
-  const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
+  const [selectedDate, setSelectedDate] = useState(null);
   const [item, setItem] = useState({
     enterprise_id: enterpriseId,
     template_id: user_id,
@@ -47,7 +48,7 @@ const AddItem = ({ name, onCancel, cta }) => {
     amount: "",
     type: isGoods ? "goods" : "services",
     batch: "",
-    expiry: date.toString(),
+    expiry: "",
     weight: "",
     length: "",
     breadth: "",
@@ -55,6 +56,42 @@ const AddItem = ({ name, onCancel, cta }) => {
     applications: "",
     units: "",
   });
+
+  // set date into expiry field of item
+  useEffect(() => {
+    setItem((prevUserData) => ({
+      ...prevUserData,
+      expiry: selectedDate ? moment(selectedDate).format("DD/MM/YYYY") : "", // Update dynamically
+    }));
+  }, [selectedDate]);
+
+  // clear errorMsg if item type changes
+  useEffect(() => {
+    setErrorMsg({});
+    setItem({
+      enterprise_id: enterpriseId,
+      template_id: user_id,
+      product_name: "",
+      manufacturer_name: "",
+      service_name: "",
+      description: "",
+      hsn_code: "",
+      SAC: "",
+      rate: "",
+      gst_percentage: "",
+      quantity: "",
+      amount: "",
+      type: item.type,
+      batch: "",
+      expiry: "",
+      weight: "",
+      length: "",
+      breadth: "",
+      height: "",
+      applications: "",
+      units: "",
+    });
+  }, [item.type]);
 
   const validation = (item) => {
     let error = {};
@@ -103,8 +140,7 @@ const AddItem = ({ name, onCancel, cta }) => {
   };
 
   const mutationGoods = useMutation({
-    mutationFn:
-      item.type === "goods" ? CreateProductGoods : CreateProductServices,
+    mutationFn: CreateProductGoods,
     onSuccess: () => {
       toast.success("Product Goods Added Successfully");
       queryClient.invalidateQueries({
@@ -118,8 +154,7 @@ const AddItem = ({ name, onCancel, cta }) => {
   });
 
   const mutationServices = useMutation({
-    mutationFn:
-      item.type === "goods" ? CreateProductGoods : CreateProductServices,
+    mutationFn: CreateProductServices,
     onSuccess: () => {
       toast.success("Product Services Added Successfully");
       queryClient.invalidateQueries({
@@ -137,9 +172,9 @@ const AddItem = ({ name, onCancel, cta }) => {
 
     // validation input value
     if (
+      id === "quantity" ||
       id === "rate" ||
       id === "gst_percentage" ||
-      id === "amount" ||
       id === "weight" ||
       id === "height" ||
       id === "length" ||
@@ -154,52 +189,54 @@ const AddItem = ({ name, onCancel, cta }) => {
     setItem((values) => ({ ...values, [id]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmitGoods = (e) => {
     e.preventDefault();
 
-    let isError = {};
+    // Extract goods data
+    const { service_name, SAC, type, units, ...goodsData } = item;
+    let isError = validation(goodsData);
 
-    if (item.type === "goods") {
-      // Extract goods data
-      const { service_name, SAC, type, units, ...goodsData } = item;
-      isError = validation(goodsData);
-
-      // If no validation errors, mutate goods
-      if (Object.keys(isError).length === 0) {
-        setErrorMsg({});
-        mutationGoods.mutate(goodsData);
-      }
-    } else {
-      // Extract services data
-      const {
-        product_name,
-        manufacturer_name,
-        hsn_code,
-        type,
-        units,
-        batch,
-        weight,
-        length,
-        breadth,
-        height,
-        ...servicesData
-      } = item;
-      isError = validation(servicesData);
-
-      // If no validation errors, mutate service
-      if (Object.keys(isError).length === 0) {
-        setErrorMsg({});
-        mutationServices.mutate(servicesData);
-      }
+    // If no validation errors, mutate goods
+    if (Object.keys(isError).length === 0) {
+      setErrorMsg({});
+      mutationGoods.mutate(goodsData);
+      return;
     }
+    setErrorMsg(isError);
+  };
+  const handleSubmitServices = (e) => {
+    e.preventDefault();
+    // Extract services data
+    const {
+      product_name,
+      manufacturer_name,
+      hsn_code,
+      type,
+      units,
+      batch,
+      weight,
+      length,
+      breadth,
+      height,
+      quantity,
+      ...servicesData
+    } = item;
+    let isError = validation(servicesData);
 
-    // Set error messages if there are any
+    // If no validation errors, mutate service
+    if (Object.keys(isError).length === 0) {
+      setErrorMsg({});
+      mutationServices.mutate(servicesData);
+      return;
+    }
     setErrorMsg(isError);
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={
+        item.type === "goods" ? handleSubmitGoods : handleSubmitServices
+      }
       className={cn(
         "flex flex-col gap-4 h-full overflow-y-auto p-2 grow scrollBarStyles"
       )}
@@ -333,32 +370,22 @@ const AddItem = ({ name, onCancel, cta }) => {
             <InputWithLabel
               name="Batch"
               id="batch"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.batch}
             />
-            {/* <InputWithLabel
-          name="Expiry"
-          id="expiry"
-          required={item.type === "goods" || item.type === "services"}
-          onChange={onChange}
-          value={item.expiry}
-        /> */}
-
             <div className="grid w-full items-center gap-1.5">
               <Label
-                htmlFor="dob"
+                htmlFor="expiry"
                 className="text-[#414656] font-medium flex items-center gap-1"
               >
                 Expiry
               </Label>
-
               <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={date}
-                  onChange={(date) =>
-                    setDate(moment(date).format("DD-MM-YYYY"))
-                  }
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date)}
+                  dateFormat="dd/MM/yyyy"
+                  popperPlacement="top"
                 />
                 <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
               </div>
@@ -368,28 +395,24 @@ const AddItem = ({ name, onCancel, cta }) => {
             <InputWithLabel
               name="Weight (kg)"
               id="weight"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.weight}
             />
             <InputWithLabel
               name="Length (cm)"
               id="length"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.length}
             />
             <InputWithLabel
               name="Breadth (cm)"
               id="breadth"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.breadth}
             />
             <InputWithLabel
               name="Height (cm)"
               id="height"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.height}
             />
@@ -397,7 +420,6 @@ const AddItem = ({ name, onCancel, cta }) => {
           <InputWithLabel
             name="Application"
             id="applications"
-            // required={item.type == "goods" || item.type === "services"}
             onChange={onChange}
             value={item.applications}
           />
@@ -450,6 +472,8 @@ const AddItem = ({ name, onCancel, cta }) => {
               />
               {errorMsg?.rate && <ErrorBox msg={errorMsg.rate} />}
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col">
               <InputWithLabel
                 name="GST (%)"
@@ -462,32 +486,9 @@ const AddItem = ({ name, onCancel, cta }) => {
                 <ErrorBox msg={errorMsg.gst_percentage} />
               )}
             </div>
-            <div className="flex flex-col">
-              <InputWithLabel
-                name="Amount"
-                id="amount"
-                required={true}
-                onChange={onChange}
-                value={item.amount}
-              />
-              {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-            </div>
-            {/* <div className="flex flex-col">
-              <InputWithLabel
-                name="Quantity"
-                id="quantity"
-                required={true}
-                onChange={onChange}
-                value={item.quantity}
-              />
-              {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
-            </div> */}
-          </div>
-          {/* optional data fields */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="grid w-full items-center gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label
-                htmlFor="dob"
+                htmlFor="expiry"
                 className="text-[#414656] font-medium flex items-center gap-1"
               >
                 Expiry
@@ -495,14 +496,24 @@ const AddItem = ({ name, onCancel, cta }) => {
 
               <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={date}
-                  onChange={(date) =>
-                    setDate(moment(date).format("DD-MM-YYYY"))
-                  }
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date)}
+                  dateFormat="dd/MM/yyyy"
+                  popperPlacement="top"
                 />
                 <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
               </div>
             </div>
+          </div>
+          <div className="flex flex-col">
+            <InputWithLabel
+              name="Amount"
+              id="amount"
+              required={true}
+              onChange={onChange}
+              value={item.amount}
+            />
+            {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
           </div>
           <InputWithLabel
             name="Application"

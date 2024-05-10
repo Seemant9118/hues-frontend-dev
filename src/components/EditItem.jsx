@@ -49,6 +49,7 @@ const EditItem = ({
           gst_percentage: goodsToEdit.gstPercentage,
           amount: goodsToEdit.amount,
           type: "goods",
+          quantity: goodsToEdit.quantity,
           batch: goodsToEdit.batch,
           expiry: goodsToEdit.expiry,
           weight: goodsToEdit.weight,
@@ -219,7 +220,13 @@ const EditItem = ({
               onChange={onChange}
               value={item.gst_percentage}
             />
-            <InputWithLabel name="Quantity" id="quantity" required={true} />
+            <InputWithLabel
+              name="Quantity"
+              id="quantity"
+              required={true}
+              onChange={onChange}
+              value={item.quantity}
+            />
           </div>
           <InputWithLabel
             name="Amount"
@@ -228,6 +235,52 @@ const EditItem = ({
             onChange={onChange}
             value={item.amount}
           />
+          <div className="grid grid-cols-2 gap-2.5">
+            <InputWithLabel
+              name="Batch"
+              id="batch"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.batch}
+            />
+            <InputWithLabel
+              name="Expiry"
+              id="expiry"
+              // required={item.type === "goods" || item.type === "services"}
+              onChange={onChange}
+              value={item.expiry}
+            />
+          </div>
+          <div className="grid grid-cols-4 gap-2.5">
+            <InputWithLabel
+              name="Weight (kg)"
+              id="weight"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.weight}
+            />
+            <InputWithLabel
+              name="Length (cm)"
+              id="length"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.length}
+            />
+            <InputWithLabel
+              name="Breadth (cm)"
+              id="breadth"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.breadth}
+            />
+            <InputWithLabel
+              name="Height (cm)"
+              id="height"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.height}
+            />
+          </div>
         </>
       ) : (
         // for services
@@ -270,7 +323,12 @@ const EditItem = ({
               onChange={onChange}
               value={item.gst_percentage}
             />
-            <InputWithLabel name="Quantity" id="quantity" required={true} />
+            <InputWithLabel
+              name="Expiry"
+              id="expiry"
+              onChange={onChange}
+              value={item.expiry}
+            />
           </div>
           <InputWithLabel
             name="Amount"
@@ -283,52 +341,6 @@ const EditItem = ({
       )}
 
       {/* optional data fields */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <InputWithLabel
-          name="Batch"
-          id="batch"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.batch}
-        />
-        <InputWithLabel
-          name="Expiry"
-          id="expiry"
-          // required={item.type === "goods" || item.type === "services"}
-          onChange={onChange}
-          value={item.expiry}
-        />
-      </div>
-      <div className="grid grid-cols-4 gap-2.5">
-        <InputWithLabel
-          name="Weight (kg)"
-          id="weight"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.weight}
-        />
-        <InputWithLabel
-          name="Length (cm)"
-          id="length"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.length}
-        />
-        <InputWithLabel
-          name="Breadth (cm)"
-          id="breadth"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.breadth}
-        />
-        <InputWithLabel
-          name="Height (cm)"
-          id="height"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.height}
-        />
-      </div>
       <InputWithLabel
         name="Application"
         id="applications"

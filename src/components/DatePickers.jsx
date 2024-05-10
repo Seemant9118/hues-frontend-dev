@@ -4,7 +4,12 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-export default function DatePickers({ selected, onChange, dateFormat }) {
+export default function DatePickers({
+  selected,
+  onChange,
+  dateFormat,
+  popperPlacement,
+}) {
   // const [startDate, setStartDate] = useState('');
   const years = Array.from(
     { length: new Date().getFullYear() - 1949 },
@@ -30,7 +35,7 @@ export default function DatePickers({ selected, onChange, dateFormat }) {
       className="w-[360px] focus:outline-none absolute top-1/2 -translate-y-2/3 z-20 bg-transparent cursor-pointer"
       placeholderText="DD/MM/YYYY"
       dateFormat={dateFormat}
-      popperPlacement="top-right"
+      popperPlacement={popperPlacement}
       renderCustomHeader={({
         date,
         changeYear,
