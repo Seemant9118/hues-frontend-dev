@@ -8,6 +8,7 @@ import { deleteTemplate } from "@/services/Template_Services/Template_Services";
 import { toast } from "sonner";
 import { template_api } from "@/api/templates_api/template_api";
 import Loading from "./Loading";
+import Link from "next/link";
 
 const TemplateCard = ({
   onViewFormClick,
@@ -65,6 +66,17 @@ const TemplateCard = ({
         // className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]"
         className="flex justify-between items-center"
       >
+        <Button
+          asChild
+          variant={"blue_outline"}
+          size="sm"
+          className="text-xs gap-1 p-1.5"
+        >
+          <Link href={`/template/${id}?url=${templateUrl}`}>
+            <Eye size={16} />
+            View
+          </Link>
+        </Button>
         <ViewTemplate
           url={templateUrl}
           id={id}

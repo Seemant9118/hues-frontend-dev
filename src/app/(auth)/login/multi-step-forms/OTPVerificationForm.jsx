@@ -13,6 +13,7 @@ import { LocalStorageService } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
 import Script from "next/script";
 import Loading from "@/components/Loading";
+import { useRouter } from "next/navigation";
 
 function Slot(props) {
   return (
@@ -39,7 +40,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
   const [otp, setOtp] = useState();
   const userId = LocalStorageService.get("user_profile");
   const userMobileNumber = LocalStorageService.get("user_mobile_number");
-
+  const router = useRouter();
   useEffect(() => {
     const timer = setInterval(() => {
       setStartFrom((prevStartFrom) => prevStartFrom - 1);
@@ -53,7 +54,11 @@ export default function OTPVerificationForm({ setCurrStep }) {
     onSuccess: (data) => {
       LocalStorageService.set("token", data.data.data.access_token);
       toast.success("OTP verified successfully");
-      setCurrStep(3);
+      if (data.data.data.user.isOnboardingComplete) {
+        router.push("/");
+      } else {
+        setCurrStep(3);
+      }
     },
     onError: () => {
       toast.error("OTP Invalid or Expired");
@@ -113,7 +118,9 @@ export default function OTPVerificationForm({ setCurrStep }) {
               00:{startFrom}s
             </p>
           ) : (
-            <Button variant="outline" disabled>Resend</Button>
+            <Button variant="outline" disabled>
+              Resend
+            </Button>
           )}
         </span>
       </p>
