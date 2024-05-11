@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { order_api } from "@/api/order_api/order_api";
 import Loading from "./Loading";
 import ErrorBox from "./ErrorBox";
+import EmptyStageComponent from "./EmptyStageComponent";
 
 const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();
@@ -221,6 +222,14 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     setErrorMsg(isError);
   };
 
+  if (!enterpriseId) {
+    return (
+      <div className="flex flex-col justify-center">
+        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Order" />
+        <Button variant="outline" onClick={onCancel}>Close</Button>
+      </div>
+    );
+  }
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>

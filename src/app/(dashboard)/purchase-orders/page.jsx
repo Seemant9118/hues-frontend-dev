@@ -81,7 +81,7 @@ const PurchaseOrders = () => {
 
   return (
     <>
-      {!isCreatingPurchase && data && (
+      {!isCreatingPurchase && (
         <Wrapper>
           <SubHeader name={"Purchases"}>
             <div className="flex items-center justify-center gap-4">
@@ -130,7 +130,7 @@ const PurchaseOrders = () => {
               </Button> */}
             </div>
           </SubHeader>
-          {data?.length === 0 ? (
+          {!enterprise_id || data?.length === 0 ? (
             <EmptyStageComponent
               heading={PurchaseEmptyStageData.heading}
               desc={PurchaseEmptyStageData.desc}
