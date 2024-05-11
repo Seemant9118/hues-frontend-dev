@@ -17,6 +17,7 @@ const TemplateCard = ({
   name,
   type,
   templateUrl,
+  templateName,
   id,
   signatureBoxPlacement,
 }) => {
@@ -40,8 +41,8 @@ const TemplateCard = ({
         {/* <p className="text-neutral-300 text-sm font-bold">Template Name</p> */}
         <div className="text-[#363940] text-base font-bold flex">
           <p className="truncate">
-            {templateUrl.substring(0, 10)}
-            {templateUrl.length > 10 && "..."}
+            {templateName.substring(0, 10)}
+            {templateName.length > 10 && "..."}
           </p>
         </div>
       </div>
@@ -78,6 +79,7 @@ const TemplateCard = ({
           </Link>
         </Button> */}
         <ViewTemplate
+          name={templateName}
           url={templateUrl}
           id={id}
           signatureBoxPlacement={signatureBoxPlacement}

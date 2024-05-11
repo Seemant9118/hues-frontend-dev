@@ -25,7 +25,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
   import.meta.url
 ).toString();
-const ViewTemplate = ({ url, id, signatureBoxPlacement }) => {
+const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isOpen, setisOpen] = useState(false);
   const [canClick, setCanClick] = useState(false);
@@ -194,7 +194,7 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement }) => {
       </SheetTrigger>
       <SheetContent className={`min-w-[40%]`}>
         <SheetHeader className="flex-row items-center justify-between py-4">
-          <SheetTitle>{"name"}</SheetTitle>
+          <SheetTitle>{name.split(".")[0]}</SheetTitle>
           <div className="flex items-center gap-2 ">
             <Button
               disabled={pageNo === 1}
