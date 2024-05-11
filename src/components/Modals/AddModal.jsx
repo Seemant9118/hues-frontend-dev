@@ -15,6 +15,7 @@ import { Edit3, Layers2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import ErrorBox from "../ErrorBox";
+import EmptyStageComponent from "../EmptyStageComponent";
 
 const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
   const queryClient = useQueryClient();
@@ -192,144 +193,159 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
       <DialogContent>
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
-        <form onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <InputWithLabel
-                name="Name"
-                type="text"
-                required={true}
-                id="name"
-                onChange={(e) => {
-                  setEnterPriseData((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }));
-                  e.target.value === ""
-                    ? setErrorMsg("*Please fill required details - Name")
-                    : setErrorMsg("");
-                }}
-                value={enterpriseData.name}
-              />
-              {errorMsg.name && <ErrorBox msg={errorMsg.name} />}
-            </div>
-            <div className="flex flex-col gap-1">
-              <InputWithLabel
-                name="Address"
-                type="text"
-                id="address"
-                required={true}
-                onChange={(e) =>
-                  setEnterPriseData((prev) => ({
-                    ...prev,
-                    address: e.target.value,
-                  }))
-                }
-                value={enterpriseData.address}
-              />
-              {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
-            </div>
-            <div className="flex flex-col gap-1">
-              <InputWithLabel
-                name="Email"
-                type="text"
-                id="email"
-                required={true}
-                onChange={(e) =>
-                  setEnterPriseData((prev) => ({
-                    ...prev,
-                    email: e.target.value,
-                  }))
-                }
-                value={enterpriseData.email}
-              />
-              {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+        {enterpriseId && (
+          <form onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}>
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <InputWithLabel
-                  name="Phone"
-                  type="tel"
-                  id="mobile_number"
+                  name="Name"
+                  type="text"
+                  required={true}
+                  id="name"
+                  onChange={(e) => {
+                    setEnterPriseData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }));
+                    e.target.value === ""
+                      ? setErrorMsg("*Please fill required details - Name")
+                      : setErrorMsg("");
+                  }}
+                  value={enterpriseData.name}
+                />
+                {errorMsg.name && <ErrorBox msg={errorMsg.name} />}
+              </div>
+              <div className="flex flex-col gap-1">
+                <InputWithLabel
+                  name="Address"
+                  type="text"
+                  id="address"
                   required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
-                      mobile_number: e.target.value,
+                      address: e.target.value,
                     }))
                   }
-                  value={enterpriseData.mobile_number}
+                  value={enterpriseData.address}
                 />
-                {errorMsg.mobile_number && (
-                  <ErrorBox msg={errorMsg.mobile_number} />
-                )}
+                {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
               </div>
               <div className="flex flex-col gap-1">
                 <InputWithLabel
-                  name="PAN"
-                  type="tel"
-                  id="pan_number"
+                  name="Email"
+                  type="text"
+                  id="email"
                   required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
-                      pan_number: e.target.value,
+                      email: e.target.value,
                     }))
                   }
-                  value={enterpriseData.pan_number}
+                  value={enterpriseData.email}
                 />
-                {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
+                {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <InputWithLabel
+                    name="Phone"
+                    type="tel"
+                    id="mobile_number"
+                    required={true}
+                    onChange={(e) =>
+                      setEnterPriseData((prev) => ({
+                        ...prev,
+                        mobile_number: e.target.value,
+                      }))
+                    }
+                    value={enterpriseData.mobile_number}
+                  />
+                  {errorMsg.mobile_number && (
+                    <ErrorBox msg={errorMsg.mobile_number} />
+                  )}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <InputWithLabel
+                    name="PAN"
+                    type="tel"
+                    id="pan_number"
+                    required={true}
+                    onChange={(e) =>
+                      setEnterPriseData((prev) => ({
+                        ...prev,
+                        pan_number: e.target.value,
+                      }))
+                    }
+                    value={enterpriseData.pan_number}
+                  />
+                  {errorMsg.pan_number && (
+                    <ErrorBox msg={errorMsg.pan_number} />
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <InputWithLabel
+                  name="GST IN"
+                  type="tel"
+                  id="gst_number"
+                  required={true}
+                  onChange={(e) =>
+                    setEnterPriseData((prev) => ({
+                      ...prev,
+                      gst_number: e.target.value,
+                    }))
+                  }
+                  value={enterpriseData.gst_number}
+                />
+                {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />}
               </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <InputWithLabel
-                name="GST IN"
-                type="tel"
-                id="gst_number"
-                required={true}
-                onChange={(e) =>
-                  setEnterPriseData((prev) => ({
-                    ...prev,
-                    gst_number: e.target.value,
-                  }))
-                }
-                value={enterpriseData.gst_number}
-              />
-              {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />}
-            </div>
-          </div>
 
-          <div className="h-[1px] bg-neutral-300"></div>
+            <div className="h-[1px] bg-neutral-300"></div>
 
-          <div className="flex justify-end items-center gap-4 mt-3">
-            <DialogClose asChild>
-              <Button
-                onClick={() => {
-                  setErrorMsg({});
-                  if (btnName !== "Edit") {
-                    setEnterPriseData({
-                      enterprise_id: "",
-                      name: "",
-                      address: "",
-                      country_code: "",
-                      mobile_number: "",
-                      email: "",
-                      pan_number: "",
-                      gst_number: "",
-                      user_type: "",
-                    });
-                  }
-                  setOpen(false);
-                }}
-                variant={"outline"}
-              >
-                Cancel
+            <div className="flex justify-end items-center gap-4 mt-3">
+              <DialogClose asChild>
+                <Button
+                  onClick={() => {
+                    setErrorMsg({});
+                    if (btnName !== "Edit") {
+                      setEnterPriseData({
+                        enterprise_id: "",
+                        name: "",
+                        address: "",
+                        country_code: "",
+                        mobile_number: "",
+                        email: "",
+                        pan_number: "",
+                        gst_number: "",
+                        user_type: "",
+                      });
+                    }
+                    setOpen(false);
+                  }}
+                  variant={"outline"}
+                >
+                  Cancel
+                </Button>
+              </DialogClose>
+
+              <Button type="submit">
+                {btnName === "Edit" ? "Edit" : type}
               </Button>
-            </DialogClose>
+            </div>
+          </form>
+        )}
 
-            <Button type="submit">{btnName === "Edit" ? "Edit" : type}</Button>
+        {!enterpriseId && (
+          <div className="flex flex-col justify-center">
+            <EmptyStageComponent heading="Please Complete Your Onboarding to Create Enterprise" />
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Close
+            </Button>
           </div>
-        </form>
+        )}
       </DialogContent>
     </Dialog>
   );

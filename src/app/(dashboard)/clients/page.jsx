@@ -88,8 +88,7 @@ const ClientPage = () => {
       {isLoading && <Loading />}
 
       {!isLoading &&
-        isSuccess &&
-        (formattedData.length !== 0 ? (
+        (formattedData && formattedData.length !== 0 ? (
           <DataTable
             id={"client table"}
             columns={ClientsColumns}
