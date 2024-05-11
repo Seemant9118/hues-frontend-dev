@@ -121,7 +121,7 @@ export default function Home() {
 
   return (
     <>
-      {data?.length === 0 && !isAdding && (
+      {(!data || data?.length === 0) && !isAdding && (
         <>
           <div className="flex justify-between items-center">
             <SubHeader name="Templates" className={"justify-between w-full"}>
@@ -131,7 +131,7 @@ export default function Home() {
                 className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
               >
                 <label htmlFor="template">
-                  <Plus size={20}/>
+                  <Plus size={20} />
                   Create
                 </label>
               </Button>
@@ -167,30 +167,34 @@ export default function Home() {
         />
       )}
 
-      {!isAdding && !viewForm && !viewResponses && data?.length !== 0 && (
-        <Wrapper>
-          <SubHeader name={"Templates"}>
-            <div className="flex items-center justify-center gap-4">
-              <div className="relative">
-                <Input placeholder="Search" />
-                <Search
-                  className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white"
-                  size={16}
+      {data &&
+        !isAdding &&
+        !viewForm &&
+        !viewResponses &&
+        data?.length !== 0 && (
+          <Wrapper>
+            <SubHeader name={"Templates"}>
+              <div className="flex items-center justify-center gap-4">
+                <div className="relative">
+                  <Input placeholder="Search" />
+                  <Search
+                    className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white"
+                    size={16}
+                  />
+                </div>
+                <Button variant={"blue_outline"} asChild size="sm">
+                  <label htmlFor="template">
+                    <Upload size={14} />
+                    Upload
+                  </label>
+                </Button>
+                <input
+                  onChange={fileHandler}
+                  id="template"
+                  type="file"
+                  className="sr-only"
                 />
-              </div>
-              <Button variant={"blue_outline"} asChild size="sm">
-                <label htmlFor="template">
-                  <Upload size={14} />
-                  Upload
-                </label>
-              </Button>
-              <input
-                onChange={fileHandler}
-                id="template"
-                type="file"
-                className="sr-only"
-              />
-              {/* <Button
+                {/* <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
                 size="sm"
@@ -198,34 +202,34 @@ export default function Home() {
                 <Layers2 size={14} />
                 Add Template
               </Button> */}
+              </div>
+            </SubHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
+              {isSuccess &&
+                data?.map((template, idx) => (
+                  <TemplateCard
+                    viewResponseClick={() => {
+                      setViewForm(false);
+                      setViewResponses(true);
+                      setSelectedTemplate(template);
+                    }}
+                    onDelete={() => {
+                      setTemplates((prev) => {
+                        const updated = [...prev];
+                        updated.splice(idx, 1);
+                        return updated;
+                      });
+                      toast.success("Templated Deleted Successfully.");
+                    }}
+                    onViewTemplateClick={() => {}}
+                    onViewFormClick={() => setViewForm(true)}
+                    {...template}
+                    key={idx}
+                  />
+                ))}
             </div>
-          </SubHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-            {isSuccess &&
-              data?.map((template, idx) => (
-                <TemplateCard
-                  viewResponseClick={() => {
-                    setViewForm(false);
-                    setViewResponses(true);
-                    setSelectedTemplate(template);
-                  }}
-                  onDelete={() => {
-                    setTemplates((prev) => {
-                      const updated = [...prev];
-                      updated.splice(idx, 1);
-                      return updated;
-                    });
-                    toast.success("Templated Deleted Successfully.");
-                  }}
-                  onViewTemplateClick={() => {}}
-                  onViewFormClick={() => setViewForm(true)}
-                  {...template}
-                  key={idx}
-                />
-              ))}
-          </div>
-        </Wrapper>
-      )}
+          </Wrapper>
+        )}
       {viewResponses && (
         <Wrapper>
           <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
