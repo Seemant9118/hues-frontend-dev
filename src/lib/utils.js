@@ -46,6 +46,7 @@ export function exportTableToExcel(
   excludeLast = true
 ) {
   const table = document.getElementById(tableID);
+  if (!table) return;
   const rows = table.getElementsByTagName("tr");
   const csvData = [];
 
