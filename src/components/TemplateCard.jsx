@@ -66,7 +66,7 @@ const TemplateCard = ({
         // className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]"
         className="flex justify-between items-center"
       >
-        <Button
+        {/* <Button
           asChild
           variant={"blue_outline"}
           size="sm"
@@ -76,7 +76,7 @@ const TemplateCard = ({
             <Eye size={16} />
             View
           </Link>
-        </Button>
+        </Button> */}
         <ViewTemplate
           url={templateUrl}
           id={id}
