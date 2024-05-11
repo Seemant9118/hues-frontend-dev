@@ -157,38 +157,43 @@ const AddItem = ({ name, onCancel, cta }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    let isError = {};
+
     if (item.type === "goods") {
-      // goodsdata
+      // Extract goods data
       const { service_name, SAC, type, units, ...goodsData } = item;
-      const isError = validation(goodsData);
+      isError = validation(goodsData);
+
+      // If no validation errors, mutate goods
       if (Object.keys(isError).length === 0) {
-        // mutate goods
         setErrorMsg({});
         mutationGoods.mutate(goodsData);
       }
-      setErrorMsg(isError);
-      return;
+    } else {
+      // Extract services data
+      const {
+        product_name,
+        manufacturer_name,
+        hsn_code,
+        type,
+        units,
+        batch,
+        weight,
+        length,
+        breadth,
+        height,
+        ...servicesData
+      } = item;
+      isError = validation(servicesData);
+
+      // If no validation errors, mutate service
+      if (Object.keys(isError).length === 0) {
+        setErrorMsg({});
+        mutationServices.mutate(servicesData);
+      }
     }
-    // servicesdata
-    const {
-      product_name,
-      manufacturer_name,
-      hsn_code,
-      type,
-      units,
-      batch,
-      weight,
-      length,
-      breadth,
-      height,
-      ...servicesData
-    } = item;
-    const isError = validation(servicesData);
-    if (Object.keys(isError).length === 0) {
-      // mutate service
-      setErrorMsg({});
-      mutationServices.mutate(servicesData);
-    }
+
+    // Set error messages if there are any
     setErrorMsg(isError);
   };
 
@@ -322,6 +327,80 @@ const AddItem = ({ name, onCancel, cta }) => {
             />
             {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
           </div>
+
+          {/* optional data fields */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <InputWithLabel
+              name="Batch"
+              id="batch"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.batch}
+            />
+            {/* <InputWithLabel
+          name="Expiry"
+          id="expiry"
+          required={item.type === "goods" || item.type === "services"}
+          onChange={onChange}
+          value={item.expiry}
+        /> */}
+
+            <div className="grid w-full items-center gap-1.5">
+              <Label
+                htmlFor="dob"
+                className="text-[#414656] font-medium flex items-center gap-1"
+              >
+                Expiry
+              </Label>
+
+              <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <DatePickers
+                  selected={date}
+                  onChange={(date) =>
+                    setDate(moment(date).format("DD-MM-YYYY"))
+                  }
+                />
+                <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-2.5">
+            <InputWithLabel
+              name="Weight (kg)"
+              id="weight"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.weight}
+            />
+            <InputWithLabel
+              name="Length (cm)"
+              id="length"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.length}
+            />
+            <InputWithLabel
+              name="Breadth (cm)"
+              id="breadth"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.breadth}
+            />
+            <InputWithLabel
+              name="Height (cm)"
+              id="height"
+              // required={item.type == "goods"}
+              onChange={onChange}
+              value={item.height}
+            />
+          </div>
+          <InputWithLabel
+            name="Application"
+            id="applications"
+            // required={item.type == "goods" || item.type === "services"}
+            onChange={onChange}
+            value={item.applications}
+          />
         </>
       ) : (
         // for services
@@ -385,6 +464,16 @@ const AddItem = ({ name, onCancel, cta }) => {
             </div>
             <div className="flex flex-col">
               <InputWithLabel
+                name="Amount"
+                id="amount"
+                required={true}
+                onChange={onChange}
+                value={item.amount}
+              />
+              {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
+            </div>
+            {/* <div className="flex flex-col">
+              <InputWithLabel
                 name="Quantity"
                 id="quantity"
                 required={true}
@@ -392,92 +481,38 @@ const AddItem = ({ name, onCancel, cta }) => {
                 value={item.quantity}
               />
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
+            </div> */}
+          </div>
+          {/* optional data fields */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid w-full items-center gap-1.5">
+              <Label
+                htmlFor="dob"
+                className="text-[#414656] font-medium flex items-center gap-1"
+              >
+                Expiry
+              </Label>
+
+              <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <DatePickers
+                  selected={date}
+                  onChange={(date) =>
+                    setDate(moment(date).format("DD-MM-YYYY"))
+                  }
+                />
+                <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
+              </div>
             </div>
           </div>
-          <div className="flex flex-col">
-            <InputWithLabel
-              name="Amount"
-              id="amount"
-              required={true}
-              onChange={onChange}
-              value={item.amount}
-            />
-            {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-          </div>
+          <InputWithLabel
+            name="Application"
+            id="applications"
+            // required={item.type == "goods" || item.type === "services"}
+            onChange={onChange}
+            value={item.applications}
+          />
         </>
       )}
-
-      {/* optional data fields */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <InputWithLabel
-          name="Batch"
-          id="batch"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.batch}
-        />
-        {/* <InputWithLabel
-          name="Expiry"
-          id="expiry"
-          required={item.type === "goods" || item.type === "services"}
-          onChange={onChange}
-          value={item.expiry}
-        /> */}
-
-        <div className="grid w-full items-center gap-1.5">
-          <Label
-            htmlFor="dob"
-            className="text-[#414656] font-medium flex items-center gap-1"
-          >
-            Expiry
-          </Label>
-
-          <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-            <DatePickers
-              selected={date}
-              onChange={(date) => setDate(moment(date).format("DD-MM-YYYY"))}
-            />
-            <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
-          </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-4 gap-2.5">
-        <InputWithLabel
-          name="Weight (kg)"
-          id="weight"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.weight}
-        />
-        <InputWithLabel
-          name="Length (cm)"
-          id="length"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.length}
-        />
-        <InputWithLabel
-          name="Breadth (cm)"
-          id="breadth"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.breadth}
-        />
-        <InputWithLabel
-          name="Height (cm)"
-          id="height"
-          // required={item.type == "goods"}
-          onChange={onChange}
-          value={item.height}
-        />
-      </div>
-      <InputWithLabel
-        name="Application"
-        id="applications"
-        // required={item.type == "goods" || item.type === "services"}
-        onChange={onChange}
-        value={item.applications}
-      />
 
       <div className="h-[1px] bg-neutral-300 mt-auto"></div>
 

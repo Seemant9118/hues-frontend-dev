@@ -35,7 +35,7 @@ function Slot(props) {
 }
 
 export default function OTPVerificationForm({ setCurrStep }) {
-  const [startFrom, setStartFrom] = useState(90);
+  const [startFrom, setStartFrom] = useState(30);
   const [otp, setOtp] = useState();
   const userId = LocalStorageService.get("user_profile");
   const userMobileNumber = LocalStorageService.get("user_mobile_number");

@@ -9,44 +9,56 @@ import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
 import moment from "moment";
+import dayjs from "dayjs";
 import { redirect, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import Loading from "@/components/Loading";
 import ErrorBox from "@/components/ErrorBox";
+import Link from "next/link";
 
 export default function ProfileDetailForm({
   setCurrStep,
   params,
   isThirdPartyLogin,
 }) {
+  const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  const [date, setDate] = useState(moment(new Date()).format("DD-MM-YYYY"));
   const [userData, setUserData] = useState({
     user_id: userId,
     name: "",
     email: "",
-    aadhaar_number: "",
-    date_of_birth: date.toString(),
+    date_of_birth: "",
     pan_number: "",
   });
 
   const [errorMsg, setErrorMsg] = useState({});
 
+  useEffect(() => {
+    setUserData((prevUserData) => ({
+      ...prevUserData,
+      date_of_birth: selectedDate
+        ? moment(selectedDate).format("DD/MM/YYYY")
+        : "", // Update dynamically
+    }));
+  }, [selectedDate]);
+
   const mutation = useMutation({
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
-      toast.success("Your Profile Completed!");
+      toast.success("Your Profile Completed & Verified");
       LocalStorageService.set(
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
-      setCurrStep(4);
+      // setCurrStep(4);
+      router.push("/");
     },
     onError: (error) => {
-      toast.error("Oops, Something went wrong!");
+      toast.error(error.response.data.message || "Oops, Something went wrong!");
     },
   });
 
@@ -64,26 +76,26 @@ export default function ProfileDetailForm({
     if (userData.pan_number === "") {
       error.pan_number = "*Required PAN Number";
     } else if (!pan_pattern.test(userData.pan_number)) {
-      error.pan_number = "* Please write valid PAN Number";
+      error.pan_number = "* Please provide valid PAN Number";
     }
 
     // Aadhaar validation
-    if (userData.aadhaar_number === "") {
-      error.aadhaar_number = "* Required Aadhaar Number";
-    } else if (userData.aadhaar_number.length !== 12) {
-      error.aadhaar_number = "* Please enter a valid 12-digit Aadhar Number";
-    }
+    // if (userData.aadhaar_number === "") {
+    //   error.aadhaar_number = "* Required Aadhaar Number";
+    // } else if (userData.aadhaar_number.length !== 4) {
+    //   error.aadhaar_number = "* Please enter a last 4 digit of Aadhaar Number";
+    // }
 
     // date_of_birth validation
-    if (userData.date_of_birth === "") {
-      error.date_of_birth = "*Required Date of Birth";
-    }
+    // if (userData.date_of_birth === "") {
+    //   error.date_of_birth = "*Required Date of Birth";
+    // }
 
     // email validation
     if (userData.email === "") {
       error.email = "*Required Email";
     } else if (!email_pattern.test(userData.email)) {
-      error.email = "*Email is not corrected format";
+      error.email = "*Please provide valid email";
     }
 
     return error;
@@ -96,33 +108,20 @@ export default function ProfileDetailForm({
     // pan validation
     if (name === "pan_number") {
       const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-      if (!pan_pattern.test(value)) {
+      if (!pan_pattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "",
+          pan_number: "* Please provide valid PAN Number",
         });
-        setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "*Please write valid PAN",
+          pan_number: "",
         });
       }
-      return;
-    }
-
-    // aadhaar_number with masked 'x' value
-    if (name === "aadhaar_number") {
-      const maskedValue = "xxxxxxxx";
-      if (value.length <= 8) {
-        const newValue = maskedValue.slice(0, value.length);
-        setUserData((values) => ({ ...values, [name]: newValue }));
-      } else {
-        const newValue = maskedValue.slice(0, value.length) + value.slice(8);
-        setUserData((values) => ({ ...values, [name]: newValue }));
-      }
+      setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
       return;
     }
 
@@ -136,6 +135,7 @@ export default function ProfileDetailForm({
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
       mutation.mutate(userData);
+      console.log(userData);
     }
     setErrorMsg(isAnyError);
   };
@@ -219,7 +219,7 @@ export default function ProfileDetailForm({
             </div>
           </div>
         )} */}
-        {!isThirdPartyLogin && (
+        {/* {!isThirdPartyLogin && (
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="mobile-number"
@@ -232,11 +232,14 @@ export default function ProfileDetailForm({
               />
             </Label>
             <div className="relative">
+              <span className="absolute text-gray-500 top-1/2 left-3 -translate-y-1/2">
+                xxxx-xxxx-
+              </span>
               <Input
                 // required={true}
-                className="focus:font-bold"
+                className="focus:font-bold px-20"
                 type="text"
-                placeholder="1111-1111-1111"
+                placeholder="____"
                 name="aadhaar_number"
                 value={userData.aadhaar_number}
                 onChange={handleChange}
@@ -247,7 +250,7 @@ export default function ProfileDetailForm({
               <ErrorBox msg={errorMsg?.aadhaar_number} />
             )}
           </div>
-        )}
+        )} */}
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label
@@ -262,9 +265,21 @@ export default function ProfileDetailForm({
           </Label>
 
           <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-            <DatePickers
+            {/* <DatePickers
+              value={date}
               selected={date}
-              onChange={(date) => setDate(moment(date).format("DD-MM-YYYY"))}
+              onChange={(date) => {
+                setDate(moment(date));
+                setUserData((prevUserData) => ({
+                  ...prevUserData,
+                  date_of_birth: moment(date).format("DD-MM-YYYY"),
+                }));
+              }}
+            /> */}
+            <DatePickers
+              selected={selectedDate}
+              dateFormat="dd/MM/yyyy"
+              onChange={(date) => setSelectedDate(date)}
             />
             <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
           </div>
@@ -303,6 +318,13 @@ export default function ProfileDetailForm({
         <Button type="submit" className="w-full">
           {mutation.isPending ? <Loading /> : "Submit"}
         </Button>
+
+        <Link
+          href="/"
+          className="text-sm underline text-slate-700 w-full flex justify-center items-center"
+        >
+          Skip for Now
+        </Link>
       </form>
 
       {/* <div className="border">

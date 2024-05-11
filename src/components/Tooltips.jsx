@@ -28,7 +28,7 @@ export default function Tooltips({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>{trigger}</TooltipTrigger>
+        <TooltipTrigger type="button">{trigger}</TooltipTrigger>
         <TooltipContent>
           <p>{content}</p>
           {isContentShow && !isLoading && data && (
