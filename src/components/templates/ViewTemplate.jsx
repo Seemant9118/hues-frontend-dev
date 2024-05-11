@@ -229,7 +229,7 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement }) => {
             <div
               ref={pdfCanvasRef}
               id="pdfCanvas"
-              className="max-w-fit bg-black mx-auto relative overflow-auto"
+              className="max-w-fit  mx-auto relative overflow-auto"
               onMouseDown={canClick ? addClickedCoordinate : () => {}}
             >
               <Document
