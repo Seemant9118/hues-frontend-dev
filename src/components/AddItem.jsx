@@ -22,6 +22,7 @@ import DatePickers from "./DatePickers";
 import InputWithLabel from "./InputWithLabel";
 import { usePathname } from "next/navigation";
 import ErrorBox from "./ErrorBox";
+import EmptyStageComponent from "./EmptyStageComponent";
 
 const AddItem = ({ name, onCancel, cta }) => {
   const queryClient = useQueryClient();
@@ -231,6 +232,15 @@ const AddItem = ({ name, onCancel, cta }) => {
     }
     setErrorMsg(isError);
   };
+
+  if (!enterpriseId) {
+    return (
+      <div className="flex flex-col justify-center">
+        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Item" />
+        <Button variant="outline" onClick={onCancel}>Close</Button>
+      </div>
+    );
+  }
 
   return (
     <form

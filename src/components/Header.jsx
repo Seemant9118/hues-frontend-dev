@@ -13,9 +13,13 @@ import { LocalStorageService } from "@/lib/utils";
 
 const Header = () => {
   const router = useRouter();
+  const enterpriseId = LocalStorageService.get("enterprise_Id");
 
   const logout = () => {
     LocalStorageService.clear();
+    router.push("/login");
+  };
+  const login = () => {
     router.push("/login");
   };
 
@@ -42,14 +46,20 @@ const Header = () => {
               <UserCircle className="text-grey" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="max-w-[150px] p-1 m-2">
-            <Button onClick={logout} className="w-full">
-              Logout
-            </Button>
-            {/* <ul className="hover:bg-slate-300 hover:cursor-pointer w-full p-2 rounded-lg">
-              <li onClick={logout}>Logout</li>
-            </ul> */}
-          </PopoverContent>
+          {enterpriseId && (
+            <PopoverContent className="max-w-[150px] p-1 m-2">
+              <Button onClick={logout} className="w-full">
+                Logout
+              </Button>
+            </PopoverContent>
+          )}
+          {!enterpriseId && (
+            <PopoverContent className="max-w-[180px] p-1 m-2">
+              <Button onClick={login} className="w-full">
+                Complete Onboarding
+              </Button>
+            </PopoverContent>
+          )}
         </Popover>
       </div>
     </div>

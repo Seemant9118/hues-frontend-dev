@@ -22,7 +22,7 @@ import {
   FileText,
   KeySquare,
   PlusCircle,
-  Upload
+  Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -119,17 +119,17 @@ const SalesOrder = () => {
                 <PlusCircle size={14} />
                 Offer
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => setIsCreatingInvoice(true)}
                 variant={"blue_outline"}
                 size="sm"
               >
                 <PlusCircle size={14} />
                 Invoice
-              </Button>
+              </Button> */}
             </div>
           </SubHeader>
-          {data?.length === 0 ? (
+          {!enterprise_id || data?.length === 0 ? (
             <EmptyStageComponent
               heading={SaleEmptyStageData.heading}
               desc={SaleEmptyStageData.desc}
@@ -163,6 +163,7 @@ const SalesOrder = () => {
         !isOrderView &
         (
           <CreateOrder
+            type="sales"
             name="Invoice"
             cta="offer"
             onCancel={() => setIsCreatingInvoice(false)}
