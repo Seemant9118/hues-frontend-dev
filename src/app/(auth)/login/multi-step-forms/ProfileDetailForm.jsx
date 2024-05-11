@@ -54,6 +54,10 @@ export default function ProfileDetailForm({
         "enterprise_Id",
         data.data.data.user.enterpriseId
       );
+      LocalStorageService.set(
+        "isOnboardingComplete",
+        data.data.data.user.isOnboardingComplete
+      );
       // setCurrStep(4);
       router.push("/");
     },

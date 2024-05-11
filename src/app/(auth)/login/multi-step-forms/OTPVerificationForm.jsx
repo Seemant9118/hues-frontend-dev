@@ -41,6 +41,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
   const userId = LocalStorageService.get("user_profile");
   const userMobileNumber = LocalStorageService.get("user_mobile_number");
   const router = useRouter();
+
   useEffect(() => {
     const timer = setInterval(() => {
       setStartFrom((prevStartFrom) => prevStartFrom - 1);
