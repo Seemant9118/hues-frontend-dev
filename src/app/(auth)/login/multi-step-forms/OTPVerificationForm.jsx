@@ -53,6 +53,14 @@ export default function OTPVerificationForm({ setCurrStep }) {
     mutationFn: (data) => userVerifyOtp(data),
     onSuccess: (data) => {
       LocalStorageService.set("token", data.data.data.access_token);
+      LocalStorageService.set(
+        "enterprise_Id",
+        data.data.data.user.enterpriseId
+      );
+      LocalStorageService.set(
+        "isOnboardingComplete",
+        data.data.data.user.isOnboardingComplete
+      );
       toast.success("OTP verified successfully");
       if (data.data.data.user.isOnboardingComplete) {
         router.push("/");
