@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteTemplate } from "@/services/Template_Services/Template_Services";
 import { toast } from "sonner";
 import { template_api } from "@/api/templates_api/template_api";
-import Loading from "./Loading";
+import Loading from "../Loading";
 import Link from "next/link";
 
 const TemplateCard = ({

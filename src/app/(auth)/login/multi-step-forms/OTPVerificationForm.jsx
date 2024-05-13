@@ -1,19 +1,16 @@
 "use client";
-import { Clock5 } from "lucide-react";
-import { OTPInput } from "input-otp";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 import { userVerifyOtp } from "@/services/User_Auth_Service/UserAuthServices";
+import { useMutation } from "@tanstack/react-query";
+import { OTPInput } from "input-otp";
+import { Clock5 } from "lucide-react";
 import { toast } from "sonner";
 
-import { useEffect, useState } from "react";
-import { LocalStorageService } from "@/lib/utils";
-import { useUser } from "@/context/UserContext";
-import Script from "next/script";
 import Loading from "@/components/Loading";
+import { LocalStorageService } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 function Slot(props) {
   return (
