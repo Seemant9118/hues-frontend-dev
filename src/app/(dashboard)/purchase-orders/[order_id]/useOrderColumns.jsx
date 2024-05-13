@@ -3,7 +3,6 @@ import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import OfferPrice from "@/components/Modals/OfferPrice";
 import SuccessModal from "@/components/Modals/SuccessModal";
-import Tooltips from "@/components/Tooltips";
 import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";

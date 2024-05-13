@@ -4,7 +4,6 @@ import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import OfferPrice from "@/components/Modals/OfferPrice";
 import SuccessModal from "@/components/Modals/SuccessModal";
-import Tooltips from "@/components/Tooltips";
 import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
@@ -111,7 +110,10 @@ export const useOrderColumns = () => {
             statusBorder = "#F8BA05";
             actionBtn = "action";
             tooltip = (
-              <ToolTipOrder trigger={<Info size={14} />} offerDetails={offerDetails}/>
+              <ToolTipOrder
+                trigger={<Info size={14} />}
+                offerDetails={offerDetails}
+              />
             );
             break;
           default:

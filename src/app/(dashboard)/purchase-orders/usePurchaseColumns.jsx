@@ -1,6 +1,5 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LocalStorageService } from "@/lib/utils";

@@ -1,6 +1,6 @@
 "use client";
 import DatePickers from "@/components/DatePickers";
-import Tooltips from "@/components/Tooltips";
+import Tooltips from "@/components/auth/Tooltips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

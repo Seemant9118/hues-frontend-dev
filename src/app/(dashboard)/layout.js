@@ -3,7 +3,7 @@ import React, { use, useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { UserProvider } from "@/context/UserContext";
-import VerifyDetail from "@/components/VerifyDetail";
+import VerifyDetail from "@/components/auth/VerifyDetail";
 import { LocalStorageService } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { user_Auth } from "@/api/user_auth/Users";
@@ -12,14 +12,14 @@ import { Button } from "@/components/ui/button";
 import KYCnotificationCard from "@/components/KYCnotificationCard";
 
 export default function DashBoardLayout({ children }) {
-  const userId = LocalStorageService.get("user_profile");
-  const [isExpireKYC, setExpireKYC] = useState(false); // condional KYCnotification component popUp
+  // const userId = LocalStorageService.get("user_profile");
+  // const [isExpireKYC, setExpireKYC] = useState(false); // condional KYCnotification component popUp
 
-  const { data } = useQuery({
-    queryKey: [user_Auth.statucKYC.endpointKey],
-    queryFn: () => checkKYCstatus({ user_id: userId }),
-    select: (data) => data.data.data,
-  });
+  // const { data } = useQuery({
+  //   queryKey: [user_Auth.statucKYC.endpointKey],
+  //   queryFn: () => checkKYCstatus({ user_id: userId }),
+  //   select: (data) => data.data.data,
+  // });
 
   return (
     <UserProvider>
