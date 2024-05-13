@@ -193,7 +193,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
       <DialogContent>
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
-        {enterpriseId && (
+        {/* {enterpriseId && ( */}
           <form onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
@@ -336,8 +336,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
               </Button>
             </div>
           </form>
-        )}
-
+        {/* )} */}
+{/* 
         {!enterpriseId && (
           <div className="flex flex-col justify-center">
             <EmptyStageComponent heading="Please Complete Your Onboarding to Create Enterprise" />
@@ -345,7 +345,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
               Close
             </Button>
           </div>
-        )}
+        )} */}
       </DialogContent>
     </Dialog>
   );
