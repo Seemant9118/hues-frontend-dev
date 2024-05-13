@@ -1,7 +1,7 @@
 "use client";
 import { goods_api } from "@/api/inventories/goods/goods";
-import AddItem from "@/components/AddItem";
-import EditItem from "@/components/EditItem";
+import AddItem from "@/components/inventory/AddItem";
+import EditItem from "@/components/inventory/EditItem";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import Loading from "@/components/Loading";
 import SubHeader from "@/components/Sub-header";
@@ -90,7 +90,7 @@ function Goods() {
       setFiles((prev) => [...prev, file]);
       queryClient.invalidateQueries([goods_api.getAllProductGoods.endpointKey]);
     } catch (error) {
-      toast.error(error.respnse.data.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     }
   };
 

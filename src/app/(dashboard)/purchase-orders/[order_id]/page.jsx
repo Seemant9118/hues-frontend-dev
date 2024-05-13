@@ -14,26 +14,6 @@ import { useQuery } from "@tanstack/react-query";
 const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
-  const items = [
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "New",
-    },
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "Accepted",
-    },
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "Negotiation",
-    },
-  ];
 
   const { isLoading, data } = useQuery({
     queryKey: [order_api.getOrderDetails.endpointKey],

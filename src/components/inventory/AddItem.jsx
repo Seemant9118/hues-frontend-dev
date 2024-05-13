@@ -18,11 +18,11 @@ import { CalendarDays } from "lucide-react";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import DatePickers from "./DatePickers";
-import InputWithLabel from "./InputWithLabel";
+import DatePickers from "../DatePickers";
+import InputWithLabel from "../InputWithLabel";
 import { usePathname } from "next/navigation";
-import ErrorBox from "./ErrorBox";
-import EmptyStageComponent from "./EmptyStageComponent";
+import ErrorBox from "../ErrorBox";
+import EmptyStageComponent from "../EmptyStageComponent";
 
 const AddItem = ({ name, onCancel, cta }) => {
   const queryClient = useQueryClient();
@@ -237,7 +237,9 @@ const AddItem = ({ name, onCancel, cta }) => {
     return (
       <div className="flex flex-col justify-center">
         <EmptyStageComponent heading="Please Complete Your Onboarding to Create Item" />
-        <Button variant="outline" onClick={onCancel}>Close</Button>
+        <Button variant="outline" onClick={onCancel}>
+          Close
+        </Button>
       </div>
     );
   }

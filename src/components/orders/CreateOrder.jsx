@@ -10,11 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useCreateSalesColumns } from "@/components/columns/useCreateSalesColumns";
 import { DataTable } from "@/components/table/data-table";
-import Wrapper from "./Wrapper";
-import SubHeader from "./Sub-header";
-import { Button } from "./ui/button";
-import SuccessModal from "./Modals/SuccessModal";
-import AddModal from "./Modals/AddModal";
+import Wrapper from "../Wrapper";
+import SubHeader from "../Sub-header";
+import { Button } from "../ui/button";
+import SuccessModal from "../Modals/SuccessModal";
+import AddModal from "../Modals/AddModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import {
@@ -29,9 +29,9 @@ import { GetAllProductServices } from "@/services/Inventories_Services/Services_
 import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
 import { toast } from "sonner";
 import { order_api } from "@/api/order_api/order_api";
-import Loading from "./Loading";
-import ErrorBox from "./ErrorBox";
-import EmptyStageComponent from "./EmptyStageComponent";
+import Loading from "../Loading";
+import ErrorBox from "../ErrorBox";
+import EmptyStageComponent from "../EmptyStageComponent";
 
 const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();

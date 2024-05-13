@@ -1,13 +1,12 @@
 "use client";
 import { template_api } from "@/api/templates_api/template_api";
-import AddItem from "@/components/AddItem";
+import AddItem from "@/components/inventory/AddItem";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import TemplateCard from "@/components/templates/TemplateCard";
 import Wrapper from "@/components/Wrapper";
 import { ResponseColumns } from "@/components/columns/ResponseColumns";
 import { DataTable } from "@/components/table/data-table";
-import ViewTemplate from "@/components/templates/ViewTemplate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LocalStorageService } from "@/lib/utils";
@@ -95,8 +94,6 @@ export default function Home() {
     select: (data) => data.data.data,
     enabled: !!enterpriseId,
   });
-
-  console.log(data); // for testing
 
   const fileHandler = (e) => {
     const uploadedFile = e.target.files[0]; // Get the first file

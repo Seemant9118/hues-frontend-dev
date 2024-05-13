@@ -1,18 +1,15 @@
 "use client";
-import AddItem from "@/components/AddItem";
+import AddItem from "@/components/inventory/AddItem";
+import EditItem from "@/components/inventory/EditItem";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
-import { Columns } from "@/components/columns";
 import { useServicesColumns } from "./ServicesColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Check,
   Download,
-  FileEdit,
-  Layers2,
-  Trash2,
   Upload,
   UploadCloud,
   CircleFadingPlus,
@@ -21,18 +18,16 @@ import {
   FileCheck,
   DatabaseZap,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import { services_api } from "@/api/inventories/services/services";
 import {
-  CreateProductServices,
   GetAllProductServices,
   UpdateProductServices,
   UploadProductServices,
 } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import EditItem from "@/components/EditItem";
 import Loading from "@/components/Loading";
 import { toast } from "sonner";
 
@@ -46,7 +41,6 @@ function Services() {
   const [servicesToEdit, setServicesToEdit] = useState(null);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
-
 
   const InventoryEmptyStageData = {
     heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for

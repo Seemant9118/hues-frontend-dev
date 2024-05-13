@@ -13,17 +13,9 @@ import { LocalStorageService } from "@/lib/utils";
 
 const Header = () => {
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
   const isOnboardingComplete = LocalStorageService.get("isOnboardingComplete");
 
   const logout = () => {
-    if (enterpriseId && isOnboardingComplete === true) {
-      LocalStorageService.remove("token");
-      LocalStorageService.remove("user_profile");
-      LocalStorageService.remove("user_mobile_number");
-      router.push("/login");
-      return;
-    }
     LocalStorageService.clear();
     router.push("/login");
   };
@@ -55,7 +47,7 @@ const Header = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="max-w-[180px] p-1 m-2 flex flex-col gap-1">
-            {!enterpriseId && (
+            {!isOnboardingComplete && (
               <Button onClick={login} className="w-full" variant="outline">
                 Complete Onboarding
               </Button>

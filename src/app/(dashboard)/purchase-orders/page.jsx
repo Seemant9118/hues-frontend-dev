@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   DatabaseZap,
   FileCheck,
-  FolderUp,
   KeySquare,
   PlusCircle,
   ShieldCheck,
@@ -22,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import CreateOrder from "@/components/CreateOrder";
+import CreateOrder from "@/components/orders/CreateOrder";
 import { order_api } from "@/api/order_api/order_api";
 import { GetPurchases } from "@/services/Orders_Services/Orders_Services";
 import { useQuery } from "@tanstack/react-query";
@@ -142,10 +141,12 @@ const PurchaseOrders = () => {
               id={"purchase-orders"}
               columns={PurchaseColumns}
               onRowClick={onRowClick}
-              data={data?.filter((purchase) => {
-                if (istype === "All" || istype === "") return true;
-                return purchase.type === istype;
-              }) || []}
+              data={
+                data?.filter((purchase) => {
+                  if (istype === "All" || istype === "") return true;
+                  return purchase.type === istype;
+                }) || []
+              }
             />
           )}
         </Wrapper>

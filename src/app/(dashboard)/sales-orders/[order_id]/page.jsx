@@ -15,27 +15,6 @@ const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
 
-  const items = [
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "New",
-    },
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "Accepted",
-    },
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "Negotiation",
-    },
-  ];
-
   const OrderColumns = useOrderColumns();
 
   const { isLoading, data } = useQuery({

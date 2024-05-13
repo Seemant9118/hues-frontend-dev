@@ -3,14 +3,12 @@ import AddItem from "@/components/AddItem";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";
-import { Columns } from "@/components/columns";
+import { Columns } from "@/components/columns/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Check,
   Download,
-  FileEdit,
-  Layers2,
   Trash2,
   Upload,
   UploadCloud,
@@ -20,7 +18,6 @@ import {
   KeySquare,
   DatabaseZap,
 } from "lucide-react";
-import Link from "next/link";
 import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 

@@ -7,8 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
@@ -103,7 +101,7 @@ export const Columns = [
             >
               Edit
             </DropdownMenuItem>
-            
+
             <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
             <DropdownMenuItem>Delete</DropdownMenuItem>
           </DropdownMenuContent>

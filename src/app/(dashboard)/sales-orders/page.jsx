@@ -1,6 +1,6 @@
 "use client";
 import { order_api } from "@/api/order_api/order_api";
-import CreateOrder from "@/components/CreateOrder";
+import CreateOrder from "@/components/orders/CreateOrder";
 import EmptyStageComponent from "@/components/EmptyStageComponent";
 import SubHeader from "@/components/Sub-header";
 import Wrapper from "@/components/Wrapper";

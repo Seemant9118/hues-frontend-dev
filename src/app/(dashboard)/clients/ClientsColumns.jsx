@@ -8,15 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LocalStorageService } from "@/lib/utils";
 import {
   DeleteEnterpriseUser,
   UpdateEnterpriseUser,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { Edit3, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 export const ClientsColumns = [
   {

@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { UserProvider } from "@/context/UserContext";
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import KYCnotificationCard from "@/components/KYCnotificationCard";
 
 export default function DashBoardLayout({ children }) {
+  
+  // KYC FLOW REMOVED FOR NOW - Don't remove this code till client confirmation
   // const userId = LocalStorageService.get("user_profile");
   // const [isExpireKYC, setExpireKYC] = useState(false); // condional KYCnotification component popUp
 

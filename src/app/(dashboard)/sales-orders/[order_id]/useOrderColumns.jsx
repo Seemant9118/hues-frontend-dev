@@ -3,14 +3,12 @@
 import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import OfferPrice from "@/components/Modals/OfferPrice";
-import SuccessModal from "@/components/Modals/SuccessModal";
 import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { Check, Info, RotateCw } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { useParams } from "next/navigation";
 
 export const useOrderColumns = () => {

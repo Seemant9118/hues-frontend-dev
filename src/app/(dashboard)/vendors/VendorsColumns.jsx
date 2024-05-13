@@ -8,12 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteEnterpriseUser, UpdateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { Edit3, MoreHorizontal, MoreVertical, Trash2 } from "lucide-react";
-
+import {
+  DeleteEnterpriseUser,
+  UpdateEnterpriseUser,
+} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { MoreVertical } from "lucide-react";
 
 export const VendorsColumns = [
   {

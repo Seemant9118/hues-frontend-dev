@@ -8,10 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Info, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import moment from "moment";
 import { order_api } from "@/api/order_api/order_api";
 import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
