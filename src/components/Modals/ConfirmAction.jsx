@@ -5,7 +5,7 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,20 +31,20 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
     }
   };
 
-  const mutation = useMutation({
-    mutationKey: [id],
-    mutationFn: mutationFunc,
-    onSuccess: () => {
-      toast.success("Deleted successfully");
-      setOpen((prev) => !prev);
-      queryClient.invalidateQueries({
-        queryKey: [mutationKey],
-      });
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
-    },
-  });
+  // const mutation = useMutation({
+  //   mutationKey: [id],
+  //   mutationFn: mutationFunc,
+  //   onSuccess: () => {
+  //     toast.success("Deleted successfully");
+  //     setOpen((prev) => !prev);
+  //     queryClient.invalidateQueries({
+  //       queryKey: [mutationKey],
+  //     });
+  //   },
+  //   onError: (error) => {
+  //     toast.error(error.response.data.message || "Something went wrong");
+  //   },
+  // });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
