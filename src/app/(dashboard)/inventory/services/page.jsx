@@ -29,23 +29,24 @@ import {
   CreateProductServices,
   GetAllProductServices,
   UpdateProductServices,
+  UploadProductServices,
 } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import EditItem from "@/components/EditItem";
 import Loading from "@/components/Loading";
+import { toast } from "sonner";
 
 function Services() {
   const enpterpriseId = LocalStorageService.get("enterprise_Id");
+  const templateId = 1;
 
+  const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
 
-  const handleChange = async (file) => {
-    setFiles((prev) => [...prev, file]);
-  };
 
   const InventoryEmptyStageData = {
     heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
@@ -80,6 +81,24 @@ function Services() {
     queryFn: () => GetAllProductServices(enpterpriseId),
     select: (data) => data.data.data,
   });
+
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("enterpriseId", enpterpriseId);
+    formData.append("templateId", templateId);
+
+    try {
+      const res = await UploadProductServices(formData);
+      toast.success("Upload Successfully");
+      setFiles((prev) => [...prev, file]);
+      queryClient.invalidateQueries([
+        services_api.getAllProductServices.endpointKey,
+      ]);
+    } catch (error) {
+      toast.error(error.respnse.data.message || "Something went wrong");
+    }
+  };
 
   const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
 
@@ -158,9 +177,9 @@ function Services() {
       {isUploading && (
         <Wrapper className={"justify-start items-center"}>
           <FileUploader
-            handleChange={handleChange}
+            handleChange={uploadFile}
             name="file"
-            types={["xls", "csv"]}
+            types={["xlsx", "csv"]}
           >
             <div className="min-w-[700px] grow px-5 py-10 mb-2 flex gap-3 justify-between items-center rounded border-2 border-sky-300 border-dashed border-spacing-3 cursor-pointer">
               <div className="flex items-center gap-4">
@@ -170,7 +189,7 @@ function Services() {
                     Drag & Drop or Select a File (Max 10MB,
                     <span className="text-sky-500 font-bold">
                       {" "}
-                      .csv/.xls Formats
+                      .csv/.xlsx Formats
                     </span>{" "}
                     )
                   </p>
@@ -207,12 +226,12 @@ function Services() {
                   {file.name}
                 </p>
                 <div className="w-1 h-1 rounded-full bg-neutral-400"></div>
-                <a
+                {/* <a
                   href="#"
                   className="text-blue-500 underline underline-offset-2 text-xs leading-4"
                 >
                   Preview
-                </a>
+                </a> */}
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-green-500/10 text-green-500">
                     <Check size={10} />
@@ -222,7 +241,7 @@ function Services() {
                   </p>
                 </div>
               </div>
-              <button
+              {/* <button
                 onClick={() => {
                   setFiles((prev) => {
                     const updated = [...prev];
@@ -232,13 +251,20 @@ function Services() {
                 }}
               >
                 <Trash2 className="text-grey" size={14} />
-              </button>
+              </button> */}
             </div>
           ))}
           <div className="h-[1px] w-full bg-neutral-300 mt-auto"></div>
 
           <div className="flex justify-end self-end ">
-            <Button onClick={() => setisUploading(false)}>Done</Button>
+            <Button
+              onClick={() => {
+                setisUploading(false);
+                setFiles([]);
+              }}
+            >
+              Done
+            </Button>
           </div>
         </Wrapper>
       )}

@@ -12,8 +12,9 @@ import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import {
   GetAllProductGoods,
   UpdateProductGoods,
+  UploadProductGoods,
 } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   CircleFadingPlus,
@@ -29,19 +30,19 @@ import {
 import { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { useGoodsColumns } from "./GoodsColumns";
+import { toast } from "sonner";
 
 function Goods() {
   const enpterpriseId = LocalStorageService.get("enterprise_Id");
+  const templateId = 1;
+
+  const queryClient = useQueryClient();
 
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
   const [isUploading, setisUploading] = useState(false);
   const [files, setFiles] = useState([]);
-
-  const handleChange = async (file) => {
-    setFiles((prev) => [...prev, file]);
-  };
 
   const InventoryEmptyStageData = {
     heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
@@ -76,6 +77,22 @@ function Goods() {
     queryFn: () => GetAllProductGoods(enpterpriseId),
     select: (data) => data.data.data,
   });
+
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("enterpriseId", enpterpriseId);
+    formData.append("templateId", templateId);
+
+    try {
+      const res = await UploadProductGoods(formData);
+      toast.success("Upload Successfully");
+      setFiles((prev) => [...prev, file]);
+      queryClient.invalidateQueries([goods_api.getAllProductGoods.endpointKey]);
+    } catch (error) {
+      toast.error(error.respnse.data.message || "Something went wrong");
+    }
+  };
 
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
@@ -155,7 +172,7 @@ function Goods() {
       {isUploading && (
         <Wrapper className={"justify-start items-center"}>
           <FileUploader
-            handleChange={handleChange}
+            handleChange={uploadFile}
             name="file"
             types={["xlsx", "csv"]}
           >
@@ -167,7 +184,7 @@ function Goods() {
                     Drag & Drop or Select a File (Max 10MB,
                     <span className="text-sky-500 font-bold">
                       {" "}
-                      .csv/.xls Formats
+                      .csv/.xlsx Formats
                     </span>{" "}
                     )
                   </p>
@@ -205,12 +222,12 @@ function Goods() {
                   {file.name}
                 </p>
                 <div className="w-1 h-1 rounded-full bg-neutral-400"></div>
-                <a
+                {/* <a
                   href="#"
                   className="text-blue-500 underline underline-offset-2 text-xs leading-4"
                 >
                   Preview
-                </a>
+                </a> */}
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-green-500/10 text-green-500">
                     <Check size={10} />
@@ -220,7 +237,7 @@ function Goods() {
                   </p>
                 </div>
               </div>
-              <button
+              {/* <button
                 onClick={() => {
                   setFiles((prev) => {
                     const updated = [...prev];
@@ -230,13 +247,20 @@ function Goods() {
                 }}
               >
                 <Trash2 className="text-grey" size={14} />
-              </button>
+              </button> */}
             </div>
           ))}
           <div className="h-[1px] w-full bg-neutral-300 mt-auto"></div>
 
           <div className="flex justify-end self-end ">
-            <Button onClick={() => setisUploading(false)}>Done</Button>
+            <Button
+              onClick={() => {
+                setisUploading(false);
+                setFiles([]);
+              }}
+            >
+              Done
+            </Button>
           </div>
         </Wrapper>
       )}
