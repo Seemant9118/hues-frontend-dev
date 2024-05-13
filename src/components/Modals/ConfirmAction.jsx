@@ -1,29 +1,38 @@
 "use client";
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogClose,
-  DialogDescription,
-  DialogFooter,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Layers2, Trash2 } from "lucide-react";
-import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { DeleteEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 
 const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
+  const deleteHandler = async (id) => {
+    try {
+      const response = await mutationFunc(id);
+      toast.success("Deleted successfully");
+      setOpen((prev) => !prev);
+      queryClient.invalidateQueries({
+        queryKey: [mutationKey],
+      });
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message || "Something went wrong");
+    }
+  };
+
   const mutation = useMutation({
+    mutationKey: [id],
     mutationFn: mutationFunc,
     onSuccess: () => {
       toast.success("Deleted successfully");
@@ -68,7 +77,8 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
           </DialogClose>
           <Button
             onClick={(e) => {
-              mutation.mutate(id);
+              // mutation.mutate(id);
+              deleteHandler(id);
             }}
           >
             Delete

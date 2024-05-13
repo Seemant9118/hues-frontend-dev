@@ -21,8 +21,8 @@ APIinstance.interceptors.request.use(
 APIinstance.interceptors.response.use(
   (response) => {
     if (
-      response.data.data.statusCode === 401 ||
-      response.data.data.statusCode === 403
+      response?.data?.data?.statusCode === 401 ||
+      response?.data?.data?.statusCode === 403
     ) {
       window.location.href = "/login";
     }
@@ -30,8 +30,8 @@ APIinstance.interceptors.response.use(
   },
   (error) => {
     if (
-      error.response.data.statusCode === 401 ||
-      error.response.data.statusCode === 403
+      error?.response?.data?.statusCode === 401 ||
+      error?.response?.data?.statusCode === 403
     ) {
       window.location.href = "/login";
     }
