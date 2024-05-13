@@ -2,7 +2,6 @@
 
 import { order_api } from "@/api/order_api/order_api";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
-import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
