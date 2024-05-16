@@ -12,7 +12,6 @@ import moment from "moment";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
 import Loading from "@/components/ui/Loading";
 import ErrorBox from "@/components/ui/ErrorBox";
 import Link from "next/link";
@@ -57,8 +56,8 @@ export default function ProfileDetailForm({
         "isOnboardingComplete",
         data.data.data.user.isOnboardingComplete
       );
-      // setCurrStep(4);
-      router.push("/");
+      setCurrStep(4);
+      // router.push("/");
     },
     onError: (error) => {
       toast.error(error.response.data.message || "Oops, Something went wrong!");
@@ -138,7 +137,6 @@ export default function ProfileDetailForm({
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
       mutation.mutate(userData);
-      console.log(userData);
     }
     setErrorMsg(isAnyError);
   };
