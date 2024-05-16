@@ -1,9 +1,9 @@
 "use client";
 import AddItem from "@/components/inventory/AddItem";
 import EditItem from "@/components/inventory/EditItem";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { useServicesColumns } from "./ServicesColumns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
   UploadProductServices,
 } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 import { toast } from "sonner";
 
 function Services() {

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
+import Header from "@/components/ui/Header";
+import Sidebar from "@/components/ui/Sidebar";
 import { UserProvider } from "@/context/UserContext";
 import VerifyDetail from "@/components/auth/VerifyDetail";
 import { LocalStorageService } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { user_Auth } from "@/api/user_auth/Users";
 import { checkKYCstatus } from "@/services/User_Auth_Service/UserAuthServices";
 import { Button } from "@/components/ui/button";
-import KYCnotificationCard from "@/components/KYCnotificationCard";
+import KYCnotificationCard from "@/components/KYC/KYCnotificationCard";
 
 export default function DashBoardLayout({ children }) {
   

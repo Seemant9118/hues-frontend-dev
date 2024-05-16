@@ -7,7 +7,7 @@ import { OTPInput } from "input-otp";
 import { Clock5 } from "lucide-react";
 import { toast } from "sonner";
 
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 import { LocalStorageService } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import InputWithLabel from "../InputWithLabel";
+import InputWithLabel from "../ui/InputWithLabel";
 import { LocalStorageService } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

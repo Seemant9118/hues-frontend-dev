@@ -1,8 +1,8 @@
 "use client";
-import AddItem from "@/components/AddItem";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import AddItem from "@/components/inventory/AddItem";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { Columns } from "@/components/columns/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";

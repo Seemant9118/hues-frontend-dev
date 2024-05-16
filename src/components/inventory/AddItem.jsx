@@ -18,11 +18,11 @@ import { CalendarDays } from "lucide-react";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import DatePickers from "../DatePickers";
-import InputWithLabel from "../InputWithLabel";
+import DatePickers from "../ui/DatePickers";
+import InputWithLabel from "../ui/InputWithLabel";
 import { usePathname } from "next/navigation";
-import ErrorBox from "../ErrorBox";
-import EmptyStageComponent from "../EmptyStageComponent";
+import ErrorBox from "../ui/ErrorBox";
+import EmptyStageComponent from "../ui/EmptyStageComponent";
 
 const AddItem = ({ name, onCancel, cta }) => {
   const queryClient = useQueryClient();

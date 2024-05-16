@@ -1,6 +1,6 @@
 "use client";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { Columns } from "@/components/columns/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";

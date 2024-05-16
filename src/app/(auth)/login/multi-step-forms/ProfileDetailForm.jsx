@@ -1,5 +1,5 @@
 "use client";
-import DatePickers from "@/components/DatePickers";
+import DatePickers from "@/components/ui/DatePickers";
 import Tooltips from "@/components/auth/Tooltips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,13 +9,12 @@ import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
 import moment from "moment";
-import dayjs from "dayjs";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import Loading from "@/components/Loading";
-import ErrorBox from "@/components/ErrorBox";
+import Loading from "@/components/ui/Loading";
+import ErrorBox from "@/components/ui/ErrorBox";
 import Link from "next/link";
 
 export default function ProfileDetailForm({

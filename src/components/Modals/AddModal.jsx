@@ -1,6 +1,6 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import InputWithLabel from "@/components/InputWithLabel";
+import InputWithLabel from "@/components/ui/InputWithLabel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,8 +14,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit3, Layers2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import ErrorBox from "../ErrorBox";
-import EmptyStageComponent from "../EmptyStageComponent";
+import ErrorBox from "../ui/ErrorBox";
+import EmptyStageComponent from "../ui/EmptyStageComponent";
 
 const AddModal = ({ type, cta, btnName, mutationFunc, userData, userId }) => {
   const queryClient = useQueryClient();

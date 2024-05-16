@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import Loading from "@/components//Loading";
+import Loading from "@/components/ui/Loading";
 import { LocalStorageService } from "@/lib/utils";
 import { toast } from "sonner";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(

@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Layers2, Fingerprint, Edit3 } from "lucide-react";
-import InputWithLabel from "@/components/InputWithLabel";
+import InputWithLabel from "@/components/ui/InputWithLabel";
 
 const AddCredentialsModal = ({ type, modalHead, btnName }) => {
   const [open, setOpen] = useState(false);

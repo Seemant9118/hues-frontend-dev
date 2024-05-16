@@ -1,10 +1,10 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import Loading from "@/components/Loading";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import Loading from "@/components/ui/Loading";
 import AddModal from "@/components/Modals/AddModal";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";

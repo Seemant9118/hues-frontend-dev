@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import {
   Upload,
 } from "lucide-react";
 import { usePurchaseColumns } from "./usePurchaseColumns";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
 import {
   Select,
   SelectContent,

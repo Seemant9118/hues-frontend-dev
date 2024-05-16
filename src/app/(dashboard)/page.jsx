@@ -1,8 +1,8 @@
 "use client";
 import DashCard from "../../components/ui/DashCard";
-import SubHeader from "@/components/Sub-header";
+import SubHeader from "@/components/ui/Sub-header";
 import AddModal from "@/components/Modals/AddModal";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
 import { LineChart } from "lucide-react";
 import AddCredentialsModal from "@/components/Modals/AddCredentialsModal";
 

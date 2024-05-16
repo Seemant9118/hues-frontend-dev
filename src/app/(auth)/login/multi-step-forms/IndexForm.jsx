@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { userGenerateOtp } from "@/services/User_Auth_Service/UserAuthServices";
 import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 
 export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const mutation = useMutation({

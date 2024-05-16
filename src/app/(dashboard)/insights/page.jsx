@@ -1,5 +1,5 @@
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import SubHeader from "@/components/Sub-header";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import SubHeader from "@/components/ui/Sub-header";
 import { DatabaseZap, FileText, KeySquare, ShieldCheck } from "lucide-react";
 import React from "react";
 

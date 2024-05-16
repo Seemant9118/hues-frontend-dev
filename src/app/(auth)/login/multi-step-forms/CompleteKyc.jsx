@@ -1,12 +1,13 @@
 "use client";
 import { user_Auth } from "@/api/user_auth/Users";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { LocalStorageService } from "@/lib/utils";
 import "@/services/Digio";
 import { createKYCRequest } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+
 const CompleteKyc = () => {
   const router = useRouter();
   // const [digio, setDigio] = useState(null);
