@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DatePickers from "@/components/ui/DatePickers";
 import { useRouter } from "next/navigation";
+import ErrorBox from "@/components/ui/ErrorBox";
+import { toast } from "sonner";
 
 const EnterpriseOnboarding = () => {
   const router = useRouter();
@@ -19,6 +21,8 @@ const EnterpriseOnboarding = () => {
     date_of_incorporation: "",
     pan: "",
   });
+  const [errorMsg, setErrorMsg] = useState({});
+
   const enterpriseTypes = [
     "Properitership",
     "Partnership",
@@ -36,8 +40,57 @@ const EnterpriseOnboarding = () => {
     }));
   }, [selectedDate]);
 
+  // validation
+  const validation = (enterpriseOnboardData) => {
+    let error = {};
+    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
+    if (enterpriseOnboardData.enterpriseName === "") {
+      error.enterpriseName = "*Required Enterprise Name";
+    }
+    if (enterpriseOnboardData.enterpriseType === "") {
+      error.enterpriseType = "*Please select your enterprise type";
+    }
+    if (enterpriseOnboardData.gst === "") {
+      error.gst = "*Required GST IN";
+    }
+    if (enterpriseOnboardData.date_of_incorporation === "") {
+      error.date_of_incorporation = "*Required Date of Incorporation";
+    }
+    if (enterpriseOnboardData.pan === "") {
+      error.pan = "*Required PAN Number";
+    } else if (!pan_pattern.test(enterpriseOnboardData.pan)) {
+      error.pan = "* Please provide valid PAN Number";
+    }
+    return error;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // pan validation
+    if (name === "pan") {
+      const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+      if (!pan_pattern.test(value) && value.length !== 10) {
+        // Reset error message if PAN is valid
+        setErrorMsg({
+          ...errorMsg,
+          pan: "* Please provide valid PAN Number",
+        });
+      } else {
+        // Set error message if PAN is invalid
+        setErrorMsg({
+          ...errorMsg,
+          pan: "",
+        });
+      }
+      setEnterpriseOnboard((values) => ({
+        ...values,
+        [name]: value.toUpperCase(),
+      }));
+      return;
+    }
+
     setEnterpriseOnboard((values) => ({ ...values, [name]: value }));
   };
 
@@ -50,8 +103,14 @@ const EnterpriseOnboarding = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form Submitted:", enterpriseOnboardData);
-    router.push("/");
+    const isError = validation(enterpriseOnboardData);
+    if (Object.keys(isError).length === 0) {
+      setErrorMsg({});
+      toast.success("Enterprise Added Succefully");
+      console.log("Form Submitted:", enterpriseOnboardData);
+      router.push("/");
+    }
+    setErrorMsg(isError);
   };
 
   return (
@@ -87,6 +146,7 @@ const EnterpriseOnboarding = () => {
           />
           <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
+        {errorMsg.enterpriseName && <ErrorBox msg={errorMsg.enterpriseName} />}
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-2 mt-5">
@@ -112,6 +172,7 @@ const EnterpriseOnboarding = () => {
             </Button>
           ))}
         </div>
+        {errorMsg.enterpriseType && <ErrorBox msg={errorMsg.enterpriseType} />}
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -135,6 +196,7 @@ const EnterpriseOnboarding = () => {
           />
           <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
+        {errorMsg.gst && <ErrorBox msg={errorMsg.gst} />}
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -158,6 +220,9 @@ const EnterpriseOnboarding = () => {
           />
           <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
         </div>
+        {errorMsg.date_of_incorporation && (
+          <ErrorBox msg={errorMsg.date_of_incorporation} />
+        )}
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1">
@@ -183,6 +248,7 @@ const EnterpriseOnboarding = () => {
           />
           <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
+        {errorMsg.pan && <ErrorBox msg={errorMsg.pan} />}
       </div>
 
       {/* {errorMsg?.name && <ErrorBox msg={errorMsg?.name} />} */}
