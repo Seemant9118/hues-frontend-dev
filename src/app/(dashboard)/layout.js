@@ -11,10 +11,9 @@ import { checkKYCstatus } from "@/services/User_Auth_Service/UserAuthServices";
 import { Button } from "@/components/ui/button";
 import KYCnotificationCard from "@/components/KYC/KYCnotificationCard";
 import InvitationBox from "@/components/ui/InvitationBox";
+import SubHeader from "@/components/ui/Sub-header";
 
 export default function DashBoardLayout({ children }) {
-  // invitation
-  const [isInvitation, setInvitation] = useState(false);
 
   // KYC FLOW REMOVED FOR NOW - Don't remove this code till client confirmation
   // const userId = LocalStorageService.get("user_profile");
@@ -39,9 +38,6 @@ export default function DashBoardLayout({ children }) {
 
       {/* Notification KYC status */}
       {/* <KYCnotificationCard isExpireKYC={isExpireKYC} /> */}
-
-      {/* Invitation Box */}
-      {isInvitation && <InvitationBox setInvitation={setInvitation} />}
 
       <section className="px-10 grid grid-cols-[250px,_1fr] gap-5 flex-grow pb-5 max-h-full overflow-y-auto relative scrollBarStyles">
         <Sidebar />
