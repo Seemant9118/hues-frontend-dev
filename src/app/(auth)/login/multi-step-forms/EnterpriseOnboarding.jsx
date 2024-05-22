@@ -11,14 +11,19 @@ import { useRouter } from "next/navigation";
 import ErrorBox from "@/components/ui/ErrorBox";
 import { toast } from "sonner";
 import RadioSelect from "@/components/ui/RadioSelect";
+import { useMutation } from "@tanstack/react-query";
+import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
+import { LocalStorageService } from "@/lib/utils";
+import Loading from "@/components/ui/Loading";
 
 const EnterpriseOnboarding = () => {
   const router = useRouter();
+  const enterprise_Id = LocalStorageService.get("enterprise_Id");
   const [selectedDate, setSelectedDate] = useState(null);
-  const [enterpriseOnboardData, setEnterpriseOnboard] = useState({
-    enterpriseName: "",
-    enterpriseType: "",
-    gst: "",
+  const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
+    name: "",
+    type: "",
+    gst_number: "",
     date_of_incorporation: "",
     pan: "",
   });
@@ -33,7 +38,7 @@ const EnterpriseOnboarding = () => {
   ];
 
   useEffect(() => {
-    setEnterpriseOnboard((prevUserData) => ({
+    setEnterpriseOnboardData((prevUserData) => ({
       ...prevUserData,
       date_of_incorporation: selectedDate
         ? moment(selectedDate).format("DD/MM/YYYY")
@@ -41,19 +46,35 @@ const EnterpriseOnboarding = () => {
     }));
   }, [selectedDate]);
 
+  // mutation
+  const enterpriseOnboardMutation = useMutation({
+    mutationFn: (data) => updateEnterpriseOnboarding(enterprise_Id, data),
+    onSuccess: (data) => {
+      LocalStorageService.set(
+        "isEnterpriseOnboardingComplete",
+        data.data.data.isEnterpriseOnboardingComplete
+      );
+      toast.success(data.data.message);
+      router.push("/");
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || "Oops, Something went wrong!");
+    },
+  });
+
   // validation
   const validation = (enterpriseOnboardData) => {
     let error = {};
     const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
-    if (enterpriseOnboardData.enterpriseName === "") {
+    if (enterpriseOnboardData.name === "") {
       error.enterpriseName = "*Required Enterprise Name";
     }
-    if (enterpriseOnboardData.enterpriseType === "") {
+    if (enterpriseOnboardData.type === "") {
       error.enterpriseType = "*Please select your enterprise type";
     }
-    if (enterpriseOnboardData.gst === "") {
-      error.gst = "*Required GST IN";
+    if (enterpriseOnboardData.gst_number === "") {
+      error.gst_number = "*Required GST IN";
     }
     if (enterpriseOnboardData.date_of_incorporation === "") {
       error.date_of_incorporation = "*Required Date of Incorporation";
@@ -85,33 +106,33 @@ const EnterpriseOnboarding = () => {
           pan: "",
         });
       }
-      setEnterpriseOnboard((values) => ({
+      setEnterpriseOnboardData((values) => ({
         ...values,
         [name]: value.toUpperCase(),
       }));
       return;
     }
 
-    setEnterpriseOnboard((values) => ({ ...values, [name]: value }));
+    setEnterpriseOnboardData((values) => ({ ...values, [name]: value }));
   };
 
   const handleEnterpriseType = (enterpriseType) => {
-    setEnterpriseOnboard((values) => ({
+    setEnterpriseOnboardData((values) => ({
       ...values,
-      enterpriseType: enterpriseType,
+      type: enterpriseType,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const isError = validation(enterpriseOnboardData);
+
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
-      toast.success("Enterprise Added Succefully");
-      // console.log("Form Submitted:", enterpriseOnboardData);
-      router.push("/");
+      enterpriseOnboardMutation.mutate(enterpriseOnboardData);
+    } else {
+      setErrorMsg(isError);
     }
-    setErrorMsg(isError);
   };
 
   return (
@@ -141,8 +162,8 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="Enterprise Name"
-            name="enterpriseName"
-            value={enterpriseOnboardData.enterpriseName}
+            name="name"
+            value={enterpriseOnboardData.name}
             onChange={handleChange}
           />
           <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
@@ -185,13 +206,13 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="GST IN"
-            name="gst"
-            value={enterpriseOnboardData.gst}
+            name="gst_number"
+            value={enterpriseOnboardData.gst_number}
             onChange={handleChange}
           />
           <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {errorMsg.gst && <ErrorBox msg={errorMsg.gst} />}
+        {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />}
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -246,9 +267,8 @@ const EnterpriseOnboarding = () => {
         {errorMsg.pan && <ErrorBox msg={errorMsg.pan} />}
       </div>
 
-      {/* {errorMsg?.name && <ErrorBox msg={errorMsg?.name} />} */}
       <Button type="submit" className="mt-4 w-full">
-        Submit
+        {enterpriseOnboardMutation.isPending ? <Loading /> : "Submit"}
       </Button>
 
       <Link

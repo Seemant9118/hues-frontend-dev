@@ -21,6 +21,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
         "user_mobile_number",
         formDataWithMob.mobile_number
       );
+      LocalStorageService.set("operation_type", data.data.data.operation_type);
       toast.success(data.data.message);
       setCurrStep(2);
     },

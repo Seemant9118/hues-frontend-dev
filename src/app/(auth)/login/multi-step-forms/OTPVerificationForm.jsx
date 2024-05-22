@@ -37,6 +37,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
   const [otp, setOtp] = useState();
   const userId = LocalStorageService.get("user_profile");
   const userMobileNumber = LocalStorageService.get("user_mobile_number");
+  const operationType = LocalStorageService.get("operation_type");
   const router = useRouter();
 
   useEffect(() => {
@@ -59,15 +60,33 @@ export default function OTPVerificationForm({ setCurrStep }) {
         "isOnboardingComplete",
         data.data.data.user.isOnboardingComplete
       );
+      LocalStorageService.set(
+        "isEnterpriseOnboardingComplete",
+        data.data.data.user.isEnterpriseOnboardingComplete
+      );
       toast.success("OTP verified successfully");
-      if (data.data.data.user.isOnboardingComplete) {
+
+      // if both userOnboarding & enterpriseOnboarding completed, then redirect to Home Page
+      if (
+        data.data.data.user.isOnboardingComplete &&
+        data.data.data.user.isEnterpriseOnboardingComplete
+      ) {
         router.push("/");
-      } else {
+      }
+      // if userOnboarding is completed but enterpriseOnboarding is not completed, then redirected to enterpriseOnboarding page
+      else if (
+        data.data.data.user.isOnboardingComplete &&
+        !data.data.data.user.isEnterpriseOnboardingComplete
+      ) {
+        setCurrStep(4);
+      }
+      // if both userOnboarding and enterpriseOnboarding is inCompleted, then stay in normal flow.
+      else {
         setCurrStep(3);
       }
     },
-    onError: () => {
-      toast.error("OTP Invalid or Expired");
+    onError: (error) => {
+      toast.error(error.response.data.message || "OTP Invalid or Expired");
     },
   });
 
@@ -80,6 +99,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
     mutation.mutate({
       otp_code: otp,
       user_id: userId,
+      operation_type: operationType,
     });
   };
 

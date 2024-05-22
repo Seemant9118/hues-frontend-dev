@@ -23,6 +23,9 @@ export default function ProfileDetailForm({
 }) {
   const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    "isEnterpriseOnboardingComplete"
+  );
   const [selectedDate, setSelectedDate] = useState(null);
 
   const [userData, setUserData] = useState({
@@ -49,15 +52,14 @@ export default function ProfileDetailForm({
     onSuccess: (data) => {
       toast.success("Your Profile Completed & Verified");
       LocalStorageService.set(
-        "enterprise_Id",
-        data.data.data.user.enterpriseId
-      );
-      LocalStorageService.set(
         "isOnboardingComplete",
         data.data.data.user.isOnboardingComplete
       );
-      setCurrStep(4);
-      // router.push("/");
+      if (isEnterpriseOnboardingComplete) {
+        router.push("/");
+      } else {
+        setCurrStep(4);
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || "Oops, Something went wrong!");
