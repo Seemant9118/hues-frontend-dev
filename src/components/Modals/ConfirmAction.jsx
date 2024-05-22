@@ -26,7 +26,6 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
         queryKey: [mutationKey],
       });
     } catch (error) {
-      console.log(error);
       toast.error(error.response.data.message || "Something went wrong");
     }
   };

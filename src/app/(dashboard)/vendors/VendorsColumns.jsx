@@ -1,5 +1,6 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
 import AddModal from "@/components/Modals/AddModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
@@ -14,6 +15,10 @@ import {
   DeleteEnterpriseUser,
   UpdateEnterpriseUser,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import {
+  deleteVendor,
+  updateVendor,
+} from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
 import { MoreVertical } from "lucide-react";
 
 export const VendorsColumns = [
@@ -83,7 +88,7 @@ export const VendorsColumns = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.userId;
+      const id = row.original.id;
       const name = row.original.name;
 
       return (
@@ -98,15 +103,15 @@ export const VendorsColumns = [
             <AddModal
               cta="vendor"
               btnName="Edit"
-              mutationFunc={UpdateEnterpriseUser}
+              mutationFunc={updateVendor}
               userData={row.original}
-              userId={row.original.userId}
+              id={id}
             />
             <ConfirmAction
               name={name}
               id={id}
-              mutationKey={enterprise_user.getEnterpriseUsers.endpointKey}
-              mutationFunc={DeleteEnterpriseUser}
+              mutationKey={vendor_enterprise.getVendors.endpointKey}
+              mutationFunc={deleteVendor}
             />
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,5 +1,6 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
 import AddModal from "@/components/Modals/AddModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
@@ -10,6 +11,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  deleteClient,
+  updateClient,
+} from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
 import {
   DeleteEnterpriseUser,
   UpdateEnterpriseUser,
@@ -87,7 +92,7 @@ export const ClientsColumns = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.userId;
+      const id = row.original.id;
       const name = row.original.name;
 
       return (
@@ -102,15 +107,15 @@ export const ClientsColumns = [
             <AddModal
               cta="client"
               btnName="Edit"
-              mutationFunc={UpdateEnterpriseUser}
+              mutationFunc={updateClient}
               userData={row.original}
-              userId={row.original.userId}
+              id={id}
             />
             <ConfirmAction
               name={name}
               id={id}
-              mutationKey={enterprise_user.getEnterpriseUsers.endpointKey}
-              mutationFunc={DeleteEnterpriseUser}
+              mutationKey={client_enterprise.getClients.endpointKey}
+              mutationFunc={deleteClient}
             />
           </DropdownMenuContent>
         </DropdownMenu>
