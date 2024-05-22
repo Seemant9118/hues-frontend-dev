@@ -10,6 +10,7 @@ import DatePickers from "@/components/ui/DatePickers";
 import { useRouter } from "next/navigation";
 import ErrorBox from "@/components/ui/ErrorBox";
 import { toast } from "sonner";
+import RadioSelect from "@/components/ui/RadioSelect";
 
 const EnterpriseOnboarding = () => {
   const router = useRouter();
@@ -107,7 +108,7 @@ const EnterpriseOnboarding = () => {
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
       toast.success("Enterprise Added Succefully");
-      console.log("Form Submitted:", enterpriseOnboardData);
+      // console.log("Form Submitted:", enterpriseOnboardData);
       router.push("/");
     }
     setErrorMsg(isError);
@@ -149,27 +150,21 @@ const EnterpriseOnboarding = () => {
         {errorMsg.enterpriseName && <ErrorBox msg={errorMsg.enterpriseName} />}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-2 mt-5">
+      <div className="grid w-full max-w-sm items-center gap-4 mt-5">
         <Label
           htmlFor="enterpriseType"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
           Select the option that best describes your enterprise
         </Label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-5">
           {enterpriseTypes.map((type) => (
-            <Button
+            <RadioSelect
               key={type}
-              variant="outline"
-              onClick={() => handleEnterpriseType(type.toLowerCase())}
-              className={
-                enterpriseOnboardData.enterpriseType === type.toLowerCase()
-                  ? "bg-blue-500 text-white"
-                  : ""
-              }
-            >
-              {type}
-            </Button>
+              option={type}
+              value={type.toLowerCase()}
+              handleChange={handleEnterpriseType}
+            />
           ))}
         </div>
         {errorMsg.enterpriseType && <ErrorBox msg={errorMsg.enterpriseType} />}
