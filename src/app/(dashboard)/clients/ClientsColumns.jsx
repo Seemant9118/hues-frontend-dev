@@ -3,6 +3,7 @@ import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
 import AddModal from "@/components/Modals/AddModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
+import GenerateLink from "@/components/enterprise/GenerateLink";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,6 +20,7 @@ import {
   DeleteEnterpriseUser,
   UpdateEnterpriseUser,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { generateLink } from "@/services/Invitation_Service/Invitation_Service";
 import { MoreVertical } from "lucide-react";
 
 export const ClientsColumns = [
@@ -87,6 +89,23 @@ export const ClientsColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST No." />
     ),
+  },
+  {
+    accessorKey: "invitation",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="INVITATION" />
+    ),
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const invitationStatus = row.original.invitationStatus;
+      return (
+        <GenerateLink
+          invitationStatus={invitationStatus}
+          invitationId={id}
+          mutationFunc={generateLink}
+        />
+      );
+    },
   },
   {
     id: "actions",

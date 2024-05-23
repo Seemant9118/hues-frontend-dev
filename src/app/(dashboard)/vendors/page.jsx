@@ -63,8 +63,10 @@ const VendorsPage = () => {
     formattedData = data.flatMap((user) => ({
       ...user.invitation.userDetails,
       id: user.id,
+      invitationStatus: user.invitation.status,
     }));
   }
+
 
   return (
     <Wrapper>
