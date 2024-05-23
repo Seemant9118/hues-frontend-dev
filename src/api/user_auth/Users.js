@@ -34,4 +34,9 @@ export const user_Auth = {
     endpoint: `/enterprise/update/`,
     endpointKey: "update_enterpriseOnboarding",
   },
+  // 8.login With Invitation
+  loginWithInvitation: {
+    endpoint: `/iam/auth/login/invitation/generate_otp`,
+    endpointKey: "login_with_Invitation_generateOTP",
+  },
 };
