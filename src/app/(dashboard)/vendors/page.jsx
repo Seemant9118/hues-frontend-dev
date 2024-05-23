@@ -62,12 +62,11 @@ const VendorsPage = () => {
   if (data) {
     formattedData = data.flatMap((user) => ({
       ...user.invitation.userDetails,
-      id: user.id,
+      id: user.invitation.id,
       invitationStatus: user.invitation.status,
     }));
   }
-
-
+  console.log(formattedData);
   return (
     <Wrapper>
       <SubHeader name={"Vendors"}>

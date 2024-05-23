@@ -18,6 +18,15 @@ import ErrorBox from "../ui/ErrorBox";
 import EmptyStageComponent from "../ui/EmptyStageComponent";
 import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
 import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Label } from "../ui/label";
+import Loading from "../ui/Loading";
 
 const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   const queryClient = useQueryClient();
@@ -181,6 +190,11 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
     setErrorMsg(isError);
   };
 
+  const [searchInput, setSearchInput] = useState({
+    id_type: "",
+    id_number: "",
+  });
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -199,8 +213,74 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       <DialogContent>
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
-        {/* {enterpriseId && ( */}
-        <form onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}>
+        {/* search inputs */}
+        {/* <form>
+          <div className="flex justify-center items-center gap-4">
+            <div className="flex flex-col gap-0.5 w-1/2">
+              <div>
+                <Label className="flex-shrink-0">Identifier Type</Label>{" "}
+                <span className="text-red-600">*</span>
+              </div>
+              <Select
+                required
+                value={searchInput.id_type}
+                onValueChange={(value) =>
+                  setSearchInput((prev) => ({ ...prev, id_type: value }))
+                }
+              >
+                <SelectTrigger className="max-w-xs gap-5">
+                  <SelectValue placeholder="Select Identifier Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gst">GST</SelectItem>
+                  <SelectItem value="pan">PAN</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1 w-1/2">
+              <InputWithLabel
+                className="rounded-md"
+                name={"Identifier No. " + searchInput?.id_type?.toUpperCase()}
+                type="tel"
+                id="id"
+                required={true}
+                value={searchInput.id_number}
+                onChange={(value) =>
+                  setSearchInput((prev) => ({ ...prev, id_number: value }))
+                }
+              />
+            </div>
+          </div>
+        </form> */}
+
+        {/* <div className="h-[1px] bg-neutral-300"></div> */}
+
+        {/* client list related search  */}
+        {/* <div className="max-h-[200px] border rounded-md p-4 flex flex-col gap-4 overflow-auto scrollBarStyles">
+          <div className="flex justify-between font-bold text-xs items-center border rounded-md p-2 bg-gray-100">
+            <div className="flex flex-col gap-1 text-gray-600">
+              <p>+91 1234567890</p>
+              <p>dummy@gmail.com</p>
+              <p>QWERT1234H</p>
+            </div>
+            <Button>Add</Button>
+          </div>
+
+          <div className="flex justify-between font-bold text-xs items-center border rounded-md p-2 bg-gray-100">
+            <div className="flex flex-col gap-1 text-gray-600">
+              <p>+91 1234567890</p>
+              <p>dummy@gmail.com</p>
+              <p>QWERT1234H</p>
+            </div>
+            <Button>Add</Button>
+          </div>
+        </div> */}
+
+        {/* if client does not in our client list then, create client */}
+        <form
+          // className="border p-5 rounded-md"
+          onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}
+        >
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <InputWithLabel
@@ -326,6 +406,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                       gst_number: "",
                       user_type: "",
                     });
+                    setSearchInput({});
                   }
                   setOpen(false);
                 }}
@@ -338,16 +419,6 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
             <Button type="submit">{btnName === "Edit" ? "Edit" : type}</Button>
           </div>
         </form>
-        {/* )} */}
-        {/* 
-        {!enterpriseId && (
-          <div className="flex flex-col justify-center">
-            <EmptyStageComponent heading="Please Complete Your Onboarding to Create Enterprise" />
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Close
-            </Button>
-          </div>
-        )} */}
       </DialogContent>
     </Dialog>
   );

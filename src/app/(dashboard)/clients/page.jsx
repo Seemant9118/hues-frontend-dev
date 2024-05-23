@@ -61,7 +61,7 @@ const ClientPage = () => {
   if (data) {
     formattedData = data.flatMap((user) => ({
       ...user.invitation.userDetails,
-      id: user.id,
+      id: user.invitation.id,
       invitationStatus: user.invitation.status,
     }));
   }
