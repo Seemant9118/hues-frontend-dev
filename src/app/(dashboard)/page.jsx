@@ -3,13 +3,47 @@ import DashCard from "../../components/ui/DashCard";
 import SubHeader from "@/components/ui/Sub-header";
 import AddModal from "@/components/Modals/AddModal";
 import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import { LineChart } from "lucide-react";
+import { CloudFog, LineChart } from "lucide-react";
 import AddCredentialsModal from "@/components/Modals/AddCredentialsModal";
 import InvitationBox from "@/components/ui/InvitationBox";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Invitation } from "@/api/invitation/Invitation";
+import {
+  getReceivedInvitation,
+  getSentInvitation,
+} from "@/services/Invitation_Service/Invitation_Service";
 
 export default function Home() {
-  const [isInvitation, setInvitation] = useState(false);
+  // const [isInvitation, setInvitation] = useState(true);
+
+  // get sent invitations
+  const { data: sentInviteData = [] } = useQuery({
+    queryKey: [Invitation.getSentInvitation.endpointKey],
+    queryFn: () => getSentInvitation(),
+    select: (data) => data.data.data,
+  });
+
+  // get received invitations
+  const { data: receivedInviteData = [] } = useQuery({
+    queryKey: [Invitation.getReceivedInvitation.endpointKey],
+    queryFn: () => getReceivedInvitation(),
+    select: (data) => data.data.data,
+  });
+
+  const SentformattedData = sentInviteData?.map((user) => ({
+    ...user.userDetails,
+    id: user.id,
+    status: user.status,
+  }));
+
+  const ReceivedformattedData = receivedInviteData?.map((user) => ({
+    ...user.enterprise,
+    id: user.id,
+  }));
+
+  let mergedData = SentformattedData.concat(ReceivedformattedData);
+  console.log(mergedData);
 
   const dashBoardData = [
     {
@@ -68,17 +102,30 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Invitation Box */}
-      {isInvitation && (
+      {(sentInviteData.length !== 0 || receivedInviteData.length !== 0) && (
         <div className="bg-gray-100 rounded-xl px-2 my-5 mx-2 overflow-y-auto scrollBarStyles max-h-[200px]">
           <SubHeader name={"Invites"} className="mb-2  bg-gray-100"></SubHeader>
           <div className="flex flex-col gap-5 py-2">
-            <InvitationBox setInvitation={setInvitation} />
-            <InvitationBox setInvitation={setInvitation} />
+            {mergedData?.map((fData) => (
+              <InvitationBox
+                key={fData.id}
+                name={fData.name}
+                mobileNumber={fData.mobileNumber}
+                gstNumber={fData.gstNumber}
+                panNumber={fData.panNumber}
+              />
+            ))}
           </div>
         </div>
       )}
 
-      <div className={isInvitation ? "px-2 " : ""}>
+      <div
+        className={
+          sentInviteData.length !== 0 || receivedInviteData.length !== 0
+            ? "px-2 "
+            : ""
+        }
+      >
         <SubHeader name={"Dashboard"}>
           {/* <div className="flex items-center justify-center gap-4">
           <AddCredentialsModal type="Save GST Credentials" modalHead="One-time setup for future convenience" btnName="Password Manager"/>
