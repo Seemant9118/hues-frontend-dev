@@ -1,6 +1,5 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LocalStorageService } from "@/lib/utils";
@@ -9,10 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Info, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import moment from "moment";
 import { order_api } from "@/api/order_api/order_api";
 import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";

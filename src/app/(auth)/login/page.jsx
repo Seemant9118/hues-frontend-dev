@@ -6,6 +6,7 @@ import IndexForm from "./multi-step-forms/IndexForm";
 import ProfileDetailForm from "./multi-step-forms/ProfileDetailForm";
 import OTPVerificationForm from "./multi-step-forms/OTPVerificationForm";
 import CompleteKyc from "./multi-step-forms/CompleteKyc";
+import EnterpriseOnboarding from "./multi-step-forms/EnterpriseOnboarding";
 
 export default function Login() {
   const [currStep, setCurrStep] = useState(1);
@@ -42,7 +43,7 @@ export default function Login() {
           <OTPVerificationForm currStep={currStep} setCurrStep={setCurrStep} />
         )}
 
-        {/* Login Form - Step 3 - Final Profile Details form */}
+        {/* Login Form - Step 3 - Final Profile Details & Pan Verification form */}
         {currStep === 3 && (
           <ProfileDetailForm
             isThirdPartyLogin={isThirdPartyLogin}
@@ -51,6 +52,8 @@ export default function Login() {
           />
         )}
         {/* {currStep === 4 && <CompleteKyc />} */}
+
+        {currStep === 4 && <EnterpriseOnboarding />}
       </div>
     </>
   );

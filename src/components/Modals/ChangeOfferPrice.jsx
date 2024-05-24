@@ -7,13 +7,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import InputWithLabel from "../InputWithLabel";
+import InputWithLabel from "../ui/InputWithLabel";
 import { RotateCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { order_api } from "@/api/order_api/order_api";
 import { GetNegotiationDetails } from "@/services/Orders_Services/Orders_Services";
 import { useParams } from "next/navigation";
-import Loading from "../Loading";
+import Loading from "../ui/Loading";
 import { Input } from "../ui/input";
 
 const ChangeOfferPrice = ({ offerDetails }) => {

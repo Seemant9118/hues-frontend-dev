@@ -1,10 +1,10 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import Loading from "@/components/Loading";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import Loading from "@/components/ui/Loading";
 import AddModal from "@/components/Modals/AddModal";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
@@ -15,6 +15,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { BookCheck, BookUser, Key, Upload, UserPlus } from "lucide-react";
 import { ClientsColumns } from "./ClientsColumns";
+import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
+import {
+  createClient,
+  getClients,
+} from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
 
 const ClientPage = () => {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
@@ -47,20 +52,17 @@ const ClientPage = () => {
   };
 
   const { isLoading, error, data, isSuccess } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: () =>
-      GetEnterpriseUsers({
-        user_type: "client",
-        enterprise_id: enterpriseId,
-      }),
+    queryKey: [client_enterprise.getClients.endpointKey],
+    queryFn: () => getClients(enterpriseId),
     select: (data) => data.data.data,
   });
 
   let formattedData = [];
   if (data) {
     formattedData = data.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-      userId: user.id,
+      ...user.invitation.userDetails,
+      id: user.invitation.id,
+      invitationStatus: user.invitation.status,
     }));
   }
 
@@ -80,7 +82,7 @@ const ClientPage = () => {
             type={"Add"}
             cta="client"
             btnName="Add"
-            mutationFunc={CreateEnterpriseUser}
+            mutationFunc={createClient}
           />
         </div>
       </SubHeader>

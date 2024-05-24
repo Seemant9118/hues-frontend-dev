@@ -27,3 +27,15 @@ export function createKYCRequest(id) {
 export function checkKYCstatus(data) {
   return APIinstance.post(user_Auth.statucKYC.endpoint, data);
 }
+
+// 7. update enterprise Onboarding
+export function updateEnterpriseOnboarding(id, data) {
+  return APIinstance.put(
+    user_Auth.updateEnterpriseOnboarding.endpoint + `${id}`,
+    data
+  );
+}
+// 8.login With Invitation
+export function loginWithInvitation(data) {
+  return APIinstance.post(user_Auth.loginWithInvitation.endpoint, data);
+}

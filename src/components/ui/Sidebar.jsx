@@ -16,7 +16,7 @@ import {
   HandPlatter
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import StyledLinks from "@/components/StyledLinks";
+import StyledLinks from "./StyledLinks";
 
 const Sidebar = () => {
   const links = [

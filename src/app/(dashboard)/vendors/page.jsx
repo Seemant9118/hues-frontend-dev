@@ -1,10 +1,10 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import Loading from "@/components/Loading";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import Loading from "@/components/ui/Loading";
 import AddModal from "@/components/Modals/AddModal";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
@@ -13,14 +13,13 @@ import {
   GetEnterpriseUsers,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { useQuery } from "@tanstack/react-query";
-import {
-  BookUser,
-  Eye,
-  HeartHandshake,
-  Settings,
-  Upload
-} from "lucide-react";
+import { BookUser, Eye, HeartHandshake, Settings, Upload } from "lucide-react";
 import { VendorsColumns } from "./VendorsColumns";
+import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+import {
+  createVendor,
+  getVendors,
+} from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
 
 const VendorsPage = () => {
   const enterpriseId = LocalStorageService.get("enterprise_Id");
@@ -54,23 +53,20 @@ const VendorsPage = () => {
   };
 
   const { isLoading, error, data, isSuccess } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: () =>
-      GetEnterpriseUsers({
-        user_type: "vendor",
-        enterprise_id: enterpriseId,
-      }),
+    queryKey: [vendor_enterprise.getVendors.endpointKey],
+    queryFn: () => getVendors(enterpriseId),
     select: (data) => data.data.data,
   });
 
   let formattedData = [];
   if (data) {
     formattedData = data.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-      userId: user.id,
+      ...user.invitation.userDetails,
+      id: user.invitation.id,
+      invitationStatus: user.invitation.status,
     }));
   }
-
+  console.log(formattedData);
   return (
     <Wrapper>
       <SubHeader name={"Vendors"}>
@@ -87,7 +83,7 @@ const VendorsPage = () => {
             type={"Add"}
             cta="vendor"
             btnName="Add"
-            mutationFunc={CreateEnterpriseUser}
+            mutationFunc={createVendor}
           />
         </div>
       </SubHeader>

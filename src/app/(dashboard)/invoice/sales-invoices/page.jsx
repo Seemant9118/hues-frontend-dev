@@ -1,7 +1,7 @@
 "use client";
-import CreateOrder from "@/components/CreateOrder";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import CreateOrder from "@/components/orders/CreateOrder";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { Columns } from "@/components/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";

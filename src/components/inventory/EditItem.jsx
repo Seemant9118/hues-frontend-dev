@@ -1,24 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import InputWithLabel from "./InputWithLabel";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import InputWithLabel from "../ui/InputWithLabel";
 import { LocalStorageService } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
 import { toast } from "sonner";
-import { CreateProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
-import { goods_api } from "@/api/inventories/goods/goods";
-import { services_api } from "@/api/inventories/services/services";
-import DatePickers from "./DatePickers";
 
 const EditItem = ({
   setIsEditing,

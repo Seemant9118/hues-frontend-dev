@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import InputWithLabel from "../InputWithLabel";
+import InputWithLabel from "../ui/InputWithLabel";
 import { RotateCw } from "lucide-react";
 import { useParams, usePathname } from "next/navigation";
 import { LocalStorageService } from "@/lib/utils";

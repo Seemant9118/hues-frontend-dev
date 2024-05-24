@@ -1,6 +1,6 @@
 "use client";
-import DatePickers from "@/components/DatePickers";
-import Tooltips from "@/components/Tooltips";
+import DatePickers from "@/components/ui/DatePickers";
+import Tooltips from "@/components/auth/Tooltips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,13 +9,11 @@ import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
 import moment from "moment";
-import dayjs from "dayjs";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import Loading from "@/components/Loading";
-import ErrorBox from "@/components/ErrorBox";
+import Loading from "@/components/ui/Loading";
+import ErrorBox from "@/components/ui/ErrorBox";
 import Link from "next/link";
 
 export default function ProfileDetailForm({
@@ -25,6 +23,9 @@ export default function ProfileDetailForm({
 }) {
   const router = useRouter();
   const userId = LocalStorageService.get("user_profile");
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    "isEnterpriseOnboardingComplete"
+  );
   const [selectedDate, setSelectedDate] = useState(null);
 
   const [userData, setUserData] = useState({
@@ -51,11 +52,14 @@ export default function ProfileDetailForm({
     onSuccess: (data) => {
       toast.success("Your Profile Completed & Verified");
       LocalStorageService.set(
-        "enterprise_Id",
-        data.data.data.user.enterpriseId
+        "isOnboardingComplete",
+        data.data.data.user.isOnboardingComplete
       );
-      // setCurrStep(4);
-      router.push("/");
+      if (isEnterpriseOnboardingComplete) {
+        router.push("/");
+      } else {
+        setCurrStep(4);
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || "Oops, Something went wrong!");
@@ -135,7 +139,6 @@ export default function ProfileDetailForm({
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
       mutation.mutate(userData);
-      console.log(userData);
     }
     setErrorMsg(isAnyError);
   };

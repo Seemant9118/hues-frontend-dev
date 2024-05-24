@@ -1,19 +1,27 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
 import AddModal from "@/components/Modals/AddModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
+import GenerateLink from "@/components/enterprise/GenerateLink";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteEnterpriseUser, UpdateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { Edit3, MoreHorizontal, MoreVertical, Trash2 } from "lucide-react";
-
+import {
+  DeleteEnterpriseUser,
+  UpdateEnterpriseUser,
+} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import {
+  deleteVendor,
+  updateVendor,
+} from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
+import { generateLink } from "@/services/Invitation_Service/Invitation_Service";
+import { MoreVertical } from "lucide-react";
 
 export const VendorsColumns = [
   {
@@ -79,10 +87,27 @@ export const VendorsColumns = [
     ),
   },
   {
+    accessorKey: "invitation",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="INVITATION" />
+    ),
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const invitationStatus = row.original.invitationStatus;
+      return (
+        <GenerateLink
+          invitationStatus={invitationStatus}
+          invitationId={id}
+          mutationFunc={generateLink}
+        />
+      );
+    },
+  },
+  {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.userId;
+      const id = row.original.id;
       const name = row.original.name;
 
       return (
@@ -97,15 +122,15 @@ export const VendorsColumns = [
             <AddModal
               cta="vendor"
               btnName="Edit"
-              mutationFunc={UpdateEnterpriseUser}
+              mutationFunc={updateVendor}
               userData={row.original}
-              userId={row.original.userId}
+              id={id}
             />
             <ConfirmAction
               name={name}
               id={id}
-              mutationKey={enterprise_user.getEnterpriseUsers.endpointKey}
-              mutationFunc={DeleteEnterpriseUser}
+              mutationKey={vendor_enterprise.getVendors.endpointKey}
+              mutationFunc={deleteVendor}
             />
           </DropdownMenuContent>
         </DropdownMenu>
