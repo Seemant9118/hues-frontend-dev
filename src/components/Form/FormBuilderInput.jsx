@@ -4,11 +4,11 @@ import { ChevronDown, ChevronUp, Copy, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
@@ -204,13 +204,7 @@ const FormBuilderInput = ({
           idx={idx}
         />
       )}
-      {input.name === "Linear Scale" && (
-        <LinearScalePopup
-          input={input}
-          setDroppedInputs={setDroppedInputs}
-          idx={idx}
-        />
-      )}
+
       {input.name === "Dropdown" && (
         <DropdownPopup
           setShowOptions={setShowOptions}

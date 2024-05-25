@@ -38,7 +38,7 @@ const UploadInputPopup = ({ input, setDroppedInputs, idx }) => {
     <div className="flex gap-2 items-center pt-3 pb-2">
       <Popover>
         <PopoverTrigger asChild>
-          <Button size={"md"} variant={"lightBlue"} className="gap-4">
+          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
             Set File Format
             <ChevronDown />
           </Button>
@@ -49,7 +49,6 @@ const UploadInputPopup = ({ input, setDroppedInputs, idx }) => {
               <Checkbox
                 onCheckedChange={(check) => checkHandler(check, format)}
                 checked={formats.includes(format)}
-                className="data-[state=checked]:bg-Blue border-Blue text-white"
                 id={format}
               />
               <Label htmlFor={format}>{format}</Label>
@@ -59,7 +58,7 @@ const UploadInputPopup = ({ input, setDroppedInputs, idx }) => {
       </Popover>
       <Popover>
         <PopoverTrigger asChild>
-          <Button size={"md"} variant={"lightBlue"} className="gap-4">
+          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
             File Size
             <ChevronDown />
           </Button>

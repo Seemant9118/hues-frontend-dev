@@ -49,7 +49,7 @@ const DropdownPopup = ({
     <>
       <div className="flex gap-2 items-center pt-3 pb-2">
         <Button
-          className="px-4 h-7 bg-Blue rounded-none text-white border-b-[1px] border-BlueOutline hover:bg-DarkBlue"
+          className="px-4 h-7 bg-primary rounded-none text-white border-b-[1px] border-primary/20 hover:bg-primary/90"
           onClick={() => {
             setShowOptions(true);
             setShowOptionInput(true);
@@ -59,7 +59,7 @@ const DropdownPopup = ({
         </Button>
         <Popover>
           <PopoverTrigger asChild>
-            <Button className="px-4 h-7 gap-4 bg-BlueLight rounded-none text-Blue border-b-[1px] border-BlueOutline hover:bg-BlueLight">
+            <Button className="px-4 h-7 gap-4 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20">
               <p>Select Format</p>
               <ChevronDown className="w-4 h-4" />
             </Button>
@@ -82,12 +82,12 @@ const DropdownPopup = ({
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  className="w-3 h-3 text-Blue border-Blue"
+                  className="w-3 h-3 text-primary/80 border-primary"
                   value="single"
                   id="single"
                 />
                 <Label
-                  className="text-DarkText text-xs leading-normal font-normal"
+                  className="text-zinc-800 text-xs leading-normal font-normal"
                   htmlFor="single"
                 >
                   Single Select
@@ -95,12 +95,12 @@ const DropdownPopup = ({
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  className="w-3 h-3 text-Blue border-Blue"
+                  className="w-3 h-3  text-primary/80 border-primary"
                   value="multi"
                   id="multi"
                 />
                 <Label
-                  className="text-DarkText text-xs leading-normal font-normal"
+                  className="text-zinc-800 text-xs leading-normal font-normal"
                   htmlFor="multi"
                 >
                   Multi Select
@@ -111,7 +111,7 @@ const DropdownPopup = ({
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button className="px-4 h-7 bg-BlueLight rounded-none text-Blue border-b-[1px] border-BlueOutline hover:bg-BlueLight gap-2">
+            <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
               Limit On Selection
               <ChevronDown className="w-4 h-4" />
             </Button>
@@ -127,10 +127,10 @@ const DropdownPopup = ({
       </div>
       {showOptions && (
         <div className="flex gap-2 items-center flex-wrap py-2">
-          <Label className="peer pr-4 pl-3 flex items-center gap-1 h-7 rounded bg-BlueLight border-[1px] border-BlueOutline text-Blue ">
+          <Label className="peer pr-4 pl-3 flex items-center gap-1 h-7 rounded bg-primary/10 border-[1px] border-primary/20 text-primary cursor-pointer">
             <Checkbox
               id="others"
-              className="w-4 h-4 rounded-full bg-[#D9D9D9] border-[#D9D9D9] data-[state=checked]:bg-Blue data-[state=checked]:border-Blue "
+              className="w-4 h-4 rounded-full bg-[#D9D9D9] border-[#D9D9D9] data-[state=checked]:bg-primary data-[state=checked]:border-primary "
               checked={input.others}
               onCheckedChange={(checked) => {
                 setDroppedInputs((prev) => {
@@ -144,18 +144,18 @@ const DropdownPopup = ({
           </Label>
 
           {showOptionInput && (
-            <div className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-BlueOutline bg-BlueLight">
+            <div className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-primary/20 ">
               <X
-                className="text-Blue"
+                className="text-primary"
                 size={"16"}
                 onClick={() => setShowOptionInput(false)}
               />
-              <Separator className="h-3 bg-DarkText" orientation="vertical" />
+              <Separator className="h-3 bg-zinc-800" orientation="vertical" />
               <form onSubmit={optionHandler}>
                 <input
                   placeholder="Enter option value"
                   type="text"
-                  className="placeholder:text-GreyPlaceholder bg-transparent min-w-[100px] border-none outline-none text-xs font-normal leading-normal"
+                  className="placeholder:text-slate-400 bg-transparent min-w-[100px] border-none outline-none text-xs font-normal leading-normal"
                   ref={optionInputRef}
                 />
               </form>
@@ -164,10 +164,10 @@ const DropdownPopup = ({
           {questionConfigs?.options.map((option, index) => (
             <div
               key={index}
-              className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-BlueOutline bg-BlueLight"
+              className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-primary/20 bg-primary/10"
             >
               <X
-                className="text-Blue"
+                className="text-primary"
                 size={"16"}
                 onClick={() => {
                   const options = input.options.filter((_, i) => i !== index);
@@ -179,8 +179,8 @@ const DropdownPopup = ({
                   });
                 }}
               />
-              <Separator className="h-3 bg-DarkText" orientation="vertical" />
-              <p className="bg-transparent min-w-fit text-DarkText text-xs font-normal leading-normal">
+              <Separator className="h-3 bg-zinc-800" orientation="vertical" />
+              <p className="bg-transparent min-w-fit text-zinc-800 text-xs font-normal leading-normal">
                 {option}
               </p>
             </div>

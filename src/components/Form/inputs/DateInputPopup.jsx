@@ -18,7 +18,7 @@ const DateInputPopup = ({ input, setDroppedInputs, idx }) => {
     <div className="flex gap-2 items-center pt-3 pb-2">
       <Popover>
         <PopoverTrigger asChild>
-          <Button size={"xs"} className={"p-1 rounded"} variant={"blue_outline"}>
+          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
             Set Input Type
             <ChevronDown />
           </Button>
