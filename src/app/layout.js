@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
       <body
         className={`bg-[#F6F9FF] flex flex-col gap-5 h-screen`}
       >
-      <Toaster richColors position="top-right" />
+      <Toaster className="fixed" richColors position="top-right" />
         <QueryWrapper>{children}</QueryWrapper>
       </body>
     </html>

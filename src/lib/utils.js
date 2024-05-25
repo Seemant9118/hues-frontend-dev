@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs) {
@@ -68,3 +69,9 @@ export function exportTableToExcel(
   link.click();
   document.body.removeChild(link);
 }
+export const copyHandler = (text) => {
+  if (!navigator.clipboard) return;
+  if (text === "") return toast.error("No question to copy");
+  navigator.clipboard.writeText(text);
+  toast.success("Question copied To clipboard");
+};

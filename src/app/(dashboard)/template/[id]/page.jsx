@@ -93,6 +93,7 @@
 
 "use client";
 import { template_api } from "@/api/templates_api/template_api";
+import Builder from "@/components/Form/Builder";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,6 +122,7 @@ const TemplateInfo = ({ params, searchParams }) => {
   const [clickedCoordinates, setClickedCoordinates] = useState([]);
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
+  const [isCreatingForm, setIsCreatingForm] = useState(false);
 
   const addClickedCoordinate = (event) => {
     // const pdfCanvas = document.getElementById("pdfCanvas");
@@ -183,7 +185,6 @@ const TemplateInfo = ({ params, searchParams }) => {
       toast.error("Failed to update template.");
     },
   });
-  console.log(clickedCoordinates);
   useEffect(() => {
     templateInfo?.signatureBoxPlacement?.data
       ? setClickedCoordinates(templateInfo?.signatureBoxPlacement?.data)
@@ -221,41 +222,50 @@ const TemplateInfo = ({ params, searchParams }) => {
             {!canClick && <FileSignature />}
             {canClick ? "Done" : isUpdating ? "Updating" : "Add Signature"}
           </Button>
-        </div>
-      </div>
-      <div className="w-full h-full bg-secondary ">
-        <div
-          ref={pdfCanvasRef}
-          id="pdfCanvas"
-          className="max-w-fit  mx-auto relative"
-          onMouseDown={canClick ? addClickedCoordinate : () => {}}
-        >
-          <Document
-            file={data?.publicUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
+          <Button
+            variant="blue_outline"
+            onClick={() => setIsCreatingForm(true)}
           >
-            <Page pageNumber={pageNo} />
-          </Document>
-          {clickedCoordinates[pageNo] &&
-            clickedCoordinates[pageNo]?.map((signature, idx) => (
-              <div
-                onClick={(e) => e.stopPropagation()}
-                key={idx}
-                className="bg-white border border-black absolute shadow-inner shadow-white h-16 w-40 flex items-center justify-center z-[100]"
-                style={{
-                  top: signature.y,
-                  left: signature.x,
-                }}
-              >
-                <Input
-                placeHolder={"Signatory Role"}
-                  className="h-full w-full  cursor-pointer z-[100]"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            ))}
+            Create Form
+          </Button>
         </div>
       </div>
+      {!isCreatingForm && (
+        <div className="w-full h-full bg-secondary ">
+          <div
+            ref={pdfCanvasRef}
+            id="pdfCanvas"
+            className="max-w-fit  mx-auto relative"
+            onMouseDown={canClick ? addClickedCoordinate : () => {}}
+          >
+            <Document
+              file={data?.publicUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+            >
+              <Page pageNumber={pageNo} />
+            </Document>
+            {clickedCoordinates[pageNo] &&
+              clickedCoordinates[pageNo]?.map((signature, idx) => (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  key={idx}
+                  className="bg-white border border-black absolute shadow-inner shadow-white h-16 w-40 flex items-center justify-center z-[100]"
+                  style={{
+                    top: signature.y,
+                    left: signature.x,
+                  }}
+                >
+                  <Input
+                    placeHolder={"Signatory Role"}
+                    className="h-full w-full  cursor-pointer z-[100]"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+      {isCreatingForm && <Builder />}
     </>
   );
 };
