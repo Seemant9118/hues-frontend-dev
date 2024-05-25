@@ -9,17 +9,22 @@ export const Invitation = {
     endpoint: `/enterprise/invitation/invitations/recieved`,
     endpointKey: "get_received_invitation",
   },
-  //   3. approved/reect action Invitation
-  actionInvitation: {
-    endpoint: `/enterprise/invitation/update`,
-    endpointKey: "action_invitation",
+  //   3. accept action Invitation
+  acceptInvitation: {
+    endpoint: `/enterprise/invitation/accept`,
+    endpointKey: "accept_invitation",
   },
-  //   4. generate Link
+  // 4. reject action Invitation
+  rejectInvitation: {
+    endpoint: `/enterprise/invitation/reject`,
+    endpointKey: "reject_invitation",
+  },
+  //   5. generate Link
   generateLink: {
     endpoint: `/enterprise/invitation/generatelink/`,
     endpointKey: "generate_link",
   },
-  //   5. validate base64
+  //   6. validate base64
   validationBase64: {
     endpoint: `/enterprise/invitation/validatelink/`,
     endpointKey: "validate_base64",
