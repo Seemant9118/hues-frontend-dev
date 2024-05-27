@@ -13,10 +13,6 @@ const Builder = () => {
 
   const handleDropInput = (item) => {
     setDroppedInputs((prevInputs) => [...prevInputs, item]);
-    containerRef.current?.scrollTo({
-      top: containerRef.current?.scrollHeight,
-      behavior: "smooth",
-    });
   };
 
   useEffect(() => {
@@ -40,6 +36,15 @@ const Builder = () => {
     }
   }, [selectedPage?.questions, selectedPage?.name]);
 
+  useEffect(() => {
+    if (droppedInputs.length !== 0) {
+      setSelectedPage((prev) => ({ ...prev, questions: droppedInputs }));
+      containerRef.current?.scrollTo({
+        top: containerRef.current?.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [droppedInputs]);
   return (
     <DndProvider backend={HTML5Backend}>
       <main

@@ -56,12 +56,6 @@ const FormMainContainer = ({
     });
   };
 
-  useEffect(() => {
-    if (droppedInputs.length !== 0) {
-      setSelectedPage((prev) => ({ ...prev, questions: droppedInputs }));
-    }
-  }, [droppedInputs]);
-
   return (
     <div
       ref={ref}
