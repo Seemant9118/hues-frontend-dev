@@ -24,3 +24,7 @@ export const generateLink = (id) => {
 export const validationBase64 = (token) => {
   return APIinstance.get(Invitation.validationBase64.endpoint + `${token}`);
 };
+
+export const sendInvitation = (data) => {
+  return APIinstance.post(Invitation.sendInvitation.endpoint, data);
+};

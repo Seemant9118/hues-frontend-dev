@@ -29,4 +29,10 @@ export const Invitation = {
     endpoint: `/enterprise/invitation/validatelink/`,
     endpointKey: "validate_base64",
   },
+  // 7. send invitation
+  sendInvitation: {
+    endpoint: `/enterprise/invitation/send`,
+    endpointKey: "send_Invitation",
+  },
+  
 };
