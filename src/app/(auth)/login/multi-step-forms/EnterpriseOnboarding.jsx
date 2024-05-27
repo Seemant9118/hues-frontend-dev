@@ -23,6 +23,7 @@ const EnterpriseOnboarding = () => {
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     name: "",
     type: "",
+    address: "",
     gst_number: "",
     date_of_incorporation: "",
     pan: "",
@@ -73,17 +74,20 @@ const EnterpriseOnboarding = () => {
     if (enterpriseOnboardData.type === "") {
       error.enterpriseType = "*Please select your enterprise type";
     }
-    if (enterpriseOnboardData.gst_number === "") {
-      error.gst_number = "*Required GST IN";
-    }
-    if (enterpriseOnboardData.date_of_incorporation === "") {
-      error.date_of_incorporation = "*Required Date of Incorporation";
-    }
-    if (enterpriseOnboardData.pan === "") {
-      error.pan = "*Required PAN Number";
-    } else if (!pan_pattern.test(enterpriseOnboardData.pan)) {
-      error.pan = "* Please provide valid PAN Number";
-    }
+    // if (enterpriseOnboardData.address === "") {
+    //   error.address = "*Required Address";
+    // }
+    // if (enterpriseOnboardData.gst_number === "") {
+    //   error.gst_number = "*Required GST IN";
+    // }
+    // if (enterpriseOnboardData.date_of_incorporation === "") {
+    //   error.date_of_incorporation = "*Required Date of Incorporation";
+    // }
+    // if (enterpriseOnboardData.pan === "") {
+    //   error.pan = "*Required PAN Number";
+    // } else if (!pan_pattern.test(enterpriseOnboardData.pan)) {
+    //   error.pan = "* Please provide valid PAN Number";
+    // }
     return error;
   };
 
@@ -176,7 +180,7 @@ const EnterpriseOnboarding = () => {
           htmlFor="enterpriseType"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Select the option that best describes your enterprise
+          Select the option that best describes your enterprise <span className="text-red-600">*</span>{" "}
         </Label>
         <div className="flex flex-wrap gap-5">
           {enterpriseTypes.map((type) => (
@@ -193,16 +197,38 @@ const EnterpriseOnboarding = () => {
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label
+          htmlFor="address"
+          className="text-[#414656] font-medium flex items-center gap-1"
+        >
+          Address 
+          <Tooltips trigger={<Info size={12} />} content="Your Enterprise Address" />
+        </Label>
+
+        <div className="relative">
+          <Input
+            className="focus:font-bold"
+            type="text"
+            placeholder="Address"
+            name="address"
+            value={enterpriseOnboardData.address}
+            onChange={handleChange}
+          />
+          <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+        </div>
+        {/* {errorMsg.address && <ErrorBox msg={errorMsg.address} />} */}
+      </div>
+
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label
           htmlFor="gst"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          GST IN <span className="text-red-600">*</span>{" "}
+          GST IN
           <Tooltips trigger={<Info size={12} />} content="GST IN" />
         </Label>
 
         <div className="relative">
           <Input
-            required
             className="focus:font-bold"
             type="text"
             placeholder="GST IN"
@@ -212,10 +238,10 @@ const EnterpriseOnboarding = () => {
           />
           <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />}
+        {/* {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />} */}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      {/* <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label
           htmlFor="dob"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -239,14 +265,14 @@ const EnterpriseOnboarding = () => {
         {errorMsg.date_of_incorporation && (
           <ErrorBox msg={errorMsg.date_of_incorporation} />
         )}
-      </div>
+      </div> */}
 
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="pan-number"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Permanent Account Number <span className="text-red-600">*</span>{" "}
+          Permanent Account Number 
           <Tooltips
             trigger={<Info size={12} />}
             content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
@@ -254,7 +280,6 @@ const EnterpriseOnboarding = () => {
         </Label>
         <div className="relative">
           <Input
-            // required={true}
             className="focus:font-bold"
             type="text"
             placeholder="FGHJ1456T"
@@ -264,7 +289,7 @@ const EnterpriseOnboarding = () => {
           />
           <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {errorMsg.pan && <ErrorBox msg={errorMsg.pan} />}
+        {/* {errorMsg.pan && <ErrorBox msg={errorMsg.pan} />} */}
       </div>
 
       <Button type="submit" className="mt-4 w-full">

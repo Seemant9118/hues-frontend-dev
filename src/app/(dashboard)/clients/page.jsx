@@ -59,12 +59,23 @@ const ClientPage = () => {
 
   let formattedData = [];
   if (data) {
-    formattedData = data.flatMap((user) => ({
-      ...user.invitation.userDetails,
-      id: user.invitation.id,
-      invitationStatus: user.invitation.status,
-    }));
+    formattedData = data.flatMap((user) => {
+      let userDetails;
+      if (user.invitation) {
+        userDetails = { ...user.invitation.userDetails };
+      } else {
+        userDetails = { ...user.client };
+      }
+
+      return {
+        ...userDetails,
+        id: user.id,
+        invitationId: user.invitation?.id,
+        invitationStatus: user.invitation?.status,
+      };
+    });
   }
+  console.log(formattedData);
 
   return (
     <Wrapper>

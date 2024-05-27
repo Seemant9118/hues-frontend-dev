@@ -9,8 +9,12 @@ export const getReceivedInvitation = () => {
   return APIinstance.get(Invitation.getReceivedInvitation.endpoint);
 };
 
-export const actionInvitation = (data) => {
-  return APIinstance.post(Invitation.actionInvitation.endpoint, data);
+export const acceptInvitation = (data) => {
+  return APIinstance.post(Invitation.acceptInvitation.endpoint, data);
+};
+
+export const rejectInvitation = (data) => {
+  return APIinstance.post(Invitation.rejectInvitation.endpoint, data);
 };
 
 export const generateLink = (id) => {

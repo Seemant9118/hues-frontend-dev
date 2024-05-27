@@ -96,7 +96,7 @@ export const ClientsColumns = [
       <DataTableColumnHeader column={column} title="INVITATION" />
     ),
     cell: ({ row }) => {
-      const id = row.original.id;
+      const id = row.original.invitationId;
       const invitationStatus = row.original.invitationStatus;
       return (
         <GenerateLink

@@ -13,37 +13,26 @@ import {
   getReceivedInvitation,
   getSentInvitation,
 } from "@/services/Invitation_Service/Invitation_Service";
+import Loading from "@/components/ui/Loading";
 
 export default function Home() {
-  // const [isInvitation, setInvitation] = useState(true);
-
-  // get sent invitations
-  const { data: sentInviteData = [] } = useQuery({
-    queryKey: [Invitation.getSentInvitation.endpointKey],
-    queryFn: () => getSentInvitation(),
-    select: (data) => data.data.data,
-  });
-
   // get received invitations
-  const { data: receivedInviteData = [] } = useQuery({
-    queryKey: [Invitation.getReceivedInvitation.endpointKey],
-    queryFn: () => getReceivedInvitation(),
-    select: (data) => data.data.data,
-  });
-
-  const SentformattedData = sentInviteData?.map((user) => ({
-    ...user.userDetails,
-    id: user.id,
-    status: user.status,
-  }));
+  const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
+    useQuery({
+      queryKey: [Invitation.getReceivedInvitation.endpointKey],
+      queryFn: () => getReceivedInvitation(),
+      select: (data) => data.data.data,
+    });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
     ...user.enterprise,
-    id: user.id,
+    id: user.invitation.id,
+    status: user.status,
   }));
 
-  let mergedData = SentformattedData.concat(ReceivedformattedData);
-  console.log(mergedData);
+  const filteredData = ReceivedformattedData.filter(
+    (data) => data.status === "PENDING" 
+  );
 
   const dashBoardData = [
     {
@@ -102,13 +91,16 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Invitation Box */}
-      {(sentInviteData.length !== 0 || receivedInviteData.length !== 0) && (
+      {isReceivedInviteLoading && <Loading />}
+
+      {filteredData.length !== 0 && (
         <div className="bg-gray-100 rounded-xl px-2 my-5 mx-2 overflow-y-auto scrollBarStyles max-h-[200px]">
           <SubHeader name={"Invites"} className="mb-2  bg-gray-100"></SubHeader>
           <div className="flex flex-col gap-5 py-2">
-            {mergedData?.map((fData) => (
+            {filteredData?.map((fData) => (
               <InvitationBox
                 key={fData.id}
+                id={fData.id}
                 name={fData.name}
                 mobileNumber={fData.mobileNumber}
                 gstNumber={fData.gstNumber}
@@ -119,13 +111,7 @@ export default function Home() {
         </div>
       )}
 
-      <div
-        className={
-          sentInviteData.length !== 0 || receivedInviteData.length !== 0
-            ? "px-2 "
-            : ""
-        }
-      >
+      <div className={receivedInviteData.length !== 0 ? "px-2 " : ""}>
         <SubHeader name={"Dashboard"}>
           {/* <div className="flex items-center justify-center gap-4">
           <AddCredentialsModal type="Save GST Credentials" modalHead="One-time setup for future convenience" btnName="Password Manager"/>
