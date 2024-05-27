@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import FormSidebar from "./FormSidebar";
-import { useRouter } from "next/navigation";
 import FormMainContainer from "./FormMainContainer";
+import FormSidebar from "./FormSidebar";
 
 const Builder = () => {
-  const router = useRouter();
-
+  const containerRef = useRef(null);
   const [droppedInputs, setDroppedInputs] = useState([]);
   const [formData, setFormData] = useState(null);
 
@@ -15,6 +13,10 @@ const Builder = () => {
 
   const handleDropInput = (item) => {
     setDroppedInputs((prevInputs) => [...prevInputs, item]);
+    containerRef.current?.scrollTo({
+      top: containerRef.current?.scrollHeight,
+      behavior: "smooth",
+    });
   };
 
   useEffect(() => {
@@ -40,16 +42,17 @@ const Builder = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <main className="relative grid grid-cols-[200px_1fr] overflow-y-auto">
+      <main
+        ref={containerRef}
+        className="flex overflow-y-auto relative max-h-[90%] scrollBarStyles"
+      >
         <FormSidebar />
-        {/* <section className="px-4 py-2 "> */}
         <FormMainContainer
           setSelectedPage={setSelectedPage}
           droppedInputs={droppedInputs}
           onDropInput={handleDropInput}
           setDroppedInputs={setDroppedInputs}
         />
-        {/* </section> */}
       </main>
     </DndProvider>
   );

@@ -10,7 +10,7 @@ import SidebarField from "./SidebarField";
 
 const FormSidebar = () => {
   return (
-    <aside className=" bg-white w-[200px]">
+    <aside className=" bg-white w-[200px] sticky top-0 left-0 bottom-0">
       <div className="text-xs py-2 px-8 bg-primary text-white">
         Append fields / structures to your form
       </div>

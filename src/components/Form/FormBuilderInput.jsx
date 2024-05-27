@@ -16,12 +16,13 @@ import { inputFields } from "@/globals/formbulder/constants";
 import { copyHandler } from "@/lib/utils";
 import DateInputPopup from "./inputs/DateInputPopup";
 import DropdownPopup from "./inputs/DropdownPopup";
-import LinearScalePopup from "./inputs/LinearScalePopup";
 import SelectInputPopup from "./inputs/SelectInputPopup";
 import Short_LongTextPopup from "./inputs/Short&LongTextPopup";
 import TimeInputPopup from "./inputs/TimeInputPopup";
 import UploadInputPopup from "./inputs/UploadInputPopup";
 import InputWrapper from "./wrappers/InputWrappers";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
 
 const FormBuilderInput = ({
   input,
@@ -49,13 +50,13 @@ const FormBuilderInput = ({
   return (
     <InputWrapper>
       <div className="h-8 flex justify-between items-center self-stretch overflow-hidden">
-        <div className="flex gap-2 items-center py-1">
+        <div className="flex gap-2 items-center py-1 grow">
           <span className="text-zinc-800 text-xs leading-6">{idx + 1}.</span>
           <Select
             value={input.name + "?" + input.type}
             onValueChange={(value) => selectHandler(value, idx)}
           >
-            <SelectTrigger className="flex items-center gap-2 px-2 bg-[#F6F3FF] text-primary text-[10px] rounded focus:ring-0 h-7">
+            <SelectTrigger className="flex items-center gap-2 px-2 bg-[#F6F3FF] text-primary text-[10px] rounded focus:ring-0 h-7 max-w-fit">
               {Icon && <Icon size={16} />}
               <SelectValue defaultValue={input.name} />
             </SelectTrigger>
@@ -67,50 +68,30 @@ const FormBuilderInput = ({
               ))}
             </SelectContent>
           </Select>
-          <form onSubmit={questionHandler}>
+          <form onSubmit={questionHandler} className="grow px-2">
             <input
               onBlur={questionHandler}
               name="text"
-              className="text-sm leading-6 text-zinc-800 min-w-[300px] placeholder:text-slate-400e focus-within:outline-none"
+              className="text-sm leading-6 text-zinc-800 w-full placeholder:text-slate-400 focus-within:outline-none"
               placeholder="Enter Question"
               maxLength={input.maxLength}
               minLength={input.minLength}
               ref={inputRef}
               defaultValue={input.question}
             />
-          </form>
+          </form> 
         </div>
-        <div className="flex gap-4 items-center">
-          <div className="flex gap-2">
-            {/* <label
-              htmlFor="static"
-              className="text-DarkText text-xs leading-6 font-normal"
-            >
-              Static
-            </label>
-            <Switch
-              id="static"
-              defaultChecked={input.static}
-              onCheckedChange={(checked) => {
-                setDroppedInputs((prev: any) => {
-                  const updated = [...prev];
-                  updated[idx].static = checked;
-                  return updated;
-                });
-              }}
-              className="h-6 text-Purple data-[state=checked]:bg-Purple"
-            /> */}
-          </div>
+        <div className="flex gap-2 items-center">
           {input.name !== "Notes" && (
             <div className="flex gap-2">
-              <label
-                htmlFor="required"
+              <Label
+                htmlFor={"required" + idx}
                 className="text-zinc-800 text-xs leading-6 font-normal"
               >
                 Required
-              </label>
+              </Label>
               <Switch
-                id="required"
+                id={"required" + idx}
                 defaultChecked={input.required}
                 onCheckedChange={(checked) => {
                   setDroppedInputs((prev) => {
@@ -119,50 +100,41 @@ const FormBuilderInput = ({
                     return updated;
                   });
                 }}
-                className="h-6 text-primary data-[state=checked]:bg-primary"
               />
             </div>
           )}
           <Button
             onClick={() => copyHandler(input.question)}
-            className=" bg-transparent hover:bg-white w-4 h-4"
+            variant={"ghost"}
             size={"icon"}
           >
-            <Copy className="text-primary cursor-pointer" size={"16px"} />
+            <Copy className="text-primary" size={"16px"} />
           </Button>
           <Button
             onClick={() => deleteHandler(idx)}
-            className=" bg-transparent hover:bg-white w-4 h-4"
+            variant={"ghost"}
             size={"icon"}
           >
-            <Trash2 className="text-primary cursor-pointer" size={"16px"} />
+            <Trash2 className="text-primary" size={"16px"} />
           </Button>
-          <div className="flex items-center justify-center gap-1">
-            {idx !== droppedInputs.length - 1 && (
-              <Button
-                className=" bg-transparent hover:bg-white w-5 h-5"
-                size={"icon"}
-                onClick={() => upAndDownHandler(idx, idx + 1)}
-              >
-                <ChevronDown
-                  className="text-primary cursor-pointer"
-                  size={"18px"}
-                />
-              </Button>
-            )}
-            {idx !== 0 && (
-              <Button
-                onClick={() => upAndDownHandler(idx, idx - 1)}
-                className=" bg-transparent hover:bg-white w-4 h-4"
-                size={"icon"}
-              >
-                <ChevronUp
-                  className="text-primary cursor-pointer"
-                  size={"18px"}
-                />
-              </Button>
-            )}
-          </div>
+          {idx !== droppedInputs.length - 1 && (
+            <Button
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => upAndDownHandler(idx, idx + 1)}
+            >
+              <ChevronDown className="text-primary" size={"18px"} />
+            </Button>
+          )}
+          {idx !== 0 && (
+            <Button
+              onClick={() => upAndDownHandler(idx, idx - 1)}
+              variant={"ghost"}
+              size={"icon"}
+            >
+              <ChevronUp className="text-primary" size={"18px"} />
+            </Button>
+          )}
         </div>
       </div>
       {(input.name === "Short text" ||

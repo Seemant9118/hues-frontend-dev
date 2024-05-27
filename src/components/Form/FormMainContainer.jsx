@@ -63,7 +63,10 @@ const FormMainContainer = ({
   }, [droppedInputs]);
 
   return (
-    <div ref={ref} className="min-h-[400px] flex flex-col gap-4 pb-28 px-4 pt-2">
+    <div
+      ref={ref}
+      className="min-h-[400px] flex flex-col gap-4 pb-28 px-4 pt-2 grow"
+    >
       {droppedInputs?.map((input, idx) => {
         // if (input.type === "structure" && input.name === "Text") {
         //   return (
@@ -132,21 +135,21 @@ const FormMainContainer = ({
         //   );
         // } else {
         return (
-            <FormBuilderInput
-              key={idx}
-              input={input}
-              idx={idx}
-              setDroppedInputs={setDroppedInputs}
-              droppedInputs={droppedInputs}
-              //for add Options
-              showOptions={showOptions}
-              setShowOptions={setShowOptions}
-              //question state and state handler props
-              deleteHandler={deleteHandler}
-              upAndDownHandler={upAndDownHandler}
-              inputHandler={inputHandler}
-              selectHandler={selectHandler}
-            />
+          <FormBuilderInput
+            key={idx}
+            input={input}
+            idx={idx}
+            setDroppedInputs={setDroppedInputs}
+            droppedInputs={droppedInputs}
+            //for add Options
+            showOptions={showOptions}
+            setShowOptions={setShowOptions}
+            //question state and state handler props
+            deleteHandler={deleteHandler}
+            upAndDownHandler={upAndDownHandler}
+            inputHandler={inputHandler}
+            selectHandler={selectHandler}
+          />
         );
         // }
       })}

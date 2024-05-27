@@ -156,7 +156,7 @@ const TemplateInfo = ({ params, searchParams }) => {
   });
 
   const { mutate, isPending: isUpdating } = useMutation({
-    mutationFn: (data) => {
+    mutationFn: ({ signatureData, formData }) => {
       const enterprise_id = LocalStorageService.get("enterprise_Id");
       const user_id = LocalStorageService.get("user_profile");
       console.log(enterprise_id, user_id);
@@ -164,10 +164,10 @@ const TemplateInfo = ({ params, searchParams }) => {
         {
           enterprise_id: enterprise_id,
           form_data: {
-            data: [],
+            data: formData || [],
           },
           signature_box_placement: {
-            data: data,
+            data: signatureData,
           },
           created_by: user_id,
         },
@@ -192,42 +192,69 @@ const TemplateInfo = ({ params, searchParams }) => {
           1: [],
         });
   }, [templateInfo?.signatureBoxPlacement?.data]);
+
+  const saveFormHandler = async () => {
+    const idx = formData?.data?.findIndex(
+      (value) => value.name === selectedPage.name
+    );
+    const newArray = [...formData?.data];
+    newArray[idx] = selectedPage;
+    const final = { ...formData, data: newArray };
+
+    mutate(clickedCoordinates, final);
+  };
   return (
     <>
-      <div className="flex items-center justify-between py-4 sticky top-0 left-0 right-0 z-50 bg-white">
+      <div className="flex items-center justify-between py-4 sticky top-0 left-0 right-0 z-50 bg-white " >
         <h3>{templateInfo?.templateName}</h3>
         <div className="flex items-center gap-2 ">
-          <Button
-            disabled={pageNo === 1}
-            onClick={() => setPageNo((prev) => (pages > prev ? prev - 1 : 1))}
-          >
-            Prev
-          </Button>
-          <Button
-            disabled={pageNo === pages}
-            onClick={() => setPageNo((prev) => (pages > prev ? prev + 1 : 1))}
-          >
-            Next
-          </Button>
-          <Button
-            onClick={() => {
-              if (canClick) {
-                mutate(clickedCoordinates);
-              }
-              setCanClick((prev) => !prev);
-            }}
-            variant="blue_outline"
-          >
-            {isUpdating && <Loading />}
-            {!canClick && <FileSignature />}
-            {canClick ? "Done" : isUpdating ? "Updating" : "Add Signature"}
-          </Button>
-          <Button
-            variant="blue_outline"
-            onClick={() => setIsCreatingForm(true)}
-          >
-            Create Form
-          </Button>
+          {!isCreatingForm && (
+            <Button
+              disabled={pageNo === 1}
+              onClick={() => setPageNo((prev) => (pages > prev ? prev - 1 : 1))}
+            >
+              Prev
+            </Button>
+          )}
+          {!isCreatingForm && (
+            <Button
+              disabled={pageNo === pages}
+              onClick={() => setPageNo((prev) => (pages > prev ? prev + 1 : 1))}
+            >
+              Next
+            </Button>
+          )}
+          {!isCreatingForm && (
+            <Button
+              onClick={() => {
+                if (canClick) {
+                  mutate(clickedCoordinates);
+                }
+                setCanClick((prev) => !prev);
+              }}
+              variant="blue_outline"
+            >
+              {isUpdating && <Loading />}
+              {!canClick && <FileSignature />}
+              {canClick ? "Done" : isUpdating ? "Updating" : "Add Signature"}
+            </Button>
+          )}
+          {!isCreatingForm && (
+            <Button
+              variant="blue_outline"
+              onClick={() => setIsCreatingForm((prev) => !prev)}
+            >
+              Create Form
+            </Button>
+          )}
+          {isCreatingForm && (
+            <Button
+              variant="blue_outline"
+              onClick={() => setIsCreatingForm((prev) => !prev)}
+            >
+              Save
+            </Button>
+          )}
         </div>
       </div>
       {!isCreatingForm && (
