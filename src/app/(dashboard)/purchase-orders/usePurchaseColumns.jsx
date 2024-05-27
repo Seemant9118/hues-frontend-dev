@@ -16,17 +16,15 @@ import { order_api } from "@/api/order_api/order_api";
 import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { Button } from "@/components/ui/button";
+import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
 
 export const usePurchaseColumns = () => {
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
   const { data } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: (data) =>
-      GetEnterpriseUsers({
-        user_type: "vendor",
-        enterprise_id: enterprise_id,
-      }),
+    queryKey: [vendor_enterprise.getVendors.endpointKey],
+    queryFn: (data) => getVendors(enterprise_id),
     select: (data) => data.data.data,
   });
   let formattedData = [];

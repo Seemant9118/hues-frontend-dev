@@ -16,17 +16,15 @@ import { useQuery } from "@tanstack/react-query";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
 import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
+import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
+import { getClients } from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
 
 export const useSalesColumns = () => {
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
   const { data } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: (data) =>
-      GetEnterpriseUsers({
-        user_type: "client",
-        enterprise_id: enterprise_id,
-      }),
+    queryKey: [client_enterprise.getClients.endpointKey],
+    queryFn: (data) => getClients(enterprise_id),
     select: (data) => data.data.data,
   });
   let formattedData = [];
