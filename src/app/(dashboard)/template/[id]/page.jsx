@@ -93,7 +93,7 @@
 
 "use client";
 import { template_api } from "@/api/templates_api/template_api";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LocalStorageService } from "@/lib/utils";

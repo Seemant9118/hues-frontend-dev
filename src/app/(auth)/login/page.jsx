@@ -1,12 +1,11 @@
 "use client";
-import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import IndexForm from "./multi-step-forms/IndexForm";
-import ProfileDetailForm from "./multi-step-forms/ProfileDetailForm";
-import OTPVerificationForm from "./multi-step-forms/OTPVerificationForm";
-import CompleteKyc from "./multi-step-forms/CompleteKyc";
+import Link from "next/link";
+import { useState } from "react";
 import EnterpriseOnboarding from "./multi-step-forms/EnterpriseOnboarding";
+import IndexForm from "./multi-step-forms/IndexForm";
+import OTPVerificationForm from "./multi-step-forms/OTPVerificationForm";
+import ProfileDetailForm from "./multi-step-forms/ProfileDetailForm";
 
 export default function Login() {
   const [currStep, setCurrStep] = useState(1);

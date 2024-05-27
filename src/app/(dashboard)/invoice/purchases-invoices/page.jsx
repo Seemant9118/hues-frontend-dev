@@ -2,7 +2,7 @@
 import CreateOrder from "@/components/orders/CreateOrder";
 import SubHeader from "@/components/ui/Sub-header";
 import Wrapper from "@/components/wrappers/Wrapper";
-import { Columns } from "@/components/columns";
+import { Columns } from "@/components/columns/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Layers2 } from "lucide-react";
@@ -19,7 +19,7 @@ export default function PurchaseInvoices() {
       category: "Business Planning",
       rate: "44",
       gst: "HFSK6468T",
-      amount: "23899"
+      amount: "23899",
     },
   ]);
 
@@ -48,7 +48,7 @@ export default function PurchaseInvoices() {
       {/* Generate Modal Handling */}
       {isAdding && (
         <CreateOrder
-          onSubmit={() => { }}
+          onSubmit={() => {}}
           name="Create Invoice"
           onCancel={() => setIsAdding(false)}
         />

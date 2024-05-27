@@ -2,7 +2,7 @@
 import CreateOrder from "@/components/orders/CreateOrder";
 import SubHeader from "@/components/ui/Sub-header";
 import Wrapper from "@/components/wrappers/Wrapper";
-import { Columns } from "@/components/columns";
+import { Columns } from "@/components/columns/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Layers2 } from "lucide-react";
