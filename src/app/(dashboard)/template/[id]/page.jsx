@@ -159,15 +159,14 @@ const TemplateInfo = ({ params, searchParams }) => {
     mutationFn: ({ signatureData, formData }) => {
       const enterprise_id = LocalStorageService.get("enterprise_Id");
       const user_id = LocalStorageService.get("user_profile");
-      console.log(enterprise_id, user_id);
       return updateTemplate(
         {
           enterprise_id: enterprise_id,
           form_data: {
-            data: formData || [],
+            data: formData || templateInfo?.formData?.data,
           },
           signature_box_placement: {
-            data: signatureData,
+            data: signatureData || clickedCoordinates,
           },
           created_by: user_id,
         },
@@ -180,6 +179,7 @@ const TemplateInfo = ({ params, searchParams }) => {
         queryKey: [template_api.getTemplate.endpointKey],
       });
       setClickedCoordinates([]);
+      setIsCreatingForm(false);
     },
     onError: (data) => {
       toast.error("Failed to update template.");
@@ -193,106 +193,106 @@ const TemplateInfo = ({ params, searchParams }) => {
         });
   }, [templateInfo?.signatureBoxPlacement?.data]);
 
-  const saveFormHandler = async () => {
-    const idx = formData?.data?.findIndex(
-      (value) => value.name === selectedPage.name
-    );
-    const newArray = [...formData?.data];
-    newArray[idx] = selectedPage;
-    const final = { ...formData, data: newArray };
-
-    mutate(clickedCoordinates, final);
-  };
   return (
     <>
-      <div className="flex items-center justify-between py-4 sticky top-0 left-0 right-0 z-50 bg-white " >
-        <h3>{templateInfo?.templateName}</h3>
-        <div className="flex items-center gap-2 ">
-          {!isCreatingForm && (
-            <Button
-              disabled={pageNo === 1}
-              onClick={() => setPageNo((prev) => (pages > prev ? prev - 1 : 1))}
-            >
-              Prev
-            </Button>
-          )}
-          {!isCreatingForm && (
-            <Button
-              disabled={pageNo === pages}
-              onClick={() => setPageNo((prev) => (pages > prev ? prev + 1 : 1))}
-            >
-              Next
-            </Button>
-          )}
-          {!isCreatingForm && (
-            <Button
-              onClick={() => {
-                if (canClick) {
-                  mutate(clickedCoordinates);
-                }
-                setCanClick((prev) => !prev);
-              }}
-              variant="blue_outline"
-            >
-              {isUpdating && <Loading />}
-              {!canClick && <FileSignature />}
-              {canClick ? "Done" : isUpdating ? "Updating" : "Add Signature"}
-            </Button>
-          )}
-          {!isCreatingForm && (
-            <Button
-              variant="blue_outline"
-              onClick={() => setIsCreatingForm((prev) => !prev)}
-            >
-              Create Form
-            </Button>
-          )}
-          {isCreatingForm && (
-            <Button
-              variant="blue_outline"
-              onClick={() => setIsCreatingForm((prev) => !prev)}
-            >
-              Save
-            </Button>
-          )}
-        </div>
-      </div>
       {!isCreatingForm && (
-        <div className="w-full h-full bg-secondary ">
-          <div
-            ref={pdfCanvasRef}
-            id="pdfCanvas"
-            className="max-w-fit  mx-auto relative"
-            onMouseDown={canClick ? addClickedCoordinate : () => {}}
-          >
-            <Document
-              file={data?.publicUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-            >
-              <Page pageNumber={pageNo} />
-            </Document>
-            {clickedCoordinates[pageNo] &&
-              clickedCoordinates[pageNo]?.map((signature, idx) => (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  key={idx}
-                  className="bg-white border border-black absolute shadow-inner shadow-white h-16 w-40 flex items-center justify-center z-[100]"
-                  style={{
-                    top: signature.y,
-                    left: signature.x,
-                  }}
+        <>
+          <div className="flex items-center justify-between py-4 sticky top-0 left-0 right-0 z-50 bg-white">
+            <h3>{templateInfo?.templateName}</h3>
+            <div className="flex items-center gap-2 ">
+              {!isCreatingForm && (
+                <Button
+                  disabled={pageNo === 1}
+                  onClick={() =>
+                    setPageNo((prev) => (pages > prev ? prev - 1 : 1))
+                  }
                 >
-                  <Input
-                    placeHolder={"Signatory Role"}
-                    className="h-full w-full  cursor-pointer z-[100]"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-              ))}
+                  Prev
+                </Button>
+              )}
+              {!isCreatingForm && (
+                <Button
+                  disabled={pageNo === pages}
+                  onClick={() =>
+                    setPageNo((prev) => (pages > prev ? prev + 1 : 1))
+                  }
+                >
+                  Next
+                </Button>
+              )}
+              {!isCreatingForm && (
+                <Button
+                  onClick={() => {
+                    if (canClick) {
+                      mutate(clickedCoordinates);
+                    }
+                    setCanClick((prev) => !prev);
+                  }}
+                  variant="blue_outline"
+                >
+                  {isUpdating && <Loading />}
+                  {!canClick && <FileSignature />}
+                  {canClick
+                    ? "Done"
+                    : isUpdating
+                    ? "Updating"
+                    : "Add Signature"}
+                </Button>
+              )}
+              {!isCreatingForm && (
+                <Button
+                  variant="blue_outline"
+                  onClick={() => setIsCreatingForm((prev) => !prev)}
+                >
+                  Create Form
+                </Button>
+              )}
+              {isCreatingForm && (
+                <Button
+                  variant="blue_outline"
+                  onClick={() => setIsCreatingForm((prev) => !prev)}
+                >
+                  Save
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+          <div className="w-full h-full bg-secondary ">
+            <div
+              ref={pdfCanvasRef}
+              id="pdfCanvas"
+              className="max-w-fit  mx-auto relative"
+              onMouseDown={canClick ? addClickedCoordinate : () => {}}
+            >
+              <Document
+                file={data?.publicUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+              >
+                <Page pageNumber={pageNo} />
+              </Document>
+              {clickedCoordinates[pageNo] &&
+                clickedCoordinates[pageNo]?.map((signature, idx) => (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    key={idx}
+                    className="bg-white border border-black absolute shadow-inner shadow-white h-16 w-40 flex items-center justify-center z-[100]"
+                    style={{
+                      top: signature.y,
+                      left: signature.x,
+                    }}
+                  >
+                    <Input
+                      placeHolder={"Signatory Role"}
+                      className="h-full w-full  cursor-pointer z-[100]"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>
+        </>
       )}
-      {isCreatingForm && <Builder />}
+      {isCreatingForm && <Builder saveHandler={mutate} />}
     </>
   );
 };
