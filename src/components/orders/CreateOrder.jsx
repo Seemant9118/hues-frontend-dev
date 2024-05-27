@@ -84,14 +84,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
     select: (customerData) => customerData.data.data,
   });
-  let formattedData = [];
-  console.log(customerData);
-  if (customerData) {
-    formattedData = customerData.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-      userId: user.id,
-    }));
-  }
 
   // goods fetching
   const { data: goodsData } = useQuery({
