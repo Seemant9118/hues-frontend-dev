@@ -420,6 +420,9 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         <div className="flex items-center justify-end gap-4">
           <Button variant="outline">Cancel</Button>
           <Button
+            disabled={Object.values(selectedItem).some(
+              (value) => value === "" || value === null || value === undefined
+            )} // if any item of selectedItem is empty then button must be disabled
             onClick={() => {
               setOrder((prev) => ({
                 ...prev,
