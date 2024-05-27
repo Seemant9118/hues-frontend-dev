@@ -32,3 +32,11 @@ export function DeleteEnterpriseUser(enterprise_id) {
     enterprise_user.deleteEnterpriseUser.endpoint + `${enterprise_id}`
   );
 }
+
+// search enterprise
+export function SearchEnterprise(identifier, identifier_type) {
+  return APIinstance.get(
+    enterprise_user.searchEnterprise.endpoint +
+      `?identifier=${identifier}&identifier_type=${identifier_type}`
+  );
+}
