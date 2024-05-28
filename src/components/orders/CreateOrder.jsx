@@ -264,29 +264,33 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
               {cta == "offer" ? (
                 <>
-                  {customerData?.map((customer) => (
-                    <SelectItem
-                      key={customer.enterpriseId}
-                      value={customer.client.id}
-                    >
-                      {customer.client
-                        ? customer.client.name
-                        : customer.invitation.userDetails.name}
-                    </SelectItem>
-                  ))}
+                  {customerData
+                    ?.filter((customer) => customer.client)
+                    ?.map((customer) => (
+                      <SelectItem
+                        key={customer.enterpriseId}
+                        value={customer?.client?.id}
+                      >
+                        {customer.client
+                          ? customer.client.name
+                          : customer.invitation.userDetails.name}
+                      </SelectItem>
+                    ))}
                 </>
               ) : (
                 <>
-                  {customerData?.map((customer) => (
-                    <SelectItem
-                      key={customer.enterpriseId}
-                      value={customer.vendor.id}
-                    >
-                      {customer.vendor
-                        ? customer.vendor.name
-                        : customer.invitation.userDetails.name}
-                    </SelectItem>
-                  ))}
+                  {customerData
+                    ?.filter((customer) => customer.vendor)
+                    ?.map((customer) => (
+                      <SelectItem
+                        key={customer.enterpriseId}
+                        value={customer?.vendor?.id}
+                      >
+                        {customer.vendor
+                          ? customer.vendor.name
+                          : customer.invitation.userDetails.name}
+                      </SelectItem>
+                    ))}
                 </>
               )}
             </SelectContent>
