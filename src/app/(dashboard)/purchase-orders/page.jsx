@@ -137,17 +137,19 @@ const PurchaseOrders = () => {
               subItems={PurchaseEmptyStageData.subItems}
             />
           ) : (
-            <DataTable
-              id={"purchase-orders"}
-              columns={PurchaseColumns}
-              onRowClick={onRowClick}
-              data={
-                data?.filter((purchase) => {
-                  if (istype === "All" || istype === "") return true;
-                  return purchase.type === istype;
-                }) || []
-              }
-            />
+            isSuccess && (
+              <DataTable
+                id={"purchase-orders"}
+                columns={PurchaseColumns}
+                onRowClick={onRowClick}
+                data={
+                  data?.filter((purchase) => {
+                    if (istype === "All" || istype === "") return true;
+                    return purchase.type === istype;
+                  }) || []
+                }
+              />
+            )
           )}
         </Wrapper>
       )}

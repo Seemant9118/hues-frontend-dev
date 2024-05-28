@@ -22,17 +22,11 @@ import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterpri
 export const usePurchaseColumns = () => {
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
-  const { data } = useQuery({
+  const { data: vendors } = useQuery({
     queryKey: [vendor_enterprise.getVendors.endpointKey],
     queryFn: (data) => getVendors(enterprise_id),
     select: (data) => data.data.data,
   });
-  let formattedData = [];
-  if (data) {
-    formattedData = data.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-    }));
-  }
 
   return [
     {
@@ -96,10 +90,10 @@ export const usePurchaseColumns = () => {
         <DataTableColumnHeader column={column} title="VENDORS" />
       ),
       cell: ({ row }) => {
-        const findData = formattedData.find(
-          (fData) => fData.id === row.original.sellerEnterpriseId
+        const vendor = vendors?.find(
+          (vendor) => vendor?.vendor?.id === row.original.sellerEnterpriseId
         );
-        return <div>{findData?.name}</div>;
+        return <div>{vendor?.vendor?.name}</div>;
       },
     },
     // {
