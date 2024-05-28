@@ -267,7 +267,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                   {customerData?.map((customer) => (
                     <SelectItem
                       key={customer.enterpriseId}
-                      value={customer.enterpriseId}
+                      value={customer.client.id}
                     >
                       {customer.client
                         ? customer.client.name
@@ -280,7 +280,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                   {customerData?.map((customer) => (
                     <SelectItem
                       key={customer.enterpriseId}
-                      value={customer.enterpriseId}
+                      value={customer.vendor.id}
                     >
                       {customer.vendor
                         ? customer.vendor.name
