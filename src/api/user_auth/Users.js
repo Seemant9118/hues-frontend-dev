@@ -39,4 +39,9 @@ export const user_Auth = {
     endpoint: `/iam/auth/login/invitation/generate_otp`,
     endpointKey: "login_with_Invitation_generateOTP",
   },
+  // 9. get user by ID
+  getUserById: {
+    endpoint: `/iam/user/get/`,
+    endpointKey: "get_User_by_id",
+  },
 };

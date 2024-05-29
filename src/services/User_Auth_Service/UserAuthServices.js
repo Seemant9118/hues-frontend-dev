@@ -39,3 +39,8 @@ export function updateEnterpriseOnboarding(id, data) {
 export function loginWithInvitation(data) {
   return APIinstance.post(user_Auth.loginWithInvitation.endpoint, data);
 }
+
+// 9. get User By Id
+export function getUserById(id) {
+  return APIinstance.get(user_Auth.getUserById.endpoint + `${id}`);
+}
