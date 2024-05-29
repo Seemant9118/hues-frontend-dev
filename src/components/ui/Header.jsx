@@ -1,15 +1,16 @@
 "use client";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "./button";
-import { Bell, UserCircle } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { LocalStorageService } from "@/lib/utils";
+import { UserCircle } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "./button";
+import { toast } from "sonner";
 
 const Header = () => {
   const router = useRouter();
@@ -17,6 +18,7 @@ const Header = () => {
 
   const logout = () => {
     LocalStorageService.clear();
+    toast.success("Logged Out");
     router.push("/login");
   };
   const login = () => {
