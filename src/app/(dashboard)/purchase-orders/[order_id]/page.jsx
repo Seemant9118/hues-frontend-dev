@@ -15,21 +15,24 @@ const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
 
-  const { isLoading, data } = useQuery({
+  const { isLoading, data: orderDetails } = useQuery({
     queryKey: [order_api.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
     select: (data) => data.data.data,
   });
 
-  const OrderColumns = useOrderColumns();
+  const OrderColumns = useOrderColumns(orderDetails);
 
   return (
     <Wrapper className="relative">
-      {isLoading && !data && <Loading />}
-      {!isLoading && data && (
+      {isLoading && !orderDetails && <Loading />}
+      {!isLoading && orderDetails && (
         <>
           <SubHeader name={"ORDER ID: #" + params.order_id}></SubHeader>
-          <DataTable columns={OrderColumns} data={data.orderItems}></DataTable>
+          <DataTable
+            columns={OrderColumns}
+            data={orderDetails.orderItems}
+          ></DataTable>
 
           <div className="absolute bottom-0 right-0">
             <div className="flex justify-end">

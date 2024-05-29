@@ -4,16 +4,38 @@ import OfferPrice from "@/components/Modals/OfferPrice";
 import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
+import { LocalStorageService } from "@/lib/utils";
 import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Info } from "lucide-react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
-export const useOrderColumns = () => {
+export const useOrderColumns = (orderDetails) => {
+  console.log(orderDetails);
   const params = useParams();
   const order_id = params.order_id;
+  const enterpriseId = LocalStorageService.get("enterprise_Id");
   const queryClient = useQueryClient();
+
+  // intial order with status NEW
+  const isIntialStageOrder = () => {
+    const { orderType, negotiationStatus, buyerEnterpriseId } = orderDetails;
+    return (
+      orderType === "PURCHASE" &&
+      negotiationStatus === "NEW" &&
+      buyerEnterpriseId === enterpriseId
+    );
+  };
+
+  const isActionValid = () => {
+    const { orderType, negotiationStatus, buyerEnterpriseId } = orderDetails;
+    return (
+      orderType === "SALES" &&
+      negotiationStatus === "NEW" &&
+      buyerEnterpriseId === enterpriseId
+    );
+  };
 
   const mutationAccept = useMutation({
     mutationFn: (data) => AccpetRejectNegotiation(data),
@@ -27,7 +49,6 @@ export const useOrderColumns = () => {
   });
 
   const handleAcceptNegotiation = (row) => {
-    // console.log(isAcceptedStatus);
     mutationAccept.mutate({
       order_id: order_id,
       item_id: row.id,
@@ -100,7 +121,6 @@ export const useOrderColumns = () => {
             statusColor = "#1863B7";
             statusBG = "#1863B71A";
             statusBorder = "#1863B7";
-            btnName = "Offer Price";
             break;
           case "NEGOTIATION":
             statusText = "Negotiation";
@@ -132,11 +152,13 @@ export const useOrderColumns = () => {
               {statusText} {tooltip}
             </div>
 
-            {btnName && (
-              <OfferPrice btnName={btnName} offerDetails={offerDetails} />
+            {isIntialStageOrder() && (
+              <span className="border p-2 rounded-md text-yellow-500 font-bold border-yellow-500 bg-yellow-50">
+                Waiting for Response
+              </span>
             )}
 
-            {actionBtn && (
+            {isActionValid() && (
               <div className="flex items-center gap-1">
                 <ChangeOfferPrice offerDetails={offerDetails} />
 
