@@ -61,10 +61,10 @@ const ClientPage = () => {
   if (data) {
     formattedData = data.flatMap((user) => {
       let userDetails;
-      if (user.invitation) {
-        userDetails = { ...user.invitation.userDetails };
-      } else {
+      if (user.client) {
         userDetails = { ...user.client };
+      } else {
+        userDetails = { ...user.invitation.userDetails };
       }
 
       return {
