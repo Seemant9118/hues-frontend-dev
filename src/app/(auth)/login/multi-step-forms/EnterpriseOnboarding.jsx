@@ -1,32 +1,29 @@
 import Tooltips from "@/components/auth/Tooltips";
-import { Label } from "@/components/ui/label";
-import { Info, Building, CalendarDays, CreditCard } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import React, { useEffect, useState } from "react";
-import moment from "moment";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import DatePickers from "@/components/ui/DatePickers";
-import { useRouter } from "next/navigation";
 import ErrorBox from "@/components/ui/ErrorBox";
-import { toast } from "sonner";
-import RadioSelect from "@/components/ui/RadioSelect";
-import { useMutation } from "@tanstack/react-query";
-import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
-import { LocalStorageService } from "@/lib/utils";
 import Loading from "@/components/ui/Loading";
+import RadioSelect from "@/components/ui/RadioSelect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LocalStorageService } from "@/lib/utils";
+import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
+import { useMutation } from "@tanstack/react-query";
+import { Building, CreditCard, Info } from "lucide-react";
+import moment from "moment";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const EnterpriseOnboarding = () => {
   const router = useRouter();
   const enterprise_Id = LocalStorageService.get("enterprise_Id");
-  const [selectedDate, setSelectedDate] = useState(null);
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     name: "",
     type: "",
     address: "",
     gst_number: "",
-    date_of_incorporation: "",
-    pan: "",
+    pan_number: "",
   });
   const [errorMsg, setErrorMsg] = useState({});
 
@@ -38,14 +35,14 @@ const EnterpriseOnboarding = () => {
     "NGO",
   ];
 
-  useEffect(() => {
-    setEnterpriseOnboardData((prevUserData) => ({
-      ...prevUserData,
-      date_of_incorporation: selectedDate
-        ? moment(selectedDate).format("DD/MM/YYYY")
-        : "", // Update dynamically
-    }));
-  }, [selectedDate]);
+  // useEffect(() => {
+  //   setEnterpriseOnboardData((prevUserData) => ({
+  //     ...prevUserData,
+  //     date_of_incorporation: selectedDate
+  //       ? moment(selectedDate).format("DD/MM/YYYY")
+  //       : "", // Update dynamically
+  //   }));
+  // }, [selectedDate]);
 
   // mutation
   const enterpriseOnboardMutation = useMutation({
@@ -66,7 +63,7 @@ const EnterpriseOnboarding = () => {
   // validation
   const validation = (enterpriseOnboardData) => {
     let error = {};
-    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     if (enterpriseOnboardData.name === "") {
       error.enterpriseName = "*Required Enterprise Name";
@@ -83,10 +80,8 @@ const EnterpriseOnboarding = () => {
     // if (enterpriseOnboardData.date_of_incorporation === "") {
     //   error.date_of_incorporation = "*Required Date of Incorporation";
     // }
-    // if (enterpriseOnboardData.pan === "") {
-    //   error.pan = "*Required PAN Number";
-    // } else if (!pan_pattern.test(enterpriseOnboardData.pan)) {
-    //   error.pan = "* Please provide valid PAN Number";
+    // if (!pan_pattern.test(enterpriseOnboardData.pan)) {
+    //   error.pan_number = "* Please provide valid PAN Number";
     // }
     return error;
   };
@@ -95,19 +90,19 @@ const EnterpriseOnboarding = () => {
     const { name, value } = e.target;
 
     // pan validation
-    if (name === "pan") {
+    if (name === "pan_number") {
       const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
       if (!pan_pattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan: "* Please provide valid PAN Number",
+          pan_number: "* Please provide valid PAN Number",
         });
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan: "",
+          pan_number: "",
         });
       }
       setEnterpriseOnboardData((values) => ({
@@ -180,7 +175,8 @@ const EnterpriseOnboarding = () => {
           htmlFor="enterpriseType"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Select the option that best describes your enterprise <span className="text-red-600">*</span>{" "}
+          Select the option that best describes your enterprise{" "}
+          <span className="text-red-600">*</span>{" "}
         </Label>
         <div className="flex flex-wrap gap-5">
           {enterpriseTypes.map((type) => (
@@ -200,8 +196,11 @@ const EnterpriseOnboarding = () => {
           htmlFor="address"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Address 
-          <Tooltips trigger={<Info size={12} />} content="Your Enterprise Address" />
+          Address
+          <Tooltips
+            trigger={<Info size={12} />}
+            content="Your Enterprise Address"
+          />
         </Label>
 
         <div className="relative">
@@ -272,7 +271,7 @@ const EnterpriseOnboarding = () => {
           htmlFor="pan-number"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Permanent Account Number 
+          Permanent Account Number
           <Tooltips
             trigger={<Info size={12} />}
             content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
@@ -283,13 +282,13 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="FGHJ1456T"
-            name="pan"
-            value={enterpriseOnboardData.pan}
+            name="pan_number"
+            value={enterpriseOnboardData.pan_number}
             onChange={handleChange}
           />
           <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {/* {errorMsg.pan && <ErrorBox msg={errorMsg.pan} />} */}
+        {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
       </div>
 
       <Button type="submit" className="mt-4 w-full">
