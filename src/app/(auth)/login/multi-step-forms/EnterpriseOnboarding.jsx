@@ -8,7 +8,14 @@ import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
 import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
-import { AtSign, Building, CreditCard, Info } from "lucide-react";
+import {
+  AtSign,
+  Building,
+  CreditCard,
+  Hash,
+  Info,
+  MapPinned,
+} from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -148,7 +155,7 @@ const EnterpriseOnboarding = () => {
         Enterprise Onboarding
       </h1>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="enterpriseName"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -175,7 +182,7 @@ const EnterpriseOnboarding = () => {
         {errorMsg.enterpriseName && <ErrorBox msg={errorMsg.enterpriseName} />}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-4 mt-5">
+      <div className="grid w-full max-w-sm items-center gap-5">
         <Label
           htmlFor="enterpriseType"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -196,7 +203,7 @@ const EnterpriseOnboarding = () => {
         {errorMsg.enterpriseType && <ErrorBox msg={errorMsg.enterpriseType} />}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="address"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -217,12 +224,12 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.address}
             onChange={handleChange}
           />
-          <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <MapPinned className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
         {/* {errorMsg.address && <ErrorBox msg={errorMsg.address} />} */}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="email"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -245,7 +252,7 @@ const EnterpriseOnboarding = () => {
         {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="gst"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -263,9 +270,8 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.gst_number}
             onChange={handleChange}
           />
-          <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <Hash className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {/* {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />} */}
       </div>
 
       {/* <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -319,7 +325,7 @@ const EnterpriseOnboarding = () => {
         {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
       </div>
 
-      <Button type="submit" className="mt-4 w-full">
+      <Button type="submit" className=" w-full">
         {enterpriseOnboardMutation.isPending ? <Loading /> : "Submit"}
       </Button>
 
