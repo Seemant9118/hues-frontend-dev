@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { LocalStorageService } from "@/lib/utils";
 import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
 import { useMutation } from "@tanstack/react-query";
-import { Building, CreditCard, Info } from "lucide-react";
+import { AtSign, Building, CreditCard, Info } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ const EnterpriseOnboarding = () => {
     name: "",
     type: "",
     address: "",
+    email: "",
     gst_number: "",
     pan_number: "",
   });
@@ -63,7 +64,8 @@ const EnterpriseOnboarding = () => {
   // validation
   const validation = (enterpriseOnboardData) => {
     let error = {};
-    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if (enterpriseOnboardData.name === "") {
       error.enterpriseName = "*Required Enterprise Name";
@@ -71,6 +73,9 @@ const EnterpriseOnboarding = () => {
     if (enterpriseOnboardData.type === "") {
       error.enterpriseType = "*Please select your enterprise type";
     }
+    // if (!email_pattern.test(enterpriseOnboardData.email)) {
+    //   error.email = "*Please provide valid email";
+    // }
     // if (enterpriseOnboardData.address === "") {
     //   error.address = "*Required Address";
     // }
@@ -80,7 +85,7 @@ const EnterpriseOnboarding = () => {
     // if (enterpriseOnboardData.date_of_incorporation === "") {
     //   error.date_of_incorporation = "*Required Date of Incorporation";
     // }
-    // if (!pan_pattern.test(enterpriseOnboardData.pan)) {
+    // if (!pan_pattern.test(enterpriseOnboardData.pan_number)) {
     //   error.pan_number = "* Please provide valid PAN Number";
     // }
     return error;
@@ -215,6 +220,29 @@ const EnterpriseOnboarding = () => {
           <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
         {/* {errorMsg.address && <ErrorBox msg={errorMsg.address} />} */}
+      </div>
+
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label
+          htmlFor="email"
+          className="text-[#414656] font-medium flex items-center gap-1"
+        >
+          Email
+          <Tooltips trigger={<Info size={12} />} content="Your Email" />
+        </Label>
+
+        <div className="relative">
+          <Input
+            className="focus:font-bold"
+            type="text"
+            placeholder="enterprise@gmail.com"
+            name="email"
+            value={enterpriseOnboardData.email}
+            onChange={handleChange}
+          />
+          <AtSign className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+        </div>
+        {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
