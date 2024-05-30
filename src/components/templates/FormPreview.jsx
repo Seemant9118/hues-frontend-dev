@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import QuestionsPreview from "./QuestionsPreview";

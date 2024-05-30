@@ -1,5 +1,5 @@
 "use client";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 import FormPreview from "@/components/templates/FormPreview";
 import { getTemplate } from "@/services/Template_Services/Template_Services";
 import { useQuery } from "@tanstack/react-query";
