@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 
 const page = ({ params }) => {
-  console.log(params?.id);
   const {
     data: templateInfo,
     isSuccess,
@@ -18,7 +17,6 @@ const page = ({ params }) => {
     select: (data) => data.data.data,
   });
 
-  console.log(templateInfo);
   if (isLoading) return <Loading />;
   return (
     <div>

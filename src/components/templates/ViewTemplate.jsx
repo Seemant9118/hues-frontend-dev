@@ -173,10 +173,6 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
   //   fetchPDFAndGeneratePDF();
   // }, []);
 
-  useEffect(() => {
-    setisOpen(true);
-  }, []);
-  console.log(clickedCoordinates[pageNo], pageNo);
   return (
     <Sheet
       open={isSheetOpen}
