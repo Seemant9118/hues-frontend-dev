@@ -4,14 +4,16 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import FormMainContainer from "./FormMainContainer";
 import FormSidebar from "./FormSidebar";
 import { Button } from "@/components/ui/button";
+import { Document, Page } from "react-pdf";
 
-const Builder = ({ saveHandler }) => {
+const Builder = ({ saveHandler, url }) => {
   const containerRef = useRef(null);
   const [droppedInputs, setDroppedInputs] = useState([]);
   const [formData, setFormData] = useState(null);
-
+  const pdfCanvasRef = useRef(null);
   const [selectedPage, setSelectedPage] = useState(null);
-
+  const [pageNo, setPageNo] = useState(1);
+  const [pages, setPages] = useState(1);
   const handleDropInput = (item) => {
     setDroppedInputs((prevInputs) => [...prevInputs, item]);
   };
@@ -56,6 +58,11 @@ const Builder = ({ saveHandler }) => {
 
     saveHandler({ signatureData: null, formData: newArray });
   };
+
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setPages(numPages);
+  };
+
   return (
     <>
       <div className="flex items-center justify-end py-4 sticky top-0 left-0 right-0 z-50 bg-white ">
@@ -69,6 +76,18 @@ const Builder = ({ saveHandler }) => {
           className="flex overflow-y-auto relative max-h-[90%] scrollBarStyles"
         >
           <FormSidebar />
+          <div
+            ref={pdfCanvasRef}
+            id="pdfCanvas"
+            className="max-w-fit  mx-auto relative overflow-auto scrollBarStyles sticky top-0"
+          >
+            <Document
+              file={url}
+              onLoadSuccess={onDocumentLoadSuccess}
+            >
+              <Page pageNumber={pageNo} />
+            </Document>
+          </div>
           <FormMainContainer
             setSelectedPage={setSelectedPage}
             droppedInputs={droppedInputs}

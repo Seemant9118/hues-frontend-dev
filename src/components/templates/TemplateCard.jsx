@@ -1,14 +1,13 @@
-import Image from "next/image";
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Eye, MessageSquareText, Trash2 } from "lucide-react";
-import ViewTemplate from "@/components/templates/ViewTemplate";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteTemplate } from "@/services/Template_Services/Template_Services";
-import { toast } from "sonner";
 import { template_api } from "@/api/templates_api/template_api";
+import ViewTemplate from "@/components/templates/ViewTemplate";
+import { Button } from "@/components/ui/button";
+import { deleteTemplate } from "@/services/Template_Services/Template_Services";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { MessageSquareText, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { toast } from "sonner";
 import Loading from "../Loading";
-import Link from "next/link";
+import CreateTemplateForm from "./CreateTemplateForm";
 
 const TemplateCard = ({
   onViewFormClick,
@@ -84,15 +83,7 @@ const TemplateCard = ({
           id={id}
           signatureBoxPlacement={signatureBoxPlacement}
         />
-        {/* <Button
-          onClick={onViewFormClick}
-          variant={"blue_outline"}
-          size="sm"
-          className="text-xs gap-1 p-1.5 "
-        >
-          <Eye size={16} />
-          Form
-        </Button> */}
+        <CreateTemplateForm url={templateUrl} id={id} />
         <Button
           // onClick={mutate}
           disabled={true}
