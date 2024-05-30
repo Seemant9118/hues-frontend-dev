@@ -1,21 +1,18 @@
 "use client";
-import DashCard from "../../components/ui/DashCard";
-import SubHeader from "@/components/ui/Sub-header";
-import AddModal from "@/components/Modals/AddModal";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import { CloudFog, LineChart } from "lucide-react";
-import AddCredentialsModal from "@/components/Modals/AddCredentialsModal";
-import InvitationBox from "@/components/ui/InvitationBox";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Invitation } from "@/api/invitation/Invitation";
-import {
-  getReceivedInvitation,
-  getSentInvitation,
-} from "@/services/Invitation_Service/Invitation_Service";
+import { useInviteColumns } from "@/components/columns/useInviteColumns";
+import { DataTable } from "@/components/table/data-table";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
 import Loading from "@/components/ui/Loading";
+import SubHeader from "@/components/ui/Sub-header";
+import {
+  getReceivedInvitation
+} from "@/services/Invitation_Service/Invitation_Service";
+import { useQuery } from "@tanstack/react-query";
+import { LineChart } from "lucide-react";
 
 export default function Home() {
+  const InviteColumns = useInviteColumns();
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
@@ -31,8 +28,9 @@ export default function Home() {
   }));
 
   const filteredData = ReceivedformattedData.filter(
-    (data) => data.status === "PENDING" 
+    (data) => data.status === "PENDING"
   );
+  // console.log(filteredData);
 
   const dashBoardData = [
     {
@@ -90,33 +88,24 @@ export default function Home() {
   // invitation
   return (
     <div className="flex flex-col">
-      {/* Invitation Box */}
-      {isReceivedInviteLoading && <Loading />}
+      {/* Invitation table */}
+      <div>
+        {isReceivedInviteLoading && <Loading />}
 
-      {filteredData.length !== 0 && (
-        <div className="bg-gray-100 rounded-xl px-2 my-5 mx-2 overflow-y-auto scrollBarStyles max-h-[200px]">
-          <SubHeader name={"Invites"} className="mb-2  bg-gray-100"></SubHeader>
-          <div className="flex flex-col gap-5 py-2">
-            {filteredData?.map((fData) => (
-              <InvitationBox
-                key={fData.id}
-                id={fData.id}
-                name={fData.name}
-                mobileNumber={fData.mobileNumber}
-                gstNumber={fData.gstNumber}
-                panNumber={fData.panNumber}
-              />
-            ))}
+        {filteredData?.length > 0 && (
+          <div className=" rounded-xl px-2 my-5 mx-2 overflow-y-auto scrollBarStyles max-h-[200px]">
+            <SubHeader
+              name={"Pending Invites"}
+              className="mb-2 "
+            ></SubHeader>
+            <DataTable columns={InviteColumns} data={filteredData} />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
+      {/* dashboard */}
       <div className={receivedInviteData.length !== 0 ? "px-2 " : ""}>
-        <SubHeader name={"Dashboard"}>
-          {/* <div className="flex items-center justify-center gap-4">
-          <AddCredentialsModal type="Save GST Credentials" modalHead="One-time setup for future convenience" btnName="Password Manager"/>
-        </div> */}
-        </SubHeader>
+        <SubHeader name={"Dashboard"}></SubHeader>
 
         <EmptyStageComponent
           heading={dashBoardEmptyStagedata.heading}

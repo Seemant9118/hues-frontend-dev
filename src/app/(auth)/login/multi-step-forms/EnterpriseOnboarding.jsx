@@ -1,32 +1,37 @@
 import Tooltips from "@/components/auth/Tooltips";
-import { Label } from "@/components/ui/label";
-import { Info, Building, CalendarDays, CreditCard } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import React, { useEffect, useState } from "react";
-import moment from "moment";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import DatePickers from "@/components/ui/DatePickers";
-import { useRouter } from "next/navigation";
 import ErrorBox from "@/components/ui/ErrorBox";
-import { toast } from "sonner";
-import RadioSelect from "@/components/ui/RadioSelect";
-import { useMutation } from "@tanstack/react-query";
-import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
-import { LocalStorageService } from "@/lib/utils";
 import Loading from "@/components/ui/Loading";
+import RadioSelect from "@/components/ui/RadioSelect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LocalStorageService } from "@/lib/utils";
+import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
+import { useMutation } from "@tanstack/react-query";
+import {
+  AtSign,
+  Building,
+  CreditCard,
+  Hash,
+  Info,
+  MapPinned,
+} from "lucide-react";
+import moment from "moment";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const EnterpriseOnboarding = () => {
   const router = useRouter();
   const enterprise_Id = LocalStorageService.get("enterprise_Id");
-  const [selectedDate, setSelectedDate] = useState(null);
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     name: "",
     type: "",
     address: "",
+    email: "",
     gst_number: "",
-    date_of_incorporation: "",
-    pan: "",
+    pan_number: "",
   });
   const [errorMsg, setErrorMsg] = useState({});
 
@@ -38,14 +43,14 @@ const EnterpriseOnboarding = () => {
     "NGO",
   ];
 
-  useEffect(() => {
-    setEnterpriseOnboardData((prevUserData) => ({
-      ...prevUserData,
-      date_of_incorporation: selectedDate
-        ? moment(selectedDate).format("DD/MM/YYYY")
-        : "", // Update dynamically
-    }));
-  }, [selectedDate]);
+  // useEffect(() => {
+  //   setEnterpriseOnboardData((prevUserData) => ({
+  //     ...prevUserData,
+  //     date_of_incorporation: selectedDate
+  //       ? moment(selectedDate).format("DD/MM/YYYY")
+  //       : "", // Update dynamically
+  //   }));
+  // }, [selectedDate]);
 
   // mutation
   const enterpriseOnboardMutation = useMutation({
@@ -67,6 +72,7 @@ const EnterpriseOnboarding = () => {
   const validation = (enterpriseOnboardData) => {
     let error = {};
     const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if (enterpriseOnboardData.name === "") {
       error.enterpriseName = "*Required Enterprise Name";
@@ -74,6 +80,9 @@ const EnterpriseOnboarding = () => {
     if (enterpriseOnboardData.type === "") {
       error.enterpriseType = "*Please select your enterprise type";
     }
+    // if (!email_pattern.test(enterpriseOnboardData.email)) {
+    //   error.email = "*Please provide valid email";
+    // }
     // if (enterpriseOnboardData.address === "") {
     //   error.address = "*Required Address";
     // }
@@ -83,10 +92,8 @@ const EnterpriseOnboarding = () => {
     // if (enterpriseOnboardData.date_of_incorporation === "") {
     //   error.date_of_incorporation = "*Required Date of Incorporation";
     // }
-    // if (enterpriseOnboardData.pan === "") {
-    //   error.pan = "*Required PAN Number";
-    // } else if (!pan_pattern.test(enterpriseOnboardData.pan)) {
-    //   error.pan = "* Please provide valid PAN Number";
+    // if (!pan_pattern.test(enterpriseOnboardData.pan_number)) {
+    //   error.pan_number = "* Please provide valid PAN Number";
     // }
     return error;
   };
@@ -95,19 +102,19 @@ const EnterpriseOnboarding = () => {
     const { name, value } = e.target;
 
     // pan validation
-    if (name === "pan") {
+    if (name === "pan_number") {
       const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
       if (!pan_pattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan: "* Please provide valid PAN Number",
+          pan_number: "* Please provide valid PAN Number",
         });
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan: "",
+          pan_number: "",
         });
       }
       setEnterpriseOnboardData((values) => ({
@@ -148,7 +155,7 @@ const EnterpriseOnboarding = () => {
         Enterprise Onboarding
       </h1>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="enterpriseName"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -175,12 +182,13 @@ const EnterpriseOnboarding = () => {
         {errorMsg.enterpriseName && <ErrorBox msg={errorMsg.enterpriseName} />}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-4 mt-5">
+      <div className="grid w-full max-w-sm items-center gap-5">
         <Label
           htmlFor="enterpriseType"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Select the option that best describes your enterprise <span className="text-red-600">*</span>{" "}
+          Select the option that best describes your enterprise{" "}
+          <span className="text-red-600">*</span>{" "}
         </Label>
         <div className="flex flex-wrap gap-5">
           {enterpriseTypes.map((type) => (
@@ -195,13 +203,16 @@ const EnterpriseOnboarding = () => {
         {errorMsg.enterpriseType && <ErrorBox msg={errorMsg.enterpriseType} />}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="address"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Address 
-          <Tooltips trigger={<Info size={12} />} content="Your Enterprise Address" />
+          Address
+          <Tooltips
+            trigger={<Info size={12} />}
+            content="Your Enterprise Address"
+          />
         </Label>
 
         <div className="relative">
@@ -213,12 +224,35 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.address}
             onChange={handleChange}
           />
-          <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <MapPinned className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
         {/* {errorMsg.address && <ErrorBox msg={errorMsg.address} />} */}
       </div>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-sm items-center gap-1">
+        <Label
+          htmlFor="email"
+          className="text-[#414656] font-medium flex items-center gap-1"
+        >
+          Email
+          <Tooltips trigger={<Info size={12} />} content="Your Email" />
+        </Label>
+
+        <div className="relative">
+          <Input
+            className="focus:font-bold"
+            type="text"
+            placeholder="enterprise@gmail.com"
+            name="email"
+            value={enterpriseOnboardData.email}
+            onChange={handleChange}
+          />
+          <AtSign className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+        </div>
+        {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
+      </div>
+
+      <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="gst"
           className="text-[#414656] font-medium flex items-center gap-1"
@@ -236,9 +270,8 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.gst_number}
             onChange={handleChange}
           />
-          <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <Hash className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {/* {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />} */}
       </div>
 
       {/* <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -272,7 +305,7 @@ const EnterpriseOnboarding = () => {
           htmlFor="pan-number"
           className="text-[#414656] font-medium flex items-center gap-1"
         >
-          Permanent Account Number 
+          Permanent Account Number
           <Tooltips
             trigger={<Info size={12} />}
             content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
@@ -283,16 +316,16 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="FGHJ1456T"
-            name="pan"
-            value={enterpriseOnboardData.pan}
+            name="pan_number"
+            value={enterpriseOnboardData.pan_number}
             onChange={handleChange}
           />
           <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
         </div>
-        {/* {errorMsg.pan && <ErrorBox msg={errorMsg.pan} />} */}
+        {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
       </div>
 
-      <Button type="submit" className="mt-4 w-full">
+      <Button type="submit" className=" w-full">
         {enterpriseOnboardMutation.isPending ? <Loading /> : "Submit"}
       </Button>
 

@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`bg-[#F6F9FF] flex flex-col gap-5 h-screen`}>
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" duration="2000"/>
         <QueryWrapper>{children}</QueryWrapper>
       </body>
     </html>

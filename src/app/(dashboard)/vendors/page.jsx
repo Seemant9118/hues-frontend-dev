@@ -62,10 +62,10 @@ const VendorsPage = () => {
   if (data) {
     formattedData = data.flatMap((user) => {
       let userDetails;
-      if (user.invitation) {
-        userDetails = { ...user.invitation.userDetails };
-      } else {
+      if (user.vendor) {
         userDetails = { ...user.vendor };
+      } else {
+        userDetails = { ...user.invitation.userDetails };
       }
 
       return {

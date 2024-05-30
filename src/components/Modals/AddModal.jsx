@@ -94,7 +94,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   // debounce wrapper
   const debouncedMutation = useCallback(
     debounce((input) => {
-      searchMutation.mutate(input);
+      if (input.id_number.length >= 3) {
+        searchMutation.mutate(input);
+      }
     }, 500),
     [] // Empty array ensures that debounce function is created only once
   );
@@ -226,6 +228,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   const handleChangeId = (e) => {
     const { id, value } = e.target;
 
+    // perform condition atleast 3 characters inputed in state then start mutation otherwise not
     setSearchInput((prev) => {
       const searchState = { ...prev, [id]: value };
       debouncedMutation(searchState); // Call debounced mutation function with new state

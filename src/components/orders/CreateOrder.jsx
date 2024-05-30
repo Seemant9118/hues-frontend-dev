@@ -208,7 +208,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       });
       setErrorMsg({});
     }
-    console.log(isError);
     setErrorMsg(isError);
   };
 
@@ -396,7 +395,16 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           <div className="flex items-center gap-4">
             <Label>Price:</Label>
             <div className="flex flex-col gap-1">
-              <Input value={selectedItem.unit_price} className="max-w-20" />
+              <Input
+                value={selectedItem.unit_price}
+                className="max-w-20"
+                onChange={(e) => {
+                  setSelectedItem((prevValue) => ({
+                    ...prevValue,
+                    unit_price: Number(e.target.value),
+                  }));
+                }}
+              />
               {errorMsg.unit_price && <ErrorBox msg={errorMsg.unit_price} />}
             </div>
           </div>
