@@ -1,44 +1,30 @@
 "use client";
-
+import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
 import { order_api } from "@/api/order_api/order_api";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
-import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Info, MoreVertical } from "lucide-react";
-import moment from "moment";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import { GetEnterpriseUsers } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
+import { getClients } from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
+import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
+import { useQuery } from "@tanstack/react-query";
+import { MoreVertical } from "lucide-react";
+import moment from "moment";
 
 export const useSalesColumns = () => {
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
-  const { data } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: (data) =>
-      GetEnterpriseUsers({
-        user_type: "client",
-        enterprise_id: enterprise_id,
-      }),
+  const { data: clients } = useQuery({
+    queryKey: [client_enterprise.getClients.endpointKey],
+    queryFn: (data) => getClients(enterprise_id),
     select: (data) => data.data.data,
   });
-  let formattedData = [];
-  if (data) {
-    formattedData = data.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-    }));
-  }
-
   return [
     {
       id: "select",
@@ -107,10 +93,10 @@ export const useSalesColumns = () => {
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),
       cell: ({ row }) => {
-        const findData = formattedData.find(
-          (fData) => fData.id === row.original.buyerEnterpriseId
+        const client = clients?.find(
+          (client) => client.client.id === row.original.buyerEnterpriseId
         );
-        return <div>{findData?.name}</div>;
+        return <div>{client?.client?.name}</div>;
       },
     },
     // {

@@ -1,22 +1,27 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
+import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
 import AddModal from "@/components/Modals/AddModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
+import GenerateLink from "@/components/enterprise/GenerateLink";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LocalStorageService } from "@/lib/utils";
+import {
+  deleteClient,
+  updateClient,
+} from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
 import {
   DeleteEnterpriseUser,
   UpdateEnterpriseUser,
 } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { Edit3, MoreVertical } from "lucide-react";
+import { generateLink } from "@/services/Invitation_Service/Invitation_Service";
+import { MoreVertical } from "lucide-react";
 
 export const ClientsColumns = [
   {
@@ -86,10 +91,27 @@ export const ClientsColumns = [
     ),
   },
   {
+    accessorKey: "invitation",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="INVITATION" />
+    ),
+    cell: ({ row }) => {
+      const id = row.original.invitationId;
+      const invitationStatus = row.original.invitationStatus;
+      return (
+        <GenerateLink
+          invitationStatus={invitationStatus}
+          invitationId={id}
+          mutationFunc={generateLink}
+        />
+      );
+    },
+  },
+  {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.userId;
+      const id = row.original.id;
       const name = row.original.name;
 
       return (
@@ -104,15 +126,15 @@ export const ClientsColumns = [
             <AddModal
               cta="client"
               btnName="Edit"
-              mutationFunc={UpdateEnterpriseUser}
+              mutationFunc={updateClient}
               userData={row.original}
-              userId={row.original.userId}
+              id={id}
             />
             <ConfirmAction
               name={name}
               id={id}
-              mutationKey={enterprise_user.getEnterpriseUsers.endpointKey}
-              mutationFunc={DeleteEnterpriseUser}
+              mutationKey={client_enterprise.getClients.endpointKey}
+              mutationFunc={deleteClient}
             />
           </DropdownMenuContent>
         </DropdownMenu>

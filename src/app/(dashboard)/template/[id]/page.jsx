@@ -1,7 +1,7 @@
 // "use client";
 // import React from "react";
 // import { Button } from "@/components/ui/button.jsx";
-// import Wrapper from "@/components/Wrapper";
+// import Wrapper from "@/components/wrappers/Wrapper";
 // import jsPDF from "jspdf";
 // import html2canvas from "html2canvas";
 // const ViewTemplate = ({ params }) => {
@@ -94,7 +94,8 @@
 "use client";
 import { template_api } from "@/api/templates_api/template_api";
 import Builder from "@/components/Form/Builder";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LocalStorageService } from "@/lib/utils";

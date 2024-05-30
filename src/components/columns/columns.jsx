@@ -1,18 +1,15 @@
 "use client";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Check, MoreHorizontal } from "lucide-react";
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MoreHorizontal } from "lucide-react";
+import ShareModal from "@/components/Modals/ShareModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Button } from "./ui/button";
-import ShareModal from "./Modals/ShareModal";
+} from "@/components/ui/dropdown-menu";
 
 export const Columns = [
   {
@@ -103,7 +100,7 @@ export const Columns = [
             >
               Edit
             </DropdownMenuItem>
-            
+
             <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
             <DropdownMenuItem>Delete</DropdownMenuItem>
           </DropdownMenuContent>

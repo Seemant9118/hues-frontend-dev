@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "./ui/button";
+import { Button } from "./button";
 import { Bell, UserCircle } from "lucide-react";
 import {
   Popover,
@@ -13,7 +13,7 @@ import { LocalStorageService } from "@/lib/utils";
 
 const Header = () => {
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const isOnboardingComplete = LocalStorageService.get("isOnboardingComplete");
 
   const logout = () => {
     LocalStorageService.clear();
@@ -46,20 +46,16 @@ const Header = () => {
               <UserCircle className="text-grey" />
             </Button>
           </PopoverTrigger>
-          {enterpriseId && (
-            <PopoverContent className="max-w-[150px] p-1 m-2">
-              <Button onClick={logout} className="w-full">
-                Logout
-              </Button>
-            </PopoverContent>
-          )}
-          {!enterpriseId && (
-            <PopoverContent className="max-w-[180px] p-1 m-2">
-              <Button onClick={login} className="w-full">
+          <PopoverContent className="max-w-[180px] p-1 m-2 flex flex-col gap-1">
+            {!isOnboardingComplete && (
+              <Button onClick={login} className="w-full" variant="outline">
                 Complete Onboarding
               </Button>
-            </PopoverContent>
-          )}
+            )}
+            <Button onClick={logout} className="w-full" variant="outline">
+              Logout
+            </Button>
+          </PopoverContent>
         </Popover>
       </div>
     </div>

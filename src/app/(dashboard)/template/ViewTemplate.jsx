@@ -1,5 +1,5 @@
 // "use client";
-// import Wrapper from "@/components/Wrapper";
+// import Wrapper from "@/components/wrappers/Wrapper";
 // import { Button } from "@/components/ui/button";
 // import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 // import { Eye } from "lucide-react";

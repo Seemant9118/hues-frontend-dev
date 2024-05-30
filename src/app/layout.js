@@ -1,4 +1,4 @@
-import QueryWrapper from "@/context/QueryWrapper";
+import QueryWrapper from "@/components/wrappers/QueryWrapper";
 import { Toaster } from "sonner";
 import "./globals.css";
 import TopLoader from "@/components/ui/TopLoader";

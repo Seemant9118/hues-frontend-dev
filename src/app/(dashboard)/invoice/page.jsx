@@ -1,26 +1,25 @@
 "use client";
-import AddProduct from "@/components/AddItem";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
-import { Columns } from "@/components/columns";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
+import { Columns } from "@/components/columns/columns";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
 import { Layers2 } from "lucide-react";
-import CreateOrder from "@/components/CreateOrder";
+import CreateOrder from "@/components/orders/CreateOrder";
 
 export default function Invoice() {
   const [products, setProducts] = useState([
     {
-      type:"Type",
+      type: "Type",
       product_name: "Brand: Crocin",
       hsn_code: "#HUESGT45",
       description:
         "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
       category: "Business Planning",
       rate: "44",
-      gst:"HFSK6468T",
-      amount:"23899"
+      gst: "HFSK6468T",
+      amount: "23899",
     },
   ]);
 

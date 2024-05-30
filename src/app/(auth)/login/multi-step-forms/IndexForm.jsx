@@ -1,34 +1,24 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocalStorageService, cn } from "@/lib/utils";
-import { useMutation } from "@tanstack/react-query";
-import { userGenerateOtp } from "@/services/User_Auth_Service/UserAuthServices";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  loginWithInvitation,
+  userGenerateOtp,
+} from "@/services/User_Auth_Service/UserAuthServices";
 import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
+import { Invitation } from "@/api/invitation/Invitation";
+import { validationBase64 } from "@/services/Invitation_Service/Invitation_Service";
 
 export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
-  const mutation = useMutation({
-    mutationFn: (data) => userGenerateOtp(data),
-    onSuccess: (data) => {
-      LocalStorageService.set("user_profile", data.data.data.userId);
-      LocalStorageService.set(
-        "user_mobile_number",
-        formDataWithMob.mobile_number
-      );
-      toast.success(data.data.message);
-      setCurrStep(2);
-    },
-    onError: () => {
-      setErrorMsg("Failed to send OTP");
-    },
-  });
-
   // const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
 
   // const [formDataWithDigi, setFormDataWithDigi] = useState({
@@ -40,6 +30,64 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
     country_code: "+91",
   });
   const [errorMsg, setErrorMsg] = useState("");
+
+  const searchParams = useSearchParams();
+  const invitationToken = searchParams.get("invitationToken");
+
+  //  if invitation login flow then
+  const {
+    isLoading,
+    error,
+    data: inviteData,
+    isSuccess,
+  } = useQuery({
+    queryKey: [Invitation.validationBase64.endpointKey],
+    queryFn: () => (invitationToken ? validationBase64(invitationToken) : ""),
+    enabled: !!invitationToken,
+    select: (data) => data.data.data,
+  });
+  console.log(inviteData);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setFormDataWithMob((values) => ({
+        ...values,
+        mobile_number: inviteData.mobile_number,
+      }));
+    }
+  }, [isSuccess, inviteData]);
+
+  // login with invitation
+  const loginInvitation = useMutation({
+    mutationFn: loginWithInvitation,
+    onSuccess: (data) => {
+      LocalStorageService.set("user_profile", data.data.data.userId);
+      LocalStorageService.set("user_mobile_number", inviteData.mobile_number);
+      LocalStorageService.set("operation_type", data.data.data.operation_type);
+      toast.success(data.data.message);
+      setCurrStep(2);
+    },
+    onError: () => {
+      setErrorMsg("Failed to send OTP");
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data) => userGenerateOtp(data),
+    onSuccess: (data) => {
+      LocalStorageService.set("user_profile", data.data.data.userId);
+      LocalStorageService.set(
+        "user_mobile_number",
+        formDataWithMob.mobile_number
+      );
+      LocalStorageService.set("operation_type", data.data.data.operation_type);
+      toast.success(data.data.message);
+      setCurrStep(2);
+    },
+    onError: () => {
+      setErrorMsg("Failed to send OTP");
+    },
+  });
 
   // const handleSwitchLoginMethod = () => {
   //   setLoginWithThirdParty(!loginWithThirdParty);
@@ -81,7 +129,14 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
     if (!errorMsg) {
-      mutation.mutate(formDataWithMob);
+      if (!invitationToken) {
+        mutation.mutate(formDataWithMob); //normal flow
+      } else {
+        loginInvitation.mutate({
+          ...inviteData,
+          mobile_number: formDataWithMob.mobile_number,
+        }); // invitation flow
+      }
     }
   };
 
@@ -95,6 +150,12 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
         <span className="font-bold">Paraphernalia</span>
       </p>
 
+      {isLoading && (
+        <div className="flex flex-col">
+          <span>Validating Invitation ...</span>
+          <Loading />
+        </div>
+      )}
       {/* login with mobile */}
       <form
         onSubmit={handleSubmitFormWithMob}

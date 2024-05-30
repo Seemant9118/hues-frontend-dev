@@ -88,3 +88,9 @@ body::-webkit-scrollbar-thumb:hover,
   background: #c6c7c9;
 }
 
+
+/* Style the label when the radio input is checked */
+input[type="radio"]:checked + label {
+  background-color:hsl(var(--primary)) ;
+  color: white;
+}

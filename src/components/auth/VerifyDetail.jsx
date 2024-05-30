@@ -11,7 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import DatePickers from "@/components/DatePickers";
+import DatePickers from "@/components/ui/DatePickers";
 import moment from "moment";
 
 const VerifyDetail = ({ submittedDetails, kycDetails }) => {

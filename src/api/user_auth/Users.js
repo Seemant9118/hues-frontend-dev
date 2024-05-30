@@ -29,4 +29,14 @@ export const user_Auth = {
     endpoint: `/iam/kyc/updateKyc`,
     endpointKey: "update_kyc",
   },
+  // 7. Update Enterprise Onboarding
+  updateEnterpriseOnboarding: {
+    endpoint: `/enterprise/update/`,
+    endpointKey: "update_enterpriseOnboarding",
+  },
+  // 8.login With Invitation
+  loginWithInvitation: {
+    endpoint: `/iam/auth/login/invitation/generate_otp`,
+    endpointKey: "login_with_Invitation_generateOTP",
+  },
 };

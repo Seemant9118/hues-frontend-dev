@@ -1,9 +1,9 @@
 "use client";
 
 import { order_api } from "@/api/order_api/order_api";
-import Loading from "@/components/Loading";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import Loading from "@/components/ui/Loading";
+import SubHeader from "@/components/ui/Sub-header";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/services/Orders_Services/Orders_Services";
@@ -14,27 +14,6 @@ import { useOrderColumns } from "./useOrderColumns";
 const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
-
-  const items = [
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "New",
-    },
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "Accepted",
-    },
-    {
-      item: "Crocin ",
-      quantity: "2",
-      price: "30",
-      status: "Negotiation",
-    },
-  ];
 
   const OrderColumns = useOrderColumns();
 

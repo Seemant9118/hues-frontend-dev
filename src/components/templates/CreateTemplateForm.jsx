@@ -1,4 +1,16 @@
-import React from "react";
+
+import { template_api } from "@/api/templates_api/template_api";
+import { LocalStorageService } from "@/lib/utils";
+import {
+  getDocument,
+  getTemplate,
+  updateTemplate,
+} from "@/services/Template_Services/Template_Services";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pen } from "lucide-react";
+import { toast } from "sonner";
+import Builder from "../Form/Builder";
+import { Button } from "../ui/button";
 import {
   Sheet,
   SheetContent,
@@ -6,18 +18,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Button } from "../ui/button";
-import { Eye, Pen } from "lucide-react";
-import Builder from "../Form/Builder";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { template_api } from "@/api/templates_api/template_api";
-import {
-  getDocument,
-  getTemplate,
-  updateTemplate,
-} from "@/services/Template_Services/Template_Services";
-import { LocalStorageService } from "@/lib/utils";
-import { toast } from "sonner";
 
 const CreateTemplateForm = ({ url, id }) => {
   const queryClient = useQueryClient();

@@ -24,4 +24,10 @@ export const enterprise_user = {
     endpoint: `/enterprise/user/delete/`,
     endpointKey: "delete_enterprise_user",
   },
+
+  // search enterprise
+  searchEnterprise: {
+    endpoint: `/enterprise/search`,
+    endpointKey: "search_enterprise",
+  },
 };

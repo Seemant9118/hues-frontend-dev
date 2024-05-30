@@ -1,10 +1,9 @@
 "use client";
 import { order_api } from "@/api/order_api/order_api";
-import CreateOrder from "@/components/CreateOrder";
-import EmptyStageComponent from "@/components/EmptyStageComponent";
-import SubHeader from "@/components/Sub-header";
-import Wrapper from "@/components/Wrapper";
+import CreateOrder from "@/components/orders/CreateOrder";
 import { DataTable } from "@/components/table/data-table";
+import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
+import SubHeader from "@/components/ui/Sub-header";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Wrapper from "@/components/wrappers/Wrapper";
 import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
 import { GetSales } from "@/services/Orders_Services/Orders_Services";
 import { useQuery } from "@tanstack/react-query";
@@ -32,12 +32,10 @@ const SalesOrder = () => {
   const router = useRouter();
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
-  const [orders, setOrders] = useState([]);
   const [istype, setIsType] = useState("All");
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isOrderView, setIsOrderView] = useState(false);
-  const [orderDetails, setOrderDetails] = useState(null);
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -68,7 +66,7 @@ const SalesOrder = () => {
     ],
   };
 
-  const SalesColumns = useSalesColumns(setIsOrderView);
+  const SalesColumns = useSalesColumns();
 
   const onRowClick = (row) => {
     router.push(`/sales-orders/${row.id}`);

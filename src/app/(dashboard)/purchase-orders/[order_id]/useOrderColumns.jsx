@@ -1,24 +1,19 @@
 import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
-import ConfirmAction from "@/components/Modals/ConfirmAction";
 import OfferPrice from "@/components/Modals/OfferPrice";
-import SuccessModal from "@/components/Modals/SuccessModal";
-import Tooltips from "@/components/Tooltips";
+import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { Check, Info, RotateCw } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export const useOrderColumns = () => {
   const params = useParams();
   const order_id = params.order_id;
   const queryClient = useQueryClient();
-
 
   const mutationAccept = useMutation({
     mutationFn: (data) => AccpetRejectNegotiation(data),
@@ -114,9 +109,8 @@ export const useOrderColumns = () => {
             statusBorder = "#F8BA05";
             actionBtn = "action";
             tooltip = (
-              <Tooltips
+              <ToolTipOrder
                 trigger={<Info size={14} />}
-                isContentShow="true"
                 offerDetails={offerDetails}
               />
             );

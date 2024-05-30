@@ -3,14 +3,12 @@
 import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import OfferPrice from "@/components/Modals/OfferPrice";
-import SuccessModal from "@/components/Modals/SuccessModal";
-import Tooltips from "@/components/Tooltips";
+import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { Check, Info, RotateCw } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { useParams } from "next/navigation";
 
 export const useOrderColumns = () => {
@@ -30,7 +28,6 @@ export const useOrderColumns = () => {
   });
 
   const handleAcceptNegotiation = (row) => {
-
     mutationAccept.mutate({
       order_id: order_id,
       item_id: row.id,
@@ -111,7 +108,10 @@ export const useOrderColumns = () => {
             statusBorder = "#F8BA05";
             actionBtn = "action";
             tooltip = (
-              <Tooltips trigger={<Info size={14} />} isContentShow="true" />
+              <ToolTipOrder
+                trigger={<Info size={14} />}
+                offerDetails={offerDetails}
+              />
             );
             break;
           default:

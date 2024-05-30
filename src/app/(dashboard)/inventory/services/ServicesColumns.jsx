@@ -1,14 +1,11 @@
 "use client";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Check, Edit3, MoreHorizontal } from "lucide-react";
-import Link from "next/link";
+import { Edit3, MoreHorizontal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -16,9 +13,8 @@ import ShareModal from "@/components/Modals/ShareModal";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { services_api } from "@/api/inventories/services/services";
 import { DeleteProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
-import { useState } from "react";
 
-export const useServicesColumns = (setIsEditing,setServicesToEdit) => {
+export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   return [
     {
       id: "select",
@@ -92,7 +88,6 @@ export const useServicesColumns = (setIsEditing,setServicesToEdit) => {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
         const id = row.original.id;
         const name = row.original.serviceName;
 

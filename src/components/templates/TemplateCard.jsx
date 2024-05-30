@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquareText, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import Loading from "../Loading";
+import Loading from "@/components/ui/Loading";
 import CreateTemplateForm from "./CreateTemplateForm";
 
 const TemplateCard = ({

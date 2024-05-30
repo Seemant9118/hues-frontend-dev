@@ -9,12 +9,7 @@ import { GetNegotiationDetails } from "@/services/Orders_Services/Orders_Service
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
-export default function Tooltips({
-  trigger,
-  content,
-  isContentShow,
-  offerDetails,
-}) {
+export default function ToolTipOrder({ trigger, offerDetails }) {
   const params = useParams();
   const order_id = params.order_id;
   const item_id = offerDetails?.id;
@@ -30,13 +25,14 @@ export default function Tooltips({
       <Tooltip>
         <TooltipTrigger type="button">{trigger}</TooltipTrigger>
         <TooltipContent>
-          <p>{content}</p>
-          {isContentShow && !isLoading && data && (
+          {!isLoading && data && (
             <div className="flex flex-col gap-2 p-4">
               {data.map((negotiationItem) => (
                 <div key={negotiationItem.id} className="flex flex-col gap-1">
                   <span>₹{negotiationItem.price}</span>
-                  <span className="text-xs text-[#C5C5C4]">{negotiationItem.date}</span>
+                  <span className="text-xs text-[#C5C5C4]">
+                    {negotiationItem.date}
+                  </span>
                 </div>
               ))}
             </div>

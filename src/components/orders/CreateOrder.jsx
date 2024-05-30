@@ -1,4 +1,12 @@
-import React, { useState } from "react";
+import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
+import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+import { goods_api } from "@/api/inventories/goods/goods";
+import { services_api } from "@/api/inventories/services/services";
+import { order_api } from "@/api/order_api/order_api";
+import { useCreateSalesColumns } from "@/components/columns/useCreateSalesColumns";
+import { DataTable } from "@/components/table/data-table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -6,32 +14,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { useCreateSalesColumns } from "@/components/columns/useCreateSalesColumns";
-import { DataTable } from "@/components/table/data-table";
-import Wrapper from "./Wrapper";
-import SubHeader from "./Sub-header";
-import { Button } from "./ui/button";
-import SuccessModal from "./Modals/SuccessModal";
-import AddModal from "./Modals/AddModal";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import {
-  CreateEnterpriseUser,
-  GetEnterpriseUsers,
-} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { LocalStorageService } from "@/lib/utils";
-import { goods_api } from "@/api/inventories/goods/goods";
+import { getClients } from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
+import { CreateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
+import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
 import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import { services_api } from "@/api/inventories/services/services";
 import { GetAllProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
-import { order_api } from "@/api/order_api/order_api";
-import Loading from "./Loading";
-import ErrorBox from "./ErrorBox";
-import EmptyStageComponent from "./EmptyStageComponent";
+import AddModal from "../Modals/AddModal";
+import EmptyStageComponent from "../ui/EmptyStageComponent";
+import ErrorBox from "../ui/ErrorBox";
+import SubHeader from "../ui/Sub-header";
+import { Button } from "../ui/button";
+import Wrapper from "../wrappers/Wrapper";
 
 const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();
@@ -72,28 +70,20 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
   // client/vendor fetching
   const { data: customerData } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: () =>
-      GetEnterpriseUsers(
-        cta === "offer"
-          ? {
-              user_type: "client",
-              enterprise_id: enterpriseId,
-            }
-          : {
-              user_type: "vendor",
-              enterprise_id: enterpriseId,
-            }
-      ),
+    queryKey: [
+      client_enterprise.getClients.endpointKey,
+      vendor_enterprise.getVendors.endpointKey,
+    ],
+    queryFn: () => {
+      if (cta === "offer") {
+        return getClients(enterpriseId);
+      } else {
+        return getVendors(enterpriseId);
+      }
+    },
+
     select: (customerData) => customerData.data.data,
   });
-  let formattedData = [];
-  if (customerData) {
-    formattedData = customerData.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-      userId: user.id,
-    }));
-  }
 
   // goods fetching
   const { data: goodsData } = useQuery({
@@ -226,7 +216,9 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     return (
       <div className="flex flex-col justify-center">
         <EmptyStageComponent heading="Please Complete Your Onboarding to Create Order" />
-        <Button variant="outline" onClick={onCancel}>Close</Button>
+        <Button variant="outline" onClick={onCancel}>
+          Close
+        </Button>
       </div>
     );
   }
@@ -272,19 +264,33 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
               {cta == "offer" ? (
                 <>
-                  {formattedData?.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
+                  {customerData
+                    ?.filter((customer) => customer.client)
+                    ?.map((customer) => (
+                      <SelectItem
+                        key={customer.enterpriseId}
+                        value={customer?.client?.id}
+                      >
+                        {customer.client
+                          ? customer.client.name
+                          : customer.invitation.userDetails.name}
+                      </SelectItem>
+                    ))}
                 </>
               ) : (
                 <>
-                  {formattedData?.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </SelectItem>
-                  ))}
+                  {customerData
+                    ?.filter((customer) => customer.vendor)
+                    ?.map((customer) => (
+                      <SelectItem
+                        key={customer.enterpriseId}
+                        value={customer?.vendor?.id}
+                      >
+                        {customer.vendor
+                          ? customer.vendor.name
+                          : customer.invitation.userDetails.name}
+                      </SelectItem>
+                    ))}
                 </>
               )}
             </SelectContent>
@@ -418,6 +424,9 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         <div className="flex items-center justify-end gap-4">
           <Button variant="outline">Cancel</Button>
           <Button
+            disabled={Object.values(selectedItem).some(
+              (value) => value === "" || value === null || value === undefined
+            )} // if any item of selectedItem is empty then button must be disabled
             onClick={() => {
               setOrder((prev) => ({
                 ...prev,

@@ -1,6 +1,5 @@
 "use client";
 import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import Tooltips from "@/components/Tooltips";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LocalStorageService } from "@/lib/utils";
@@ -9,34 +8,25 @@ import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Info, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import moment from "moment";
 import { order_api } from "@/api/order_api/order_api";
 import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
 import ConfirmAction from "@/components/Modals/ConfirmAction";
 import { Button } from "@/components/ui/button";
+import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
 
 export const usePurchaseColumns = () => {
   const enterprise_id = LocalStorageService.get("enterprise_Id");
 
-  const { data } = useQuery({
-    queryKey: [enterprise_user.getEnterpriseUsers.endpointKey],
-    queryFn: (data) =>
-      GetEnterpriseUsers({
-        user_type: "vendor",
-        enterprise_id: enterprise_id,
-      }),
+  const { data: vendors } = useQuery({
+    queryKey: [vendor_enterprise.getVendors.endpointKey],
+    queryFn: (data) => getVendors(enterprise_id),
     select: (data) => data.data.data,
   });
-  let formattedData = [];
-  if (data) {
-    formattedData = data.flatMap((user) => ({
-      ...user.mappedUserEnterprise,
-    }));
-  }
 
   return [
     {
@@ -100,10 +90,10 @@ export const usePurchaseColumns = () => {
         <DataTableColumnHeader column={column} title="VENDORS" />
       ),
       cell: ({ row }) => {
-        const findData = formattedData.find(
-          (fData) => fData.id === row.original.sellerEnterpriseId
+        const vendor = vendors?.find(
+          (vendor) => vendor?.vendor?.id === row.original.sellerEnterpriseId
         );
-        return <div>{findData?.name}</div>;
+        return <div>{vendor?.vendor?.name}</div>;
       },
     },
     // {
