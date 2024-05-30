@@ -1,5 +1,3 @@
-"use client";
-
 import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
 import OfferPrice from "@/components/Modals/OfferPrice";
@@ -11,32 +9,17 @@ import { AccpetRejectNegotiation } from "@/services/Orders_Services/Orders_Servi
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Info } from "lucide-react";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
-export const useOrderColumns = (orderDetails) => {
-  console.log(orderDetails);
+export const usePurchaseOrderColumns = (
+  buyerEnterpriseId,
+  sellerEnterpriseId,
+  orderType
+) => {
   const params = useParams();
   const order_id = params.order_id;
   const enterpriseId = LocalStorageService.get("enterprise_Id");
   const queryClient = useQueryClient();
-
-  // intial order with status NEW
-  const isIntialStageOrder = () => {
-    const { orderType, negotiationStatus, sellerEnterpriseId } = orderDetails;
-    return (
-      orderType === "SALES" &&
-      negotiationStatus === "NEW" &&
-      sellerEnterpriseId === enterpriseId
-    );
-  };
-
-  const isActionValid = () => {
-    const { orderType, negotiationStatus, sellerEnterpriseId } = orderDetails;
-    return (
-      orderType === "PURCHASE" &&
-      negotiationStatus === "NEW" &&
-      sellerEnterpriseId === enterpriseId
-    );
-  };
 
   const mutationAccept = useMutation({
     mutationFn: (data) => AccpetRejectNegotiation(data),
@@ -44,8 +27,8 @@ export const useOrderColumns = (orderDetails) => {
       toast.success("Accepted current negotiation Price");
       queryClient.invalidateQueries([order_api.getOrderDetails.endpointKey]);
     },
-    onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
+    onError: () => {
+      toast.error("Something went wrong");
     },
   });
 
@@ -56,6 +39,7 @@ export const useOrderColumns = (orderDetails) => {
       status: "ACCEPTED",
     });
   };
+
   return [
     {
       accessorKey: "item",
@@ -66,8 +50,8 @@ export const useOrderColumns = (orderDetails) => {
         const productType = row.original.productType;
         const name =
           productType === "GOODS"
-            ? row.original.productDetails.productName
-            : row.original.productDetails.serviceName;
+            ? row.original?.productDetails?.productName
+            : row.original?.productDetails?.serviceName;
         return name;
       },
     },
@@ -94,6 +78,27 @@ export const useOrderColumns = (orderDetails) => {
       },
     },
     {
+      accessorKey: "price",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ASKING PRICE" />
+      ),
+      cell: ({ row }) => {
+        const price = row.original?.negotiation?.price;
+        const amount = parseFloat(price);
+
+        // Format the amount as a dollar amount
+        const formatted = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "INR",
+        }).format(amount);
+        return price ? (
+          <div className="font-medium">{formatted}</div>
+        ) : (
+          <div className="font-bold text-lg">-</div>
+        );
+      },
+    },
+    {
       accessorKey: "negotiationStatus",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="STATUS" />
@@ -101,14 +106,9 @@ export const useOrderColumns = (orderDetails) => {
       cell: ({ row }) => {
         const status = row.original.negotiationStatus;
         const offerDetails = row.original;
+        const negoStatus = row.original?.negotiation?.status;
 
-        let statusText,
-          statusColor,
-          statusBG,
-          statusBorder,
-          btnName,
-          actionBtn,
-          tooltip;
+        let statusText, statusColor, statusBG, statusBorder, tooltip;
         switch (status) {
           case "ACCEPTED":
             statusText = "Accepted";
@@ -121,14 +121,12 @@ export const useOrderColumns = (orderDetails) => {
             statusColor = "#1863B7";
             statusBG = "#1863B71A";
             statusBorder = "#1863B7";
-
             break;
           case "NEGOTIATION":
-            statusText = "Negotiation";
+            statusText = negoStatus;
             statusColor = "#F8BA05";
             statusBG = "#F8BA051A";
             statusBorder = "#F8BA05";
-            actionBtn = "action";
             tooltip = (
               <ToolTipOrder
                 trigger={<Info size={14} />}
@@ -143,7 +141,7 @@ export const useOrderColumns = (orderDetails) => {
         return (
           <div className="flex justify-between items-center">
             <div
-              className="max-w-fit px-1.5 py-2 flex justify-center items-center font-bold border rounded gap-1"
+              className="max-w-fit p-1 flex justify-center items-center font-bold border rounded gap-1"
               style={{
                 color: statusColor,
                 backgroundColor: statusBG,
@@ -153,23 +151,51 @@ export const useOrderColumns = (orderDetails) => {
               {statusText} {tooltip}
             </div>
 
-            {isIntialStageOrder() && (
-              <span className="border p-2 rounded-md text-yellow-500 font-bold border-yellow-500 bg-yellow-50">
-                Waiting for Response
-              </span>
+            {/* status NEW */}
+            {status === "NEW" && buyerEnterpriseId === enterpriseId && (
+              <>
+                {orderType === "PURCHASE" && (
+                  <span className="border p-2 rounded-md text-yellow-500 font-bold border-yellow-500 bg-yellow-50">
+                    Waiting for Response
+                  </span>
+                )}
+
+                {orderType === "SALES" && (
+                  <div className="flex items-center gap-1">
+                    <ChangeOfferPrice offerDetails={offerDetails} />
+
+                    <Button
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleAcceptNegotiation(offerDetails)}
+                    >
+                      <Check size={24} strokeWidth={3} />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
 
-            {isActionValid() && (
-              <div className="flex items-center gap-1">
-                <ChangeOfferPrice offerDetails={offerDetails} />
+            {/* status NEGOTIATION */}
+            {status === "NEGOTIATION" && buyerEnterpriseId === enterpriseId && (
+              <>
+                {negoStatus === "OFFER_SUBMITTED" && (
+                  <div className="flex items-center gap-1">
+                    <ChangeOfferPrice offerDetails={offerDetails} />
 
-                <Button
-                  className="bg-green-600 hover:bg-green-700"
-                  onClick={() => handleAcceptNegotiation(offerDetails)}
-                >
-                  <Check size={24} strokeWidth={3} />
-                </Button>
-              </div>
+                    <Button
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleAcceptNegotiation(offerDetails)}
+                    >
+                      <Check size={24} strokeWidth={3} />
+                    </Button>
+                  </div>
+                )}
+                {negoStatus === "BID_SUBMITTED" && (
+                  <span className="border p-2 rounded-md text-yellow-500 font-bold border-yellow-500 bg-yellow-50">
+                    Waiting for Response
+                  </span>
+                )}
+              </>
             )}
           </div>
         );

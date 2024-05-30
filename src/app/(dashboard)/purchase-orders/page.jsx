@@ -82,7 +82,7 @@ const PurchaseOrders = () => {
     <>
       {!isCreatingPurchase && (
         <Wrapper>
-          <SubHeader name={"Purchases"}>
+          <SubHeader name={"Purchases"} className="bg-white z-10">
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select

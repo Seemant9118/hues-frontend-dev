@@ -9,7 +9,7 @@ import Wrapper from "@/components/wrappers/Wrapper";
 import { OrderDetails } from "@/services/Orders_Services/Orders_Services";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useOrderColumns } from "./useOrderColumns";
+import { useSalesOrderColumns } from "./useSalesOrderColumns";
 
 const ViewOrder = () => {
   const router = useRouter();
@@ -21,7 +21,11 @@ const ViewOrder = () => {
     select: (data) => data.data.data,
   });
 
-  const OrderColumns = useOrderColumns(orderDetails);
+  const OrderColumns = useSalesOrderColumns(
+    orderDetails?.buyerEnterpriseId,
+    orderDetails?.sellerEnterpriseId,
+    orderDetails?.orderType
+  );
 
   return (
     <Wrapper className="relative">
@@ -32,7 +36,7 @@ const ViewOrder = () => {
           <SubHeader name={"ORDER ID: #" + params.order_id}></SubHeader>
           <DataTable
             columns={OrderColumns}
-            data={orderDetails.orderItems}
+            data={orderDetails?.orderItems}
           ></DataTable>
 
           <div className="absolute bottom-0 right-0">

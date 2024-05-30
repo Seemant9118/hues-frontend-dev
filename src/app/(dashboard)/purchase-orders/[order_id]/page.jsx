@@ -7,7 +7,7 @@ import Wrapper from "@/components/wrappers/Wrapper";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/services/Orders_Services/Orders_Services";
-import { useOrderColumns } from "./useOrderColumns";
+import { usePurchaseOrderColumns } from "./usePurchaseOrderColumns";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -21,7 +21,11 @@ const ViewOrder = () => {
     select: (data) => data.data.data,
   });
 
-  const OrderColumns = useOrderColumns(orderDetails);
+  const OrderColumns = usePurchaseOrderColumns(
+    orderDetails?.buyerEnterpriseId,
+    orderDetails?.sellerEnterpriseId,
+    orderDetails?.orderType
+  );
 
   return (
     <Wrapper className="relative">
