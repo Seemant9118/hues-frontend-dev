@@ -185,93 +185,101 @@ const FormMainContainer = ({
         // ref={ref}
         className="min-h-[400px] flex flex-col gap-4 pb-28 px-4 pt-2 grow"
       >
-        {droppedInputs?.map((input, idx) => {
-          // if (input.type === "structure" && input.name === "Text") {
-          //   return (
-          //     <TextStructure
-          //       idx={idx}
-          //       input={input}
-          //       deleteHandler={deleteHandler}
-          //       setDroppedInputs={setDroppedInputs}
-          //       key={idx + Date.now()}
-          //       droppedInputs={droppedInputs}
-          //     />
-          //   );
-          // } else if (input.type === "structure" && input.name === "Notes") {
-          //   return (
-          //     <FormInputs
-          //       key={idx + Date.now()}
-          //       input={input}
-          //       idx={idx}
-          //       setDroppedInputs={setDroppedInputs}
-          //       droppedInputs={droppedInputs}
-          //       //for add Options
-          //       showOptions={showOptions}
-          //       setShowOptions={setShowOptions}
-          //       //question state and state handler props
-          //       deleteHandler={deleteHandler}
-          //       upAndDownHandler={upAndDownHandler}
-          //       inputHandler={inputHandler}
-          //       selectHandler={selectHandler}
-          //     />
-          //   );
-          // } else if (input.type === "input" && input.name === "Tables") {
-          //   return (
-          //     <TableStructure
-          //       idx={idx}
-          //       deleteHandler={deleteHandler}
-          //       setDroppedInputs={setDroppedInputs}
-          //       key={idx + Date.now()}
-          //       input={input}
-          //       // droppedInputs={droppedInputs}
-          //     />
-          //   );
-          // } else if (input.type === "structure" && input.name === "Media") {
-          //   return (
-          //     <MediaStructure
-          //       idx={idx}
-          //       deleteHandler={deleteHandler}
-          //       setDroppedInputs={setDroppedInputs}
-          //       key={idx + Date.now()}
-          //       droppedInputs={droppedInputs}
-          //     />
-          //   );
-          // } else if (input.type === "structure" && input.name === "Section") {
-          //   return (
-          //     <SectionStructure
-          //       idx={idx}
-          //       input={input}
-          //       deleteHandler={deleteHandler}
-          //       upAndDownHandler={upAndDownHandler}
-          //       setDroppedInputs={setDroppedInputs}
-          //       key={idx + Date.now()}
-          //       droppedInputs={droppedInputs}
-          //       //for add Options
-          //       showOptions={showOptions}
-          //       setShowOptions={setShowOptions}
-          //     />
-          //   );
-          // } else {
-          return (
-            <FormBuilderInput
-              key={idx}
-              input={input}
-              idx={idx}
-              setDroppedInputs={setDroppedInputs}
-              droppedInputs={droppedInputs}
-              //for add Options
-              showOptions={showOptions}
-              setShowOptions={setShowOptions}
-              //question state and state handler props
-              deleteHandler={deleteHandler}
-              upAndDownHandler={upAndDownHandler}
-              inputHandler={inputHandler}
-              selectHandler={selectHandler}
-              isFocussed={focussedInput === idx}
-            />
-          );
-          // }
-        })}
+        {droppedInputs.length !== 0 &&
+          droppedInputs?.map((input, idx) => {
+            // if (input.type === "structure" && input.name === "Text") {
+            //   return (
+            //     <TextStructure
+            //       idx={idx}
+            //       input={input}
+            //       deleteHandler={deleteHandler}
+            //       setDroppedInputs={setDroppedInputs}
+            //       key={idx + Date.now()}
+            //       droppedInputs={droppedInputs}
+            //     />
+            //   );
+            // } else if (input.type === "structure" && input.name === "Notes") {
+            //   return (
+            //     <FormInputs
+            //       key={idx + Date.now()}
+            //       input={input}
+            //       idx={idx}
+            //       setDroppedInputs={setDroppedInputs}
+            //       droppedInputs={droppedInputs}
+            //       //for add Options
+            //       showOptions={showOptions}
+            //       setShowOptions={setShowOptions}
+            //       //question state and state handler props
+            //       deleteHandler={deleteHandler}
+            //       upAndDownHandler={upAndDownHandler}
+            //       inputHandler={inputHandler}
+            //       selectHandler={selectHandler}
+            //     />
+            //   );
+            // } else if (input.type === "input" && input.name === "Tables") {
+            //   return (
+            //     <TableStructure
+            //       idx={idx}
+            //       deleteHandler={deleteHandler}
+            //       setDroppedInputs={setDroppedInputs}
+            //       key={idx + Date.now()}
+            //       input={input}
+            //       // droppedInputs={droppedInputs}
+            //     />
+            //   );
+            // } else if (input.type === "structure" && input.name === "Media") {
+            //   return (
+            //     <MediaStructure
+            //       idx={idx}
+            //       deleteHandler={deleteHandler}
+            //       setDroppedInputs={setDroppedInputs}
+            //       key={idx + Date.now()}
+            //       droppedInputs={droppedInputs}
+            //     />
+            //   );
+            // } else if (input.type === "structure" && input.name === "Section") {
+            //   return (
+            //     <SectionStructure
+            //       idx={idx}
+            //       input={input}
+            //       deleteHandler={deleteHandler}
+            //       upAndDownHandler={upAndDownHandler}
+            //       setDroppedInputs={setDroppedInputs}
+            //       key={idx + Date.now()}
+            //       droppedInputs={droppedInputs}
+            //       //for add Options
+            //       showOptions={showOptions}
+            //       setShowOptions={setShowOptions}
+            //     />
+            //   );
+            // } else {
+            return (
+              <FormBuilderInput
+                key={idx}
+                input={input}
+                idx={idx}
+                setDroppedInputs={setDroppedInputs}
+                droppedInputs={droppedInputs}
+                //for add Options
+                showOptions={showOptions}
+                setShowOptions={setShowOptions}
+                //question state and state handler props
+                deleteHandler={deleteHandler}
+                upAndDownHandler={upAndDownHandler}
+                inputHandler={inputHandler}
+                selectHandler={selectHandler}
+                isFocussed={focussedInput === idx}
+              />
+            );
+            // }
+          })}
+        {droppedInputs.length === 0 &&  <div className="grid my-auto p-5 text-center gap-2 ">
+            <p>This document was generated automatically. Since no input was added, please follow the steps below:</p>
+            <ol>
+              <li>Step 1: Drag and place the field required on the pdf.</li>
+              {/* <li>Please add the necessary input to proceed with generating the detailed content.</li> */}
+            </ol>
+          </div>}
       </div>
     </>
   );
