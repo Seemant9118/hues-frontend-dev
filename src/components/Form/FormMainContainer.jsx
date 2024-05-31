@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import { useDrag, useDrop } from "react-dnd";
+import { useRef, useState } from "react";
+import { useDrop } from "react-dnd";
 
-import FormBuilderInput from "./FormBuilderInput";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+
 import { Document, Page } from "react-pdf";
-import { Input } from "../ui/input";
 import ResizableInput from "../ui/ResizableInput";
+import FormBuilderInput from "./FormBuilderInput";
 // import MediaStructure from "./structures/MediaStructure";
 // import SectionStructure from "./structures/SectionStructure";
 // import TableStructure from "./structures/TableStructure";
@@ -22,10 +28,12 @@ const FormMainContainer = ({
     drop: (item, monitor) => {
       const delta = monitor.getSourceClientOffset();
       const canvasRect = pdfCanvasRef.current.getBoundingClientRect();
-      const coords = {
-        x: delta.x - canvasRect.left,
-        y: delta.y - canvasRect.top,
-      };
+      const coords = [
+        {
+          x: delta.x - canvasRect.left,
+          y: delta.y - canvasRect.top,
+        },
+      ];
 
       const newItem = {
         ...item,
@@ -40,6 +48,7 @@ const FormMainContainer = ({
   const [showOptions, setShowOptions] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
+  const [focussedInput, setFocussedInput] = useState(null);
   const pdfCanvasRef = useRef(null);
 
   const deleteHandler = (idx) => {
@@ -82,28 +91,50 @@ const FormMainContainer = ({
     setPages(numPages);
   };
 
-  const handleResizeStop = (size, id) => {
+  const handleResizeStop = (size, id, inputIndex) => {
     setDroppedInputs((prevInputs) =>
-      prevInputs.map((input) =>
-        input.id === id ? { ...input, ...size } : input
+      prevInputs.map((input, idx) =>
+        `${input.id}|${idx}` === id ? { ...input, ...size } : input
       )
     );
   };
 
-  const handleDragStop = (delta, id) => {
+  const handleDragStop = (delta, id, coordinateIndex, inputIndex) => {
+    console.log(delta, id, coordinateIndex, inputIndex);
     setDroppedInputs((prevInputs) =>
-      prevInputs.map((input) =>
-        input.id === id
-          ? {
-              ...input,
-              coords: {
-                x: input.coords.x + delta.x,
-                y: input.coords.y + delta.y,
-              },
-            }
-          : input
-      )
+      prevInputs.map((input, idx) => {
+        if (`${input.id}|${idx}` === id) {
+          const newCoordinates = [...input.coords];
+          newCoordinates[coordinateIndex] = {
+            x: input.coords[coordinateIndex].x + delta.x,
+            y: input.coords[coordinateIndex].y + delta.y,
+          };
+          return {
+            ...input,
+            coords: newCoordinates,
+          };
+        } else {
+          return input;
+        }
+      })
     );
+  };
+
+  const onInputCopy = (inputIndex, coordinate) => {
+    console.log(inputIndex, coordinate);
+    const newInputs = [...droppedInputs];
+    newInputs[inputIndex].coords.push(coordinate);
+    setDroppedInputs(newInputs);
+  };
+  const onInputRemove = (inputIndex, coordinateIndex) => {
+    if (droppedInputs[inputIndex].coords.length === 1) {
+      deleteHandler(inputIndex);
+    } else {
+      const newInputs = [...droppedInputs];
+      console.log("this");
+      newInputs[inputIndex].coords.splice(coordinateIndex, 1);
+      setDroppedInputs(newInputs);
+    }
   };
   return (
     <>
@@ -115,15 +146,39 @@ const FormMainContainer = ({
           <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
             <Page pageNumber={pageNo} />
           </Document>
-          {droppedInputs?.map((input, index) => (
-            <ResizableInput
-              key={index}
-              onDragStop={handleDragStop}
-              index={index}
-              input={input}
-              onResizeStop={handleResizeStop}
-            />
-          ))}
+          {droppedInputs?.map((input, index) =>
+            input.coords.map((coordinate, coordinateIndex) => (
+              <ContextMenu key={`${index}|${coordinateIndex}`}>
+                <ContextMenuTrigger onClick={() => setFocussedInput(index)}>
+                  <ResizableInput
+                    onDragStop={handleDragStop}
+                    index={index}
+                    isFocussed={focussedInput === index}
+                    coordinateIndex={coordinateIndex}
+                    input={input}
+                    coordinate={coordinate}
+                    onResizeStop={handleResizeStop}
+                  />
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    onClick={(e) => {
+                      onInputCopy(index, coordinate);
+                    }}
+                  >
+                    Copy
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onClick={(e) => {
+                      onInputRemove(index, coordinateIndex);
+                    }}
+                  >
+                    Remove
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
+            ))
+          )}
         </div>
       </div>
       <div
@@ -212,6 +267,7 @@ const FormMainContainer = ({
               upAndDownHandler={upAndDownHandler}
               inputHandler={inputHandler}
               selectHandler={selectHandler}
+              isFocussed={focussedInput === idx}
             />
           );
           // }

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { ChevronDown, ChevronUp, Copy, Trash2 } from "lucide-react";
 
@@ -13,7 +13,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 import { inputFields } from "@/globals/formbulder/constants";
-import { copyHandler } from "@/lib/utils";
+import { cn, copyHandler } from "@/lib/utils";
+import { Label } from "../ui/label";
 import DateInputPopup from "./inputs/DateInputPopup";
 import DropdownPopup from "./inputs/DropdownPopup";
 import SelectInputPopup from "./inputs/SelectInputPopup";
@@ -21,8 +22,6 @@ import Short_LongTextPopup from "./inputs/Short&LongTextPopup";
 import TimeInputPopup from "./inputs/TimeInputPopup";
 import UploadInputPopup from "./inputs/UploadInputPopup";
 import InputWrapper from "./wrappers/InputWrappers";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 
 const FormBuilderInput = ({
   input,
@@ -35,9 +34,12 @@ const FormBuilderInput = ({
   inputHandler,
   upAndDownHandler,
   selectHandler,
+  isFocussed,
 }) => {
   // const [showOptions, setShowOptions] = useState(true);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
+
   const { icon: Icon } = input;
 
   const questionHandler = (e) => {
@@ -47,9 +49,24 @@ const FormBuilderInput = ({
     }
   };
 
+  useEffect(() => {
+    if (isFocussed) {
+      containerRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  }, [isFocussed]);
+
   return (
-    <InputWrapper>
-      <div className="h-8 flex justify-between items-center self-stretch overflow-hidden">
+    <InputWrapper
+      ref={containerRef}
+      className={isFocussed ? "bg-primary/10" : ""}
+    >
+      <div
+        className={cn(
+          "h-8 flex justify-between items-center self-stretch overflow-hidden "
+        )}
+      >
         <div className="flex gap-2 items-center py-1 grow">
           <span className="text-zinc-800 text-xs leading-6">{idx + 1}.</span>
           <Select
@@ -79,7 +96,7 @@ const FormBuilderInput = ({
               ref={inputRef}
               defaultValue={input.question}
             />
-          </form> 
+          </form>
         </div>
         <div className="flex gap-2 items-center">
           {input.name !== "Notes" && (

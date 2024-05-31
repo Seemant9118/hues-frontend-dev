@@ -3,8 +3,17 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { Input } from "@/components/ui/input";
 import { useDrag } from "react-dnd";
+import { cn } from "@/lib/utils";
 
-const ResizableInput = ({ input, onResizeStop, index, onDragStop }) => {
+const ResizableInput = ({
+  input,
+  onResizeStop,
+  index,
+  onDragStop,
+  coordinate,
+  coordinateIndex,
+  isFocussed,
+}) => {
   const [{ isDragging }, drag] = useDrag({
     type: "input",
     item: { id: input?.id + index },
@@ -14,12 +23,12 @@ const ResizableInput = ({ input, onResizeStop, index, onDragStop }) => {
     end: (item, monitor) => {
       const delta = monitor.getDifferenceFromInitialOffset();
       if (delta) {
-        onDragStop(delta, input.id);
+        onDragStop(delta, `${input.id}|${index}`, coordinateIndex, index);
       }
     },
   });
   const handleResizeStop = (e, data) => {
-    onResizeStop(data.size, input.id);
+    onResizeStop(data.size, `${input.id}|${index}`, index);
   };
 
   return (
@@ -28,8 +37,8 @@ const ResizableInput = ({ input, onResizeStop, index, onDragStop }) => {
       key={index}
       style={{
         position: "absolute",
-        top: input.coords.y,
-        left: input.coords.x,
+        top: coordinate.y,
+        left: coordinate.x,
         width: input.width,
         height: input.height,
         zIndex: 5000000000,
@@ -49,9 +58,10 @@ const ResizableInput = ({ input, onResizeStop, index, onDragStop }) => {
               width: input.width || 100,
               height: input.height || 30,
             }}
-            className={
-              "min-h-full min-w-full border border-slate-400 bg-zinc-800 rounded"
-            }
+            className={cn(
+              "min-h-full min-w-full border border-slate-400 shadow-lg  rounded",
+              isFocussed ? "bg-primary/20" : "bg-white"
+            )}
             type="text"
             defaultValue={input.label}
           />
