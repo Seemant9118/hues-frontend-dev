@@ -1,6 +1,7 @@
 import QueryWrapper from "@/components/wrappers/QueryWrapper";
 import { Toaster } from "sonner";
 import "./globals.css";
+import TopLoader from "@/components/ui/TopLoader";
 
 // Font files can be colocated inside of `app`
 export const metadata = {

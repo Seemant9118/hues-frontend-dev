@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs) {
@@ -6,6 +7,8 @@ export function cn(...inputs) {
 }
 
 export const isBrowser = typeof window !== "undefined";
+
+
 // LocalStorageService.js
 export class LocalStorageService {
   // Get a value from local storage by key
@@ -40,6 +43,8 @@ export class LocalStorageService {
     localStorage.clear();
   }
 }
+
+
 export function exportTableToExcel(
   tableID,
   filename = "exported_table",
@@ -68,3 +73,12 @@ export function exportTableToExcel(
   link.click();
   document.body.removeChild(link);
 }
+
+
+export const copyHandler = (text) => {
+  if (!text) return toast.error("Please write question before copying.");
+  if (!navigator.clipboard) return;
+  if (text === "") return toast.error("No question to copy");
+  navigator.clipboard.writeText(text);
+  toast.success("Question copied To clipboard");
+};
