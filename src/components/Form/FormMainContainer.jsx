@@ -134,6 +134,7 @@ const FormMainContainer = ({
       console.log("this");
       newInputs[inputIndex].coords.splice(coordinateIndex, 1);
       setDroppedInputs(newInputs);
+      setFocussedInput(null);
     }
   };
   return (
@@ -273,13 +274,18 @@ const FormMainContainer = ({
             );
             // }
           })}
-        {droppedInputs.length === 0 &&  <div className="grid my-auto p-5 text-center gap-2 ">
-            <p>This document was generated automatically. Since no input was added, please follow the steps below:</p>
+        {droppedInputs.length === 0 && (
+          <div className="grid my-auto p-5 text-center gap-2 ">
+            <p>
+              This document was generated automatically. Since no input was
+              added, please follow the steps below:
+            </p>
             <ol>
               <li>Step 1: Drag and place the field required on the pdf.</li>
               {/* <li>Please add the necessary input to proceed with generating the detailed content.</li> */}
             </ol>
-          </div>}
+          </div>
+        )}
       </div>
     </>
   );
