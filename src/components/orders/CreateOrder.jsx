@@ -18,8 +18,14 @@ import { LocalStorageService } from "@/lib/utils";
 import { getClients } from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
 import { CreateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
 import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
-import { GetAllProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import { GetAllProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
+import {
+  GetAllProductGoods,
+  GetProductGoodsVendor,
+} from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
+import {
+  GetAllProductServices,
+  GetServicesVendor,
+} from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
 import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -85,11 +91,12 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     select: (customerData) => customerData.data.data,
   });
 
-  // goods fetching
+  // client goods fetching
   const { data: goodsData } = useQuery({
     queryKey: [goods_api.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
     select: (goodsData) => goodsData.data.data,
+    enabled: !!cta == "offer",
   });
   const formattedGoodsData =
     goodsData?.map((good) => ({
@@ -98,13 +105,13 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       product_name: good.productName,
     })) || [];
 
-  // services fetching
+  // client services fetching
   const { data: servicesData } = useQuery({
     queryKey: [services_api.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
     select: (servicesData) => servicesData.data.data,
+    enabled: !!cta == "offer",
   });
-
   const formattedServicesData =
     servicesData?.map((service) => ({
       ...service,
@@ -112,7 +119,49 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       product_name: service.serviceName,
     })) || [];
 
-  const itemData = formattedGoodsData.concat(formattedServicesData); // both goods & services concatinated
+  // both client goods & client services concatinated
+  const itemData = formattedGoodsData.concat(formattedServicesData);
+
+  // vendor goods fetching
+  const { data: vendorGoodsData } = useQuery({
+    queryKey: [
+      goods_api.vendorProductGoods.endpointKey,
+      order.seller_enterprise_id,
+    ],
+    queryFn: () => GetProductGoodsVendor(order.seller_enterprise_id),
+    select: (vendorGoodsData) => vendorGoodsData.data.data,
+    enabled: !!order.seller_enterprise_id,
+  });
+  const formattedVendorGoodsData =
+    vendorGoodsData?.map((good) => ({
+      ...good,
+      product_type: "GOODS",
+      product_name: good.productName,
+    })) || [];
+
+  // vendor services fetching
+  const { data: vendorServicesData } = useQuery({
+    queryKey: [
+      services_api.vendorServices.endpointKey,
+      order.seller_enterprise_id,
+    ],
+    queryFn: () => GetServicesVendor(order.seller_enterprise_id),
+    select: (vendorServicesData) => vendorServicesData.data.data,
+    enabled: !!order.seller_enterprise_id,
+  });
+  const formattedVendorServicesData =
+    vendorServicesData?.map((service) => ({
+      ...service,
+      product_type: "SERVICE",
+      product_name: service.serviceName,
+    })) || [];
+
+  // both client goods & client services concatinated
+  const vendorItemData = [
+    ...(formattedVendorGoodsData || []),
+    ...(formattedVendorServicesData || []),
+  ];
+  console.log(vendorItemData);
 
   // mutation - create order
   const orderMutation = useMutation({
@@ -331,9 +380,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
               <Select
                 // defaultValue={selectedItem.product_id}
                 onValueChange={(value) => {
-                  const selectedItemData = itemData?.find(
-                    (item) => value === item.id
-                  );
+                  const selectedItemData =
+                    cta === "offer"
+                      ? itemData?.find((item) => value === item.id)
+                      : vendorItemData?.find((item) => value === item.id);
 
                   setSelectedItem((prev) => ({
                     ...prev,
@@ -349,19 +399,35 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  {itemData?.map((item) => (
-                    <SelectItem
-                      disabled={
-                        !!order.order_items.find(
-                          (itemO) => itemO.product_id === item.id
-                        )
-                      }
-                      key={item.id}
-                      value={item.id}
-                    >
-                      {item.product_name}
-                    </SelectItem>
-                  ))}
+                  {cta === "offer" &&
+                    itemData?.map((item) => (
+                      <SelectItem
+                        disabled={
+                          !!order.order_items.find(
+                            (itemO) => itemO.product_id === item.id
+                          )
+                        }
+                        key={item.id}
+                        value={item.id}
+                      >
+                        {item.product_name}
+                      </SelectItem>
+                    ))}
+
+                  {cta !== "offer" &&
+                    vendorItemData?.map((item) => (
+                      <SelectItem
+                        disabled={
+                          !!order.order_items.find(
+                            (itemO) => itemO.product_id === item.id
+                          )
+                        }
+                        key={item.id}
+                        value={item.id}
+                      >
+                        {item.product_name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {/* {errorMsg.name && <ErrorBox msg={errorMsg.name} />} */}

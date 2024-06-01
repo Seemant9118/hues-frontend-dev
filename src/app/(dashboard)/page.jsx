@@ -5,9 +5,7 @@ import { DataTable } from "@/components/table/data-table";
 import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
 import Loading from "@/components/ui/Loading";
 import SubHeader from "@/components/ui/Sub-header";
-import {
-  getReceivedInvitation
-} from "@/services/Invitation_Service/Invitation_Service";
+import { getReceivedInvitation } from "@/services/Invitation_Service/Invitation_Service";
 import { useQuery } from "@tanstack/react-query";
 import { LineChart } from "lucide-react";
 
@@ -30,7 +28,7 @@ export default function Home() {
   const filteredData = ReceivedformattedData.filter(
     (data) => data.status === "PENDING"
   );
-  // console.log(filteredData);
+  console.log(filteredData);
 
   const dashBoardData = [
     {
@@ -85,7 +83,7 @@ export default function Home() {
       },
     ],
   };
-  // invitation
+
   return (
     <div className="flex flex-col">
       {/* Invitation table */}
@@ -94,10 +92,7 @@ export default function Home() {
 
         {filteredData?.length > 0 && (
           <div className=" rounded-xl px-2 my-5 mx-2 overflow-y-auto scrollBarStyles max-h-[200px]">
-            <SubHeader
-              name={"Pending Invites"}
-              className="mb-2 "
-            ></SubHeader>
+            <SubHeader name={"Pending Invites"} className="mb-2 "></SubHeader>
             <DataTable columns={InviteColumns} data={filteredData} />
           </div>
         )}

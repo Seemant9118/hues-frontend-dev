@@ -2,7 +2,6 @@
 
 import { order_api } from "@/api/order_api/order_api";
 import ChangeOfferPrice from "@/components/Modals/ChangeOfferPrice";
-import OfferPrice from "@/components/Modals/OfferPrice";
 import ToolTipOrder from "@/components/orders/ToolTipOrder";
 import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
