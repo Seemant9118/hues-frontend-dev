@@ -102,6 +102,8 @@ const ChangeOfferPrice = ({ offerDetails }) => {
 
   const negotiationHistoryColumns = usenegotiationHistoryColumns();
 
+  console.log(negotiationData);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -126,11 +128,6 @@ const ChangeOfferPrice = ({ offerDetails }) => {
               }
               disabled={true}
             />
-            {negotiationData.length === 0 && (
-              <div className="text-xs font-bold text-slate-800">
-                Want to Negotiate price as per your choice?
-              </div>
-            )}
 
             {/* Original Price */}
             <div className="flex justify-between">
@@ -140,11 +137,21 @@ const ChangeOfferPrice = ({ offerDetails }) => {
               </span>
             </div>
 
-            <div className="font-bold">History</div>
-            <DataTable
-              columns={negotiationHistoryColumns}
-              data={negotiationData}
-            />
+            {negotiationData.length === 0 && (
+              <div className=" font-bold text-slate-800">
+                Want to Negotiate price as per your choice?
+              </div>
+            )}
+
+            {negotiationData.length > 0 && (
+              <>
+                <div className="font-bold">History</div>
+                <DataTable
+                  columns={negotiationHistoryColumns}
+                  data={negotiationData}
+                />
+              </>
+            )}
 
             <div className="flex justify-between items-end">
               <Button
