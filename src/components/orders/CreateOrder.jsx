@@ -161,7 +161,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     ...(formattedVendorGoodsData || []),
     ...(formattedVendorServicesData || []),
   ];
-  console.log(vendorItemData);
 
   // mutation - create order
   const orderMutation = useMutation({
@@ -270,6 +269,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       </div>
     );
   }
+
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
@@ -378,6 +378,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <Label className="flex-shrink-0">Item</Label>
             <div className="flex flex-col gap-1">
               <Select
+                disabled={
+                  (cta === "offer" && order.buyer_enterperise_id == null) ||
+                  order.seller_enterprise_id == null
+                }
                 // defaultValue={selectedItem.product_id}
                 onValueChange={(value) => {
                   const selectedItemData =
@@ -437,6 +441,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <Label>Quantity:</Label>
             <div className="flex flex-col gap-1">
               <Input
+                disabled={
+                  (cta === "offer" && order.buyer_enterperise_id == null) ||
+                  order.seller_enterprise_id == null
+                }
                 value={selectedItem.quantity}
                 onChange={(e) => {
                   const totalAmt = parseFloat(
@@ -462,6 +470,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <Label>Price:</Label>
             <div className="flex flex-col gap-1">
               <Input
+                disabled={
+                  (cta === "offer" && order.buyer_enterperise_id == null) ||
+                  order.seller_enterprise_id == null
+                }
                 value={selectedItem.unit_price}
                 className="max-w-20"
                 onChange={(e) => {
@@ -478,7 +490,11 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           <div className="flex items-center gap-4">
             <Label>GST (%) :</Label>
             <div className="flex flex-col gap-1">
-              <Input value={selectedItem.gst_per_unit} className="max-w-20" />
+              <Input
+                disabled
+                value={selectedItem.gst_per_unit}
+                className="max-w-20"
+              />
               {errorMsg.gst_per_unit && (
                 <ErrorBox msg={errorMsg.gst_per_unit} />
               )}
@@ -488,7 +504,11 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           <div className="flex items-center gap-4">
             <Label>Amount:</Label>
             <div className="flex flex-col gap-1">
-              <Input value={selectedItem.total_amount} className="max-w-20" />
+              <Input
+                disabled
+                value={selectedItem.total_amount}
+                className="max-w-20"
+              />
               {errorMsg.total_amount && (
                 <ErrorBox msg={errorMsg.total_amount} />
               )}
@@ -496,7 +516,21 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           </div>
         </div>
         <div className="flex items-center justify-end gap-4">
-          <Button variant="outline">Cancel</Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSelectedItem((prev) => ({
+                ...prev,
+                product_id: "",
+                product_type: "",
+                product_name: "",
+                unit_price: "",
+                gst_per_unit: "",
+              }));
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             disabled={Object.values(selectedItem).some(
               (value) => value === "" || value === null || value === undefined
