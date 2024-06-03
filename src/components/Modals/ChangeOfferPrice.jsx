@@ -19,7 +19,7 @@ import moment from "moment";
 import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { negotiationHistoryColumns } from "../columns/negotiationHistoryColumns";
+import { usenegotiationHistoryColumns } from "../columns/negotiationHistoryColumns";
 import { DataTable } from "../table/data-table";
 import InputWithLabel from "../ui/InputWithLabel";
 import Loading from "../ui/Loading";
@@ -99,6 +99,8 @@ const ChangeOfferPrice = ({ offerDetails }) => {
   const handleChangeOffer = () => {
     changeOfferMutation.mutate(changeOffer);
   };
+
+  const negotiationHistoryColumns = usenegotiationHistoryColumns();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
