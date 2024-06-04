@@ -39,19 +39,17 @@ describe('Input Component', () => {
     const handleChange = jest.fn();
     render(<Input onChange={handleChange} />);
     const input = screen.getByRole('textbox');
-    
+
     await user.type(input, 'new value');
-    
+
     expect(handleChange).toHaveBeenCalledTimes(9);
     expect(handleChange).toHaveBeenCalledWith(expect.any(Object));
     expect(input.value).toBe('new value');
   });
-  
 
   it('handles required attribute', () => {
     render(<Input required />);
     const input = screen.getByRole('textbox');
     expect(input).toBeRequired();
   });
-  
 });
