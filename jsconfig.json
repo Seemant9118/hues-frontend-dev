@@ -2,6 +2,16 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
-    }
-  }
+    },
+    "target": "es6",
+    "module": "commonjs",
+    "lib": ["dom", "es2017"],
+    "allowJs": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "types": ["jest", "@testing-library/jest-dom"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
