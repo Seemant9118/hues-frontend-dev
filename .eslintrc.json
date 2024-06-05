@@ -40,7 +40,11 @@
         "singleQuote": true,
         "endOfLine": "auto"
       }
-    ]
+    ],
+    "react-hooks/exhaustive-deps": "off",
+    "no-nested-ternary":"off",
+    "no-param-reassign":"off",
+    "no-unused-expressions":"off"
   },
   "overrides": [
     {
@@ -79,6 +83,7 @@
         ],
         // Disable extension requirement for imports
         "import/extensions": "off",
+        "react-hooks/exhaustive-deps": "off",
         // Allow flexibility in defining function components
         "react/function-component-definition": "off",
         // Allow destructuring assignments to be omitted
