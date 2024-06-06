@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState } from 'react';
 // import { Error } from "../../../../assets/formIcons";
 
 const MinMaxForm = ({ setFormData, idx, input }) => {
   const [min, setMin] = useState(input.minLength || 0);
   const [max, setMax] = useState(input.maxLength || 100);
-  const [limitError, setLimitError] = useState("");
+  const [limitError, setLimitError] = useState('');
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -18,74 +18,74 @@ const MinMaxForm = ({ setFormData, idx, input }) => {
       updated[idx].maxLength = max;
       return updated;
     });
+
   };
 
   const minMaxSetter = (e, type) => {
-    setLimitError("");
+    setLimitError('');
     const value = Number(e.target.value);
 
-    if (type === "min") {
+    if (type === 'min') {
       setMin(value);
     } else {
       setMax(value);
     }
 
-    setLimitError("");
-    if (type === "max") {
+    setLimitError('');
+    if (type === 'max') {
       if (value < min) {
-        setLimitError("Max value should be greater than Min value");
+        setLimitError('Max value should be greater than Min value');
       }
       return;
     }
-    if (type === "min") {
+    if (type === 'min') {
       if (value > max) {
-        setLimitError("Min value should be less than Max value");
+        setLimitError('Min value should be less than Max value');
       }
-      return;
     }
   };
 
   return (
     <>
-      <form onSubmit={submitHandler} className=" flex justify-center gap-4">
+      <form onSubmit={submitHandler} className="flex justify-center gap-4">
         <div className="flex flex-col gap-2">
           <label
             htmlFor="minValue"
-            className="text-xs text-primary font-normal leading-normal"
+            className="text-xs font-normal leading-normal text-primary"
           >
             Min Value
           </label>
           <input
-            onBlur={(e) => minMaxSetter(e, "min")}
-            className="text-xs leading-6 w-20 h-7 flex px-2 items-center bg-white border-[1px] border-primary/10 rounded focus-within:outline-none"
+            onBlur={(e) => minMaxSetter(e, 'min')}
+            className="flex h-7 w-20 items-center rounded border-[1px] border-primary/10 bg-white px-2 text-xs leading-6 focus-within:outline-none"
             type="number"
             id="minValue"
             value={min || 0}
-            onChange={(e) => minMaxSetter(e, "min")}
+            onChange={(e) => minMaxSetter(e, 'min')}
           />
         </div>
         <div className="flex flex-col gap-2">
           <label
-            className="text-xs text-primary font-normal leading-normal"
+            className="text-xs font-normal leading-normal text-primary"
             htmlFor="maxValue"
           >
             Max Value
           </label>
           <input
-            onBlur={(e) => minMaxSetter(e, "max")}
-            className="text-xs leading-6 w-20 h-7 flex px-2 items-center bg-white border-[1px] border-primary/10 rounded focus-within:outline-none"
+            onBlur={(e) => minMaxSetter(e, 'max')}
+            className="flex h-7 w-20 items-center rounded border-[1px] border-primary/10 bg-white px-2 text-xs leading-6 focus-within:outline-none"
             type="number"
             id="maxValue"
             value={max || 100}
-            onChange={(e) => minMaxSetter(e, "max")}
+            onChange={(e) => minMaxSetter(e, 'max')}
           />
         </div>
         <button className="hidden">submit</button>
       </form>
-      {limitError !== "" && (
+      {limitError !== '' && (
         <p className="flex items-center justify-center gap-2 px-4">
           {/* <Error /> */}
-          <span className="text-[#B83333] font-light text-xs leading-normal">
+          <span className="text-xs font-light leading-normal text-[#B83333]">
             {limitError}
           </span>
         </p>

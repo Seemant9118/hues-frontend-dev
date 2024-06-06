@@ -1,27 +1,24 @@
-import { useEffect, useRef } from "react";
-
-import { ChevronDown, ChevronUp, Copy, Trash2 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from 'react';
+import { ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-
-import { inputFields } from "@/globals/formbulder/constants";
-import { cn, copyHandler } from "@/lib/utils";
-import { Label } from "../ui/label";
-import DateInputPopup from "./inputs/DateInputPopup";
-import DropdownPopup from "./inputs/DropdownPopup";
-import SelectInputPopup from "./inputs/SelectInputPopup";
-import Short_LongTextPopup from "./inputs/Short&LongTextPopup";
-import TimeInputPopup from "./inputs/TimeInputPopup";
-import UploadInputPopup from "./inputs/UploadInputPopup";
-import InputWrapper from "./wrappers/InputWrappers";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { inputFields } from '@/globals/formbulder/constants';
+import { cn, copyHandler } from '@/lib/utils';
+import { Label } from '../ui/label';
+import DateInputPopup from './inputs/DateInputPopup';
+import DropdownPopup from './inputs/DropdownPopup';
+import SelectInputPopup from './inputs/SelectInputPopup';
+import ShortLongTextPopup from './inputs/Short&LongTextPopup';
+import TimeInputPopup from './inputs/TimeInputPopup';
+import UploadInputPopup from './inputs/UploadInputPopup';
+import InputWrapper from './wrappers/InputWrappers';
 
 const FormBuilderInput = ({
   input,
@@ -52,7 +49,7 @@ const FormBuilderInput = ({
   useEffect(() => {
     if (isFocussed) {
       containerRef.current.scrollIntoView({
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   }, [isFocussed]);
@@ -60,26 +57,26 @@ const FormBuilderInput = ({
   return (
     <InputWrapper
       ref={containerRef}
-      className={isFocussed ? "bg-primary/10" : ""}
+      className={isFocussed ? 'bg-primary/10' : ''}
     >
       <div
         className={cn(
-          "h-8 flex justify-between items-center self-stretch overflow-hidden "
+          'flex h-8 items-center justify-between self-stretch overflow-hidden',
         )}
       >
-        <div className="flex gap-2 items-center py-1 grow">
-          <span className="text-zinc-800 text-xs leading-6">{idx + 1}.</span>
+        <div className="flex grow items-center gap-2 py-1">
+          <span className="text-xs leading-6 text-zinc-800">{idx + 1}.</span>
           <Select
-            value={input.name + "?" + input.type}
+            value={`${input.name}?${input.type}`}
             onValueChange={(value) => selectHandler(value, idx)}
           >
-            <SelectTrigger className="flex items-center gap-2 px-2 bg-[#F6F3FF] text-primary text-[10px] rounded focus:ring-0 h-7 max-w-fit">
+            <SelectTrigger className="flex h-7 max-w-fit items-center gap-2 rounded bg-[#F6F3FF] px-2 text-[10px] text-primary focus:ring-0">
               {Icon && <Icon size={16} />}
               <SelectValue defaultValue={input.name} />
             </SelectTrigger>
             <SelectContent>
               {inputFields.map((item) => (
-                <SelectItem key={item.id} value={item.name + "?" + item.type}>
+                <SelectItem key={item.id} value={`${item.name}?${item.type}`}>
                   {item.name}
                 </SelectItem>
               ))}
@@ -89,7 +86,7 @@ const FormBuilderInput = ({
             <input
               onBlur={questionHandler}
               name="text"
-              className="text-sm leading-6 text-zinc-800 w-full placeholder:text-slate-400 focus-within:outline-none"
+              className="w-full text-sm leading-6 text-zinc-800 placeholder:text-slate-400 focus-within:outline-none"
               placeholder="Enter Question"
               maxLength={input.maxLength}
               minLength={input.minLength}
@@ -98,17 +95,17 @@ const FormBuilderInput = ({
             />
           </form>
         </div>
-        <div className="flex gap-2 items-center">
-          {input.name !== "Notes" && (
+        <div className="flex items-center gap-2">
+          {input.name !== 'Notes' && (
             <div className="flex gap-2">
               <Label
-                htmlFor={"required" + idx}
-                className="text-zinc-800 text-xs leading-6 font-normal"
+                htmlFor={`required${idx}`}
+                className="text-xs font-normal leading-6 text-zinc-800"
               >
                 Required
               </Label>
               <Switch
-                id={"required" + idx}
+                id={`required${idx}`}
                 defaultChecked={input.required}
                 onCheckedChange={(checked) => {
                   setDroppedInputs((prev) => {
@@ -122,48 +119,48 @@ const FormBuilderInput = ({
           )}
           <Button
             onClick={() => copyHandler(input.question)}
-            variant={"ghost"}
-            size={"icon"}
+            variant={'ghost'}
+            size={'icon'}
           >
-            <Copy className="text-primary" size={"16px"} />
+            <Copy className="text-primary" size={'16px'} />
           </Button>
           <Button
             onClick={() => deleteHandler(idx)}
-            variant={"ghost"}
-            size={"icon"}
+            variant={'ghost'}
+            size={'icon'}
           >
-            <Trash2 className="text-primary" size={"16px"} />
+            <Trash2 className="text-primary" size={'16px'} />
           </Button>
           {idx !== droppedInputs.length - 1 && (
             <Button
-              variant={"ghost"}
-              size={"icon"}
+              variant={'ghost'}
+              size={'icon'}
               onClick={() => upAndDownHandler(idx, idx + 1)}
             >
-              <ChevronDown className="text-primary" size={"18px"} />
+              <ChevronDown className="text-primary" size={'18px'} />
             </Button>
           )}
           {idx !== 0 && (
             <Button
               onClick={() => upAndDownHandler(idx, idx - 1)}
-              variant={"ghost"}
-              size={"icon"}
+              variant={'ghost'}
+              size={'icon'}
             >
-              <ChevronUp className="text-primary" size={"18px"} />
+              <ChevronUp className="text-primary" size={'18px'} />
             </Button>
           )}
         </div>
       </div>
-      {(input.name === "Short text" ||
-        input.name === "Long text" ||
-        input.name === "Number") && (
-        <Short_LongTextPopup
+      {(input.name === 'Short text' ||
+        input.name === 'Long text' ||
+        input.name === 'Number') && (
+        <ShortLongTextPopup
           input={input}
           setDroppedInputs={setDroppedInputs}
           idx={idx}
         />
       )}
-      {(input.name === "Single Select" || input.name === "Multi Select") && (
+      {(input.name === 'Single Select' || input.name === 'Multi Select') && (
         <SelectInputPopup
           showOptions={showOptions}
           setShowOptions={setShowOptions}
@@ -172,21 +169,21 @@ const FormBuilderInput = ({
           idx={idx}
         />
       )}
-      {input.name === "Date Picker" && (
+      {input.name === 'Date Picker' && (
         <DateInputPopup
           input={input}
           setDroppedInputs={setDroppedInputs}
           idx={idx}
         />
       )}
-      {input.name === "Upload" && (
+      {input.name === 'Upload' && (
         <UploadInputPopup
           input={input}
           setDroppedInputs={setDroppedInputs}
           idx={idx}
         />
       )}
-      {input.name === "Time" && (
+      {input.name === 'Time' && (
         <TimeInputPopup
           input={input}
           setDroppedInputs={setDroppedInputs}
@@ -194,7 +191,7 @@ const FormBuilderInput = ({
         />
       )}
 
-      {input.name === "Dropdown" && (
+      {input.name === 'Dropdown' && (
         <DropdownPopup
           setShowOptions={setShowOptions}
           showOptions={showOptions}

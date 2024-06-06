@@ -1,17 +1,17 @@
-import { ChevronDown, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { ChevronDown, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
-import MinMaxForm from "./MinMaxForm";
+} from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
+import MinMaxForm from './MinMaxForm';
 
 const DropdownPopup = ({
   input,
@@ -22,7 +22,7 @@ const DropdownPopup = ({
 }) => {
   const [questionConfigs, setQuestionConfigs] = useState({
     options: input.options || [],
-    format: input.format || "vertical",
+    format: input.format || 'vertical',
   });
   const [showOptionInput, setShowOptionInput] = useState(true);
   const optionInputRef = useRef(null);
@@ -30,7 +30,7 @@ const DropdownPopup = ({
   const optionHandler = (e) => {
     e.preventDefault();
     if (!optionInputRef.current) return;
-    if (optionInputRef.current?.value === "") return;
+    if (optionInputRef.current?.value === '') return;
     const option = optionInputRef.current.value;
     setQuestionConfigs((prev) => ({
       ...prev,
@@ -42,14 +42,14 @@ const DropdownPopup = ({
 
       return updated;
     });
-    optionInputRef.current.value = "";
+    optionInputRef.current.value = '';
   };
 
   return (
     <>
-      <div className="flex gap-2 items-center pt-3 pb-2">
+      <div className="flex items-center gap-2 pb-2 pt-3">
         <Button
-          className="px-4 h-7 bg-primary rounded-none text-white border-b-[1px] border-primary/20 hover:bg-primary/90"
+          className="h-7 rounded-none border-b-[1px] border-primary/20 bg-primary px-4 text-white hover:bg-primary/90"
           onClick={() => {
             setShowOptions(true);
             setShowOptionInput(true);
@@ -59,12 +59,12 @@ const DropdownPopup = ({
         </Button>
         <Popover>
           <PopoverTrigger asChild>
-            <Button className="px-4 h-7 gap-4 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20">
+            <Button className="h-7 gap-4 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
               <p>Select Format</p>
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="max-w-fit ml-32 px-4 py-2">
+          <PopoverContent className="ml-32 max-w-fit px-4 py-2">
             <RadioGroup
               onValueChange={(value) => {
                 setQuestionConfigs((prev) => ({
@@ -78,16 +78,16 @@ const DropdownPopup = ({
                   return updated;
                 });
               }}
-              defaultValue={input.format || "single"}
+              defaultValue={input.format || 'single'}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  className="w-3 h-3 text-primary/80 border-primary"
+                  className="h-3 w-3 border-primary text-primary/80"
                   value="single"
                   id="single"
                 />
                 <Label
-                  className="text-zinc-800 text-xs leading-normal font-normal"
+                  className="text-xs font-normal leading-normal text-zinc-800"
                   htmlFor="single"
                 >
                   Single Select
@@ -95,12 +95,12 @@ const DropdownPopup = ({
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  className="w-3 h-3  text-primary/80 border-primary"
+                  className="h-3 w-3 border-primary text-primary/80"
                   value="multi"
                   id="multi"
                 />
                 <Label
-                  className="text-zinc-800 text-xs leading-normal font-normal"
+                  className="text-xs font-normal leading-normal text-zinc-800"
                   htmlFor="multi"
                 >
                   Multi Select
@@ -111,12 +111,12 @@ const DropdownPopup = ({
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
+            <Button className="h-7 gap-2 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
               Limit On Selection
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="max-w-fit ml-28">
+          <PopoverContent className="ml-28 max-w-fit">
             <MinMaxForm
               setFormData={setDroppedInputs}
               idx={idx}
@@ -126,11 +126,11 @@ const DropdownPopup = ({
         </Popover>
       </div>
       {showOptions && (
-        <div className="flex gap-2 items-center flex-wrap py-2">
-          <Label className="peer pr-4 pl-3 flex items-center gap-1 h-7 rounded bg-primary/10 border-[1px] border-primary/20 text-primary cursor-pointer">
+        <div className="flex flex-wrap items-center gap-2 py-2">
+          <Label className="peer flex h-7 cursor-pointer items-center gap-1 rounded border-[1px] border-primary/20 bg-primary/10 pl-3 pr-4 text-primary">
             <Checkbox
               id="others"
-              className="w-4 h-4 rounded-full bg-[#D9D9D9] border-[#D9D9D9] data-[state=checked]:bg-primary data-[state=checked]:border-primary "
+              className="h-4 w-4 rounded-full border-[#D9D9D9] bg-[#D9D9D9] data-[state=checked]:border-primary data-[state=checked]:bg-primary"
               checked={input.others}
               onCheckedChange={(checked) => {
                 setDroppedInputs((prev) => {
@@ -144,10 +144,10 @@ const DropdownPopup = ({
           </Label>
 
           {showOptionInput && (
-            <div className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-primary/20 ">
+            <div className="flex h-7 items-center justify-center gap-1 rounded border-[1px] border-primary/20 pl-3 pr-4">
               <X
                 className="text-primary"
-                size={"16"}
+                size={'16'}
                 onClick={() => setShowOptionInput(false)}
               />
               <Separator className="h-3 bg-zinc-800" orientation="vertical" />
@@ -155,7 +155,7 @@ const DropdownPopup = ({
                 <input
                   placeholder="Enter option value"
                   type="text"
-                  className="placeholder:text-slate-400 bg-transparent min-w-[100px] border-none outline-none text-xs font-normal leading-normal"
+                  className="min-w-[100px] border-none bg-transparent text-xs font-normal leading-normal outline-none placeholder:text-slate-400"
                   ref={optionInputRef}
                 />
               </form>
@@ -164,11 +164,11 @@ const DropdownPopup = ({
           {questionConfigs?.options.map((option, index) => (
             <div
               key={index}
-              className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-primary/20 bg-primary/10"
+              className="flex h-7 items-center justify-center gap-1 rounded border-[1px] border-primary/20 bg-primary/10 pl-3 pr-4"
             >
               <X
                 className="text-primary"
-                size={"16"}
+                size={'16'}
                 onClick={() => {
                   const options = input.options.filter((_, i) => i !== index);
 
@@ -180,7 +180,7 @@ const DropdownPopup = ({
                 }}
               />
               <Separator className="h-3 bg-zinc-800" orientation="vertical" />
-              <p className="bg-transparent min-w-fit text-zinc-800 text-xs font-normal leading-normal">
+              <p className="min-w-fit bg-transparent text-xs font-normal leading-normal text-zinc-800">
                 {option}
               </p>
             </div>

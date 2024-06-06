@@ -1,21 +1,22 @@
-"use client";
-import { order_api } from "@/api/order_api/order_api";
-import CreateOrder from "@/components/orders/CreateOrder";
-import { DataTable } from "@/components/table/data-table";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import SubHeader from "@/components/ui/Sub-header";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import { orderApi } from '@/api/order_api/order_api';
+import CreateOrder from '@/components/orders/CreateOrder';
+import { DataTable } from '@/components/table/data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import SubHeader from '@/components/ui/Sub-header';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import Wrapper from "@/components/wrappers/Wrapper";
-import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
-import { GetSales } from "@/services/Orders_Services/Orders_Services";
-import { useQuery } from "@tanstack/react-query";
+} from '@/components/ui/select';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
+import { GetSales } from '@/services/Orders_Services/Orders_Services';
+import { useQuery } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -23,16 +24,16 @@ import {
   KeySquare,
   PlusCircle,
   Upload,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useSalesColumns } from "./useSalesColumns";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useSalesColumns } from './useSalesColumns';
 
 const SalesOrder = () => {
   const router = useRouter();
-  const enterprise_id = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
-  const [istype, setIsType] = useState("All");
+  const [istype, setIsType] = useState('All');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isOrderView, setIsOrderView] = useState(false);
@@ -40,7 +41,7 @@ const SalesOrder = () => {
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
     signatures."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,
@@ -73,16 +74,16 @@ const SalesOrder = () => {
   };
 
   const { data, isSuccess } = useQuery({
-    queryKey: [order_api.getSales.endpointKey],
-    queryFn: () => GetSales(enterprise_id),
-    select: (data) => data.data.data,
+    queryKey: [orderApi.getSales.endpointKey],
+    queryFn: () => GetSales(enterpriseId),
+    select: (res) => res.data.data,
   });
 
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && (
         <Wrapper>
-          <SubHeader name={"Sales"} className="bg-white z-10">
+          <SubHeader name={'Sales'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-4">
                 <Select
@@ -101,9 +102,9 @@ const SalesOrder = () => {
                 </Select>
               </div>
               <Button
-                onClick={() => exportTableToExcel("sale-orders", "sales_list")}
-                variant={"blue_outline"}
-                className="bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10"
+                onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
+                variant={'blue_outline'}
+                className="border-neutral-300 bg-neutral-500/10 text-neutral-600 hover:bg-neutral-600/10"
                 size="sm"
               >
                 <Upload size={14} />
@@ -111,7 +112,7 @@ const SalesOrder = () => {
               </Button>
               <Button
                 onClick={() => setIsCreatingSales(true)}
-                variant={"blue_outline"}
+                variant={'blue_outline'}
                 size="sm"
               >
                 <PlusCircle size={14} />
@@ -127,7 +128,7 @@ const SalesOrder = () => {
               </Button> */}
             </div>
           </SubHeader>
-          {!enterprise_id || data?.length === 0 ? (
+          {!enterpriseId || data?.length === 0 ? (
             <EmptyStageComponent
               heading={SaleEmptyStageData.heading}
               desc={SaleEmptyStageData.desc}
@@ -137,7 +138,7 @@ const SalesOrder = () => {
           ) : (
             isSuccess && (
               <DataTable
-                id={"sale-orders"}
+                id={'sale-orders'}
                 columns={SalesColumns}
                 onRowClick={onRowClick}
                 data={data}
@@ -156,17 +157,14 @@ const SalesOrder = () => {
         />
       )}
 
-      {isCreatingInvoice &&
-        !isCreatingSales &&
-        !isOrderView &
-        (
-          <CreateOrder
-            type="sales"
-            name="Invoice"
-            cta="offer"
-            onCancel={() => setIsCreatingInvoice(false)}
-          />
-        )}
+      {isCreatingInvoice && !isCreatingSales && !isOrderView && (
+        <CreateOrder
+          type="sales"
+          name="Invoice"
+          cta="offer"
+          onCancel={() => setIsCreatingInvoice(false)}
+        />
+      )}
     </>
   );
 };

@@ -1,16 +1,16 @@
-import { useDrag } from "react-dnd";
+import { useDrag } from 'react-dnd';
 
 const SidebarField = ({ item, disable = false }) => {
   const { icon: Icon } = item;
   const [, ref] = useDrag({
-    type: "INPUT",
+    type: 'INPUT',
     item: { ...item },
   });
 
   if (disable) {
     return (
-      <div className="flex items-center pl-8 pr-4 py-1 bg-white text-primary font-semibold text-sm leading-normal">
-        <div className="w-4 h-4 mr-2">
+      <div className="flex items-center bg-white py-1 pl-8 pr-4 text-sm font-semibold leading-normal text-primary">
+        <div className="mr-2 h-4 w-4">
           <Icon size={16} />
         </div>
         {item.name}
@@ -21,9 +21,9 @@ const SidebarField = ({ item, disable = false }) => {
   return (
     <div
       ref={ref}
-      className="flex items-center pl-8 pr-4 py-1 bg-white text-primary font-semibold text-sm leading-normal cursor-grab hover:bg-primary/10"
+      className="flex cursor-grab items-center bg-white py-1 pl-8 pr-4 text-sm font-semibold leading-normal text-primary hover:bg-primary/10"
     >
-      <div className="w-4 h-4 mr-2">
+      <div className="mr-2 h-4 w-4">
         <Icon size={13} />
       </div>
       {item.name}

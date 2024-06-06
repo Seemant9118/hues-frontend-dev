@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { DndProvider, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import FormMainContainer from "./FormMainContainer";
-import FormSidebar from "./FormSidebar";
-import { Button } from "@/components/ui/button";
-import { Document, Page } from "react-pdf";
+import { useEffect, useRef, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import FormMainContainer from './FormMainContainer';
+import FormSidebar from './FormSidebar';
 
 const Builder = ({ saveHandler, url }) => {
   const containerRef = useRef(null);
@@ -18,7 +16,7 @@ const Builder = ({ saveHandler, url }) => {
     setTimeout(() => {
       containerRef.current?.scrollTo({
         top: containerRef.current?.scrollHeight,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }, 200);
   };
@@ -27,13 +25,13 @@ const Builder = ({ saveHandler, url }) => {
     setFormData({
       data: [
         {
-          name: "Default Page",
+          name: 'Default Page',
           questions: [],
         },
       ],
     });
     setSelectedPage({
-      name: "Default Page",
+      name: 'Default Page',
       questions: [],
     });
   }, []);
@@ -50,15 +48,15 @@ const Builder = ({ saveHandler, url }) => {
     }
   }, [droppedInputs]);
 
-  const saveFormHandler = async () => {
-    const idx = formData?.data?.findIndex(
-      (value) => value.name === selectedPage.name
-    );
-    const newArray = [...formData?.data];
-    newArray[idx] = selectedPage;
+  // const saveFormHandler = async () => {
+  //   const idx = formData?.data?.findIndex(
+  //     (value) => value.name === selectedPage.name,
+  //   );
+  //   const newArray = [...formData?.data];
+  //   newArray[idx] = selectedPage;
 
-    saveHandler({ signatureData: null, formData: newArray });
-  };
+  //   saveHandler({ signatureData: null, formData: newArray });
+  // };
 
   return (
     <>
@@ -70,7 +68,7 @@ const Builder = ({ saveHandler, url }) => {
       <DndProvider backend={HTML5Backend}>
         <main
           ref={containerRef}
-          className="flex overflow-y-auto relative max-h-[90%] scrollBarStyles"
+          className="scrollBarStyles relative flex max-h-[90%] overflow-y-auto"
         >
           <FormSidebar />
 

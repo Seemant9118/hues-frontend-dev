@@ -1,13 +1,13 @@
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import SubHeader from "@/components/ui/Sub-header";
-import { DatabaseZap, FileText, KeySquare, ShieldCheck } from "lucide-react";
-import React from "react";
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import SubHeader from '@/components/ui/Sub-header';
+import { DatabaseZap, FileText, KeySquare, ShieldCheck } from 'lucide-react';
+import React from 'react';
 
 const InsightsPage = () => {
   const InsightEmptyStageData = {
     heading: `~"Transform financial data into actionable intelligence with Insights, enhancing decision-making
     and secure collaboration."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,

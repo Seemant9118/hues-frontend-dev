@@ -1,19 +1,19 @@
-"use client";
-import { PenBox } from "lucide-react";
-import React, { useRef, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/TextLayer.css";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import React, { useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
 ).toString();
 
 const PdfRenderer = ({ canClick }) => {
   const pdfCanvasRef = useRef();
   const [clickedCoordinates, setClickedCoordinates] = useState([]);
-  const [pageNo, setPageNo] = useState(1);
+  // const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
 
   const addClickedCoordinate = (event) => {
@@ -33,12 +33,12 @@ const PdfRenderer = ({ canClick }) => {
       <div
         ref={pdfCanvasRef}
         id="pdfCanvas"
-        className="max-w-fit bg-black mx-auto relative"
+        className="relative mx-auto max-w-fit bg-black"
         onMouseDown={canClick ? addClickedCoordinate : () => {}}
       >
         <Document
           file={
-            "https://trampolinebucket.s3.ap-south-1.amazonaws.com/www_ilovepdf.pdf"
+            'https://trampolinebucket.s3.ap-south-1.amazonaws.com/www_ilovepdf.pdf'
           }
           onLoadSuccess={onDocumentLoadSuccess}
         >
@@ -47,7 +47,7 @@ const PdfRenderer = ({ canClick }) => {
         {clickedCoordinates.map((signature, idx) => (
           <div
             key={idx}
-            className="bg-white border border-black px-3 py-2 absolute shadow-inner shadow-white h-10"
+            className="absolute h-10 border border-black bg-white px-3 py-2 shadow-inner shadow-white"
             style={{
               top: signature.y,
               left: signature.x,

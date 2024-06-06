@@ -1,39 +1,40 @@
-"use client";
-import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
-import { order_api } from "@/api/order_api/order_api";
-import ConfirmAction from "@/components/Modals/ConfirmAction";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { orderApi } from '@/api/order_api/order_api';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { LocalStorageService } from "@/lib/utils";
-import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
-import { DeleteOrder } from "@/services/Orders_Services/Orders_Services";
-import { useQuery } from "@tanstack/react-query";
-import { MoreVertical } from "lucide-react";
-import moment from "moment";
+} from '@/components/ui/dropdown-menu';
+import { LocalStorageService } from '@/lib/utils';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
+import { useQuery } from '@tanstack/react-query';
+import { MoreVertical } from 'lucide-react';
+import moment from 'moment';
 
 export const usePurchaseColumns = () => {
-  const enterprise_id = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const { data: vendors } = useQuery({
-    queryKey: [vendor_enterprise.getVendors.endpointKey],
-    queryFn: (data) => getVendors(enterprise_id),
-    select: (data) => data.data.data,
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryFn: () => getVendors(enterpriseId),
+    select: (res) => res.data.data,
   });
 
   return [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -50,19 +51,19 @@ export const usePurchaseColumns = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "id",
+      accessorKey: 'id',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PURCHASE ID" />
       ),
     },
     {
-      accessorKey: "createdAt",
+      accessorKey: 'createdAt',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="DATE" />
       ),
       cell: ({ row }) => {
-        const createdAt = row.original.createdAt;
-        const date = moment(createdAt).format("DD-MM-YYYY");
+        const { createdAt } = row.original;
+        const date = moment(createdAt).format('DD-MM-YYYY');
         return <div className="text-[#A5ABBD]">{date}</div>;
       },
     },
@@ -83,13 +84,14 @@ export const usePurchaseColumns = () => {
     //   },
     // },
     {
-      accessorKey: "sellerEnterpriseId",
+      accessorKey: 'sellerEnterpriseId',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="VENDORS" />
       ),
       cell: ({ row }) => {
         const vendor = vendors?.find(
-          (vendor) => vendor?.vendor?.id === row.original.sellerEnterpriseId
+          (vendorData) =>
+            vendorData?.vendor?.id === row.original.sellerEnterpriseId,
         );
         return <div>{vendor?.vendor?.name}</div>;
       },
@@ -101,41 +103,36 @@ export const usePurchaseColumns = () => {
     //   ),
     // },
     {
-      accessorKey: "negotiationStatus",
+      accessorKey: 'negotiationStatus',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="STATUS" />
       ),
       cell: ({ row }) => {
         const status = row.original.negotiationStatus;
 
-        let statusText,
-          statusColor,
-          statusBG,
-          statusBorder,
-          btnName,
-          actionBtn,
-          tooltip;
+        let statusText;
+        let statusColor;
+        let statusBG;
+        let statusBorder;
+        let tooltip;
         switch (status) {
-          case "ACCEPTED":
-            statusText = "Accepted";
-            statusColor = "#39C06F";
-            statusBG = "#39C06F1A";
-            statusBorder = "#39C06F";
+          case 'ACCEPTED':
+            statusText = 'Accepted';
+            statusColor = '#39C06F';
+            statusBG = '#39C06F1A';
+            statusBorder = '#39C06F';
             break;
-          case "NEW":
-            statusText = "New";
-            statusColor = "#1863B7";
-            statusBG = "#1863B71A";
-            statusBorder = "#1863B7";
-            btnName = "Offer Price";
+          case 'NEW':
+            statusText = 'New';
+            statusColor = '#1863B7';
+            statusBG = '#1863B71A';
+            statusBorder = '#1863B7';
             break;
-          case "NEGOTIATION":
-            statusText = "Negotiation";
-            statusColor = "#F8BA05";
-            statusBG = "#F8BA051A";
-            statusBorder = "#F8BA05";
-            actionBtn = "action";
-
+          case 'NEGOTIATION':
+            statusText = 'Negotiation';
+            statusColor = '#F8BA05';
+            statusBG = '#F8BA051A';
+            statusBorder = '#F8BA05';
             break;
           default:
             return null;
@@ -143,7 +140,7 @@ export const usePurchaseColumns = () => {
 
         return (
           <div
-            className="w-24 p-1 flex justify-center items-center font-bold border rounded gap-1"
+            className="flex w-24 items-center justify-center gap-1 rounded border p-1 font-bold"
             style={{
               color: statusColor,
               backgroundColor: statusBG,
@@ -156,28 +153,28 @@ export const usePurchaseColumns = () => {
       },
     },
     {
-      accessorKey: "amount",
+      accessorKey: 'amount',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="AMOUNT" />
       ),
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("amount"));
+        const amount = parseFloat(row.getValue('amount'));
 
         // Format the amount as a dollar amount
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "INR",
+        const formatted = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'INR',
         }).format(amount);
         return <div className="font-medium">{formatted}</div>;
       },
     },
 
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const id = row.original.id;
-        const name = "order";
+        const { id } = row.original;
+        const name = 'order';
 
         return (
           <DropdownMenu>
@@ -191,7 +188,7 @@ export const usePurchaseColumns = () => {
               <ConfirmAction
                 name={name}
                 id={id}
-                mutationKey={order_api.getPurchases.endpointKey}
+                mutationKey={orderApi.getPurchases.endpointKey}
                 mutationFunc={DeleteOrder}
               />
             </DropdownMenuContent>

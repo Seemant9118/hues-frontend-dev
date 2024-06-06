@@ -1,51 +1,51 @@
-import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
-import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
-import { goods_api } from "@/api/inventories/goods/goods";
-import { services_api } from "@/api/inventories/services/services";
-import { order_api } from "@/api/order_api/order_api";
-import { useCreateSalesColumns } from "@/components/columns/useCreateSalesColumns";
-import { DataTable } from "@/components/table/data-table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { goodsApi } from '@/api/inventories/goods/goods';
+import { servicesApi } from '@/api/inventories/services/services';
+import { orderApi } from '@/api/order_api/order_api';
+import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
+import { DataTable } from '@/components/table/data-table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { LocalStorageService } from "@/lib/utils";
-import { getClients } from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
-import { CreateEnterpriseUser } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { getVendors } from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
+} from '@/components/ui/select';
+import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { CreateEnterpriseUser } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   GetAllProductGoods,
   GetProductGoodsVendor,
-} from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
+} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import {
   GetAllProductServices,
   GetServicesVendor,
-} from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
-import { CreateOrderService } from "@/services/Orders_Services/Orders_Services";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "sonner";
-import AddModal from "../Modals/AddModal";
-import EmptyStageComponent from "../ui/EmptyStageComponent";
-import ErrorBox from "../ui/ErrorBox";
-import SubHeader from "../ui/Sub-header";
-import { Button } from "../ui/button";
-import Wrapper from "../wrappers/Wrapper";
+} from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
+import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import AddModal from '../Modals/AddModal';
+import EmptyStageComponent from '../ui/EmptyStageComponent';
+import ErrorBox from '../ui/ErrorBox';
+import SubHeader from '../ui/Sub-header';
+import { Button } from '../ui/button';
+import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({ onCancel, name, cta, type }) => {
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
   const [selectedItem, setSelectedItem] = useState({
-    product_name: "",
-    product_type: "",
-    product_id: "",
+    product_name: '',
+    product_type: '',
+    product_id: '',
     quantity: null,
     unit_price: null,
     gst_per_unit: null,
@@ -53,13 +53,13 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     total_gst_amount: null,
   });
   const [order, setOrder] = useState(
-    cta == "offer"
+    cta === 'offer'
       ? {
           seller_enterprise_id: enterpriseId,
           buyer_enterperise_id: null,
           gst_amount: null,
           amount: null,
-          order_type: "SALES",
+          order_type: 'SALES',
           order_items: [],
         }
       : {
@@ -67,9 +67,9 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           buyer_enterperise_id: enterpriseId,
           gst_amount: null,
           amount: null,
-          order_type: "PURCHASE",
+          order_type: 'PURCHASE',
           order_items: [],
-        }
+        },
   );
 
   const createSalesColumns = useCreateSalesColumns(setOrder);
@@ -77,45 +77,45 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   // client/vendor fetching
   const { data: customerData } = useQuery({
     queryKey: [
-      client_enterprise.getClients.endpointKey,
-      vendor_enterprise.getVendors.endpointKey,
+      clientEnterprise.getClients.endpointKey,
+      vendorEnterprise.getVendors.endpointKey,
     ],
     queryFn: () => {
-      if (cta === "offer") {
+      if (cta === 'offer') {
         return getClients(enterpriseId);
       } else {
         return getVendors(enterpriseId);
       }
     },
 
-    select: (customerData) => customerData.data.data,
+    select: () => customerData.data.data,
   });
 
   // client goods fetching
   const { data: goodsData } = useQuery({
-    queryKey: [goods_api.getAllProductGoods.endpointKey],
+    queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
-    select: (goodsData) => goodsData.data.data,
-    enabled: !!cta == "offer",
+    select: () => goodsData.data.data,
+    enabled: !!cta === 'offer',
   });
   const formattedGoodsData =
     goodsData?.map((good) => ({
       ...good,
-      product_type: "GOODS",
+      product_type: 'GOODS',
       product_name: good.productName,
     })) || [];
 
   // client services fetching
   const { data: servicesData } = useQuery({
-    queryKey: [services_api.getAllProductServices.endpointKey],
+    queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
-    select: (servicesData) => servicesData.data.data,
-    enabled: !!cta == "offer",
+    select: () => servicesData.data.data,
+    enabled: !!cta === 'offer',
   });
   const formattedServicesData =
     servicesData?.map((service) => ({
       ...service,
-      product_type: "SERVICE",
+      product_type: 'SERVICE',
       product_name: service.serviceName,
     })) || [];
 
@@ -125,34 +125,34 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   // vendor goods fetching
   const { data: vendorGoodsData } = useQuery({
     queryKey: [
-      goods_api.vendorProductGoods.endpointKey,
+      goodsApi.vendorProductGoods.endpointKey,
       order.seller_enterprise_id,
     ],
     queryFn: () => GetProductGoodsVendor(order.seller_enterprise_id),
-    select: (vendorGoodsData) => vendorGoodsData.data.data,
+    select: () => vendorGoodsData.data.data,
     enabled: !!order.seller_enterprise_id,
   });
   const formattedVendorGoodsData =
     vendorGoodsData?.map((good) => ({
       ...good,
-      product_type: "GOODS",
+      product_type: 'GOODS',
       product_name: good.productName,
     })) || [];
 
   // vendor services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
-      services_api.vendorServices.endpointKey,
+      servicesApi.vendorServices.endpointKey,
       order.seller_enterprise_id,
     ],
     queryFn: () => GetServicesVendor(order.seller_enterprise_id),
-    select: (vendorServicesData) => vendorServicesData.data.data,
+    select: () => vendorServicesData.data.data,
     enabled: !!order.seller_enterprise_id,
   });
   const formattedVendorServicesData =
     vendorServicesData?.map((service) => ({
       ...service,
-      product_type: "SERVICE",
+      product_type: 'SERVICE',
       product_name: service.serviceName,
     })) || [];
 
@@ -167,64 +167,64 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     mutationFn: CreateOrderService,
     onSuccess: () => {
       toast.success(
-        cta === "offer"
-          ? "Sales Order Created Successfully"
-          : "Purchase Order Created Successfully"
+        cta === 'offer'
+          ? 'Sales Order Created Successfully'
+          : 'Purchase Order Created Successfully',
       );
       onCancel();
       queryClient.invalidateQueries({
         queryKey:
-          cta === "offer"
-            ? [order_api.getSales.endpointKey]
-            : [order_api.getPurchases.endpointKey],
+          cta === 'offer'
+            ? [orderApi.getSales.endpointKey]
+            : [orderApi.getPurchases.endpointKey],
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
   // validations
-  const validation = ({ order, selectedItem }) => {
-    let error = {};
+  const validation = ({ orderData, selectedItemData }) => {
+    const error = {};
 
-    if (cta == "offer") {
-      if (order?.buyer_enterperise_id == null) {
-        error.buyer_enterperise_id = "*Please select a client";
+    if (cta === 'offer') {
+      if (orderData?.buyer_enterperise_id == null) {
+        error.buyer_enterperise_id = '*Please select a client';
       }
-      if (order?.order_item?.length === 0) {
-        error.order_item = "*Please add atleast one item to create order";
+      if (orderData?.order_item?.length === 0) {
+        error.order_item = '*Please add atleast one item to create order';
       }
-      if (selectedItem.quantity === null) {
-        error.quantity = "*Required Quantity";
+      if (selectedItemData.quantity === null) {
+        error.quantity = '*Required Quantity';
       }
-      if (selectedItem.unit_price === null) {
-        error.unit_price = "*Required Price";
+      if (selectedItemData.unit_price === null) {
+        error.unit_price = '*Required Price';
       }
-      if (selectedItem.gst_per_unit === null) {
-        error.gst_per_unit = "*Required GST (%)";
+      if (selectedItemData.gst_per_unit === null) {
+        error.gst_per_unit = '*Required GST (%)';
       }
-      if (selectedItem.total_amount === null) {
-        error.total_amount = "*Required Amount";
+      if (selectedItemData.total_amount === null) {
+        error.total_amount = '*Required Amount';
       }
     } else {
-      if (order?.seller_enterprise_id == null) {
-        error.seller_enterprise_id = "*Please select a vendor";
+      if (orderData?.seller_enterprise_id == null) {
+        error.seller_enterprise_id = '*Please select a vendor';
       }
-      if (order?.order_item?.length === 0) {
-        error.order_item = "*Please add atleast one item to create order";
+      if (orderData?.order_item?.length === 0) {
+        error.order_item = '*Please add atleast one item to create order';
       }
-      if (selectedItem.quantity === null) {
-        error.quantity = "*Required Quantity";
+      if (selectedItemData.quantity === null) {
+        error.quantity = '*Required Quantity';
       }
-      if (selectedItem.unit_price === null) {
-        error.unit_price = "*Required Price";
+      if (selectedItemData.unit_price === null) {
+        error.unit_price = '*Required Price';
       }
-      if (selectedItem.gst_per_unit === null) {
-        error.gst_per_unit = "*Required GST (%)";
+      if (selectedItemData.gst_per_unit === null) {
+        error.gst_per_unit = '*Required GST (%)';
       }
-      if (selectedItem.total_amount === null) {
-        error.total_amount = "*Required Amount";
+      if (selectedItemData.total_amount === null) {
+        error.total_amount = '*Required Amount';
       }
     }
 
@@ -246,7 +246,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-    const isError = validation({ order: order, selectedItem: selectedItem });
+    const isError = validation({ order, selectedItem });
 
     if (Object.keys(isError).length === 0) {
       orderMutation.mutate({
@@ -273,13 +273,13 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
-      <div className="flex items-center gap-4 p-4 rounded-sm border-neutral-200 border">
-        <Label>{cta == "offer" ? "Client" : "Vendor"}</Label>
+      <div className="flex items-center gap-4 rounded-sm border border-neutral-200 p-4">
+        <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
         <div className="flex flex-col gap-1">
           <Select
             defaultValue=""
             onValueChange={(value) => {
-              cta === "offer"
+              cta === 'offer'
                 ? setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
                 : setOrder((prev) => ({
                     ...prev,
@@ -292,25 +292,25 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             </SelectTrigger>
             <SelectContent>
               {/* if expected client is not in the list add a new client */}
-              {type === "sales" && (
+              {type === 'sales' && (
                 <AddModal
-                  type={"Add Client"}
+                  type={'Add Client'}
                   cta="client"
                   btnName="Add"
                   mutationFunc={CreateEnterpriseUser}
                 />
               )}
               {/* if expected vendor is not in the list add a new vendor */}
-              {type === "purchase" && (
+              {type === 'purchase' && (
                 <AddModal
-                  type={"Add Vendor"}
+                  type={'Add Vendor'}
                   cta="vendor"
                   btnName="Add"
                   mutationFunc={CreateEnterpriseUser}
                 />
               )}
 
-              {cta == "offer" ? (
+              {cta === 'offer' ? (
                 <>
                   {customerData
                     ?.filter((customer) => customer.client)
@@ -343,7 +343,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
               )}
             </SelectContent>
           </Select>
-          {cta === "offer"
+          {cta === 'offer'
             ? errorMsg.buyer_enterperise_id && (
                 <ErrorBox msg={errorMsg.buyer_enterperise_id} />
               )
@@ -372,20 +372,20 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           </>
         )} */}
       </div>
-      <div className="p-4 rounded-sm border-neutral-200 border flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4 ">
+      <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Label className="flex-shrink-0">Item</Label>
             <div className="flex flex-col gap-1">
               <Select
                 disabled={
-                  (cta === "offer" && order.buyer_enterperise_id == null) ||
+                  (cta === 'offer' && order.buyer_enterperise_id == null) ||
                   order.seller_enterprise_id == null
                 }
                 // defaultValue={selectedItem.product_id}
                 onValueChange={(value) => {
                   const selectedItemData =
-                    cta === "offer"
+                    cta === 'offer'
                       ? itemData?.find((item) => value === item.id)
                       : vendorItemData?.find((item) => value === item.id);
 
@@ -403,12 +403,12 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  {cta === "offer" &&
+                  {cta === 'offer' &&
                     itemData?.map((item) => (
                       <SelectItem
                         disabled={
                           !!order.order_items.find(
-                            (itemO) => itemO.product_id === item.id
+                            (itemO) => itemO.product_id === item.id,
                           )
                         }
                         key={item.id}
@@ -418,12 +418,12 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                       </SelectItem>
                     ))}
 
-                  {cta !== "offer" &&
+                  {cta !== 'offer' &&
                     vendorItemData?.map((item) => (
                       <SelectItem
                         disabled={
                           !!order.order_items.find(
-                            (itemO) => itemO.product_id === item.id
+                            (itemO) => itemO.product_id === item.id,
                           )
                         }
                         key={item.id}
@@ -442,16 +442,16 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Input
                 disabled={
-                  (cta === "offer" && order.buyer_enterperise_id == null) ||
+                  (cta === 'offer' && order.buyer_enterperise_id == null) ||
                   order.seller_enterprise_id == null
                 }
                 value={selectedItem.quantity}
                 onChange={(e) => {
                   const totalAmt = parseFloat(
-                    (e.target.value * selectedItem.unit_price).toFixed(2)
+                    (e.target.value * selectedItem.unit_price).toFixed(2),
                   ); // totalAmt excluding gst
                   const GstAmt = parseFloat(
-                    (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2)
+                    (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2),
                   ); // total gstAmt
                   setSelectedItem((prev) => ({
                     ...prev,
@@ -471,7 +471,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Input
                 disabled={
-                  (cta === "offer" && order.buyer_enterperise_id == null) ||
+                  (cta === 'offer' && order.buyer_enterperise_id == null) ||
                   order.seller_enterprise_id == null
                 }
                 value={selectedItem.unit_price}
@@ -521,11 +521,11 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             onClick={() => {
               setSelectedItem((prev) => ({
                 ...prev,
-                product_id: "",
-                product_type: "",
-                product_name: "",
-                unit_price: "",
-                gst_per_unit: "",
+                product_id: '',
+                product_type: '',
+                product_name: '',
+                unit_price: '',
+                gst_per_unit: '',
               }));
             }}
           >
@@ -533,7 +533,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
           </Button>
           <Button
             disabled={Object.values(selectedItem).some(
-              (value) => value === "" || value === null || value === undefined
+              (value) => value === '' || value === null || value === undefined,
             )} // if any item of selectedItem is empty then button must be disabled
             onClick={() => {
               setOrder((prev) => ({
@@ -541,14 +541,14 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                 order_items: [...prev.order_items, selectedItem],
               }));
               setSelectedItem({
-                product_name: "",
-                product_type: "",
-                product_id: "",
-                quantity: "",
-                unit_price: "",
-                gst_per_unit: "",
-                total_amount: "", // total amount + gst amount
-                total_gst_amount: "",
+                product_name: '',
+                product_type: '',
+                product_id: '',
+                quantity: '',
+                unit_price: '',
+                gst_per_unit: '',
+                total_amount: '', // total amount + gst amount
+                total_gst_amount: '',
               });
               setErrorMsg({});
             }}
@@ -562,10 +562,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       {/* selected itme table */}
       <DataTable data={order.order_items} columns={createSalesColumns} />
 
-      <div className="h-[1px] bg-neutral-300 mt-auto"></div>
+      <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex justify-end items-center gap-4 ">
-        <Button onClick={onCancel} variant={"outline"}>
+      <div className="flex items-center justify-end gap-4">
+        <Button onClick={onCancel} variant={'outline'}>
           Cancel
         </Button>
         {/* <SuccessModal

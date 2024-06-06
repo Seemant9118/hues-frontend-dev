@@ -1,11 +1,12 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import InputWithLabel from "../ui/InputWithLabel";
-import { LocalStorageService } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { cn, LocalStorageService } from '@/lib/utils';
+import React, { useState } from 'react';
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import InputWithLabel from '../ui/InputWithLabel';
 
 const EditItem = ({
   setIsEditing,
@@ -17,15 +18,15 @@ const EditItem = ({
   queryKey,
 }) => {
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
-  const user_id = LocalStorageService.get("user_profile");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const userId = LocalStorageService.get('user_profile');
   const Id = goodsToEdit ? goodsToEdit.id : servicesToEdit.id;
 
   const [item, setItem] = useState(
     goodsToEdit
       ? {
           enterprise_id: enterpriseId,
-          template_id: user_id,
+          template_id: userId,
           product_name: goodsToEdit.productName,
           manufacturer_name: goodsToEdit.manufacturerName,
           service_name: goodsToEdit.serviceName,
@@ -35,7 +36,7 @@ const EditItem = ({
           rate: goodsToEdit.rate,
           gst_percentage: goodsToEdit.gstPercentage,
           amount: goodsToEdit.amount,
-          type: "goods",
+          type: 'goods',
           quantity: goodsToEdit.quantity,
           batch: goodsToEdit.batch,
           expiry: goodsToEdit.expiry,
@@ -48,67 +49,66 @@ const EditItem = ({
         }
       : {
           enterprise_id: enterpriseId,
-          template_id: user_id,
-          product_name: "",
-          manufacturer_name: "",
+          template_id: userId,
+          product_name: '',
+          manufacturer_name: '',
           service_name: servicesToEdit.serviceName,
           description: servicesToEdit.description,
-          hsn_code: "",
+          hsn_code: '',
           SAC: servicesToEdit.sac,
           rate: servicesToEdit.rate,
           gst_percentage: servicesToEdit.gstPercentage,
           amount: servicesToEdit.amount,
-          type: "servies",
-          batch: "",
+          type: 'servies',
+          batch: '',
           expiry: servicesToEdit.expiry,
-          weight: "",
-          length: "",
-          breadth: "",
-          height: "",
+          weight: '',
+          length: '',
+          breadth: '',
+          height: '',
           applications: servicesToEdit.applications,
-          units: "",
-        }
+          units: '',
+        },
   );
 
   const updateMutation = useMutation({
     mutationFn: (data) => mutationFunc(data, Id),
     onSuccess: (data) => {
       if (!data.data.status) {
-        console.log(this.onError);
         this.onError();
         return;
       }
-      toast.success("Edited Successfully");
+      toast.success('Edited Successfully');
       setItem({
-        enterprise_id: "",
-        template_id: "",
-        product_name: "",
-        manufacturer_name: "",
-        service_name: "",
-        description: "",
-        hsn_code: "",
-        SAC: "",
-        rate: "",
-        gst_percentage: "",
-        amount: "",
-        type: "",
-        batch: "",
-        expiry: "",
-        weight: "",
-        length: "",
-        breadth: "",
-        height: "",
-        applications: "",
-        units: "",
+        enterprise_id: '',
+        template_id: '',
+        product_name: '',
+        manufacturer_name: '',
+        service_name: '',
+        description: '',
+        hsn_code: '',
+        SAC: '',
+        rate: '',
+        gst_percentage: '',
+        amount: '',
+        type: '',
+        batch: '',
+        expiry: '',
+        weight: '',
+        length: '',
+        breadth: '',
+        height: '',
+        applications: '',
+        units: '',
       });
       goodsToEdit ? setGoodsToEdit(null) : setServicesToEdit(null);
       setIsEditing((prev) => !prev);
       queryClient.invalidateQueries({
-        queryKey: queryKey,
+        queryKey,
       });
     },
-    onError: (error) => {
-      toast.error("Something went wrong");
+    onError: () => {
+      toast.error('Something went wrong');
     },
   });
 
@@ -126,10 +126,10 @@ const EditItem = ({
     <form
       onSubmit={handleEditSubmit}
       className={cn(
-        "flex flex-col gap-4 h-full overflow-y-auto p-2 grow scrollBarStyles"
+        'scrollBarStyles flex h-full grow flex-col gap-4 overflow-y-auto p-2',
       )}
     >
-      <h2 className="text-zinc-900 font-bold text-2xl">Edit Item</h2>
+      <h2 className="text-2xl font-bold text-zinc-900">Edit Item</h2>
 
       {/* <div className="grid grid-cols-2 gap-2.5">
         {cta === "Item" && !goodsToEdit && (
@@ -159,7 +159,7 @@ const EditItem = ({
       </div> */}
 
       {/* mandatory data fields */}
-      {item.type == "goods" ? (
+      {item.type === 'goods' ? (
         // for goods
         <>
           <div className="grid grid-cols-2 gap-2.5">
@@ -336,15 +336,15 @@ const EditItem = ({
         value={item.applications}
       />
 
-      <div className="h-[1px] bg-neutral-300 mt-auto"></div>
+      <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex justify-end items-center gap-4 ">
+      <div className="flex items-center justify-end gap-4">
         <Button
           onClick={() => {
             setIsEditing((prev) => !prev);
             goodsToEdit ? setGoodsToEdit(null) : setServicesToEdit(null);
           }}
-          variant={"outline"}
+          variant={'outline'}
         >
           Cancel
         </Button>

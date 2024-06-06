@@ -1,36 +1,32 @@
-"use client";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
-import AddModal from "@/components/Modals/AddModal";
-import ConfirmAction from "@/components/Modals/ConfirmAction";
-import GenerateLink from "@/components/enterprise/GenerateLink";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import AddModal from '@/components/Modals/AddModal';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
+import GenerateLink from '@/components/enterprise/GenerateLink';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   deleteClient,
   updateClient,
-} from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
-import {
-  DeleteEnterpriseUser,
-  UpdateEnterpriseUser,
-} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { generateLink } from "@/services/Invitation_Service/Invitation_Service";
-import { MoreVertical } from "lucide-react";
+} from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
+import { MoreVertical } from 'lucide-react';
 
 export const ClientsColumns = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -47,57 +43,57 @@ export const ClientsColumns = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="NAME" />
     ),
   },
   {
-    accessorKey: "address",
+    accessorKey: 'address',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ADDRESS" />
     ),
     cell: ({ row }) => {
-      const address = row.original.address;
+      const { address } = row.original;
       return <p className="truncate">{address}</p>;
     },
   },
   {
-    accessorKey: "mobileNumber",
+    accessorKey: 'mobileNumber',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PHONE" />
     ),
     cell: ({ row }) => {
-      const mobile_number = row.original.mobileNumber;
-      return <p className="flex-shrink-0">{mobile_number}</p>;
+      const { mobileNumber } = row.original;
+      return <p className="flex-shrink-0">{mobileNumber}</p>;
     },
   },
   {
-    accessorKey: "email",
+    accessorKey: 'email',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="EMAIL" />
     ),
   },
   {
-    accessorKey: "panNumber",
+    accessorKey: 'panNumber',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PAN" />
     ),
   },
   {
-    accessorKey: "gstNumber",
+    accessorKey: 'gstNumber',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST No." />
     ),
   },
   {
-    accessorKey: "invitation",
+    accessorKey: 'invitation',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="INVITATION" />
     ),
     cell: ({ row }) => {
       const id = row.original.invitationId;
-      const invitationStatus = row.original.invitationStatus;
+      const { invitationStatus } = row.original;
       return (
         <GenerateLink
           invitationStatus={invitationStatus}
@@ -108,11 +104,11 @@ export const ClientsColumns = [
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.id;
-      const name = row.original.name;
+      const { id } = row.original;
+      const { name } = row.original;
 
       return (
         <DropdownMenu>
@@ -133,7 +129,7 @@ export const ClientsColumns = [
             <ConfirmAction
               name={name}
               id={id}
-              mutationKey={client_enterprise.getClients.endpointKey}
+              mutationKey={clientEnterprise.getClients.endpointKey}
               mutationFunc={deleteClient}
             />
           </DropdownMenuContent>

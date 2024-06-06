@@ -1,32 +1,24 @@
-"use client";
-import React, { useState } from "react";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  AtSign,
-  CalendarDays,
-  Contact,
-  CreditCard,
-  CreditCardIcon,
-  Phone,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import DatePickers from "@/components/ui/DatePickers";
-import moment from "moment";
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@radix-ui/react-dropdown-menu';
+import { AtSign, CalendarDays, Contact, CreditCardIcon } from 'lucide-react';
+import React from 'react';
 
 const VerifyDetail = ({ submittedDetails, kycDetails }) => {
   return (
     <section className="px-10">
-      <h1 className="text-2xl leading-8 pb-4 font-bold text-[#121212]">
+      <h1 className="pb-4 text-2xl font-bold leading-8 text-[#121212]">
         Please Verify Correct Details to Continue
       </h1>
-      <div className=" grid grid-cols-[1fr,1fr] gap-5">
-        {/* form1 Submitted details*/}
-        <form className="h-[75vh] bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] px-4 pb-4 overflow-y-auto flex flex-col justify-center items-center gap-5 scrollBarStyles">
+      <div className="grid grid-cols-[1fr,1fr] gap-5">
+        {/* form1 Submitted details */}
+        <form className="scrollBarStyles flex h-[75vh] flex-col items-center justify-center gap-5 overflow-y-auto rounded-xl bg-white px-4 pb-4 shadow-[0_4px_6px_0_#3288ED1A]">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="Name"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               Name
             </Label>
@@ -40,13 +32,13 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 value={submittedDetails.name}
                 disabled
               />
-              <Contact className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <Contact className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="Aadhaar_number"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               Aadhar Number
             </Label>
@@ -60,13 +52,13 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 value={submittedDetails.aadharNumber}
                 disabled
               />
-              <AtSign className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <AtSign className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="pan_number"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               Date of Birth
             </Label>
@@ -81,13 +73,13 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 value={submittedDetails.dob}
                 onChange=""
               />
-              <CalendarDays className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <CalendarDays className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="pan_number"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               PAN Number
             </Label>
@@ -102,18 +94,18 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 disabled
               />
 
-              <CreditCardIcon className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <CreditCardIcon className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
-          <Button className="w-full max-w-sm mt-8">Continue</Button>
+          <Button className="mt-8 w-full max-w-sm">Continue</Button>
         </form>
 
         {/* form2 - KYC fetched details */}
-        <form className="h-[75vh] bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] px-4 pb-4 overflow-y-auto flex flex-col justify-center items-center gap-5 scrollBarStyles">
+        <form className="scrollBarStyles flex h-[75vh] flex-col items-center justify-center gap-5 overflow-y-auto rounded-xl bg-white px-4 pb-4 shadow-[0_4px_6px_0_#3288ED1A]">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="Name"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               Name
             </Label>
@@ -127,13 +119,13 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 disabled
                 value={kycDetails.name}
               />
-              <Contact className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <Contact className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="Aadhaar_number"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               Aadhar Number
             </Label>
@@ -148,14 +140,14 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 value={kycDetails.aadharNumber}
                 onChange=""
               />
-              <AtSign className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <AtSign className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="pan_number"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               Date of Birth
             </Label>
@@ -170,14 +162,14 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 value={kycDetails.dob}
                 onChange=""
               />
-              <CalendarDays className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <CalendarDays className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label
               htmlFor="pan_number"
-              className="text-[#414656] font-medium flex items-center gap-1"
+              className="flex items-center gap-1 font-medium text-[#414656]"
             >
               PAN Number
             </Label>
@@ -193,11 +185,11 @@ const VerifyDetail = ({ submittedDetails, kycDetails }) => {
                 onChange=""
               />
 
-              <CreditCardIcon className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+              <CreditCardIcon className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
           <Button
-            className="w-full max-w-sm mt-8"
+            className="mt-8 w-full max-w-sm"
             variant="grey"
             disabled={true}
           >

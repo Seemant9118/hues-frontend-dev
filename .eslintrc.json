@@ -44,7 +44,8 @@
     "react-hooks/exhaustive-deps": "off",
     "no-nested-ternary":"off",
     "no-param-reassign":"off",
-    "no-unused-expressions":"off"
+    "no-unused-expressions":"off",
+    "no-plusplus":"off"
   },
   "overrides": [
     {

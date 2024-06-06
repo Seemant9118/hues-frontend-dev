@@ -1,37 +1,38 @@
-"use client";
-import { user_Auth } from "@/api/user_auth/Users";
-import Loading from "@/components/ui/Loading";
-import { Button } from "@/components/ui/button";
-import { LocalStorageService } from "@/lib/utils";
-import "@/services/Digio";
-import { createKYCRequest } from "@/services/User_Auth_Service/UserAuthServices";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+'use client';
+
+import { userAuth } from '@/api/user_auth/Users';
+import Loading from '@/components/ui/Loading';
+import { Button } from '@/components/ui/button';
+import { LocalStorageService } from '@/lib/utils';
+import '@/services/Digio';
+import { createKYCRequest } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 const CompleteKyc = () => {
   const router = useRouter();
   // const [digio, setDigio] = useState(null);
 
-  var options = {
+  const options = {
     // Is_redirection_approach: true,
     // redirect_url: "http:localhost:3000",
-    environment: "sandbox",
-    callback: function (response) {
+    environment: 'sandbox',
+    callback(response) {
       console.log(response);
-      if (response.hasOwnProperty("error_code")) {
-        return console.log("error occurred in process");
+      if (response.hasOwnProperty('error_code')) {
+        return console.log('error occurred in process');
       }
-      //check status api call
-      console.log("Signing;completed;successfully:");
-      router.push("/");
+      // check status api call
+      console.log('Signing;completed;successfully:');
+      router.push('/');
     },
     event_listener: (data) => {
       // console.log(data, "event_l");
     },
     // logo: "https://www.mylogourl.com/image.jpeg",
     theme: {
-      primaryColor: "#2563EB",
-      secondaryColor: "#ffffff",
+      primaryColor: '#2563EB',
+      secondaryColor: '#ffffff',
     },
   };
 
@@ -54,14 +55,14 @@ const CompleteKyc = () => {
     digioInstance.submit(
       data.request_id,
       data.user_identifier,
-      data.access_token.id
+      data.access_token.id,
     );
   };
 
   const { mutate, isPending } = useMutation({
-    mutationKey: [user_Auth.createKYC.endpointKey],
+    mutationKey: [userAuth.createKYC.endpointKey],
     mutationFn: () => {
-      const userId = LocalStorageService.get("user_profile");
+      const userId = LocalStorageService.get('user_profile');
       return createKYCRequest(userId);
     },
     onSuccess: (data) => {
@@ -79,9 +80,9 @@ const CompleteKyc = () => {
         e.preventDefault();
         mutate();
       }}
-      className="border border-[#E1E4ED] py-10 px-5 flex flex-col justify-center items-center gap-3 h-[500px] w-[450px] bg-white z-20 rounded-md"
+      className="z-20 flex h-[500px] w-[450px] flex-col items-center justify-center gap-3 rounded-md border border-[#E1E4ED] bg-white px-5 py-10"
     >
-      <h1 className="w-full text-2xl text-[#414656] font-bold text-center">
+      <h1 className="w-full text-center text-2xl font-bold text-[#414656]">
         Please Complete Your KYC
       </h1>
 

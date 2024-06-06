@@ -1,47 +1,42 @@
-import { template_api } from "@/api/templates_api/template_api";
-import ViewTemplate from "@/components/templates/ViewTemplate";
-import { Button } from "@/components/ui/button";
-import { deleteTemplate } from "@/services/Template_Services/Template_Services";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MessageSquareText, Trash2 } from "lucide-react";
-import Image from "next/image";
-import { toast } from "sonner";
-import Loading from "@/components/ui/Loading";
-import CreateTemplateForm from "./CreateTemplateForm";
+import ViewTemplate from '@/components/templates/ViewTemplate';
+import { Button } from '@/components/ui/button';
+import { MessageSquareText } from 'lucide-react';
+import Image from 'next/image';
+import CreateTemplateForm from './CreateTemplateForm';
 
 const TemplateCard = ({
-  onViewFormClick,
-  onDelete,
+  // onViewFormClick,
+  // onDelete,
   viewResponseClick,
-  name,
-  type,
+  // name,
+  // type,
   templateUrl,
   templateName,
   id,
   signatureBoxPlacement,
 }) => {
   // const getfileExtension = type.replace(/(.*)\//g, "");
-  const queryClient = useQueryClient();
-  const { mutate, isPending } = useMutation({
-    mutationFn: () => deleteTemplate(id),
-    onSuccess: () => {
-      toast.success("Template Deleted Successfully.");
-      queryClient.invalidateQueries({
-        queryKey: [template_api.getTemplates.endpointKey],
-      });
-    },
-    onError: () => {
-      toast.error("Failed to delete template.");
-    },
-  });
+  // const queryClient = useQueryClient();
+  // const { mutate, isPending } = useMutation({
+  //   mutationFn: () => deleteTemplate(id),
+  //   onSuccess: () => {
+  //     toast.success('Template Deleted Successfully.');
+  //     queryClient.invalidateQueries({
+  //       queryKey: [templateApi.getTemplates.endpointKey],
+  //     });
+  //   },
+  //   onError: () => {
+  //     toast.error('Failed to delete template.');
+  //   },
+  // });
   return (
-    <div className="border border-neutral-500/10 rounded-md flex flex-col gap-2.5 p-4 scrollBarStyles relative">
+    <div className="scrollBarStyles relative flex flex-col gap-2.5 rounded-md border border-neutral-500/10 p-4">
       <div className="flex items-center justify-between gap-2">
         {/* <p className="text-neutral-300 text-sm font-bold">Template Name</p> */}
-        <div className="text-[#363940] text-base font-bold flex">
+        <div className="flex text-base font-bold text-[#363940]">
           <p className="truncate">
             {templateName.substring(0, 10)}
-            {templateName.length > 10 && "..."}
+            {templateName.length > 10 && '...'}
           </p>
         </div>
       </div>
@@ -51,7 +46,7 @@ const TemplateCard = ({
         ) : (
           <Image src={"/xlsx_png.png"} alt="Template" height={55} width={60} />
         )} */}
-        <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
+        <Image src={'/pdf_png.png'} alt="Template" height={55} width={60} />
         <Button
           variant="grey"
           onClick={() => viewResponseClick()}
@@ -64,7 +59,7 @@ const TemplateCard = ({
 
       <div
         // className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]"
-        className="flex justify-between items-center"
+        className="flex items-center justify-between"
       >
         {/* <Button
           asChild
@@ -91,7 +86,7 @@ const TemplateCard = ({
           size="icon"
           className="text-neutral-500 hover:text-black"
         >
-          {isPending ? <Loading /> : <Trash2 size={12} />}
+          {/* {isPending ? <Loading /> : <Trash2 size={12} />} */}
         </Button>
       </div>
     </div>

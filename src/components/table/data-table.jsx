@@ -1,17 +1,8 @@
-"use client";
-import * as React from "react";
+'use client';
 
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import * as React from 'react';
+
+import { DataTablePagination } from '@/components/table/DataTablePagination';
 import {
   Table,
   TableBody,
@@ -19,10 +10,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { DataTablePagination } from "@/components/table/DataTablePagination";
+} from '@/components/ui/table';
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 
-export function DataTable({ columns, data, page, onRowClick, id }) {
+export function DataTable({ columns, data, onRowClick, id }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
@@ -55,7 +53,7 @@ export function DataTable({ columns, data, page, onRowClick, id }) {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -68,16 +66,16 @@ export function DataTable({ columns, data, page, onRowClick, id }) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                   onClick={
                     onRowClick ? () => onRowClick(row.original) : () => {}
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="shrink-0 max-w-xl ">
+                    <TableCell key={cell.id} className="max-w-xl shrink-0">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

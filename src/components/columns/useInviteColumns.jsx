@@ -1,44 +1,45 @@
-"use client";
-import { Invitation } from "@/api/invitation/Invitation";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { LocalStorageService } from "@/lib/utils";
+'use client';
+
+import { invitation } from '@/api/invitation/Invitation';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { LocalStorageService } from '@/lib/utils';
 import {
   acceptInvitation,
   rejectInvitation,
-} from "@/services/Invitation_Service/Invitation_Service";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X } from "lucide-react";
-import { toast } from "sonner";
+} from '@/services/Invitation_Service/Invitation_Service';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const useInviteColumns = () => {
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const acceptInvitationMutation = useMutation({
     mutationFn: (data) => acceptInvitation(data),
-    onSuccess: (data) => {
-      toast.success("Success");
+    onSuccess: () => {
+      toast.success('Success');
       queryClient.invalidateQueries([
-        Invitation.getReceivedInvitation.endpointKey,
+        invitation.getReceivedInvitation.endpointKey,
       ]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
   const rejectInvitationMutation = useMutation({
     mutationFn: (data) => rejectInvitation(data),
-    onSuccess: (data) => {
-      toast.success("Rejected");
+    onSuccess: () => {
+      toast.success('Rejected');
       queryClient.invalidateQueries([
-        Invitation.getReceivedInvitation.endpointKey,
+        invitation.getReceivedInvitation.endpointKey,
       ]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
@@ -57,12 +58,12 @@ export const useInviteColumns = () => {
   };
   return [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -79,89 +80,89 @@ export const useInviteColumns = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "name",
+      accessorKey: 'name',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="NAME" />
       ),
       cell: ({ row }) => {
         if (!row.original.name) {
-          return "NA";
+          return 'NA';
         } else {
           return row.original.name;
         }
       },
     },
     {
-      accessorKey: "gstNumber",
+      accessorKey: 'gstNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GST IN" />
       ),
       cell: ({ row }) => {
         if (!row.original.gstNumber) {
-          return "NA";
+          return 'NA';
         } else {
           return row.original.gstNumber;
         }
       },
     },
     {
-      accessorKey: "panNumber",
+      accessorKey: 'panNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PAN" />
       ),
       cell: ({ row }) => {
         if (!row.original.panNumber) {
-          return "NA";
+          return 'NA';
         } else {
           return row.original.panNumber;
         }
       },
     },
     {
-      accessorKey: "email",
+      accessorKey: 'email',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="MAIL" />
       ),
       cell: ({ row }) => {
         if (!row.original.email) {
-          return "NA";
+          return 'NA';
         } else {
           return row.original.email;
         }
       },
     },
     {
-      accessorKey: "mobileNumber",
+      accessorKey: 'mobileNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PHONE NO." />
       ),
       cell: ({ row }) => {
         if (!row.original.mobileNumber) {
-          return "NA";
+          return 'NA';
         } else {
           return row.original.mobileNumber;
         }
       },
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ACCEPT/REJECT" />
       ),
       cell: ({ row }) => {
-        const id = row.original.id;
+        const { id } = row.original;
 
         return (
-          <div className="flex gap-4 items-center">
+          <div className="flex items-center gap-4">
             <Button
-              className="h-9 w-34 bg-red-500 hover:bg-red-700"
+              className="w-34 h-9 bg-red-500 hover:bg-red-700"
               onClick={() => handleReject(id)}
             >
               <X size={20} className="cursor-pointer" />
             </Button>
             <Button
-              className="h-9 w-34 bg-green-500 hover:bg-green-700"
+              className="w-34 h-9 bg-green-500 hover:bg-green-700"
               onClick={() => handleAccept(id)}
             >
               <Check />

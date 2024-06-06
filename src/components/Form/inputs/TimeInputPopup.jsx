@@ -1,31 +1,31 @@
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import MinMaxForm from "./MinMaxForm";
+} from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import MinMaxForm from './MinMaxForm';
 
 const TimeInputPopup = ({ input, setDroppedInputs, idx }) => {
-  const [format, setFormat] = useState(input?.format || "Duration");
-  const [stepSize, setstepSize] = useState(0);
+  const [format, setFormat] = useState(input?.format || 'Duration');
+  const [stepSize] = useState(0);
 
-  const stepSizeSetter = (e) => {};
+  const stepSizeSetter = () => {};
 
   return (
-    <div className="flex gap-2 items-center pt-3 pb-2">
+    <div className="flex items-center gap-2 pb-2 pt-3">
       <Popover>
         <PopoverTrigger asChild>
-          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
+          <Button className="h-7 gap-2 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
             Set Input Type
             <ChevronDown />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-w-fit ml-36 flex flex-col gap-2">
+        <PopoverContent className="ml-36 flex max-w-fit flex-col gap-2">
           <RadioGroup
             onValueChange={(value) => {
               setFormat(value);
@@ -38,26 +38,26 @@ const TimeInputPopup = ({ input, setDroppedInputs, idx }) => {
             defaultValue={format}
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value={"Duration"} id={"Duration"} />
-              <Label htmlFor={"Duration"}>Duration</Label>
+              <RadioGroupItem value={'Duration'} id={'Duration'} />
+              <Label htmlFor={'Duration'}>Duration</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value={"Time"} id={"Time"} />
-              <Label htmlFor={"Duration"}>Time</Label>
+              <RadioGroupItem value={'Time'} id={'Time'} />
+              <Label htmlFor={'Duration'}>Time</Label>
             </div>
           </RadioGroup>
 
-          {format === "Duration" && (
-            <div className="flex flex-col gap-2 border-t-[1px] border-b-[1px] border-primary/20 py-2">
+          {format === 'Duration' && (
+            <div className="flex flex-col gap-2 border-b-[1px] border-t-[1px] border-primary/20 py-2">
               <label
                 htmlFor="minValue"
-                className="text-xs text-primary font-normal leading-normal"
+                className="text-xs font-normal leading-normal text-primary"
               >
                 Step Size
               </label>
               <input
                 onBlur={(e) => stepSizeSetter(e)}
-                className="text-xs leading-6 w-20 h-7 flex px-2 items-center bg-white border-[1px] border-primary/20 rounded focus-within:outline-none"
+                className="flex h-7 w-20 items-center rounded border-[1px] border-primary/20 bg-white px-2 text-xs leading-6 focus-within:outline-none"
                 type="number"
                 id="minValue"
                 value={stepSize || 0}
@@ -75,13 +75,13 @@ const TimeInputPopup = ({ input, setDroppedInputs, idx }) => {
       </Popover>
       <Popover>
         <PopoverTrigger asChild>
-          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
+          <Button className="h-7 gap-2 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
             Time Format
             <ChevronDown />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-w-fit ml-36 flex flex-col gap-2">
-          {format === "Duration" ? (
+        <PopoverContent className="ml-36 flex max-w-fit flex-col gap-2">
+          {format === 'Duration' ? (
             <RadioGroup
               onValueChange={(value) => {
                 setFormat(value);
@@ -94,12 +94,12 @@ const TimeInputPopup = ({ input, setDroppedInputs, idx }) => {
               defaultValue={format}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={"HH:MM:SS"} id={"HH:MM:SS"} />
-                <Label htmlFor={"HH:MM:SS"}>HH:MM:SS</Label>
+                <RadioGroupItem value={'HH:MM:SS'} id={'HH:MM:SS'} />
+                <Label htmlFor={'HH:MM:SS'}>HH:MM:SS</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={"HH:MM"} id={"HH:MM"} />
-                <Label htmlFor={"HH:MM"}>HH:MM</Label>
+                <RadioGroupItem value={'HH:MM'} id={'HH:MM'} />
+                <Label htmlFor={'HH:MM'}>HH:MM</Label>
               </div>
             </RadioGroup>
           ) : (
@@ -115,12 +115,12 @@ const TimeInputPopup = ({ input, setDroppedInputs, idx }) => {
               defaultValue={format}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={"12 hour clock"} id={"12 hour clock"} />
-                <Label htmlFor={"12 hour clock"}>12 hour clock</Label>
+                <RadioGroupItem value={'12 hour clock'} id={'12 hour clock'} />
+                <Label htmlFor={'12 hour clock'}>12 hour clock</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={"24 hour clock"} id={"24 hour clock"} />
-                <Label htmlFor={"24 hour clock"}>24</Label>
+                <RadioGroupItem value={'24 hour clock'} id={'24 hour clock'} />
+                <Label htmlFor={'24 hour clock'}>24</Label>
               </div>
             </RadioGroup>
           )}

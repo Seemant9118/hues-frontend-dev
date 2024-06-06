@@ -1,32 +1,35 @@
-"use client";
-import InputWithLabel from "@/components/ui/InputWithLabel";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import InputWithLabel from '@/components/ui/InputWithLabel';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { LocalStorageService } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Edit3, Layers2 } from "lucide-react";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import ErrorBox from "../ui/ErrorBox";
-import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
-import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+} from '@/components/ui/dialog';
+import { LocalStorageService } from '@/lib/utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Edit3, Layers2 } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import ErrorBox from '../ui/ErrorBox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import { Label } from "../ui/label";
-import Loading from "../ui/Loading";
-import { SearchEnterprise } from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { sendInvitation } from "@/services/Invitation_Service/Invitation_Service";
+} from '../ui/select';
+import { Label } from '../ui/label';
+import Loading from '../ui/Loading';
+
+import { Input } from '../ui/input';
 
 // debouncing function
 const debounce = (func, delay) => {
@@ -43,39 +46,39 @@ const debounce = (func, delay) => {
 
 const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [open, setOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [enterpriseData, setEnterPriseData] = useState(
-    btnName !== "Edit"
+    btnName !== 'Edit'
       ? {
           enterprise_id: enterpriseId,
-          name: "",
-          address: "",
-          country_code: "+91",
-          mobile_number: "",
-          email: "",
-          pan_number: "",
-          gst_number: "",
+          name: '',
+          address: '',
+          country_code: '+91',
+          mobile_number: '',
+          email: '',
+          pan_number: '',
+          gst_number: '',
           user_type: cta,
         }
       : {
           enterprise_id: enterpriseId,
           name: userData.name,
           address: userData.address,
-          country_code: "+91",
+          country_code: '+91',
           mobile_number: userData.mobileNumber,
           email: userData.email,
           pan_number: userData.panNumber,
           gst_number: userData.gstNumber,
           user_type: cta,
-        }
+        },
   );
   const [errorMsg, setErrorMsg] = useState({});
   const [searchInput, setSearchInput] = useState({
-    id_type: "",
-    id_number: "",
+    id_type: '',
+    id_number: '',
   });
   const [searchData, setSearchData] = useState([]);
 
@@ -98,17 +101,17 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         searchMutation.mutate(input);
       }
     }, 500),
-    [] // Empty array ensures that debounce function is created only once
+    [], // Empty array ensures that debounce function is created only once
   );
 
   // send invite mutation
   const sendInvite = useMutation({
     mutationFn: (data) => sendInvitation(data),
     onSuccess: (data) => {
-      if (data.data.message === "Invitation already exists") {
+      if (data.data.message === 'Invitation already exists') {
         toast.info(data.data.message);
       } else {
-        toast.success("Invitation sent successfully");
+        toast.success('Invitation sent successfully');
       }
     },
     onError: (error) => {
@@ -121,33 +124,33 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
     mutationFn: mutationFunc,
     onSuccess: () => {
       toast.success(
-        cta == "client"
-          ? "Client Added Successfully"
-          : "Vendor Added Successfully"
+        cta === 'client'
+          ? 'Client Added Successfully'
+          : 'Vendor Added Successfully',
       );
       setOpen((prev) => !prev);
       setEnterPriseData({
         enterprise_id: enterpriseId,
-        name: "",
-        address: "",
-        country_code: "+91",
-        mobile_number: "",
-        email: "",
-        pan_number: "",
-        gst_number: "",
+        name: '',
+        address: '',
+        country_code: '+91',
+        mobile_number: '',
+        email: '',
+        pan_number: '',
+        gst_number: '',
         user_type: cta,
       });
       setIsAdding(false);
       setSearchInput({});
       queryClient.invalidateQueries({
         queryKey:
-          cta == "client"
-            ? [client_enterprise.getClients.endpointKey]
-            : [vendor_enterprise.getVendors.endpointKey],
+          cta === 'client'
+            ? [clientEnterprise.getClients.endpointKey]
+            : [vendorEnterprise.getVendors.endpointKey],
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
@@ -160,29 +163,29 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         return;
       }
 
-      toast.success("Edited Successfully");
+      toast.success('Edited Successfully');
       setOpen((prev) => !prev);
       setEnterPriseData({
-        enterprise_id: "",
-        name: "",
-        address: "",
-        country_code: "",
-        mobile_number: "",
-        email: "",
-        pan_number: "",
-        gst_number: "",
-        user_type: "",
+        enterprise_id: '',
+        name: '',
+        address: '',
+        country_code: '',
+        mobile_number: '',
+        email: '',
+        pan_number: '',
+        gst_number: '',
+        user_type: '',
       });
 
       queryClient.invalidateQueries({
         queryKey:
-          cta == "client"
-            ? [client_enterprise.getClients.endpointKey]
-            : [vendor_enterprise.getVendors.endpointKey],
+          cta === 'client'
+            ? [clientEnterprise.getClients.endpointKey]
+            : [vendorEnterprise.getVendors.endpointKey],
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
@@ -192,34 +195,34 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
     const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
-    if (enterpriseData.name === "") {
-      error.name = "*Required Name";
+    if (enterpriseData.name === '') {
+      error.name = '*Required Name';
     }
 
-    if (enterpriseData.address === "") {
-      error.address = "*Required Address";
+    if (enterpriseData.address === '') {
+      error.address = '*Required Address';
     }
 
-    if (enterpriseData.mobile_number === "") {
-      error.mobile_number = "*Required Phone";
+    if (enterpriseData.mobile_number === '') {
+      error.mobile_number = '*Required Phone';
     } else if (enterpriseData.mobile_number.length !== 10) {
-      error.mobile_number = "*Please enter a valid mobile number";
+      error.mobile_number = '*Please enter a valid mobile number';
     }
 
-    if (enterpriseData.email === "") {
-      error.email = "*Required Email";
+    if (enterpriseData.email === '') {
+      error.email = '*Required Email';
     } else if (!email_pattern.test(enterpriseData.email)) {
-      error.email = "*Please provide valid email";
+      error.email = '*Please provide valid email';
     }
 
-    if (enterpriseData.pan_number === "") {
-      error.pan_number = "*Required PAN";
+    if (enterpriseData.pan_number === '') {
+      error.pan_number = '*Required PAN';
     } else if (!pan_pattern.test(enterpriseData.pan_number)) {
-      error.pan_number = "* Please provide valid PAN Number";
+      error.pan_number = '* Please provide valid PAN Number';
     }
 
-    if (enterpriseData.gst_number === "") {
-      error.gst_number = "*Required GST IN";
+    if (enterpriseData.gst_number === '') {
+      error.gst_number = '*Required GST IN';
     }
 
     return error;
@@ -240,7 +243,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
     sendInvite.mutate({
       from_enterprise_id: enterpriseId,
       to_enterprise_id: id,
-      invitation_type: cta === "client" ? "CLIENT" : "VENDOR",
+      invitation_type: cta === 'client' ? 'CLIENT' : 'VENDOR',
     });
   };
 
@@ -274,18 +277,18 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       onOpenChange={() => {
         setOpen((prev) => !prev);
         setSearchInput({
-          id_type: "",
-          id_number: "",
+          id_type: '',
+          id_number: '',
         });
         setEnterPriseData({
           enterprise_id: enterpriseId,
-          name: "",
-          address: "",
-          country_code: "+91",
-          mobile_number: "",
-          email: "",
-          pan_number: "",
-          gst_number: "",
+          name: '',
+          address: '',
+          country_code: '+91',
+          mobile_number: '',
+          email: '',
+          pan_number: '',
+          gst_number: '',
           user_type: cta,
         });
         setSearchData([]);
@@ -293,13 +296,13 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       }}
     >
       <DialogTrigger asChild>
-        {btnName === "Edit" ? (
-          <div className="flex items-center justify-center rounded-sm  px-2 py-1.5 hover:cursor-pointer hover:bg-slate-100 gap-2 w-full">
+        {btnName === 'Edit' ? (
+          <div className="flex w-full items-center justify-center gap-2 rounded-sm px-2 py-1.5 hover:cursor-pointer hover:bg-slate-100">
             <Edit3 size={12} />
-            Edit{" "}
+            Edit{' '}
           </div>
         ) : (
-          <Button variant={"blue_outline"} className="w-full">
+          <Button variant={'blue_outline'} className="w-full">
             <Layers2 size={14} />
             {btnName}
           </Button>
@@ -309,12 +312,12 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
         {/* search inputs */}
-        {!isAdding && (
+        {!isAdding && btnName !== 'Edit' && (
           <form>
-            <div className="flex justify-center items-center gap-4">
-              <div className="flex flex-col gap-0.5 w-1/2">
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex w-1/2 flex-col gap-0.5">
                 <div>
-                  <Label className="flex-shrink-0">Identifier Type</Label>{" "}
+                  <Label className="flex-shrink-0">Identifier Type</Label>{' '}
                   <span className="text-red-600">*</span>
                 </div>
                 <Select
@@ -334,18 +337,18 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-1 w-1/2">
+              <div className="flex w-1/2 flex-col gap-1">
                 <InputWithLabel
                   className="rounded-md"
                   name={`Identifier No. (${
-                    searchInput?.id_type === ""
-                      ? "Select type"
+                    searchInput?.id_type === ''
+                      ? 'Select type'
                       : searchInput?.id_type?.toUpperCase()
                   })`}
                   type="tel"
                   id="id_number"
                   required={true}
-                  disabled={searchInput.id_type === ""}
+                  disabled={searchInput.id_type === ''}
                   value={searchInput.id_number}
                   onChange={handleChangeId}
                 />
@@ -360,15 +363,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         )}
 
         {/* client list related search  */}
-        {!isAdding && (
-          <div className="max-h-[200px] border rounded-md p-4 flex flex-col gap-4 overflow-auto scrollBarStyles">
+        {!isAdding && btnName !== 'Edit' && (
+          <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto rounded-md border p-4">
             {searchMutation.isPending && <Loading />}
             {searchData &&
               searchData.length !== 0 &&
               searchData.map((sdata) => (
                 <div
                   key={sdata.id}
-                  className="flex justify-between font-bold text-xs items-center border rounded-md p-2 bg-gray-100"
+                  className="flex items-center justify-between rounded-md border bg-gray-100 p-2 text-xs font-bold"
                 >
                   <div className="flex flex-col gap-1 text-gray-600">
                     <p>{sdata?.name}</p>
@@ -384,7 +387,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
             {searchData?.length === 0 && (
               <span>
-                Enterprise not available,{" "}
+                Enterprise not available,{' '}
                 <Button variant="link" onClick={() => setIsAdding(true)}>
                   Add details
                 </Button>
@@ -396,37 +399,46 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         )}
 
         {/* if client does not in our client list then, create client */}
-        {isAdding && searchData?.length === 0 && (
+        {isAdding && searchData?.length === 0 && btnName !== 'Edit' && (
           <form
-            className="border p-5 rounded-md"
-            onSubmit={btnName === "Edit" ? handleEditSubmit : handleSubmit}
+            className="rounded-md border p-5"
+            onSubmit={btnName === 'Edit' ? handleEditSubmit : handleSubmit}
           >
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <InputWithLabel
+                <div className="flex gap-1">
+                  <Label>Name</Label>
+                  <span className="text-red-600">*</span>
+                </div>
+
+                <Input
                   name="Name"
                   type="text"
-                  required={true}
+                  // required={true}
                   id="name"
                   onChange={(e) => {
                     setEnterPriseData((prev) => ({
                       ...prev,
                       name: e.target.value,
                     }));
-                    e.target.value === ""
-                      ? setErrorMsg("*Please fill required details - Name")
-                      : setErrorMsg("");
+                    e.target.value === ''
+                      ? setErrorMsg('*Please fill required details - Name')
+                      : setErrorMsg('');
                   }}
                   value={enterpriseData.name}
                 />
                 {errorMsg.name && <ErrorBox msg={errorMsg.name} />}
               </div>
               <div className="flex flex-col gap-1">
-                <InputWithLabel
+                <div className="flex gap-1">
+                  <Label>Address</Label>
+                  <span className="text-red-600">*</span>
+                </div>
+                <Input
                   name="Address"
                   type="text"
                   id="address"
-                  required={true}
+                  // required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
@@ -438,11 +450,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
               </div>
               <div className="flex flex-col gap-1">
-                <InputWithLabel
+                <div className="flex gap-1">
+                  <Label>Email</Label>
+                  <span className="text-red-600">*</span>
+                </div>
+                <Input
                   name="Email"
                   type="text"
                   id="email"
-                  required={true}
+                  // required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
@@ -455,11 +471,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
-                  <InputWithLabel
+                  <div className="flex gap-1">
+                    <Label>Phone</Label>
+                    <span className="text-red-600">*</span>
+                  </div>
+                  <Input
                     name="Phone"
                     type="tel"
                     id="mobile_number"
-                    required={true}
+                    // required={true}
                     onChange={(e) =>
                       setEnterPriseData((prev) => ({
                         ...prev,
@@ -473,11 +493,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
-                  <InputWithLabel
+                  <div className="flex gap-1">
+                    <Label>PAN</Label>
+                    <span className="text-red-600">*</span>
+                  </div>
+                  <Input
                     name="PAN"
                     type="tel"
                     id="pan_number"
-                    required={true}
+                    // required={true}
                     onChange={(e) =>
                       setEnterPriseData((prev) => ({
                         ...prev,
@@ -492,11 +516,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <InputWithLabel
+                <div className="flex gap-1">
+                  <Label>GST IN</Label>
+                  <span className="text-red-600">*</span>
+                </div>
+                <Input
                   name="GST IN"
                   type="tel"
                   id="gst_number"
-                  required={true}
+                  // required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
@@ -511,36 +539,36 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
             <div className="h-[1px] bg-neutral-300"></div>
 
-            <div className="flex justify-end items-center gap-4 mt-3">
+            <div className="mt-3 flex items-center justify-end gap-4">
               <DialogClose asChild>
                 <Button
                   onClick={() => {
                     setErrorMsg({});
-                    if (btnName !== "Edit") {
+                    if (btnName !== 'Edit') {
                       setEnterPriseData({
-                        enterprise_id: "",
-                        name: "",
-                        address: "",
-                        country_code: "",
-                        mobile_number: "",
-                        email: "",
-                        pan_number: "",
-                        gst_number: "",
-                        user_type: "",
+                        enterprise_id: '',
+                        name: '',
+                        address: '',
+                        country_code: '',
+                        mobile_number: '',
+                        email: '',
+                        pan_number: '',
+                        gst_number: '',
+                        user_type: '',
                       });
                       setIsAdding(false);
                       setSearchInput({});
                     }
                     setOpen(false);
                   }}
-                  variant={"outline"}
+                  variant={'outline'}
                 >
                   Cancel
                 </Button>
               </DialogClose>
 
               <Button type="submit">
-                {btnName === "Edit" ? "Edit" : type}
+                {btnName === 'Edit' ? 'Edit' : type}
               </Button>
             </div>
           </form>

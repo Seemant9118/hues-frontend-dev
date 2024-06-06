@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint . --ext .jsx --format stylish",
     "lint:fix": "eslint . --ext .jsx --fix",
+    "lint:watch": "nodemon --exec \"npm run lint\" --ext js,jsx",
     "test": "jest",
     "test:watch": "jest --watch"
   },

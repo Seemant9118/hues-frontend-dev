@@ -1,24 +1,24 @@
-"use client";
-import { Suspense, useEffect, useState } from "react";
-import Image from "next/image";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { LocalStorageService, cn } from "@/lib/utils";
-import { useMutation, useQuery } from "@tanstack/react-query";
+'use client';
+
+import { invitation } from '@/api/invitation/Invitation';
+import Loading from '@/components/ui/Loading';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LocalStorageService } from '@/lib/utils';
+import { validationBase64 } from '@/services/Invitation_Service/Invitation_Service';
 import {
   loginWithInvitation,
   userGenerateOtp,
-} from "@/services/User_Auth_Service/UserAuthServices";
-import { toast } from "sonner";
-import { useUser } from "@/context/UserContext";
-import Loading from "@/components/ui/Loading";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
-import { Invitation } from "@/api/invitation/Invitation";
-import { validationBase64 } from "@/services/Invitation_Service/Invitation_Service";
+} from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Phone } from 'lucide-react';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
+export default function IndexForm({ setCurrStep }) {
   // const [loginWithThirdParty, setLoginWithThirdParty] = useState(true); // digilocker (thirdParty) by default active
 
   // const [formDataWithDigi, setFormDataWithDigi] = useState({
@@ -26,27 +26,25 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   // });
 
   const [formDataWithMob, setFormDataWithMob] = useState({
-    mobile_number: "",
-    country_code: "+91",
+    mobile_number: '',
+    country_code: '+91',
   });
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
   const searchParams = useSearchParams();
-  const invitationToken = searchParams.get("invitationToken");
+  const invitationToken = searchParams.get('invitationToken');
 
   //  if invitation login flow then
   const {
     isLoading,
-    error,
     data: inviteData,
     isSuccess,
   } = useQuery({
-    queryKey: [Invitation.validationBase64.endpointKey],
-    queryFn: () => (invitationToken ? validationBase64(invitationToken) : ""),
+    queryKey: [invitation.validationBase64.endpointKey],
+    queryFn: () => (invitationToken ? validationBase64(invitationToken) : ''),
     enabled: !!invitationToken,
     select: (data) => data.data.data,
   });
-  console.log(inviteData);
 
   useEffect(() => {
     if (isSuccess) {
@@ -61,31 +59,31 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   const loginInvitation = useMutation({
     mutationFn: loginWithInvitation,
     onSuccess: (data) => {
-      LocalStorageService.set("user_profile", data.data.data.userId);
-      LocalStorageService.set("user_mobile_number", inviteData.mobile_number);
-      LocalStorageService.set("operation_type", data.data.data.operation_type);
+      LocalStorageService.set('user_profile', data.data.data.userId);
+      LocalStorageService.set('user_mobile_number', inviteData.mobile_number);
+      LocalStorageService.set('operation_type', data.data.data.operation_type);
       toast.success(data.data.message);
       setCurrStep(2);
     },
     onError: () => {
-      setErrorMsg("Failed to send OTP");
+      setErrorMsg('Failed to send OTP');
     },
   });
 
   const mutation = useMutation({
     mutationFn: (data) => userGenerateOtp(data),
     onSuccess: (data) => {
-      LocalStorageService.set("user_profile", data.data.data.userId);
+      LocalStorageService.set('user_profile', data.data.data.userId);
       LocalStorageService.set(
-        "user_mobile_number",
-        formDataWithMob.mobile_number
+        'user_mobile_number',
+        formDataWithMob.mobile_number,
       );
-      LocalStorageService.set("operation_type", data.data.data.operation_type);
+      LocalStorageService.set('operation_type', data.data.data.operation_type);
       toast.success(data.data.message);
       setCurrStep(2);
     },
     onError: () => {
-      setErrorMsg("Failed to send OTP");
+      setErrorMsg('Failed to send OTP');
     },
   });
 
@@ -107,13 +105,13 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   // };
 
   const handleChangeMobLogin = (e) => {
-    let name = e.target.name;
-    let value = e.target.value;
+    const { name } = e.target;
+    const { value } = e.target;
     // handle validation
     if (value.length !== 10) {
-      setErrorMsg("*Please enter a 10 - digit mobile number");
+      setErrorMsg('*Please enter a 10 - digit mobile number');
     } else {
-      setErrorMsg("");
+      setErrorMsg('');
     }
     setFormDataWithMob((values) => ({ ...values, [name]: value }));
   };
@@ -130,7 +128,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
     e.preventDefault();
     if (!errorMsg) {
       if (!invitationToken) {
-        mutation.mutate(formDataWithMob); //normal flow
+        mutation.mutate(formDataWithMob); // normal flow
       } else {
         loginInvitation.mutate({
           ...inviteData,
@@ -141,12 +139,12 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
   };
 
   return (
-    <div className="border border-[#E1E4ED] p-10 flex flex-col justify-center items-center gap-5 h-[500px] w-[450px] bg-white z-20 rounded-md">
-      <h1 className="w-full text-3xl text-[#414656] font-bold text-center">
+    <div className="z-20 flex h-[500px] w-[450px] flex-col items-center justify-center gap-5 rounded-md border border-[#E1E4ED] bg-white p-10">
+      <h1 className="w-full text-center text-3xl font-bold text-[#414656]">
         Welcome to Hues!
       </h1>
-      <p className="w-full text-xl text-[#414656] text-center">
-        One account for all things{" "}
+      <p className="w-full text-center text-xl text-[#414656]">
+        One account for all things{' '}
         <span className="font-bold">Paraphernalia</span>
       </p>
 
@@ -162,27 +160,27 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
         className="grid w-full max-w-sm items-center gap-3.5"
       >
         <div className="flex flex-col gap-1">
-          <Label htmlFor="mobile-number" className="text-[#414656] font-medium">
+          <Label htmlFor="mobile-number" className="font-medium text-[#414656]">
             Mobile Number <span className="text-red-600">*</span>
           </Label>
-          <div className="hover:border-gray-600 flex items-center gap-1 relative">
-            <span className="absolute left-1.5 font-semibold text-gray-600 text-sm">
+          <div className="relative flex items-center gap-1 hover:border-gray-600">
+            <span className="absolute left-1.5 text-sm font-semibold text-gray-600">
               +91
             </span>
             <Input
               type="text"
               name="mobile_number"
               placeholder="Mobile Number"
-              className="focus:font-bold px-8"
+              className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobile_number}
               required
             />
 
-            <Phone className=" text-[#3F5575] font-bold absolute top-1/2 right-2 -translate-y-1/2" />
+            <Phone className="absolute right-2 top-1/2 -translate-y-1/2 font-bold text-[#3F5575]" />
           </div>
           {errorMsg && (
-            <span className="text-red-600 text-sm w-full px-1 font-semibold">
+            <span className="w-full px-1 text-sm font-semibold text-red-600">
               {errorMsg}
             </span>
           )}
@@ -197,7 +195,7 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
           ) : (
             <>
               <Image
-                src={"/smartphone.png"}
+                src={'/smartphone.png'}
                 alt="smartph-icon"
                 width={15}
                 height={5}
@@ -259,17 +257,17 @@ export default function IndexForm({ setCurrStep, setIsThirdPartyLogin }) {
       )} */}
 
       {/* signup redirection */}
-      <div className="w-full py-2 px-4 flex justify-center gap-1 font-bold text-[#414656]">
-        Not a Hues subscriber yet?{" "}
-        <span className="text-[#288AF9] hover:underline hover:cursor-pointer">
+      <div className="flex w-full justify-center gap-1 px-4 py-2 font-bold text-[#414656]">
+        Not a Hues subscriber yet?{' '}
+        <span className="text-[#288AF9] hover:cursor-pointer hover:underline">
           Sign-up
         </span>
       </div>
 
       {/* log in with google redirection */}
-      <Button className="w-full rounded font-bold text-[#414656] hover:cursor-pointer bg-[#f5f4f4] hover:bg-[#e8e7e7]">
+      <Button className="w-full rounded bg-[#f5f4f4] font-bold text-[#414656] hover:cursor-pointer hover:bg-[#e8e7e7]">
         <Image
-          src={"/google-icon.png"}
+          src={'/google-icon.png'}
           alt="google-icon"
           width={25}
           height={20}

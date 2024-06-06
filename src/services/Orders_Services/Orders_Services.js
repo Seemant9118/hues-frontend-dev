@@ -1,45 +1,45 @@
-import { order_api } from "@/api/order_api/order_api";
-import { APIinstance } from "@/services";
+import { orderApi } from '@/api/order_api/order_api';
+import { APIinstance } from '@/services';
 
 export const CreateOrderService = (data) => {
-  return APIinstance.post(order_api.createOrder.endpoint, data);
+  return APIinstance.post(orderApi.createOrder.endpoint, data);
 };
 
 export const GetSales = (id) => {
-  return APIinstance.get(order_api.getSales.endpoint + `${id}`);
+  return APIinstance.get(`${orderApi.getSales.endpoint}${id}`);
 };
 
 export const GetPurchases = (id) => {
-  return APIinstance.get(order_api.getPurchases.endpoint + `${id}`);
+  return APIinstance.get(`${orderApi.getPurchases.endpoint}${id}`);
 };
 
 export const OrderDetails = (id) => {
-  return APIinstance.get(order_api.getOrderDetails.endpoint + `${id}`);
+  return APIinstance.get(`${orderApi.getOrderDetails.endpoint}${id}`);
 };
 
 export const DeleteOrder = (id) => {
-  return APIinstance.delete(order_api.deleteOrder.endpoint + `${id}`);
+  return APIinstance.delete(`${orderApi.deleteOrder.endpoint}${id}`);
 };
 
 export const CreateNegotiation = (data) => {
-  return APIinstance.post(order_api.createNegotiation.endpoint, data);
+  return APIinstance.post(orderApi.createNegotiation.endpoint, data);
 };
 
 export const GetNegotiationDetails = (orderId, itemId) => {
   return APIinstance.get(
-    order_api.getNegotiationDetails.endpoint +
-      `?order_id=${orderId}&item_id=${itemId}`
+    `${orderApi.getNegotiationDetails.endpoint}
+      ?order_id=${orderId}&item_id=${itemId}`,
   );
 };
 
 export const AccpetRejectNegotiation = (data) => {
-  return APIinstance.post(order_api.acceptRejectNegotiation.endpoint, data);
+  return APIinstance.post(orderApi.acceptRejectNegotiation.endpoint, data);
 };
 
 export const getSalesInvoices = (id) => {
-  return APIinstance.get(order_api.getSalesInvoice.endpoint + `${id}`);
+  return APIinstance.get(`${orderApi.getSalesInvoice.endpoint}${id}`);
 };
 
 export const getPurchaseInvoices = (id) => {
-  return APIinstance.get(order_api.getPurchaseInvoice.endpoint + `${id}`);
+  return APIinstance.get(`${orderApi.getPurchaseInvoice.endpoint}${id}`);
 };

@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react';
 
 const ErrorBox = ({ msg }) => {
-  return <div className="text-red-600 text-xs font-semibold">{msg}</div>;
+  return <div className="text-xs font-semibold text-red-600">{msg}</div>;
 };
 
 export default ErrorBox;

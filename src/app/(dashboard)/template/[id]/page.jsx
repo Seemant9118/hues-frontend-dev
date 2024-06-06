@@ -91,29 +91,31 @@
 //   );
 // }
 
-"use client";
-import { template_api } from "@/api/templates_api/template_api";
-import Builder from "@/components/Form/Builder";
-import Loading from "@/components/ui/Loading";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LocalStorageService } from "@/lib/utils";
+import { templateApi } from '@/api/templates_api/template_api';
+import Builder from '@/components/Form/Builder';
+import Loading from '@/components/ui/Loading';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { LocalStorageService } from '@/lib/utils';
 import {
   getDocument,
   getTemplate,
   updateTemplate,
-} from "@/services/Template_Services/Template_Services";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileSignature } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/TextLayer.css";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import { toast } from "sonner";
+} from '@/services/Template_Services/Template_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { FileSignature } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import { toast } from 'sonner';
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
 ).toString();
 
 const TemplateInfo = ({ params, searchParams }) => {
@@ -142,48 +144,48 @@ const TemplateInfo = ({ params, searchParams }) => {
     setPages(numPages);
   };
 
-  const { data, isLoading, isSuccess } = useQuery({
-    queryKey: [template_api.getS3Document.endpointKey, searchParams.url],
+  const { data } = useQuery({
+    queryKey: [templateApi.getS3Document.endpointKey, searchParams.url],
     queryFn: () => getDocument(searchParams.url),
     enabled: !!searchParams.url,
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
   });
 
   const { data: templateInfo } = useQuery({
-    queryKey: [template_api.getTemplate.endpointKey, params.id],
+    queryKey: [templateApi.getTemplate.endpointKey, params.id],
     queryFn: () => getTemplate(params.id),
     enabled: !!params.id,
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
   });
 
   const { mutate, isPending: isUpdating } = useMutation({
     mutationFn: ({ signatureData, formData }) => {
-      const enterprise_id = LocalStorageService.get("enterprise_Id");
-      const user_id = LocalStorageService.get("user_profile");
+      const enterpriseId = LocalStorageService.get('enterprise_Id');
+      const userId = LocalStorageService.get('user_profile');
       return updateTemplate(
         {
-          enterprise_id: enterprise_id,
+          enterprise_id: enterpriseId,
           form_data: {
             data: formData || templateInfo?.formData?.data,
           },
           signature_box_placement: {
             data: signatureData || clickedCoordinates,
           },
-          created_by: user_id,
+          created_by: userId,
         },
-        params.id
+        params.id,
       );
     },
-    onSuccess: (data) => {
-      toast.success("Template Updated Successfully.");
+    onSuccess: () => {
+      toast.success('Template Updated Successfully.');
       queryClient.invalidateQueries({
-        queryKey: [template_api.getTemplate.endpointKey],
+        queryKey: [templateApi.getTemplate.endpointKey],
       });
       setClickedCoordinates([]);
       setIsCreatingForm(false);
     },
-    onError: (data) => {
-      toast.error("Failed to update template.");
+    onError: () => {
+      toast.error('Failed to update template.');
     },
   });
   useEffect(() => {
@@ -198,9 +200,9 @@ const TemplateInfo = ({ params, searchParams }) => {
     <>
       {!isCreatingForm && (
         <>
-          <div className="flex items-center justify-between py-4 sticky top-0 left-0 right-0 z-50 bg-white">
+          <div className="sticky left-0 right-0 top-0 z-50 flex items-center justify-between bg-white py-4">
             <h3>{templateInfo?.templateName}</h3>
-            <div className="flex items-center gap-2 ">
+            <div className="flex items-center gap-2">
               {!isCreatingForm && (
                 <Button
                   disabled={pageNo === 1}
@@ -234,10 +236,10 @@ const TemplateInfo = ({ params, searchParams }) => {
                   {isUpdating && <Loading />}
                   {!canClick && <FileSignature />}
                   {canClick
-                    ? "Done"
+                    ? 'Done'
                     : isUpdating
-                    ? "Updating"
-                    : "Add Signature"}
+                      ? 'Updating'
+                      : 'Add Signature'}
                 </Button>
               )}
               {!isCreatingForm && (
@@ -258,11 +260,11 @@ const TemplateInfo = ({ params, searchParams }) => {
               )}
             </div>
           </div>
-          <div className="w-full h-full bg-secondary ">
+          <div className="h-full w-full bg-secondary">
             <div
               ref={pdfCanvasRef}
               id="pdfCanvas"
-              className="max-w-fit  mx-auto relative"
+              className="relative mx-auto max-w-fit"
               onMouseDown={canClick ? addClickedCoordinate : () => {}}
             >
               <Document
@@ -276,15 +278,15 @@ const TemplateInfo = ({ params, searchParams }) => {
                   <div
                     onClick={(e) => e.stopPropagation()}
                     key={idx}
-                    className="bg-white border border-black absolute shadow-inner shadow-white h-16 w-40 flex items-center justify-center z-[100]"
+                    className="absolute z-[100] flex h-16 w-40 items-center justify-center border border-black bg-white shadow-inner shadow-white"
                     style={{
                       top: signature.y,
                       left: signature.x,
                     }}
                   >
                     <Input
-                      placeHolder={"Signatory Role"}
-                      className="h-full w-full  cursor-pointer z-[100]"
+                      placeHolder={'Signatory Role'}
+                      className="z-[100] h-full w-full cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>

@@ -1,32 +1,28 @@
-"use client";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import Loading from "@/components/ui/Loading";
-import AddModal from "@/components/Modals/AddModal";
-import SubHeader from "@/components/ui/Sub-header";
-import Wrapper from "@/components/wrappers/Wrapper";
-import { DataTable } from "@/components/table/data-table";
-import { Button } from "@/components/ui/button";
-import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
-import {
-  CreateEnterpriseUser,
-  GetEnterpriseUsers,
-} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { useQuery } from "@tanstack/react-query";
-import { BookCheck, BookUser, Key, Upload, UserPlus } from "lucide-react";
-import { ClientsColumns } from "./ClientsColumns";
-import { client_enterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
+'use client';
+
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import AddModal from '@/components/Modals/AddModal';
+import { DataTable } from '@/components/table/data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import Loading from '@/components/ui/Loading';
+import SubHeader from '@/components/ui/Sub-header';
+import { Button } from '@/components/ui/button';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   createClient,
   getClients,
-} from "@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service";
+} from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { useQuery } from '@tanstack/react-query';
+import { BookCheck, BookUser, Key, Upload, UserPlus } from 'lucide-react';
+import { ClientsColumns } from './ClientsColumns';
 
 const ClientPage = () => {
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const ClientsEmptyStageData = {
     heading: `~"Streamline sales with our Clients feature, integrating customer data for direct inventory offers
     and full catalog visibility."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,
@@ -51,10 +47,10 @@ const ClientPage = () => {
     ],
   };
 
-  const { isLoading, error, data, isSuccess } = useQuery({
-    queryKey: [client_enterprise.getClients.endpointKey],
+  const { isLoading, data } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: () => getClients(enterpriseId),
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
   });
 
   let formattedData = [];
@@ -75,22 +71,21 @@ const ClientPage = () => {
       };
     });
   }
-  console.log(formattedData);
 
   return (
     <Wrapper>
-      <SubHeader name={"Clients"}>
+      <SubHeader name={'Clients'}>
         <div className="flex items-center justify-center gap-4">
           <Button
-            variant={"export"}
+            variant={'export'}
             size="sm"
-            onClick={() => exportTableToExcel("client table", "clients_list")}
+            onClick={() => exportTableToExcel('client table', 'clients_list')}
           >
             <Upload size={14} />
             Export
           </Button>
           <AddModal
-            type={"Add"}
+            type={'Add'}
             cta="client"
             btnName="Add"
             mutationFunc={createClient}
@@ -103,7 +98,7 @@ const ClientPage = () => {
       {!isLoading &&
         (formattedData && formattedData.length !== 0 ? (
           <DataTable
-            id={"client table"}
+            id={'client table'}
             columns={ClientsColumns}
             data={formattedData}
           />

@@ -1,20 +1,21 @@
-"use client";
-import { goods_api } from "@/api/inventories/goods/goods";
-import AddItem from "@/components/inventory/AddItem";
-import EditItem from "@/components/inventory/EditItem";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import Loading from "@/components/ui/Loading";
-import SubHeader from "@/components/ui/Sub-header";
-import Wrapper from "@/components/wrappers/Wrapper";
-import { DataTable } from "@/components/table/data-table";
-import { Button } from "@/components/ui/button";
-import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
+'use client';
+
+import { goodsApi } from '@/api/inventories/goods/goods';
+import AddItem from '@/components/inventory/AddItem';
+import EditItem from '@/components/inventory/EditItem';
+import { DataTable } from '@/components/table/data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import Loading from '@/components/ui/Loading';
+import SubHeader from '@/components/ui/Sub-header';
+import { Button } from '@/components/ui/button';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
   UpdateProductGoods,
   UploadProductGoods,
-} from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check,
   CircleFadingPlus,
@@ -23,17 +24,16 @@ import {
   FileCheck,
   FileText,
   KeySquare,
-  Trash2,
   Upload,
   UploadCloud,
-} from "lucide-react";
-import { useState } from "react";
-import { FileUploader } from "react-drag-drop-files";
-import { useGoodsColumns } from "./GoodsColumns";
-import { toast } from "sonner";
+} from 'lucide-react';
+import { useState } from 'react';
+import { FileUploader } from 'react-drag-drop-files';
+import { toast } from 'sonner';
+import { useGoodsColumns } from './GoodsColumns';
 
 function Goods() {
-  const enpterpriseId = LocalStorageService.get("enterprise_Id");
+  const enpterpriseId = LocalStorageService.get('enterprise_Id');
   const templateId = 1;
 
   const queryClient = useQueryClient();
@@ -47,7 +47,7 @@ function Goods() {
   const InventoryEmptyStageData = {
     heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
     perfect cataloging."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,
@@ -72,25 +72,25 @@ function Goods() {
     ],
   };
 
-  const { data, isLoading, isSuccess, error } = useQuery({
-    queryKey: [goods_api.getAllProductGoods.endpointKey],
+  const { data, isLoading } = useQuery({
+    queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enpterpriseId),
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
   });
 
   const uploadFile = async (file) => {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("enterpriseId", enpterpriseId);
-    formData.append("templateId", templateId);
+    formData.append('file', file);
+    formData.append('enterpriseId', enpterpriseId);
+    formData.append('templateId', templateId);
 
     try {
-      const res = await UploadProductGoods(formData);
-      toast.success("Upload Successfully");
+      await UploadProductGoods(formData);
+      toast.success('Upload Successfully');
       setFiles((prev) => [...prev, file]);
-      queryClient.invalidateQueries([goods_api.getAllProductGoods.endpointKey]);
+      queryClient.invalidateQueries([goodsApi.getAllProductGoods.endpointKey]);
     } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     }
   };
 
@@ -100,19 +100,19 @@ function Goods() {
     <>
       {!isAdding && !isUploading && !isEditing && (
         <Wrapper>
-          <SubHeader name={"Goods"}>
+          <SubHeader name={'Goods'}>
             <div className="flex items-center justify-center gap-4">
               <Button
-                variant={"export"}
+                variant={'export'}
                 size="sm"
-                onClick={() => exportTableToExcel("goods table", "goods_list")}
+                onClick={() => exportTableToExcel('goods table', 'goods_list')}
               >
                 <Upload size={14} />
                 Export
               </Button>
               <Button
                 onClick={() => setisUploading(true)}
-                variant={"blue_outline"}
+                variant={'blue_outline'}
                 size="sm"
               >
                 <Upload size={14} />
@@ -120,7 +120,7 @@ function Goods() {
               </Button>
               <Button
                 onClick={() => setIsAdding(true)}
-                variant={"blue_outline"}
+                variant={'blue_outline'}
                 size="sm"
               >
                 <CircleFadingPlus size={14} />
@@ -135,7 +135,7 @@ function Goods() {
             // isSuccess &&
             (data && data.length !== 0 ? (
               <DataTable
-                id={"goods table"}
+                id={'goods table'}
                 columns={GoodsColumns}
                 data={data}
               />
@@ -153,8 +153,8 @@ function Goods() {
       {isAdding && (
         <AddItem
           setIsAdding={setIsAdding}
-          name={"Item"}
-          cta={"Item"}
+          name={'Item'}
+          cta={'Item'}
           onCancel={() => setIsAdding(false)}
         />
       )}
@@ -165,30 +165,30 @@ function Goods() {
           goodsToEdit={goodsToEdit}
           setGoodsToEdit={setGoodsToEdit}
           mutationFunc={UpdateProductGoods}
-          queryKey={[goods_api.getAllProductGoods.endpointKey]}
+          queryKey={[goodsApi.getAllProductGoods.endpointKey]}
         />
       )}
 
       {isUploading && (
-        <Wrapper className={"justify-start items-center"}>
+        <Wrapper className={'items-center justify-start'}>
           <FileUploader
             handleChange={uploadFile}
             name="file"
-            types={["xlsx", "csv"]}
+            types={['xlsx', 'csv']}
           >
-            <div className="min-w-[700px] grow px-5 py-10 mb-2 flex gap-3 justify-between items-center rounded border-2 border-sky-300 border-dashed border-spacing-3 cursor-pointer">
+            <div className="mb-2 flex min-w-[700px] grow border-spacing-3 cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-sky-300 px-5 py-10">
               <div className="flex items-center gap-4">
                 <UploadCloud className="text-sky-500" size={40} />
-                <div className="flex flex-col gap-1 ">
-                  <p className=" text-darkText font-medium text-xs">
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs font-medium text-darkText">
                     Drag & Drop or Select a File (Max 10MB,
-                    <span className="text-sky-500 font-bold">
-                      {" "}
+                    <span className="font-bold text-sky-500">
+                      {' '}
                       .csv/.xlsx Formats
-                    </span>{" "}
+                    </span>{' '}
                     )
                   </p>
-                  <p className="text-sky-500 text-xs font-normal">
+                  <p className="text-xs font-normal text-sky-500">
                     Note - Trade enabled for eSigned inventories only.
                   </p>
                   {/* <p className="text-sky-500 text-xs font-normal">
@@ -205,7 +205,7 @@ function Goods() {
 
           <Button asChild variant="outline" className="w-full max-w-[700px]">
             <a
-              download={"/Hues_inventory_sample_goods.xlsx"}
+              download={'/Hues_inventory_sample_goods.xlsx'}
               href="/Hues_inventory_sample_goods.xlsx"
             >
               <Download />
@@ -215,13 +215,13 @@ function Goods() {
           {files.map((file, idx) => (
             <div
               key={idx}
-              className="p-4 border-neutral-300 border rounded-sm flex items-center justify-between gap-4 min-w-[700px]"
+              className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
             >
               <div className="flex items-center gap-4">
                 <p className="text-xs font-medium leading-[18px]">
                   {file.name}
                 </p>
-                <div className="w-1 h-1 rounded-full bg-neutral-400"></div>
+                <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
                 {/* <a
                   href="#"
                   className="text-blue-500 underline underline-offset-2 text-xs leading-4"
@@ -229,10 +229,10 @@ function Goods() {
                   Preview
                 </a> */}
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-full bg-green-500/10 text-green-500">
+                  <div className="rounded-full bg-green-500/10 p-2 text-green-500">
                     <Check size={10} />
                   </div>
-                  <p className="text-xs font-medium text-green-500 leading-5">
+                  <p className="text-xs font-medium leading-5 text-green-500">
                     Upload Successfully!
                   </p>
                 </div>
@@ -250,9 +250,9 @@ function Goods() {
               </button> */}
             </div>
           ))}
-          <div className="h-[1px] w-full bg-neutral-300 mt-auto"></div>
+          <div className="mt-auto h-[1px] w-full bg-neutral-300"></div>
 
-          <div className="flex justify-end self-end ">
+          <div className="flex justify-end self-end">
             <Button
               onClick={() => {
                 setisUploading(false);

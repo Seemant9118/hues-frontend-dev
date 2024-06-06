@@ -1,24 +1,25 @@
-"use client";
-import ShareModal from "@/components/Modals/ShareModal";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+
+import ShareModal from '@/components/Modals/ShareModal';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
 
 export const Columns = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -35,53 +36,53 @@ export const Columns = [
     enableHiding: false,
   },
   {
-    accessorKey: "type",
+    accessorKey: 'type',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ITEM TYPE" />
     ),
   },
   {
-    accessorKey: "product_name",
+    accessorKey: 'product_name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ITEM NAME" />
     ),
   },
   {
-    accessorKey: "hsn_code",
+    accessorKey: 'hsn_code',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="CODE" />
     ),
   },
   {
-    accessorKey: "description",
+    accessorKey: 'description',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="DESCRIPTION" />
     ),
     cell: ({ row }) => {
-      const description = row.original.description;
+      const { description } = row.original;
       return <p className="truncate">{description}</p>;
     },
   },
   {
-    accessorKey: "rate",
+    accessorKey: 'rate',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="RATE" />
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: 'gst',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST" />
     ),
   },
   {
-    accessorKey: "amount",
+    accessorKey: 'amount',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Amount" />
     ),
   },
   {
-    id: "actions",
+    id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
       const payment = row.original;
