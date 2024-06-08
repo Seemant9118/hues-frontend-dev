@@ -351,26 +351,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                 <ErrorBox msg={errorMsg.seller_enterprise_id} />
               )}
         </div>
-        {/* {name === "Invoice" && (
-          <>
-            <Label>Order</Label>
-            <Select
-              value={order.customer}
-              onValueChange={(value) =>
-                setOrder((prev) => ({ ...prev, customer: value }))
-              }
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Ex Item 1">External Item</SelectItem>
-                <SelectItem value="Item 2">Internal Item 1</SelectItem>
-                <SelectItem value="Item 3">Internal Item 2</SelectItem>
-              </SelectContent>
-            </Select>
-          </>
-        )} */}
       </div>
       <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex items-center justify-between gap-4">
@@ -568,11 +548,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         <Button onClick={onCancel} variant={'outline'}>
           Cancel
         </Button>
-        {/* <SuccessModal
-          onClose={() => {
-            onCancel();
-          }}
-        > */}
         <Button
           onClick={
             handleSubmit // invoke handle submit fn
@@ -580,7 +555,6 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         >
           Create
         </Button>
-        {/* </SuccessModal> */}
       </div>
     </Wrapper>
   );
