@@ -88,14 +88,14 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       }
     },
 
-    select: () => customerData.data.data,
+    select: (res) => res.data.data,
   });
 
   // client goods fetching
   const { data: goodsData } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
-    select: () => goodsData.data.data,
+    select: (res) => res.data.data,
     enabled: !!cta === 'offer',
   });
   const formattedGoodsData =
@@ -109,7 +109,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   const { data: servicesData } = useQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
-    select: () => servicesData.data.data,
+    select: (res) => res.data.data,
     enabled: !!cta === 'offer',
   });
   const formattedServicesData =
@@ -129,7 +129,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       order.seller_enterprise_id,
     ],
     queryFn: () => GetProductGoodsVendor(order.seller_enterprise_id),
-    select: () => vendorGoodsData.data.data,
+    select: (res) => res.data.data,
     enabled: !!order.seller_enterprise_id,
   });
   const formattedVendorGoodsData =
@@ -146,7 +146,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
       order.seller_enterprise_id,
     ],
     queryFn: () => GetServicesVendor(order.seller_enterprise_id),
-    select: () => vendorServicesData.data.data,
+    select: (res) => res.data.data,
     enabled: !!order.seller_enterprise_id,
   });
   const formattedVendorServicesData =
