@@ -28,7 +28,6 @@ import {
 } from '../ui/select';
 import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
-
 import { Input } from '../ui/input';
 
 // debouncing function
@@ -53,26 +52,26 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   const [enterpriseData, setEnterPriseData] = useState(
     btnName !== 'Edit'
       ? {
-          enterprise_id: enterpriseId,
+          enterpriseId,
           name: '',
           address: '',
-          country_code: '+91',
-          mobile_number: '',
+          countryCode: '+91',
+          mobileNumber: '',
           email: '',
-          pan_number: '',
-          gst_number: '',
-          user_type: cta,
+          panNumber: '',
+          gstNumber: '',
+          userType: cta,
         }
       : {
-          enterprise_id: enterpriseId,
+          enterpriseId,
           name: userData.name,
           address: userData.address,
-          country_code: '+91',
-          mobile_number: userData.mobileNumber,
+          countryCode: '+91',
+          mobileNumber: userData.mobileNumber,
           email: userData.email,
-          pan_number: userData.panNumber,
-          gst_number: userData.gstNumber,
-          user_type: cta,
+          panNumber: userData.panNumber,
+          gstNumber: userData.gstNumber,
+          userType: cta,
         },
   );
   const [errorMsg, setErrorMsg] = useState({});
@@ -130,15 +129,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       );
       setOpen((prev) => !prev);
       setEnterPriseData({
-        enterprise_id: enterpriseId,
+        enterpriseId,
         name: '',
         address: '',
-        country_code: '+91',
-        mobile_number: '',
+        countryCode: '+91',
+        mobileNumber: '',
         email: '',
-        pan_number: '',
-        gst_number: '',
-        user_type: cta,
+        panNumber: '',
+        gstNumber: '',
+        userType: cta,
       });
       setIsAdding(false);
       setSearchInput({});
@@ -166,15 +165,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       toast.success('Edited Successfully');
       setOpen((prev) => !prev);
       setEnterPriseData({
-        enterprise_id: '',
+        enterpriseId: '',
         name: '',
         address: '',
-        country_code: '',
-        mobile_number: '',
+        countryCode: '',
+        mobileNumber: '',
         email: '',
-        pan_number: '',
-        gst_number: '',
-        user_type: '',
+        panNumber: '',
+        gstNumber: '',
+        userType: '',
       });
 
       queryClient.invalidateQueries({
@@ -190,42 +189,42 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   });
 
   // validation
-  const validation = (enterpriseData) => {
-    let error = {};
-    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const validation = (enterpriseDataItem) => {
+    const errorObj = {};
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
-    if (enterpriseData.name === '') {
-      error.name = '*Required Name';
+    if (enterpriseDataItem.name === '') {
+      errorObj.name = '*Required Name';
     }
 
-    if (enterpriseData.address === '') {
-      error.address = '*Required Address';
+    if (enterpriseDataItem.address === '') {
+      errorObj.address = '*Required Address';
     }
 
-    if (enterpriseData.mobile_number === '') {
-      error.mobile_number = '*Required Phone';
-    } else if (enterpriseData.mobile_number.length !== 10) {
-      error.mobile_number = '*Please enter a valid mobile number';
+    if (enterpriseDataItem.mobileNumber === '') {
+      errorObj.mobileNumber = '*Required Phone';
+    } else if (enterpriseDataItem.mobileNumber.length !== 10) {
+      errorObj.mobileNumber = '*Please enter a valid mobile number';
     }
 
-    if (enterpriseData.email === '') {
-      error.email = '*Required Email';
-    } else if (!email_pattern.test(enterpriseData.email)) {
-      error.email = '*Please provide valid email';
+    if (enterpriseDataItem.email === '') {
+      errorObj.email = '*Required Email';
+    } else if (!emailPattern.test(enterpriseDataItem.email)) {
+      errorObj.email = '*Please provide valid email';
     }
 
-    if (enterpriseData.pan_number === '') {
-      error.pan_number = '*Required PAN';
-    } else if (!pan_pattern.test(enterpriseData.pan_number)) {
-      error.pan_number = '* Please provide valid PAN Number';
+    if (enterpriseDataItem.panNumber === '') {
+      errorObj.panNumber = '*Required PAN';
+    } else if (!panPattern.test(enterpriseDataItem.panNumber)) {
+      errorObj.panNumber = '* Please provide valid PAN Number';
     }
 
-    if (enterpriseData.gst_number === '') {
-      error.gst_number = '*Required GST IN';
+    if (enterpriseDataItem.gstNumber === '') {
+      errorObj.gstNumber = '*Required GST IN';
     }
 
-    return error;
+    return errorObj;
   };
 
   const handleChangeId = (e) => {
@@ -281,15 +280,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
           id_number: '',
         });
         setEnterPriseData({
-          enterprise_id: enterpriseId,
+          enterpriseId,
           name: '',
           address: '',
-          country_code: '+91',
-          mobile_number: '',
+          countryCode: '+91',
+          mobileNumber: '',
           email: '',
-          pan_number: '',
-          gst_number: '',
-          user_type: cta,
+          panNumber: '',
+          gstNumber: '',
+          userType: cta,
         });
         setSearchData([]);
         setIsAdding(false);
@@ -478,18 +477,18 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   <Input
                     name="Phone"
                     type="tel"
-                    id="mobile_number"
+                    id="mobileNumber"
                     // required={true}
                     onChange={(e) =>
                       setEnterPriseData((prev) => ({
                         ...prev,
-                        mobile_number: e.target.value,
+                        mobileNumber: e.target.value,
                       }))
                     }
-                    value={enterpriseData.mobile_number}
+                    value={enterpriseData.mobileNumber}
                   />
-                  {errorMsg.mobile_number && (
-                    <ErrorBox msg={errorMsg.mobile_number} />
+                  {errorMsg.mobileNumber && (
+                    <ErrorBox msg={errorMsg.mobileNumber} />
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -500,18 +499,18 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   <Input
                     name="PAN"
                     type="tel"
-                    id="pan_number"
+                    id="panNumber"
                     // required={true}
                     onChange={(e) =>
                       setEnterPriseData((prev) => ({
                         ...prev,
-                        pan_number: e.target.value,
+                        panNumber: e.target.value,
                       }))
                     }
-                    value={enterpriseData.pan_number}
+                    value={enterpriseData.panNumber}
                   />
-                  {errorMsg.pan_number && (
-                    <ErrorBox msg={errorMsg.pan_number} />
+                  {errorMsg.panNumber && (
+                    <ErrorBox msg={errorMsg.panNumber} />
                   )}
                 </div>
               </div>
@@ -523,17 +522,17 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 <Input
                   name="GST IN"
                   type="tel"
-                  id="gst_number"
+                  id="gstNumber"
                   // required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
-                      gst_number: e.target.value,
+                      gstNumber: e.target.value,
                     }))
                   }
-                  value={enterpriseData.gst_number}
+                  value={enterpriseData.gstNumber}
                 />
-                {errorMsg.gst_number && <ErrorBox msg={errorMsg.gst_number} />}
+                {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />}
               </div>
             </div>
 
@@ -546,15 +545,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                     setErrorMsg({});
                     if (btnName !== 'Edit') {
                       setEnterPriseData({
-                        enterprise_id: '',
+                        enterpriseId: '',
                         name: '',
                         address: '',
-                        country_code: '',
-                        mobile_number: '',
+                        countryCode: '',
+                        mobileNumber: '',
                         email: '',
-                        pan_number: '',
-                        gst_number: '',
-                        user_type: '',
+                        panNumber: '',
+                        gstNumber: '',
+                        userType: '',
                       });
                       setIsAdding(false);
                       setSearchInput({});

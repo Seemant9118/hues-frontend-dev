@@ -98,9 +98,9 @@ export default function OTPVerificationForm({ setCurrStep }) {
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
     mutation.mutate({
-      otp_code: otp,
-      user_id: userId,
-      operation_type: operationType,
+      otpCode: otp,
+      userId,
+      operationType,
     });
   };
 

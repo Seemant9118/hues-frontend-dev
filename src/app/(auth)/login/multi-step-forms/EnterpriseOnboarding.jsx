@@ -29,8 +29,8 @@ const EnterpriseOnboarding = () => {
     type: '',
     address: '',
     email: '',
-    gst_number: '',
-    pan_number: '',
+    gstNumber: '',
+    panNumber: '',
   });
   const [errorMsg, setErrorMsg] = useState({});
 
@@ -101,19 +101,19 @@ const EnterpriseOnboarding = () => {
     const { name, value } = e.target;
 
     // pan validation
-    if (name === 'pan_number') {
+    if (name === 'panNumber') {
       const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
       if (!panPattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan_number: '* Please provide valid PAN Number',
+          panNumber: '* Please provide valid PAN Number',
         });
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan_number: '',
+          panNumber: '',
         });
       }
       setEnterpriseOnboardData((values) => ({
@@ -265,8 +265,8 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="GST IN"
-            name="gst_number"
-            value={enterpriseOnboardData.gst_number}
+            name="gstNumber"
+            value={enterpriseOnboardData.gstNumber}
             onChange={handleChange}
           />
           <Hash className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
@@ -301,7 +301,7 @@ const EnterpriseOnboarding = () => {
 
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
-          htmlFor="pan-number"
+          htmlFor="panNumber"
           className="flex items-center gap-1 font-medium text-[#414656]"
         >
           Permanent Account Number
@@ -315,13 +315,13 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="FGHJ1456T"
-            name="pan_number"
-            value={enterpriseOnboardData.pan_number}
+            name="panNumber"
+            value={enterpriseOnboardData.panNumber}
             onChange={handleChange}
           />
           <CreditCard className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
         </div>
-        {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
+        {errorMsg.panNumber && <ErrorBox msg={errorMsg.panNumber} />}
       </div>
 
       <Button type="submit" className="w-full">

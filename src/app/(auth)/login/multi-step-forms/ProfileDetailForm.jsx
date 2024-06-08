@@ -23,18 +23,18 @@ export default function ProfileDetailForm({
   // isThirdPartyLogin,
 }) {
   const router = useRouter();
-  const userId = LocalStorageService.get('user_profile');
+  const userID = LocalStorageService.get('user_profile');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const [selectedDate, setSelectedDate] = useState(null);
 
   const [userData, setUserData] = useState({
-    user_id: userId,
+    userId: userID,
     name: '',
     email: '',
-    date_of_birth: '',
-    pan_number: '',
+    dateOfBirth: '',
+    panNumber: '',
   });
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -42,7 +42,7 @@ export default function ProfileDetailForm({
   useEffect(() => {
     setUserData((prevUserData) => ({
       ...prevUserData,
-      date_of_birth: selectedDate
+      dateOfBirth: selectedDate
         ? moment(selectedDate).format('DD/MM/YYYY')
         : '', // Update dynamically
     }));
@@ -78,10 +78,10 @@ export default function ProfileDetailForm({
     }
 
     // pan validation
-    if (userDataItem.pan_number === '') {
-      error.pan_number = '*Required PAN Number';
-    } else if (!panPattern.test(userData.pan_number)) {
-      error.pan_number = '* Please provide valid PAN Number';
+    if (userDataItem.panNumber === '') {
+      error.panNumber = '*Required PAN Number';
+    } else if (!panPattern.test(userData.panNumber)) {
+      error.panNumber = '* Please provide valid PAN Number';
     }
 
     // Aadhaar validation
@@ -91,9 +91,9 @@ export default function ProfileDetailForm({
     //   error.aadhaar_number = "* Please enter a last 4 digit of Aadhaar Number";
     // }
 
-    // date_of_birth validation
-    // if (userData.date_of_birth === "") {
-    //   error.date_of_birth = "*Required Date of Birth";
+    // dateOfBirth validation
+    // if (userData.dateOfBirth === "") {
+    //   error.dateOfBirth = "*Required Date of Birth";
     // }
 
     // email validation
@@ -111,19 +111,19 @@ export default function ProfileDetailForm({
     const { value } = e.target;
 
     // pan validation
-    if (name === 'pan_number') {
+    if (name === 'panNumber') {
       const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
       if (!panPattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan_number: '* Please provide valid PAN Number',
+          panNumber: '* Please provide valid PAN Number',
         });
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan_number: '',
+          panNumber: '',
         });
       }
       setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
@@ -198,13 +198,13 @@ export default function ProfileDetailForm({
               className="focus:font-bold"
               type="text"
               placeholder="FGHJ1456T"
-              name="pan_number"
-              value={userData.pan_number}
+              name="panNumber"
+              value={userData.panNumber}
               onChange={handleChange}
             />
             <CreditCard className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
           </div>
-          {errorMsg?.pan_number && <ErrorBox msg={errorMsg?.pan_number} />}
+          {errorMsg?.panNumber && <ErrorBox msg={errorMsg?.panNumber} />}
         </div>
 
         {/* {isThirdPartyLogin && (
@@ -277,9 +277,7 @@ export default function ProfileDetailForm({
             />
             <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
           </div>
-          {errorMsg?.date_of_birth && (
-            <ErrorBox msg={errorMsg?.date_of_birth} />
-          )}
+          {errorMsg?.dateOfBirth && <ErrorBox msg={errorMsg?.dateOfBirth} />}
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">

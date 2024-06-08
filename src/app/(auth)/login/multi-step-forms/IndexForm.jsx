@@ -26,8 +26,8 @@ export default function IndexForm({ setCurrStep }) {
   // });
 
   const [formDataWithMob, setFormDataWithMob] = useState({
-    mobile_number: '',
-    country_code: '+91',
+    mobileNumber: '',
+    countryCode: '+91',
   });
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -50,7 +50,7 @@ export default function IndexForm({ setCurrStep }) {
     if (isSuccess) {
       setFormDataWithMob((values) => ({
         ...values,
-        mobile_number: inviteData.mobile_number,
+        mobileNumber: inviteData.mobile_number,
       }));
     }
   }, [isSuccess, inviteData]);
@@ -76,7 +76,7 @@ export default function IndexForm({ setCurrStep }) {
       LocalStorageService.set('user_profile', data.data.data.userId);
       LocalStorageService.set(
         'user_mobile_number',
-        formDataWithMob.mobile_number,
+        formDataWithMob.mobileNumber,
       );
       LocalStorageService.set('operation_type', data.data.data.operation_type);
       toast.success(data.data.message);
@@ -132,7 +132,7 @@ export default function IndexForm({ setCurrStep }) {
       } else {
         loginInvitation.mutate({
           ...inviteData,
-          mobile_number: formDataWithMob.mobile_number,
+          mobile_number: formDataWithMob.mobileNumber,
         }); // invitation flow
       }
     }
@@ -169,11 +169,11 @@ export default function IndexForm({ setCurrStep }) {
             </span>
             <Input
               type="text"
-              name="mobile_number"
+              name="mobileNumber"
               placeholder="Mobile Number"
               className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
-              value={formDataWithMob.mobile_number}
+              value={formDataWithMob.mobileNumber}
               required
             />
 

@@ -45,7 +45,8 @@
     "no-nested-ternary":"off",
     "no-param-reassign":"off",
     "no-unused-expressions":"off",
-    "no-plusplus":"off"
+    "no-plusplus":"off",
+    "no-shadow":"off",
   },
   "overrides": [
     {
