@@ -131,8 +131,10 @@ export default function IndexForm({ setCurrStep }) {
         mutation.mutate(formDataWithMob); // normal flow
       } else {
         loginInvitation.mutate({
-          ...inviteData,
-          mobile_number: formDataWithMob.mobileNumber,
+          countryCode: inviteData.country_code,
+          invitationPasscode : inviteData.invitation_passcode,
+          invitationReferenceId: inviteData.invitation_reference_id,
+          mobileNumber: formDataWithMob.mobileNumber,
         }); // invitation flow
       }
     }

@@ -35,16 +35,16 @@ const AddItem = ({ name, onCancel, cta }) => {
   const [errorMsg, setErrorMsg] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [item, setItem] = useState({
-    enterprise_id: enterpriseId,
-    template_id: userId,
-    product_name: '',
-    manufacturer_name: '',
-    service_name: '',
+    enterpriseId,
+    templateId: userId,
+    productName: '',
+    manufacturerName: '',
+    serviceName: '',
     description: '',
-    hsn_code: '',
+    hsnCode: '',
     SAC: '',
     rate: '',
-    gst_percentage: '',
+    gstPercentage: '',
     quantity: '',
     amount: '',
     type: isGoods ? 'goods' : 'services',
@@ -70,16 +70,16 @@ const AddItem = ({ name, onCancel, cta }) => {
   useEffect(() => {
     setErrorMsg({});
     setItem({
-      enterprise_id: enterpriseId,
-      template_id: userId,
-      product_name: '',
-      manufacturer_name: '',
-      service_name: '',
+      enterpriseId,
+      templateId: userId,
+      productName: '',
+      manufacturerName: '',
+      serviceName: '',
       description: '',
-      hsn_code: '',
+      hsnCode: '',
       SAC: '',
       rate: '',
-      gst_percentage: '',
+      gstPercentage: '',
       quantity: '',
       amount: '',
       type: item.type,
@@ -98,24 +98,24 @@ const AddItem = ({ name, onCancel, cta }) => {
     const error = {};
 
     // productName
-    if (itemData.product_name === '') {
-      error.product_name = '*Required Product Name';
+    if (itemData.productName === '') {
+      error.productName = '*Required Product Name';
     }
     // manufacturerName
-    if (itemData.manufacturer_name === '') {
-      error.manufacturer_name = '*Required Manufacturer Name';
+    if (itemData.manufacturerName === '') {
+      error.manufacturerName = '*Required Manufacturer Name';
     }
     //  serviceName
-    if (itemData.service_name === '') {
-      error.service_name = '*Required Service Name';
+    if (itemData.serviceName === '') {
+      error.serviceName = '*Required Service Name';
     }
     // description
     if (itemData.description === '') {
       error.description = '*Required Description';
     }
     // HSN
-    if (itemData.hsn_code === '') {
-      error.hsn_code = '*Required HSN Code';
+    if (itemData.hsnCode === '') {
+      error.hsnCode = '*Required HSN Code';
     }
     // SAC
     if (itemData.SAC === '') {
@@ -126,8 +126,8 @@ const AddItem = ({ name, onCancel, cta }) => {
       error.rate = '*Required Rate';
     }
     // gst_percentage
-    if (itemData.gst_percentage === '') {
-      error.gst_percentage = '*Required GST (%)';
+    if (itemData.gstPercentage === '') {
+      error.gstPercentage = '*Required GST (%)';
     }
     // quantity
     if (itemData.quantity === '') {
@@ -175,7 +175,7 @@ const AddItem = ({ name, onCancel, cta }) => {
     if (
       id === 'quantity' ||
       id === 'rate' ||
-      id === 'gst_percentage' ||
+      id === 'gstPercentage' ||
       id === 'weight' ||
       id === 'height' ||
       id === 'length' ||
@@ -194,7 +194,7 @@ const AddItem = ({ name, onCancel, cta }) => {
     e.preventDefault();
 
     // Extract goods data
-    const { service_name, SAC, type, units, ...goodsData } = item;
+    const { serviceName, SAC, type, units, ...goodsData } = item;
     const isError = validation(goodsData);
 
     // If no validation errors, mutate goods
@@ -209,9 +209,9 @@ const AddItem = ({ name, onCancel, cta }) => {
     e.preventDefault();
     // Extract services data
     const {
-      product_name,
-      manufacturer_name,
-      hsn_code,
+      productName,
+      manufacturerName,
+      hsnCode,
       type,
       units,
       batch,
@@ -290,25 +290,25 @@ const AddItem = ({ name, onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name="Product Name"
-                id="product_name"
+                id="productName"
                 required={true}
                 onChange={onChange}
-                value={item.product_name}
+                value={item.productName}
               />
-              {errorMsg?.product_name && (
-                <ErrorBox msg={errorMsg.product_name} />
+              {errorMsg?.productName && (
+                <ErrorBox msg={errorMsg.productName} />
               )}
             </div>
             <div className="flex flex-col">
               <InputWithLabel
                 name="Manufacturer's Name"
-                id="manufacturer_name"
+                id="manufacturerName"
                 required={true}
                 onChange={onChange}
-                value={item.manufacturer_name}
+                value={item.manufacturerName}
               />
-              {errorMsg?.manufacturer_name && (
-                <ErrorBox msg={errorMsg.manufacturer_name} />
+              {errorMsg?.manufacturerName && (
+                <ErrorBox msg={errorMsg.manufacturerName} />
               )}
             </div>
           </div>
@@ -326,12 +326,12 @@ const AddItem = ({ name, onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name="HSN Code"
-                id="hsn_code"
+                id="hsnCode"
                 required={true}
                 onChange={onChange}
-                value={item.hsn_code}
+                value={item.hsnCode}
               />
-              {errorMsg?.hsn_code && <ErrorBox msg={errorMsg.hsn_code} />}
+              {errorMsg?.hsnCode && <ErrorBox msg={errorMsg.hsnCode} />}
             </div>
             <div className="flex flex-col">
               <InputWithLabel
@@ -346,13 +346,13 @@ const AddItem = ({ name, onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name="GST (%)"
-                id="gst_percentage"
+                id="gstPercentage"
                 required={true}
                 onChange={onChange}
-                value={item.gst_percentage}
+                value={item.gstPercentage}
               />
-              {errorMsg?.gst_percentage && (
-                <ErrorBox msg={errorMsg.gst_percentage} />
+              {errorMsg?.gstPercentage && (
+                <ErrorBox msg={errorMsg.gstPercentage} />
               )}
             </div>
             <div className="flex flex-col">
@@ -443,13 +443,13 @@ const AddItem = ({ name, onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name="Service Name"
-                id="service_name"
+                id="serviceName"
                 required={true}
                 onChange={onChange}
-                value={item.service_name}
+                value={item.serviceName}
               />
-              {errorMsg?.service_name && (
-                <ErrorBox msg={errorMsg.service_name} />
+              {errorMsg?.serviceName && (
+                <ErrorBox msg={errorMsg.serviceName} />
               )}
             </div>
           </div>
@@ -489,13 +489,13 @@ const AddItem = ({ name, onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name="GST (%)"
-                id="gst_percentage"
+                id="gstPercentage"
                 required={true}
                 onChange={onChange}
-                value={item.gst_percentage}
+                value={item.gstPercentage}
               />
-              {errorMsg?.gst_percentage && (
-                <ErrorBox msg={errorMsg.gst_percentage} />
+              {errorMsg?.gstPercentage && (
+                <ErrorBox msg={errorMsg.gstPercentage} />
               )}
             </div>
             <div className="flex flex-col gap-2">

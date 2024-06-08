@@ -33,8 +33,8 @@ export const usePurchaseOrderColumns = (
 
   const handleAcceptNegotiation = (row) => {
     mutationAccept.mutate({
-      order_id: orderId,
-      item_id: row.id,
+      orderId,
+      itemId: row.id,
       status: 'ACCEPTED',
     });
   };

@@ -45,15 +45,15 @@ export const useInviteColumns = () => {
 
   const handleAccept = (id) => {
     acceptInvitationMutation.mutate({
-      enterprise_id: enterpriseId,
-      invitation_id: id,
+      enterpriseId,
+      invitationId: id,
     });
   };
 
   const handleReject = (id) => {
     rejectInvitationMutation.mutate({
-      enterprise_id: enterpriseId,
-      invitation_id: id,
+      enterpriseId,
+      invitationId: id,
     });
   };
   return [

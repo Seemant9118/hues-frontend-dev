@@ -26,9 +26,13 @@ export const CreateNegotiation = (data) => {
 };
 
 export const GetNegotiationDetails = (orderId, itemId) => {
+  // return APIinstance.get(
+  //   `${orderApi.getNegotiationDetails.endpoint}
+  //     ?order_id=${orderId}&item_id=${itemId}`,
+  // );
   return APIinstance.get(
-    `${orderApi.getNegotiationDetails.endpoint}
-      ?order_id=${orderId}&item_id=${itemId}`,
+    orderApi.getNegotiationDetails.endpoint +
+      `?order_id=${orderId}&item_id=${itemId}`,
   );
 };
 

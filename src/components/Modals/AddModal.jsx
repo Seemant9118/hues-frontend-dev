@@ -76,15 +76,14 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   );
   const [errorMsg, setErrorMsg] = useState({});
   const [searchInput, setSearchInput] = useState({
-    id_type: '',
-    id_number: '',
+    idType: '',
+    idNumber: '',
   });
   const [searchData, setSearchData] = useState([]);
 
   // query search mutation
   const searchMutation = useMutation({
-    mutationFn: ({ id_number, id_type }) =>
-      SearchEnterprise(id_number, id_type),
+    mutationFn: ({ idNumber, idType }) => SearchEnterprise(idNumber, idType),
     onSuccess: (data) => {
       setSearchData(data?.data?.data);
     },
@@ -96,7 +95,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   // debounce wrapper
   const debouncedMutation = useCallback(
     debounce((input) => {
-      if (input.id_number.length >= 3) {
+      if (input.idNumber.length >= 3) {
         searchMutation.mutate(input);
       }
     }, 500),
@@ -240,9 +239,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
   const handleSendInvite = (id) => {
     sendInvite.mutate({
-      from_enterprise_id: enterpriseId,
-      to_enterprise_id: id,
-      invitation_type: cta === 'client' ? 'CLIENT' : 'VENDOR',
+      fromEnterpriseId: enterpriseId,
+      toEnterpriseId: id,
+      invitationType: cta === 'client' ? 'CLIENT' : 'VENDOR',
     });
   };
 
@@ -276,8 +275,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       onOpenChange={() => {
         setOpen((prev) => !prev);
         setSearchInput({
-          id_type: '',
-          id_number: '',
+          idType: '',
+          idNumber: '',
         });
         setEnterPriseData({
           enterpriseId,
@@ -321,9 +320,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 </div>
                 <Select
                   required
-                  value={searchInput.id_type}
+                  value={searchInput.idType}
                   onValueChange={(value) =>
-                    setSearchInput((prev) => ({ ...prev, id_type: value }))
+                    setSearchInput((prev) => ({ ...prev, idType: value }))
                   }
                 >
                   <SelectTrigger className="max-w-xs gap-5">
@@ -340,15 +339,15 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 <InputWithLabel
                   className="rounded-md"
                   name={`Identifier No. (${
-                    searchInput?.id_type === ''
+                    searchInput?.idType === ''
                       ? 'Select type'
-                      : searchInput?.id_type?.toUpperCase()
+                      : searchInput?.idType?.toUpperCase()
                   })`}
                   type="tel"
-                  id="id_number"
+                  id="idNumber"
                   required={true}
-                  disabled={searchInput.id_type === ''}
-                  value={searchInput.id_number}
+                  disabled={searchInput.idType === ''}
+                  value={searchInput.idNumber}
                   onChange={handleChangeId}
                 />
               </div>
@@ -509,9 +508,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                     }
                     value={enterpriseData.panNumber}
                   />
-                  {errorMsg.panNumber && (
-                    <ErrorBox msg={errorMsg.panNumber} />
-                  )}
+                  {errorMsg.panNumber && <ErrorBox msg={errorMsg.panNumber} />}
                 </div>
               </div>
               <div className="flex flex-col gap-1">

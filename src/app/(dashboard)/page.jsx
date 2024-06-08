@@ -29,32 +29,6 @@ export default function Home() {
     (data) => data.status === 'PENDING',
   );
 
-  // const dashBoardData = [
-  //   {
-  //     id: 1,
-  //     title: 'YTD Sale',
-  //     numbers: '₹52.4k',
-  //     growth: '+3.4%',
-  //     icon: <LineChart size={16} />,
-  //   },
-  //   { id: 2, title: 'Daily Sale', numbers: '₹12.87k', growth: '-2.4%' },
-  //   {
-  //     id: 3,
-  //     title: 'Products',
-  //     numbers: '2365',
-  //     growth: '',
-  //     icon: <LineChart size={16} />,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: 'YTD Items Sold',
-  //     numbers: '22K',
-  //     growth: '',
-  //     icon: <LineChart size={16} />,
-  //   },
-  //   { id: 5, title: 'Items Sold Today', numbers: '11', growth: '' },
-  // ];
-
   const dashBoardEmptyStagedata = {
     heading:
       'Seamlessly monitor financial health and compliance with an integrated, real-time dashboard',

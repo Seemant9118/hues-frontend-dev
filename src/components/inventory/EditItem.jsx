@@ -25,16 +25,16 @@ const EditItem = ({
   const [item, setItem] = useState(
     goodsToEdit
       ? {
-          enterprise_id: enterpriseId,
-          template_id: userId,
-          product_name: goodsToEdit.productName,
-          manufacturer_name: goodsToEdit.manufacturerName,
-          service_name: goodsToEdit.serviceName,
+          enterpriseId,
+          templateId: userId,
+          productName: goodsToEdit.productName,
+          manufacturerName: goodsToEdit.manufacturerName,
+          serviceName: goodsToEdit.serviceName,
           description: goodsToEdit.description,
-          hsn_code: goodsToEdit.hsnCode,
+          hsnCode: goodsToEdit.hsnCode,
           SAC: goodsToEdit.sac,
           rate: goodsToEdit.rate,
-          gst_percentage: goodsToEdit.gstPercentage,
+          gstPercentage: goodsToEdit.gstPercentage,
           amount: goodsToEdit.amount,
           type: 'goods',
           quantity: goodsToEdit.quantity,
@@ -48,16 +48,16 @@ const EditItem = ({
           units: goodsToEdit.units,
         }
       : {
-          enterprise_id: enterpriseId,
-          template_id: userId,
-          product_name: '',
-          manufacturer_name: '',
-          service_name: servicesToEdit.serviceName,
+          enterpriseId,
+          templateId: userId,
+          productName: '',
+          manufacturerName: '',
+          serviceName: servicesToEdit.serviceName,
           description: servicesToEdit.description,
-          hsn_code: '',
+          hsnCode: '',
           SAC: servicesToEdit.sac,
           rate: servicesToEdit.rate,
-          gst_percentage: servicesToEdit.gstPercentage,
+          gstPercentage: servicesToEdit.gstPercentage,
           amount: servicesToEdit.amount,
           type: 'servies',
           batch: '',
@@ -80,16 +80,16 @@ const EditItem = ({
       }
       toast.success('Edited Successfully');
       setItem({
-        enterprise_id: '',
-        template_id: '',
-        product_name: '',
-        manufacturer_name: '',
-        service_name: '',
+        enterpriseId: '',
+        templateId: '',
+        productName: '',
+        manufacturerName: '',
+        serviceName: '',
         description: '',
-        hsn_code: '',
+        hsnCode: '',
         SAC: '',
         rate: '',
-        gst_percentage: '',
+        gstPercentage: '',
         amount: '',
         type: '',
         batch: '',
@@ -165,17 +165,17 @@ const EditItem = ({
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
               name="Product Name (Brand)"
-              id="product_name"
+              id="productName"
               required={true}
               onChange={onChange}
-              value={item.product_name}
+              value={item.productName}
             />
             <InputWithLabel
               name="Manufacturer's Name"
-              id="manufacturer_name"
+              id="manufacturerName"
               required={true}
               onChange={onChange}
-              value={item.manufacturer_name}
+              value={item.manufacturerName}
             />
           </div>
           <InputWithLabel
@@ -188,10 +188,10 @@ const EditItem = ({
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
               name="HSN Code"
-              id="hsn_code"
+              id="hsnCode"
               required={true}
               onChange={onChange}
-              value={item.hsn_code}
+              value={item.hsnCode}
             />
             <InputWithLabel
               name="Rate"
@@ -202,10 +202,10 @@ const EditItem = ({
             />
             <InputWithLabel
               name="GST (%)"
-              id="gst_percentage"
+              id="gstPercentage"
               required={true}
               onChange={onChange}
-              value={item.gst_percentage}
+              value={item.gstPercentage}
             />
             <InputWithLabel
               name="Quantity"
@@ -275,10 +275,10 @@ const EditItem = ({
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
               name="Service Name (Brand)"
-              id="service_name"
+              id="serviceName"
               required={true}
               onChange={onChange}
-              value={item.service_name}
+              value={item.serviceName}
             />
           </div>
           <InputWithLabel
@@ -305,10 +305,10 @@ const EditItem = ({
             />
             <InputWithLabel
               name="GST (%)"
-              id="gst_percentage"
+              id="gstPercentage"
               required={true}
               onChange={onChange}
-              value={item.gst_percentage}
+              value={item.gstPercentage}
             />
             <InputWithLabel
               name="Expiry"

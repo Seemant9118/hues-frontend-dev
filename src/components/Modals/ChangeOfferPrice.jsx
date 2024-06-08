@@ -33,13 +33,13 @@ const ChangeOfferPrice = ({ offerDetails }) => {
   const userId = LocalStorageService.get('user_profile');
   const isSales = pathName.includes('sales-orders');
   const date = moment(new Date()).format('DD-MM-YYYY');
-  const { order_id } = params;
+  const orderId = Number(params.order_id);
   const itemId = offerDetails.id;
 
   const [changeOffer, setChangeOffer] = useState({
-    order_id: Number(params.order_id),
-    order_item_id: offerDetails.id,
-    price_type: isSales ? 'OFFER' : 'BID',
+    orderId,
+    orderItemId: offerDetails.id,
+    priceType: isSales ? 'OFFER' : 'BID',
     createdBy: userId,
     date,
     status: isSales ? 'OFFER_SUBMITTED' : 'BID_SUBMITTED',
@@ -49,8 +49,8 @@ const ChangeOfferPrice = ({ offerDetails }) => {
 
   // negotiation data
   const { isLoading, data: negotiationData } = useQuery({
-    queryKey: [orderApi.getNegotiationDetails.endpointKey, order_id, itemId],
-    queryFn: () => GetNegotiationDetails(order_id, itemId),
+    queryKey: [orderApi.getNegotiationDetails.endpointKey, orderId, itemId],
+    queryFn: () => GetNegotiationDetails(orderId, itemId),
     select: (data) => data.data.data,
   });
 
@@ -63,9 +63,9 @@ const ChangeOfferPrice = ({ offerDetails }) => {
         orderApi.getNegotiationDetails.endpointKey,
       ]);
       setChangeOffer({
-        order_id: '',
-        order_item_id: '',
-        price_type: '',
+        orderId: null,
+        orderItemId: null,
+        priceType: '',
         createdBy: '',
         date: '',
         status: '',
@@ -91,8 +91,8 @@ const ChangeOfferPrice = ({ offerDetails }) => {
 
   const handleAcceptNegotiation = () => {
     mutationAccept.mutate({
-      order_id,
-      item_id: itemId,
+      orderId,
+      itemId: itemId,
       status: 'ACCEPTED',
     });
   };

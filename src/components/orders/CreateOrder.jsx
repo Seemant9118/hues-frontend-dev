@@ -43,32 +43,32 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
   const [errorMsg, setErrorMsg] = useState({});
   const [selectedItem, setSelectedItem] = useState({
-    product_name: '',
-    product_type: '',
-    product_id: '',
+    productName: '',
+    productType: '',
+    productId: '',
     quantity: null,
-    unit_price: null,
-    gst_per_unit: null,
-    total_amount: null,
-    total_gst_amount: null,
+    unitPrice: null,
+    gstPerUnit: null,
+    totalAmount: null,
+    totalGstAmount: null,
   });
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
-          seller_enterprise_id: enterpriseId,
-          buyer_enterperise_id: null,
-          gst_amount: null,
+          sellerEnterpriseId: enterpriseId,
+          buyerEnterperiseId: null,
+          gstAmount: null,
           amount: null,
-          order_type: 'SALES',
-          order_items: [],
+          orderType: 'SALES',
+          orderItems: [],
         }
       : {
-          seller_enterprise_id: null,
-          buyer_enterperise_id: enterpriseId,
-          gst_amount: null,
+          sellerEnterpriseId: null,
+          buyerEnterperiseId: enterpriseId,
+          gstAmount: null,
           amount: null,
-          order_type: 'PURCHASE',
-          order_items: [],
+          orderType: 'PURCHASE',
+          orderItems: [],
         },
   );
 
@@ -101,8 +101,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   const formattedGoodsData =
     goodsData?.map((good) => ({
       ...good,
-      product_type: 'GOODS',
-      product_name: good.productName,
+      productType: 'GOODS',
+      productName: good.productName,
     })) || [];
 
   // client services fetching
@@ -115,8 +115,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   const formattedServicesData =
     servicesData?.map((service) => ({
       ...service,
-      product_type: 'SERVICE',
-      product_name: service.serviceName,
+      productType: 'SERVICE',
+      productName: service.serviceName,
     })) || [];
 
   // both client goods & client services concatinated
@@ -126,34 +126,34 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   const { data: vendorGoodsData } = useQuery({
     queryKey: [
       goodsApi.vendorProductGoods.endpointKey,
-      order.seller_enterprise_id,
+      order.sellerEnterpriseId,
     ],
-    queryFn: () => GetProductGoodsVendor(order.seller_enterprise_id),
+    queryFn: () => GetProductGoodsVendor(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.seller_enterprise_id,
+    enabled: !!order.sellerEnterpriseId,
   });
   const formattedVendorGoodsData =
     vendorGoodsData?.map((good) => ({
       ...good,
-      product_type: 'GOODS',
-      product_name: good.productName,
+      productType: 'GOODS',
+      productName: good.productName,
     })) || [];
 
   // vendor services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
       servicesApi.vendorServices.endpointKey,
-      order.seller_enterprise_id,
+      order.sellerEnterpriseId,
     ],
-    queryFn: () => GetServicesVendor(order.seller_enterprise_id),
+    queryFn: () => GetServicesVendor(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.seller_enterprise_id,
+    enabled: !!order.sellerEnterpriseId,
   });
   const formattedVendorServicesData =
     vendorServicesData?.map((service) => ({
       ...service,
-      product_type: 'SERVICE',
-      product_name: service.serviceName,
+      productType: 'SERVICE',
+      productName: service.serviceName,
     })) || [];
 
   // both client goods & client services concatinated
@@ -185,59 +185,59 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   });
 
   // validations
-  const validation = ({ orderData, selectedItemData }) => {
-    const error = {};
+  const validation = ({ order, selectedItem }) => {
+    const errorObj = {};
 
     if (cta === 'offer') {
-      if (orderData?.buyer_enterperise_id == null) {
-        error.buyer_enterperise_id = '*Please select a client';
+      if (order?.buyerEnterperiseId == null) {
+        errorObj.buyerEnterperiseId = '*Please select a client';
       }
-      if (orderData?.order_item?.length === 0) {
-        error.order_item = '*Please add atleast one item to create order';
+      if (order?.orderItem?.length === 0) {
+        errorObj.orderItem = '*Please add atleast one item to create order';
       }
-      if (selectedItemData.quantity === null) {
-        error.quantity = '*Required Quantity';
+      if (selectedItem.quantity === null) {
+        errorObj.quantity = '*Required Quantity';
       }
-      if (selectedItemData.unit_price === null) {
-        error.unit_price = '*Required Price';
+      if (selectedItem.unitPrice === null) {
+        errorObj.unitPrice = '*Required Price';
       }
-      if (selectedItemData.gst_per_unit === null) {
-        error.gst_per_unit = '*Required GST (%)';
+      if (selectedItem.gstPerUnit === null) {
+        errorObj.gstPerUnit = '*Required GST (%)';
       }
-      if (selectedItemData.total_amount === null) {
-        error.total_amount = '*Required Amount';
+      if (selectedItem.totalAmount === null) {
+        errorObj.totalAmount = '*Required Amount';
       }
     } else {
-      if (orderData?.seller_enterprise_id == null) {
-        error.seller_enterprise_id = '*Please select a vendor';
+      if (order?.sellerEnterpriseId == null) {
+        errorObj.sellerEnterpriseId = '*Please select a vendor';
       }
-      if (orderData?.order_item?.length === 0) {
-        error.order_item = '*Please add atleast one item to create order';
+      if (order?.orderItem?.length === 0) {
+        errorObj.orderItem = '*Please add atleast one item to create order';
       }
-      if (selectedItemData.quantity === null) {
-        error.quantity = '*Required Quantity';
+      if (selectedItem.quantity === null) {
+        errorObj.quantity = '*Required Quantity';
       }
-      if (selectedItemData.unit_price === null) {
-        error.unit_price = '*Required Price';
+      if (selectedItem.unitPrice === null) {
+        errorObj.unitPrice = '*Required Price';
       }
-      if (selectedItemData.gst_per_unit === null) {
-        error.gst_per_unit = '*Required GST (%)';
+      if (selectedItem.gstPerUnit === null) {
+        errorObj.gstPerUnit = '*Required GST (%)';
       }
-      if (selectedItemData.total_amount === null) {
-        error.total_amount = '*Required Amount';
+      if (selectedItem.totalAmount === null) {
+        errorObj.totalAmount = '*Required Amount';
       }
     }
 
-    return error;
+    return errorObj;
   };
 
   const handleSetTotalAmt = () => {
-    const totalAmount = order.order_items.reduce((totalAmt, orderItem) => {
-      return totalAmt + orderItem.total_amount;
+    const totalAmount = order.orderItems.reduce((totalAmt, orderItem) => {
+      return totalAmt + orderItem.totalAmount;
     }, 0);
 
-    const totalGstAmt = order.order_items.reduce((totalGst, orderItem2) => {
-      return totalGst + orderItem2.total_gst_amount;
+    const totalGstAmt = order.orderItems.reduce((totalGst, orderItem2) => {
+      return totalGst + orderItem2.totalGstAmount;
     }, 0);
 
     return { totalAmount, totalGstAmt };
@@ -247,12 +247,13 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
+    console.log(isError);
 
     if (Object.keys(isError).length === 0) {
       orderMutation.mutate({
         ...order,
         amount: parseFloat(totalAmount.toFixed(2)),
-        gst_amount: parseFloat(totalGstAmt.toFixed(2)),
+        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
       });
       setErrorMsg({});
     }
@@ -280,10 +281,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             defaultValue=""
             onValueChange={(value) => {
               cta === 'offer'
-                ? setOrder((prev) => ({ ...prev, buyer_enterperise_id: value }))
+                ? setOrder((prev) => ({ ...prev, buyerEnterperiseId: value }))
                 : setOrder((prev) => ({
                     ...prev,
-                    seller_enterprise_id: value,
+                    sellerEnterpriseId: value,
                   }));
             }}
           >
@@ -344,11 +345,11 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             </SelectContent>
           </Select>
           {cta === 'offer'
-            ? errorMsg.buyer_enterperise_id && (
-                <ErrorBox msg={errorMsg.buyer_enterperise_id} />
+            ? errorMsg.buyerEnterperiseId && (
+                <ErrorBox msg={errorMsg.buyerEnterperiseId} />
               )
-            : errorMsg.seller_enterprise_id && (
-                <ErrorBox msg={errorMsg.seller_enterprise_id} />
+            : errorMsg.sellerEnterpriseId && (
+                <ErrorBox msg={errorMsg.sellerEnterpriseId} />
               )}
         </div>
       </div>
@@ -359,8 +360,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Select
                 disabled={
-                  (cta === 'offer' && order.buyer_enterperise_id == null) ||
-                  order.seller_enterprise_id == null
+                  (cta === 'offer' && order.buyerEnterperiseId == null) ||
+                  order.sellerEnterpriseId == null
                 }
                 // defaultValue={selectedItem.product_id}
                 onValueChange={(value) => {
@@ -371,11 +372,11 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
                   setSelectedItem((prev) => ({
                     ...prev,
-                    product_id: value,
-                    product_type: selectedItemData.product_type,
-                    product_name: selectedItemData.product_name,
-                    unit_price: selectedItemData.rate,
-                    gst_per_unit: selectedItemData.gstPercentage,
+                    productId: value,
+                    productType: selectedItemData.productType,
+                    productName: selectedItemData.productName,
+                    unitPrice: selectedItemData.rate,
+                    gstPerUnit: selectedItemData.gstPercentage,
                   }));
                 }}
               >
@@ -387,14 +388,14 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                     itemData?.map((item) => (
                       <SelectItem
                         disabled={
-                          !!order.order_items.find(
-                            (itemO) => itemO.product_id === item.id,
+                          !!order.orderItems.find(
+                            (itemO) => itemO.productId === item.id,
                           )
                         }
                         key={item.id}
                         value={item.id}
                       >
-                        {item.product_name}
+                        {item.productName}
                       </SelectItem>
                     ))}
 
@@ -402,14 +403,14 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                     vendorItemData?.map((item) => (
                       <SelectItem
                         disabled={
-                          !!order.order_items.find(
-                            (itemO) => itemO.product_id === item.id,
+                          !!order.orderItems.find(
+                            (itemO) => itemO.productId === item.id,
                           )
                         }
                         key={item.id}
                         value={item.id}
                       >
-                        {item.product_name}
+                        {item.productName}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -422,22 +423,22 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Input
                 disabled={
-                  (cta === 'offer' && order.buyer_enterperise_id == null) ||
-                  order.seller_enterprise_id == null
+                  (cta === 'offer' && order.buyerEnterperiseId == null) ||
+                  order.sellerEnterpriseId == null
                 }
                 value={selectedItem.quantity}
                 onChange={(e) => {
                   const totalAmt = parseFloat(
-                    (e.target.value * selectedItem.unit_price).toFixed(2),
+                    (e.target.value * selectedItem.unitPrice).toFixed(2),
                   ); // totalAmt excluding gst
                   const GstAmt = parseFloat(
-                    (totalAmt * (selectedItem.gst_per_unit / 100)).toFixed(2),
+                    (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                   ); // total gstAmt
                   setSelectedItem((prev) => ({
                     ...prev,
                     quantity: Number(e.target.value),
-                    total_amount: totalAmt,
-                    total_gst_amount: GstAmt,
+                    totalAmount: totalAmt,
+                    totalGstAmount: GstAmt,
                   }));
                 }}
                 className="max-w-20"
@@ -451,19 +452,19 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Input
                 disabled={
-                  (cta === 'offer' && order.buyer_enterperise_id == null) ||
-                  order.seller_enterprise_id == null
+                  (cta === 'offer' && order.buyerEnterperiseId == null) ||
+                  order.sellerEnterpriseId == null
                 }
-                value={selectedItem.unit_price}
+                value={selectedItem.unitPrice}
                 className="max-w-20"
                 onChange={(e) => {
                   setSelectedItem((prevValue) => ({
                     ...prevValue,
-                    unit_price: Number(e.target.value),
+                    unitPrice: Number(e.target.value),
                   }));
                 }}
               />
-              {errorMsg.unit_price && <ErrorBox msg={errorMsg.unit_price} />}
+              {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
             </div>
           </div>
 
@@ -472,12 +473,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Input
                 disabled
-                value={selectedItem.gst_per_unit}
+                value={selectedItem.gstPerUnit}
                 className="max-w-20"
               />
-              {errorMsg.gst_per_unit && (
-                <ErrorBox msg={errorMsg.gst_per_unit} />
-              )}
+              {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
             </div>
           </div>
 
@@ -486,12 +485,10 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             <div className="flex flex-col gap-1">
               <Input
                 disabled
-                value={selectedItem.total_amount}
+                value={selectedItem.totalAmount}
                 className="max-w-20"
               />
-              {errorMsg.total_amount && (
-                <ErrorBox msg={errorMsg.total_amount} />
-              )}
+              {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
             </div>
           </div>
         </div>
@@ -501,11 +498,11 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             onClick={() => {
               setSelectedItem((prev) => ({
                 ...prev,
-                product_id: '',
-                product_type: '',
-                product_name: '',
-                unit_price: '',
-                gst_per_unit: '',
+                productId: '',
+                productType: '',
+                productName: '',
+                unitPrice: '',
+                gstPerUnit: '',
               }));
             }}
           >
@@ -518,17 +515,17 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
             onClick={() => {
               setOrder((prev) => ({
                 ...prev,
-                order_items: [...prev.order_items, selectedItem],
+                orderItems: [...prev.orderItems, selectedItem],
               }));
               setSelectedItem({
-                product_name: '',
-                product_type: '',
-                product_id: '',
+                productName: '',
+                productType: '',
+                productId: '',
                 quantity: '',
-                unit_price: '',
-                gst_per_unit: '',
-                total_amount: '', // total amount + gst amount
-                total_gst_amount: '',
+                unitPrice: '',
+                gstPerUnit: '',
+                totalAmount: '', // total amount + gst amount
+                totalGstAmount: '',
               });
               setErrorMsg({});
             }}
@@ -539,8 +536,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
         </div>
       </div>
 
-      {/* selected itme table */}
-      <DataTable data={order.order_items} columns={createSalesColumns} />
+      {/* selected item table */}
+      <DataTable data={order.orderItems} columns={createSalesColumns} />
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
