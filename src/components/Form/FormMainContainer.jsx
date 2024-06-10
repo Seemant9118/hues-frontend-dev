@@ -1,12 +1,12 @@
-import { useRef, useState } from 'react';
-import { useDrop } from 'react-dnd';
-
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { useRef, useState } from 'react';
+import { useDrop } from 'react-dnd';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Document, Page } from 'react-pdf';
 import ResizableInput from '../ui/ResizableInput';
@@ -24,8 +24,8 @@ const FormMainContainer = ({
   url,
 }) => {
   const [showOptions, setShowOptions] = useState(false);
-  const [pageNo, setPageNo] = useState(1);
-  const [pages, setPages] = useState(1);
+  // const [pageNo, setPageNo] = useState(1);
+  // const [pages, setPages] = useState(1);
   const [focussedInput, setFocussedInput] = useState(null);
   const pdfCanvasRef = useRef(null);
 
@@ -36,6 +36,7 @@ const FormMainContainer = ({
       const canvasRect = pdfCanvasRef.current.getBoundingClientRect();
       const coords = [
         {
+          id: uuidv4(),
           x: delta.x - canvasRect.left,
           y: delta.y - canvasRect.top,
         },
@@ -46,6 +47,7 @@ const FormMainContainer = ({
         coords,
         width: 100, // Default width
         height: 30, // Default height
+        _id: uuidv4(),
       };
       onDropInput(newItem);
     },
@@ -63,10 +65,11 @@ const FormMainContainer = ({
     // if (value === "")
     setDroppedInputs((prev) => {
       const updated = [...prev];
-      const values = value.split('?');
+      const [name, type] = value.split('?');
 
-      updated[idx].name = values[0];
-      updated[idx].type = values[1];
+      updated[idx].name = name;
+      updated[idx].type = type;
+      ``;
       return updated;
     });
   };
@@ -87,11 +90,11 @@ const FormMainContainer = ({
     });
   };
 
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setPages(numPages);
-  };
+  // const onDocumentLoadSuccess = ({ numPages }) => {
+  // setPages(numPages);
+  // };
 
-  const handleResizeStop = (size, id, inputIndex) => {
+  const handleResizeStop = (size, id) => {
     setDroppedInputs((prevInputs) =>
       prevInputs.map((input, idx) =>
         `${input.id}|${idx}` === id ? { ...input, ...size } : input,
@@ -99,8 +102,8 @@ const FormMainContainer = ({
     );
   };
 
-  const handleDragStop = (delta, id, coordinateIndex, inputIndex) => {
-    console.log(delta, id, coordinateIndex, inputIndex);
+  const handleDragStop = (delta, id, coordinateIndex) => {
+    // console.log(delta, id, coordinateIndex, inputIndex);
     setDroppedInputs((prevInputs) =>
       prevInputs.map((input, idx) => {
         if (`${input.id}|${idx}` === id) {
@@ -121,7 +124,7 @@ const FormMainContainer = ({
   };
 
   const onInputCopy = (inputIndex, coordinate) => {
-    console.log(inputIndex, coordinate);
+    // console.log(inputIndex, coordinate);
     const newInputs = [...droppedInputs];
     newInputs[inputIndex].coords.push(coordinate);
     setDroppedInputs(newInputs);
@@ -131,7 +134,7 @@ const FormMainContainer = ({
       deleteHandler(inputIndex);
     } else {
       const newInputs = [...droppedInputs];
-      console.log('this');
+      // console.log('this');
       newInputs[inputIndex].coords.splice(coordinateIndex, 1);
       setDroppedInputs(newInputs);
       setFocussedInput(null);
@@ -144,12 +147,15 @@ const FormMainContainer = ({
         className="scrollBarStyles sticky top-0 mx-auto max-w-fit overflow-auto"
       >
         <div ref={pdfCanvasRef} id="pdfCanvas relative">
-          <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page pageNumber={pageNo} />
+          <Document
+            file={url}
+            // onLoadSuccess={onDocumentLoadSuccess}
+          >
+            <Page pageNumber={1} />
           </Document>
           {droppedInputs?.map((input, index) =>
             input.coords.map((coordinate, coordinateIndex) => (
-              <ContextMenu key={`${index}|${coordinateIndex}`}>
+              <ContextMenu key={coordinate.id}>
                 <ContextMenuTrigger onClick={() => setFocussedInput(index)}>
                   <ResizableInput
                     onDragStop={handleDragStop}
@@ -256,7 +262,7 @@ const FormMainContainer = ({
             // } else {
             return (
               <FormBuilderInput
-                key={idx}
+                key={input._id}
                 input={input}
                 idx={idx}
                 setDroppedInputs={setDroppedInputs}

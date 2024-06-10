@@ -124,7 +124,7 @@ const FormPreview = ({
               'flex cursor-pointer items-center gap-2 px-8 py-4',
               selectedPage?.name === page.name && 'border-b-2 border-b-sky-500',
             )}
-            key={idx}
+            key={page.name}
             onClick={() => {
               setSelectedPage(page);
               setPageNo(idx);

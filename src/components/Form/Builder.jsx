@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -48,23 +49,25 @@ const Builder = ({ saveHandler, url }) => {
     }
   }, [droppedInputs]);
 
-  // const saveFormHandler = async () => {
-  //   const idx = formData?.data?.findIndex(
-  //     (value) => value.name === selectedPage.name,
-  //   );
-  //   const newArray = [...formData?.data];
-  //   newArray[idx] = selectedPage;
+  const saveFormHandler = async () => {
+    const idx = formData?.data?.findIndex(
+      (value) => value.name === selectedPage.name,
+    );
+    if (idx) {
+      const newArray = [...formData.data];
+      newArray[idx] = selectedPage;
 
-  //   saveHandler({ signatureData: null, formData: newArray });
-  // };
+      saveHandler({ signatureData: null, formData: newArray });
+    }
+  };
 
   return (
     <>
-      {/* <div className="flex items-center justify-end py-4 sticky top-0 left-0 right-0 z-50 bg-white ">
+      <div className="sticky left-0 right-0 top-0 z-50 flex items-center justify-end bg-white py-4">
         <Button variant="blue_outline" onClick={saveFormHandler}>
           Save
         </Button>
-      </div> */}
+      </div>
       <DndProvider backend={HTML5Backend}>
         <main
           ref={containerRef}

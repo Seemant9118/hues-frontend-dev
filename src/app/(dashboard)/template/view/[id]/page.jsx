@@ -6,7 +6,7 @@ import { getTemplate } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-const page = ({ params }) => {
+const ViewTemplatePage = ({ params }) => {
   const { data: templateInfo, isLoading } = useQuery({
     queryKey: ['Template', params?.id],
     queryFn: () => getTemplate(params?.id),
@@ -26,4 +26,4 @@ const page = ({ params }) => {
   );
 };
 
-export default page;
+export default ViewTemplatePage;

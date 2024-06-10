@@ -2,7 +2,6 @@
 
 import { templateApi } from '@/api/templates_api/template_api';
 import { ResponseColumns } from '@/components/columns/ResponseColumns';
-import AddItem from '@/components/inventory/AddItem';
 import { DataTable } from '@/components/table/data-table';
 import TemplateCard from '@/components/templates/TemplateCard';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -37,9 +36,6 @@ export default function Home() {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
 
-  const [file, setFile] = useState(null);
-  const [isAdding, setIsAdding] = useState(false);
-  const [templates, setTemplates] = useState([]);
   const [viewForm, setViewForm] = useState(false);
   const [viewResponses, setViewResponses] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -81,7 +77,6 @@ export default function Home() {
     mutationFn: (uploadedFile) => uploadTemplate(uploadedFile, enterpriseId),
     onSuccess: () => {
       toast.success('Template Added Successfully.');
-      setFile(null);
       queryClient.invalidateQueries([templateApi.getTemplates.endpointKey]);
     },
     onError: () => {
@@ -99,17 +94,6 @@ export default function Home() {
   const fileHandler = (e) => {
     const uploadedFile = e.target.files[0]; // Get the first file
     if (uploadedFile) {
-      setFile(uploadedFile);
-
-      setTemplates((prev) => [
-        ...prev,
-        {
-          name: uploadedFile.name,
-          type:
-            uploadedFile.type.replace(/(.*)\//g, '') === 'pdf' ? 'pdf' : 'xlsx',
-        },
-      ]);
-
       const formData = new FormData();
       formData.append('file', uploadedFile);
 
@@ -119,7 +103,7 @@ export default function Home() {
 
   return (
     <>
-      {(!data || data?.length === 0) && !isAdding && (
+      {(!data || data?.length === 0) && (
         <>
           <div className="flex items-center justify-between">
             <SubHeader name="Templates" className={'w-full justify-between'}>
@@ -151,7 +135,7 @@ export default function Home() {
           />
         </>
       )}
-
+      {/* 
       {viewForm && (
         <AddItem
           onCancel={() => setViewForm(false)}
@@ -163,36 +147,32 @@ export default function Home() {
           name={'Product'}
           cta={'Template'}
         />
-      )}
+      )} */}
 
-      {data &&
-        !isAdding &&
-        !viewForm &&
-        !viewResponses &&
-        data?.length !== 0 && (
-          <Wrapper>
-            <SubHeader name={'Templates'}>
-              <div className="flex items-center justify-center gap-4">
-                <div className="relative">
-                  <Input placeholder="Search" />
-                  <Search
-                    className="absolute right-2 top-1/2 z-10 -translate-y-1/2 cursor-pointer bg-white"
-                    size={16}
-                  />
-                </div>
-                <Button variant={'blue_outline'} asChild size="sm">
-                  <label htmlFor="template">
-                    <Upload size={14} />
-                    Upload
-                  </label>
-                </Button>
-                <input
-                  onChange={fileHandler}
-                  id="template"
-                  type="file"
-                  className="sr-only"
+      {data && !viewForm && !viewResponses && data?.length !== 0 && (
+        <Wrapper>
+          <SubHeader name={'Templates'}>
+            <div className="flex items-center justify-center gap-4">
+              <div className="relative">
+                <Input placeholder="Search" />
+                <Search
+                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 cursor-pointer bg-white"
+                  size={16}
                 />
-                {/* <Button
+              </div>
+              <Button variant={'blue_outline'} asChild size="sm">
+                <label htmlFor="template">
+                  <Upload size={14} />
+                  Upload
+                </label>
+              </Button>
+              <input
+                onChange={fileHandler}
+                id="template"
+                type="file"
+                className="sr-only"
+              />
+              {/* <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
                 size="sm"
@@ -200,34 +180,34 @@ export default function Home() {
                 <Layers2 size={14} />
                 Add Template
               </Button> */}
-              </div>
-            </SubHeader>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {isSuccess &&
-                data?.map((template, idx) => (
-                  <TemplateCard
-                    viewResponseClick={() => {
-                      setViewForm(false);
-                      setViewResponses(true);
-                      setSelectedTemplate(template);
-                    }}
-                    onDelete={() => {
-                      setTemplates((prev) => {
-                        const updated = [...prev];
-                        updated.splice(idx, 1);
-                        return updated;
-                      });
-                      toast.success('Templated Deleted Successfully.');
-                    }}
-                    onViewTemplateClick={() => {}}
-                    onViewFormClick={() => setViewForm(true)}
-                    {...template}
-                    key={idx}
-                  />
-                ))}
             </div>
-          </Wrapper>
-        )}
+          </SubHeader>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {isSuccess &&
+              data?.map((template) => (
+                <TemplateCard
+                  viewResponseClick={() => {
+                    setViewForm(false);
+                    setViewResponses(true);
+                    setSelectedTemplate(template);
+                  }}
+                  // onDelete={() => {
+                  //   setTemplates((prev) => {
+                  //     const updated = [...prev];
+                  //     updated.splice(idx, 1);
+                  //     return updated;
+                  //   });
+                  //   toast.success('Templated Deleted Successfully.');
+                  // }}
+                  onViewTemplateClick={() => {}}
+                  onViewFormClick={() => setViewForm(true)}
+                  {...template}
+                  key={template.id}
+                />
+              ))}
+          </div>
+        </Wrapper>
+      )}
       {viewResponses && (
         <Wrapper>
           <div className="flex items-center justify-between rounded-sm border border-[#A5ABBD26] p-8">
@@ -259,6 +239,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <Button
                 onClick={() => setViewForm(true)}
+                disabled={true}
                 variant={'blue_outline'}
                 size="sm"
                 className="gap-1 p-1.5 text-xs"

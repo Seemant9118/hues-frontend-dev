@@ -15,7 +15,7 @@ const ResizableInput = ({
 }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'input',
-    item: { id: input?.id + index },
+    item: { id: input.id + index },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -34,6 +34,7 @@ const ResizableInput = ({
     <div
       ref={drag}
       key={index}
+      className={cn('', isDragging && 'opacity-90')}
       style={{
         position: 'absolute',
         top: coordinate.y,
