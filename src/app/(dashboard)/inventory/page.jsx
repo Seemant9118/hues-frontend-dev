@@ -15,7 +15,6 @@ import {
   FileCheck,
   FileText,
   KeySquare,
-  Trash2,
   Upload,
   UploadCloud,
 } from 'lucide-react';
@@ -144,9 +143,9 @@ const InventoryPage = () => {
               Sample
             </Button>
           </FileUploader>
-          {files.map((file, idx) => (
+          {files.map((file) => (
             <div
-              key={idx}
+              key={file.name}
               className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
             >
               <div className="flex items-center gap-4">
@@ -169,7 +168,7 @@ const InventoryPage = () => {
                   </p>
                 </div>
               </div>
-              <button
+              {/* <button
                 onClick={() => {
                   setFiles((prev) => {
                     const updated = [...prev];
@@ -179,7 +178,7 @@ const InventoryPage = () => {
                 }}
               >
                 <Trash2 className="text-grey" size={14} />
-              </button>
+              </button> */}
             </div>
           ))}
           <div className="mt-auto h-[1px] w-full bg-neutral-300"></div>

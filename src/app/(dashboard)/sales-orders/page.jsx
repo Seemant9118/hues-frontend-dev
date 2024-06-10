@@ -36,7 +36,7 @@ const SalesOrder = () => {
   const [istype, setIsType] = useState('All');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
-  const [isOrderView, setIsOrderView] = useState(false);
+  // const [isOrderView, setIsOrderView] = useState(false);
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -148,7 +148,8 @@ const SalesOrder = () => {
         </Wrapper>
       )}
 
-      {isCreatingSales && !isCreatingInvoice && !isOrderView && (
+      {isCreatingSales && !isCreatingInvoice && (
+        // && !isOrderView
         <CreateOrder
           type="sales"
           name="Offer"
@@ -157,7 +158,8 @@ const SalesOrder = () => {
         />
       )}
 
-      {isCreatingInvoice && !isCreatingSales && !isOrderView && (
+      {isCreatingInvoice && !isCreatingSales && (
+        // && !isOrderView
         <CreateOrder
           type="sales"
           name="Invoice"

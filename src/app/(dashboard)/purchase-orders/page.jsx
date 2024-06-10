@@ -1,10 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import SubHeader from '@/components/ui/Sub-header';
-import Wrapper from '@/components/wrappers/Wrapper';
+import { orderApi } from '@/api/order_api/order_api';
+import CreateOrder from '@/components/orders/CreateOrder';
 import { DataTable } from '@/components/table/data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
+import { GetPurchases } from '@/services/Orders_Services/Orders_Services';
+import { useQuery } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -13,30 +25,16 @@ import {
   ShieldCheck,
   Upload,
 } from 'lucide-react';
-import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import CreateOrder from '@/components/orders/CreateOrder';
-import { orderApi } from '@/api/order_api/order_api';
-import { GetPurchases } from '@/services/Orders_Services/Orders_Services';
-import { useQuery } from '@tanstack/react-query';
-import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { usePurchaseColumns } from './usePurchaseColumns';
 
 const PurchaseOrders = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
-  const [purchases, setPurchases] = useState([]);
-
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [istype, setIsType] = useState('All');
 
   const PurchaseEmptyStageData = {
@@ -154,14 +152,14 @@ const PurchaseOrders = () => {
           )}
         </Wrapper>
       )}
-      {isCreatingPurchase && !isCreatingInvoice && (
+      {isCreatingPurchase && (
+        // && !isCreatingInvoice
         <CreateOrder
           type="purchase"
           name={'Bid'}
           cta="bid"
           onCancel={() => setIsCreatingPurchase(false)}
-          onSubmit={(newOrder) => {
-            setPurchases((prev) => [...prev, newOrder]);
+          onSubmit={() => {
             setIsCreatingPurchase(false);
           }}
         />

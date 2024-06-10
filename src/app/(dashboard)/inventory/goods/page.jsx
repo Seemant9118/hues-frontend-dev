@@ -212,9 +212,9 @@ function Goods() {
               Sample
             </a>
           </Button>
-          {files.map((file, idx) => (
+          {files.map((file) => (
             <div
-              key={idx}
+              key={file.name}
               className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
             >
               <div className="flex items-center gap-4">
