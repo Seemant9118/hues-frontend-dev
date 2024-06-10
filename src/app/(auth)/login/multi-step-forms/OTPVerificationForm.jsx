@@ -1,15 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import { cn, LocalStorageService } from '@/lib/utils';
 import { userVerifyOtp } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5 } from 'lucide-react';
 import { toast } from 'sonner';
-
-import Loading from '@/components/ui/Loading';
-
+import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -129,8 +128,8 @@ export default function OTPVerificationForm({ setCurrStep }) {
         containerClassName="group flex items-center has-[:disabled]:opacity-30"
         render={({ slots }) => (
           <div className="flex gap-4">
-            {slots.map((slot, idx) => (
-              <Slot key={idx} {...slot} />
+            {slots.map((slot) => (
+              <Slot key={uuidv4()} {...slot} />
             ))}
           </div>
         )}

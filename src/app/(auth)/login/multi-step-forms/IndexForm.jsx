@@ -132,7 +132,7 @@ export default function IndexForm({ setCurrStep }) {
       } else {
         loginInvitation.mutate({
           countryCode: inviteData.country_code,
-          invitationPasscode : inviteData.invitation_passcode,
+          invitationPasscode: inviteData.invitation_passcode,
           invitationReferenceId: inviteData.invitation_reference_id,
           mobileNumber: formDataWithMob.mobileNumber,
         }); // invitation flow
