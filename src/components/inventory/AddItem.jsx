@@ -295,9 +295,7 @@ const AddItem = ({ name, onCancel, cta }) => {
                 onChange={onChange}
                 value={item.productName}
               />
-              {errorMsg?.productName && (
-                <ErrorBox msg={errorMsg.productName} />
-              )}
+              {errorMsg?.productName && <ErrorBox msg={errorMsg.productName} />}
             </div>
             <div className="flex flex-col">
               <InputWithLabel
@@ -448,9 +446,7 @@ const AddItem = ({ name, onCancel, cta }) => {
                 onChange={onChange}
                 value={item.serviceName}
               />
-              {errorMsg?.serviceName && (
-                <ErrorBox msg={errorMsg.serviceName} />
-              )}
+              {errorMsg?.serviceName && <ErrorBox msg={errorMsg.serviceName} />}
             </div>
           </div>
           <div className="flex flex-col">

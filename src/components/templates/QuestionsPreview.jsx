@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { UploadIcon } from 'lucide-react';
 import React from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import PreviewLabel from './PreviewLabel';
@@ -26,7 +26,7 @@ const QuestionsPreview = ({
       {questions?.map((question, idx) => {
         if (question.type === 'text' && question.name === 'Long text') {
           return (
-            <div className="flex w-full flex-col gap-2.5" key={idx}>
+            <div className="flex w-full flex-col gap-2.5" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <div className="max-w-full py-4 lg:max-w-[70%]">
                 <RichTextEditor
@@ -46,7 +46,7 @@ const QuestionsPreview = ({
           question.type === 'time'
         ) {
           return (
-            <div className="flex max-w-xl flex-col gap-2" key={idx}>
+            <div className="flex max-w-xl flex-col gap-2" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <div className="">
                 <Input
@@ -63,7 +63,7 @@ const QuestionsPreview = ({
         }
         if (question.type === 'select' && question.name === 'Multi Select') {
           return (
-            <div className="flex w-full flex-col gap-2" key={idx}>
+            <div className="flex w-full flex-col gap-2" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <div
                 className={cn(
@@ -72,10 +72,7 @@ const QuestionsPreview = ({
                 )}
               >
                 {question?.options?.map((option, optionIdx) => (
-                  <div
-                    className={cn('flex items-center gap-2')}
-                    key={optionIdx}
-                  >
+                  <div className={cn('flex items-center gap-2')} key={option}>
                     <p>{++optionIdx}.</p>
                     <Checkbox
                       disabled={!isEdit}
@@ -96,7 +93,7 @@ const QuestionsPreview = ({
                 {question.others && (
                   <div
                     className={cn('flex max-w-fit items-center gap-2')}
-                    key={idx}
+                    key={question._id}
                   >
                     <p>{question.options.length + 1}.</p>
                     <Checkbox
@@ -124,7 +121,7 @@ const QuestionsPreview = ({
         }
         if (question.type === 'select') {
           return (
-            <div className="flex w-full flex-col gap-2" key={idx}>
+            <div className="flex w-full flex-col gap-2" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <RadioGroup
                 disabled={!isEdit}
@@ -138,7 +135,7 @@ const QuestionsPreview = ({
                 {question?.options?.map((option, optionIdx) => (
                   <div
                     className={cn('flex max-w-fit items-center space-x-2')}
-                    key={optionIdx}
+                    key={option}
                   >
                     <p>{++optionIdx}.</p>
                     <RadioGroupItem value={option} id={option} />
@@ -150,7 +147,7 @@ const QuestionsPreview = ({
                 {question.others && (
                   <div
                     className={cn('flex max-w-fit items-center space-x-2')}
-                    key={idx}
+                    key={question._id}
                   >
                     <p>{question.options.length + 1}.</p>
                     <RadioGroupItem
@@ -173,7 +170,7 @@ const QuestionsPreview = ({
           return (
             <div
               className="flex w-full flex-col gap-2.5 rounded-[10px]"
-              key={idx}
+              key={question._id}
             >
               <PreviewLabel question={question} idx={idx} />
 
@@ -184,13 +181,14 @@ const QuestionsPreview = ({
                 types={question.formats}
               >
                 <div className="flex h-[200px] w-full border-spacing-3 cursor-pointer flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-gray-500 p-2.5">
-                  <Image
-                    src={fileUploadIcon}
+                  {/* <Image
+                    src={''}
                     alt="upload-icon"
                     width={30}
                     height={30}
                     className="h-10 w-10"
-                  />
+                  /> */}
+                  <UploadIcon size={30} />
                   <p className="font-normal leading-[18px]">
                     <span className="px-1 text-sm font-medium text-zinc-800 underline">
                       Click to upload
@@ -205,7 +203,7 @@ const QuestionsPreview = ({
 
         // if (question.type === "dropdown") {
         //   return (
-        //     <div className="flex flex-col gap-2 w-full " key={idx}>
+        //     <div className="flex flex-col gap-2 w-full " key={question._id}>
         //       <PreviewLabel question={question} idx={idx} />
         //       <Select
         //         disabled={!isEdit}
@@ -223,7 +221,7 @@ const QuestionsPreview = ({
         //         </SelectTrigger>
         //         <SelectContent>
         //           {question.options.map((option, idx) => (
-        //             <SelectItem key={idx} value={option}>
+        //             <SelectItem key={question._id} value={option}>
         //               {option}
         //             </SelectItem>
         //           ))}
@@ -238,7 +236,7 @@ const QuestionsPreview = ({
         // if (question.type === "structure" && question.name === "Section") {
         //   return (
         //     <SectionPreview
-        //       key={idx}
+        //       key={question._id}
         //       selectedForm={selectedForm}
         //       question={question}
         //       isConsultantPreview={isConsultantPreview}
@@ -253,7 +251,7 @@ const QuestionsPreview = ({
           return (
             <div
               className="flex w-full flex-col gap-2 rounded-[10px]"
-              key={idx}
+              key={question._id}
             >
               <div dangerouslySetInnerHTML={{ __html: question.text }} />
             </div>
@@ -263,7 +261,7 @@ const QuestionsPreview = ({
         //   return (
         //     <div
         //       className="flex flex-col gap-2 w-full rounded-[10px] "
-        //       key={idx}
+        //       key={question._id}
         //     >
         //       <Image src={tempImage} width={200} height={200} alt="image" />
         //     </div>
@@ -271,11 +269,13 @@ const QuestionsPreview = ({
         // }
         // if (question.type === "input" && question.name === "Tables") {
         //   return (
-        //     <div className="flex flex-col gap-2.5 w-full" key={idx}>
+        //     <div className="flex flex-col gap-2.5 w-full" key={question._id}>
         //       <TableStructurePreview question={question} isEdit={isEdit} />
         //     </div>
         //   );
         // }
+
+        return null;
       })}
     </div>
   );

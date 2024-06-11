@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 // import { Error } from "../../../../assets/formIcons";
 
 const MinMaxForm = ({ setFormData, idx, input }) => {
@@ -10,7 +11,7 @@ const MinMaxForm = ({ setFormData, idx, input }) => {
     e.preventDefault();
 
     if (limitError) {
-      return alert(limitError);
+      return toast.error(limitError);
     }
     setFormData((prev) => {
       const updated = [...prev];
@@ -19,6 +20,7 @@ const MinMaxForm = ({ setFormData, idx, input }) => {
       return updated;
     });
 
+    return undefined;
   };
 
   const minMaxSetter = (e, type) => {

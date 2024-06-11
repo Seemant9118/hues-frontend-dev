@@ -5,16 +5,21 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import { getUserById } from '@/services/User_Auth_Service/UserAuthServices';
 import { useQuery } from '@tanstack/react-query';
 
-export const usenegotiationHistoryColumns = () => {
-  const fetchUser = (id) => {
-    return useQuery({
-      queryKey: [userAuth.getUserById.endpointKey],
-      queryFn: () => getUserById(id),
-      select: (data) => data.data.data,
-      enabled: !!id,
-    });
-  };
+const UserCell = ({ row }) => {
+  const userId = row.original.createdBy;
+  const { data, error, isLoading } = useQuery({
+    queryKey: [userAuth.getUserById.endpointKey],
+    queryFn: () => getUserById(userId),
+    select: (data) => data.data.data,
+    enabled: !!userId,
+  });
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading user</div>;
+  return <div>{data?.name || '-'}</div>;
+};
+
+export const useNegotiationHistoryColumns = () => {
   return [
     {
       accessorKey: 'date',
@@ -27,14 +32,7 @@ export const usenegotiationHistoryColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Created By" />
       ),
-      cell: ({ row }) => {
-        const userId = row.original.createdBy;
-        const { data, error, isLoading } = fetchUser(userId);
-
-        if (isLoading) return <div>Loading...</div>;
-        if (error) return <div>Error loading user</div>;
-        return <div>{data?.name || '-'}</div>;
-      },
+      cell: UserCell,
     },
     {
       accessorKey: 'priceType',

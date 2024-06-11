@@ -18,15 +18,15 @@ const CompleteKyc = () => {
     // redirect_url: "http:localhost:3000",
     environment: 'sandbox',
     callback(response) {
-      console.log(response);
-      if (response.hasOwnProperty('error_code')) {
-        return console.log('error occurred in process');
+      if (Object.prototype.hasOwnProperty.call(response, 'error_code')) {
+        // CONSOLE LOG HAS BEEN COMMENTED
+        // return console.log('error occurred in process');
       }
       // check status api call
-      console.log('Signing;completed;successfully:');
       router.push('/');
+      return null;
     },
-    event_listener: (data) => {
+    event_listener: () => {
       // console.log(data, "event_l");
     },
     // logo: "https://www.mylogourl.com/image.jpeg",
@@ -50,7 +50,6 @@ const CompleteKyc = () => {
 
   const loadScript = async (data) => {
     const digioInstance = new window.Digio(options);
-    console.log(data);
     digioInstance.init();
     digioInstance.submit(
       data.request_id,
@@ -66,11 +65,11 @@ const CompleteKyc = () => {
       return createKYCRequest(userId);
     },
     onSuccess: (data) => {
-      console.log(data.data.data);
       loadScript(data.data.data);
     },
-    onError: (error) => {
-      console.log(error);
+    onError: () => {
+      // CONSOLE LOG HAS BEEN COMMENTED
+      // console.log(error);
     },
   });
 

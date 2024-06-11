@@ -274,10 +274,10 @@ const TemplateInfo = ({ params, searchParams }) => {
                 <Page pageNumber={pageNo} />
               </Document>
               {clickedCoordinates[pageNo] &&
-                clickedCoordinates[pageNo]?.map((signature, idx) => (
+                clickedCoordinates[pageNo]?.map((signature) => (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    key={idx}
+                    key={`${pageNo}|${signature.x}|${signature.y}`}
                     className="absolute z-[100] flex h-16 w-40 items-center justify-center border border-black bg-white shadow-inner shadow-white"
                     style={{
                       top: signature.y,

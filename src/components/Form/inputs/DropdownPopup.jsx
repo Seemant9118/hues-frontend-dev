@@ -163,7 +163,7 @@ const DropdownPopup = ({
           )}
           {questionConfigs?.options.map((option, index) => (
             <div
-              key={index}
+              key={option}
               className="flex h-7 items-center justify-center gap-1 rounded border-[1px] border-primary/20 bg-primary/10 pl-3 pr-4"
             >
               <X

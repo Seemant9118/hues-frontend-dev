@@ -237,9 +237,9 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
                 <Page pageNumber={pageNo} />
               </Document>
               {clickedCoordinates[pageNo] &&
-                clickedCoordinates[pageNo]?.map((signature, idx) => (
+                clickedCoordinates[pageNo]?.map((signature) => (
                   <div
-                    key={idx}
+                    key={`${pageNo}|${signature.y}|${signature.x}`}
                     className="absolute h-10 border border-black bg-white px-3 py-2 shadow-inner shadow-white"
                     style={{
                       top: signature.y,

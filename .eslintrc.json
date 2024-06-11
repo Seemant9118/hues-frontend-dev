@@ -46,7 +46,9 @@
     "no-param-reassign": "off",
     "no-unused-expressions": "off",
     "no-plusplus": "off",
-    "no-shadow": "off"
+    "no-shadow": "off",
+    "no-underscore-dangle": "off",
+    "consistent-return": "warn"
   },
   "overrides": [
     {
