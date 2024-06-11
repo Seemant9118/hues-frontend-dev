@@ -19,6 +19,8 @@ const MinMaxForm = ({ setFormData, idx, input }) => {
       updated[idx].maxLength = max;
       return updated;
     });
+
+    return undefined;
   };
 
   const minMaxSetter = (e, type) => {

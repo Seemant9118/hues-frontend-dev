@@ -19,7 +19,8 @@ const CompleteKyc = () => {
     environment: 'sandbox',
     callback(response) {
       if (Object.prototype.hasOwnProperty.call(response, 'error_code')) {
-        return console.log('error occurred in process');
+        // CONSOLE LOG HAS BEEN COMMENTED
+        // return console.log('error occurred in process');
       }
       // check status api call
       router.push('/');
@@ -66,8 +67,9 @@ const CompleteKyc = () => {
     onSuccess: (data) => {
       loadScript(data.data.data);
     },
-    onError: (error) => {
-      console.log(error);
+    onError: () => {
+      // CONSOLE LOG HAS BEEN COMMENTED
+      // console.log(error);
     },
   });
 

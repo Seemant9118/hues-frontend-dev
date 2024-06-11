@@ -247,7 +247,8 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
-    console.log(isError);
+    // CONSOLE LOG HAS BEEN COMMENTED
+    // console.log(isError);
 
     if (Object.keys(isError).length === 0) {
       orderMutation.mutate({
