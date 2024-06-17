@@ -1,13 +1,13 @@
-import Tooltips from "@/components/auth/Tooltips";
-import ErrorBox from "@/components/ui/ErrorBox";
-import Loading from "@/components/ui/Loading";
-import RadioSelect from "@/components/ui/RadioSelect";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LocalStorageService } from "@/lib/utils";
-import { updateEnterpriseOnboarding } from "@/services/User_Auth_Service/UserAuthServices";
-import { useMutation } from "@tanstack/react-query";
+import Tooltips from '@/components/auth/Tooltips';
+import ErrorBox from '@/components/ui/ErrorBox';
+import Loading from '@/components/ui/Loading';
+import RadioSelect from '@/components/ui/RadioSelect';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LocalStorageService } from '@/lib/utils';
+import { updateEnterpriseOnboarding } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import {
   AtSign,
   Building,
@@ -15,32 +15,31 @@ import {
   Hash,
   Info,
   MapPinned,
-} from "lucide-react";
-import moment from "moment";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const EnterpriseOnboarding = () => {
   const router = useRouter();
-  const enterprise_Id = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
-    name: "",
-    type: "",
-    address: "",
-    email: "",
-    gst_number: "",
-    pan_number: "",
+    name: '',
+    type: '',
+    address: '',
+    email: '',
+    gstNumber: '',
+    panNumber: '',
   });
   const [errorMsg, setErrorMsg] = useState({});
 
   const enterpriseTypes = [
-    "Properitership",
-    "Partnership",
-    "LLP",
-    "Pvt. Ltd. Company",
-    "NGO",
+    'Properitership',
+    'Partnership',
+    'LLP',
+    'Pvt. Ltd. Company',
+    'NGO',
   ];
 
   // useEffect(() => {
@@ -54,31 +53,31 @@ const EnterpriseOnboarding = () => {
 
   // mutation
   const enterpriseOnboardMutation = useMutation({
-    mutationFn: (data) => updateEnterpriseOnboarding(enterprise_Id, data),
+    mutationFn: (data) => updateEnterpriseOnboarding(enterpriseId, data),
     onSuccess: (data) => {
       LocalStorageService.set(
-        "isEnterpriseOnboardingComplete",
-        data.data.data.isEnterpriseOnboardingComplete
+        'isEnterpriseOnboardingComplete',
+        data.data.data.isEnterpriseOnboardingComplete,
       );
       toast.success(data.data.message);
-      router.push("/");
+      router.push('/');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Oops, Something went wrong!");
+      toast.error(error.response.data.message || 'Oops, Something went wrong!');
     },
   });
 
   // validation
-  const validation = (enterpriseOnboardData) => {
-    let error = {};
-    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const validation = (enterpriseOnboardD) => {
+    const error = {};
+    // const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    // const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    if (enterpriseOnboardData.name === "") {
-      error.enterpriseName = "*Required Enterprise Name";
+    if (enterpriseOnboardD.name === '') {
+      error.enterpriseName = '*Required Enterprise Name';
     }
-    if (enterpriseOnboardData.type === "") {
-      error.enterpriseType = "*Please select your enterprise type";
+    if (enterpriseOnboardD.type === '') {
+      error.enterpriseType = '*Please select your enterprise type';
     }
     // if (!email_pattern.test(enterpriseOnboardData.email)) {
     //   error.email = "*Please provide valid email";
@@ -102,19 +101,19 @@ const EnterpriseOnboarding = () => {
     const { name, value } = e.target;
 
     // pan validation
-    if (name === "pan_number") {
-      const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-      if (!pan_pattern.test(value) && value.length !== 10) {
+    if (name === 'panNumber') {
+      const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+      if (!panPattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "* Please provide valid PAN Number",
+          panNumber: '* Please provide valid PAN Number',
         });
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "",
+          panNumber: '',
         });
       }
       setEnterpriseOnboardData((values) => ({
@@ -149,18 +148,18 @@ const EnterpriseOnboarding = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-[#E1E4ED] py-2 px-5 flex flex-col justify-center items-center gap-4 min-h-[500px] w-[450px] bg-white z-20 rounded-md"
+      className="z-20 flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-4 rounded-md border border-[#E1E4ED] bg-white px-5 py-2"
     >
-      <h1 className="w-full text-2xl text-[#414656] font-bold text-center">
+      <h1 className="w-full text-center text-2xl font-bold text-[#414656]">
         Enterprise Onboarding
       </h1>
 
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="enterpriseName"
-          className="text-[#414656] font-medium flex items-center gap-1"
+          className="flex items-center gap-1 font-medium text-[#414656]"
         >
-          Enterprise Name <span className="text-red-600">*</span>{" "}
+          Enterprise Name <span className="text-red-600">*</span>{' '}
           <Tooltips
             trigger={<Info size={12} />}
             content="Your Enterprise Name"
@@ -177,7 +176,7 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.name}
             onChange={handleChange}
           />
-          <Building className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <Building className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
         </div>
         {errorMsg.enterpriseName && <ErrorBox msg={errorMsg.enterpriseName} />}
       </div>
@@ -185,10 +184,10 @@ const EnterpriseOnboarding = () => {
       <div className="grid w-full max-w-sm items-center gap-5">
         <Label
           htmlFor="enterpriseType"
-          className="text-[#414656] font-medium flex items-center gap-1"
+          className="flex items-center gap-1 font-medium text-[#414656]"
         >
-          Select the option that best describes your enterprise{" "}
-          <span className="text-red-600">*</span>{" "}
+          Select the option that best describes your enterprise{' '}
+          <span className="text-red-600">*</span>{' '}
         </Label>
         <div className="flex flex-wrap gap-5">
           {enterpriseTypes.map((type) => (
@@ -206,7 +205,7 @@ const EnterpriseOnboarding = () => {
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="address"
-          className="text-[#414656] font-medium flex items-center gap-1"
+          className="flex items-center gap-1 font-medium text-[#414656]"
         >
           Address
           <Tooltips
@@ -224,7 +223,7 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.address}
             onChange={handleChange}
           />
-          <MapPinned className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <MapPinned className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
         </div>
         {/* {errorMsg.address && <ErrorBox msg={errorMsg.address} />} */}
       </div>
@@ -232,7 +231,7 @@ const EnterpriseOnboarding = () => {
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="email"
-          className="text-[#414656] font-medium flex items-center gap-1"
+          className="flex items-center gap-1 font-medium text-[#414656]"
         >
           Email
           <Tooltips trigger={<Info size={12} />} content="Your Email" />
@@ -247,7 +246,7 @@ const EnterpriseOnboarding = () => {
             value={enterpriseOnboardData.email}
             onChange={handleChange}
           />
-          <AtSign className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <AtSign className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
         </div>
         {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
       </div>
@@ -255,7 +254,7 @@ const EnterpriseOnboarding = () => {
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
           htmlFor="gst"
-          className="text-[#414656] font-medium flex items-center gap-1"
+          className="flex items-center gap-1 font-medium text-[#414656]"
         >
           GST IN
           <Tooltips trigger={<Info size={12} />} content="GST IN" />
@@ -266,11 +265,11 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="GST IN"
-            name="gst_number"
-            value={enterpriseOnboardData.gst_number}
+            name="gstNumber"
+            value={enterpriseOnboardData.gstNumber}
             onChange={handleChange}
           />
-          <Hash className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <Hash className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
         </div>
       </div>
 
@@ -302,8 +301,8 @@ const EnterpriseOnboarding = () => {
 
       <div className="grid w-full max-w-sm items-center gap-1">
         <Label
-          htmlFor="pan-number"
-          className="text-[#414656] font-medium flex items-center gap-1"
+          htmlFor="panNumber"
+          className="flex items-center gap-1 font-medium text-[#414656]"
         >
           Permanent Account Number
           <Tooltips
@@ -316,22 +315,22 @@ const EnterpriseOnboarding = () => {
             className="focus:font-bold"
             type="text"
             placeholder="FGHJ1456T"
-            name="pan_number"
-            value={enterpriseOnboardData.pan_number}
+            name="panNumber"
+            value={enterpriseOnboardData.panNumber}
             onChange={handleChange}
           />
-          <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+          <CreditCard className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
         </div>
-        {errorMsg.pan_number && <ErrorBox msg={errorMsg.pan_number} />}
+        {errorMsg.panNumber && <ErrorBox msg={errorMsg.panNumber} />}
       </div>
 
-      <Button type="submit" className=" w-full">
-        {enterpriseOnboardMutation.isPending ? <Loading /> : "Submit"}
+      <Button type="submit" className="w-full">
+        {enterpriseOnboardMutation.isPending ? <Loading /> : 'Submit'}
       </Button>
 
       <Link
         href="/"
-        className="text-sm underline text-slate-700 w-full flex justify-center items-center"
+        className="flex w-full items-center justify-center text-sm text-slate-700 underline"
       >
         Skip for Now
       </Link>

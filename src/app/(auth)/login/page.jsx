@@ -1,12 +1,13 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
-import { Suspense, useState } from "react";
-import EnterpriseOnboarding from "./multi-step-forms/EnterpriseOnboarding";
-import IndexForm from "./multi-step-forms/IndexForm";
-import OTPVerificationForm from "./multi-step-forms/OTPVerificationForm";
-import ProfileDetailForm from "./multi-step-forms/ProfileDetailForm";
-import Loading from "@/components/ui/Loading";
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { Suspense, useState } from 'react';
+import Loading from '@/components/ui/Loading';
+import EnterpriseOnboarding from './multi-step-forms/EnterpriseOnboarding';
+import IndexForm from './multi-step-forms/IndexForm';
+import OTPVerificationForm from './multi-step-forms/OTPVerificationForm';
+import ProfileDetailForm from './multi-step-forms/ProfileDetailForm';
 
 export default function Login() {
   const [currStep, setCurrStep] = useState(1);
@@ -16,10 +17,10 @@ export default function Login() {
     <>
       <Suspense fallback={Loading}>
         {/* Header */}
-        <div className="px-10 py-5 shadow-[0_4px_6px_0_#3288ED1A] bg-transparent">
-          <Link href={"/"}>
+        <div className="bg-transparent px-10 py-5 shadow-[0_4px_6px_0_#3288ED1A]">
+          <Link href={'/'}>
             <Image
-              src={"/hues_logo_2.png"}
+              src={'/hues_logo_2.png'}
               height={30}
               width={100}
               placeholder="blur"
@@ -29,7 +30,7 @@ export default function Login() {
           </Link>
         </div>
         {/* Body */}
-        <div className="h-[92vh] flex justify-center items-center">
+        <div className="flex h-[92vh] items-center justify-center">
           {/* Login Form - Step 1 */}
           {currStep === 1 && (
             <IndexForm
@@ -39,7 +40,7 @@ export default function Login() {
             />
           )}
 
-          {/* Login Form - Step 2 - If logIn with Mobile - OTPVerificationForm*/}
+          {/* Login Form - Step 2 - If logIn with Mobile - OTPVerificationForm */}
           {currStep === 2 && (
             <OTPVerificationForm
               currStep={currStep}

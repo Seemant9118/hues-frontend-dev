@@ -1,9 +1,8 @@
-import React from "react";
-import { ResizableBox } from "react-resizable";
-import "react-resizable/css/styles.css";
-import { Input } from "@/components/ui/input";
-import { useDrag } from "react-dnd";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import React from 'react';
+import { useDrag } from 'react-dnd';
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
 const ResizableInput = ({
   input,
@@ -15,8 +14,8 @@ const ResizableInput = ({
   isFocussed,
 }) => {
   const [{ isDragging }, drag] = useDrag({
-    type: "input",
-    item: { id: input?.id + index },
+    type: 'input',
+    item: { id: input.id + index },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -35,8 +34,9 @@ const ResizableInput = ({
     <div
       ref={drag}
       key={index}
+      className={cn('', isDragging && 'opacity-90')}
       style={{
-        position: "absolute",
+        position: 'absolute',
         top: coordinate.y,
         left: coordinate.x,
         width: input.width,
@@ -59,8 +59,8 @@ const ResizableInput = ({
               height: input.height || 30,
             }}
             className={cn(
-              "min-h-full min-w-full border border-slate-400 shadow-lg  rounded",
-              isFocussed ? "bg-primary/20" : "bg-white"
+              'min-h-full min-w-full rounded border border-slate-400 shadow-lg',
+              isFocussed ? 'bg-primary/20' : 'bg-white',
             )}
             type="text"
             defaultValue={input.label}

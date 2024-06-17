@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { DndProvider, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import FormMainContainer from "./FormMainContainer";
-import FormSidebar from "./FormSidebar";
-import { Button } from "@/components/ui/button";
-import { Document, Page } from "react-pdf";
+import { Button } from '@/components/ui/button';
+import { useEffect, useRef, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import FormMainContainer from './FormMainContainer';
+import FormSidebar from './FormSidebar';
 
 const Builder = ({ saveHandler, url }) => {
   const containerRef = useRef(null);
@@ -18,7 +17,7 @@ const Builder = ({ saveHandler, url }) => {
     setTimeout(() => {
       containerRef.current?.scrollTo({
         top: containerRef.current?.scrollHeight,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }, 200);
   };
@@ -27,13 +26,13 @@ const Builder = ({ saveHandler, url }) => {
     setFormData({
       data: [
         {
-          name: "Default Page",
+          name: 'Default Page',
           questions: [],
         },
       ],
     });
     setSelectedPage({
-      name: "Default Page",
+      name: 'Default Page',
       questions: [],
     });
   }, []);
@@ -52,25 +51,27 @@ const Builder = ({ saveHandler, url }) => {
 
   const saveFormHandler = async () => {
     const idx = formData?.data?.findIndex(
-      (value) => value.name === selectedPage.name
+      (value) => value.name === selectedPage.name,
     );
-    const newArray = [...formData?.data];
-    newArray[idx] = selectedPage;
+    if (idx) {
+      const newArray = [...formData.data];
+      newArray[idx] = selectedPage;
 
-    saveHandler({ signatureData: null, formData: newArray });
+      saveHandler({ signatureData: null, formData: newArray });
+    }
   };
 
   return (
     <>
-      {/* <div className="flex items-center justify-end py-4 sticky top-0 left-0 right-0 z-50 bg-white ">
+      <div className="sticky left-0 right-0 top-0 z-50 flex items-center justify-end bg-white py-4">
         <Button variant="blue_outline" onClick={saveFormHandler}>
           Save
         </Button>
-      </div> */}
+      </div>
       <DndProvider backend={HTML5Backend}>
         <main
           ref={containerRef}
-          className="flex overflow-y-auto relative max-h-[90%] scrollBarStyles"
+          className="scrollBarStyles relative flex max-h-[90%] overflow-y-auto"
         >
           <FormSidebar />
 

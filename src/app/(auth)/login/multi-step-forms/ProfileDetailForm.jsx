@@ -1,39 +1,40 @@
-"use client";
-import DatePickers from "@/components/ui/DatePickers";
-import Tooltips from "@/components/auth/Tooltips";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LocalStorageService } from "@/lib/utils";
-import { userUpdate } from "@/services/User_Auth_Service/UserAuthServices";
-import { useMutation } from "@tanstack/react-query";
-import { CalendarDays, CreditCard, Info, Phone, UserRound } from "lucide-react";
-import moment from "moment";
-import { redirect, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import Loading from "@/components/ui/Loading";
-import ErrorBox from "@/components/ui/ErrorBox";
-import Link from "next/link";
+'use client';
+
+import Tooltips from '@/components/auth/Tooltips';
+import DatePickers from '@/components/ui/DatePickers';
+import ErrorBox from '@/components/ui/ErrorBox';
+import Loading from '@/components/ui/Loading';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LocalStorageService } from '@/lib/utils';
+import { userUpdate } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
+import { CalendarDays, CreditCard, Info, UserRound } from 'lucide-react';
+import moment from 'moment';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function ProfileDetailForm({
   setCurrStep,
-  params,
-  isThirdPartyLogin,
+  // params,
+  // isThirdPartyLogin,
 }) {
   const router = useRouter();
-  const userId = LocalStorageService.get("user_profile");
+  const userID = LocalStorageService.get('user_profile');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
-    "isEnterpriseOnboardingComplete"
+    'isEnterpriseOnboardingComplete',
   );
   const [selectedDate, setSelectedDate] = useState(null);
 
   const [userData, setUserData] = useState({
-    user_id: userId,
-    name: "",
-    email: "",
-    date_of_birth: "",
-    pan_number: "",
+    userId: userID,
+    name: '',
+    email: '',
+    dateOfBirth: '',
+    panNumber: '',
   });
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -41,46 +42,46 @@ export default function ProfileDetailForm({
   useEffect(() => {
     setUserData((prevUserData) => ({
       ...prevUserData,
-      date_of_birth: selectedDate
-        ? moment(selectedDate).format("DD/MM/YYYY")
-        : "", // Update dynamically
+      dateOfBirth: selectedDate
+        ? moment(selectedDate).format('DD/MM/YYYY')
+        : '', // Update dynamically
     }));
   }, [selectedDate]);
 
   const mutation = useMutation({
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
-      toast.success("Your Profile Completed & Verified");
+      toast.success('Your Profile Completed & Verified');
       LocalStorageService.set(
-        "isOnboardingComplete",
-        data.data.data.user.isOnboardingComplete
+        'isOnboardingComplete',
+        data.data.data.user.isOnboardingComplete,
       );
       if (isEnterpriseOnboardingComplete) {
-        router.push("/");
+        router.push('/');
       } else {
         setCurrStep(4);
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || "Oops, Something went wrong!");
+      toast.error(error.response.data.message || 'Oops, Something went wrong!');
     },
   });
 
-  const validation = (userData) => {
-    let error = {};
-    const email_pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const validation = (userDataItem) => {
+    const error = {};
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
     // name validation
-    if (userData.name === "") {
-      error.name = "*Required Full Name";
+    if (userDataItem.name === '') {
+      error.name = '*Required Full Name';
     }
 
     // pan validation
-    if (userData.pan_number === "") {
-      error.pan_number = "*Required PAN Number";
-    } else if (!pan_pattern.test(userData.pan_number)) {
-      error.pan_number = "* Please provide valid PAN Number";
+    if (userDataItem.panNumber === '') {
+      error.panNumber = '*Required PAN Number';
+    } else if (!panPattern.test(userData.panNumber)) {
+      error.panNumber = '* Please provide valid PAN Number';
     }
 
     // Aadhaar validation
@@ -90,39 +91,39 @@ export default function ProfileDetailForm({
     //   error.aadhaar_number = "* Please enter a last 4 digit of Aadhaar Number";
     // }
 
-    // date_of_birth validation
-    // if (userData.date_of_birth === "") {
-    //   error.date_of_birth = "*Required Date of Birth";
+    // dateOfBirth validation
+    // if (userData.dateOfBirth === "") {
+    //   error.dateOfBirth = "*Required Date of Birth";
     // }
 
     // email validation
-    if (userData.email === "") {
-      error.email = "*Required Email";
-    } else if (!email_pattern.test(userData.email)) {
-      error.email = "*Please provide valid email";
+    if (userDataItem.email === '') {
+      error.email = '*Required Email';
+    } else if (!emailPattern.test(userData.email)) {
+      error.email = '*Please provide valid email';
     }
 
     return error;
   };
 
   const handleChange = (e) => {
-    let name = e.target.name;
-    let value = e.target.value;
+    const { name } = e.target;
+    const { value } = e.target;
 
     // pan validation
-    if (name === "pan_number") {
-      const pan_pattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-      if (!pan_pattern.test(value) && value.length !== 10) {
+    if (name === 'panNumber') {
+      const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+      if (!panPattern.test(value) && value.length !== 10) {
         // Reset error message if PAN is valid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "* Please provide valid PAN Number",
+          panNumber: '* Please provide valid PAN Number',
         });
       } else {
         // Set error message if PAN is invalid
         setErrorMsg({
           ...errorMsg,
-          pan_number: "",
+          panNumber: '',
         });
       }
       setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
@@ -147,9 +148,9 @@ export default function ProfileDetailForm({
     <>
       <form
         onSubmit={login}
-        className="border border-[#E1E4ED] py-10 px-5 flex flex-col justify-center items-center gap-3 min-h-[500px] w-[450px] bg-white z-20 rounded-md"
+        className="z-20 flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-3 rounded-md border border-[#E1E4ED] bg-white px-5 py-10"
       >
-        <h1 className="w-full text-2xl text-[#414656] font-bold text-center">
+        <h1 className="w-full text-center text-2xl font-bold text-[#414656]">
           Complete your profile: unlock Hues
         </h1>
         {/* <p className="w-full text-xl text-[#414656] text-center">
@@ -159,9 +160,9 @@ export default function ProfileDetailForm({
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label
             htmlFor="mobile-number"
-            className="text-[#414656] font-medium flex items-center gap-1"
+            className="flex items-center gap-1 font-medium text-[#414656]"
           >
-            Full Name <span className="text-red-600">*</span>{" "}
+            Full Name <span className="text-red-600">*</span>{' '}
             <Tooltips trigger={<Info size={12} />} content="Your full Name" />
           </Label>
 
@@ -175,7 +176,7 @@ export default function ProfileDetailForm({
               value={userData.name}
               onChange={handleChange}
             />
-            <UserRound className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+            <UserRound className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
           </div>
           {errorMsg?.name && <ErrorBox msg={errorMsg?.name} />}
         </div>
@@ -183,9 +184,9 @@ export default function ProfileDetailForm({
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label
             htmlFor="mobile-number"
-            className="text-[#414656] font-medium flex items-center gap-1"
+            className="flex items-center gap-1 font-medium text-[#414656]"
           >
-            Permanent Account Number <span className="text-red-600">*</span>{" "}
+            Permanent Account Number <span className="text-red-600">*</span>{' '}
             <Tooltips
               trigger={<Info size={12} />}
               content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
@@ -197,13 +198,13 @@ export default function ProfileDetailForm({
               className="focus:font-bold"
               type="text"
               placeholder="FGHJ1456T"
-              name="pan_number"
-              value={userData.pan_number}
+              name="panNumber"
+              value={userData.panNumber}
               onChange={handleChange}
             />
-            <CreditCard className="text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2" />
+            <CreditCard className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
           </div>
-          {errorMsg?.pan_number && <ErrorBox msg={errorMsg?.pan_number} />}
+          {errorMsg?.panNumber && <ErrorBox msg={errorMsg?.panNumber} />}
         </div>
 
         {/* {isThirdPartyLogin && (
@@ -258,9 +259,9 @@ export default function ProfileDetailForm({
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label
             htmlFor="dob"
-            className="text-[#414656] font-medium flex items-center gap-1"
+            className="flex items-center gap-1 font-medium text-[#414656]"
           >
-            Date of Birth <span className="text-red-600">*</span>{" "}
+            Date of Birth <span className="text-red-600">*</span>{' '}
             <Tooltips
               trigger={<Info size={12} />}
               content="Hues requires age verification for secure transactions, ensuring a trustworthy user experience."
@@ -274,19 +275,17 @@ export default function ProfileDetailForm({
               dateFormat="dd/MM/yyyy"
               popperPlacement="top-right"
             />
-            <CalendarDays className=" text-[#3F5575] absolute top-1/2 right-2 -translate-y-1/2 z-0" />
+            <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
           </div>
-          {errorMsg?.date_of_birth && (
-            <ErrorBox msg={errorMsg?.date_of_birth} />
-          )}
+          {errorMsg?.dateOfBirth && <ErrorBox msg={errorMsg?.dateOfBirth} />}
         </div>
 
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label
             htmlFor="email"
-            className="text-[#414656] font-medium flex items-center gap-1"
+            className="flex items-center gap-1 font-medium text-[#414656]"
           >
-            Email Address <span className="text-red-600">*</span>{" "}
+            Email Address <span className="text-red-600">*</span>{' '}
             <Tooltips
               trigger={<Info size={12} />}
               content="Your email: The gateway to important Hues communications and document deliveries."
@@ -302,19 +301,19 @@ export default function ProfileDetailForm({
               value={userData.email}
               onChange={handleChange}
             />
-            <span className="text-[#3F5575] text-xl font-bold absolute top-1/2 right-2 -translate-y-1/2">
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xl font-bold text-[#3F5575]">
               @
             </span>
           </div>
           {errorMsg?.email && <ErrorBox msg={errorMsg?.email} />}
         </div>
         <Button type="submit" className="w-full">
-          {mutation.isPending ? <Loading /> : "Submit"}
+          {mutation.isPending ? <Loading /> : 'Submit'}
         </Button>
 
         <Link
           href="/"
-          className="text-sm underline text-slate-700 w-full flex justify-center items-center"
+          className="flex w-full items-center justify-center text-sm text-slate-700 underline"
         >
           Skip for Now
         </Link>

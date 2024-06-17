@@ -1,28 +1,29 @@
-"use client";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Edit3, MoreHorizontal } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+
+import { servicesApi } from '@/api/inventories/services/services';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
+import ShareModal from '@/components/Modals/ShareModal';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import ShareModal from "@/components/Modals/ShareModal";
-import ConfirmAction from "@/components/Modals/ConfirmAction";
-import { services_api } from "@/api/inventories/services/services";
-import { DeleteProductServices } from "@/services/Inventories_Services/Services_Inventories/Services_Inventories";
+} from '@/components/ui/dropdown-menu';
+import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
+import { Edit3, MoreHorizontal } from 'lucide-react';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   return [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -45,50 +46,50 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
     //     ),
     // },
     {
-      accessorKey: "serviceName",
+      accessorKey: 'serviceName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="SERVICE NAME" />
       ),
     },
     {
-      accessorKey: "sac",
+      accessorKey: 'sac',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="SAC" />
       ),
     },
     {
-      accessorKey: "description",
+      accessorKey: 'description',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="DESCRIPTION" />
       ),
       cell: ({ row }) => {
-        const description = row.original.description;
+        const { description } = row.original;
         return <p className="truncate">{description}</p>;
       },
     },
     {
-      accessorKey: "rate",
+      accessorKey: 'rate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="RATE" />
       ),
     },
     {
-      accessorKey: "gstPercentage",
+      accessorKey: 'gstPercentage',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GST (%)" />
       ),
     },
     {
-      accessorKey: "amount",
+      accessorKey: 'amount',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Amount" />
       ),
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const id = row.original.id;
+        const { id } = row.original;
         const name = row.original.serviceName;
 
         return (
@@ -116,7 +117,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
               <ConfirmAction
                 name={name}
                 id={id}
-                mutationKey={services_api.getAllProductServices.endpointKey}
+                mutationKey={servicesApi.getAllProductServices.endpointKey}
                 mutationFunc={DeleteProductServices}
               />
             </DropdownMenuContent>

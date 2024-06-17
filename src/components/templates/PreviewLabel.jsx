@@ -1,15 +1,15 @@
-import React from "react";
-import { Label } from "@/components/ui/label";
+import React from 'react';
+import { Label } from '@/components/ui/label';
 
-//Preview Label
+// Preview Label
 const PreviewLabel = ({ question, idx }) => {
   return (
     <Label
       htmlFor={question.question}
-      className="text-sm md:text-md lg:text-lg text-GreyPrimary"
+      className="md:text-md text-GreyPrimary text-sm lg:text-lg"
     >
       <span>{idx + 1}. </span>
-      {question?.question}{" "}
+      {question?.question}{' '}
       {question.required && <span className="text-red-500">*</span>}
     </Label>
   );

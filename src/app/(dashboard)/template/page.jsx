@@ -1,20 +1,20 @@
-"use client";
-import { template_api } from "@/api/templates_api/template_api";
-import AddItem from "@/components/inventory/AddItem";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import SubHeader from "@/components/ui/Sub-header";
-import TemplateCard from "@/components/templates/TemplateCard";
-import Wrapper from "@/components/wrappers/Wrapper";
-import { ResponseColumns } from "@/components/columns/ResponseColumns";
-import { DataTable } from "@/components/table/data-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LocalStorageService } from "@/lib/utils";
+'use client';
+
+import { templateApi } from '@/api/templates_api/template_api';
+import { ResponseColumns } from '@/components/columns/ResponseColumns';
+import { DataTable } from '@/components/table/data-table';
+import TemplateCard from '@/components/templates/TemplateCard';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import SubHeader from '@/components/ui/Sub-header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService } from '@/lib/utils';
 import {
   getTemplates,
   uploadTemplate,
-} from "@/services/Template_Services/Template_Services";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+} from '@/services/Template_Services/Template_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   DatabaseZap,
   Eye,
@@ -27,18 +27,15 @@ import {
   ShieldCheck,
   Trash2,
   Upload,
-} from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { toast } from "sonner";
+} from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function Home() {
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
 
-  const [file, setFile] = useState(null);
-  const [isAdding, setIsAdding] = useState(false);
-  const [templates, setTemplates] = useState([]);
   const [viewForm, setViewForm] = useState(false);
   const [viewResponses, setViewResponses] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -46,7 +43,7 @@ export default function Home() {
   const templateEmptyStageData = {
     heading: `~"Streamline workflows with customizable, secure, digitally-signable templates for all business
     needs."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,
@@ -77,40 +74,28 @@ export default function Home() {
   };
 
   const uploadFileMutation = useMutation({
-    mutationFn: (file) => uploadTemplate(file, enterpriseId),
+    mutationFn: (uploadedFile) => uploadTemplate(uploadedFile, enterpriseId),
     onSuccess: () => {
-      toast.success("Template Added Successfully.");
-      setFile(null);
-      queryClient.invalidateQueries([template_api.getTemplates.endpointKey]);
+      toast.success('Template Added Successfully.');
+      queryClient.invalidateQueries([templateApi.getTemplates.endpointKey]);
     },
     onError: () => {
-      toast.error("Something went wrong");
+      toast.error('Something went wrong');
     },
   });
 
-  const { isLoading, data, error, isSuccess } = useQuery({
-    queryKey: [template_api.getTemplates.endpointKey],
+  const { data, isSuccess } = useQuery({
+    queryKey: [templateApi.getTemplates.endpointKey],
     queryFn: () => getTemplates(enterpriseId),
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
     enabled: !!enterpriseId,
   });
 
   const fileHandler = (e) => {
     const uploadedFile = e.target.files[0]; // Get the first file
     if (uploadedFile) {
-      setFile(uploadedFile);
-
-      setTemplates((prev) => [
-        ...prev,
-        {
-          name: uploadedFile.name,
-          type:
-            uploadedFile.type.replace(/(.*)\//g, "") === "pdf" ? "pdf" : "xlsx",
-        },
-      ]);
-
       const formData = new FormData();
-      formData.append("file", uploadedFile);
+      formData.append('file', uploadedFile);
 
       uploadFileMutation.mutate(formData);
     }
@@ -118,14 +103,14 @@ export default function Home() {
 
   return (
     <>
-      {(!data || data?.length === 0) && !isAdding && (
+      {(!data || data?.length === 0) && (
         <>
-          <div className="flex justify-between items-center">
-            <SubHeader name="Templates" className={"justify-between w-full"}>
+          <div className="flex items-center justify-between">
+            <SubHeader name="Templates" className={'w-full justify-between'}>
               <Button
                 asChild
-                variant={"secondary"}
-                className="gap-2 text-blue-500 border border-blue-500 hover:bg-blue-500/10 cursor-pointer"
+                variant={'secondary'}
+                className="cursor-pointer gap-2 border border-blue-500 text-blue-500 hover:bg-blue-500/10"
               >
                 <label htmlFor="template">
                   <Plus size={20} />
@@ -150,48 +135,44 @@ export default function Home() {
           />
         </>
       )}
-
+      {/* 
       {viewForm && (
         <AddItem
           onCancel={() => setViewForm(false)}
           onSubmit={(newProduct) => {
             setTemplates((prev) => [...prev, newProduct]);
             setViewForm(false);
-            toast.success("Templated Added Successfully.");
+            toast.success('Templated Added Successfully.');
           }}
-          name={"Product"}
-          cta={"Template"}
+          name={'Product'}
+          cta={'Template'}
         />
-      )}
+      )} */}
 
-      {data &&
-        !isAdding &&
-        !viewForm &&
-        !viewResponses &&
-        data?.length !== 0 && (
-          <Wrapper>
-            <SubHeader name={"Templates"}>
-              <div className="flex items-center justify-center gap-4">
-                <div className="relative">
-                  <Input placeholder="Search" />
-                  <Search
-                    className="absolute top-1/2 right-2 -translate-y-1/2 z-10 cursor-pointer bg-white"
-                    size={16}
-                  />
-                </div>
-                <Button variant={"blue_outline"} asChild size="sm">
-                  <label htmlFor="template">
-                    <Upload size={14} />
-                    Upload
-                  </label>
-                </Button>
-                <input
-                  onChange={fileHandler}
-                  id="template"
-                  type="file"
-                  className="sr-only"
+      {data && !viewForm && !viewResponses && data?.length !== 0 && (
+        <Wrapper>
+          <SubHeader name={'Templates'}>
+            <div className="flex items-center justify-center gap-4">
+              <div className="relative">
+                <Input placeholder="Search" />
+                <Search
+                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 cursor-pointer bg-white"
+                  size={16}
                 />
-                {/* <Button
+              </div>
+              <Button variant={'blue_outline'} asChild size="sm">
+                <label htmlFor="template">
+                  <Upload size={14} />
+                  Upload
+                </label>
+              </Button>
+              <input
+                onChange={fileHandler}
+                id="template"
+                type="file"
+                className="sr-only"
+              />
+              {/* <Button
                 onClick={() => setViewForm(true)}
                 variant={"blue_outline"}
                 size="sm"
@@ -199,41 +180,41 @@ export default function Home() {
                 <Layers2 size={14} />
                 Add Template
               </Button> */}
-              </div>
-            </SubHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-              {isSuccess &&
-                data?.map((template, idx) => (
-                  <TemplateCard
-                    viewResponseClick={() => {
-                      setViewForm(false);
-                      setViewResponses(true);
-                      setSelectedTemplate(template);
-                    }}
-                    onDelete={() => {
-                      setTemplates((prev) => {
-                        const updated = [...prev];
-                        updated.splice(idx, 1);
-                        return updated;
-                      });
-                      toast.success("Templated Deleted Successfully.");
-                    }}
-                    onViewTemplateClick={() => {}}
-                    onViewFormClick={() => setViewForm(true)}
-                    {...template}
-                    key={idx}
-                  />
-                ))}
             </div>
-          </Wrapper>
-        )}
+          </SubHeader>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {isSuccess &&
+              data?.map((template) => (
+                <TemplateCard
+                  viewResponseClick={() => {
+                    setViewForm(false);
+                    setViewResponses(true);
+                    setSelectedTemplate(template);
+                  }}
+                  // onDelete={() => {
+                  //   setTemplates((prev) => {
+                  //     const updated = [...prev];
+                  //     updated.splice(idx, 1);
+                  //     return updated;
+                  //   });
+                  //   toast.success('Templated Deleted Successfully.');
+                  // }}
+                  onViewTemplateClick={() => {}}
+                  onViewFormClick={() => setViewForm(true)}
+                  {...template}
+                  key={template.id}
+                />
+              ))}
+          </div>
+        </Wrapper>
+      )}
       {viewResponses && (
         <Wrapper>
-          <div className="flex items-center justify-between p-8 border rounded-sm border-[#A5ABBD26]">
-            <div className="flex items-center gap-4 ">
+          <div className="flex items-center justify-between rounded-sm border border-[#A5ABBD26] p-8">
+            <div className="flex items-center gap-4">
               {/* {selectedTemplate?.type.replace(/(.*)\//g, "") === "pdf" ? ( */}
               <Image
-                src={"/pdf_png.png"}
+                src={'/pdf_png.png'}
                 alt="Template"
                 height={55}
                 width={60}
@@ -247,8 +228,8 @@ export default function Home() {
               //   />
               // )} */}
               <div className="grid gap-2">
-                <p className="text-grey font-bold text-sm">Template Name</p>
-                <p className=" font-bold text-sm">{selectedTemplate.name}</p>
+                <p className="text-sm font-bold text-grey">Template Name</p>
+                <p className="text-sm font-bold">{selectedTemplate.name}</p>
               </div>
               <Button variant="grey" className="ml-20">
                 <MessageSquareText size={14} />
@@ -258,9 +239,10 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <Button
                 onClick={() => setViewForm(true)}
-                variant={"blue_outline"}
+                disabled={true}
+                variant={'blue_outline'}
                 size="sm"
-                className="text-xs gap-1 p-1.5 "
+                className="gap-1 p-1.5 text-xs"
               >
                 <Eye size={16} />
                 View Form
@@ -268,14 +250,14 @@ export default function Home() {
             </div>
           </div>
           <DataTable columns={ResponseColumns} data={[]} />
-          <div className="h-[1px] bg-neutral-300 mt-auto"></div>
+          <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-          <div className="flex justify-end items-center gap-4">
-            <Button onClick={() => {}} variant={"grey"} size="icon">
+          <div className="flex items-center justify-end gap-4">
+            <Button onClick={() => {}} variant={'grey'} size="icon">
               <Trash2 />
             </Button>
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className=""
               onClick={() => {
                 setViewResponses(false);

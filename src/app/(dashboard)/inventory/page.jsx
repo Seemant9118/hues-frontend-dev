@@ -1,25 +1,25 @@
-"use client";
-import AddItem from "@/components/inventory/AddItem";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import SubHeader from "@/components/ui/Sub-header";
-import Wrapper from "@/components/wrappers/Wrapper";
-import { Columns } from "@/components/columns/columns";
-import { DataTable } from "@/components/table/data-table";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import { Columns } from '@/components/columns/columns';
+import AddItem from '@/components/inventory/AddItem';
+import { DataTable } from '@/components/table/data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import SubHeader from '@/components/ui/Sub-header';
+import { Button } from '@/components/ui/button';
+import Wrapper from '@/components/wrappers/Wrapper';
 import {
   Check,
-  Download,
-  Trash2,
-  Upload,
-  UploadCloud,
   CircleFadingPlus,
+  DatabaseZap,
+  Download,
   FileCheck,
   FileText,
   KeySquare,
-  DatabaseZap,
-} from "lucide-react";
-import React, { useState } from "react";
-import { FileUploader } from "react-drag-drop-files";
+  Upload,
+  UploadCloud,
+} from 'lucide-react';
+import React, { useState } from 'react';
+import { FileUploader } from 'react-drag-drop-files';
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
@@ -34,7 +34,7 @@ const InventoryPage = () => {
   const InventoryEmptyStageData = {
     heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
     perfect cataloging."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,
@@ -63,11 +63,11 @@ const InventoryPage = () => {
     <>
       {!isAdding && !isUploading && (
         <Wrapper>
-          <SubHeader name={"Inventory"}>
+          <SubHeader name={'Inventory'}>
             <div className="flex items-center justify-center gap-4">
               <Button
                 onClick={() => setisUploading(true)}
-                variant={"blue_outline"}
+                variant={'blue_outline'}
                 size="sm"
               >
                 <Upload size={14} />
@@ -75,7 +75,7 @@ const InventoryPage = () => {
               </Button>
               <Button
                 onClick={() => setIsAdding(true)}
-                variant={"blue_outline"}
+                variant={'blue_outline'}
                 size="sm"
               >
                 <CircleFadingPlus size={14} />
@@ -100,32 +100,32 @@ const InventoryPage = () => {
           onCancel={() => setIsAdding(false)}
           onSubmit={(newProduct) => {
             setIsAdding(false);
-            setProducts((products) => [...products, newProduct]);
+            setProducts((product) => [...product, newProduct]);
           }}
-          name={"Add Item"}
-          cta={"Item"}
+          name={'Add Item'}
+          cta={'Item'}
         />
       )}
       {isUploading && (
-        <Wrapper className={"justify-start items-center"}>
+        <Wrapper className={'items-center justify-start'}>
           <FileUploader
             handleChange={handleChange}
             name="file"
-            types={["xls", "csv"]}
+            types={['xls', 'csv']}
           >
-            <div className="min-w-[700px] grow px-5 py-10 mb-2 flex gap-3 justify-between items-center rounded border-2 border-sky-300 border-dashed border-spacing-3 cursor-pointer">
+            <div className="mb-2 flex min-w-[700px] grow border-spacing-3 cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-sky-300 px-5 py-10">
               <div className="flex items-center gap-4">
                 <UploadCloud className="text-sky-500" size={40} />
-                <div className="flex flex-col gap-1 ">
-                  <p className=" text-darkText font-medium text-xs">
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs font-medium text-darkText">
                     Drag & Drop or Select a File (Max 10MB,
-                    <span className="text-sky-500 font-bold">
-                      {" "}
+                    <span className="font-bold text-sky-500">
+                      {' '}
                       .csv/.xls Formats
-                    </span>{" "}
+                    </span>{' '}
                     )
                   </p>
-                  <p className="text-sky-500 text-xs font-normal">
+                  <p className="text-xs font-normal text-sky-500">
                     Note - Trade Enabled for eSigned Inventories Only.
                   </p>
                   {/* <p className="text-sky-500 text-xs font-normal">
@@ -143,32 +143,32 @@ const InventoryPage = () => {
               Sample
             </Button>
           </FileUploader>
-          {files.map((file, idx) => (
+          {files.map((file) => (
             <div
-              key={idx}
-              className="p-4 border-neutral-300 border rounded-sm flex items-center justify-between gap-4 min-w-[700px]"
+              key={file.name}
+              className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
             >
               <div className="flex items-center gap-4">
                 <p className="text-xs font-medium leading-[18px]">
                   {file.name}
                 </p>
-                <div className="w-1 h-1 rounded-full bg-neutral-400"></div>
+                <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
                 <a
                   href="#"
-                  className="text-blue-500 underline underline-offset-2 text-xs leading-4"
+                  className="text-xs leading-4 text-blue-500 underline underline-offset-2"
                 >
                   Preview
                 </a>
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-full bg-green-500/10 text-green-500">
+                  <div className="rounded-full bg-green-500/10 p-2 text-green-500">
                     <Check size={10} />
                   </div>
-                  <p className="text-xs font-medium text-green-500 leading-5">
+                  <p className="text-xs font-medium leading-5 text-green-500">
                     Upload Successfully!
                   </p>
                 </div>
               </div>
-              <button
+              {/* <button
                 onClick={() => {
                   setFiles((prev) => {
                     const updated = [...prev];
@@ -178,12 +178,12 @@ const InventoryPage = () => {
                 }}
               >
                 <Trash2 className="text-grey" size={14} />
-              </button>
+              </button> */}
             </div>
           ))}
-          <div className="h-[1px] w-full bg-neutral-300 mt-auto"></div>
+          <div className="mt-auto h-[1px] w-full bg-neutral-300"></div>
 
-          <div className="flex justify-end self-end ">
+          <div className="flex justify-end self-end">
             <Button onClick={() => setisUploading(false)}>Done</Button>
           </div>
         </Wrapper>

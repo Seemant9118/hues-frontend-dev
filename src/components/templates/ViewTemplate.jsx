@@ -1,33 +1,35 @@
-"use client";
-import { template_api } from "@/api/templates_api/template_api";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import { templateApi } from '@/api/templates_api/template_api';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import {
   getDocument,
   updateTemplate,
-} from "@/services/Template_Services/Template_Services";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, FileSignature } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/TextLayer.css";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import Loading from "@/components/ui/Loading";
-import { LocalStorageService } from "@/lib/utils";
-import { toast } from "sonner";
+} from '@/services/Template_Services/Template_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye, FileSignature } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import Loading from '@/components/ui/Loading';
+import { LocalStorageService } from '@/lib/utils';
+import { toast } from 'sonner';
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
 ).toString();
 const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isOpen, setisOpen] = useState(false);
+  const [isOpen] = useState(false);
   const [canClick, setCanClick] = useState(false);
   const queryClient = useQueryClient();
   const pdfCanvasRef = useRef();
@@ -36,7 +38,7 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
       ? signatureBoxPlacement?.data
       : {
           1: [],
-        }
+        },
   );
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
@@ -66,40 +68,40 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
   };
 
   const { data, isLoading, isSuccess } = useQuery({
-    queryKey: [template_api.getS3Document.endpointKey, url],
+    queryKey: [templateApi.getS3Document.endpointKey, url],
     queryFn: () => getDocument(url),
     enabled: !!isOpen,
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
   });
 
   const { mutate, isPending: isUpdating } = useMutation({
-    mutationFn: (data) => {
-      const enterprise_id = LocalStorageService.get("enterprise_Id");
-      const user_id = LocalStorageService.get("user_profile");
+    mutationFn: () => {
+      const enterpriseId = LocalStorageService.get('enterprise_Id');
+      const userId = LocalStorageService.get('user_profile');
       return updateTemplate(
         {
-          enterprise_id: enterprise_id,
+          enterprise_id: enterpriseId,
           form_data: {
             data: [],
           },
           signature_box_placement: {
-            data: data,
+            data,
           },
-          created_by: user_id,
+          created_by: userId,
         },
-        id
+        id,
       );
     },
-    onSuccess: (data) => {
-      toast.success("Template Updated Successfully.");
+    onSuccess: () => {
+      toast.success('Template Updated Successfully.');
       queryClient.invalidateQueries({
-        queryKey: [template_api.getTemplates.endpointKey],
+        queryKey: [templateApi.getTemplates.endpointKey],
       });
       setClickedCoordinates([]);
       setIsSheetOpen(false);
     },
-    onError: (data) => {
-      toast.error("Failed to update template.");
+    onError: () => {
+      toast.error('Failed to update template.');
     },
   });
 
@@ -180,9 +182,9 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
     >
       <SheetTrigger asChild>
         <Button
-          variant={"blue_outline"}
+          variant={'blue_outline'}
           size="sm"
-          className="text-xs gap-1 p-1.5"
+          className="gap-1 p-1.5 text-xs"
         >
           <Eye size={16} />
           View
@@ -190,8 +192,8 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
       </SheetTrigger>
       <SheetContent className={`min-w-[40%]`}>
         <SheetHeader className="flex-row items-center justify-between py-4">
-          <SheetTitle>{name.split(".")[0]}</SheetTitle>
-          <div className="flex items-center gap-2 ">
+          <SheetTitle>{name.split('.')[0]}</SheetTitle>
+          <div className="flex items-center gap-2">
             <Button
               disabled={pageNo === 1}
               onClick={() => setPageNo((prev) => (pages > prev ? prev - 1 : 1))}
@@ -215,17 +217,17 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
             >
               {isUpdating && <Loading />}
               {!canClick && <FileSignature />}
-              {canClick ? "Done" : isUpdating ? "Updating" : "Add Signature"}
+              {canClick ? 'Done' : isUpdating ? 'Updating' : 'Add Signature'}
             </Button>
           </div>
         </SheetHeader>
         {isLoading && <Loading />}
         {!isLoading && isSuccess && (
-          <div className="w-full h-full bg-secondary overflow-auto">
+          <div className="h-full w-full overflow-auto bg-secondary">
             <div
               ref={pdfCanvasRef}
               id="pdfCanvas"
-              className="max-w-fit  mx-auto relative overflow-auto"
+              className="relative mx-auto max-w-fit overflow-auto"
               onMouseDown={canClick ? addClickedCoordinate : () => {}}
             >
               <Document
@@ -235,10 +237,10 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
                 <Page pageNumber={pageNo} />
               </Document>
               {clickedCoordinates[pageNo] &&
-                clickedCoordinates[pageNo]?.map((signature, idx) => (
+                clickedCoordinates[pageNo]?.map((signature) => (
                   <div
-                    key={idx}
-                    className="bg-white border border-black px-3 py-2 absolute shadow-inner shadow-white h-10"
+                    key={`${pageNo}|${signature.y}|${signature.x}`}
+                    className="absolute h-10 border border-black bg-white px-3 py-2 shadow-inner shadow-white"
                     style={{
                       top: signature.y,
                       left: signature.x,

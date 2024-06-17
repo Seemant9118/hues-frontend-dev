@@ -1,23 +1,23 @@
-import { order_api } from "@/api/order_api/order_api";
+import { orderApi } from '@/api/order_api/order_api';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { GetNegotiationDetails } from "@/services/Orders_Services/Orders_Services";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+} from '@/components/ui/tooltip';
+import { GetNegotiationDetails } from '@/services/Orders_Services/Orders_Services';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
 
 export default function ToolTipOrder({ trigger, offerDetails }) {
   const params = useParams();
-  const order_id = params.order_id;
-  const item_id = offerDetails?.id;
+  const orderId = params.order_id;
+  const itemId = offerDetails?.id;
 
   const { isLoading, data } = useQuery({
-    queryKey: [order_api.getNegotiationDetails.endpointKey],
-    queryFn: () => GetNegotiationDetails(order_id, item_id),
-    select: (data) => data.data.data,
+    queryKey: [orderApi.getNegotiationDetails.endpointKey],
+    queryFn: () => GetNegotiationDetails(orderId, itemId),
+    select: () => data.data.data,
   });
 
   return (

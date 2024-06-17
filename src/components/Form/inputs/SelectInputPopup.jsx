@@ -1,22 +1,22 @@
-import { ChevronDown, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { ChevronDown, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
 
 const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
   const [questionConfigs, setQuestionConfigs] = useState({
     options: input.options ? input.options : [],
     columnCount: input.columnCount || 3,
-    align: input.align || "vertical",
+    align: input.align || 'vertical',
   });
 
   const [showOptions, setShowOptions] = useState(false);
@@ -26,7 +26,7 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
   const optionHandler = (e) => {
     e?.preventDefault();
     if (!optionInputRef.current) return;
-    if (optionInputRef.current?.value === "") return;
+    if (optionInputRef.current?.value === '') return;
     const option = optionInputRef.current.value;
     setQuestionConfigs((prev) => ({
       ...prev,
@@ -38,14 +38,14 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
 
       return updated;
     });
-    optionInputRef.current.value = "";
+    optionInputRef.current.value = '';
   };
 
   return (
     <>
-      <div className="flex gap-2 items-center pt-3 pb-2">
+      <div className="flex items-center gap-2 pb-2 pt-3">
         <Button
-          className="px-4 h-7 bg-primary/90 rounded-none text-white border-b-[1px] border-primary/20 hover:bg-primary"
+          className="h-7 rounded-none border-b-[1px] border-primary/20 bg-primary/90 px-4 text-white hover:bg-primary"
           onClick={() => {
             setShowOptions(true);
             setShowOptionInput(true);
@@ -56,12 +56,12 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
         </Button>
         <Popover>
           <PopoverTrigger asChild>
-            <Button className="px-4 h-7 gap-4 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20">
+            <Button className="h-7 gap-4 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
               <p>Align Options Vertically</p>
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="max-w-fit ml-20 px-4 py-2">
+          <PopoverContent className="ml-20 max-w-fit px-4 py-2">
             <RadioGroup
               onValueChange={(value) => {
                 setQuestionConfigs((prev) => ({
@@ -75,16 +75,16 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
                   return updated;
                 });
               }}
-              defaultValue={input.align || "vertical"}
+              defaultValue={input.align || 'vertical'}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  className="w-3 h-3 text-primary border-primary"
+                  className="h-3 w-3 border-primary text-primary"
                   value="vertical"
                   id="vertical"
                 />
                 <Label
-                  className="text-zinc-800 text-xs leading-normal font-normal"
+                  className="text-xs font-normal leading-normal text-zinc-800"
                   htmlFor="vertical"
                 >
                   Align Options Vertically
@@ -92,26 +92,26 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
-                  className="w-3 h-3 text-primary border-primary"
+                  className="h-3 w-3 border-primary text-primary"
                   value="horizontal"
                   id="horizontal"
                 />
                 <Label
-                  className="text-zinc-800 text-xs leading-normal font-normal"
+                  className="text-xs font-normal leading-normal text-zinc-800"
                   htmlFor="horizontal"
                 >
                   Align Options Horizontally
                 </Label>
               </div>
-              <div className="flex justify-center-center flex-col space-y-2">
+              <div className="justify-center-center flex flex-col space-y-2">
                 <div className="flex items-center gap-2">
                   <RadioGroupItem
-                    className="w-3 h-3 text-primary border-primary"
+                    className="h-3 w-3 border-primary text-primary"
                     value="grid"
                     id="grid"
                   />
                   <Label
-                    className="text-zinc-800 text-xs leading-normal font-normal"
+                    className="text-xs font-normal leading-normal text-zinc-800"
                     htmlFor="grid"
                   >
                     Align as grid with
@@ -121,11 +121,11 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
             </RadioGroup>
             <div className="flex items-center space-x-2">
               <input
-                className="h-7 w-14 pl-2 border-[1px] border-primary/30 rounded disabled:text-slate-400 focus-within:outline-none"
+                className="h-7 w-14 rounded border-[1px] border-primary/30 pl-2 focus-within:outline-none disabled:text-slate-400"
                 type="number"
                 name="columnCount"
                 id="columnCount"
-                disabled={questionConfigs.align !== "grid"}
+                disabled={questionConfigs.align !== 'grid'}
                 value={questionConfigs.columnCount}
                 onChange={(e) => {
                   if (Number(e.target.value) <= 0) return;
@@ -136,7 +136,7 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
                 }}
               />
               <Label
-                className="text-zinc-800 text-xs leading-normal font-normal"
+                className="text-xs font-normal leading-normal text-zinc-800"
                 htmlFor="columnCount"
               >
                 Columns
@@ -146,11 +146,11 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
         </Popover>
       </div>
       {showOptions && (
-        <div className="flex gap-2 items-center flex-wrap py-2">
-          <Label className="peer pr-4 pl-3 flex items-center gap-1 h-7 rounded bg-primary/10 border-[1px] border-primary/30 text-primary cursor-pointer">
+        <div className="flex flex-wrap items-center gap-2 py-2">
+          <Label className="peer flex h-7 cursor-pointer items-center gap-1 rounded border-[1px] border-primary/30 bg-primary/10 pl-3 pr-4 text-primary">
             <Checkbox
               id="others"
-              className="w-4 h-4 rounded-full bg-[#D9D9D9] border-[#D9D9D9] data-[state=checked]:bg-primary data-[state=checked]:border-primary "
+              className="h-4 w-4 rounded-full border-[#D9D9D9] bg-[#D9D9D9] data-[state=checked]:border-primary data-[state=checked]:bg-primary"
               checked={input.others}
               onCheckedChange={(checked) => {
                 setDroppedInputs((prev) => {
@@ -164,10 +164,10 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
           </Label>
 
           {showOptionInput && (
-            <div className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-BlueOutline bg-BlueLight">
+            <div className="border-BlueOutline bg-BlueLight flex h-7 items-center justify-center gap-1 rounded border-[1px] pl-3 pr-4">
               <X
-                className="text-primary cursor-pointer"
-                size={"16"}
+                className="cursor-pointer text-primary"
+                size={'16'}
                 onClick={() => setShowOptionInput(false)}
               />
               <Separator className="h-3 bg-zinc-800" orientation="vertical" />
@@ -175,7 +175,7 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
                 <input
                   placeholder="Enter option value"
                   type="text"
-                  className="placeholder:text-slate-400 bg-transparent min-w-[100px] border-none outline-none text-xs font-normal leading-normal"
+                  className="min-w-[100px] border-none bg-transparent text-xs font-normal leading-normal outline-none placeholder:text-slate-400"
                   ref={optionInputRef}
                 />
               </form>
@@ -183,18 +183,18 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
           )}
           {questionConfigs?.options.map((option, index) => (
             <div
-              key={index}
-              className="pr-4 pl-3 flex items-center justify-center gap-1 h-7 rounded border-[1px] border-primary/20 bg-primary/10"
+              key={option}
+              className="flex h-7 items-center justify-center gap-1 rounded border-[1px] border-primary/20 bg-primary/10 pl-3 pr-4"
             >
               <X
-                className="text-primary cursor-pointer"
-                size={"16"}
+                className="cursor-pointer text-primary"
+                size={'16'}
                 onClick={() => {
                   const options = input.options.filter((_, i) => i !== index);
 
                   setQuestionConfigs((prev) => ({
                     ...prev,
-                    options: options,
+                    options,
                   }));
 
                   setDroppedInputs((prev) => {
@@ -205,7 +205,7 @@ const SelectInputPopup = ({ input, setDroppedInputs, idx }) => {
                 }}
               />
               <Separator className="h-3 bg-zinc-800" orientation="vertical" />
-              <p className="bg-transparent min-w-fit text-zinc-800 text-xs font-normal leading-normal">
+              <p className="min-w-fit bg-transparent text-xs font-normal leading-normal text-zinc-800">
                 {option}
               </p>
             </div>

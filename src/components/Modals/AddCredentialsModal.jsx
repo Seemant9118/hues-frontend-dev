@@ -1,51 +1,48 @@
-"use client";
-import React, { useState } from "react";
+'use client';
+
+import InputWithLabel from '@/components/ui/InputWithLabel';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogClose,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Layers2, Fingerprint, Edit3 } from "lucide-react";
-import InputWithLabel from "@/components/ui/InputWithLabel";
+} from '@/components/ui/select';
+import { Fingerprint } from 'lucide-react';
+import React, { useState } from 'react';
 
-const AddCredentialsModal = ({ type, modalHead, btnName }) => {
+const AddCredentialsModal = ({ modalHead, btnName }) => {
   const [open, setOpen] = useState(false);
   const [gstCredential, setGstCredentials] = useState({
-    agency: "",
-    user_id: "",
-    password: "",
+    agency: '',
+    user_id: '',
+    password: '',
   });
-  const [errorMsg, setErrorMsg] = useState("*Mandatory Information");
+  const [errorMsg, setErrorMsg] = useState('*Mandatory Information');
 
   // handle submit function for password manager modal
   const handleSubmitGstCredentials = (e) => {
     e.preventDefault();
-    console.log(gstCredential)
     setGstCredentials({
-      agency: "",
-      user_id: "",
-      password: "",
+      agency: '',
+      user_id: '',
+      password: '',
     });
     setOpen((prev) => !prev);
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"blue_outline"} size="sm">
+        <Button variant={'blue_outline'} size="sm">
           <Fingerprint size={14} />
           {btnName}
         </Button>
@@ -77,9 +74,9 @@ const AddCredentialsModal = ({ type, modalHead, btnName }) => {
                   ...prev,
                   user_id: e.target.value,
                 }));
-                e.target.value === ""
-                  ? setErrorMsg("*Mandatory Information - username")
-                  : setErrorMsg("");
+                e.target.value === ''
+                  ? setErrorMsg('*Mandatory Information - username')
+                  : setErrorMsg('');
               }}
               value={gstCredential.user_id}
             />
@@ -92,9 +89,9 @@ const AddCredentialsModal = ({ type, modalHead, btnName }) => {
                   ...prev,
                   password: e.target.value,
                 }));
-                e.target.value === ""
-                  ? setErrorMsg("*Mandatory Information - password")
-                  : setErrorMsg("");
+                e.target.value === ''
+                  ? setErrorMsg('*Mandatory Information - password')
+                  : setErrorMsg('');
               }}
               value={gstCredential.pass}
             />
@@ -102,13 +99,13 @@ const AddCredentialsModal = ({ type, modalHead, btnName }) => {
 
           <div className="h-[1px] bg-neutral-300"></div>
 
-          <div className="flex justify-end items-center gap-4 mt-3">
+          <div className="mt-3 flex items-center justify-end gap-4">
             <DialogClose asChild>
               <Button
                 onClick={() => {
                   setOpen((prev) => !prev);
                 }}
-                variant={"outline"}
+                variant={'outline'}
               >
                 Cancel
               </Button>

@@ -1,28 +1,29 @@
-"use client";
-import { goods_api } from "@/api/inventories/goods/goods";
-import ConfirmAction from "@/components/Modals/ConfirmAction";
-import ShareModal from "@/components/Modals/ShareModal";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+
+import { goodsApi } from '@/api/inventories/goods/goods';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
+import ShareModal from '@/components/Modals/ShareModal';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DeleteProductGoods } from "@/services/Inventories_Services/Goods_Inventories/Goods_Inventories";
-import { Edit3, MoreHorizontal } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
+import { Edit3, MoreHorizontal } from 'lucide-react';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   return [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -45,57 +46,56 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
     //   ),
     // },
     {
-      accessorKey: "productName",
+      accessorKey: 'productName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PRODUCT NAME" />
       ),
     },
     {
-      accessorKey: "manufacturerName",
+      accessorKey: 'manufacturerName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="MANUFACTURER NAME" />
       ),
     },
     {
-      accessorKey: "hsnCode",
+      accessorKey: 'hsnCode',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CODE" />
       ),
     },
     {
-      accessorKey: "description",
+      accessorKey: 'description',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="DESCRIPTION" />
       ),
       cell: ({ row }) => {
-        const description = row.original.description;
+        const { description } = row.original;
         return <p className="truncate">{description}</p>;
       },
     },
     {
-      accessorKey: "rate",
+      accessorKey: 'rate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="RATE" />
       ),
     },
     {
-      accessorKey: "gstPercentage",
+      accessorKey: 'gstPercentage',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GST (%)" />
       ),
     },
     {
-      accessorKey: "amount",
+      accessorKey: 'amount',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Amount" />
       ),
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
-        const id = row.original.id;
+        const { id } = row.original;
         const name = row.original.productName;
         return (
           <DropdownMenu>
@@ -122,7 +122,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
               <ConfirmAction
                 name={name}
                 id={id}
-                mutationKey={goods_api.getAllProductGoods.endpointKey}
+                mutationKey={goodsApi.getAllProductGoods.endpointKey}
                 mutationFunc={DeleteProductGoods}
               />
             </DropdownMenuContent>

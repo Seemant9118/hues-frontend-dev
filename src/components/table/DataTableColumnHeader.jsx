@@ -2,12 +2,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { ArrowDownIcon, ArrowUpDown, ArrowUpIcon } from "lucide-react";
-import { Button } from "../ui/button";
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import { ArrowDownIcon, ArrowUpDown, ArrowUpIcon } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export function DataTableColumnHeader({ column, title, className }) {
   if (!column.getCanSort()) {
@@ -15,18 +14,18 @@ export function DataTableColumnHeader({ column, title, className }) {
   }
 
   return (
-    <div className={cn("flex items-center space-x-2 min-w-[150px]", className)}>
+    <div className={cn('flex min-w-[150px] items-center space-x-2', className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="-ml-3 h-8 data-[state=open]:bg-accent text-xs text-darkText font-bold"
+            className="-ml-3 h-8 text-xs font-bold text-darkText data-[state=open]:bg-accent"
           >
             <span>{title}</span>
-            {column.getIsSorted() === "desc" ? (
+            {column.getIsSorted() === 'desc' ? (
               <ArrowDownIcon className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
+            ) : column.getIsSorted() === 'asc' ? (
               <ArrowUpIcon className="ml-2 h-4 w-4" />
             ) : (
               <ArrowUpDown className="ml-2 h-4 w-4" />

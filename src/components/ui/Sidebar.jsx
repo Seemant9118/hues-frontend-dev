@@ -1,61 +1,56 @@
-import React from "react";
+import React from 'react';
 
 import {
-  Gauge,
+  Boxes,
   ClipboardList,
+  Gauge,
+  HandPlatter,
   LayoutDashboard,
   Package,
-  PieChart,
   ScrollText,
   Store,
   UserRound,
-  ReceiptText,
-  ReceiptIndianRupee,
-  BadgeIndianRupee,
-  Boxes,
-  HandPlatter
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import StyledLinks from "./StyledLinks";
+} from 'lucide-react';
+import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
   const links = [
     {
-      name: "Dashboard",
+      name: 'Dashboard',
       icon: <Gauge size={16} />,
-      path: "/",
+      path: '/',
     },
     {
-      name: "Templates",
+      name: 'Templates',
       icon: <LayoutDashboard size={16} />,
-      path: "/template",
+      path: '/template',
     },
     {
-      name: "Inventories",
+      name: 'Inventories',
       icon: <Package size={16} />,
-      path: "/inventory/goods",
+      path: '/inventory/goods',
       subTab: [
         {
-          name: "Goods",
+          name: 'Goods',
           icon: <Boxes size={16} />,
-          path: "/inventory/goods"
+          path: '/inventory/goods',
         },
         {
-          name: "Services",
+          name: 'Services',
           icon: <HandPlatter size={16} />,
-          path: "/inventory/services"
+          path: '/inventory/services',
         },
       ],
     },
     {
-      name: "Sales",
+      name: 'Sales',
       icon: <ClipboardList size={16} />,
-      path: "/sales-orders",
+      path: '/sales-orders',
     },
     {
-      name: "Purchases",
+      name: 'Purchases',
       icon: <ScrollText size={16} />,
-      path: "/purchase-orders",
+      path: '/purchase-orders',
     },
     // {
     //   name: "Invoices",
@@ -75,14 +70,14 @@ const Sidebar = () => {
     //   ],
     // },
     {
-      name: "Clients",
+      name: 'Clients',
       icon: <UserRound size={16} />,
-      path: "/clients",
+      path: '/clients',
     },
     {
-      name: "Vendors",
+      name: 'Vendors',
       icon: <Store size={16} />,
-      path: "/vendors",
+      path: '/vendors',
     },
     // {
     //   name: "Insights",
@@ -92,7 +87,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-[0_4px_6px_0_#3288ED1A] p-2 flex flex-col gap-2">
+    <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-[0_4px_6px_0_#3288ED1A]">
       {links.map((link) => (
         <StyledLinks key={link.name} link={link} />
       ))}

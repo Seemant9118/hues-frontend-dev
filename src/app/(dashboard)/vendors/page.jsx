@@ -1,33 +1,29 @@
-"use client";
-import { enterprise_user } from "@/api/enterprises_user/Enterprises_users";
-import EmptyStageComponent from "@/components/ui/EmptyStageComponent";
-import Loading from "@/components/ui/Loading";
-import AddModal from "@/components/Modals/AddModal";
-import SubHeader from "@/components/ui/Sub-header";
-import Wrapper from "@/components/wrappers/Wrapper";
-import { DataTable } from "@/components/table/data-table";
-import { Button } from "@/components/ui/button";
-import { LocalStorageService, exportTableToExcel } from "@/lib/utils";
-import {
-  CreateEnterpriseUser,
-  GetEnterpriseUsers,
-} from "@/services/Enterprises_Users_Service/EnterprisesUsersService";
-import { useQuery } from "@tanstack/react-query";
-import { BookUser, Eye, HeartHandshake, Settings, Upload } from "lucide-react";
-import { VendorsColumns } from "./VendorsColumns";
-import { vendor_enterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
+'use client';
+
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import AddModal from '@/components/Modals/AddModal';
+import { DataTable } from '@/components/table/data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import Loading from '@/components/ui/Loading';
+import SubHeader from '@/components/ui/Sub-header';
+import { Button } from '@/components/ui/button';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   createVendor,
   getVendors,
-} from "@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service";
+} from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { useQuery } from '@tanstack/react-query';
+import { BookUser, Eye, HeartHandshake, Settings, Upload } from 'lucide-react';
+import { VendorsColumns } from './VendorsColumns';
 
 const VendorsPage = () => {
-  const enterpriseId = LocalStorageService.get("enterprise_Id");
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const VendorsEmptyStageData = {
     heading: `~"Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
     catalogs for efficient transactions."`,
-    subHeading: "Features",
+    subHeading: 'Features',
     subItems: [
       {
         id: 1,
@@ -52,15 +48,15 @@ const VendorsPage = () => {
     ],
   };
 
-  const { isLoading, error, data, isSuccess } = useQuery({
-    queryKey: [vendor_enterprise.getVendors.endpointKey],
+  const { isLoading, data: vendorsList } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
     queryFn: () => getVendors(enterpriseId),
-    select: (data) => data.data.data,
+    select: (res) => res.data.data,
   });
 
   let formattedData = [];
-  if (data) {
-    formattedData = data.flatMap((user) => {
+  if (vendorsList) {
+    formattedData = vendorsList.flatMap((user) => {
       let userDetails;
       if (user.vendor) {
         userDetails = { ...user.vendor };
@@ -76,22 +72,21 @@ const VendorsPage = () => {
       };
     });
   }
-  console.log(formattedData);
 
   return (
     <Wrapper>
-      <SubHeader name={"Vendors"}>
+      <SubHeader name={'Vendors'}>
         <div className="flex items-center justify-center gap-4">
           <Button
-            variant={"export"}
+            variant={'export'}
             size="sm"
-            onClick={() => exportTableToExcel("vendor table", "vendors_list")}
+            onClick={() => exportTableToExcel('vendor table', 'vendors_list')}
           >
             <Upload size={14} />
             Export
           </Button>
           <AddModal
-            type={"Add"}
+            type={'Add'}
             cta="vendor"
             btnName="Add"
             mutationFunc={createVendor}
@@ -104,7 +99,7 @@ const VendorsPage = () => {
       {!isLoading &&
         (formattedData && formattedData.length !== 0 ? (
           <DataTable
-            id={"vendor table"}
+            id={'vendor table'}
             columns={VendorsColumns}
             data={formattedData}
           />

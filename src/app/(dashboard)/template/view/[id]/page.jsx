@@ -1,17 +1,14 @@
-"use client";
-import Loading from "@/components/ui/Loading";
-import FormPreview from "@/components/templates/FormPreview";
-import { getTemplate } from "@/services/Template_Services/Template_Services";
-import { useQuery } from "@tanstack/react-query";
-import React from "react";
+'use client';
 
-const page = ({ params }) => {
-  const {
-    data: templateInfo,
-    isSuccess,
-    isLoading,
-  } = useQuery({
-    queryKey: ["Template", params?.id],
+import FormPreview from '@/components/templates/FormPreview';
+import Loading from '@/components/ui/Loading';
+import { getTemplate } from '@/services/Template_Services/Template_Services';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+
+const ViewTemplatePage = ({ params }) => {
+  const { data: templateInfo, isLoading } = useQuery({
+    queryKey: ['Template', params?.id],
     queryFn: () => getTemplate(params?.id),
     enabled: !!params?.id,
     select: (data) => data.data.data,
@@ -29,4 +26,4 @@ const page = ({ params }) => {
   );
 };
 
-export default page;
+export default ViewTemplatePage;

@@ -1,23 +1,16 @@
-import React from "react";
-import RichTextEditor from "./RichTextEditor";
-import PreviewLabel from "./PreviewLabel";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import Image from "next/image";
-import { FileUploader } from "react-drag-drop-files";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
+import { UploadIcon } from 'lucide-react';
+import React from 'react';
+import { FileUploader } from 'react-drag-drop-files';
+import PreviewLabel from './PreviewLabel';
+import RichTextEditor from './RichTextEditor';
 // import SectionPreview from "./SectionPreview";
 // import TableStructurePreview from "./TableStructurePreview";
-// import fileUploadIcon from "../../../assets/StudentPreview/uploadFileIcon.svg";
+// import fileUploadIcon from '../../../assets/StudentPreview/uploadFileIcon.svg';
 // import tempImage from "../../../assets/tempImg.jpg";
 
 const QuestionsPreview = ({
@@ -25,17 +18,17 @@ const QuestionsPreview = ({
   isEdit,
   answerHandler,
   multiSelectHandler,
-  sectionAnswerHandler,
-  sectionMultiSelectHandler,
+  // sectionAnswerHandler,
+  // sectionMultiSelectHandler,
 }) => {
   return (
-    <div className=" flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
       {questions?.map((question, idx) => {
-        if (question.type === "text" && question.name === "Long text") {
+        if (question.type === 'text' && question.name === 'Long text') {
           return (
-            <div className="flex flex-col gap-2.5 w-full" key={idx}>
+            <div className="flex w-full flex-col gap-2.5" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
-              <div className="py-4 max-w-full lg:max-w-[70%] ">
+              <div className="max-w-full py-4 lg:max-w-[70%]">
                 <RichTextEditor
                   disabled={!isEdit}
                   value={question?.answer}
@@ -47,22 +40,20 @@ const QuestionsPreview = ({
           );
         }
         if (
-          question.type === "text" ||
-          question.type === "number" ||
-          question.type === "date" ||
-          question.type === "time"
+          question.type === 'text' ||
+          question.type === 'number' ||
+          question.type === 'date' ||
+          question.type === 'time'
         ) {
           return (
-            <div className="flex flex-col gap-2 max-w-xl" key={idx}>
+            <div className="flex max-w-xl flex-col gap-2" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <div className="">
                 <Input
-                  disabled={!Boolean(isEdit)}
+                  disabled={!isEdit}
                   value={question?.answer}
                   onChange={(e) => answerHandler(e.target.value, idx)}
-                  className={cn(
-                    " disabled:opacity-75"
-                  )}
+                  className={cn('disabled:opacity-75')}
                   id={question.question}
                   type={question.type}
                 />
@@ -70,23 +61,18 @@ const QuestionsPreview = ({
             </div>
           );
         }
-        if (question.type === "select" && question.name === "Multi Select") {
+        if (question.type === 'select' && question.name === 'Multi Select') {
           return (
-            <div className="flex flex-col gap-2 w-full" key={idx}>
+            <div className="flex w-full flex-col gap-2" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <div
                 className={cn(
-                  "flex flex-col gap-5 px-3  max-w-xl rounded-[10px] w-full ",
-                  question.align === "horizontal" ? "flex-row" : "flex-col"
+                  'flex w-full max-w-xl flex-col gap-5 rounded-[10px] px-3',
+                  question.align === 'horizontal' ? 'flex-row' : 'flex-col',
                 )}
               >
                 {question?.options?.map((option, optionIdx) => (
-                  <div
-                    className={cn(
-                      "flex items-center gap-2 "
-                    )}
-                    key={optionIdx}
-                  >
+                  <div className={cn('flex items-center gap-2')} key={option}>
                     <p>{++optionIdx}.</p>
                     <Checkbox
                       disabled={!isEdit}
@@ -106,26 +92,24 @@ const QuestionsPreview = ({
                 ))}
                 {question.others && (
                   <div
-                    className={cn(
-                      "flex gap-2 items-center max-w-fit"
-                    )}
-                    key={idx}
+                    className={cn('flex max-w-fit items-center gap-2')}
+                    key={question._id}
                   >
                     <p>{question.options.length + 1}.</p>
                     <Checkbox
                       disabled={!isEdit}
                       checked={
-                        question.answer && question?.answer?.includes("others")
+                        question.answer && question?.answer?.includes('others')
                       }
                       onCheckedChange={(value) =>
-                        multiSelectHandler("others", idx, value)
+                        multiSelectHandler('others', idx, value)
                       }
-                      value={"others"}
-                      id={question.question + "others"}
+                      value={'others'}
+                      id={`${question.question}others`}
                     />
                     <Label
                       className="cursor-pointer"
-                      htmlFor={question.question + "others"}
+                      htmlFor={`${question.question}others`}
                     >
                       Others
                     </Label>
@@ -135,34 +119,26 @@ const QuestionsPreview = ({
             </div>
           );
         }
-        if (question.type === "select") {
+        if (question.type === 'select') {
           return (
-            <div
-              className="flex flex-col gap-2 w-full"
-              key={idx}
-            >
+            <div className="flex w-full flex-col gap-2" key={question._id}>
               <PreviewLabel question={question} idx={idx} />
               <RadioGroup
                 disabled={!isEdit}
                 defaultValue={question?.answer}
                 onValueChange={(value) => answerHandler(value, idx)}
                 className={cn(
-                  "flex flex-col gap-2.5 px-3 bg-[#fff] max-w-xl",
-                  question.align === "horizontal" ? "flex-row" : "flex-col"
+                  'flex max-w-xl flex-col gap-2.5 bg-[#fff] px-3',
+                  question.align === 'horizontal' ? 'flex-row' : 'flex-col',
                 )}
               >
                 {question?.options?.map((option, optionIdx) => (
                   <div
-                    className={cn(
-                      "flex items-center space-x-2 max-w-fit  "
-                    )}
-                    key={optionIdx}
+                    className={cn('flex max-w-fit items-center space-x-2')}
+                    key={option}
                   >
                     <p>{++optionIdx}.</p>
-                    <RadioGroupItem
-                      value={option}
-                      id={option}
-                    />
+                    <RadioGroupItem value={option} id={option} />
                     <Label className="cursor-pointer" htmlFor={option}>
                       {option}
                     </Label>
@@ -170,17 +146,17 @@ const QuestionsPreview = ({
                 ))}
                 {question.others && (
                   <div
-                    className={cn("flex items-center space-x-2 max-w-fit")}
-                    key={idx}
+                    className={cn('flex max-w-fit items-center space-x-2')}
+                    key={question._id}
                   >
                     <p>{question.options.length + 1}.</p>
                     <RadioGroupItem
-                      value={"others"}
-                      id={question.question + "others"}
+                      value={'others'}
+                      id={`${question.question}others`}
                     />
                     <Label
                       className="cursor-pointer"
-                      htmlFor={question.question + "others"}
+                      htmlFor={`${question.question}others`}
                     >
                       Others
                     </Label>
@@ -190,11 +166,11 @@ const QuestionsPreview = ({
             </div>
           );
         }
-        if (question.type === "file") {
+        if (question.type === 'file') {
           return (
             <div
-              className="flex flex-col gap-2.5 w-full rounded-[10px]"
-              key={idx}
+              className="flex w-full flex-col gap-2.5 rounded-[10px]"
+              key={question._id}
             >
               <PreviewLabel question={question} idx={idx} />
 
@@ -204,18 +180,19 @@ const QuestionsPreview = ({
                 name="file"
                 types={question.formats}
               >
-                <div className="w-full h-[200px] p-2.5 flex flex-col justify-center items-center gap-2 rounded border-2 border-gray-500 border-dashed border-spacing-3 cursor-pointer ">
-                  <Image
-                    src={fileUploadIcon}
+                <div className="flex h-[200px] w-full border-spacing-3 cursor-pointer flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-gray-500 p-2.5">
+                  {/* <Image
+                    src={''}
                     alt="upload-icon"
                     width={30}
                     height={30}
-                    className="w-10 h-10"
-                  />
-                  <p className="leading-[18px] font-normal">
-                    <span className="text-zinc-800 font-medium underline text-sm px-1 ">
+                    className="h-10 w-10"
+                  /> */}
+                  <UploadIcon size={30} />
+                  <p className="font-normal leading-[18px]">
+                    <span className="px-1 text-sm font-medium text-zinc-800 underline">
                       Click to upload
-                    </span>{" "}
+                    </span>{' '}
                     or drag & drop
                   </p>
                 </div>
@@ -226,7 +203,7 @@ const QuestionsPreview = ({
 
         // if (question.type === "dropdown") {
         //   return (
-        //     <div className="flex flex-col gap-2 w-full " key={idx}>
+        //     <div className="flex flex-col gap-2 w-full " key={question._id}>
         //       <PreviewLabel question={question} idx={idx} />
         //       <Select
         //         disabled={!isEdit}
@@ -244,7 +221,7 @@ const QuestionsPreview = ({
         //         </SelectTrigger>
         //         <SelectContent>
         //           {question.options.map((option, idx) => (
-        //             <SelectItem key={idx} value={option}>
+        //             <SelectItem key={question._id} value={option}>
         //               {option}
         //             </SelectItem>
         //           ))}
@@ -259,7 +236,7 @@ const QuestionsPreview = ({
         // if (question.type === "structure" && question.name === "Section") {
         //   return (
         //     <SectionPreview
-        //       key={idx}
+        //       key={question._id}
         //       selectedForm={selectedForm}
         //       question={question}
         //       isConsultantPreview={isConsultantPreview}
@@ -270,11 +247,11 @@ const QuestionsPreview = ({
         //     />
         //   );
         // }
-        if (question.type === "structure" && question.name === "Text") {
+        if (question.type === 'structure' && question.name === 'Text') {
           return (
             <div
-              className="flex flex-col gap-2 w-full rounded-[10px] "
-              key={idx}
+              className="flex w-full flex-col gap-2 rounded-[10px]"
+              key={question._id}
             >
               <div dangerouslySetInnerHTML={{ __html: question.text }} />
             </div>
@@ -284,7 +261,7 @@ const QuestionsPreview = ({
         //   return (
         //     <div
         //       className="flex flex-col gap-2 w-full rounded-[10px] "
-        //       key={idx}
+        //       key={question._id}
         //     >
         //       <Image src={tempImage} width={200} height={200} alt="image" />
         //     </div>
@@ -292,11 +269,13 @@ const QuestionsPreview = ({
         // }
         // if (question.type === "input" && question.name === "Tables") {
         //   return (
-        //     <div className="flex flex-col gap-2.5 w-full" key={idx}>
+        //     <div className="flex flex-col gap-2.5 w-full" key={question._id}>
         //       <TableStructurePreview question={question} isEdit={isEdit} />
         //     </div>
         //   );
         // }
+
+        return null;
       })}
     </div>
   );

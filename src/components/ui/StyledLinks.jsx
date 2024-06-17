@@ -1,8 +1,8 @@
-"use client";
-import { usePathname, useRouter } from "next/navigation";
-import { Button } from "./button";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+'use client';
+
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const StyledLinks = ({ link }) => {
   const pathname = usePathname();
@@ -13,10 +13,10 @@ const StyledLinks = ({ link }) => {
       <Link
         href={link.path}
         className={cn(
-          "w-full  border-none text-xs gap-2 flex items-center  p-4 rounded-xl",
+          'flex w-full items-center gap-2 rounded-xl border-none p-4 text-xs',
           pathname === link.path && pathname.includes(link.path)
-            ? "text-[#288AF9] bg-[#288AF91A]"
-            : "text-grey bg-transparent"
+            ? 'bg-[#288AF91A] text-[#288AF9]'
+            : 'bg-transparent text-grey',
         )}
       >
         {link.icon}
@@ -27,16 +27,16 @@ const StyledLinks = ({ link }) => {
       {pathname === link.path ||
       pathname === link.subTab?.[0].path ||
       (pathname === link.subTab?.[1].path && link.subTab) ? (
-        <ul className=" flex flex-col w-full gap-2 pl-10">
+        <ul className="flex w-full flex-col gap-2 pl-10">
           {link.subTab?.map((subtabs) => (
             <Link
               href={subtabs.path}
               key={subtabs}
               className={cn(
-                "p-4 border-none text-xs flex gap-2 rounded-xl",
+                'flex gap-2 rounded-xl border-none p-4 text-xs',
                 pathname === subtabs.path
-                  ? "text-[#288AF9] bg-[#288AF91A]"
-                  : "text-grey bg-transparent"
+                  ? 'bg-[#288AF91A] text-[#288AF9]'
+                  : 'bg-transparent text-grey',
               )}
             >
               {subtabs.icon}
@@ -45,7 +45,7 @@ const StyledLinks = ({ link }) => {
           ))}
         </ul>
       ) : (
-        ""
+        ''
       )}
     </>
   );

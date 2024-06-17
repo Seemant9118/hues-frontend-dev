@@ -1,19 +1,19 @@
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import MinMaxForm from "./MinMaxForm";
+} from '@/components/ui/popover';
+import MinMaxForm from './MinMaxForm';
 
-const uploadFormats = ["JPEG", "PDF", "Document", "PNG"];
+const uploadFormats = ['JPEG', 'PDF', 'Document', 'PNG'];
 
 const UploadInputPopup = ({ input, setDroppedInputs, idx }) => {
-  const [formats, setFormats] = useState(input.formats || ["JPEG"]);
+  const [formats, setFormats] = useState(input.formats || ['JPEG']);
 
   const checkHandler = (check, value) => {
     if (formats.includes(value)) {
@@ -35,15 +35,15 @@ const UploadInputPopup = ({ input, setDroppedInputs, idx }) => {
   };
 
   return (
-    <div className="flex gap-2 items-center pt-3 pb-2">
+    <div className="flex items-center gap-2 pb-2 pt-3">
       <Popover>
         <PopoverTrigger asChild>
-          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
+          <Button className="h-7 gap-2 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
             Set File Format
             <ChevronDown />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-w-fit ml-36 flex flex-col gap-2">
+        <PopoverContent className="ml-36 flex max-w-fit flex-col gap-2">
           {uploadFormats.map((format) => (
             <div className="flex items-center gap-4" key={format}>
               <Checkbox
@@ -58,12 +58,12 @@ const UploadInputPopup = ({ input, setDroppedInputs, idx }) => {
       </Popover>
       <Popover>
         <PopoverTrigger asChild>
-          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
+          <Button className="h-7 gap-2 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
             File Size
             <ChevronDown />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-w-fit ml-36 flex flex-col gap-2">
+        <PopoverContent className="ml-36 flex max-w-fit flex-col gap-2">
           <MinMaxForm
             setDroppedInputs={setDroppedInputs}
             idx={idx}

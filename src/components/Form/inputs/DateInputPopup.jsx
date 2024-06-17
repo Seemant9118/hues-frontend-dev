@@ -1,29 +1,29 @@
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+} from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
-const dateFormats = ["DD:MM:YY", "MM:YY:DD", "YY:MM:DD", "YY:MM", "YY", "MM"];
+const dateFormats = ['DD:MM:YY', 'MM:YY:DD', 'YY:MM:DD', 'YY:MM', 'YY', 'MM'];
 
 const DateInputPopup = ({ input, setDroppedInputs, idx }) => {
-  const [format, setFormat] = useState(input?.format || "DD:MM:YY");
+  const [format, setFormat] = useState(input?.format || 'DD:MM:YY');
 
   return (
-    <div className="flex gap-2 items-center pt-3 pb-2">
+    <div className="flex items-center gap-2 pb-2 pt-3">
       <Popover>
         <PopoverTrigger asChild>
-          <Button className="px-4 h-7 bg-primary/10 rounded-none text-primary border-b-[1px] border-primary/20 hover:bg-primary/20 gap-2">
+          <Button className="h-7 gap-2 rounded-none border-b-[1px] border-primary/20 bg-primary/10 px-4 text-primary hover:bg-primary/20">
             Set Input Type
             <ChevronDown />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-w-fit ml-40">
+        <PopoverContent className="ml-40 max-w-fit">
           <RadioGroup
             onValueChange={(value) => {
               setFormat(value);
@@ -35,14 +35,14 @@ const DateInputPopup = ({ input, setDroppedInputs, idx }) => {
             }}
             defaultValue={format}
           >
-            {dateFormats.map((format) => (
-              <div className="flex items-center space-x-2" key={format}>
+            {dateFormats.map((dateFormat) => (
+              <div className="flex items-center space-x-2" key={dateFormat}>
                 <RadioGroupItem
-                  className="text-primary border-primary"
-                  value={format}
-                  id={format}
+                  className="border-primary text-primary"
+                  value={dateFormat}
+                  id={dateFormat}
                 />
-                <Label htmlFor={format}>{format}</Label>
+                <Label htmlFor={dateFormat}>{dateFormat}</Label>
               </div>
             ))}
           </RadioGroup>

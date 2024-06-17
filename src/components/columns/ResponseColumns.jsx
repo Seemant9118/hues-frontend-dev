@@ -1,15 +1,16 @@
-"use client";
-import { DataTableColumnHeader } from "@/components/table/DataTableColumnHeader";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export const ResponseColumns = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -26,19 +27,19 @@ export const ResponseColumns = [
     enableHiding: false,
   },
   {
-    accessorKey: "product",
+    accessorKey: 'product',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PRODUCT" />
     ),
   },
   {
-    accessorKey: "description",
+    accessorKey: 'description',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="DESCRIPTION" />
     ),
   },
   {
-    accessorKey: "hsn",
+    accessorKey: 'hsn',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="HSN | SAC" />
     ),
@@ -48,47 +49,47 @@ export const ResponseColumns = [
     },
   },
   {
-    accessorKey: "role",
+    accessorKey: 'role',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ROLE (MRP)" />
     ),
   },
   {
-    accessorKey: "units",
+    accessorKey: 'units',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="UNITS" />
     ),
   },
   {
-    accessorKey: "tax",
+    accessorKey: 'tax',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="TAXABLE VALUE" />
     ),
   },
   {
-    accessorKey: "gst",
+    accessorKey: 'gst',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST (%)" />
     ),
   },
   {
-    accessorKey: "gst_value",
+    accessorKey: 'gst_value',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GST (VALUE)" />
     ),
   },
   {
-    accessorKey: "amount",
+    accessorKey: 'amount',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="AMOUNT" />
     ),
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = parseFloat(row.getValue('amount'));
 
       // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "INR",
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'INR',
       }).format(amount);
       return <div className="font-medium">{formatted}</div>;
     },

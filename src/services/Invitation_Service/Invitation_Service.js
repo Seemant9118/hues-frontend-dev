@@ -1,30 +1,30 @@
-import { Invitation } from "@/api/invitation/Invitation";
-import { APIinstance } from "@/services";
+import { invitation } from '@/api/invitation/Invitation';
+import { APIinstance } from '@/services';
 
 export const getSentInvitation = () => {
-  return APIinstance.get(Invitation.getSentInvitation.endpoint);
+  return APIinstance.get(invitation.getSentInvitation.endpoint);
 };
 
 export const getReceivedInvitation = () => {
-  return APIinstance.get(Invitation.getReceivedInvitation.endpoint);
+  return APIinstance.get(invitation.getReceivedInvitation.endpoint);
 };
 
 export const acceptInvitation = (data) => {
-  return APIinstance.post(Invitation.acceptInvitation.endpoint, data);
+  return APIinstance.post(invitation.acceptInvitation.endpoint, data);
 };
 
 export const rejectInvitation = (data) => {
-  return APIinstance.post(Invitation.rejectInvitation.endpoint, data);
+  return APIinstance.post(invitation.rejectInvitation.endpoint, data);
 };
 
 export const generateLink = (id) => {
-  return APIinstance.get(Invitation.generateLink.endpoint + `${id}`);
+  return APIinstance.get(`${invitation.generateLink.endpoint}${id}`);
 };
 
 export const validationBase64 = (token) => {
-  return APIinstance.get(Invitation.validationBase64.endpoint + `${token}`);
+  return APIinstance.get(`${invitation.validationBase64.endpoint}${token}`);
 };
 
 export const sendInvitation = (data) => {
-  return APIinstance.post(Invitation.sendInvitation.endpoint, data);
+  return APIinstance.post(invitation.sendInvitation.endpoint, data);
 };

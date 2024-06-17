@@ -1,25 +1,23 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
 
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
+import Loading from '@/components/ui/Loading';
+import { Button } from '@/components/ui/button';
+import QuestionsPreview from './QuestionsPreview';
 
-import Loading from "@/components/ui/Loading";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import QuestionsPreview from "./QuestionsPreview";
-
-//main Form Preview
+// main Form Preview
 const FormPreview = ({
   name,
   isLoading,
   formSaveHandler,
   selectedForm,
-  is_completed = false,
+  isCompleted = false,
 }) => {
   const [selectedPage, setSelectedPage] = useState(null);
   const [pageNo, setPageNo] = useState(0);
   // const [isEdit, setIsEdit] = useState(false);
-  const isEdit = !is_completed;
+  const isEdit = !isCompleted;
   useEffect(() => {
     setSelectedPage(selectedForm?.data[0]);
   }, [selectedForm]);
@@ -31,7 +29,7 @@ const FormPreview = ({
       const questions = [...prev.questions];
       const updatedQuestion = {
         ...questions[index],
-        answer: answer,
+        answer,
       };
       prev.questions[index] = updatedQuestion;
       return { ...prev };
@@ -42,7 +40,7 @@ const FormPreview = ({
       const questions = [...prev.questions];
       const updatedQuestion = {
         ...questions[sectionIdx][type][index],
-        answer: answer,
+        answer,
       };
       prev.questions[sectionIdx][type][index] = updatedQuestion;
       return { ...prev };
@@ -54,11 +52,11 @@ const FormPreview = ({
     index,
     sectionIdx,
     type,
-    checked
+    checked,
   ) => {
     setSelectedPage((prev) => {
       const questions = [...prev.questions];
-      let updatedQuestion = { ...questions[sectionIdx][type][index] };
+      const updatedQuestion = { ...questions[sectionIdx][type][index] };
       if (checked) {
         if (updatedQuestion.answer) {
           updatedQuestion.answer = [...updatedQuestion.answer, answer];
@@ -71,7 +69,7 @@ const FormPreview = ({
         updatedQuestion.answer =
           questions[sectionIdx][type][index] &&
           questions[sectionIdx][type][index].answer?.filter(
-            (a) => a !== answer
+            (a) => a !== answer,
           );
         prev.questions[sectionIdx][type][index] = updatedQuestion;
       }
@@ -81,7 +79,7 @@ const FormPreview = ({
   const multiSelectHandler = (answer, index, checked) => {
     setSelectedPage((prev) => {
       const questions = [...prev.questions];
-      let updatedQuestion = { ...questions[index] };
+      const updatedQuestion = { ...questions[index] };
       if (checked) {
         if (updatedQuestion.answer) {
           updatedQuestion.answer = [...updatedQuestion.answer, answer];
@@ -108,31 +106,31 @@ const FormPreview = ({
   if (isLoading) return <Loading />;
   if (!selectedForm) return null;
   return (
-    <div className=" flex flex-col gap-5 grow relative">
-      <div className="flex items-center justify-between pt-3 px-2 sticky top-0 bg-white">
-        <h2 className="text-zinc-800 text-base font-semibold leading-[16px]">
+    <div className="relative flex grow flex-col gap-5">
+      <div className="sticky top-0 flex items-center justify-between bg-white px-2 pt-3">
+        <h2 className="text-base font-semibold leading-[16px] text-zinc-800">
           {name}
         </h2>
         {isEdit && (
-          <Button onClick={saveHandler} className="max-w-fit ml-auto">
+          <Button onClick={saveHandler} className="ml-auto max-w-fit">
             Save
           </Button>
         )}
       </div>
-      <div className="flex gap-2 sticky top-[50px] bg-white z-[500000]">
+      <div className="sticky top-[50px] z-[500000] flex gap-2 bg-white">
         {pages?.map((page, idx) => (
           <div
             className={cn(
-              "flex gap-2 items-center px-8 py-4 cursor-pointer",
-              selectedPage?.name === page.name && "border-b-sky-500 border-b-2"
+              'flex cursor-pointer items-center gap-2 px-8 py-4',
+              selectedPage?.name === page.name && 'border-b-2 border-b-sky-500',
             )}
-            key={idx}
+            key={page.name}
             onClick={() => {
               setSelectedPage(page);
               setPageNo(idx);
             }}
           >
-            <p className={cn("text-md font-semibold ")}>{page.name}</p>
+            <p className={cn('text-md font-semibold')}>{page.name}</p>
           </div>
         ))}
       </div>

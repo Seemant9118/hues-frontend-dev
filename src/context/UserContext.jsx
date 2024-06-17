@@ -1,7 +1,8 @@
-"use client";
-import { LocalStorageService } from "@/lib/utils";
-import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+'use client';
+
+import { LocalStorageService } from '@/lib/utils';
+import { usePathname, useRouter } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const UserContext = createContext();
 
@@ -12,14 +13,14 @@ export const UserProvider = ({ children }) => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const token = LocalStorageService.get("token");
-    const profile = LocalStorageService.get("user_profile");
+    const Token = LocalStorageService.get('token');
+    // const profile = LocalStorageService.get('user_profile');
 
-    if (!token) {
+    if (!Token) {
       router.push(`/login?redirect=${pathname}`);
     }
-    if (token) {
-      setToken(token);
+    if (Token) {
+      setToken(Token);
     }
   }, []);
 
@@ -38,7 +39,7 @@ export const UserProvider = ({ children }) => {
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error("useUser must be used within a UserProvider");
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
 };

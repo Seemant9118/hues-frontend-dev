@@ -1,3 +1,166 @@
 {
-  "extends": "next/core-web-vitals"
+  // Configuration for JavaScript files
+  "extends": [
+    // Airbnb's base
+    "airbnb-base",
+    // Comes with next.js framework
+    "next/core-web-vitals",
+    // To integrate Prettier for code formatting
+    "plugin:prettier/recommended"
+  ],
+  "plugins": [
+    // Use import plugin for managing import/export syntax. To disable common.js imports
+    "import"
+  ],
+  "settings": {
+    // This is the parser for typescript files. Rahul this is just for your reference for Trampoline. You can remove this once you've reviewed it.
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    // Configure the resolver for TypeScript imports. Again, just for review only.
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        // Use the specified TypeScript configuration file for resolution. I had to do .jsconfig.json just for reference purpose. Ideally, in your scenario it would be tsconfig.json and the whole settings can be removed in JS based projects.
+        "project": "./jsconfig.json"
+      }
+    }
+  },
+  "rules": {
+    // Enforce not using array indexes in React keys for better performance
+    "react/no-array-index-key": ["error"],
+    // Allow else return statements to be omitted
+    "no-else-return": "off",
+    // Allow named exports without forcing default export
+    "import/prefer-default-export": "off",
+    // Enforce single quotes and handle different line endings automatically
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "endOfLine": "auto"
+      }
+    ],
+    "react-hooks/exhaustive-deps": "off",
+    "no-nested-ternary": "off",
+    "no-param-reassign": "off",
+    "no-unused-expressions": "off",
+    "no-plusplus": "off",
+    "no-shadow": "off",
+    "no-underscore-dangle": "off",
+    "consistent-return": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "plugins": [
+        // Use TypeScript plugin for TypeScript specific linting rules. You can safely remove in this one.
+        "@typescript-eslint",
+        // Detect and remove unused imports
+        "unused-imports",
+        // Integrate Tailwind CSS linting
+        "tailwindcss",
+        // Sort import statements for consistency
+        "simple-import-sort"
+      ],
+      "extends": [
+        // Tailwind CSS recommended configuration
+        "plugin:tailwindcss/recommended",
+        // Airbnb's base JavaScript and React style guide
+        "airbnb",
+        // Next.js core web vitals configuration for best practices
+        "next/core-web-vitals",
+        // Integrate Prettier for code formatting
+        "plugin:prettier/recommended"
+      ],
+      "parserOptions": {
+        "project": "./jsconfig.json"
+      },
+      "rules": {
+        // Enforce single quotes and handle different line endings automatically
+        "prettier/prettier": [
+          "error",
+          {
+            "singleQuote": true,
+            "endOfLine": "auto"
+          }
+        ],
+        // Disable extension requirement for imports
+        "import/extensions": "off",
+        "react-hooks/exhaustive-deps": "off",
+        // Allow flexibility in defining function components
+        "react/function-component-definition": "off",
+        // Allow destructuring assignments to be omitted
+        "react/destructuring-assignment": "off",
+        // Allow components to omit default props
+        "react/require-default-props": "off",
+        // Allow props spreading in JSX
+        "react/jsx-props-no-spreading": "off",
+        // Allow omitting trailing commas in TypeScript. Can remove after review
+        "@typescript-eslint/comma-dangle": "off",
+        // Enforce consistent use of type imports in TypeScript. Can remove after review
+        "@typescript-eslint/consistent-type-imports": "error",
+        // Restrict usage of specific JavaScript syntax for better readability
+        "no-restricted-syntax": [
+          "error",
+          "ForInStatement",
+          "LabeledStatement",
+          "WithStatement"
+        ],
+        // Allow named exports without forcing default export
+        "import/prefer-default-export": "off",
+        // Enforce sorted imports for consistency
+        "simple-import-sort/imports": "error",
+        // Enforce sorted exports for consistency
+        "simple-import-sort/exports": "error",
+        // Disable import order rule as simple-import-sort is used instead
+        "import/order": "off",
+        // Disable unused variables rule for TypeScript as unused-imports handles it. Can remove after review.
+        "@typescript-eslint/no-unused-vars": "off",
+        // Automatically remove unused imports
+        "unused-imports/no-unused-imports": "error",
+        // Ignore unused variables starting with an underscore
+        "unused-imports/no-unused-vars": [
+          "error",
+          { "argsIgnorePattern": "^_" }
+        ]
+      }
+    },
+
+    {
+      // CONFIGURATION FOR JEST
+      "files": ["**/__tests__/**/*.jsx", "**/__tests__/**/*.js"],
+      // Set Jest environment to recognize Jest globals
+      "env": {
+        "jest": true
+      },
+      "plugins": [
+        // Use Jest plugin for Jest-specific linting rules
+        "jest",
+        // Use Testing Library plugin for React Testing Library specific linting rules
+        "testing-library"
+      ],
+      "extends": [
+        // Apply recommended rules for Jest
+        "plugin:jest/recommended",
+        // Apply recommended rules for Testing Library
+        "plugin:testing-library/react"
+      ],
+      "rules": {
+        // Allow unused expressions in tests for better readability
+        "no-unused-expressions": "off",
+        // Disable undefined variable rule for Jest globals
+        "no-undef": "off",
+        // Disable explicit any rule for TypeScript in tests. Can remove after review
+        "@typescript-eslint/no-explicit-any": "off",
+        // Allow dev dependencies to be imported in test files
+        "import/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": true
+          }
+        ]
+      }
+    }
+  ]
 }

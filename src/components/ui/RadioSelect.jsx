@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const RadioSelect = ({ value, handleChange, option }) => {
   return (
@@ -14,7 +14,7 @@ const RadioSelect = ({ value, handleChange, option }) => {
       />
       <label
         htmlFor={option}
-        className="cursor-pointer p-2 border border-gray-600 rounded-md bg-gray-100 text-slate-700 hover:text-white hover:bg-primary"
+        className="cursor-pointer rounded-md border border-gray-600 bg-gray-100 p-2 text-slate-700 hover:bg-primary hover:text-white"
       >
         {option}
       </label>
