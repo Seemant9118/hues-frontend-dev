@@ -24,6 +24,7 @@ import {
   FileCheck,
   FileText,
   KeySquare,
+  Share2,
   Upload,
   UploadCloud,
 } from 'lucide-react';
@@ -103,6 +104,15 @@ function Services() {
         <Wrapper>
           <SubHeader name={'Services'}>
             <div className="flex items-center justify-center gap-4">
+              <Button
+                onClick={() => {}}
+                variant={'blue_outline'}
+                size="sm"
+                disabled
+              >
+                <Share2 size={14} />
+                Share
+              </Button>
               <Button
                 variant={'export'}
                 size="sm"
@@ -204,8 +214,8 @@ function Services() {
           </FileUploader>
           <Button asChild variant="outline" className="w-full max-w-[700px]">
             <a
-              download={'/Hues_inventory_sample_services.xlsx'}
-              href="/Hues_inventory_sample_services.xlsx"
+              download={'/serviceSampleFile.xlsx'}
+              href="/serviceSampleFile.xlsx"
             >
               <Download />
               Sample

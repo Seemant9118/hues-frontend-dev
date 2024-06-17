@@ -6,13 +6,6 @@ import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import { GetSales } from '@/services/Orders_Services/Orders_Services';
@@ -33,7 +26,6 @@ const SalesOrder = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
-  const [istype, setIsType] = useState('All');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   // const [isOrderView, setIsOrderView] = useState(false);
@@ -85,22 +77,14 @@ const SalesOrder = () => {
         <Wrapper>
           <SubHeader name={'Sales'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              <div className="flex items-center gap-4">
-                <Select
-                  value={istype.type}
-                  onValueChange={(value) => setIsType(value)}
-                >
-                  <SelectTrigger className="max-w-xs gap-5">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Bid">Bids</SelectItem>
-                    <SelectItem value="offer">Offers</SelectItem>
-                    <SelectItem value="invoice">Invoices</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Button
+                onClick={() => setIsCreatingInvoice(true)}
+                variant={'blue_outline'}
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Invoice
+              </Button>
               <Button
                 onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
                 variant={'blue_outline'}
@@ -110,6 +94,7 @@ const SalesOrder = () => {
                 <Upload size={14} />
                 Export
               </Button>
+
               <Button
                 onClick={() => setIsCreatingSales(true)}
                 variant={'blue_outline'}
@@ -118,14 +103,6 @@ const SalesOrder = () => {
                 <PlusCircle size={14} />
                 Offer
               </Button>
-              {/* <Button
-                onClick={() => setIsCreatingInvoice(true)}
-                variant={"blue_outline"}
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Invoice
-              </Button> */}
             </div>
           </SubHeader>
           {!enterpriseId || data?.length === 0 ? (
@@ -149,7 +126,6 @@ const SalesOrder = () => {
       )}
 
       {isCreatingSales && !isCreatingInvoice && (
-        // && !isOrderView
         <CreateOrder
           type="sales"
           name="Offer"
@@ -159,9 +135,8 @@ const SalesOrder = () => {
       )}
 
       {isCreatingInvoice && !isCreatingSales && (
-        // && !isOrderView
         <CreateOrder
-          type="sales"
+          type="invoice"
           name="Invoice"
           cta="offer"
           onCancel={() => setIsCreatingInvoice(false)}

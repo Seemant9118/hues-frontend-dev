@@ -48,13 +48,13 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
     {
       accessorKey: 'productName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PRODUCT NAME" />
+        <DataTableColumnHeader column={column} title="PRODUCT" />
       ),
     },
     {
       accessorKey: 'manufacturerName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="MANUFACTURER NAME" />
+        <DataTableColumnHeader column={column} title="MANUFACTURER" />
       ),
     },
     {
@@ -83,12 +83,6 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GST (%)" />
-      ),
-    },
-    {
-      accessorKey: 'amount',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Amount" />
       ),
     },
     {

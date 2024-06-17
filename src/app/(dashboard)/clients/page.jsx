@@ -57,10 +57,10 @@ const ClientPage = () => {
   if (data) {
     formattedData = data.flatMap((user) => {
       let userDetails;
-      if (user.client) {
+      if (user.client && user?.client?.name !== null) {
         userDetails = { ...user.client };
       } else {
-        userDetails = { ...user.invitation.userDetails };
+        userDetails = { ...user?.invitation?.userDetails };
       }
 
       return {

@@ -6,13 +6,6 @@ import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import { GetPurchases } from '@/services/Orders_Services/Orders_Services';
@@ -34,8 +27,6 @@ const PurchaseOrders = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
-  // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
-  const [istype, setIsType] = useState('All');
 
   const PurchaseEmptyStageData = {
     heading: `~"Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
@@ -83,22 +74,6 @@ const PurchaseOrders = () => {
         <Wrapper>
           <SubHeader name={'Purchases'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              <div className="flex items-center gap-4">
-                <Select
-                  value={istype.type}
-                  onValueChange={(value) => setIsType(value)}
-                >
-                  <SelectTrigger className="max-w-xs gap-5">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Bid">Bids</SelectItem>
-                    <SelectItem value="offer">Offers</SelectItem>
-                    <SelectItem value="invoice">Invoices</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               <Button
                 onClick={() =>
                   exportTableToExcel('purchase-orders', 'purchases_list', false)
@@ -141,12 +116,7 @@ const PurchaseOrders = () => {
                 id={'purchase-orders'}
                 columns={PurchaseColumns}
                 onRowClick={onRowClick}
-                data={
-                  data?.filter((purchase) => {
-                    if (istype === 'All' || istype === '') return true;
-                    return purchase.type === istype;
-                  }) || []
-                }
+                data={data}
               />
             )
           )}

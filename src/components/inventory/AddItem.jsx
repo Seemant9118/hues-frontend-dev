@@ -46,7 +46,6 @@ const AddItem = ({ name, onCancel, cta }) => {
     rate: '',
     gstPercentage: '',
     quantity: '',
-    amount: '',
     type: isGoods ? 'goods' : 'services',
     batch: '',
     expiry: '',
@@ -81,7 +80,6 @@ const AddItem = ({ name, onCancel, cta }) => {
       rate: '',
       gstPercentage: '',
       quantity: '',
-      amount: '',
       type: item.type,
       batch: '',
       expiry: '',
@@ -132,10 +130,6 @@ const AddItem = ({ name, onCancel, cta }) => {
     // quantity
     if (itemData.quantity === '') {
       error.quantity = '*Required Quantity';
-    }
-    // amount
-    if (itemData.amount === '') {
-      error.amount = '*Required Amount';
     }
     return error;
   };
@@ -364,7 +358,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <InputWithLabel
               name="Amount"
               id="amount"
@@ -373,7 +367,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.amount}
             />
             {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-          </div>
+          </div> */}
 
           {/* optional data fields */}
           <div className="grid grid-cols-2 gap-2.5">
@@ -513,7 +507,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <InputWithLabel
               name="Amount"
               id="amount"
@@ -522,7 +516,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.amount}
             />
             {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-          </div>
+          </div> */}
           <InputWithLabel
             name="Application"
             id="applications"

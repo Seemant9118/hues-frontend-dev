@@ -76,9 +76,10 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   );
   const [errorMsg, setErrorMsg] = useState({});
   const [searchInput, setSearchInput] = useState({
-    idType: '',
+    idType: 'pan',
     idNumber: '',
   });
+
   const [searchData, setSearchData] = useState([]);
 
   // query search mutation
@@ -275,7 +276,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       onOpenChange={() => {
         setOpen((prev) => !prev);
         setSearchInput({
-          idType: '',
+          idType: 'pan',
           idNumber: '',
         });
         setEnterPriseData({
@@ -326,7 +327,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   }
                 >
                   <SelectTrigger className="max-w-xs gap-5">
-                    <SelectValue placeholder="Select Identifier Type" />
+                    <SelectValue placeholder="PAN" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gst">GST</SelectItem>
@@ -338,15 +339,10 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               <div className="flex w-1/2 flex-col gap-1">
                 <InputWithLabel
                   className="rounded-md"
-                  name={`Identifier No. (${
-                    searchInput?.idType === ''
-                      ? 'Select type'
-                      : searchInput?.idType?.toUpperCase()
-                  })`}
+                  name={`Identifier No. (${searchInput.idType.toUpperCase()})`}
                   type="tel"
                   id="idNumber"
                   required={true}
-                  disabled={searchInput.idType === ''}
                   value={searchInput.idNumber}
                   onChange={handleChangeId}
                 />

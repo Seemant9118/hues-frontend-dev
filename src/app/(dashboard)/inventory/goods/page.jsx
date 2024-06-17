@@ -24,6 +24,7 @@ import {
   FileCheck,
   FileText,
   KeySquare,
+  Share2,
   Upload,
   UploadCloud,
 } from 'lucide-react';
@@ -102,6 +103,15 @@ function Goods() {
         <Wrapper>
           <SubHeader name={'Goods'}>
             <div className="flex items-center justify-center gap-4">
+              <Button
+                onClick={() => {}}
+                variant={'blue_outline'}
+                size="sm"
+                disabled
+              >
+                <Share2 size={14} />
+                Share
+              </Button>
               <Button
                 variant={'export'}
                 size="sm"
@@ -205,8 +215,8 @@ function Goods() {
 
           <Button asChild variant="outline" className="w-full max-w-[700px]">
             <a
-              download={'/Hues_inventory_sample_goods.xlsx'}
-              href="/Hues_inventory_sample_goods.xlsx"
+              download={'/ProductGoodsSample.xlsx'}
+              href="/ProductGoodsSample.xlsx"
             >
               <Download />
               Sample
@@ -237,6 +247,15 @@ function Goods() {
                   </p>
                 </div>
               </div>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setisUploading(false);
+                  setFiles([]);
+                }}
+              >
+                Back to View
+              </Button>
               {/* <button
                 onClick={() => {
                   setFiles((prev) => {
@@ -252,7 +271,7 @@ function Goods() {
           ))}
           <div className="mt-auto h-[1px] w-full bg-neutral-300"></div>
 
-          <div className="flex justify-end self-end">
+          {/* <div className="flex justify-end self-end">
             <Button
               onClick={() => {
                 setisUploading(false);
@@ -261,7 +280,7 @@ function Goods() {
             >
               Done
             </Button>
-          </div>
+          </div> */}
         </Wrapper>
       )}
     </>
