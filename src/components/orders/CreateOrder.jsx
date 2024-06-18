@@ -243,12 +243,18 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     return { totalAmount, totalGstAmt };
   };
 
+  const handleCalculateGrossAmt = () => {
+    const grossAmount = order.orderItems.reduce((acc, orderItem) => {
+      return acc + orderItem.totalAmount;
+    }, 0);
+    return grossAmount;
+  };
+  const grossAmt = handleCalculateGrossAmt();
+
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
-    // CONSOLE LOG HAS BEEN COMMENTED
-    // console.log(isError);
 
     if (Object.keys(isError).length === 0) {
       orderMutation.mutate({
@@ -525,7 +531,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                 quantity: '',
                 unitPrice: '',
                 gstPerUnit: '',
-                totalAmount: '', // total amount + gst amount
+                totalAmount: '',
                 totalGstAmount: '',
               });
               setErrorMsg({});
@@ -542,17 +548,23 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex items-center justify-end gap-4">
-        <Button onClick={onCancel} variant={'outline'}>
-          Cancel
-        </Button>
-        <Button
-          onClick={
-            handleSubmit // invoke handle submit fn
-          }
-        >
-          Create
-        </Button>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="font-bold">Total Gross Amount : </span>
+          <span className="rounded-md border bg-slate-100 p-2">{grossAmt}</span>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={onCancel} variant={'outline'}>
+            Cancel
+          </Button>
+          <Button
+            onClick={
+              handleSubmit // invoke handle submit fn
+            }
+          >
+            Create
+          </Button>
+        </div>
       </div>
     </Wrapper>
   );
