@@ -134,10 +134,42 @@ const AddItem = ({ name, onCancel, cta }) => {
     return error;
   };
 
+  const communicationInventory = (res, lang) => {
+    const message = {
+      successMessage: '',
+      errorMessage: '',
+    };
+
+    // Handle case if success
+    if (res.data.status === true) {
+      switch (res.data.message) {
+        // If Goods added successfully
+        case 'INVENTORY_GOODS_ADDED_SUCCESS':
+          switch (lang) {
+            case 'en-IN':
+              message.successMessage = 'Goods Added Successfully';
+              break;
+            case 'hindi':
+              message.successMessage = 'सामान सफलतापूर्वक जोड़ा गया';
+              break;
+            // Add more cases for other languages as needed
+            default:
+              message.successMessage = 'Good Added Successfully';
+          }
+          break;
+        default:
+          message.successMessage = 'Added Successfully';
+      }
+    }
+
+    return message;
+  };
+
   const mutationGoods = useMutation({
     mutationFn: CreateProductGoods,
-    onSuccess: () => {
-      toast.success('Goods Added Successfully');
+    onSuccess: (res) => {
+      const message = communicationInventory(res, 'en-IN');
+      toast.success(message.successMessage || 'Added Successfully');
       queryClient.invalidateQueries({
         queryKey: [goodsApi.getAllProductGoods.endpointKey],
       });
