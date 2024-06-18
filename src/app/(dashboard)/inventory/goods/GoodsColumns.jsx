@@ -3,6 +3,7 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ShareModal from '@/components/Modals/ShareModal';
+import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import { Edit3, MoreHorizontal } from 'lucide-react';
+import { Edit3, Info, MoreHorizontal } from 'lucide-react';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   return [
@@ -50,6 +51,15 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PRODUCT" />
       ),
+      cell: ({ row }) => {
+        const { description, productName } = row.original;
+        return (
+          <div className="flex items-center gap-1">
+            {productName}
+            <Tooltips trigger={<Info size={14} />} content={description} />
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'manufacturerName',
@@ -60,19 +70,19 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
     {
       accessorKey: 'hsnCode',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="CODE" />
+        <DataTableColumnHeader column={column} title="HSN CODE" />
       ),
     },
-    {
-      accessorKey: 'description',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DESCRIPTION" />
-      ),
-      cell: ({ row }) => {
-        const { description } = row.original;
-        return <p className="truncate">{description}</p>;
-      },
-    },
+    // {
+    //   accessorKey: 'description',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title="DESCRIPTION" />
+    //   ),
+    //   cell: ({ row }) => {
+    //     const { description } = row.original;
+    //     return <p className="truncate">{description}</p>;
+    //   },
+    // },
     {
       accessorKey: 'rate',
       header: ({ column }) => (

@@ -137,7 +137,7 @@ const AddItem = ({ name, onCancel, cta }) => {
   const mutationGoods = useMutation({
     mutationFn: CreateProductGoods,
     onSuccess: () => {
-      toast.success('Product Goods Added Successfully');
+      toast.success('Goods Added Successfully');
       queryClient.invalidateQueries({
         queryKey: [goodsApi.getAllProductGoods.endpointKey],
       });
@@ -151,7 +151,7 @@ const AddItem = ({ name, onCancel, cta }) => {
   const mutationServices = useMutation({
     mutationFn: CreateProductServices,
     onSuccess: () => {
-      toast.success('Product Services Added Successfully');
+      toast.success('Services Added Successfully');
       queryClient.invalidateQueries({
         queryKey: [servicesApi.getAllProductServices.endpointKey],
       });
@@ -397,7 +397,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             <InputWithLabel
-              name="Weight (kg)"
+              name="Weight (grams)"
               id="weight"
               onChange={onChange}
               value={item.weight}
