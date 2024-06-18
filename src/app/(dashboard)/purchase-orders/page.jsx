@@ -128,6 +128,7 @@ const PurchaseOrders = () => {
           type="purchase"
           name={'Bid'}
           cta="bid"
+          isOrder="order"
           onCancel={() => setIsCreatingPurchase(false)}
           onSubmit={() => {
             setIsCreatingPurchase(false);

@@ -26,7 +26,10 @@ import {
   GetAllProductServices,
   GetServicesVendor,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
+import {
+  CreateOrderService,
+  createInvoice,
+} from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -37,7 +40,7 @@ import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
-const CreateOrder = ({ onCancel, name, cta, type }) => {
+const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -184,6 +187,21 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     },
   });
 
+  // mutation - create invoice
+  const invoiceMutation = useMutation({
+    mutationFn: createInvoice,
+    onSuccess: () => {
+      toast.success('Invoice Created Successfully');
+      onCancel();
+      queryClient.invalidateQueries({
+        queryKey: [orderApi.getSales.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   // validations
   const validation = ({ order, selectedItem }) => {
     const errorObj = {};
@@ -257,14 +275,24 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     const isError = validation({ order, selectedItem });
 
     if (Object.keys(isError).length === 0) {
-      orderMutation.mutate({
-        ...order,
-        amount: parseFloat(totalAmount.toFixed(2)),
-        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-      });
-      setErrorMsg({});
+      if (isOrder === 'invoice') {
+        invoiceMutation.mutate({
+          ...order,
+          amount: parseFloat(totalAmount.toFixed(2)),
+          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        });
+        setErrorMsg({});
+      } else {
+        orderMutation.mutate({
+          ...order,
+          amount: parseFloat(totalAmount.toFixed(2)),
+          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        });
+        setErrorMsg({});
+      }
+    } else {
+      setErrorMsg(isError);
     }
-    setErrorMsg(isError);
   };
 
   if (!enterpriseId) {

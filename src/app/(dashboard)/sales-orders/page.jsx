@@ -130,6 +130,7 @@ const SalesOrder = () => {
           type="sales"
           name="Offer"
           cta="offer"
+          isOrder="order"
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
@@ -139,6 +140,7 @@ const SalesOrder = () => {
           type="invoice"
           name="Invoice"
           cta="offer"
+          isOrder="invoice"
           onCancel={() => setIsCreatingInvoice(false)}
         />
       )}
