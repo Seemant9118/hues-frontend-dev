@@ -54,4 +54,10 @@ export const orderApi = {
     endpoint: `/order/purchaseinvoices/`,
     endpointKey: 'get_purchase_invoice',
   },
+
+  // 11. create Invoice
+  createInvoice: {
+    endpoint: `/order/createinvoice`,
+    endpointKey: 'create_invoice',
+  },
 };

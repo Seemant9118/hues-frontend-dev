@@ -26,7 +26,10 @@ import {
   GetAllProductServices,
   GetServicesVendor,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
+import {
+  CreateOrderService,
+  createInvoice,
+} from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -37,7 +40,7 @@ import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
-const CreateOrder = ({ onCancel, name, cta, type }) => {
+const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -184,6 +187,21 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     },
   });
 
+  // mutation - create invoice
+  const invoiceMutation = useMutation({
+    mutationFn: createInvoice,
+    onSuccess: () => {
+      toast.success('Invoice Created Successfully');
+      onCancel();
+      queryClient.invalidateQueries({
+        queryKey: [orderApi.getSales.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   // validations
   const validation = ({ order, selectedItem }) => {
     const errorObj = {};
@@ -243,22 +261,38 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
     return { totalAmount, totalGstAmt };
   };
 
+  const handleCalculateGrossAmt = () => {
+    const grossAmount = order.orderItems.reduce((acc, orderItem) => {
+      return acc + orderItem.totalAmount;
+    }, 0);
+    return grossAmount;
+  };
+  const grossAmt = handleCalculateGrossAmt();
+
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
-    // CONSOLE LOG HAS BEEN COMMENTED
-    // console.log(isError);
 
     if (Object.keys(isError).length === 0) {
-      orderMutation.mutate({
-        ...order,
-        amount: parseFloat(totalAmount.toFixed(2)),
-        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-      });
-      setErrorMsg({});
+      if (isOrder === 'invoice') {
+        invoiceMutation.mutate({
+          ...order,
+          amount: parseFloat(totalAmount.toFixed(2)),
+          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        });
+        setErrorMsg({});
+      } else {
+        orderMutation.mutate({
+          ...order,
+          amount: parseFloat(totalAmount.toFixed(2)),
+          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        });
+        setErrorMsg({});
+      }
+    } else {
+      setErrorMsg(isError);
     }
-    setErrorMsg(isError);
   };
 
   if (!enterpriseId) {
@@ -525,7 +559,7 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
                 quantity: '',
                 unitPrice: '',
                 gstPerUnit: '',
-                totalAmount: '', // total amount + gst amount
+                totalAmount: '',
                 totalGstAmount: '',
               });
               setErrorMsg({});
@@ -542,17 +576,23 @@ const CreateOrder = ({ onCancel, name, cta, type }) => {
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex items-center justify-end gap-4">
-        <Button onClick={onCancel} variant={'outline'}>
-          Cancel
-        </Button>
-        <Button
-          onClick={
-            handleSubmit // invoke handle submit fn
-          }
-        >
-          Create
-        </Button>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="font-bold">Total Gross Amount : </span>
+          <span className="rounded-md border bg-slate-100 p-2">{grossAmt}</span>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={onCancel} variant={'outline'}>
+            Cancel
+          </Button>
+          <Button
+            onClick={
+              handleSubmit // invoke handle submit fn
+            }
+          >
+            Create
+          </Button>
+        </div>
       </div>
     </Wrapper>
   );

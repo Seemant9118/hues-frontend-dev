@@ -26,6 +26,7 @@ export const useSalesColumns = () => {
     queryFn: () => getClients(enterpriseId),
     select: (res) => res.data.data,
   });
+
   return [
     {
       id: 'select',
@@ -96,8 +97,9 @@ export const useSalesColumns = () => {
       cell: ({ row }) => {
         const client = clients?.find(
           (clientData) =>
-            clientData.client.id === row.original.buyerEnterpriseId,
+            clientData?.client?.id === row.original.buyerEnterpriseId,
         );
+
         return <div>{client?.client?.name}</div>;
       },
     },

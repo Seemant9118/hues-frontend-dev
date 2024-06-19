@@ -76,9 +76,10 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   );
   const [errorMsg, setErrorMsg] = useState({});
   const [searchInput, setSearchInput] = useState({
-    idType: '',
+    idType: 'pan',
     idNumber: '',
   });
+
   const [searchData, setSearchData] = useState([]);
 
   // query search mutation
@@ -275,7 +276,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       onOpenChange={() => {
         setOpen((prev) => !prev);
         setSearchInput({
-          idType: '',
+          idType: 'pan',
           idNumber: '',
         });
         setEnterPriseData({
@@ -326,7 +327,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   }
                 >
                   <SelectTrigger className="max-w-xs gap-5">
-                    <SelectValue placeholder="Select Identifier Type" />
+                    <SelectValue placeholder="PAN" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gst">GST</SelectItem>
@@ -338,15 +339,10 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               <div className="flex w-1/2 flex-col gap-1">
                 <InputWithLabel
                   className="rounded-md"
-                  name={`Identifier No. (${
-                    searchInput?.idType === ''
-                      ? 'Select type'
-                      : searchInput?.idType?.toUpperCase()
-                  })`}
+                  name={`Identifier No. (${searchInput.idType.toUpperCase()})`}
                   type="tel"
                   id="idNumber"
                   required={true}
-                  disabled={searchInput.idType === ''}
                   value={searchInput.idNumber}
                   onChange={handleChangeId}
                 />
@@ -362,7 +358,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
         {/* client list related search  */}
         {!isAdding && btnName !== 'Edit' && (
-          <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto rounded-md border p-4">
+          <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto p-4">
             {searchMutation.isPending && <Loading />}
             {searchData &&
               searchData.length !== 0 &&
@@ -383,7 +379,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 </div>
               ))}
 
-            {searchData?.length === 0 && (
+            {searchData?.length === 0 && searchInput.idNumber.length >= 3 && (
               <span>
                 Enterprise not available,{' '}
                 <Button variant="link" onClick={() => setIsAdding(true)}>
@@ -392,14 +388,16 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </span>
             )}
 
-            {!searchData && <span>By typing Identifier to search</span>}
+            {searchInput.idNumber.length < 3 && (
+              <span className="text-sm">By typing Identifier to search</span>
+            )}
           </div>
         )}
 
         {/* if client does not in our client list then, create client */}
         {isAdding && searchData?.length === 0 && btnName !== 'Edit' && (
           <form
-            className="rounded-md border p-5"
+            className="rounded-md p-2"
             onSubmit={btnName === 'Edit' ? handleEditSubmit : handleSubmit}
           >
             <div className="flex flex-col gap-4">

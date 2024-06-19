@@ -48,6 +48,38 @@ export default function ProfileDetailForm({
     }));
   }, [selectedDate]);
 
+  const erpCommunication = (res, lang) => {
+    const message = {
+      successMessage: '',
+      errorMessage: '',
+    };
+
+    // Handle case if an error occurs
+    if (res.response.data.status === false) {
+      switch (res.response.data.message) {
+        // In User Onboarding , PAN Alreadt exist
+        case 'USER_ONBOARDING_DUPLICATE_PAN_ERROR':
+          switch (lang) {
+            case 'en-IN':
+              message.errorMessage = 'User already exists with this PAN number';
+              break;
+            case 'hindi':
+              message.errorMessage = 'यह पैन नंबर पहले से मौजूद है';
+              break;
+            // Add more cases for other languages as needed
+            default:
+              message.errorMessage = 'User already exists with this PAN number';
+          }
+          break;
+        // Handle other specific error messages here if needed
+        default:
+          message.errorMessage = 'An unknown error occurred';
+      }
+    }
+
+    return message;
+  };
+
   const mutation = useMutation({
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
@@ -63,7 +95,8 @@ export default function ProfileDetailForm({
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+      const message = erpCommunication(error, 'en-IN');
+      toast.error(message.errorMessage || 'Oops, Something went wrong!');
     },
   });
 

@@ -39,12 +39,6 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
       enableSorting: false,
       enableHiding: false,
     },
-    // {
-    //     accessorKey: "type",
-    //     header: ({ column }) => (
-    //         <DataTableColumnHeader column={column} title="ITEM TYPE" />
-    //     ),
-    // },
     {
       accessorKey: 'serviceName',
       header: ({ column }) => (
@@ -77,12 +71,6 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GST (%)" />
-      ),
-    },
-    {
-      accessorKey: 'amount',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Amount" />
       ),
     },
     {

@@ -35,7 +35,6 @@ const EditItem = ({
           SAC: goodsToEdit.sac,
           rate: goodsToEdit.rate,
           gstPercentage: goodsToEdit.gstPercentage,
-          amount: goodsToEdit.amount,
           type: 'goods',
           quantity: goodsToEdit.quantity,
           batch: goodsToEdit.batch,
@@ -58,7 +57,6 @@ const EditItem = ({
           SAC: servicesToEdit.sac,
           rate: servicesToEdit.rate,
           gstPercentage: servicesToEdit.gstPercentage,
-          amount: servicesToEdit.amount,
           type: 'servies',
           batch: '',
           expiry: servicesToEdit.expiry,
@@ -90,7 +88,6 @@ const EditItem = ({
         SAC: '',
         rate: '',
         gstPercentage: '',
-        amount: '',
         type: '',
         batch: '',
         expiry: '',
@@ -215,13 +212,6 @@ const EditItem = ({
               value={item.quantity}
             />
           </div>
-          <InputWithLabel
-            name="Amount"
-            id="amount"
-            required={true}
-            onChange={onChange}
-            value={item.amount}
-          />
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
               name="Batch"
@@ -317,13 +307,6 @@ const EditItem = ({
               value={item.expiry}
             />
           </div>
-          <InputWithLabel
-            name="Amount"
-            id="amount"
-            required={true}
-            onChange={onChange}
-            value={item.amount}
-          />
         </>
       )}
 

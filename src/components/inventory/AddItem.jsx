@@ -46,7 +46,6 @@ const AddItem = ({ name, onCancel, cta }) => {
     rate: '',
     gstPercentage: '',
     quantity: '',
-    amount: '',
     type: isGoods ? 'goods' : 'services',
     batch: '',
     expiry: '',
@@ -81,7 +80,6 @@ const AddItem = ({ name, onCancel, cta }) => {
       rate: '',
       gstPercentage: '',
       quantity: '',
-      amount: '',
       type: item.type,
       batch: '',
       expiry: '',
@@ -133,17 +131,45 @@ const AddItem = ({ name, onCancel, cta }) => {
     if (itemData.quantity === '') {
       error.quantity = '*Required Quantity';
     }
-    // amount
-    if (itemData.amount === '') {
-      error.amount = '*Required Amount';
-    }
     return error;
+  };
+
+  const communicationInventory = (res, lang) => {
+    const message = {
+      successMessage: '',
+      errorMessage: '',
+    };
+
+    // Handle case if success
+    if (res.data.status === true) {
+      switch (res.data.message) {
+        // If Goods added successfully
+        case 'INVENTORY_GOODS_ADDED_SUCCESS':
+          switch (lang) {
+            case 'en-IN':
+              message.successMessage = 'Goods Added Successfully';
+              break;
+            case 'hindi':
+              message.successMessage = 'सामान सफलतापूर्वक जोड़ा गया';
+              break;
+            // Add more cases for other languages as needed
+            default:
+              message.successMessage = 'Good Added Successfully';
+          }
+          break;
+        default:
+          message.successMessage = 'Added Successfully';
+      }
+    }
+
+    return message;
   };
 
   const mutationGoods = useMutation({
     mutationFn: CreateProductGoods,
-    onSuccess: () => {
-      toast.success('Product Goods Added Successfully');
+    onSuccess: (res) => {
+      const message = communicationInventory(res, 'en-IN');
+      toast.success(message.successMessage || 'Added Successfully');
       queryClient.invalidateQueries({
         queryKey: [goodsApi.getAllProductGoods.endpointKey],
       });
@@ -157,7 +183,7 @@ const AddItem = ({ name, onCancel, cta }) => {
   const mutationServices = useMutation({
     mutationFn: CreateProductServices,
     onSuccess: () => {
-      toast.success('Product Services Added Successfully');
+      toast.success('Services Added Successfully');
       queryClient.invalidateQueries({
         queryKey: [servicesApi.getAllProductServices.endpointKey],
       });
@@ -364,7 +390,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <InputWithLabel
               name="Amount"
               id="amount"
@@ -373,7 +399,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.amount}
             />
             {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-          </div>
+          </div> */}
 
           {/* optional data fields */}
           <div className="grid grid-cols-2 gap-2.5">
@@ -403,7 +429,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             <InputWithLabel
-              name="Weight (kg)"
+              name="Weight (grams)"
               id="weight"
               onChange={onChange}
               value={item.weight}
@@ -513,7 +539,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <InputWithLabel
               name="Amount"
               id="amount"
@@ -522,7 +548,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.amount}
             />
             {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-          </div>
+          </div> */}
           <InputWithLabel
             name="Application"
             id="applications"
