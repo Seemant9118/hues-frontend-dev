@@ -24,13 +24,25 @@ describe('DashCard', () => {
     expect(dashCardElement).toBeInTheDocument();
   });
 
-  test('renders growth correctly', () => {
+  test('renders growth correctly when growth is positive', () => {
     const growthElement = screen.getByText(growth);
     expect(growthElement).toBeInTheDocument();
     expect(growthElement).toHaveClass(
       'rounded-full px-2 py-1 text-sm font-semibold',
     );
     expect(growthElement).toHaveClass('bg-[#E3F4E3] text-[#1EC57F]');
+  });
+
+  test('renders growth correctly when growth is negative', () => {
+    render(
+      <DashCard title={title} numbers={numbers} growth="-10" icon={icon} />,
+    );
+    const growthElement = screen.getByText('-10');
+    expect(growthElement).toBeInTheDocument();
+    expect(growthElement).toHaveClass(
+      'rounded-full px-2 py-1 text-sm font-semibold',
+    );
+    expect(growthElement).toHaveClass('bg-[#F4E3E3] text-[#E85555]');
   });
 
   test('renders icon correctly', () => {

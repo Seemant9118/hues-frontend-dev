@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { Orbit } from 'lucide-react';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 
 describe('EmptyStageComponent', () => {
@@ -10,7 +9,7 @@ describe('EmptyStageComponent', () => {
       id: 2,
       subItemtitle: 'SubItem 2',
       item: 'Item 2',
-      icon: <Orbit size={10} />,
+      icon: <>Icon</>,
     },
   ];
 
@@ -33,8 +32,7 @@ describe('EmptyStageComponent', () => {
   });
 
   test('renders provided icon correctly', () => {
-    const subItemWithIcon = subItems.find((subItem) => subItem.icon);
-    const iconElement = screen.getByTestId(`icon-${subItemWithIcon.id}`);
+    const iconElement = screen.getByText('Icon');
     expect(iconElement).toBeInTheDocument();
   });
 });
