@@ -31,7 +31,7 @@ const StyledLinks = ({ link }) => {
           {link.subTab?.map((subtabs) => (
             <Link
               href={subtabs.path}
-              key={subtabs}
+              key={subtabs.path}
               className={cn(
                 'flex gap-2 rounded-xl border-none p-4 text-xs',
                 pathname === subtabs.path
