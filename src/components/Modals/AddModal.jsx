@@ -339,7 +339,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               <div className="flex w-1/2 flex-col gap-1">
                 <InputWithLabel
                   className="rounded-md"
-                  name={`Identifier No. (${searchInput.idType.toUpperCase()})`}
+                  name={`Identifier No. (${searchInput?.idType?.toUpperCase()})`}
                   type="tel"
                   id="idNumber"
                   required={true}
