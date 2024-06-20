@@ -427,23 +427,23 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label>Address</Label>
+                  <Label>GST IN</Label>
                   <span className="text-red-600">*</span>
                 </div>
                 <Input
-                  name="Address"
-                  type="text"
-                  id="address"
+                  name="GST IN"
+                  type="tel"
+                  id="gstNumber"
                   // required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
-                      address: e.target.value,
+                      gstNumber: e.target.value,
                     }))
                   }
-                  value={enterpriseData.address}
+                  value={enterpriseData.gstNumber}
                 />
-                {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
+                {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />}
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
@@ -511,23 +511,23 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label>GST IN</Label>
+                  <Label>Address</Label>
                   <span className="text-red-600">*</span>
                 </div>
                 <Input
-                  name="GST IN"
-                  type="tel"
-                  id="gstNumber"
+                  name="Address"
+                  type="text"
+                  id="address"
                   // required={true}
                   onChange={(e) =>
                     setEnterPriseData((prev) => ({
                       ...prev,
-                      gstNumber: e.target.value,
+                      address: e.target.value,
                     }))
                   }
-                  value={enterpriseData.gstNumber}
+                  value={enterpriseData.address}
                 />
-                {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />}
+                {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
               </div>
             </div>
 
