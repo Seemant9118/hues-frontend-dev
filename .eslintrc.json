@@ -159,6 +159,47 @@
           {
             "devDependencies": true
           }
+        ],
+        // Prefer screen queries
+        "testing-library/prefer-screen-queries": "error"
+      }
+    },
+    {
+      // CONFIGURATION FOR PLAYWRIGHT
+      "files": [
+        "**/__tests__/e2e/**/*.jsx",
+        "**/__tests__/e2e/**/*.tsx",
+        "**/__tests__/e2e/**/*.js",
+        "**/__tests__/e2e/**/*.ts"
+      ],
+      "env": {
+        "node": true
+      },
+      "plugins": ["playwright"],
+      "extends": ["plugin:playwright/recommended"],
+      "rules": {
+        "import/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": ["**/__tests__/e2e/**"]
+          }
+        ],
+        // Disable Testing Library rule for Playwright
+        "testing-library/prefer-screen-queries": "off"
+      }
+    },
+    {
+      // config for playwright config
+      "files": ["playwright.config.js"],
+      "env": {
+        "node": true
+      },
+      "rules": {
+        "import/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": true
+          }
         ]
       }
     }
