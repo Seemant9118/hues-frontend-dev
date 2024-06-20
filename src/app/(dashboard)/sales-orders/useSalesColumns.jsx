@@ -100,7 +100,13 @@ export const useSalesColumns = () => {
             clientData?.client?.id === row.original.buyerEnterpriseId,
         );
 
-        return <div>{client?.client?.name}</div>;
+        return (
+          <div>
+            {client?.client?.name !== null
+              ? client?.client?.name
+              : client?.invitation?.userDetails?.name}
+          </div>
+        );
       },
     },
     // {

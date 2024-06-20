@@ -36,6 +36,7 @@ import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
+import SearchInput from '../ui/SearchInput';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
@@ -45,6 +46,10 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
+
+  const [customerToSearch, setCustomerToSearch] = useState('');
+  const [itemToSearch, setItemToSearch] = useState('');
+
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
     productType: '',
@@ -94,6 +99,16 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     select: (res) => res.data.data,
   });
 
+  // searching client/vendor from list given "customerData"
+  const searchCustomerData = customerData?.filter((customer) => {
+    const clientName = customer.client?.name ?? '';
+    const userDetailsName = customer.invitation?.userDetails?.name ?? '';
+    return (
+      clientName.toLowerCase().includes(customerToSearch.toLowerCase()) ||
+      userDetailsName.toLowerCase().includes(customerToSearch.toLowerCase())
+    );
+  });
+
   // client goods fetching
   const { data: goodsData } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
@@ -124,6 +139,12 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
 
   // both client goods & client services concatinated
   const itemData = formattedGoodsData.concat(formattedServicesData);
+
+  // searching item from list given "itemData" - Inventory
+  const searchItemData = itemData?.filter((item) => {
+    const itemName = item.productName ?? '';
+    return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
+  });
 
   // vendor goods fetching
   const { data: vendorGoodsData } = useQuery({
@@ -164,6 +185,12 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     ...(formattedVendorGoodsData || []),
     ...(formattedVendorServicesData || []),
   ];
+
+  // searching vendor's item from list given "vendorItemData" - Inventory
+  const searchVendorsItemData = vendorItemData?.filter((item) => {
+    const itemName = item.productName ?? '';
+    return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
+  });
 
   // mutation - create order
   const orderMutation = useMutation({
@@ -328,7 +355,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
             </SelectTrigger>
             <SelectContent>
               {/* if expected client is not in the list add a new client */}
-              {type === 'sales' && (
+              {type === 'sales' && customerData?.length === 0 && (
                 <AddModal
                   type={'Add Client'}
                   cta="client"
@@ -337,7 +364,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                 />
               )}
               {/* if expected vendor is not in the list add a new vendor */}
-              {type === 'purchase' && (
+              {type === 'purchase' && customerData?.length === 0 && (
                 <AddModal
                   type={'Add Vendor'}
                   cta="vendor"
@@ -346,35 +373,35 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                 />
               )}
 
+              {/* search bar for searching clients/vendor */}
+              {customerData?.length > 0 && (
+                <SearchInput
+                  toSearchTerm={customerToSearch}
+                  setToSearchTerm={setCustomerToSearch}
+                />
+              )}
+
               {cta === 'offer' ? (
                 <>
-                  {customerData
-                    ?.filter((customer) => customer.client)
-                    ?.map((customer) => (
-                      <SelectItem
-                        key={customer.enterpriseId}
-                        value={customer?.client?.id}
-                      >
-                        {customer.client
-                          ? customer.client.name
-                          : customer.invitation.userDetails.name}
-                      </SelectItem>
-                    ))}
+                  {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
+                  {searchCustomerData?.map((customer) => (
+                    <SelectItem key={customer.id} value={customer?.client?.id}>
+                      {customer?.client && customer?.client?.name !== null
+                        ? customer?.client?.name
+                        : customer?.invitation?.userDetails?.name}
+                    </SelectItem>
+                  ))}
                 </>
               ) : (
                 <>
-                  {customerData
-                    ?.filter((customer) => customer.vendor)
-                    ?.map((customer) => (
-                      <SelectItem
-                        key={customer.enterpriseId}
-                        value={customer?.vendor?.id}
-                      >
-                        {customer.vendor
-                          ? customer.vendor.name
-                          : customer.invitation.userDetails.name}
-                      </SelectItem>
-                    ))}
+                  {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
+                  {searchCustomerData?.map((customer) => (
+                    <SelectItem key={customer.id} value={customer?.vendor?.id}>
+                      {customer?.vendor && customer?.vendor?.name !== null
+                        ? customer?.vendor?.name
+                        : customer?.invitation?.userDetails?.name}
+                    </SelectItem>
+                  ))}
                 </>
               )}
             </SelectContent>
@@ -419,8 +446,14 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
+                  {itemData.length > 0 && (
+                    <SearchInput
+                      toSearchTerm={itemToSearch}
+                      setToSearchTerm={setItemToSearch}
+                    />
+                  )}
                   {cta === 'offer' &&
-                    itemData?.map((item) => (
+                    searchItemData?.map((item) => (
                       <SelectItem
                         disabled={
                           !!order.orderItems.find(
@@ -435,7 +468,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                     ))}
 
                   {cta !== 'offer' &&
-                    vendorItemData?.map((item) => (
+                    searchVendorsItemData?.map((item) => (
                       <SelectItem
                         disabled={
                           !!order.orderItems.find(
