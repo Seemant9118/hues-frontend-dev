@@ -301,7 +301,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
             Edit{' '}
           </div>
         ) : (
-          <Button variant={'blue_outline'} className="w-full">
+          <Button variant={'blue_outline'} size="sm" className="w-full">
             <Layers2 size={14} />
             {btnName}
           </Button>

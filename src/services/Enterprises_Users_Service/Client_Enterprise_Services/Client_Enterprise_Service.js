@@ -1,30 +1,34 @@
-import { clientEnterprise } from "@/api/enterprises_user/client_enterprise/client_enterprise";
-import { APIinstance } from "@/services";
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { APIinstance } from '@/services';
 
 export function createClient(data) {
   return APIinstance.post(
     clientEnterprise.createClientEnterprise.endpoint,
-    data
+    data,
   );
 }
 
 export function updateClient(id, data) {
   return APIinstance.put(
-    clientEnterprise.updateClientEnterprise.endpoint + `${id}`,
-    data
+    `${clientEnterprise.updateClientEnterprise.endpoint}${id}`,
+    data,
   );
 }
 
 export function deleteClient(id) {
   return APIinstance.delete(
-    clientEnterprise.deleteClientEnterprise.endpoint + `${id}`
+    `${clientEnterprise.deleteClientEnterprise.endpoint}${id}`,
   );
 }
 
 export function getClient(id) {
-  return APIinstance.get(clientEnterprise.getClient.endpoint + `${id}`);
+  return APIinstance.get(`${clientEnterprise.getClient.endpoint}${id}`);
 }
 
 export function getClients(id) {
-  return APIinstance.get(clientEnterprise.getClients.endpoint + `${id}`);
+  return APIinstance.get(`${clientEnterprise.getClients.endpoint}${id}`);
+}
+
+export function bulkUploadClients(data) {
+  return APIinstance.post(clientEnterprise.bulkUploadClients.endpoint, data);
 }

@@ -38,7 +38,7 @@ function Services() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
-  const [isUploading, setisUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
 
   const InventoryEmptyStageData = {
@@ -121,7 +121,7 @@ function Services() {
                 Export
               </Button>
               <Button
-                onClick={() => setisUploading(true)}
+                onClick={() => setIsUploading(true)}
                 variant={'blue_outline'}
                 size="sm"
               >
@@ -181,7 +181,7 @@ function Services() {
           type="services"
           uploadFile={uploadFile}
           files={files}
-          setisUploading={setisUploading}
+          setisUploading={setIsUploading}
           setFiles={setFiles}
         />
         // <Wrapper className={'items-center justify-start'}>

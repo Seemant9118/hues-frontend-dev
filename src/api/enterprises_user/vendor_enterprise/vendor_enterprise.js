@@ -24,4 +24,9 @@ export const vendorEnterprise = {
     endpoint: `/enterprise/vendor/`,
     endpointKey: 'get_vendors',
   },
+  // 6. bulk upload vendors
+  bulkUploadVendors: {
+    endpoint: `/enterprise/vendor/create/bulk`,
+    endpointKey: 'bulk_upload_vendors',
+  },
 };

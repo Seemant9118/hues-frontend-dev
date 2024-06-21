@@ -39,7 +39,7 @@ function Goods() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
-  const [isUploading, setisUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
 
   const InventoryEmptyStageData = {
@@ -118,7 +118,7 @@ function Goods() {
                 Export
               </Button>
               <Button
-                onClick={() => setisUploading(true)}
+                onClick={() => setIsUploading(true)}
                 variant={'blue_outline'}
                 size="sm"
               >
@@ -181,7 +181,7 @@ function Goods() {
           type="goods"
           uploadFile={uploadFile}
           files={files}
-          setisUploading={setisUploading}
+          setisUploading={setIsUploading}
           setFiles={setFiles}
         />
       )}
