@@ -1,30 +1,34 @@
-import { vendorEnterprise } from "@/api/enterprises_user/vendor_enterprise/vendor_enterprise";
-import { APIinstance } from "@/services";
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { APIinstance } from '@/services';
 
 export function createVendor(data) {
   return APIinstance.post(
     vendorEnterprise.createVendorEnterprise.endpoint,
-    data
+    data,
   );
 }
 
 export function updateVendor(id, data) {
   return APIinstance.put(
-    vendorEnterprise.updateVendorEnterprise.endpoint + `${id}`,
-    data
+    `${vendorEnterprise.updateVendorEnterprise.endpoint}${id}`,
+    data,
   );
 }
 
 export function deleteVendor(id) {
   return APIinstance.delete(
-    vendorEnterprise.deleteVendorEnterprise.endpoint + `${id}`
+    `${vendorEnterprise.deleteVendorEnterprise.endpoint}${id}`,
   );
 }
 
 export function getVendor(id) {
-  return APIinstance.get(vendorEnterprise.getVendor.endpoint + `${id}`);
+  return APIinstance.get(`${vendorEnterprise.getVendor.endpoint}${id}`);
 }
 
 export function getVendors(id) {
-  return APIinstance.get(vendorEnterprise.getVendors.endpoint + `${id}`);
+  return APIinstance.get(`${vendorEnterprise.getVendors.endpoint}${id}`);
+}
+
+export function bulkUploadVendors(data) {
+  return APIinstance.post(vendorEnterprise.bulkUploadVendors.endpoint, data);
 }
