@@ -77,10 +77,6 @@ const SalesOrder = () => {
         <Wrapper>
           <SubHeader name={'Sales'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              <Button onClick={() => {}} variant={'blue_outline'} size="sm">
-                <FileText size={14} />
-                Generate Invoice
-              </Button>
               <Button
                 onClick={() => setIsCreatingInvoice(true)}
                 variant={'blue_outline'}
@@ -141,7 +137,7 @@ const SalesOrder = () => {
 
       {isCreatingInvoice && !isCreatingSales && (
         <CreateOrder
-          type="invoice"
+          type="sales"
           name="Invoice"
           cta="offer"
           isOrder="invoice"

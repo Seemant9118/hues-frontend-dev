@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { OrderDetails } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
+import { FileText } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
@@ -33,7 +34,12 @@ const ViewOrder = () => {
 
       {!isLoading && orderDetails && (
         <>
-          <SubHeader name={`ORDER ID: #${params.order_id}`}></SubHeader>
+          <SubHeader name={`ORDER ID: #${params.order_id}`}>
+            <Button onClick={() => {}} variant={'blue_outline'} size="sm">
+              <FileText size={14} />
+              Generate Invoice
+            </Button>
+          </SubHeader>
           <DataTable
             columns={OrderColumns}
             data={orderDetails?.orderItems}

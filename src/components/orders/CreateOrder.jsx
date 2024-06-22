@@ -50,6 +50,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   const [customerToSearch, setCustomerToSearch] = useState('');
   const [itemToSearch, setItemToSearch] = useState('');
 
+  const [itemType, setItemType] = useState('');
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
     productType: '',
@@ -114,7 +115,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
     select: (res) => res.data.data,
-    enabled: !!cta === 'offer',
+    enabled: cta === 'offer' && itemType === 'goods',
   });
   const formattedGoodsData =
     goodsData?.map((good) => ({
@@ -128,7 +129,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
     select: (res) => res.data.data,
-    enabled: !!cta === 'offer',
+    enabled: cta === 'offer' && itemType === 'services',
   });
   const formattedServicesData =
     servicesData?.map((service) => ({
@@ -138,7 +139,8 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     })) || [];
 
   // both client goods & client services concatinated
-  const itemData = formattedGoodsData.concat(formattedServicesData);
+  const itemData =
+    itemType === 'goods' ? formattedGoodsData : formattedServicesData;
 
   // searching item from list given "itemData" - Inventory
   const searchItemData = itemData?.filter((item) => {
@@ -181,10 +183,15 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     })) || [];
 
   // both client goods & client services concatinated
-  const vendorItemData = [
-    ...(formattedVendorGoodsData || []),
-    ...(formattedVendorServicesData || []),
-  ];
+  // const vendorItemData = [
+  //   ...(formattedVendorGoodsData || []),
+  //   ...(formattedVendorServicesData || []),
+  // ];
+
+  const vendorItemData =
+    itemType === 'goods'
+      ? formattedVendorGoodsData
+      : formattedVendorServicesData;
 
   // searching vendor's item from list given "vendorItemData" - Inventory
   const searchVendorsItemData = vendorItemData?.filter((item) => {
@@ -336,83 +343,107 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
-      <div className="flex items-center gap-4 rounded-sm border border-neutral-200 p-4">
-        <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
-        <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
+        <div className="flex w-1/2 items-center gap-2">
+          <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
+          <div className="flex w-full flex-col gap-1">
+            <Select
+              defaultValue=""
+              onValueChange={(value) => {
+                cta === 'offer'
+                  ? setOrder((prev) => ({ ...prev, buyerEnterperiseId: value }))
+                  : setOrder((prev) => ({
+                      ...prev,
+                      sellerEnterpriseId: value,
+                    }));
+              }}
+            >
+              <SelectTrigger className="max-w-xs">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {/* if expected client is not in the list add a new client */}
+                {type === 'sales' && (
+                  <AddModal
+                    type={'Add Client'}
+                    cta="client"
+                    btnName="Add"
+                    mutationFunc={CreateEnterpriseUser}
+                  />
+                )}
+                {/* if expected vendor is not in the list add a new vendor */}
+                {type === 'purchase' && (
+                  <AddModal
+                    type={'Add Vendor'}
+                    cta="vendor"
+                    btnName="Add"
+                    mutationFunc={CreateEnterpriseUser}
+                  />
+                )}
+
+                {/* search bar for searching clients/vendor */}
+                {customerData?.length > 0 && (
+                  <SearchInput
+                    toSearchTerm={customerToSearch}
+                    setToSearchTerm={setCustomerToSearch}
+                  />
+                )}
+
+                {cta === 'offer' ? (
+                  <>
+                    {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
+                    {searchCustomerData?.map((customer) => (
+                      <SelectItem
+                        key={customer.id}
+                        value={customer?.client?.id}
+                      >
+                        {customer?.client && customer?.client?.name !== null
+                          ? customer?.client?.name
+                          : customer?.invitation?.userDetails?.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
+                    {searchCustomerData?.map((customer) => (
+                      <SelectItem
+                        key={customer.id}
+                        value={customer?.vendor?.id}
+                      >
+                        {customer?.vendor && customer?.vendor?.name !== null
+                          ? customer?.vendor?.name
+                          : customer?.invitation?.userDetails?.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
+              </SelectContent>
+            </Select>
+            {cta === 'offer'
+              ? errorMsg.buyerEnterperiseId && (
+                  <ErrorBox msg={errorMsg.buyerEnterperiseId} />
+                )
+              : errorMsg.sellerEnterpriseId && (
+                  <ErrorBox msg={errorMsg.sellerEnterpriseId} />
+                )}
+          </div>
+        </div>
+        <div className="flex w-1/2 items-center gap-2">
+          <Label>Item Type</Label>
           <Select
-            defaultValue=""
             onValueChange={(value) => {
-              cta === 'offer'
-                ? setOrder((prev) => ({ ...prev, buyerEnterperiseId: value }))
-                : setOrder((prev) => ({
-                    ...prev,
-                    sellerEnterpriseId: value,
-                  }));
+              setItemType(value);
             }}
           >
-            <SelectTrigger className="max-w-xs">
-              <SelectValue placeholder="Select" />
+            <SelectTrigger className="max-w-xs gap-5">
+              <SelectValue placeholder="Select Item Type" />
             </SelectTrigger>
             <SelectContent>
-              {/* if expected client is not in the list add a new client */}
-              {type === 'sales' && customerData?.length === 0 && (
-                <AddModal
-                  type={'Add Client'}
-                  cta="client"
-                  btnName="Add"
-                  mutationFunc={CreateEnterpriseUser}
-                />
-              )}
-              {/* if expected vendor is not in the list add a new vendor */}
-              {type === 'purchase' && customerData?.length === 0 && (
-                <AddModal
-                  type={'Add Vendor'}
-                  cta="vendor"
-                  btnName="Add"
-                  mutationFunc={CreateEnterpriseUser}
-                />
-              )}
-
-              {/* search bar for searching clients/vendor */}
-              {customerData?.length > 0 && (
-                <SearchInput
-                  toSearchTerm={customerToSearch}
-                  setToSearchTerm={setCustomerToSearch}
-                />
-              )}
-
-              {cta === 'offer' ? (
-                <>
-                  {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                  {searchCustomerData?.map((customer) => (
-                    <SelectItem key={customer.id} value={customer?.client?.id}>
-                      {customer?.client && customer?.client?.name !== null
-                        ? customer?.client?.name
-                        : customer?.invitation?.userDetails?.name}
-                    </SelectItem>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                  {searchCustomerData?.map((customer) => (
-                    <SelectItem key={customer.id} value={customer?.vendor?.id}>
-                      {customer?.vendor && customer?.vendor?.name !== null
-                        ? customer?.vendor?.name
-                        : customer?.invitation?.userDetails?.name}
-                    </SelectItem>
-                  ))}
-                </>
-              )}
+              <SelectItem value="goods">Goods</SelectItem>
+              <SelectItem value="services">Services</SelectItem>
             </SelectContent>
           </Select>
-          {cta === 'offer'
-            ? errorMsg.buyerEnterperiseId && (
-                <ErrorBox msg={errorMsg.buyerEnterperiseId} />
-              )
-            : errorMsg.sellerEnterpriseId && (
-                <ErrorBox msg={errorMsg.sellerEnterpriseId} />
-              )}
         </div>
       </div>
       <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
@@ -423,7 +454,8 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
               <Select
                 disabled={
                   (cta === 'offer' && order.buyerEnterperiseId == null) ||
-                  order.sellerEnterpriseId == null
+                  (cta === 'bid' && order.sellerEnterpriseId == null) ||
+                  itemType === ''
                 }
                 // defaultValue={selectedItem.product_id}
                 onValueChange={(value) => {
@@ -499,14 +531,14 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                   const totalAmt = parseFloat(
                     (e.target.value * selectedItem.unitPrice).toFixed(2),
                   ); // totalAmt excluding gst
-                  const GstAmt = parseFloat(
+                  const gstAmt = parseFloat(
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                   ); // total gstAmt
                   setSelectedItem((prev) => ({
                     ...prev,
                     quantity: Number(e.target.value),
                     totalAmount: totalAmt,
-                    totalGstAmount: GstAmt,
+                    totalGstAmount: gstAmt,
                   }));
                 }}
                 className="max-w-20"
@@ -526,9 +558,17 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                 value={selectedItem.unitPrice}
                 className="max-w-20"
                 onChange={(e) => {
+                  const totalAmt = parseFloat(
+                    (selectedItem.quantity * e.target.value).toFixed(2),
+                  ); // totalAmt excluding gst
+                  const gstAmt = parseFloat(
+                    (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                  ); // total gstAmt
                   setSelectedItem((prevValue) => ({
                     ...prevValue,
-                    unitPrice: Number(e.target.value),
+                    unitPrice: e.target.value,
+                    totalAmount: totalAmt,
+                    totalGstAmount: gstAmt,
                   }));
                 }}
               />
