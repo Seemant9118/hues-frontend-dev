@@ -67,22 +67,6 @@ export const usePurchaseColumns = () => {
         return <div className="text-[#A5ABBD]">{date}</div>;
       },
     },
-    // {
-    //   accessorKey: "type",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="TYPE" />
-    //   ),
-    // },
-    // {
-    //   accessorKey: "quantity",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="PURCHASE ORDERS" />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const description = row.original.quantity;
-    //     return <p className="truncate">{description}</p>;
-    //   },
-    // },
     {
       accessorKey: 'sellerEnterpriseId',
       header: ({ column }) => (
@@ -93,15 +77,15 @@ export const usePurchaseColumns = () => {
           (vendorData) =>
             vendorData?.vendor?.id === row.original.sellerEnterpriseId,
         );
-        return <div>{vendor?.vendor?.name}</div>;
+        return (
+          <div>
+            {vendor?.vendor?.name !== null
+              ? vendor?.vendor?.name
+              : vendor?.invitation?.userDetails?.name}
+          </div>
+        );
       },
     },
-    // {
-    //   accessorKey: "delivery_date",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="DELIVERY DATE" />
-    //   ),
-    // },
     {
       accessorKey: 'negotiationStatus',
       header: ({ column }) => (
