@@ -1,0 +1,3 @@
+{
+    "buildCommand":"next lint && exit 0"
+}
