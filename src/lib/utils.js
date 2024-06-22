@@ -1,19 +1,18 @@
-import { clsx } from "clsx";
-import { toast } from "sonner";
-import { twMerge } from "tailwind-merge";
+import { clsx } from 'clsx';
+import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-export const isBrowser = typeof window !== "undefined";
-
+export const isBrowser = typeof window !== 'undefined';
 
 // LocalStorageService.js
 export class LocalStorageService {
   // Get a value from local storage by key
   static get(key) {
-    if (!isBrowser) return;
+    if (!isBrowser) return null;
     const value = localStorage.getItem(key);
     if (value) {
       try {
@@ -44,41 +43,55 @@ export class LocalStorageService {
   }
 }
 
-
 export function exportTableToExcel(
   tableID,
-  filename = "exported_table",
-  excludeLast = true
+  filename = 'exported_table',
+  excludeLast = true,
 ) {
   const table = document.getElementById(tableID);
   if (!table) return;
-  const rows = table.getElementsByTagName("tr");
+  const rows = table.getElementsByTagName('tr');
   const csvData = [];
 
   for (let i = 0; i < rows.length; i++) {
-    const row = [],
-      cols = rows[i].querySelectorAll("td, th");
+    const row = [];
+    const cols = rows[i].querySelectorAll('td, th');
     for (let j = 0; j < cols.length - excludeLast ? 1 : 0; j++) {
       row.push(cols[j].innerText);
     }
-    csvData.push(row.join(","));
+    csvData.push(row.join(','));
   }
 
-  const csvContent = "data:text/csv;charset=utf-8," + csvData.join("\n");
+  const csvContent = `data:text/csv;charset=utf-8,${csvData.join('\n')}`;
   const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", filename + ".csv");
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `${filename}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
+// export const copyHandler = (text) => {
+//   if (!text) return toast.error('Please write question before copying.');
+//   if (!navigator.clipboard) return;
+//   if (text === '') return toast.error('No question to copy');
+//   navigator.clipboard.writeText(text);
+//   toast.success('Question copied To clipboard');
+// };
 
 export const copyHandler = (text) => {
-  if (!text) return toast.error("Please write question before copying.");
-  if (!navigator.clipboard) return;
-  if (text === "") return toast.error("No question to copy");
+  if (!text) {
+    toast.error('Please write question before copying.');
+    return;
+  }
+  if (!navigator.clipboard) {
+    return;
+  }
+  if (text === '') {
+    toast.error('No question to copy');
+    return;
+  }
   navigator.clipboard.writeText(text);
-  toast.success("Question copied To clipboard");
+  toast.success('Question copied to clipboard');
 };
