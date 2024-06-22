@@ -3,7 +3,7 @@ import { Input } from './input';
 
 const SearchInput = ({ toSearchTerm, setToSearchTerm }) => {
   return (
-    <div className="relative mb-2">
+    <div className="relative">
       <Input
         type="text"
         placeholder="Search ..."
