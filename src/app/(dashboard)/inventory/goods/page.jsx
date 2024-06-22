@@ -28,6 +28,7 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import UploadItems from '@/components/inventory/UploadItems';
+import SearchInput from '@/components/ui/SearchInput';
 import { useGoodsColumns } from './GoodsColumns';
 
 function Goods() {
@@ -36,6 +37,7 @@ function Goods() {
 
   const queryClient = useQueryClient();
 
+  const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
@@ -70,10 +72,16 @@ function Goods() {
     ],
   };
 
-  const { data, isLoading } = useQuery({
+  const { data: productGoods, isLoading } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enpterpriseId),
     select: (res) => res.data.data,
+  });
+
+  // get product via search
+  const searchProductGoods = productGoods?.filter((product) => {
+    const productName = product.productName ?? '';
+    return productName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const uploadFile = async (file) => {
@@ -100,6 +108,10 @@ function Goods() {
         <Wrapper>
           <SubHeader name={'Goods'}>
             <div className="flex items-center justify-center gap-4">
+              <SearchInput
+                toSearchTerm={searchTerm}
+                setToSearchTerm={setSearchTerm}
+              />
               <Button
                 onClick={() => {}}
                 variant={'blue_outline'}
@@ -140,11 +152,11 @@ function Goods() {
 
           {!isLoading &&
             // isSuccess &&
-            (data && data.length !== 0 ? (
+            (productGoods && productGoods.length !== 0 ? (
               <DataTable
                 id={'goods table'}
                 columns={GoodsColumns}
-                data={data}
+                data={searchProductGoods}
               />
             ) : (
               <EmptyStageComponent

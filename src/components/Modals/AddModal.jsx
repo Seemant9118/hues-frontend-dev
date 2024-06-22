@@ -379,7 +379,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 </div>
               ))}
 
-            {searchData?.length === 0 && searchInput.idNumber.length >= 3 && (
+            {searchData?.length === 0 && searchInput?.idNumber?.length >= 3 && (
               <span>
                 Enterprise not available,{' '}
                 <Button variant="link" onClick={() => setIsAdding(true)}>
