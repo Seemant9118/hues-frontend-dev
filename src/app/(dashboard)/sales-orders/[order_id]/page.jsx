@@ -16,10 +16,6 @@ const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
 
-  const url = 'dummy.com';
-
-  // const [isInvoiceGeneration, setIsGenerationInvoice] = useState('');
-
   const { isLoading, data: orderDetails } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
@@ -39,7 +35,7 @@ const ViewOrder = () => {
       {!isLoading && orderDetails && (
         <>
           <SubHeader name={`ORDER ID: #${params.order_id}`}>
-            <InvoicePDFViewModal url={url} />
+            <InvoicePDFViewModal orderId={params.order_id} />
             {/* <Button
               onClick={() => {
                 setIsGenerationInvoice(true);

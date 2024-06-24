@@ -46,3 +46,7 @@ export const getPurchaseInvoices = (id) => {
 export const createInvoice = (data) => {
   return APIinstance.post(orderApi.createInvoice.endpoint, data);
 };
+
+export const generateInvoice = (id) => {
+  return APIinstance.post(`${orderApi.generateInvoice.endpoint}${id}`);
+};
