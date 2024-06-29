@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function ProfileDetailForm({
+export default function UserOnboarding({
   setCurrStep,
   // params,
   // isThirdPartyLogin,
