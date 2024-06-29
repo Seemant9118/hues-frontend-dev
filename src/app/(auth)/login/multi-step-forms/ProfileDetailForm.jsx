@@ -73,7 +73,7 @@ export default function ProfileDetailForm({
           break;
         // Handle other specific error messages here if needed
         default:
-          message.errorMessage = 'An unknown error occurred';
+          message.errorMessage = res.response.data.message;
       }
     }
 
@@ -125,9 +125,9 @@ export default function ProfileDetailForm({
     // }
 
     // dateOfBirth validation
-    // if (userData.dateOfBirth === "") {
-    //   error.dateOfBirth = "*Required Date of Birth";
-    // }
+    if (userData.dateOfBirth === '') {
+      error.dateOfBirth = '*Required Date of Birth';
+    }
 
     // email validation
     if (userDataItem.email === '') {
