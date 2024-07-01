@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Document, Page } from 'react-pdf';
 import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+// Set the worker source for pdfjs
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const ViewPdf = ({ url }) => {
   const [pageNo, setPageNo] = useState(1);
@@ -17,19 +20,19 @@ const ViewPdf = ({ url }) => {
       <div className="flex items-center justify-end gap-4">
         <Button
           disabled={pageNo === 1}
-          onClick={() => setPageNo((prev) => (pages > prev ? prev - 1 : 1))}
+          onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
         >
           Prev
         </Button>
         <Button
           disabled={pageNo === pages}
-          onClick={() => setPageNo((prev) => (pages > prev ? prev + 1 : 1))}
+          onClick={() => setPageNo((prev) => (prev < pages ? prev + 1 : pages))}
         >
           Next
         </Button>
       </div>
       <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-        <Page pageNumber={pageNo} />
+        <Page size="A4" pageNumber={pageNo} />
       </Document>
     </div>
   );

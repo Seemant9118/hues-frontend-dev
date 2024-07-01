@@ -50,7 +50,6 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   const [customerToSearch, setCustomerToSearch] = useState('');
   const [itemToSearch, setItemToSearch] = useState('');
 
-  const [itemType, setItemType] = useState('');
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
     productType: '',
@@ -69,6 +68,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
           gstAmount: null,
           amount: null,
           orderType: 'SALES',
+          invoiceType: '',
           orderItems: [],
         }
       : {
@@ -77,6 +77,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
           gstAmount: null,
           amount: null,
           orderType: 'PURCHASE',
+          invoiceType: '',
           orderItems: [],
         },
   );
@@ -115,7 +116,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
     select: (res) => res.data.data,
-    enabled: cta === 'offer' && itemType === 'goods',
+    enabled: cta === 'offer' && order.invoiceType === 'GOODS',
   });
   const formattedGoodsData =
     goodsData?.map((good) => ({
@@ -129,7 +130,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
     select: (res) => res.data.data,
-    enabled: cta === 'offer' && itemType === 'services',
+    enabled: cta === 'offer' && order.invoiceType === 'SERVICE',
   });
   const formattedServicesData =
     servicesData?.map((service) => ({
@@ -138,9 +139,9 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
       productName: service.serviceName,
     })) || [];
 
-  // both client goods & client services concatinated
+  // selected data on the basis of itemType
   const itemData =
-    itemType === 'goods' ? formattedGoodsData : formattedServicesData;
+    order.invoiceType === 'GOODS' ? formattedGoodsData : formattedServicesData;
 
   // searching item from list given "itemData" - Inventory
   const searchItemData = itemData?.filter((item) => {
@@ -189,7 +190,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   // ];
 
   const vendorItemData =
-    itemType === 'goods'
+    order.invoiceType === 'GOODS'
       ? formattedVendorGoodsData
       : formattedVendorServicesData;
 
@@ -302,6 +303,14 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     return grossAmount;
   };
   const grossAmt = handleCalculateGrossAmt();
+
+  const handleCalculateTotalAmounts = () => {
+    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+
+    const totalAmountWithGST = totalAmount + totalGstAmt;
+    return totalAmountWithGST;
+  };
+  const totalAmtWithGst = handleCalculateTotalAmounts();
 
   // handling submit fn
   const handleSubmit = () => {
@@ -433,15 +442,15 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
           <Label>Item Type</Label>
           <Select
             onValueChange={(value) => {
-              setItemType(value);
+              setOrder((prev) => ({ ...prev, invoiceType: value }));
             }}
           >
             <SelectTrigger className="max-w-xs gap-5">
               <SelectValue placeholder="Select Item Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="goods">Goods</SelectItem>
-              <SelectItem value="services">Services</SelectItem>
+              <SelectItem value="GOODS">Goods</SelectItem>
+              <SelectItem value="SERVICE">Services</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -455,7 +464,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                 disabled={
                   (cta === 'offer' && order.buyerEnterperiseId == null) ||
                   (cta === 'bid' && order.sellerEnterpriseId == null) ||
-                  itemType === ''
+                  order.invoiceType === ''
                 }
                 // defaultValue={selectedItem.product_id}
                 onValueChange={(value) => {
@@ -651,9 +660,20 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
 
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-bold">Total Gross Amount : </span>
-          <span className="rounded-md border bg-slate-100 p-2">{grossAmt}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold">Gross Amount : </span>
+            <span className="rounded-md border bg-slate-100 p-2">
+              {grossAmt}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-bold">Total Amount : </span>
+            <span className="rounded-md border bg-slate-100 p-2">
+              {totalAmtWithGst}
+            </span>
+          </div>
         </div>
+
         <div className="flex gap-2">
           <Button onClick={onCancel} variant={'outline'}>
             Cancel

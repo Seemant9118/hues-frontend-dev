@@ -220,9 +220,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       errorObj.panNumber = '* Please provide valid PAN Number';
     }
 
-    if (enterpriseDataItem.gstNumber === '') {
-      errorObj.gstNumber = '*Required GST IN';
-    }
+    // if (enterpriseDataItem.gstNumber === '') {
+    //   errorObj.gstNumber = '*Required GST IN';
+    // }
 
     return errorObj;
   };
@@ -388,7 +388,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </span>
             )}
 
-            {searchInput.idNumber.length < 3 && (
+            {searchInput?.idNumber?.length < 3 && (
               <span className="text-sm">By typing Identifier to search</span>
             )}
           </div>
@@ -428,7 +428,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
                   <Label>GST IN</Label>
-                  <span className="text-red-600">*</span>
+                  {/* <span className="text-red-600">*</span> */}
                 </div>
                 <Input
                   name="GST IN"
@@ -443,7 +443,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   }
                   value={enterpriseData.gstNumber}
                 />
-                {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />}
+                {/* {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />} */}
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">

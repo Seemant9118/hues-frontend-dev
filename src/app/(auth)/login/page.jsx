@@ -7,7 +7,7 @@ import Loading from '@/components/ui/Loading';
 import EnterpriseOnboarding from './multi-step-forms/EnterpriseOnboarding';
 import IndexForm from './multi-step-forms/IndexForm';
 import OTPVerificationForm from './multi-step-forms/OTPVerificationForm';
-import ProfileDetailForm from './multi-step-forms/ProfileDetailForm';
+import UserOnboarding from './multi-step-forms/UserOnboarding';
 
 export default function Login() {
   const [currStep, setCurrStep] = useState(1);
@@ -50,7 +50,7 @@ export default function Login() {
 
           {/* Login Form - Step 3 - Final Profile Details & Pan Verification form */}
           {currStep === 3 && (
-            <ProfileDetailForm
+            <UserOnboarding
               isThirdPartyLogin={isThirdPartyLogin}
               currStep={currStep}
               setCurrStep={setCurrStep}

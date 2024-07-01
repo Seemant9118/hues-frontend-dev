@@ -126,6 +126,9 @@ export default function IndexForm({ setCurrStep }) {
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
+    if (formDataWithMob.mobileNumber.length === 0) {
+      setErrorMsg('Mobile Number is required to proceed');
+    }
     if (!errorMsg) {
       if (!invitationToken) {
         mutation.mutate(formDataWithMob); // normal flow
@@ -141,7 +144,7 @@ export default function IndexForm({ setCurrStep }) {
   };
 
   return (
-    <div className="z-20 flex h-[500px] w-[450px] flex-col items-center justify-center gap-5 rounded-md border border-[#E1E4ED] bg-white p-10">
+    <div className="z-20 flex h-[350px] w-[450px] flex-col items-center justify-center gap-5 rounded-md border border-[#E1E4ED] bg-white p-10">
       <h1 className="w-full text-center text-3xl font-bold text-[#414656]">
         Welcome to Hues!
       </h1>
@@ -176,7 +179,6 @@ export default function IndexForm({ setCurrStep }) {
               className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobileNumber}
-              required
             />
 
             <Phone className="absolute right-2 top-1/2 -translate-y-1/2 font-bold text-[#3F5575]" />
@@ -195,15 +197,15 @@ export default function IndexForm({ setCurrStep }) {
           {mutation.isPending ? (
             <Loading />
           ) : (
-            <>
+            <div className="flex items-center gap-4">
               <Image
                 src={'/smartphone.png'}
                 alt="smartph-icon"
                 width={15}
                 height={5}
               />
-              <p>Login with Mobile</p>
-            </>
+              <p>Register/Login with Mobile</p>
+            </div>
           )}
         </Button>
       </form>
@@ -259,15 +261,15 @@ export default function IndexForm({ setCurrStep }) {
       )} */}
 
       {/* signup redirection */}
-      <div className="flex w-full justify-center gap-1 px-4 py-2 font-bold text-[#414656]">
+      {/* <div className="flex w-full justify-center gap-1 px-4 py-2 font-bold text-[#414656]">
         Not a Hues subscriber yet?{' '}
         <span className="text-[#288AF9] hover:cursor-pointer hover:underline">
           Sign-up
         </span>
-      </div>
+      </div> */}
 
       {/* log in with google redirection */}
-      <Button className="w-full rounded bg-[#f5f4f4] font-bold text-[#414656] hover:cursor-pointer hover:bg-[#e8e7e7]">
+      {/* <Button className="w-full rounded bg-[#f5f4f4] font-bold text-[#414656] hover:cursor-pointer hover:bg-[#e8e7e7]">
         <Image
           src={'/google-icon.png'}
           alt="google-icon"
@@ -275,7 +277,7 @@ export default function IndexForm({ setCurrStep }) {
           height={20}
         />
         Login with Google
-      </Button>
+      </Button> */}
 
       {/* button handler on the basis of current login method Digilocker/Mobile */}
       {/* {loginWithThirdParty ? (
