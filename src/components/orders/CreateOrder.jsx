@@ -304,6 +304,14 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   };
   const grossAmt = handleCalculateGrossAmt();
 
+  const handleCalculateTotalAmounts = () => {
+    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+
+    const totalAmountWithGST = totalAmount + totalGstAmt;
+    return totalAmountWithGST;
+  };
+  const totalAmtWithGst = handleCalculateTotalAmounts();
+
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
@@ -652,9 +660,20 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
 
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-bold">Total Gross Amount : </span>
-          <span className="rounded-md border bg-slate-100 p-2">{grossAmt}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold">Gross Amount : </span>
+            <span className="rounded-md border bg-slate-100 p-2">
+              {grossAmt}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-bold">Total Amount : </span>
+            <span className="rounded-md border bg-slate-100 p-2">
+              {totalAmtWithGst}
+            </span>
+          </div>
         </div>
+
         <div className="flex gap-2">
           <Button onClick={onCancel} variant={'outline'}>
             Cancel
