@@ -57,11 +57,15 @@ const EnterpriseFinal = ({
     if (enterpriseOnboardData.doi === '') {
       error.doi = '*Required Date of Incorporation';
     }
-    if (enterpriseOnboardD.panNumber === '') {
-      error.panNumber = '* Required PAN Number';
-    } else if (!panPattern.test(enterpriseOnboardData.panNumber)) {
-      error.panNumber = '* Please provide valid PAN Number';
+
+    if (enterpriseOnboardD.type !== 'proprietorship') {
+      if (enterpriseOnboardD.panNumber === '') {
+        error.panNumber = '* Required PAN Number';
+      } else if (!panPattern.test(enterpriseOnboardData.panNumber)) {
+        error.panNumber = '* Please provide valid PAN Number';
+      }
     }
+
     if (enterpriseOnboardD.type === 'llp' && enterpriseOnboardD.LLPIN === '') {
       error.LLPIN = '* Required LLP IN';
     }
@@ -78,7 +82,6 @@ const EnterpriseFinal = ({
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     // pan validation
     if (name === 'panNumber') {
       const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
@@ -136,9 +139,9 @@ const EnterpriseFinal = ({
         Enterprise Onboarding
       </h1>
 
-      {enterpriseOnboardData.type === 'properitership' && (
+      {enterpriseOnboardData.type === 'proprietorship' && (
         <>
-          <div className="grid w-full max-w-md items-center gap-1">
+          {/* <div className="grid w-full max-w-md items-center gap-1">
             <Label
               htmlFor="panNumber"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -161,7 +164,7 @@ const EnterpriseFinal = ({
               <CreditCard className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
             </div>
             {errorMsg.panNumber && <ErrorBox msg={errorMsg.panNumber} />}
-          </div>
+          </div> */}
 
           <div className="grid w-full max-w-md items-center gap-1.5">
             <Label

@@ -65,8 +65,8 @@ const EnterpriseIndex = ({
           />
           <RadioSelect
             name="enterpriseType"
-            option={'Properitership'}
-            value="properitership"
+            option={'Proprietorship'}
+            value="proprietorship"
             handleChange={handleEnterpriseType}
           />
           <RadioSelect

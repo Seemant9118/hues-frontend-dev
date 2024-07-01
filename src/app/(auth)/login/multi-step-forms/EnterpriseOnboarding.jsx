@@ -14,7 +14,7 @@ const EnterpriseOnboarding = () => {
     udyam: '',
     panNumber: '',
     doi: '',
-    isDeclerationConsent: false,
+    isDeclerationConsent: null,
     LLPIN: '',
     CIN: '',
   });

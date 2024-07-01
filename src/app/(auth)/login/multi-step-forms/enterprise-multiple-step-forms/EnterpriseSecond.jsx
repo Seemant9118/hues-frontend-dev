@@ -97,9 +97,9 @@ const EnterpriseSecond = ({
           />
           <RadioSelect
             name="enterpriseType"
-            option={'Properitership'}
-            value="properitership"
-            checked={enterpriseOnboardData.type === 'properitership'}
+            option={'Proprietorship'}
+            value="proprietorship"
+            checked={enterpriseOnboardData.type === 'proprietorship'}
             disabled={true}
           />
           <RadioSelect
@@ -131,7 +131,6 @@ const EnterpriseSecond = ({
             disabled={true}
           />
         </div>
-        {/* {errorMsg.enterpriseType && <ErrorBox msg={errorMsg.enterpriseType} />} */}
       </div>
 
       {/* for Individuals */}
