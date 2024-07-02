@@ -34,4 +34,9 @@ export const servicesApi = {
     endpoint: `/inventory/services/vendor/getservices/`,
     endpointKey: 'get_services_vendor',
   },
+  // 8. getServicesSampleFile
+  getServicesSample: {
+    endpoint: `/inventory/services/downloadsamplefile`,
+    endpointKey: 'get_services_sample_file',
+  },
 };

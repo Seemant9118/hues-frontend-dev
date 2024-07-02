@@ -28,3 +28,7 @@ export const UploadProductGoods = (data) => {
 export const GetProductGoodsVendor = (id) => {
   return APIinstance.get(`${goodsApi.vendorProductGoods.endpoint}${id}`);
 };
+
+export const GetGoodsSampleFile = () => {
+  return APIinstance.get(goodsApi.getGoodsSample.endpoint);
+};

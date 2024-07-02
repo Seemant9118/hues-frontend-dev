@@ -147,7 +147,7 @@ const ClientPage = () => {
 
       {isUploading && (
         <UploadItems
-          type="enterprise"
+          type="client"
           uploadFile={uploadFile}
           files={files}
           setisUploading={setIsUploading}

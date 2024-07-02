@@ -147,7 +147,7 @@ const VendorsPage = () => {
 
       {isUploading && (
         <UploadItems
-          type="enterprise"
+          type="vendor"
           uploadFile={uploadFile}
           files={files}
           setisUploading={setIsUploading}

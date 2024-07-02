@@ -34,4 +34,9 @@ export const goodsApi = {
     endpoint: `/inventory/productgoods/vendor/getgoods/`,
     endpointKey: 'get_product_goods_vendor',
   },
+  // 8. getGoodsSampleFile
+  getGoodsSample: {
+    endpoint: `/inventory/productgoods/downloadsamplefile`,
+    endpointKey: 'get_goods_sample_file',
+  },
 };

@@ -33,3 +33,7 @@ export const UploadProductServices = (data) => {
 export const GetServicesVendor = (id) => {
   return APIinstance.get(`${servicesApi.vendorServices.endpoint}${id}`);
 };
+
+export const GetServiceSampleFile = () => {
+  return APIinstance.get(servicesApi.getServicesSample.endpoint);
+};

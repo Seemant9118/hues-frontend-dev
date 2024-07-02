@@ -29,4 +29,9 @@ export const vendorEnterprise = {
     endpoint: `/enterprise/vendor/create/bulk`,
     endpointKey: 'bulk_upload_vendors',
   },
+  // 7. getVendorSampleFile
+  getVendorSample: {
+    endpoint: `/enterprise/vendor/downloadsamplefile`,
+    endpointKey: 'get_vendor_sample_file',
+  },
 };

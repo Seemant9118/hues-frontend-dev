@@ -1,3 +1,12 @@
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { goodsApi } from '@/api/inventories/goods/goods';
+import { servicesApi } from '@/api/inventories/services/services';
+import { getClientSampleFile } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { getVendorSampleFile } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { GetGoodsSampleFile } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
+import { GetServiceSampleFile } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
+import { useQuery } from '@tanstack/react-query';
 import { Check, Download, MoveLeft, Upload, UploadCloud } from 'lucide-react';
 import React from 'react';
 import { FileUploader } from 'react-drag-drop-files';
@@ -13,20 +22,56 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
   let sampleFileName;
   let sampleFileUrl;
 
+  // get Goods Sample File
+  const { data: goodsSampleFile } = useQuery({
+    queryKey: [goodsApi.getGoodsSample.endpointKey],
+    queryFn: GetGoodsSampleFile,
+    enabled: type === 'goods',
+    select: (data) => data.data.data,
+  });
+
+  // get Services Sample File
+  const { data: servicesSampleFile } = useQuery({
+    queryKey: [servicesApi.getServicesSample.endpointKey],
+    queryFn: GetServiceSampleFile,
+    enabled: type === 'services',
+    select: (data) => data.data.data,
+  });
+
+  // get Client Sample File
+  const { data: clientSampleFile } = useQuery({
+    queryKey: [clientEnterprise.getClientSample.endpointKey],
+    queryFn: getClientSampleFile,
+    enabled: type === 'client',
+    select: (data) => data.data.data,
+  });
+
+  // get Vendor Sample File
+  const { data: vendorSampleFile } = useQuery({
+    queryKey: [vendorEnterprise.getVendorSample.endpointKey],
+    queryFn: getVendorSampleFile,
+    enabled: type === 'vendor',
+    select: (data) => data.data.data,
+  });
+
   switch (type) {
     case 'goods':
       sampleFileName = 'ProductGoodsSample.xlsx';
-      sampleFileUrl = '/productGoodsSample.xlsx';
+      sampleFileUrl = goodsSampleFile?.publicUrl;
       break;
 
     case 'services':
-      sampleFileName = 'ServiceSampleFile.xlsx';
-      sampleFileUrl = '/serviceSampleFile.xlsx';
+      sampleFileName = 'ServiceSample.xlsx';
+      sampleFileUrl = servicesSampleFile?.publicUrl;
       break;
 
-    case 'enterprise':
-      sampleFileName = 'ClientVendorSample.xlsx';
-      sampleFileUrl = '/ClientVendorSample.xlsx';
+    case 'client':
+      sampleFileName = 'ClientSample.xlsx';
+      sampleFileUrl = clientSampleFile?.publicUrl;
+      break;
+    case 'vendor':
+      sampleFileName = 'VendorSample.xlsx';
+      sampleFileUrl = vendorSampleFile?.publicUrl;
       break;
     default:
       sampleFileName = '';
