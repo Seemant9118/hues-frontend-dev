@@ -32,3 +32,7 @@ export function getClients(id) {
 export function bulkUploadClients(data) {
   return APIinstance.post(clientEnterprise.bulkUploadClients.endpoint, data);
 }
+
+export function getClientSampleFile() {
+  return APIinstance.get(clientEnterprise.getClientSample.endpoint);
+}

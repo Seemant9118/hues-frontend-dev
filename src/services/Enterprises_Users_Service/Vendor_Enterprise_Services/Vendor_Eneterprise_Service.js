@@ -32,3 +32,7 @@ export function getVendors(id) {
 export function bulkUploadVendors(data) {
   return APIinstance.post(vendorEnterprise.bulkUploadVendors.endpoint, data);
 }
+
+export function getVendorSampleFile() {
+  return APIinstance.get(vendorEnterprise.getVendorSample.endpoint);
+}

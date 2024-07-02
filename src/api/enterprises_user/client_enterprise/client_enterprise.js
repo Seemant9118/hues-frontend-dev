@@ -29,4 +29,9 @@ export const clientEnterprise = {
     endpoint: `/enterprise/client/create/bulk`,
     endpointKey: 'upload_bulk_clients',
   },
+  // 7. getClientSampleFile
+  getClientSample: {
+    endpoint: `/enterprise/client/downloadsamplefile`,
+    endpointKey: 'get_client_sample_file',
+  },
 };
