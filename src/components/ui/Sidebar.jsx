@@ -5,7 +5,6 @@ import {
   ClipboardList,
   Gauge,
   HandPlatter,
-  LayoutDashboard,
   Package,
   ScrollText,
   Store,
@@ -20,11 +19,11 @@ const Sidebar = () => {
       icon: <Gauge size={16} />,
       path: '/',
     },
-    {
-      name: 'Templates',
-      icon: <LayoutDashboard size={16} />,
-      path: '/template',
-    },
+    // {
+    //   name: 'Templates',
+    //   icon: <LayoutDashboard size={16} />,
+    //   path: '/template',
+    // },
     {
       name: 'Inventories',
       icon: <Package size={16} />,
