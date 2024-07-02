@@ -16,12 +16,12 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
   switch (type) {
     case 'goods':
       sampleFileName = 'ProductGoodsSample.xlsx';
-      sampleFileUrl = '/ProductGoodsSample.xlsx';
+      sampleFileUrl = '/productGoodsSample.xlsx';
       break;
 
     case 'services':
       sampleFileName = 'ServiceSampleFile.xlsx';
-      sampleFileUrl = '/ServiceSampleFile.xlsx';
+      sampleFileUrl = '/serviceSampleFile.xlsx';
       break;
 
     case 'enterprise':
