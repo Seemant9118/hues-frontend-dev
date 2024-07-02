@@ -401,30 +401,30 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                 {cta === 'offer' ? (
                   <>
                     {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                    {searchCustomerData?.map((customer) => (
-                      <SelectItem
-                        key={customer.id}
-                        value={customer?.client?.id}
-                      >
-                        {customer?.client && customer?.client?.name !== null
-                          ? customer?.client?.name
-                          : customer?.invitation?.userDetails?.name}
-                      </SelectItem>
-                    ))}
+                    {searchCustomerData
+                      ?.filter((customer) => !!customer?.client?.name)
+                      .map((customer) => (
+                        <SelectItem
+                          key={customer.id}
+                          value={customer?.client?.id}
+                        >
+                          {customer?.client?.name}
+                        </SelectItem>
+                      ))}
                   </>
                 ) : (
                   <>
                     {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                    {searchCustomerData?.map((customer) => (
-                      <SelectItem
-                        key={customer.id}
-                        value={customer?.vendor?.id}
-                      >
-                        {customer?.vendor && customer?.vendor?.name !== null
-                          ? customer?.vendor?.name
-                          : customer?.invitation?.userDetails?.name}
-                      </SelectItem>
-                    ))}
+                    {searchCustomerData
+                      ?.filter((customer) => !!customer?.vendor?.name)
+                      .map((customer) => (
+                        <SelectItem
+                          key={customer.id}
+                          value={customer?.vendor?.id}
+                        >
+                          {customer?.vendor?.name}
+                        </SelectItem>
+                      ))}
                   </>
                 )}
               </SelectContent>
