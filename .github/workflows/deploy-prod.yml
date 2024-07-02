@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20.x"
+          node-version: '20.x'
 
       - name: SSH Deploy
         # Use the 'appleboy/ssh-action' action for SSH deployment
@@ -28,7 +28,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY_PROD }} # Your server's SSH private key
           script: |
             cd ${{vars.PROJECT_PATH}} # Specify the path to your app directory on the server
-            git pull origin release
+            git pull
             npm install
             npm run build
             pm2 restart ${{vars.SERVICE_NAME}} # Replace with your PM2 service name
