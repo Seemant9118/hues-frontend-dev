@@ -2,7 +2,6 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import AddModal from '@/components/Modals/AddModal';
-import UploadItems from '@/components/inventory/UploadItems';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -17,9 +16,15 @@ import {
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookUser, Eye, HeartHandshake, Settings, Upload } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { VendorsColumns } from './VendorsColumns';
+
+const UploadItems = dynamic(
+  () => import('@/components/inventory/UploadItems'),
+  { loading: () => <Loading /> },
+);
 
 const VendorsPage = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');

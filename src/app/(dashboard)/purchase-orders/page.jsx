@@ -1,9 +1,9 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
-import CreateOrder from '@/components/orders/CreateOrder';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -18,9 +18,15 @@ import {
   ShieldCheck,
   Upload,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { usePurchaseColumns } from './usePurchaseColumns';
+
+// dynamic imports
+const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
+  loading: () => <Loading />,
+});
 
 const PurchaseOrders = () => {
   const router = useRouter();
@@ -62,7 +68,7 @@ const PurchaseOrders = () => {
 
   const PurchaseColumns = usePurchaseColumns();
 
-  const { data, isSuccess } = useQuery({
+  const { isLoading, data } = useQuery({
     queryKey: [orderApi.getPurchases.endpointKey],
     queryFn: () => GetPurchases(enterpriseId),
     select: (res) => res.data.data,
@@ -93,37 +99,30 @@ const PurchaseOrders = () => {
                 <PlusCircle size={14} />
                 Bid
               </Button>
-              {/* <Button
-                onClick={() => setIsCreatingInvoice(true)}
-                variant={"blue_outline"}
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Invoice
-              </Button> */}
             </div>
           </SubHeader>
-          {!enterpriseId || data?.length === 0 ? (
-            <EmptyStageComponent
-              heading={PurchaseEmptyStageData.heading}
-              desc={PurchaseEmptyStageData.desc}
-              subHeading={PurchaseEmptyStageData.subHeading}
-              subItems={PurchaseEmptyStageData.subItems}
-            />
-          ) : (
-            isSuccess && (
+
+          {isLoading && <Loading />}
+
+          {!isLoading &&
+            (data && data?.length > 0 ? (
               <DataTable
-                id={'purchase-orders'}
+                id={'sale-orders'}
                 columns={PurchaseColumns}
                 onRowClick={onRowClick}
                 data={data}
               />
-            )
-          )}
+            ) : (
+              <EmptyStageComponent
+                heading={PurchaseEmptyStageData.heading}
+                desc={PurchaseEmptyStageData.desc}
+                subHeading={PurchaseEmptyStageData.subHeading}
+                subItems={PurchaseEmptyStageData.subItems}
+              />
+            ))}
         </Wrapper>
       )}
       {isCreatingPurchase && (
-        // && !isCreatingInvoice
         <CreateOrder
           type="purchase"
           name={'Bid'}

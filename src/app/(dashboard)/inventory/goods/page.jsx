@@ -1,8 +1,6 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
-import AddItem from '@/components/inventory/AddItem';
-import EditItem from '@/components/inventory/EditItem';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -27,9 +25,22 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import UploadItems from '@/components/inventory/UploadItems';
+import Tooltips from '@/components/auth/Tooltips';
 import SearchInput from '@/components/ui/SearchInput';
+import dynamic from 'next/dynamic';
 import { useGoodsColumns } from './GoodsColumns';
+
+// dynamic imports
+const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
+  loading: () => <Loading />,
+});
+const EditItem = dynamic(() => import('@/components/inventory/EditItem'), {
+  loading: () => <Loading />,
+});
+const UploadItems = dynamic(
+  () => import('@/components/inventory/UploadItems'),
+  { loading: () => <Loading /> },
+);
 
 function Goods() {
   const enpterpriseId = LocalStorageService.get('enterprise_Id');
@@ -112,15 +123,22 @@ function Goods() {
                 toSearchTerm={searchTerm}
                 setToSearchTerm={setSearchTerm}
               />
-              <Button
-                onClick={() => {}}
-                variant={'blue_outline'}
-                size="sm"
-                disabled
-              >
-                <Share2 size={14} />
-                Share
-              </Button>
+              {/* coming soon */}
+              <Tooltips
+                trigger={
+                  <Button
+                    onClick={() => {}}
+                    variant={'export'}
+                    size="sm"
+                    className="cursor-not-allowed"
+                  >
+                    <Share2 size={14} />
+                    Share
+                  </Button>
+                }
+                content={'This feature Coming Soon...'}
+              />
+
               <Button
                 variant={'export'}
                 size="sm"

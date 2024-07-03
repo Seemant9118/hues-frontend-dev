@@ -1,11 +1,10 @@
 'use client';
 
 import { servicesApi } from '@/api/inventories/services/services';
-import AddItem from '@/components/inventory/AddItem';
-import EditItem from '@/components/inventory/EditItem';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -26,10 +25,22 @@ import {
   Upload,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import UploadItems from '@/components/inventory/UploadItems';
+import Tooltips from '@/components/auth/Tooltips';
 import { toast } from 'sonner';
-import SearchInput from '@/components/ui/SearchInput';
+import dynamic from 'next/dynamic';
 import { useServicesColumns } from './ServicesColumns';
+
+// dynamic imports
+const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
+  loading: () => <Loading />,
+});
+const EditItem = dynamic(() => import('@/components/inventory/EditItem'), {
+  loading: () => <Loading />,
+});
+const UploadItems = dynamic(
+  () => import('@/components/inventory/UploadItems'),
+  { loading: () => <Loading /> },
+);
 
 function Services() {
   const enpterpriseId = LocalStorageService.get('enterprise_Id');
@@ -113,15 +124,21 @@ function Services() {
                 toSearchTerm={searchTerm}
                 setToSearchTerm={setSearchTerm}
               />
-              <Button
-                onClick={() => {}}
-                variant={'blue_outline'}
-                size="sm"
-                disabled
-              >
-                <Share2 size={14} />
-                Share
-              </Button>
+              {/* coming soon */}
+              <Tooltips
+                trigger={
+                  <Button
+                    onClick={() => {}}
+                    variant={'export'}
+                    size="sm"
+                    className="cursor-not-allowed"
+                  >
+                    <Share2 size={14} />
+                    Share
+                  </Button>
+                }
+                content={'This feature Coming Soon...'}
+              />
               <Button
                 variant={'export'}
                 size="sm"
