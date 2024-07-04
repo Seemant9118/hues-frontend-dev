@@ -54,6 +54,7 @@ const AddItem = ({ name, onCancel, cta }) => {
     breadth: '',
     height: '',
     applications: '',
+    manufacturerGstId: '',
     units: '',
   });
 
@@ -390,16 +391,6 @@ const AddItem = ({ name, onCancel, cta }) => {
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
-          {/* <div className="flex flex-col">
-            <InputWithLabel
-              name="Amount"
-              id="amount"
-              required={true}
-              onChange={onChange}
-              value={item.amount}
-            />
-            {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
-          </div> */}
 
           {/* optional data fields */}
           <div className="grid grid-cols-2 gap-2.5">
@@ -427,6 +418,22 @@ const AddItem = ({ name, onCancel, cta }) => {
               </div>
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <InputWithLabel
+              name="Application"
+              id="applications"
+              onChange={onChange}
+              value={item.applications}
+            />
+            <InputWithLabel
+              name="GST ID"
+              id="manufacturerGstId"
+              onChange={onChange}
+              value={item.manufacturerGstId}
+            />
+          </div>
+
           <div className="grid grid-cols-4 gap-2.5">
             <InputWithLabel
               name="Weight (grams)"
@@ -453,12 +460,6 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.height}
             />
           </div>
-          <InputWithLabel
-            name="Application"
-            id="applications"
-            onChange={onChange}
-            value={item.applications}
-          />
         </>
       ) : (
         // for services
