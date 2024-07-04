@@ -5,25 +5,36 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useStep } from '@/context/StepsContext';
 import { LocalStorageService } from '@/lib/utils';
 import { UserCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from './button';
 
 const Header = () => {
+  const [open, setOpen] = useState(false);
+  const { setCurrStep } = useStep();
   const router = useRouter();
-  const isOnboardingComplete = LocalStorageService.get('isOnboardingComplete');
+
+  const handleProfile = () => {
+    router.push('/profile');
+    setOpen(false);
+  };
 
   const logout = () => {
     LocalStorageService.clear();
     toast.success('Logged Out');
+    setCurrStep(1);
     router.push('/login');
   };
-  const login = () => {
-    router.push('/login');
+
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
   };
 
   return (
@@ -43,19 +54,21 @@ const Header = () => {
           <Bell className="text-grey" />
         </Button> */}
 
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant={'link'} size={'icon'} className="your-profile">
               <UserCircle className="text-grey" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="m-2 flex max-w-[180px] flex-col gap-1 p-1">
-            {!isOnboardingComplete && (
-              <Button onClick={login} className="w-full" variant="outline">
-                Complete Onboarding
-              </Button>
-            )}
-            <Button onClick={logout} className="w-full" variant="outline">
+            <Button
+              onClick={handleProfile}
+              className="w-full"
+              variant="outline"
+            >
+              Profile
+            </Button>
+            <Button onClick={handleLogout} className="w-full" variant="outline">
               Logout
             </Button>
           </PopoverContent>

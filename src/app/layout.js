@@ -1,4 +1,5 @@
 import QueryWrapper from '@/components/wrappers/QueryWrapper';
+import { StepsProvider } from '@/context/StepsContext';
 import { Toaster } from 'sonner';
 import './globals.css';
 
@@ -15,7 +16,10 @@ export default function RootLayout({ children }) {
         <div className="absolute">
           <Toaster richColors position="top-right" duration="2500" />
         </div>
-        <QueryWrapper>{children}</QueryWrapper>
+
+        <StepsProvider>
+          <QueryWrapper>{children}</QueryWrapper>
+        </StepsProvider>
       </body>
     </html>
   );

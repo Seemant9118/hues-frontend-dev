@@ -1,16 +1,18 @@
 'use client';
 
+import Loading from '@/components/ui/Loading';
+import { useStep } from '@/context/StepsContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense, useState } from 'react';
-import Loading from '@/components/ui/Loading';
 import EnterpriseOnboarding from './multi-step-forms/EnterpriseOnboarding';
 import IndexForm from './multi-step-forms/IndexForm';
 import OTPVerificationForm from './multi-step-forms/OTPVerificationForm';
 import UserOnboarding from './multi-step-forms/UserOnboarding';
 
 export default function Login() {
-  const [currStep, setCurrStep] = useState(1);
+  const { currStep, setCurrStep } = useStep();
+
   const [isThirdPartyLogin, setIsThirdPartyLogin] = useState(false);
 
   return (
