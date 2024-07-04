@@ -44,4 +44,9 @@ export const userAuth = {
     endpoint: `/iam/user/get/`,
     endpointKey: 'get_User_by_id',
   },
+  // 10. getProfileDetails
+  getProfileDetails: {
+    endpoint: `/iam/user/userdetails/`,
+    endpointKey: 'get_profile_details',
+  },
 };

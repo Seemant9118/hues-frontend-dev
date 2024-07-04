@@ -136,7 +136,7 @@ const EnterpriseFinal = ({
       className="z-20 flex min-h-[400px] w-[450px] flex-col items-center justify-between gap-4 rounded-md border border-[#E1E4ED] bg-white p-3"
     >
       <h1 className="w-full text-center text-2xl font-bold text-[#414656]">
-        Enterprise Onboarding
+        Complete your profile: unlock Hues
       </h1>
 
       {enterpriseOnboardData.type === 'proprietorship' && (

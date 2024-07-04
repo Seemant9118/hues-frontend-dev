@@ -44,3 +44,8 @@ export function loginWithInvitation(data) {
 export function getUserById(id) {
   return APIinstance.get(`${userAuth.getUserById.endpoint}${id}`);
 }
+
+// 10. get Profile Details
+export function getProfileDetails(id) {
+  return APIinstance.get(`${userAuth.getProfileDetails.endpoint}${id}`);
+}
