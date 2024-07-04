@@ -2,7 +2,6 @@
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import AddModal from '@/components/Modals/AddModal';
-import UploadItems from '@/components/inventory/UploadItems';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -17,9 +16,15 @@ import {
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookCheck, BookUser, Key, Upload, UserPlus } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ClientsColumns } from './ClientsColumns';
+// dynamic imports
+const UploadItems = dynamic(
+  () => import('@/components/inventory/UploadItems'),
+  { loading: () => <Loading /> },
+);
 
 const ClientPage = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');

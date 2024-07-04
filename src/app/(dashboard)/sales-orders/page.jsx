@@ -1,9 +1,9 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
-import CreateOrder from '@/components/orders/CreateOrder';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -18,9 +18,15 @@ import {
   PlusCircle,
   Upload,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSalesColumns } from './useSalesColumns';
+
+// dynamic imports
+const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
+  loading: () => <Loading />,
+});
 
 const SalesOrder = () => {
   const router = useRouter();
@@ -65,7 +71,7 @@ const SalesOrder = () => {
     router.push(`/sales-orders/${row.id}`);
   };
 
-  const { data, isSuccess } = useQuery({
+  const { isLoading, data } = useQuery({
     queryKey: [orderApi.getSales.endpointKey],
     queryFn: () => GetSales(enterpriseId),
     select: (res) => res.data.data,
@@ -105,23 +111,25 @@ const SalesOrder = () => {
               </Button>
             </div>
           </SubHeader>
-          {!enterpriseId || data?.length === 0 ? (
-            <EmptyStageComponent
-              heading={SaleEmptyStageData.heading}
-              desc={SaleEmptyStageData.desc}
-              subHeading={SaleEmptyStageData.subHeading}
-              subItems={SaleEmptyStageData.subItems}
-            />
-          ) : (
-            isSuccess && (
+
+          {isLoading && <Loading />}
+
+          {!isLoading &&
+            (data && data?.length > 0 ? (
               <DataTable
                 id={'sale-orders'}
                 columns={SalesColumns}
                 onRowClick={onRowClick}
                 data={data}
               />
-            )
-          )}
+            ) : (
+              <EmptyStageComponent
+                heading={SaleEmptyStageData.heading}
+                desc={SaleEmptyStageData.desc}
+                subHeading={SaleEmptyStageData.subHeading}
+                subItems={SaleEmptyStageData.subItems}
+              />
+            ))}
         </Wrapper>
       )}
 
