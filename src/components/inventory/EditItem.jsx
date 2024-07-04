@@ -44,6 +44,7 @@ const EditItem = ({
           breadth: goodsToEdit.breadth,
           height: goodsToEdit.height,
           applications: goodsToEdit.applications,
+          manufacturerGstId: goodsToEdit.manufacturerGstId,
           units: goodsToEdit.units,
         }
       : {
@@ -95,6 +96,7 @@ const EditItem = ({
         length: '',
         breadth: '',
         height: '',
+        manufacturerGstId: '',
         applications: '',
         units: '',
       });
@@ -226,6 +228,20 @@ const EditItem = ({
               // required={item.type === "goods" || item.type === "services"}
               onChange={onChange}
               value={item.expiry}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <InputWithLabel
+              name="Application"
+              id="applications"
+              onChange={onChange}
+              value={item.applications}
+            />
+            <InputWithLabel
+              name="GST ID"
+              id="manufacturerGstId"
+              onChange={onChange}
+              value={item.manufacturerGstId}
             />
           </div>
           <div className="grid grid-cols-4 gap-2.5">
