@@ -58,7 +58,6 @@ const EnterpriseSecond = ({
     if (enterpriseOnboardData.type !== 'individual') {
       if (Object.keys(isError).length === 0) {
         setErrorMsg({});
-        // console.log('others:', enterpriseOnboardData);
         setEnterpriseCurrStep(3);
       } else {
         setErrorMsg(isError);
@@ -88,13 +87,14 @@ const EnterpriseSecond = ({
           <span className="text-red-600">*</span>{' '}
         </Label>
         <div className="flex flex-wrap gap-5">
-          <RadioSelect
+          {/* remove for now */}
+          {/* <RadioSelect
             name="enterpriseType"
             option={'Individual'}
             value="individual"
             checked={enterpriseOnboardData.type === 'individual'}
             disabled={true}
-          />
+          /> */}
           <RadioSelect
             name="enterpriseType"
             option={'Proprietorship'}
