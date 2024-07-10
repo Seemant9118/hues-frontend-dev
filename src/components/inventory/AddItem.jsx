@@ -427,7 +427,7 @@ const AddItem = ({ name, onCancel, cta }) => {
               value={item.applications}
             />
             <InputWithLabel
-              name="GST ID"
+              name="Manufacturer's GST IN"
               id="manufacturerGstId"
               onChange={onChange}
               value={item.manufacturerGstId}
