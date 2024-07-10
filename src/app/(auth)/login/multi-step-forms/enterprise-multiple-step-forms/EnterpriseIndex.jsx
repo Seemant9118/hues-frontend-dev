@@ -57,12 +57,13 @@ const EnterpriseIndex = ({
           <span className="text-red-600">*</span>{' '}
         </Label>
         <div className="flex flex-wrap gap-5">
-          <RadioSelect
+          {/* remove for now */}
+          {/* <RadioSelect
             name="enterpriseType"
             option={'Individual'}
             value="individual"
             handleChange={handleEnterpriseType}
-          />
+          /> */}
           <RadioSelect
             name="enterpriseType"
             option={'Proprietorship'}
