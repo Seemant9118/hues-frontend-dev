@@ -1,7 +1,14 @@
 import React from 'react';
 import { Input } from './input';
 
-const RadioSelect = ({ checked, value, handleChange, option, disabled }) => {
+const RadioSelect = ({
+  checked,
+  checkBoxName,
+  value,
+  handleChange,
+  option,
+  disabled,
+}) => {
   return (
     <div>
       {/* Hidden radio input with label */}
@@ -9,7 +16,7 @@ const RadioSelect = ({ checked, value, handleChange, option, disabled }) => {
         checked={checked}
         type="radio"
         id={option}
-        name="options"
+        name={checkBoxName}
         disabled={disabled}
         value={value}
         onChange={() => handleChange(value)}

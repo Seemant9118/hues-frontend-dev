@@ -1,13 +1,13 @@
 'use client';
 
-import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { NotificationDataTableColumnHeader } from '@/components/table/NotificationDataTableColumnHeader';
+import moment from 'moment';
 
 export const NotificationColumns = [
   {
     accessorKey: 'notifications',
     header: ({ column }) => (
-      <DataTableColumnHeader
-        notificationHeader={'true'}
+      <NotificationDataTableColumnHeader
         column={column}
         title="NOTIFICATIONS"
       />
@@ -16,18 +16,23 @@ export const NotificationColumns = [
   {
     accessorKey: 'recievdAt',
     header: ({ column }) => (
-      <DataTableColumnHeader
-        notificationHeader={'true'}
+      <NotificationDataTableColumnHeader
+        notificationDateFilter={'true'}
         column={column}
         title="RECIEVED AT"
       />
     ),
+    cell: ({ row }) => {
+      const { recievdAt } = row.original;
+      const date = moment(recievdAt).format('DD-MM-YYYY');
+      return <div className="text-[#A5ABBD]">{date}</div>;
+    },
   },
   {
     accessorKey: 'type',
     header: ({ column }) => (
-      <DataTableColumnHeader
-        notificationHeader={'true'}
+      <NotificationDataTableColumnHeader
+        notificationTypeFilter={'true'}
         column={column}
         title="TYPE"
       />

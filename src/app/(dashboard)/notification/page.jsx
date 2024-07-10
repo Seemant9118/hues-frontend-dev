@@ -8,12 +8,12 @@ const page = () => {
   const data = [
     {
       notifications: 'New Client Added',
-      recievdAt: '28/08/2024',
+      recievdAt: '08/05/2024',
       type: 'user',
     },
     {
       notifications: 'Order in Negotitaion',
-      recievdAt: '28/08/2024',
+      recievdAt: '08/05/2024',
       type: 'order',
     },
     {
@@ -27,6 +27,7 @@ const page = () => {
       type: 'invoice',
     },
   ];
+
   return (
     <>
       <Wrapper>
@@ -34,6 +35,7 @@ const page = () => {
           name={'Notifications'}
           className="flex justify-start"
         ></SubHeader>
+
         <DataTable
           id={'notification table'}
           columns={NotificationColumns}

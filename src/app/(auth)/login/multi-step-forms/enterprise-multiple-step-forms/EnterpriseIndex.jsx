@@ -61,36 +61,42 @@ const EnterpriseIndex = ({
             name="enterpriseType"
             option={'Individual'}
             value="individual"
+            checkBoxName="options"
             handleChange={handleEnterpriseType}
           />
           <RadioSelect
             name="enterpriseType"
             option={'Proprietorship'}
             value="proprietorship"
+            checkBoxName="options"
             handleChange={handleEnterpriseType}
           />
           <RadioSelect
             name="enterpriseType"
             option={'Partnership'}
             value="partnership"
+            checkBoxName="options"
             handleChange={handleEnterpriseType}
           />
           <RadioSelect
             name="enterpriseType"
             option={'LLP'}
             value="llp"
+            checkBoxName="options"
             handleChange={handleEnterpriseType}
           />
           <RadioSelect
             name="enterpriseType"
             option={'Private Limited Company'}
             value="privateLimited"
+            checkBoxName="options"
             handleChange={handleEnterpriseType}
           />
           <RadioSelect
             name="enterpriseType"
             option={'Public Limited Company'}
             value="publicLimited"
+            checkBoxName="options"
             handleChange={handleEnterpriseType}
           />
         </div>
