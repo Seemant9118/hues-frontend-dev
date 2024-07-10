@@ -4,6 +4,7 @@ import { userAuth } from '@/api/user_auth/Users';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import Wrapper from '@/components/wrappers/Wrapper';
 import { useStep } from '@/context/StepsContext';
 import { LocalStorageService } from '@/lib/utils';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
@@ -33,7 +34,7 @@ function Profile() {
   };
 
   return (
-    <div>
+    <Wrapper>
       <SubHeader className="flex justify-start">
         <MoveLeft
           className="hover:cursor-pointer"
@@ -222,7 +223,7 @@ function Profile() {
           )}
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
