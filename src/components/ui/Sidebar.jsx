@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {
+  Bell,
   Boxes,
   ClipboardList,
   Gauge,
@@ -77,6 +78,11 @@ const Sidebar = () => {
       name: 'Vendors',
       icon: <Store size={16} />,
       path: '/vendors',
+    },
+    {
+      name: 'Notifications',
+      icon: <Bell size={16} />,
+      path: '/notification',
     },
     // {
     //   name: "Insights",

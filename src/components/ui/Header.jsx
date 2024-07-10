@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import NotificationModal from '../Modals/NotificationModal';
 import { Button } from './button';
 
 const Header = () => {
@@ -50,9 +51,7 @@ const Header = () => {
         />
       </Link>
       <div className="flex items-center gap-4">
-        {/* <Button variant={"link"} size={"icon"} className="your-notification">
-          <Bell className="text-grey" />
-        </Button> */}
+        <NotificationModal />
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
