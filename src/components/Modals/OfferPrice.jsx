@@ -53,8 +53,8 @@ const OfferPrice = ({ btnName, offerDetails }) => {
       });
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
     },
-    onError: () => {
-      toast.error('Something went wrong');
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 

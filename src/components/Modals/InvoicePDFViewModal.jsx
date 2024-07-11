@@ -25,7 +25,7 @@ const InvoicePDFViewModal = ({ orderId }) => {
       toast.success(res.data.message);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to generate invoice');
+      toast.error(error.response.data.message || 'Failed to generate invoice');
     },
   });
 
