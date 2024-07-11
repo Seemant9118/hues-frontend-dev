@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 
-function NotificationModal() {
+function NotificationPopUp() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -78,4 +78,4 @@ function NotificationModal() {
   );
 }
 
-export default NotificationModal;
+export default NotificationPopUp;

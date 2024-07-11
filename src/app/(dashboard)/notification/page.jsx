@@ -2,6 +2,7 @@ import { DataTable } from '@/components/table/data-table';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import React from 'react';
+import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPopUp';
 import { NotificationColumns } from './NotificationsColumns';
 
 const page = () => {
@@ -31,11 +32,9 @@ const page = () => {
   return (
     <>
       <Wrapper>
-        <SubHeader
-          name={'Notifications'}
-          className="flex justify-start"
-        ></SubHeader>
-
+        <SubHeader name={'Notifications'} className="flex justify-between">
+          <NotificationFilterPopUp />
+        </SubHeader>
         <DataTable
           id={'notification table'}
           columns={NotificationColumns}
