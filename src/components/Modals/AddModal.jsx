@@ -49,6 +49,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
   const [open, setOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [invitedIds, setInvitedIds] = useState([]);
+
   const [enterpriseData, setEnterPriseData] = useState(
     btnName !== 'Edit'
       ? {
@@ -239,6 +241,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   };
 
   const handleSendInvite = (id) => {
+    // Add the new ID to the list of invited IDs
+    setInvitedIds((prev) => [...prev, id]);
+
     sendInvite.mutate({
       fromEnterpriseId: enterpriseId,
       toEnterpriseId: id,
@@ -375,9 +380,20 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                     <p>{sdata?.email}</p>
                     <p>{sdata?.panNumber}</p>
                   </div>
-                  <Button onClick={() => handleSendInvite(sdata.id)}>
-                    Invite
-                  </Button>
+
+                  {invitedIds?.includes(sdata.id) ? (
+                    <Button
+                      variant="ghost"
+                      className="font-bold text-green-800 underline hover:cursor-not-allowed"
+                      disabled
+                    >
+                      Invite sent
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleSendInvite(sdata.id)}>
+                      Invite
+                    </Button>
+                  )}
                 </div>
               ))}
 
