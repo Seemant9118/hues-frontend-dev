@@ -1,5 +1,7 @@
 'use client';
 
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import InputWithLabel from '@/components/ui/InputWithLabel';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,15 +12,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { LocalStorageService } from '@/lib/utils';
+import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit3, Layers2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import ErrorBox from '../ui/ErrorBox';
+import Loading from '../ui/Loading';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import {
   Select,
   SelectContent,
@@ -26,9 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { Label } from '../ui/label';
-import Loading from '../ui/Loading';
-import { Input } from '../ui/input';
 
 // debouncing function
 const debounce = (func, delay) => {
@@ -49,6 +49,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
   const [open, setOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [invitedIds, setInvitedIds] = useState([]);
+
   const [enterpriseData, setEnterPriseData] = useState(
     btnName !== 'Edit'
       ? {
@@ -239,6 +241,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   };
 
   const handleSendInvite = (id) => {
+    // Add the new ID to the list of invited IDs
+    setInvitedIds((prev) => [...prev, id]);
+
     sendInvite.mutate({
       fromEnterpriseId: enterpriseId,
       toEnterpriseId: id,
@@ -360,7 +365,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         {!isAdding && btnName !== 'Edit' && (
           <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto p-4">
             {searchMutation.isPending && <Loading />}
-            {searchData &&
+
+            {searchInput?.idNumber?.length > 2 &&
+              searchData &&
               searchData.length !== 0 &&
               searchData.map((sdata) => (
                 <div
@@ -373,9 +380,20 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                     <p>{sdata?.email}</p>
                     <p>{sdata?.panNumber}</p>
                   </div>
-                  <Button onClick={() => handleSendInvite(sdata.id)}>
-                    Invite
-                  </Button>
+
+                  {invitedIds?.includes(sdata.id) ? (
+                    <Button
+                      variant="ghost"
+                      className="font-bold text-green-800 underline hover:cursor-not-allowed"
+                      disabled
+                    >
+                      Invite sent
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleSendInvite(sdata.id)}>
+                      Invite
+                    </Button>
+                  )}
                 </div>
               ))}
 

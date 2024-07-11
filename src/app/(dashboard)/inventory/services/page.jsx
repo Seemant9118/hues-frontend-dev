@@ -108,7 +108,7 @@ function Services() {
         servicesApi.getAllProductServices.endpointKey,
       ]);
     } catch (error) {
-      toast.error(error.respnse.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || 'Something went wrong');
     }
   };
 

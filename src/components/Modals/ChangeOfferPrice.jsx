@@ -73,8 +73,8 @@ const ChangeOfferPrice = ({ offerDetails }) => {
       });
       setOpen(false);
     },
-    onError: () => {
-      toast.error('Something went wrong');
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 

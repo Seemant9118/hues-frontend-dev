@@ -35,7 +35,9 @@ const ViewOrder = () => {
       {!isLoading && orderDetails && (
         <>
           <SubHeader name={`ORDER ID: #${params.order_id}`}>
-            <InvoicePDFViewModal orderId={params.order_id} />
+            {orderDetails.negotiationStatus === 'ACCEPTED' && (
+              <InvoicePDFViewModal orderId={params.order_id} />
+            )}
             {/* <Button
               onClick={() => {
                 setIsGenerationInvoice(true);
