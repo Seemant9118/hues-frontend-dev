@@ -13,19 +13,24 @@ import DatePickers from '../ui/DatePickers';
 import { Label } from '../ui/label';
 import Checkboxes from '../ui/Checkboxes';
 
-function NotificationFilterPopUp() {
-  const notificationTypes = ['Inventory', 'Order', 'Invite', 'New', 'Purchase'];
+function NotificationFilterPopUp({ setFilteredNotification }) {
+  const notificationTypes = [
+    'Invoice',
+    'Order',
+    'Invitation',
+    'Order_Negotiation',
+  ];
   const [open, setOpen] = useState(false);
   const [selectedFromDate, setSelectedFromDate] = useState(null);
   const [selectedToDate, setSelectedToDate] = useState(null);
 
   const [dataForFilter, setDataForFilter] = useState({
+    isRead: false,
     fromDate: '',
     toDate: '',
-    typesSelected: [],
+    notificationType: [],
   });
 
-  dataForFilter;
   useEffect(() => {
     setDataForFilter((prev) => ({
       ...prev,
@@ -44,13 +49,13 @@ function NotificationFilterPopUp() {
 
   const handleTypesFilter = (type) => {
     setDataForFilter((prev) => {
-      const typesSelected = prev.typesSelected.includes(type)
-        ? prev.typesSelected.filter((t) => t !== type)
-        : [...prev.typesSelected, type];
+      const typesSelected = prev.notificationType.includes(type)
+        ? prev.notificationType.filter((t) => t !== type)
+        : [...prev.notificationType, type];
 
       return {
         ...prev,
-        typesSelected,
+        notificationType: typesSelected,
       };
     });
   };
@@ -113,12 +118,12 @@ function NotificationFilterPopUp() {
                   key={type}
                   name="notificationType"
                   option={type}
-                  value={type.toLowerCase()}
-                  checkBoxName={type.toLowerCase()}
-                  checked={dataForFilter.typesSelected.includes(
-                    type.toLowerCase(),
+                  value={type.toUpperCase()}
+                  checkBoxName={type.toUpperCase()}
+                  checked={dataForFilter.notificationType.includes(
+                    type.toUpperCase(),
                   )}
-                  handleChange={() => handleTypesFilter(type.toLowerCase())}
+                  handleChange={() => handleTypesFilter(type.toUpperCase())}
                 />
               ))}
             </div>
@@ -134,7 +139,12 @@ function NotificationFilterPopUp() {
               setDataForFilter({
                 fromDate: '',
                 toDate: '',
-                typesSelected: [],
+                notificationType: [],
+              });
+              setFilteredNotification({
+                fromDate: '',
+                toDate: '',
+                notificationType: [],
               });
               setOpen(false);
             }}
@@ -144,7 +154,7 @@ function NotificationFilterPopUp() {
           <Button
             variant={'blue_outline'}
             onClick={() => {
-              // console.log(dataForFilter);
+              setFilteredNotification(dataForFilter);
               setOpen(!open);
             }}
           >
