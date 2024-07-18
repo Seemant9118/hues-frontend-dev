@@ -9,8 +9,9 @@ import {
 import { LocalStorageService } from '@/lib/utils';
 import { getNotifications } from '@/services/Notification_Services/NotificationServices';
 import { useMutation } from '@tanstack/react-query';
-import { Bell } from 'lucide-react';
+import { Bell, Dot } from 'lucide-react';
 import moment from 'moment';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -39,6 +40,22 @@ function NotificationPopUp() {
     }
   }, [open]);
 
+  // Date & time formatter
+  const formatDateTime = (itemDateT) => {
+    const itemDateTime = moment(itemDateT);
+    const now = moment();
+    let displayDate;
+
+    if (itemDateTime.isSame(now, 'day')) {
+      displayDate = 'Today';
+    } else if (itemDateTime.isSame(now.clone().subtract(1, 'days'), 'day')) {
+      displayDate = 'Yesterday';
+    } else {
+      displayDate = itemDateTime.format('DD-MM-YYYY');
+    }
+    return `${displayDate} ${itemDateTime.format('HH:mm:ss')}`;
+  };
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -53,24 +70,24 @@ function NotificationPopUp() {
           </div>
           <ul className="scrollBarStyles flex max-h-[300px] flex-col gap-2 overflow-auto">
             {notifications.map((item) => (
-              <li
-                className="flex flex-col gap-1 rounded-lg border bg-gray-100 p-2"
+              <Link
+                href={'/'}
+                className={
+                  item.isRead
+                    ? 'relative flex flex-col gap-1 rounded-lg border p-2 hover:bg-gray-100'
+                    : 'relative flex flex-col gap-1 rounded-lg border bg-gray-100 p-2 hover:bg-blue-50'
+                }
                 key={item.id}
               >
-                <span
-                  className={
-                    item.isRead
-                      ? 'text-black'
-                      : 'cursor-pointer text-blue-400 hover:underline'
-                  }
-                >
-                  {item.text}
-                </span>
+                {!item.isRead && (
+                  <Dot className="absolute right-0 top-0 text-blue-600" />
+                )}
+                <span className={'text-black'}>{item.text}</span>
                 <span className="text-xs font-bold text-gray-400">
-                  {moment(item.updatedAt).format('DD-MM-YYYY')}
+                  {formatDateTime(item.updatedAt)}
                 </span>
-                <span className="text-xs font-bold text-gray-600">{`(${item.notificationType})`}</span>
-              </li>
+                {/* <span className="text-xs font-bold text-gray-600">{`(${item.notificationType})`}</span> */}
+              </Link>
             ))}
           </ul>
           <span

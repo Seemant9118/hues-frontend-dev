@@ -85,7 +85,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
                   selected={selectedFromDate}
                   onChange={setSelectedFromDate}
                   dateFormat="dd/MM/yyyy"
-                  popperPlacement="top-right"
+                  popperPlacement="left"
                 />
                 <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
               </div>
@@ -102,7 +102,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
                   selected={selectedToDate}
                   onChange={setSelectedToDate}
                   dateFormat="dd/MM/yyyy"
-                  popperPlacement="top-right"
+                  popperPlacement="left"
                 />
                 <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
               </div>
