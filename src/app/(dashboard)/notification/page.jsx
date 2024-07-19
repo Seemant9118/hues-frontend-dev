@@ -36,7 +36,10 @@ const Notification = () => {
 
   return (
     <Wrapper>
-      <SubHeader name="Notifications" className="flex justify-between">
+      <SubHeader
+        name="Notifications"
+        className="z-10 flex justify-between bg-white"
+      >
         <NotificationFilterPopUp
           setFilteredNotification={setFilteredNotification}
         />
