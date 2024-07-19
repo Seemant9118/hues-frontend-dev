@@ -7,11 +7,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { LocalStorageService } from '@/lib/utils';
-import { getNotifications } from '@/services/Notification_Services/NotificationServices';
+import {
+  getNotifications,
+  updateNotification,
+} from '@/services/Notification_Services/NotificationServices';
 import { useMutation } from '@tanstack/react-query';
-import { Bell, Dot } from 'lucide-react';
+import { Bell, BellOff, Dot } from 'lucide-react';
 import moment from 'moment';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -39,6 +41,24 @@ function NotificationPopUp() {
       getNotificationsMutations.mutate({});
     }
   }, [open]);
+
+  const updateNotificationMutation = useMutation({
+    mutationKey: notificationApi.updateNotifications.endpointKey,
+    mutationFn: updateNotification,
+    onSuccess: () => {
+      setOpen(false);
+    },
+    onError: (error) => {
+      setOpen(false);
+      toast.log(error.response.data.message);
+    },
+  });
+
+  // hanlder function for update
+  const handleUpdateNotification = (notificationId, notificationLink) => {
+    updateNotificationMutation.mutate(notificationId);
+    router.push(notificationLink);
+  };
 
   // Date & time formatter
   const formatDateTime = (itemDateT) => {
@@ -68,37 +88,51 @@ function NotificationPopUp() {
           <div className="text-center font-bold text-gray-500">
             Notifications
           </div>
-          <ul className="scrollBarStyles flex max-h-[300px] flex-col gap-2 overflow-auto">
-            {notifications.map((item) => (
-              <Link
-                href={'/'}
-                className={
-                  item.isRead
-                    ? 'relative flex flex-col gap-1 rounded-lg border p-2 hover:bg-gray-100'
-                    : 'relative flex flex-col gap-1 rounded-lg border bg-gray-100 p-2 hover:bg-blue-50'
-                }
-                key={item.id}
+          {notifications.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-1 rounded-lg border bg-gray-100 p-2">
+              <BellOff className="text-gray-400" />
+              <span className="text-gray-500">No Notifications</span>
+            </div>
+          )}
+          {notifications.length > 0 && (
+            <>
+              <ul className="scrollBarStyles flex max-h-[300px] flex-col gap-2 overflow-auto">
+                {notifications
+                  .sort((a, b) => a.isRead - b.isRead)
+                  .map((item) => (
+                    <div
+                      onClick={() => {
+                        handleUpdateNotification(item.id, item.deepLink);
+                      }}
+                      className={
+                        item.isRead
+                          ? 'relative flex cursor-pointer flex-col gap-1 rounded-lg border p-2 hover:bg-blue-50'
+                          : 'relative flex cursor-pointer flex-col gap-1 rounded-lg border bg-gray-100 p-2 hover:bg-blue-50'
+                      }
+                      key={item.id}
+                    >
+                      {!item.isRead && (
+                        <Dot className="absolute right-0 top-0 text-blue-600" />
+                      )}
+                      <span className={'text-black'}>{item.text}</span>
+                      <span className="text-xs font-bold text-gray-400">
+                        {formatDateTime(item.updatedAt)}
+                      </span>
+                      {/* <span className="text-xs font-bold text-gray-600">{`(${item.notificationType})`}</span> */}
+                    </div>
+                  ))}
+              </ul>
+              <span
+                className="cursor-pointer text-center text-blue-400 underline"
+                onClick={() => {
+                  setOpen(!open);
+                  router.push('/notification');
+                }}
               >
-                {!item.isRead && (
-                  <Dot className="absolute right-0 top-0 text-blue-600" />
-                )}
-                <span className={'text-black'}>{item.text}</span>
-                <span className="text-xs font-bold text-gray-400">
-                  {formatDateTime(item.updatedAt)}
-                </span>
-                {/* <span className="text-xs font-bold text-gray-600">{`(${item.notificationType})`}</span> */}
-              </Link>
-            ))}
-          </ul>
-          <span
-            className="cursor-pointer text-center text-blue-400 underline"
-            onClick={() => {
-              setOpen(!open);
-              router.push('/notification');
-            }}
-          >
-            See more
-          </span>
+                See more
+              </span>
+            </>
+          )}
         </PopoverContent>
       </Popover>
     </>

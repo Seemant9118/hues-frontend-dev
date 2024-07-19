@@ -7,3 +7,9 @@ export const getNotifications = (id, data) => {
     data,
   );
 };
+
+export const updateNotification = (id) => {
+  return APIinstance.put(
+    `${notificationApi.updateNotifications.endpoint}${id}`,
+  );
+};
