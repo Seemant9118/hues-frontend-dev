@@ -24,6 +24,8 @@ function NotificationPopUp() {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
+  // State to manage visibility of read notifications
+  const [visibleReadNotifications, setVisibleReadNotifications] = useState({});
 
   const getNotificationsMutations = useMutation({
     mutationKey: notificationApi.getNotifications.endpointKey,
@@ -54,11 +56,44 @@ function NotificationPopUp() {
     },
   });
 
-  // hanlder function for update
+  // Handler function for update
   const handleUpdateNotification = (notificationId, notificationLink) => {
     updateNotificationMutation.mutate(notificationId);
     router.push(notificationLink);
   };
+
+  // Notification grouping based on notificationType
+  const groupedNotifications = notifications.reduce((acc, item) => {
+    if (!acc[item.notificationType]) {
+      acc[item.notificationType] = [];
+    }
+    acc[item.notificationType].push(item);
+    return acc;
+  }, {});
+
+  // Sort the notifications within each group
+  Object.keys(groupedNotifications).forEach((type) => {
+    groupedNotifications[type].sort(
+      (a, b) =>
+        a.isRead - b.isRead || new Date(b.updatedAt) - new Date(a.updatedAt),
+    );
+  });
+
+  const handleSeeMoreClick = (type) => {
+    setVisibleReadNotifications((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  // Sort the groups so those with unread notifications are on top
+  const sortedNotificationTypes = Object.keys(groupedNotifications).sort(
+    (a, b) => {
+      const aHasUnread = groupedNotifications[a].some((item) => !item.isRead);
+      const bHasUnread = groupedNotifications[b].some((item) => !item.isRead);
+      return bHasUnread - aHasUnread;
+    },
+  );
 
   // Date & time formatter
   const formatDateTime = (itemDateT) => {
@@ -84,7 +119,7 @@ function NotificationPopUp() {
             <Bell className="text-grey" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="m-2 flex max-h-[400px] max-w-[300px] flex-col gap-4 px-4 text-sm">
+        <PopoverContent className="m-2 flex max-h-[400px] w-[300px] flex-col gap-4 px-4 text-sm">
           <div className="text-center font-bold text-gray-500">
             Notifications
           </div>
@@ -96,32 +131,87 @@ function NotificationPopUp() {
           )}
           {notifications.length > 0 && (
             <>
-              <ul className="scrollBarStyles flex max-h-[300px] flex-col gap-2 overflow-auto">
-                {notifications
-                  .sort((a, b) => a.isRead - b.isRead)
-                  .map((item) => (
-                    <div
-                      onClick={() => {
-                        handleUpdateNotification(item.id, item.deepLink);
-                      }}
-                      className={
-                        item.isRead
-                          ? 'relative flex cursor-pointer flex-col gap-1 rounded-lg border p-2 hover:bg-blue-50'
-                          : 'relative flex cursor-pointer flex-col gap-1 rounded-lg border bg-gray-100 p-2 hover:bg-blue-50'
-                      }
-                      key={item.id}
-                    >
-                      {!item.isRead && (
-                        <Dot className="absolute right-0 top-0 text-blue-600" />
-                      )}
-                      <span className={'text-black'}>{item.text}</span>
-                      <span className="text-xs font-bold text-gray-400">
-                        {formatDateTime(item.updatedAt)}
-                      </span>
-                      {/* <span className="text-xs font-bold text-gray-600">{`(${item.notificationType})`}</span> */}
+              <div className="scrollBarStyles max-h-[300px] overflow-auto">
+                {sortedNotificationTypes.map((type) => {
+                  const unreadNotifications = groupedNotifications[type].filter(
+                    (item) => !item.isRead,
+                  );
+                  const readNotifications = groupedNotifications[type].filter(
+                    (item) => item.isRead,
+                  );
+
+                  return (
+                    <div key={type}>
+                      <h3 className="py-2 text-xs font-bold text-gray-600">
+                        {type}
+                      </h3>
+                      <ul className="flex flex-col gap-2">
+                        {unreadNotifications.length > 0
+                          ? unreadNotifications.map((item) => (
+                              <div
+                                onClick={() =>
+                                  handleUpdateNotification(
+                                    item.id,
+                                    item.deepLink,
+                                  )
+                                }
+                                className="relative flex cursor-pointer flex-col gap-1 rounded-lg border bg-gray-100 p-2 hover:bg-blue-50"
+                                key={item.id}
+                              >
+                                <Dot className="absolute right-0 top-0 text-blue-600" />
+                                <span className="text-black">{item.text}</span>
+                                <span className="text-xs font-bold text-gray-400">
+                                  {formatDateTime(item.updatedAt)}
+                                </span>
+                              </div>
+                            ))
+                          : readNotifications.slice(0, 1).map((item) => (
+                              <div
+                                onClick={() =>
+                                  handleUpdateNotification(
+                                    item.id,
+                                    item.deepLink,
+                                  )
+                                }
+                                className="relative flex cursor-pointer flex-col gap-1 rounded-lg border p-2 hover:bg-blue-50"
+                                key={item.id}
+                              >
+                                <span className="text-black">{item.text}</span>
+                                <span className="text-xs font-bold text-gray-400">
+                                  {formatDateTime(item.updatedAt)}
+                                </span>
+                              </div>
+                            ))}
+                        {readNotifications.length > 1 && (
+                          <button
+                            onClick={() => handleSeeMoreClick(type)}
+                            className="text-blue-400 underline"
+                          >
+                            {visibleReadNotifications[type]
+                              ? 'See Less'
+                              : `${readNotifications.length - 1 > 0 ? `Show More ${readNotifications.length - 1}+` : ''}`}
+                          </button>
+                        )}
+                        {visibleReadNotifications[type] &&
+                          readNotifications.slice(1).map((item) => (
+                            <div
+                              onClick={() =>
+                                handleUpdateNotification(item.id, item.deepLink)
+                              }
+                              className="relative flex cursor-pointer flex-col gap-1 rounded-lg border p-2 hover:bg-blue-50"
+                              key={item.id}
+                            >
+                              <span className="text-black">{item.text}</span>
+                              <span className="text-xs font-bold text-gray-400">
+                                {formatDateTime(item.updatedAt)}
+                              </span>
+                            </div>
+                          ))}
+                      </ul>
                     </div>
-                  ))}
-              </ul>
+                  );
+                })}
+              </div>
               <span
                 className="cursor-pointer text-center text-blue-400 underline"
                 onClick={() => {

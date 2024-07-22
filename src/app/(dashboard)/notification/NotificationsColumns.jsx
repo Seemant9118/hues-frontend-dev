@@ -11,13 +11,13 @@ export const NotificationColumns = [
     ),
   },
   {
-    accessorKey: 'updatedAt',
+    accessorKey: 'createdAt',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="RECIEVED AT" />
     ),
     cell: ({ row }) => {
-      const { updatedAt } = row.original;
-      const date = moment(updatedAt).format('DD-MM-YYYY');
+      const { createdAt } = row.original;
+      const date = moment(createdAt).format('DD-MM-YYYY');
       return <div className="text-[#A5ABBD]">{date}</div>;
     },
   },
