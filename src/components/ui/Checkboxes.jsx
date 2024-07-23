@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from './input';
 
-const RadioSelect = ({
+const Checkboxes = ({
   checked,
   checkBoxName,
   value,
@@ -10,17 +10,16 @@ const RadioSelect = ({
   disabled,
 }) => {
   return (
-    <div>
-      {/* Hidden radio input with label */}
+    <div className="relative">
       <Input
         checked={checked}
-        type="radio"
+        type="checkbox"
         id={option}
         name={checkBoxName}
         disabled={disabled}
         value={value}
         onChange={() => handleChange(value)}
-        className="hidden"
+        className={`${checked ? 'absolute right-0 top-0 w-4' : 'hidden'}`}
       />
       <label
         htmlFor={option}
@@ -34,4 +33,4 @@ const RadioSelect = ({
   );
 };
 
-export default RadioSelect;
+export default Checkboxes;

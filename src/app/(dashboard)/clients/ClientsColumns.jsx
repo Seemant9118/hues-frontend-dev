@@ -1,8 +1,6 @@
 'use client';
 
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import AddModal from '@/components/Modals/AddModal';
-import ConfirmAction from '@/components/Modals/ConfirmAction';
 import GenerateLink from '@/components/enterprise/GenerateLink';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
@@ -12,10 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  deleteClient,
-  updateClient,
-} from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { updateClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
 import { MoreVertical } from 'lucide-react';
 
@@ -108,7 +103,7 @@ export const ClientsColumns = [
     enableHiding: false,
     cell: ({ row }) => {
       const { id } = row.original;
-      const { name } = row.original;
+      // const { name } = row.original;
 
       return (
         <DropdownMenu>
@@ -126,12 +121,12 @@ export const ClientsColumns = [
               userData={row.original}
               id={id}
             />
-            <ConfirmAction
+            {/* <ConfirmAction
               name={name}
               id={id}
               mutationKey={clientEnterprise.getClients.endpointKey}
               mutationFunc={deleteClient}
-            />
+            /> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );
