@@ -1,18 +1,9 @@
 'use client';
 
-import AddModal from '@/components/Modals/AddModal';
 import GenerateLink from '@/components/enterprise/GenerateLink';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { updateClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
-import { MoreVertical } from 'lucide-react';
 
 export const ClientsColumns = [
   {
@@ -98,38 +89,38 @@ export const ClientsColumns = [
       );
     },
   },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const { id } = row.original;
-      // const { name } = row.original;
+  // {
+  //   id: 'actions',
+  //   enableHiding: false,
+  //   cell: ({ row }) => {
+  //     const { id } = row.original;
+  //     // const { name } = row.original;
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="max-w-fit">
-            <AddModal
-              cta="client"
-              btnName="Edit"
-              mutationFunc={updateClient}
-              userData={row.original}
-              id={id}
-            />
-            {/* <ConfirmAction
-              name={name}
-              id={id}
-              mutationKey={clientEnterprise.getClients.endpointKey}
-              mutationFunc={deleteClient}
-            /> */}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
+  //     return (
+  //       <DropdownMenu>
+  //         <DropdownMenuTrigger asChild>
+  //           <Button variant="ghost" className="h-8 w-8 p-0">
+  //             <span className="sr-only">Open menu</span>
+  //             <MoreVertical className="h-4 w-4" />
+  //           </Button>
+  //         </DropdownMenuTrigger>
+  //         <DropdownMenuContent align="end" className="max-w-fit">
+  //           <AddModal
+  //             cta="client"
+  //             btnName="Edit"
+  //             mutationFunc={updateClient}
+  //             userData={row.original}
+  //             id={id}
+  //           />
+  //           {/* <ConfirmAction
+  //             name={name}
+  //             id={id}
+  //             mutationKey={clientEnterprise.getClients.endpointKey}
+  //             mutationFunc={deleteClient}
+  //           /> */}
+  //         </DropdownMenuContent>
+  //       </DropdownMenu>
+  //     );
+  //   },
+  // },
 ];
