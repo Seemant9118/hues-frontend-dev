@@ -14,12 +14,13 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { Bell, BellOff, Dot } from 'lucide-react';
 import moment from 'moment';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 
 function NotificationPopUp() {
+  const pathName = usePathname();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [notifications, setNotifications] = useState([]);
@@ -27,6 +28,7 @@ function NotificationPopUp() {
   // State to manage visibility of read notifications
   const [visibleReadNotifications, setVisibleReadNotifications] = useState({});
 
+  // getNotification mutation fn
   const getNotificationsMutations = useMutation({
     mutationKey: notificationApi.getNotifications.endpointKey,
     mutationFn: (data) => getNotifications(enterpriseId, data),
@@ -38,12 +40,14 @@ function NotificationPopUp() {
     },
   });
 
+  // call api : on whenever routes changes in app, opening/closing popup, initial load
   useEffect(() => {
     if (enterpriseId) {
       getNotificationsMutations.mutate({});
     }
-  }, [open]);
+  }, [pathName, open]);
 
+  // update mutation
   const updateNotificationMutation = useMutation({
     mutationKey: notificationApi.updateNotifications.endpointKey,
     mutationFn: updateNotification,
@@ -159,7 +163,22 @@ function NotificationPopUp() {
                                 key={item.id}
                               >
                                 <Dot className="absolute right-0 top-0 text-blue-600" />
-                                <span className="text-black">{item.text}</span>
+                                <span className="flex flex-wrap gap-1 text-black">
+                                  {item.text}
+                                  {item.deepLink !== '' && (
+                                    <p
+                                      onClick={() =>
+                                        handleUpdateNotification(
+                                          item.id,
+                                          item.deepLink,
+                                        )
+                                      }
+                                      className="text-blue-400 underline hover:text-blue-600"
+                                    >
+                                      View
+                                    </p>
+                                  )}
+                                </span>
                                 <span className="text-xs font-bold text-gray-400">
                                   {formatDateTime(item.updatedAt)}
                                 </span>
@@ -176,7 +195,22 @@ function NotificationPopUp() {
                                 className="relative flex cursor-pointer flex-col gap-1 rounded-lg border p-2 hover:bg-blue-50"
                                 key={item.id}
                               >
-                                <span className="text-black">{item.text}</span>
+                                <span className="flex flex-wrap gap-1 text-black">
+                                  {item.text}
+                                  {item.deepLink !== '' && (
+                                    <p
+                                      onClick={() =>
+                                        handleUpdateNotification(
+                                          item.id,
+                                          item.deepLink,
+                                        )
+                                      }
+                                      className="text-blue-400 underline hover:text-blue-600"
+                                    >
+                                      View
+                                    </p>
+                                  )}
+                                </span>
                                 <span className="text-xs font-bold text-gray-400">
                                   {formatDateTime(item.updatedAt)}
                                 </span>
@@ -201,7 +235,22 @@ function NotificationPopUp() {
                               className="relative flex cursor-pointer flex-col gap-1 rounded-lg border p-2 hover:bg-blue-50"
                               key={item.id}
                             >
-                              <span className="text-black">{item.text}</span>
+                              <span className="flex flex-wrap gap-1 text-black">
+                                {item.text}
+                                {item.deepLink !== '' && (
+                                  <p
+                                    onClick={() =>
+                                      handleUpdateNotification(
+                                        item.id,
+                                        item.deepLink,
+                                      )
+                                    }
+                                    className="text-blue-400 underline hover:text-blue-600"
+                                  >
+                                    View
+                                  </p>
+                                )}
+                              </span>
                               <span className="text-xs font-bold text-gray-400">
                                 {formatDateTime(item.updatedAt)}
                               </span>

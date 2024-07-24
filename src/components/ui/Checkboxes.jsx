@@ -23,7 +23,7 @@ const Checkboxes = ({
       />
       <label
         htmlFor={option}
-        className={`rounded-md border border-gray-600 bg-gray-100 p-2 text-slate-700 hover:bg-primary hover:text-white ${
+        className={`rounded-md border border-gray-400 bg-gray-100 p-2 text-slate-700 hover:bg-blue-500 hover:text-white ${
           disabled ? 'cursor-not-allowed' : 'cursor-pointer'
         }`}
       >
