@@ -25,7 +25,6 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
   const [selectedToDate, setSelectedToDate] = useState(null);
 
   const [dataForFilter, setDataForFilter] = useState({
-    isRead: false,
     fromDate: '',
     toDate: '',
     notificationType: [],
