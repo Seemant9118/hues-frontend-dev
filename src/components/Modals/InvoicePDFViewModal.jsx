@@ -24,7 +24,7 @@ const InvoicePDFViewModal = ({ pvtUrl }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-28">
+        <Button variant="outline" className="mx-8 border-black">
           <Download size={16} />
           Invoice
         </Button>

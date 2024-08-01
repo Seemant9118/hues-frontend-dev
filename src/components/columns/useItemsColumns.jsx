@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '../ui/button';
@@ -11,21 +10,15 @@ export const useItemsColumns = ({
   invoicedData,
   setProductDetailsList,
   productDetailsList,
+  initialQuantities,
 }) => {
-  const [initialQuantities, setInitialQuantities] = useState([]);
-
-  useEffect(() => {
-    const initialQtys = productDetailsList?.map((item) => item.quantity);
-    setInitialQuantities(initialQtys);
-  }, [productDetailsList]);
-
   const handleRowSelection = (row, value) => {
     const updatedSelection = value
       ? [...invoicedData.invoiceItems, row.original]
       : invoicedData.invoiceItems.filter(
           (item) => item.orderItemId !== row.original.orderItemId,
         );
-    // Calculate the total amount and GST amount
+
     const totalAmount = updatedSelection.reduce(
       (acc, item) => acc + item.totalAmount,
       0,
@@ -59,9 +52,26 @@ export const useItemsColumns = ({
         : item,
     );
     setProductDetailsList(updatedList);
+  };
+
+  const updateInvoicedDataForQuantity = (index, newQuantity) => {
+    const updatedItems = invoicedData.invoiceItems.map((item, idx) =>
+      idx === index
+        ? {
+            ...item,
+            quantity: newQuantity,
+            totalAmount: newQuantity * item.unitPrice,
+            totalGstAmount: parseFloat(
+              (newQuantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
+                2,
+              ),
+            ),
+          }
+        : item,
+    );
     setInvoicedData({
       ...invoicedData,
-      invoiceItems: updatedList,
+      invoiceItems: updatedItems,
     });
   };
 
@@ -78,16 +88,20 @@ export const useItemsColumns = ({
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => {
-            row.toggleSelected(!!value);
-            handleRowSelection(row, !!value);
-          }}
-          aria-label="Select row"
-        />
-      ),
+      cell: ({ row }) => {
+        const { quantity } = row.original;
+        return (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+              handleRowSelection(row, !!value);
+            }}
+            aria-label="Select row"
+            disabled={quantity === 0}
+          />
+        );
+      },
       enableSorting: false,
       enableHiding: false,
     },
@@ -96,6 +110,9 @@ export const useItemsColumns = ({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ITEM NAME" />
       ),
+      cell: ({ row }) => {
+        return row.original.productName || row.original.serviceName;
+      },
     },
     {
       accessorKey: 'quantity',
@@ -110,13 +127,19 @@ export const useItemsColumns = ({
           const newQty = quantity - 1;
           if (newQty >= 1) {
             updateProductDetailsList(index, newQty);
+            if (row.getIsSelected()) {
+              updateInvoicedDataForQuantity(index, newQty);
+            }
           }
         };
 
         const handleIncrement = () => {
           const newQty = quantity + 1;
-          if (newQty <= initialQuantities[index]) {
+          if (newQty <= initialQuantities?.[index]) {
             updateProductDetailsList(index, newQty);
+            if (row.getIsSelected()) {
+              updateInvoicedDataForQuantity(index, newQty);
+            }
           }
         };
 
@@ -124,6 +147,9 @@ export const useItemsColumns = ({
           const value = parseInt(event.target.value, 10);
           const newQty = Number.isNaN(value) ? 1 : Math.max(1, value);
           updateProductDetailsList(index, newQty);
+          if (row.getIsSelected()) {
+            updateInvoicedDataForQuantity(index, newQty);
+          }
         };
 
         return (
@@ -147,7 +173,7 @@ export const useItemsColumns = ({
               className="disabled:cursor-not-allowed"
               variant="export"
               onClick={handleIncrement}
-              // disabled={quantity >= initialQuantities[index]}
+              disabled={quantity >= initialQuantities?.[index]}
             >
               +
             </Button>

@@ -6,8 +6,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { createInvoiceNew } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useItemsColumns } from '../columns/useItemsColumns';
@@ -15,12 +16,29 @@ import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
 
 const EditablePartialInvoiceModal = ({ orderDetails }) => {
+  const params = useParams();
+  const orderId = params.order_id;
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  // console.log(open);
   const [invoicedData, setInvoicedData] = useState(); // invoiceData to create invoice
-  // console.log('invoiceData', invoicedData);
   const [productDetailsList, setProductDetailsList] = useState();
-  // console.log('productDataList', productDetailsList);
+  const [initialQuantities, setInitialQuantities] = useState();
+
+  // Function to get initialQuantities
+  const initializeQuantities = () => {
+    const initialQtys = orderDetails?.orderItems?.map((item) => item.quantity);
+    setInitialQuantities(initialQtys);
+  };
+
+  useEffect(initializeQuantities, [open]); // call when modal open or close
+
+  const calculatedInvoiceQuantity = (quantity, invoiceQuantity) => {
+    let calculatedQty = quantity - invoiceQuantity;
+    if (calculatedQty < 0) {
+      calculatedQty = 0;
+    }
+    return calculatedQty;
+  };
 
   // fn for getting intital value when modal open
   const getInitialProductDetailsList = (orderItems) => {
@@ -28,7 +46,7 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
       ...item.productDetails,
       productType: item.productType,
       orderItemId: item.id,
-      quantity: item.quantity,
+      quantity: calculatedInvoiceQuantity(item.quantity, item.invoiceQuantity),
       unitPrice: item.unitPrice,
       gstPerUnit: item.gstPerUnit,
       totalAmount: item.totalAmount,
@@ -56,6 +74,7 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
     invoicedData,
     setProductDetailsList,
     productDetailsList,
+    initialQuantities,
   });
 
   // onClose func
@@ -71,6 +90,10 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
     mutationFn: createInvoiceNew,
     onSuccess: () => {
       toast.success('Invoice Generated Successfully');
+      queryClient.invalidateQueries([
+        invoiceApi.getInvoices.endpointKey,
+        orderId,
+      ]);
       onHandleClose();
     },
     onError: (error) => {

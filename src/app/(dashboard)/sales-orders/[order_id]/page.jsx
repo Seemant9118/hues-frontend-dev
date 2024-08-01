@@ -81,11 +81,12 @@ const ViewOrder = () => {
                     View Invoices{' '}
                   </Button>
                 )}
-
-                <EditablePartialInvoiceModal
-                  orderDetails={orderDetails}
-                  orderId={params.order_id}
-                />
+                {!orderDetails?.invoiceGenerationCompleted && (
+                  <EditablePartialInvoiceModal
+                    orderDetails={orderDetails}
+                    orderId={params.order_id}
+                  />
+                )}
               </div>
             )}
           </SubHeader>
