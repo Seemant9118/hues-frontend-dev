@@ -5,47 +5,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { generateInvoice } from '@/services/Orders_Services/Orders_Services';
 import { getDocument } from '@/services/Template_Services/Template_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Download, FileText } from 'lucide-react';
-import React, { useState } from 'react';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { Download } from 'lucide-react';
+import React from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ orderId }) => {
-  const [pvturl, setPvtUrl] = useState('');
-
-  // generate and get S3 pvt url
-  const generateInvoiceMutation = useMutation({
-    mutationFn: () => generateInvoice(orderId),
-    onSuccess: (res) => {
-      setPvtUrl(res.data.data);
-      toast.success(res.data.message);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Failed to generate invoice');
-    },
-  });
-
+const InvoicePDFViewModal = ({ pvtUrl }) => {
   // making pvtUrl to publicUrl to render
   const { data: pdfDoc } = useQuery({
-    queryKey: [templateApi.getS3Document.endpointKey, pvturl],
-    queryFn: () => getDocument(pvturl),
-    enabled: !!pvturl,
+    queryKey: [templateApi.getS3Document.endpointKey, pvtUrl],
+    queryFn: () => getDocument(pvtUrl),
+    enabled: !!pvtUrl,
     select: (res) => res.data.data,
   });
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="blue_outline"
-          onClick={() => generateInvoiceMutation.mutate()}
-        >
-          <FileText size={14} />
-          Generate Invoice
+        <Button variant="outline" className="mx-8 border-black">
+          <Download size={16} />
+          Invoice
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
@@ -58,10 +39,6 @@ const InvoicePDFViewModal = ({ orderId }) => {
                 Download Invoice
               </a>
             </Button>
-            {/* <Button variant="outline" as="a" href={pdfDoc?.publicUrl} download>
-              <Download size={14} />
-              Download Invoice
-            </Button> */}
             <div className="flex items-center justify-center">
               <ViewPdf url={pdfDoc?.publicUrl} />
             </div>
