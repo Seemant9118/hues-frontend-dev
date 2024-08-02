@@ -12,11 +12,13 @@ export const useItemsColumns = ({
   productDetailsList,
   initialQuantities,
 }) => {
-  const handleRowSelection = (row, value) => {
-    const updatedSelection = value
-      ? [...invoicedData.invoiceItems, row.original]
+  // Function to handle row selection
+  const handleRowSelection = (rows, isSelected) => {
+    const updatedSelection = isSelected
+      ? [...invoicedData.invoiceItems, ...rows.map((row) => row.original)]
       : invoicedData.invoiceItems.filter(
-          (item) => item.orderItemId !== row.original.orderItemId,
+          (item) =>
+            !rows.some((row) => row.original.orderItemId === item.orderItemId),
         );
 
     const totalAmount = updatedSelection.reduce(
@@ -36,6 +38,7 @@ export const useItemsColumns = ({
     });
   };
 
+  // Function to update product details list
   const updateProductDetailsList = (index, newQuantity) => {
     const updatedList = productDetailsList.map((item, idx) =>
       idx === index
@@ -54,6 +57,7 @@ export const useItemsColumns = ({
     setProductDetailsList(updatedList);
   };
 
+  // Function to update invoiced data for quantity changes
   const updateInvoicedDataForQuantity = (index, newQuantity) => {
     const updatedItems = invoicedData.invoiceItems.map((item, idx) =>
       idx === index
@@ -84,8 +88,13 @@ export const useItemsColumns = ({
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          onCheckedChange={(value) => {
+            table.toggleAllPageRowsSelected(!!value);
+            handleRowSelection(table.getRowModel().rows, !!value);
+          }}
           aria-label="Select all"
+          // Disabled if there are no rows to select
+          disabled={table.getRowModel().rows.length === 0}
         />
       ),
       cell: ({ row }) => {
@@ -95,7 +104,7 @@ export const useItemsColumns = ({
             checked={row.getIsSelected()}
             onCheckedChange={(value) => {
               row.toggleSelected(!!value);
-              handleRowSelection(row, !!value);
+              handleRowSelection([row], !!value);
             }}
             aria-label="Select row"
             disabled={quantity === 0}
@@ -200,7 +209,7 @@ export const useItemsColumns = ({
             name="totalAmount"
             disabled
             className="w-20 disabled:cursor-not-allowed"
-            value={totalAmt}
+            value={`₹ ${totalAmt.toFixed(2)}`}
           />
         );
       },

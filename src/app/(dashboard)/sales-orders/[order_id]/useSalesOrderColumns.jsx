@@ -58,8 +58,16 @@ export const useSalesOrderColumns = (
     {
       accessorKey: 'quantity',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="QUANTITY" />
+        <DataTableColumnHeader column={column} title="INVOICE / QUANTITY" />
       ),
+      cell: ({ row }) => {
+        const { invoiceQuantity, quantity } = row.original;
+        return (
+          <div>
+            {invoiceQuantity} / {quantity}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'totalAmount',
