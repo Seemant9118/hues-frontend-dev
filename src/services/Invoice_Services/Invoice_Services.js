@@ -12,3 +12,7 @@ export const getInvoices = (id) => {
 export const getInvoice = (id) => {
   return APIinstance.get(`${invoiceApi.getInvoice.endpoint}${id}`);
 };
+
+export const previewInvoice = (data) => {
+  return APIinstance.post(invoiceApi.previewInvoice.endpoint, data);
+};

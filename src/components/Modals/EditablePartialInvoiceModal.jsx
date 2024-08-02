@@ -5,7 +5,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { createInvoiceNew } from '@/services/Invoice_Services/Invoice_Services';
+import {
+  createInvoiceNew,
+  previewInvoice,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -14,6 +17,7 @@ import { toast } from 'sonner';
 import { useItemsColumns } from '../columns/useItemsColumns';
 import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
+import PreviewInvoice from './PreviewInvoiceModal';
 
 const EditablePartialInvoiceModal = ({ orderDetails }) => {
   const params = useParams();
@@ -23,6 +27,7 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
   const [invoicedData, setInvoicedData] = useState(); // invoiceData to create invoice
   const [productDetailsList, setProductDetailsList] = useState();
   const [initialQuantities, setInitialQuantities] = useState();
+  const [previewInvoiceBase64, setPreviewInvoiceBase64] = useState();
 
   // Function to get initialQuantities
   const initializeQuantities = () => {
@@ -84,7 +89,19 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
     setInvoicedData({});
   };
 
-  // mutation fn
+  // mutation fn - preview Invoice
+  const previewInvMutation = useMutation({
+    mutationKey: [invoiceApi.previewInvoice.endpointKey],
+    mutationFn: previewInvoice,
+    onSuccess: (data) => {
+      setPreviewInvoiceBase64(data?.data?.data);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // mutation fn - generate Invoice
   const invoiceMutation = useMutation({
     mutationKey: [invoiceApi.createInvoiceNew.endpointKey],
     mutationFn: createInvoiceNew,
@@ -101,7 +118,11 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
     },
   });
 
-  // submition fn
+  // preview fn
+  const handlePreview = () => {
+    previewInvMutation.mutate(invoicedData);
+  };
+  // generate fn
   const handleGenerate = () => {
     invoiceMutation.mutate(invoicedData);
   };
@@ -119,13 +140,20 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
         <div className="flex flex-col gap-4">
           <DataTable columns={itemColumns} data={productDetailsList} />
 
-          <Button
-            disabled={invoicedData?.invoiceItems?.length === 0}
-            className="w-32"
-            onClick={handleGenerate}
-          >
-            Generate
-          </Button>
+          <div className="flex gap-2">
+            <PreviewInvoice
+              base64StrToRenderPDF={previewInvoiceBase64}
+              mutationFn={handlePreview}
+              disableCondition={invoicedData?.invoiceItems?.length === 0}
+            />
+            <Button
+              disabled={invoicedData?.invoiceItems?.length === 0}
+              className="w-32"
+              onClick={handleGenerate}
+            >
+              Generate
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
