@@ -49,4 +49,9 @@ export const userAuth = {
     endpoint: `/iam/user/userdetails/`,
     endpointKey: 'get_profile_details',
   },
+  // 11. generateVerifySignOTP
+  generateVerifySignOTP: {
+    endpoint: `/iam/auth/verifysignature/generateotp`,
+    endpointKey: 'generate_verify_sign_otp',
+  },
 };

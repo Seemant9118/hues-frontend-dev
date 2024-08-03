@@ -10,6 +10,7 @@ import { Eye } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
+import Loading from '../ui/Loading';
 
 const PreviewInvoice = ({
   base64StrToRenderPDF,
@@ -49,6 +50,7 @@ const PreviewInvoice = ({
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
         <DialogTitle>Preview Invoice</DialogTitle>
+        {!url && <Loading />}
         {url && (
           <>
             <div className="flex flex-col items-center justify-center gap-2">

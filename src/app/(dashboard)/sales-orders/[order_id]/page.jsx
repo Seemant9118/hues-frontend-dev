@@ -84,7 +84,7 @@ const ViewOrder = () => {
                 {!orderDetails?.invoiceGenerationCompleted && (
                   <EditablePartialInvoiceModal
                     orderDetails={orderDetails}
-                    orderId={params.order_id}
+                    setIsPastInvoices={setIsPastInvoices}
                   />
                 )}
               </div>

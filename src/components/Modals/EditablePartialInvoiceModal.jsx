@@ -1,28 +1,24 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { userAuth } from '@/api/user_auth/Users';
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  createInvoiceNew,
-  previewInvoice,
-} from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { previewInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import { generateSignOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
-import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useItemsColumns } from '../columns/useItemsColumns';
 import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
+import GenerateInvoiceModal from './GenerateInvoiceModal';
 import PreviewInvoice from './PreviewInvoiceModal';
 
-const EditablePartialInvoiceModal = ({ orderDetails }) => {
-  const params = useParams();
-  const orderId = params.order_id;
-  const queryClient = useQueryClient();
+const EditablePartialInvoiceModal = ({ orderDetails, setIsPastInvoices }) => {
   const [open, setOpen] = useState(false);
   const [invoicedData, setInvoicedData] = useState(); // invoiceData to create invoice
   const [productDetailsList, setProductDetailsList] = useState();
@@ -101,17 +97,11 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
     },
   });
 
-  // mutation fn - generate Invoice
-  const invoiceMutation = useMutation({
-    mutationKey: [invoiceApi.createInvoiceNew.endpointKey],
-    mutationFn: createInvoiceNew,
+  const generateOTPMutation = useMutation({
+    mutationKey: [userAuth.generateVerifySignOTP.endpointKey],
+    mutationFn: generateSignOTP,
     onSuccess: () => {
-      toast.success('Invoice Generated Successfully');
-      queryClient.invalidateQueries([
-        invoiceApi.getInvoices.endpointKey,
-        orderId,
-      ]);
-      onHandleClose();
+      toast.success('OTP sent');
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -123,8 +113,8 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
     previewInvMutation.mutate(invoicedData);
   };
   // generate fn
-  const handleGenerate = () => {
-    invoiceMutation.mutate(invoicedData);
+  const handleGenerateOTP = () => {
+    generateOTPMutation.mutate();
   };
 
   return (
@@ -146,13 +136,14 @@ const EditablePartialInvoiceModal = ({ orderDetails }) => {
               mutationFn={handlePreview}
               disableCondition={invoicedData?.invoiceItems?.length === 0}
             />
-            <Button
-              disabled={invoicedData?.invoiceItems?.length === 0}
-              className="w-32"
-              onClick={handleGenerate}
-            >
-              Generate
-            </Button>
+
+            <GenerateInvoiceModal
+              invoicedData={invoicedData}
+              generateOTP={handleGenerateOTP}
+              disableCondition={invoicedData?.invoiceItems?.length === 0}
+              setIsPastInvoices={setIsPastInvoices}
+              handleClose={onHandleClose}
+            />
           </div>
         </div>
       </DialogContent>
