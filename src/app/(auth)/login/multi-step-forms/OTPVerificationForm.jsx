@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
-import { cn, LocalStorageService } from '@/lib/utils';
+import { LocalStorageService } from '@/lib/utils';
 import { userVerifyOtp } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
@@ -11,26 +11,7 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-function Slot(props) {
-  return (
-    <div
-      className={cn(
-        'relative h-14 w-10 text-[2rem]',
-        'flex items-center justify-center',
-        'transition-all duration-300',
-        'rounded-md border-2 bg-[#A5ABBD1A] focus:bg-blue-600',
-        'group-focus-within:border-accent-foreground/20 group-hover:border-accent-foreground/20',
-        'outline outline-0 outline-accent-foreground/20',
-        { 'outline-4 outline-accent-foreground': props.isActive },
-      )}
-    >
-      {props.char !== null && (
-        <div className="text-[#288AF9]">{props.char}</div>
-      )}
-    </div>
-  );
-}
+import Slot from '@/components/ui/Slot';
 
 export default function OTPVerificationForm({ setCurrStep }) {
   const [startFrom, setStartFrom] = useState(30);

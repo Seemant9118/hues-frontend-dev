@@ -30,6 +30,11 @@ function PastInvoices() {
     [],
   );
 
+  // fn for captilization
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
   if (isLoading) {
     return <Loading />;
   }
@@ -41,22 +46,29 @@ function PastInvoices() {
             key={invoice.id}
             className="flex flex-col gap-2 rounded-lg border border-black bg-gray-50 p-4"
           >
-            <div className="grid grid-cols-5 items-center">
-              <h1 className="text-sm font-bold">{invoice.referenceNumber}</h1>
-              <h1 className="text-sm font-bold">
-                Date : {moment(invoice.createdAt).format('DD-MM-YYYY')}
-              </h1>
-              <h1 className="text-sm font-bold">
-                Invoice type: {invoice.invoiceType}
-              </h1>
-              <h1 className="text-sm font-bold">
-                Total Amount <span className="text-xs">(inc. GST)</span> :{' '}
-                {formattedCurrency(invoice.totalAmount)}
-              </h1>
-              <InvoicePDFViewModal pvtUrl={invoice.attachmentLink} />
-            </div>
+            <section className="flex justify-between gap-2">
+              <div className="flex flex-col gap-2">
+                <h1 className="text-sm font-bold">
+                  Invoice No. : {invoice.referenceNumber}
+                </h1>
+                <h1 className="text-sm font-bold">
+                  Date : {moment(invoice.createdAt).format('DD-MM-YYYY')}
+                </h1>
+                <h1 className="text-sm font-bold">
+                  Type: {capitalize(invoice.invoiceType)}
+                </h1>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <h1 className="text-sm font-bold">
+                  Total Amount <span className="text-xs">(inc. GST)</span> :{' '}
+                  {formattedCurrency(invoice.totalAmount)}
+                </h1>
+                <InvoicePDFViewModal pvtUrl={invoice.attachmentLink} />
+              </div>
+            </section>
+            <div className="border border-gray-200"></div>
             <div className="flex flex-col gap-2">
-              <ul className="flex flex-col gap-2 text-sm">
+              <ul className="scrollBarStyles flex max-h-24 flex-col gap-2 overflow-auto text-sm">
                 <li className="grid grid-cols-4 font-bold">
                   <span>ITEM</span>
                   <span>QUANTITY</span>

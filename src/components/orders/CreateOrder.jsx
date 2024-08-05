@@ -663,13 +663,13 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
           <div className="flex items-center gap-2">
             <span className="font-bold">Gross Amount : </span>
             <span className="rounded-md border bg-slate-100 p-2">
-              {grossAmt}
+              {grossAmt.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>
             <span className="rounded-md border bg-slate-100 p-2">
-              {totalAmtWithGst}
+              {totalAmtWithGst.toFixed(2)}
             </span>
           </div>
         </div>

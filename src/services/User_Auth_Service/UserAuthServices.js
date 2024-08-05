@@ -49,3 +49,8 @@ export function getUserById(id) {
 export function getProfileDetails(id) {
   return APIinstance.get(`${userAuth.getProfileDetails.endpoint}${id}`);
 }
+
+// 11. generate Verify Sign OTP
+export function generateSignOTP() {
+  return APIinstance.post(userAuth.generateVerifySignOTP.endpoint);
+}
