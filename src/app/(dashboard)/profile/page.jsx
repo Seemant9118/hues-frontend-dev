@@ -172,6 +172,10 @@ function Profile() {
                     <Label className="text-md">GST IN : </Label>
                     <span className="text-md">XXX48489XX15454</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-md">UDYAM : </Label>
+                    <span className="text-md">XXXXXXXXX1234</span>
+                  </div>
                 </section>
               </div>
             </div>
@@ -216,6 +220,12 @@ function Profile() {
                   <Label className="text-md">GST IN : </Label>
                   <span className="text-md">
                     {profileDetails?.enterpriseDetails?.gstNumber}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-md">UDYAM : </Label>
+                  <span className="text-md">
+                    {profileDetails?.enterpriseDetails?.udyam}
                   </span>
                 </div>
               </section>
