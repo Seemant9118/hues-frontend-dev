@@ -19,4 +19,9 @@ export const invoiceApi = {
     endpoint: `/order/invoice/preview`,
     endpointKey: 'preview_Invoice',
   },
+  // 5. generateOTP for Invoice
+  generateOTPInvoice: {
+    endpoint: `/order/invoice/verifysignature/generateotp`,
+    endpointKey: 'invoice_generate_otp',
+  },
 };

@@ -1,7 +1,6 @@
 'use client';
 
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { userAuth } from '@/api/user_auth/Users';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +9,6 @@ import {
 } from '@/components/ui/dialog';
 import { LocalStorageService } from '@/lib/utils';
 import { createInvoiceNew } from '@/services/Invoice_Services/Invoice_Services';
-import { userVerifyOtp } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5, FileCog } from 'lucide-react';
@@ -24,6 +22,7 @@ import Slot from '../ui/Slot';
 
 const GenerateInvoiceModal = ({
   invoicedData,
+  setInvoicedData,
   generateOTP,
   disableCondition,
   setIsPastInvoices,
@@ -32,13 +31,14 @@ const GenerateInvoiceModal = ({
   const queryClient = useQueryClient();
   const params = useParams();
   const orderId = params.order_id;
-  const userId = LocalStorageService.get('user_profile');
+  // const userId = LocalStorageService.get('user_profile');
   const userMobileNumber = LocalStorageService.get('user_mobile_number');
-  const operationType = LocalStorageService.get('operation_type');
+  // const operationType = LocalStorageService.get('operation_type');
   const [open, setOpen] = useState(false);
   const [isOTPVerified, setOTPVerified] = useState(false);
   const [startFrom, setStartFrom] = useState(30);
-  const [otp, setOtp] = useState('');
+  // const [otp, setOtp] = useState(null);
+  // console.log(otp);
 
   //   timer for resend
   useEffect(() => {
@@ -57,6 +57,7 @@ const GenerateInvoiceModal = ({
     mutationKey: [invoiceApi.createInvoiceNew.endpointKey],
     mutationFn: createInvoiceNew,
     onSuccess: () => {
+      setOTPVerified(true);
       toast.success('Invoice Generated Successfully');
       queryClient.invalidateQueries([
         invoiceApi.getInvoices.endpointKey,
@@ -68,31 +69,16 @@ const GenerateInvoiceModal = ({
     },
   });
 
-  // Verify OTP mutation function
-  const verifyOTPMutation = useMutation({
-    mutationKey: [userAuth.loginVerifyOtp.endpointKey],
-    mutationFn: userVerifyOtp,
-    onSuccess: () => {
-      toast.success('OTP Verified');
-      setOTPVerified(true);
-      invoiceMutation.mutate(invoicedData);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
   const handleChangeOtp = (value) => {
-    setOtp(value);
+    setInvoicedData((prev) => ({
+      ...prev,
+      otpCode: value,
+    }));
   };
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
-    verifyOTPMutation.mutate({
-      otpCode: otp,
-      userId,
-      operationType,
-    });
+    invoiceMutation.mutate(invoicedData);
   };
 
   return (
@@ -125,7 +111,7 @@ const GenerateInvoiceModal = ({
               name="otp"
               onChange={handleChangeOtp}
               maxLength={4}
-              value={otp}
+              value={invoicedData?.otpCode}
               containerClassName="group flex items-center has-[:disabled]:opacity-30"
               render={({ slots }) => (
                 <div className="flex gap-4">
@@ -151,7 +137,7 @@ const GenerateInvoiceModal = ({
               </span>
             </p>
             <Button type="submit" className="w-full">
-              {verifyOTPMutation.isLoading ? <Loading /> : 'Verify To Generate'}
+              {invoiceMutation.isLoading ? <Loading /> : 'Verify To Generate'}
             </Button>
           </form>
         )}

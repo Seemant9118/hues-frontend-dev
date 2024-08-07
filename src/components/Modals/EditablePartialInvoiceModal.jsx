@@ -1,13 +1,14 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { userAuth } from '@/api/user_auth/Users';
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { previewInvoice } from '@/services/Invoice_Services/Invoice_Services';
-import { generateSignOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import {
+  invoiceGenerateOTP,
+  previewInvoice,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -60,6 +61,7 @@ const EditablePartialInvoiceModal = ({ orderDetails, setIsPastInvoices }) => {
       getInitialProductDetailsList(orderDetails?.orderItems),
     );
     setInvoicedData({
+      otpCode: null,
       orderId: orderDetails?.id,
       gstAmount: orderDetails?.gstAmount,
       amount: orderDetails?.amount,
@@ -98,8 +100,8 @@ const EditablePartialInvoiceModal = ({ orderDetails, setIsPastInvoices }) => {
   });
 
   const generateOTPMutation = useMutation({
-    mutationKey: [userAuth.generateVerifySignOTP.endpointKey],
-    mutationFn: generateSignOTP,
+    mutationKey: [invoiceApi.generateOTPInvoice.endpointKey],
+    mutationFn: invoiceGenerateOTP,
     onSuccess: () => {
       toast.success('OTP sent');
     },
@@ -139,6 +141,7 @@ const EditablePartialInvoiceModal = ({ orderDetails, setIsPastInvoices }) => {
 
             <GenerateInvoiceModal
               invoicedData={invoicedData}
+              setInvoicedData={setInvoicedData}
               generateOTP={handleGenerateOTP}
               disableCondition={invoicedData?.invoiceItems?.length === 0}
               setIsPastInvoices={setIsPastInvoices}

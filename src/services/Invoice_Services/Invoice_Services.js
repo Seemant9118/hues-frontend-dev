@@ -16,3 +16,7 @@ export const getInvoice = (id) => {
 export const previewInvoice = (data) => {
   return APIinstance.post(invoiceApi.previewInvoice.endpoint, data);
 };
+
+export const invoiceGenerateOTP = () => {
+  return APIinstance.post(invoiceApi.generateOTPInvoice.endpoint);
+};
