@@ -60,6 +60,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
     totalAmount: null,
     totalGstAmount: null,
   });
+
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
@@ -82,7 +83,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
         },
   );
 
-  const createSalesColumns = useCreateSalesColumns(setOrder);
+  const createSalesColumns = useCreateSalesColumns(setOrder, setSelectedItem);
 
   // client/vendor fetching
   const { data: customerData } = useQuery({
@@ -531,6 +532,7 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
             <Label>Quantity:</Label>
             <div className="flex flex-col gap-1">
               <Input
+                type="number"
                 disabled={
                   (cta === 'offer' && order.buyerEnterperiseId == null) ||
                   order.sellerEnterpriseId == null

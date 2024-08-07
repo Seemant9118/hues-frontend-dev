@@ -48,7 +48,7 @@ const PreviewInvoice = ({
           Preview
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
+      <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-auto">
         <DialogTitle>Preview Invoice</DialogTitle>
         {!url && <Loading />}
         {url && (

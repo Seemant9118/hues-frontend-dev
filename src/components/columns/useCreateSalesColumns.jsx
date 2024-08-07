@@ -4,7 +4,7 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import { Edit2, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 
-export const useCreateSalesColumns = (setOrder) => {
+export const useCreateSalesColumns = (setOrder, setSelectedItem) => {
   return [
     {
       accessorKey: 'productName',
@@ -62,6 +62,7 @@ export const useCreateSalesColumns = (setOrder) => {
               variant="ghost"
               size="icon"
               onClick={() => {
+                setSelectedItem(row.original);
                 setOrder((prev) => ({
                   ...prev,
                   orderItems: prev.orderItems.filter(

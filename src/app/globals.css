@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("satoshi.css");
+@import url('satoshi.css');
 
 @layer base {
   :root {
@@ -60,7 +60,7 @@
 }
 
 body {
-  font-family: "Satoshi-Variable" !important;
+  font-family: 'Satoshi-Variable' !important;
 }
 
 .scrollBarStyles::-webkit-scrollbar,
@@ -88,9 +88,16 @@ body::-webkit-scrollbar-thumb:hover,
   background: #c6c7c9;
 }
 
-
 /* Style the label when the radio input is checked */
-input[type="radio"]:checked + label {
-  background-color:hsl(var(--primary)) ;
+input[type='radio']:checked + label {
+  background-color: hsl(var(--primary));
   color: white;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
 }

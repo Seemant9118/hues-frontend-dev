@@ -3,6 +3,9 @@
 import { Button } from '@/components/ui/button';
 import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+// for hiding redundant text
+import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 
 // Set the worker source for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
