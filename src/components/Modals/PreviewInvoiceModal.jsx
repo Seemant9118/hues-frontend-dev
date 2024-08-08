@@ -48,22 +48,13 @@ const PreviewInvoice = ({
           Preview
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-auto">
+      <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
         <DialogTitle>Preview Invoice</DialogTitle>
         {!url && <Loading />}
         {url && (
           <>
-            <div className="flex flex-col items-center justify-center gap-2">
-              <div className="relative w-full">
-                <Button
-                  variant="outline"
-                  className="absolute left-40 top-2 border-black"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Back
-                </Button>
-              </div>
-              <ViewPdf url={url} />
+            <div className="flex flex-col items-center justify-center gap-2 p-2">
+              <ViewPdf url={url} setIsOpen={setIsOpen} />
             </div>
           </>
         )}
