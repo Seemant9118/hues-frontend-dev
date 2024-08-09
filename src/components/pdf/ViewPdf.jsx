@@ -10,7 +10,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 // Set the worker source for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-const ViewPdf = ({ url }) => {
+const ViewPdf = ({ url, setIsOpen }) => {
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
 
@@ -19,8 +19,16 @@ const ViewPdf = ({ url }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-end gap-4">
+    <div className="scrollBarStyles flex max-h-[40rem] max-w-[60rem] flex-col gap-2 overflow-auto">
+      <div className="sticky right-0 top-0 z-50 flex items-center justify-end gap-4 bg-white">
+        <span className="rounded-md border bg-gray-100 p-2">{`${pageNo} of ${pages} pages`}</span>
+        <Button
+          variant="outline "
+          className="border border-black"
+          onClick={() => setIsOpen(false)}
+        >
+          Back
+        </Button>
         <Button
           disabled={pageNo === 1}
           onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
