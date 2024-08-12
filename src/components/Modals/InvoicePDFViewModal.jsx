@@ -8,12 +8,19 @@ import {
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ pvtUrl }) => {
-  // making pvtUrl to publicUrl to render
+const InvoicePDFViewModal = ({ pvtUrl, shouldOpen }) => {
+  const [isOpen, setIsOpen] = useState(shouldOpen || false);
+
+  // Automatically open modal if shouldOpen is true
+  useEffect(() => {
+    setIsOpen(shouldOpen);
+  }, []);
+
+  // Fetch the PDF document using react-query
   const { data: pdfDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, pvtUrl],
     queryFn: () => getDocument(pvtUrl),
@@ -22,7 +29,7 @@ const InvoicePDFViewModal = ({ pvtUrl }) => {
   });
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-1/2 border-black">
           <Download size={16} />

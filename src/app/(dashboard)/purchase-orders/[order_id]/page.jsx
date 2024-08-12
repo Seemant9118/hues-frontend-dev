@@ -10,7 +10,7 @@ import { OrderDetails } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
 import { Eye, MoveLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 // dynamic imports
@@ -24,7 +24,11 @@ const PastInvoices = dynamic(
 const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
-  const [isPastInvoices, setIsPastInvoices] = useState(false);
+  const searchParams = useSearchParams();
+  const showInvoice = searchParams.get('showInvoice');
+  const invoiceId = searchParams.get('invoiceId');
+
+  const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
 
   const { isLoading, data: orderDetails } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey],
@@ -89,7 +93,7 @@ const ViewOrder = () => {
             ></DataTable>
           )}
 
-          {isPastInvoices && <PastInvoices />}
+          {isPastInvoices && <PastInvoices invoiceId={invoiceId} />}
 
           <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
