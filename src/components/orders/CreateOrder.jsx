@@ -34,6 +34,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
+import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import SearchInput from '../ui/SearchInput';
@@ -41,12 +42,20 @@ import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
-const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
+const CreateOrder = ({
+  onCancel,
+  name,
+  cta,
+  type,
+  isOrder,
+  setIsCreatingSales,
+  setIsCreatingInvoice,
+}) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
-
+  const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
   const [customerToSearch, setCustomerToSearch] = useState('');
   const [itemToSearch, setItemToSearch] = useState('');
 
@@ -183,12 +192,6 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
       productType: 'SERVICE',
       productName: service.serviceName,
     })) || [];
-
-  // both client goods & client services concatinated
-  // const vendorItemData = [
-  //   ...(formattedVendorGoodsData || []),
-  //   ...(formattedVendorServicesData || []),
-  // ];
 
   const vendorItemData =
     order.invoiceType === 'GOODS'
@@ -353,6 +356,15 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
   return (
     <Wrapper>
       <SubHeader name={name}></SubHeader>
+      {/* redirection to invoice modal */}
+      {redirectPopupOnFail && (
+        <RedirectionToInvoiceModal
+          redirectPopupOnFail={redirectPopupOnFail}
+          setIsCreatingSales={setIsCreatingSales}
+          setIsCreatingInvoice={setIsCreatingInvoice}
+        />
+      )}
+
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex w-1/2 items-center gap-2">
           <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
@@ -360,12 +372,22 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
             <Select
               defaultValue=""
               onValueChange={(value) => {
-                cta === 'offer'
-                  ? setOrder((prev) => ({ ...prev, buyerEnterperiseId: value }))
-                  : setOrder((prev) => ({
+                if (cta === 'offer') {
+                  if (value !== undefined) {
+                    setRedirectPopUpOnFail(false);
+                    setOrder((prev) => ({
                       ...prev,
-                      sellerEnterpriseId: value,
+                      buyerEnterperiseId: value,
                     }));
+                  } else if (name !== 'Invoice') {
+                    setRedirectPopUpOnFail(true);
+                  }
+                } else {
+                  setOrder((prev) => ({
+                    ...prev,
+                    sellerEnterpriseId: value,
+                  }));
+                }
               }}
             >
               <SelectTrigger className="max-w-xs">
@@ -402,16 +424,15 @@ const CreateOrder = ({ onCancel, name, cta, type, isOrder }) => {
                 {cta === 'offer' ? (
                   <>
                     {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                    {searchCustomerData
-                      ?.filter((customer) => !!customer?.client?.name)
-                      .map((customer) => (
-                        <SelectItem
-                          key={customer.id}
-                          value={customer?.client?.id}
-                        >
-                          {customer?.client?.name}
-                        </SelectItem>
-                      ))}
+                    {searchCustomerData?.map((customer) => (
+                      <SelectItem
+                        key={customer.id}
+                        value={customer?.client?.id || customer?.id}
+                      >
+                        {customer?.client?.name ||
+                          customer.invitation?.userDetails?.name}
+                      </SelectItem>
+                    ))}
                   </>
                 ) : (
                   <>
