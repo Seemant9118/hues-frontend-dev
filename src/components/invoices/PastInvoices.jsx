@@ -19,6 +19,11 @@ function PastInvoices() {
     select: (data) => data.data.data,
   });
 
+  // Sort the invoicedDataList by createdAt in descending order : latest invoice shows first
+  const sortedInvoicedDataList = invoicedDataList?.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
+
   // fn for formatted currency
   const formattedCurrency = React.useMemo(
     () => (amount) => {
@@ -40,30 +45,30 @@ function PastInvoices() {
   }
   return (
     <div className="scrollBarStyles flex max-h-[100vh] flex-col gap-2 overflow-auto">
-      {invoicedDataList && invoicedDataList?.length > 0 ? (
-        invoicedDataList.map((invoice) => (
+      {sortedInvoicedDataList && sortedInvoicedDataList?.length > 0 ? (
+        sortedInvoicedDataList?.map((invoice) => (
           <div
-            key={invoice.id}
+            key={invoice?.id}
             className="flex flex-col gap-2 rounded-lg border border-black bg-gray-50 p-4"
           >
             <section className="flex justify-between gap-2">
               <div className="flex flex-col gap-2">
                 <h1 className="text-sm font-bold">
-                  Invoice No. : {invoice.referenceNumber}
+                  Invoice No. : {invoice?.referenceNumber}
                 </h1>
                 <h1 className="text-sm font-bold">
-                  Date : {moment(invoice.createdAt).format('DD-MM-YYYY')}
+                  Date : {moment(invoice?.createdAt).format('DD-MM-YYYY')}
                 </h1>
                 <h1 className="text-sm font-bold">
-                  Type: {capitalize(invoice.invoiceType)}
+                  Type: {capitalize(invoice?.invoiceType)}
                 </h1>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <h1 className="text-sm font-bold">
                   Total Amount <span className="text-xs">(inc. GST)</span> :{' '}
-                  {formattedCurrency(invoice.totalAmount)}
+                  {formattedCurrency(invoice?.totalAmount)}
                 </h1>
-                <InvoicePDFViewModal pvtUrl={invoice.attachmentLink} />
+                <InvoicePDFViewModal pvtUrl={invoice?.attachmentLink} />
               </div>
             </section>
             <div className="border border-gray-200"></div>
@@ -75,19 +80,21 @@ function PastInvoices() {
                   <span>DATE</span>
                   <span>AMOUNT</span>
                 </li>
-                {invoice.invoiceItems.map((item) => {
+                {invoice?.invoiceItems?.map((item) => {
                   // Extract product name from productDetails
                   const productName =
-                    item.orderItemId?.productDetails?.productName ||
-                    item.orderItemId?.productDetails?.serviceName ||
+                    item?.orderItemId?.productDetails?.productName ||
+                    item?.orderItemId?.productDetails?.serviceName ||
                     'N/A';
 
                   return (
-                    <li key={item.id} className="grid grid-cols-4">
+                    <li key={item?.id} className="grid grid-cols-4">
                       <span>{productName}</span>
-                      <span>{item.quantity}</span>
-                      <span>{moment(item.createdAt).format('DD-MM-YYYY')}</span>
-                      <span>{formattedCurrency(item.totalAmount)}</span>
+                      <span>{item?.quantity}</span>
+                      <span>
+                        {moment(item?.createdAt).format('DD-MM-YYYY')}
+                      </span>
+                      <span>{formattedCurrency(item?.totalAmount)}</span>
                     </li>
                   );
                 })}
