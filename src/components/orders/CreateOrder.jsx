@@ -427,7 +427,10 @@ const CreateOrder = ({
                     {searchCustomerData?.map((customer) => (
                       <SelectItem
                         key={customer.id}
-                        value={customer?.client?.id || customer?.id}
+                        value={
+                          customer?.client?.id ??
+                          (name === 'Invoice' ? customer?.id : undefined)
+                        }
                       >
                         {customer?.client?.name ||
                           customer.invitation?.userDetails?.name}

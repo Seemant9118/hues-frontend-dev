@@ -67,60 +67,25 @@ export const useSalesColumns = () => {
         return <div className="text-[#A5ABBD]">{date}</div>;
       },
     },
-    // {
-    //   accessorKey: "item",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="ITEMS" />
-    //   ),
-    // },
-    // {
-    //   accessorKey: "type",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="TYPE"/>
-    //   ),
-    // },
-    // {
-    //   accessorKey: "quantity",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="ORDERS" />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const description = row.original.quantity;
-    //     return <p className="truncate">{description}</p>;
-    //   },
-    // },
     {
       accessorKey: 'buyerEnterpriseId',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),
       cell: ({ row }) => {
-        const client = clients?.find(
-          (clientData) =>
-            clientData?.client?.id === row.original.buyerEnterpriseId,
-        );
+        const client = clients?.find((clientData) => {
+          const clientId = clientData?.client?.id ?? clientData?.id;
+          return clientId === row.original.buyerEnterpriseId;
+        });
 
-        return (
-          <div>
-            {client?.client?.name !== null
-              ? client?.client?.name
-              : client?.invitation?.userDetails?.name}
-          </div>
-        );
+        const clientName =
+          client?.client === null
+            ? client?.invitation?.userDetails?.name
+            : client?.client?.name;
+
+        return <div>{clientName}</div>;
       },
     },
-    // {
-    //   accessorKey: "price",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="PRICE" />
-    //   ),
-    // },
-    // {
-    //   accessorKey: "gst",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="GST %" />
-    //   ),
-    // },
     {
       accessorKey: 'negotiationStatus',
       header: ({ column }) => (

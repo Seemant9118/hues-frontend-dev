@@ -38,7 +38,10 @@ const RedirectionToInvoiceModal = ({
             <Button
               variant="outline"
               className="w-36"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setIsCreatingSales(false);
+              }}
             >
               No
             </Button>
