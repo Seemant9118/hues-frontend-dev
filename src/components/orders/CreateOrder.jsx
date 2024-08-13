@@ -372,12 +372,20 @@ const CreateOrder = ({
             <Select
               defaultValue=""
               onValueChange={(value) => {
+                const selectedItem = JSON.parse(value); // Parse the JSON string
+                const { id, isAcceptedCustomer } = selectedItem; // Destructure the parsed object
+
                 if (cta === 'offer') {
-                  if (value !== undefined) {
+                  if (
+                    (id !== undefined &&
+                      isAcceptedCustomer === 'ACCEPTED' &&
+                      name === 'Offer') ||
+                    name === 'Invoice'
+                  ) {
                     setRedirectPopUpOnFail(false);
                     setOrder((prev) => ({
                       ...prev,
-                      buyerEnterperiseId: value,
+                      buyerEnterperiseId: id,
                     }));
                   } else if (name !== 'Invoice') {
                     setRedirectPopUpOnFail(true);
@@ -385,7 +393,7 @@ const CreateOrder = ({
                 } else {
                   setOrder((prev) => ({
                     ...prev,
-                    sellerEnterpriseId: value,
+                    sellerEnterpriseId: id,
                   }));
                 }
               }}
@@ -427,10 +435,16 @@ const CreateOrder = ({
                     {searchCustomerData?.map((customer) => (
                       <SelectItem
                         key={customer.id}
-                        value={
-                          customer?.client?.id ??
-                          (name === 'Invoice' ? customer?.id : undefined)
-                        }
+                        value={JSON.stringify({
+                          id:
+                            customer?.client?.id ??
+                            (name === 'Invoice' ? customer?.id : undefined),
+                          isAcceptedCustomer:
+                            customer?.invitation === null ||
+                            customer?.invitation === undefined
+                              ? 'ACCEPTED'
+                              : customer?.invitation?.status,
+                        })}
                       >
                         {customer?.client?.name ||
                           customer.invitation?.userDetails?.name}
@@ -445,7 +459,14 @@ const CreateOrder = ({
                       .map((customer) => (
                         <SelectItem
                           key={customer.id}
-                          value={customer?.vendor?.id}
+                          value={JSON.stringify({
+                            id: customer?.vendor?.id,
+                            isAcceptedCustomer:
+                              customer?.invitation === null ||
+                              customer?.invitation === undefined
+                                ? 'ACCEPTED'
+                                : customer?.invitation?.status,
+                          })}
                         >
                           {customer?.vendor?.name}
                         </SelectItem>
