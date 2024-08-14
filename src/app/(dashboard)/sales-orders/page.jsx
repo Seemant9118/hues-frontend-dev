@@ -139,6 +139,8 @@ const SalesOrder = () => {
           name="Offer"
           cta="offer"
           isOrder="order"
+          setIsCreatingSales={setIsCreatingSales}
+          setIsCreatingInvoice={setIsCreatingInvoice}
           onCancel={() => setIsCreatingSales(false)}
         />
       )}
