@@ -1,21 +1,27 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
+import BulkNegotiateModal from '@/components/Modals/BulkNegotiateModal';
 import EditablePartialInvoiceModal from '@/components/Modals/EditablePartialInvoiceModal';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { OrderDetails } from '@/services/Orders_Services/Orders_Services';
-import { useQuery } from '@tanstack/react-query';
+import { LocalStorageService } from '@/lib/utils';
+import {
+  bulkNegotiateAcceptOrReject,
+  OrderDetails,
+} from '@/services/Orders_Services/Orders_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, MoveLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
-// dynamic imports
+// Dynamic imports
 const PastInvoices = dynamic(
   () => import('@/components/invoices/PastInvoices'),
   {
@@ -24,8 +30,10 @@ const PastInvoices = dynamic(
 );
 
 const ViewOrder = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [isPastInvoices, setIsPastInvoices] = useState(false);
 
   const { isLoading, data: orderDetails } = useQuery({
@@ -34,11 +42,73 @@ const ViewOrder = () => {
     select: (data) => data.data.data,
   });
 
+  const acceptMutation = useMutation({
+    mutationKey: orderApi.bulkNegotiateAcceptOrReject.endpointKey,
+    mutationFn: bulkNegotiateAcceptOrReject,
+    onSuccess: () => {
+      toast.success('Order Accepted');
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message);
+    },
+  });
+
+  const handleAccept = () => {
+    acceptMutation.mutate({
+      orderId: Number(params.order_id),
+      status: 'ACCEPTED',
+    });
+  };
+
   const OrderColumns = useSalesOrderColumns(
     orderDetails?.buyerEnterpriseId,
     orderDetails?.sellerEnterpriseId,
     orderDetails?.orderType,
   );
+
+  const ConditionalRenderingStatus = ({ status }) => {
+    let statusText;
+    let statusColor;
+    let statusBG;
+    let statusBorder;
+
+    switch (status) {
+      case 'ACCEPTED':
+        statusText = 'ACCEPTED';
+        statusColor = '#39C06F';
+        statusBG = '#39C06F1A';
+        statusBorder = '#39C06F';
+        break;
+      case 'NEW':
+        statusText = 'NEW';
+        statusColor = '#1863B7';
+        statusBG = '#1863B71A';
+        statusBorder = '#1863B7';
+        break;
+      case 'NEGOTIATION':
+        statusText = 'NEGOTIATION';
+        statusColor = '#F8BA05';
+        statusBG = '#F8BA051A';
+        statusBorder = '#F8BA05';
+        break;
+      default:
+        return null;
+    }
+
+    return (
+      <div
+        className="flex max-w-fit items-center justify-center gap-1 rounded border px-1.5 py-2 text-sm font-bold"
+        style={{
+          color: statusColor,
+          backgroundColor: statusBG,
+          borderColor: statusBorder,
+        }}
+      >
+        {statusText}
+      </div>
+    );
+  };
 
   const subHeader = isPastInvoices ? (
     <>
@@ -46,7 +116,10 @@ const ViewOrder = () => {
       <span className="text-blue-400 underline">INVOICES</span>
     </>
   ) : (
-    `ORDER ID: #${params.order_id}`
+    <div className="flex items-center gap-2">
+      ORDER ID: #{params.order_id}{' '}
+      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+    </div>
   );
 
   return (
@@ -102,18 +175,71 @@ const ViewOrder = () => {
 
           <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-          {!isPastInvoices && (
-            <Button
-              variant="outline"
-              className="w-32"
-              onClick={() => {
-                router.push('/sales-orders');
-              }}
-            >
-              {' '}
-              Close{' '}
-            </Button>
-          )}
+          <div className="flex justify-between">
+            {!isPastInvoices && (
+              <Button
+                variant="outline"
+                className="w-32"
+                onClick={() => {
+                  router.push('/sales-orders');
+                }}
+              >
+                {' '}
+                Close{' '}
+              </Button>
+            )}
+
+            {/* status NEW */}
+            {!isPastInvoices &&
+              orderDetails?.negotiationStatus === 'NEW' &&
+              orderDetails?.sellerEnterpriseId === enterpriseId && (
+                <>
+                  {orderDetails?.orderType === 'SALES' && (
+                    <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
+                      Waiting for Response
+                    </span>
+                  )}
+
+                  {orderDetails?.orderType === 'PURCHASE' && (
+                    <div className="flex gap-2">
+                      <BulkNegotiateModal orderDetails={orderDetails} />
+                      <Button
+                        className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                        onClick={handleAccept}
+                      >
+                        Accept
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+
+            {/* status NEGOTIATION */}
+            {!isPastInvoices &&
+              orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+              orderDetails?.sellerEnterpriseId === enterpriseId && (
+                <>
+                  {orderDetails?.orderItems?.[0]?.negotiation?.status ===
+                    'BID_SUBMITTED' && (
+                    <div className="flex gap-2">
+                      <BulkNegotiateModal orderDetails={orderDetails} />
+                      <Button
+                        className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                        onClick={handleAccept}
+                      >
+                        Accept
+                      </Button>
+                    </div>
+                  )}
+                  {orderDetails?.orderItems?.[0]?.negotiation?.status ===
+                    'OFFER_SUBMITTED' && (
+                    <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
+                      Waiting for Response
+                    </span>
+                  )}
+                </>
+              )}
+          </div>
         </>
       )}
     </Wrapper>

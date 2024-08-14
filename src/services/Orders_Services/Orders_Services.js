@@ -50,3 +50,11 @@ export const createInvoice = (data) => {
 export const generateInvoice = (id) => {
   return APIinstance.post(`${orderApi.generateInvoice.endpoint}${id}`);
 };
+
+export const bulkNegotiateAcceptOrReject = (data) => {
+  return APIinstance.post(orderApi.bulkNegotiateAcceptOrReject.endpoint, data);
+};
+
+export const createBulkNegotiaion = (data) => {
+  return APIinstance.post(orderApi.createBulkNegotiation.endpoint, data);
+};
