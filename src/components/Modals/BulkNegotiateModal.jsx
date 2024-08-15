@@ -22,18 +22,18 @@ const BulkNegotiateModal = ({ orderDetails }) => {
   const pathName = usePathname();
   const isBid = pathName.includes('purchase-orders');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+
   const [open, setOpen] = useState(false);
-  const [bulkNegotiateOrder, setBulkNegotiateOrder] = useState(
-    orderDetails?.orderItems,
-  );
+  const [bulkNegotiateOrder, setBulkNegotiateOrder] = useState([]);
 
   const createBulkNegotiationMutation = useMutation({
     mutationKey: orderApi.createBulkNegotiation.endpointKey,
     mutationFn: createBulkNegotiaion,
     onSuccess: () => {
-      toast.success('Negotiation created');
+      toast.success('Negotiation submitted Successfully');
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       setOpen(false);
+      setBulkNegotiateOrder([]);
     },
     onError: (error) => {
       toast.error(error.response.data.message);
@@ -79,7 +79,13 @@ const BulkNegotiateModal = ({ orderDetails }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        setOpen(!open);
+        setBulkNegotiateOrder([]);
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]">
           Negotiate
@@ -146,7 +152,8 @@ const BulkNegotiateModal = ({ orderDetails }) => {
                   <Input
                     type="number"
                     name="quantity"
-                    value={bulkNegotiateOrder[index].quantity || ''}
+                    placeholder="Qty."
+                    value={bulkNegotiateOrder?.[index]?.quantity || ''}
                     onChange={(e) => handleChange(e, index)}
                   />
                 </div>
@@ -159,7 +166,8 @@ const BulkNegotiateModal = ({ orderDetails }) => {
                   <Input
                     type="number"
                     name="unitPrice"
-                    value={bulkNegotiateOrder[index].unitPrice || ''}
+                    placeholder="Rate"
+                    value={bulkNegotiateOrder?.[index]?.unitPrice || ''}
                     onChange={(e) => handleChange(e, index)}
                   />
                 </div>
@@ -169,8 +177,8 @@ const BulkNegotiateModal = ({ orderDetails }) => {
                   {item.totalAmount}
                 </div>
                 <div className="flex items-center justify-center p-1">
-                  {Number(bulkNegotiateOrder[index]?.quantity) *
-                    Number(bulkNegotiateOrder[index]?.unitPrice)}
+                  {Number(bulkNegotiateOrder?.[index]?.quantity) *
+                    Number(bulkNegotiateOrder?.[index]?.unitPrice) || 0}
                 </div>
               </div>
             </div>
