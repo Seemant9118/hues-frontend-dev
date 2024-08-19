@@ -40,7 +40,6 @@ const ViewOrder = () => {
 
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
 
-
   const { isLoading, data: orderDetails } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
