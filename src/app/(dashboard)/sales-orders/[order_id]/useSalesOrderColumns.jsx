@@ -25,9 +25,10 @@ export const useSalesOrderColumns = () => {
       ),
       cell: ({ row }) => {
         const { invoiceQuantity, quantity } = row.original;
+        const negotiationQty = row.original?.negotiation?.quantity;
         return (
           <div>
-            {invoiceQuantity} / {quantity}
+            {invoiceQuantity} / {negotiationQty || quantity}
           </div>
         );
       },
@@ -38,9 +39,10 @@ export const useSalesOrderColumns = () => {
         <DataTableColumnHeader column={column} title="ASKING RATE" />
       ),
       cell: ({ row }) => {
+        const isNegotiation = row.original?.negotiation;
         const { rate } = row.original.productDetails;
-        const askRate = row?.original?.negotiation?.rate;
-        return <div>{askRate ?? rate}</div>;
+        const askRate = row.original?.negotiation?.unitPrice;
+        return <div>{isNegotiation ? askRate : rate}</div>;
       },
     },
     {
@@ -49,13 +51,15 @@ export const useSalesOrderColumns = () => {
         <DataTableColumnHeader column={column} title="TOTAL AMOUNT" />
       ),
       cell: ({ row }) => {
+        const isNegotiation = row.original?.negotiation;
         const amount = parseFloat(row.getValue('totalAmount'));
+        const negotiateAmt = parseFloat(row.original?.negotiation?.price);
 
         // Format the amount as a dollar amount
         const formatted = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'INR',
-        }).format(amount);
+        }).format(isNegotiation ? negotiateAmt : amount);
         return <div className="font-medium">{formatted}</div>;
       },
     },

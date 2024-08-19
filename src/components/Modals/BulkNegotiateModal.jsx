@@ -21,7 +21,7 @@ const BulkNegotiateModal = ({ orderDetails }) => {
   const queryClient = useQueryClient();
   const pathName = usePathname();
   const isBid = pathName.includes('purchase-orders');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const userId = LocalStorageService.get('user_profile');
 
   const [open, setOpen] = useState(false);
   const [bulkNegotiateOrder, setBulkNegotiateOrder] = useState([]);
@@ -48,7 +48,7 @@ const BulkNegotiateModal = ({ orderDetails }) => {
       orderId: orderDetails?.orderItems?.[index]?.orderId,
       orderItemId: orderDetails?.orderItems?.[index]?.id,
       priceType: isBid ? 'BID' : 'OFFER',
-      createdBy: enterpriseId,
+      createdBy: userId,
       date: moment(new Date()).format('DD/MM/YYYY'),
       status: isBid ? 'BID_SUBMITTED' : 'OFFER_SUBMITTED',
       [name]: Number(value), // update the specific field (quantity or price)
@@ -146,7 +146,9 @@ const BulkNegotiateModal = ({ orderDetails }) => {
               </div>
               <div className="grid grid-cols-2 border border-black">
                 <div className="flex items-center justify-center p-1">
-                  {item.quantity}
+                  {item?.negotiation
+                    ? item?.negotiation?.quantity
+                    : item?.quantity}
                 </div>
                 <div className="flex items-center justify-center p-1">
                   <Input
@@ -160,7 +162,9 @@ const BulkNegotiateModal = ({ orderDetails }) => {
               </div>
               <div className="grid grid-cols-2 border border-black">
                 <div className="flex items-center justify-center p-1">
-                  {item.unitPrice}
+                  {item?.negotiation
+                    ? item?.negotiation?.unitPrice
+                    : item?.unitPrice}
                 </div>
                 <div className="flex items-center justify-center p-1">
                   <Input
@@ -174,7 +178,9 @@ const BulkNegotiateModal = ({ orderDetails }) => {
               </div>
               <div className="grid grid-cols-2 border border-black">
                 <div className="flex items-center justify-center p-1">
-                  {item.totalAmount}
+                  {item?.negotiation
+                    ? item?.negotiation?.price
+                    : item.totalAmount}
                 </div>
                 <div className="flex items-center justify-center p-1">
                   {Number(bulkNegotiateOrder?.[index]?.quantity) *

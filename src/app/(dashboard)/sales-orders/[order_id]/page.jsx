@@ -61,11 +61,7 @@ const ViewOrder = () => {
     });
   };
 
-  const OrderColumns = useSalesOrderColumns(
-    orderDetails?.buyerEnterpriseId,
-    orderDetails?.sellerEnterpriseId,
-    orderDetails?.orderType,
-  );
+  const OrderColumns = useSalesOrderColumns();
 
   const ConditionalRenderingStatus = ({ status }) => {
     let statusText;
