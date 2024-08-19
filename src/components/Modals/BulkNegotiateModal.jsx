@@ -30,7 +30,7 @@ const BulkNegotiateModal = ({ orderDetails }) => {
     mutationKey: orderApi.createBulkNegotiation.endpointKey,
     mutationFn: createBulkNegotiaion,
     onSuccess: () => {
-      toast.success('Negotiation submitted Successfully');
+      toast.success('Negotiation submitted successfully');
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       setOpen(false);
       setBulkNegotiateOrder([]);
@@ -52,14 +52,18 @@ const BulkNegotiateModal = ({ orderDetails }) => {
       date: moment(new Date()).format('DD/MM/YYYY'),
       status: isBid ? 'BID_SUBMITTED' : 'OFFER_SUBMITTED',
       [name]: Number(value), // update the specific field (quantity or price)
-      price: null,
     };
     setBulkNegotiateOrder(updatedOrder);
   };
-
   const extractData = () => {
+    // Filter out null, undefined, or incomplete objects
+    const filteredOrders = bulkNegotiateOrder.filter(
+      (item) => item && item.quantity && item.unitPrice,
+    );
+
+    // Return the negotiations only for valid orders
     return {
-      negotiations: bulkNegotiateOrder.map((item) => ({
+      negotiations: filteredOrders.map((item) => ({
         orderId: item.orderId,
         orderItemId: item.orderItemId,
         priceType: item.priceType,
@@ -74,8 +78,12 @@ const BulkNegotiateModal = ({ orderDetails }) => {
   };
 
   const handleSubmit = () => {
-    const printedExtractedData = extractData();
-    createBulkNegotiationMutation.mutate(printedExtractedData);
+    const extractedData = extractData();
+    if (extractedData.negotiations.length === 0) {
+      toast.error('Please fill in at least one negotiation item.');
+      return;
+    }
+    createBulkNegotiationMutation.mutate(extractedData);
   };
 
   return (

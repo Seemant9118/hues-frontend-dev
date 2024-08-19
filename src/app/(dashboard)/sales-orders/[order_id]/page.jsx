@@ -215,8 +215,7 @@ const ViewOrder = () => {
               orderDetails?.negotiationStatus === 'NEGOTIATION' &&
               orderDetails?.sellerEnterpriseId === enterpriseId && (
                 <>
-                  {orderDetails?.orderItems?.[0]?.negotiation?.status ===
-                    'BID_SUBMITTED' && (
+                  {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
                     <div className="flex gap-2">
                       <BulkNegotiateModal orderDetails={orderDetails} />
                       <Button
@@ -227,8 +226,7 @@ const ViewOrder = () => {
                       </Button>
                     </div>
                   )}
-                  {orderDetails?.orderItems?.[0]?.negotiation?.status ===
-                    'OFFER_SUBMITTED' && (
+                  {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
                     <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
                       Waiting for Response
                     </span>
