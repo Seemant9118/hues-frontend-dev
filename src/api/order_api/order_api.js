@@ -66,4 +66,16 @@ export const orderApi = {
     endpoint: `/order/generateinvoice/`,
     endpointKey: 'generate_invoice',
   },
+
+  // 13. bulkNegotiate accept/reject
+  bulkNegotiateAcceptOrReject: {
+    endpoint: `/order/negotiation/bulk/updatestatus`,
+    endpointKey: 'bulk_Negotiation_accept_reject',
+  },
+
+  // 14. createbulkNegotiation
+  createBulkNegotiation: {
+    endpoint: `/order/negotiation/bulk/create`,
+    endpointKey: 'create_bulk_negotiation',
+  },
 };
