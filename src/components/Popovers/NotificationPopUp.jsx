@@ -40,6 +40,14 @@ function NotificationPopUp() {
     },
   });
 
+  // calculate totol number of unread notifications
+  const calculateNoOfUnreadNotifications = (notifications) => {
+    return notifications?.filter(
+      (notification) => notification.isRead === false,
+    ).length;
+  };
+  const totalUnread = calculateNoOfUnreadNotifications(notifications);
+
   // call api : on whenever routes changes in app, opening/closing popup, initial load
   useEffect(() => {
     if (enterpriseId) {
@@ -119,8 +127,15 @@ function NotificationPopUp() {
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant={'link'} size={'icon'} className="your-notification">
+          <Button variant={'link'} size={'icon'} className="relative">
             <Bell className="text-grey" />
+            {totalUnread === 0 ? (
+              ''
+            ) : (
+              <span className="absolute right-1 top-0 rounded-xl bg-white text-red-500">
+                {totalUnread}
+              </span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="m-2 flex max-h-[400px] w-[300px] flex-col gap-4 px-4 text-sm">
