@@ -72,7 +72,7 @@ const BulkNegotiateModal = ({ orderDetails }) => {
         status: item.status,
         unitPrice: item.unitPrice,
         quantity: item.quantity,
-        price: item.quantity * item.unitPrice,
+        price: (item.quantity * item.unitPrice).toFixed(2),
       })),
     };
   };
@@ -192,7 +192,8 @@ const BulkNegotiateModal = ({ orderDetails }) => {
                 </div>
                 <div className="flex items-center justify-center p-1">
                   {Number(bulkNegotiateOrder?.[index]?.quantity) *
-                    Number(bulkNegotiateOrder?.[index]?.unitPrice) || 0}
+                    Number(bulkNegotiateOrder?.[index]?.unitPrice).toFixed(2) ||
+                    0}
                 </div>
               </div>
             </div>
