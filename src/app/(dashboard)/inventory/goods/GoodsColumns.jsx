@@ -6,7 +6,6 @@ import ShareModal from '@/components/Modals/ShareModal';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,34 +17,6 @@ import { Edit3, Info, MoreHorizontal } from 'lucide-react';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   return [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    // {
-    //   accessorKey: "type",
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="ITEM TYPE" />
-    //   ),
-    // },
     {
       accessorKey: 'productName',
       header: ({ column }) => (
@@ -73,16 +44,6 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
         <DataTableColumnHeader column={column} title="HSN CODE" />
       ),
     },
-    // {
-    //   accessorKey: 'description',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="DESCRIPTION" />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const { description } = row.original;
-    //     return <p className="truncate">{description}</p>;
-    //   },
-    // },
     {
       accessorKey: 'rate',
       header: ({ column }) => (
