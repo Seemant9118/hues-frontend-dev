@@ -15,10 +15,10 @@ import { LocalStorageService } from '@/lib/utils';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
-export const useSalesColumns = () => {
+export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const { data: clients } = useQuery({
@@ -169,6 +169,18 @@ export const useSalesColumns = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
+              {status === 'NEW' && (
+                <span
+                  onClick={(e) => {
+                    setIsEditingOrder(true);
+                    e.stopPropagation();
+                    setOrderId(row.original.id);
+                  }}
+                  className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                >
+                  <Pencil size={14} /> Edit
+                </span>
+              )}
               <ConfirmAction
                 name={name}
                 id={id}

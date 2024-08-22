@@ -28,13 +28,18 @@ const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
   loading: () => <Loading />,
 });
 
+const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
+  loading: () => <Loading />,
+});
+
 const SalesOrder = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
-  // const [isOrderView, setIsOrderView] = useState(false);
+  const [isEditingOrder, setIsEditingOrder] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -65,7 +70,7 @@ const SalesOrder = () => {
     ],
   };
 
-  const SalesColumns = useSalesColumns();
+  const SalesColumns = useSalesColumns(setIsEditingOrder, setOrderId);
 
   const onRowClick = (row) => {
     router.push(`/sales-orders/${row.id}`);
@@ -79,7 +84,7 @@ const SalesOrder = () => {
 
   return (
     <>
-      {!isCreatingSales && !isCreatingInvoice && (
+      {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
         <Wrapper>
           <SubHeader name={'Sales'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
@@ -133,7 +138,7 @@ const SalesOrder = () => {
         </Wrapper>
       )}
 
-      {isCreatingSales && !isCreatingInvoice && (
+      {isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
         <CreateOrder
           type="sales"
           name="Offer"
@@ -145,13 +150,24 @@ const SalesOrder = () => {
         />
       )}
 
-      {isCreatingInvoice && !isCreatingSales && (
+      {isCreatingInvoice && !isCreatingSales && !isEditingOrder && (
         <CreateOrder
           type="sales"
           name="Invoice"
           cta="offer"
           isOrder="invoice"
           onCancel={() => setIsCreatingInvoice(false)}
+        />
+      )}
+
+      {isEditingOrder && !isCreatingSales && !isCreatingInvoice && (
+        <EditOrder
+          type="sales"
+          name="Edit"
+          cta="offer"
+          isOrder="order"
+          orderId={orderId}
+          onCancel={() => setIsEditingOrder(false)}
         />
       )}
     </>
