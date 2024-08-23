@@ -15,10 +15,11 @@ import { LocalStorageService } from '@/lib/utils';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
-export const usePurchaseColumns = () => {
+export const usePurchaseColumns = (setIsEditingOrder, setOrderId) => {
+  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const { data: vendors } = useQuery({
@@ -99,6 +100,7 @@ export const usePurchaseColumns = () => {
         let statusBG;
         let statusBorder;
         let tooltip;
+
         switch (status) {
           case 'ACCEPTED':
             statusText = 'Accepted';
@@ -128,7 +130,7 @@ export const usePurchaseColumns = () => {
             style={{
               color: statusColor,
               backgroundColor: statusBG,
-              border: statusBorder,
+              borderColor: statusBorder,
             }}
           >
             {statusText} {tooltip}
@@ -144,21 +146,24 @@ export const usePurchaseColumns = () => {
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('amount'));
 
-        // Format the amount as a dollar amount
+        // Format the amount as a currency value
         const formatted = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'INR',
         }).format(amount);
+
         return <div className="font-medium">{formatted}</div>;
       },
     },
-
     {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const { id } = row.original;
+        const { id, createdBy } = row.original;
         const name = 'order';
+        const status = row.original.negotiationStatus;
+
+        if (status === 'NEGOTIATION' || status === 'ACCEPTED') return null;
 
         return (
           <DropdownMenu>
@@ -169,6 +174,19 @@ export const usePurchaseColumns = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
+              {status === 'NEW' &&
+                userId.toString() === createdBy.toString() && (
+                  <span
+                    onClick={(e) => {
+                      setIsEditingOrder(true);
+                      e.stopPropagation();
+                      setOrderId(row.original.id);
+                    }}
+                    className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                  >
+                    <Pencil size={14} /> Edit
+                  </span>
+                )}
               <ConfirmAction
                 name={name}
                 id={id}

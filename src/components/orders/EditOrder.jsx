@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { LocalStorageService } from '@/lib/utils';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
@@ -25,12 +33,14 @@ import {
   GetAllProductServices,
   GetServicesVendor,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { OrderDetails } from '@/services/Orders_Services/Orders_Services';
-import { useQuery } from '@tanstack/react-query';
+import {
+  OrderDetails,
+  updateOrder,
+} from '@/services/Orders_Services/Orders_Services';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useEditColumns } from '../columns/useEditColumns';
-import { DataTable } from '../table/data-table';
-import ErrorBox from '../ui/ErrorBox';
+import { toast } from 'sonner';
 import Loading from '../ui/Loading';
 import SearchInput from '../ui/SearchInput';
 import SubHeader from '../ui/Sub-header';
@@ -38,10 +48,8 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const EditOrder = ({ onCancel, name, cta, orderId }) => {
-  //   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [itemToSearch, setItemToSearch] = useState('');
-  const [errorMsg, setErrorMsg] = useState({});
 
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
@@ -52,6 +60,7 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
     gstPerUnit: null,
     totalAmount: null,
     totalGstAmount: null,
+    negotiationStatus: 'NEW',
   });
 
   // Fetch order details✅
@@ -66,6 +75,7 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
     return orderItems?.map((item) => {
       const { productDetails } = item;
       return {
+        id: item.id,
         gstPerUnit: item.gstPerUnit,
         productId: productDetails?.id ?? null, // Use null as default if undefined
         productName: productDetails?.productName || productDetails?.serviceName, // Use empty string as default if undefined
@@ -74,6 +84,8 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
         totalAmount: item.totalAmount,
         totalGstAmount: item.totalGstAmount,
         unitPrice: item.unitPrice,
+        version: item.version,
+        negotiationStatus: item?.negotiationStatus || 'NEW',
       };
     });
   };
@@ -88,7 +100,9 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
     amount: orderDetails?.amount || 0,
     orderType: orderDetails?.orderType || '',
     invoiceType: orderDetails?.invoiceType || '',
+    version: orderDetails?.version,
     orderItems: transformedItems || [],
+    negotiationStatus: orderDetails?.negotiationStatus,
   };
 
   const [order, setOrder] = useState(defaultOrder);
@@ -129,26 +143,47 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
     }, 0);
     return grossAmount;
   };
-  let grossAmt = handleCalculateGrossAmt();
-
   const handleCalculateTotalAmounts = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
 
     const totalAmountWithGST = totalAmount + totalGstAmt;
     return totalAmountWithGST;
   };
-  let totalAmtWithGst = handleCalculateTotalAmounts();
 
   useEffect(() => {
-    grossAmt = handleCalculateGrossAmt();
-    totalAmtWithGst = handleCalculateTotalAmounts();
+    handleSetTotalAmt();
+    handleCalculateGrossAmt();
+    handleCalculateTotalAmounts();
   }, [order]);
 
-  const editColumns = useEditColumns(
-    setSelectedItem,
-    setOrder,
-    orderDetails?.orderType,
-  );
+  // Update the order state when input values change
+  const handleInputChange = (rowItem, key, newValue) => {
+    setOrder((prev) => ({
+      ...prev,
+      orderItems: prev.orderItems.map((item) => {
+        if (item.productId === rowItem.productId) {
+          const updatedItem = {
+            ...item,
+            [key]: Number(newValue),
+          };
+          // Recalculate totalAmount using updated values
+          updatedItem.totalAmount =
+            updatedItem.quantity * updatedItem.unitPrice;
+
+          // Recalculate totalGstAmount based on the updated totalAmount and gstPerUnit
+          updatedItem.totalGstAmount = parseFloat(
+            (updatedItem.totalAmount * (updatedItem.gstPerUnit / 100)).toFixed(
+              2,
+            ),
+          );
+
+          return updatedItem;
+        }
+
+        return item;
+      }),
+    }));
+  };
 
   //   getclients : to getName of the client
   const { data: clients } = useQuery({
@@ -175,14 +210,14 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
   });
   const vendor = vendors?.find((vendorData) => {
     const vendorId = vendorData?.vendor?.id ?? vendorData?.id;
-    return vendorId === order?.buyerEnterpriseId;
+    return vendorId === order?.sellerEnterpriseId;
   });
   const vendorName =
     vendor?.vendor === null
       ? vendor?.invitation?.userDetails?.name
       : vendor?.vendor?.name;
 
-  // client goods fetching✅
+  // client goods fetching
   const { data: goodsData } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
@@ -195,8 +230,7 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
       productType: 'GOODS',
       productName: good.productName,
     })) || [];
-
-  // client services fetching✅
+  // client services fetching
   const { data: servicesData } = useQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
@@ -209,12 +243,10 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
       productType: 'SERVICE',
       productName: service.serviceName,
     })) || [];
-
-  // selected data on the basis of itemType✅
+  // selected data on the basis of itemType
   const itemData =
     order.invoiceType === 'GOODS' ? formattedGoodsData : formattedServicesData;
-
-  // searching item from list given "itemData" - Inventory✅
+  // searching item from list given "itemData" - Inventory
   const searchItemData = itemData?.filter((item) => {
     const itemName = item.productName ?? '';
     return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
@@ -236,7 +268,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
       productType: 'GOODS',
       productName: good.productName,
     })) || [];
-
   // vendor services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
@@ -253,12 +284,10 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
       productType: 'SERVICE',
       productName: service.serviceName,
     })) || [];
-
   const vendorItemData =
     order.invoiceType === 'GOODS'
       ? formattedVendorGoodsData
       : formattedVendorServicesData;
-
   // searching vendor's item from list given "vendorItemData" - Inventory
   const searchVendorsItemData = vendorItemData?.filter((item) => {
     const itemName = item.productName ?? '';
@@ -267,66 +296,32 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
 
   // fn for capitalization
   function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    // eslint-disable-next-line no-unsafe-optional-chaining
+    return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   }
 
-  // validations
-  const validation = ({ order, selectedItem }) => {
-    const errorObj = {};
-
-    if (cta === 'offer') {
-      if (order?.orderItem?.length === 0) {
-        errorObj.orderItem = '*Please add atleast one item to create order';
-      }
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = '*Required Quantity';
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = '*Required Price';
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = '*Required GST (%)';
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = '*Required Amount';
-      }
-    } else {
-      if (order?.orderItem?.length === 0) {
-        errorObj.orderItem = '*Please add atleast one item to create order';
-      }
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = '*Required Quantity';
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = '*Required Price';
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = '*Required GST (%)';
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = '*Required Amount';
-      }
-    }
-
-    return errorObj;
-  };
+  // mutation Fn for update order
+  const updateOrderMutation = useMutation({
+    mutationKey: [orderApi.updateOrder.endpointKey],
+    mutationFn: (data) => updateOrder(orderId, data),
+    onSuccess: () => {
+      toast.success('Order Updated Successfully');
+      onCancel();
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
 
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-    const isError = validation({ order, selectedItem });
 
-    if (Object.keys(isError).length === 0) {
-      totalAmount;
-      totalGstAmt;
-      // orderEditMutation.mutate({
-      //   ...order,
-      //   amount: parseFloat(totalAmount.toFixed(2)),
-      //   gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-      // });
-    } else {
-      setErrorMsg(isError);
-    }
+    updateOrderMutation.mutate({
+      ...order,
+      amount: parseFloat(totalAmount.toFixed(2)),
+      gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+    });
   };
 
   return (
@@ -335,13 +330,13 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex w-1/2 items-center gap-2">
           <Label>{cta === 'offer' ? 'Client' : 'Vendor'}:</Label>
-          <div className="w-full rounded-md border bg-gray-100 p-2 text-sm">
+          <div className="w-full rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {clientName || vendorName}
           </div>
         </div>
         <div className="flex w-1/2 items-center gap-2">
           <Label>Type:</Label>
-          <div className="w-full rounded-md border bg-gray-100 p-2 text-sm">
+          <div className="w-full rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {capitalize(orderDetails?.invoiceType)}
           </div>
         </div>
@@ -410,7 +405,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
                     ))}
                 </SelectContent>
               </Select>
-              {errorMsg.name && <ErrorBox msg={errorMsg.name} />}
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -435,7 +429,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
                 }}
                 className="max-w-20"
               />
-              {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
 
@@ -460,7 +453,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
                   }));
                 }}
               />
-              {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
             </div>
           </div>
 
@@ -472,7 +464,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
                 value={selectedItem.gstPerUnit}
                 className="max-w-20"
               />
-              {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
             </div>
           </div>
 
@@ -484,7 +475,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
                 value={selectedItem.totalAmount}
                 className="max-w-20"
               />
-              {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
             </div>
           </div>
         </div>
@@ -526,7 +516,6 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
                 totalAmount: '',
                 totalGstAmount: '',
               });
-              setErrorMsg({});
             }}
             variant="blue_outline"
           >
@@ -534,7 +523,7 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
           </Button>
         </div>
       </div>
-      {/* selected item table */}
+      {/* selected item / Edit item table */}
       <div className="scrollBarStyles min-h-42 relative flex flex-col gap-2 overflow-auto rounded-md border px-4">
         <span className="sticky top-0 z-20 w-full bg-white pt-4 font-bold">
           Edit Items
@@ -542,7 +531,86 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
         {isLoading ? (
           <Loading />
         ) : (
-          <DataTable data={order?.orderItems} columns={editColumns} />
+          <div>
+            <div className="rounded-[6px]">
+              <Table id={orderId}>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      ITEM
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      PRICE
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      QUANTITY
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      GST (%)
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      AMOUNT
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      GST AMOUNT
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="italic">
+                  {order?.orderItems?.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.productName}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.unitPrice}
+                          onChange={(e) =>
+                            handleInputChange(item, 'unitPrice', e.target.value)
+                          }
+                          className="w-24 border-2 font-semibold"
+                          placeholder="price"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleInputChange(item, 'quantity', e.target.value)
+                          }
+                          className="w-24 border-2 font-semibold"
+                        />
+                      </TableCell>
+                      <TableCell>{item.gstPerUnit}</TableCell>
+                      <TableCell>{`₹ ${item.totalAmount}`}</TableCell>
+                      <TableCell>{`₹ ${item.totalGstAmount}`}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            className="text-red-500"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setOrder((prev) => ({
+                                ...prev,
+                                orderItems: prev.orderItems.filter(
+                                  (orderItem) =>
+                                    orderItem.productId !== item.productId,
+                                ),
+                              }));
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         )}
       </div>
 
@@ -552,13 +620,13 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
           <div className="flex items-center gap-2">
             <span className="font-bold">Gross Amount : </span>
             <span className="rounded-md border bg-slate-100 p-2">
-              {grossAmt?.toFixed(2)}
+              {handleCalculateGrossAmt()?.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>
             <span className="rounded-md border bg-slate-100 p-2">
-              {totalAmtWithGst?.toFixed(2)}
+              {handleCalculateTotalAmounts()?.toFixed(2)}
             </span>
           </div>
         </div>

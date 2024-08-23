@@ -40,9 +40,9 @@ export const useSalesOrderColumns = () => {
       ),
       cell: ({ row }) => {
         const isNegotiation = row.original?.negotiation;
-        const { rate } = row.original.productDetails;
+        const { unitPrice } = row.original;
         const askRate = row.original?.negotiation?.unitPrice;
-        return <div>{isNegotiation ? askRate : rate}</div>;
+        return <div>{isNegotiation ? askRate : unitPrice}</div>;
       },
     },
     {

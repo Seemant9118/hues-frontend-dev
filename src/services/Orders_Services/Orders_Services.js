@@ -58,3 +58,7 @@ export const bulkNegotiateAcceptOrReject = (data) => {
 export const createBulkNegotiaion = (data) => {
   return APIinstance.post(orderApi.createBulkNegotiation.endpoint, data);
 };
+
+export const updateOrder = (id, data) => {
+  return APIinstance.post(`${orderApi.updateOrder.endpoint}${id}`, data);
+};

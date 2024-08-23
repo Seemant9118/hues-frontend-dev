@@ -19,6 +19,7 @@ import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
 export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
+  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const { data: clients } = useQuery({
@@ -98,7 +99,7 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
         let statusColor;
         let statusBG;
         let statusBorder;
-        let tooltip;
+
         switch (status) {
           case 'ACCEPTED':
             statusText = 'Accepted';
@@ -124,14 +125,14 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
 
         return (
           <div
-            className="flex max-w-fit items-center justify-center gap-1 rounded border px-1.5 py-2 font-bold"
+            className="flex w-24 items-center justify-center gap-1 rounded border p-1 font-bold"
             style={{
               color: statusColor,
               backgroundColor: statusBG,
-              border: statusBorder,
+              borderColor: statusBorder,
             }}
           >
-            {statusText} {tooltip}
+            {statusText}
           </div>
         );
       },
@@ -144,11 +145,11 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('amount'));
 
-        // Format the amount as a dollar amount
         const formatted = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'INR',
         }).format(amount);
+
         return <div className="font-medium">{formatted}</div>;
       },
     },
@@ -156,10 +157,12 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const { id } = row.original;
+        const { id, createdBy } = row.original;
         const name = 'order';
         const status = row.original.negotiationStatus;
-        if (status === 'NEGOTIATION') return null;
+
+        if (status === 'NEGOTIATION' || status === 'ACCEPTED') return null;
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -169,18 +172,19 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
-              {status === 'NEW' && (
-                <span
-                  onClick={(e) => {
-                    setIsEditingOrder(true);
-                    e.stopPropagation();
-                    setOrderId(row.original.id);
-                  }}
-                  className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
-                >
-                  <Pencil size={14} /> Edit
-                </span>
-              )}
+              {status === 'NEW' &&
+                userId.toString() === createdBy.toString() && (
+                  <span
+                    onClick={(e) => {
+                      setIsEditingOrder(true);
+                      e.stopPropagation();
+                      setOrderId(row.original.id);
+                    }}
+                    className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                  >
+                    <Pencil size={14} /> Edit
+                  </span>
+                )}
               <ConfirmAction
                 name={name}
                 id={id}
