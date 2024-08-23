@@ -28,11 +28,17 @@ const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
   loading: () => <Loading />,
 });
 
+const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
+  loading: () => <Loading />,
+});
+
 const PurchaseOrders = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
+  const [isEditingOrder, setIsEditingOrder] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
   const PurchaseEmptyStageData = {
     heading: `~"Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
@@ -66,7 +72,7 @@ const PurchaseOrders = () => {
     router.push(`/purchase-orders/${row.id}`);
   };
 
-  const PurchaseColumns = usePurchaseColumns();
+  const PurchaseColumns = usePurchaseColumns(setIsEditingOrder, setOrderId);
 
   const { isLoading, data } = useQuery({
     queryKey: [orderApi.getPurchases.endpointKey],
@@ -76,7 +82,7 @@ const PurchaseOrders = () => {
 
   return (
     <>
-      {!isCreatingPurchase && (
+      {!isCreatingPurchase && !isEditingOrder && (
         <Wrapper>
           <SubHeader name={'Purchases'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
@@ -122,7 +128,7 @@ const PurchaseOrders = () => {
             ))}
         </Wrapper>
       )}
-      {isCreatingPurchase && (
+      {isCreatingPurchase && !isEditingOrder && (
         <CreateOrder
           type="purchase"
           name={'Bid'}
@@ -132,6 +138,16 @@ const PurchaseOrders = () => {
           onSubmit={() => {
             setIsCreatingPurchase(false);
           }}
+        />
+      )}
+
+      {isEditingOrder && !isCreatingPurchase && (
+        <EditOrder
+          type="purchase"
+          name="Edit"
+          cta="purchase"
+          orderId={orderId}
+          onCancel={() => setIsEditingOrder(false)}
         />
       )}
     </>

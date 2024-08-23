@@ -78,4 +78,10 @@ export const orderApi = {
     endpoint: `/order/negotiation/bulk/create`,
     endpointKey: 'create_bulk_negotiation',
   },
+
+  // 15. updateOrder
+  updateOrder: {
+    endpoint: `/order/update/`,
+    endpointKey: 'update_order',
+  },
 };
