@@ -25,7 +25,7 @@ export const CreateNegotiation = (data) => {
   return APIinstance.post(orderApi.createNegotiation.endpoint, data);
 };
 
-export const GetNegotiationDetails = (orderId, itemId) => {
+export const GetNegotiationDetails = ({ orderId, itemId }) => {
   return APIinstance.get(
     `${orderApi.getNegotiationDetails.endpoint}?order_id=${orderId}&item_id=${itemId}`,
   );

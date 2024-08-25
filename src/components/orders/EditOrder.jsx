@@ -37,7 +37,7 @@ import {
   OrderDetails,
   updateOrder,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -47,7 +47,8 @@ import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
-const EditOrder = ({ onCancel, name, cta, orderId }) => {
+const EditOrder = ({ onCancel, type, name, cta, orderId }) => {
+  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [itemToSearch, setItemToSearch] = useState('');
 
@@ -306,6 +307,12 @@ const EditOrder = ({ onCancel, name, cta, orderId }) => {
     mutationFn: (data) => updateOrder(orderId, data),
     onSuccess: () => {
       toast.success('Order Updated Successfully');
+      queryClient.invalidateQueries(
+        type === 'sales'
+          ? [orderApi.getSales.endpointKey]
+          : [orderApi.getPurchases.endpointKey],
+      );
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       onCancel();
     },
     onError: (error) => {
