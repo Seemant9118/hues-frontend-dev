@@ -3,7 +3,6 @@
 import { orderApi } from '@/api/order_api/order_api';
 import EditablePartialInvoiceModal from '@/components/Modals/EditablePartialInvoiceModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
-import NegotiationComponent from '@/components/orders/NegotiationComponent';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -22,9 +21,15 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
-// Dynamic imports
+// dynamic imports
 const PastInvoices = dynamic(
   () => import('@/components/invoices/PastInvoices'),
+  {
+    loading: () => <Loading />,
+  },
+);
+const NegotiationComponent = dynamic(
+  () => import('@/components/orders/NegotiationComponent'),
   {
     loading: () => <Loading />,
   },
@@ -171,7 +176,6 @@ const ViewOrder = () => {
 
                   {orderDetails?.orderType === 'PURCHASE' && (
                     <div className="flex w-full justify-end gap-2">
-                      {/* <BulkNegotiateModal orderDetails={orderDetails} /> */}
                       {!isNegotiation && (
                         <>
                           <Button
@@ -200,7 +204,6 @@ const ViewOrder = () => {
                 <>
                   {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
                     <div className="flex w-full justify-end gap-2">
-                      {/* <BulkNegotiateModal orderDetails={orderDetails} /> */}
                       {!isNegotiation && (
                         <>
                           <Button

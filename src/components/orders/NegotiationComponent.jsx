@@ -106,15 +106,6 @@ const NegotiationComponent = ({
     };
   };
 
-  const handleSubmit = () => {
-    const extractedData = extractData();
-    if (extractedData.negotiations.length === 0) {
-      toast.error('Please fill in at least one negotiation item.');
-      return;
-    }
-    createBulkNegotiationMutation.mutate(extractedData);
-  };
-
   const toggleHistory = (index, itemData) => {
     setHistoryVisible((prev) => ({
       ...prev,
@@ -124,6 +115,15 @@ const NegotiationComponent = ({
       orderId: itemData.orderId,
       itemId: itemData.id,
     });
+  };
+
+  const handleSubmit = () => {
+    const extractedData = extractData();
+    if (extractedData.negotiations.length === 0) {
+      toast.error('Please fill in at least one negotiation item.');
+      return;
+    }
+    createBulkNegotiationMutation.mutate(extractedData);
   };
 
   return (
@@ -219,8 +219,8 @@ const NegotiationComponent = ({
                   />
                 </TableCell>
                 <TableCell colSpan={1} className="text-center">
-                  {`₹${item?.negotiation?.price?.toFixed(2)}` ??
-                    `₹${item?.totalAmount.toFixed(2)}`}
+                  {item?.negotiation?.price?.toFixed(2) ??
+                    item?.totalAmount.toFixed(2)}
                 </TableCell>
                 <TableCell colSpan={1} className="flex justify-center">
                   <Input

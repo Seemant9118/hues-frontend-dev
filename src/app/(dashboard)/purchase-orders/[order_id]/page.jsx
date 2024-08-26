@@ -2,7 +2,6 @@
 
 import { orderApi } from '@/api/order_api/order_api';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
-import NegotiationComponent from '@/components/orders/NegotiationComponent';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -23,6 +22,12 @@ import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 // dynamic imports
 const PastInvoices = dynamic(
   () => import('@/components/invoices/PastInvoices'),
+  {
+    loading: () => <Loading />,
+  },
+);
+const NegotiationComponent = dynamic(
+  () => import('@/components/orders/NegotiationComponent'),
   {
     loading: () => <Loading />,
   },
@@ -168,7 +173,6 @@ const ViewOrder = () => {
 
                   {orderDetails?.orderType === 'SALES' && (
                     <div className="flex w-full justify-end gap-2">
-                      {/* <BulkNegotiateModal orderDetails={orderDetails} /> */}
                       {!isNegotiation && (
                         <>
                           <Button
