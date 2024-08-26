@@ -103,6 +103,7 @@ const EditOrder = ({ onCancel, type, name, cta, orderId }) => {
     invoiceType: orderDetails?.invoiceType || '',
     version: orderDetails?.version,
     orderItems: transformedItems || [],
+    deletedItems: [],
     negotiationStatus: orderDetails?.negotiationStatus,
   };
 
@@ -605,6 +606,10 @@ const EditOrder = ({ onCancel, type, name, cta, orderId }) => {
                                   (orderItem) =>
                                     orderItem.productId !== item.productId,
                                 ),
+                                deletedItems: [
+                                  ...(prev.deletedItems || []),
+                                  item.id,
+                                ],
                               }));
                             }}
                           >
