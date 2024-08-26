@@ -30,6 +30,7 @@ const NegotiationComponent = ({
   const queryClient = useQueryClient();
   const pathName = usePathname();
   const isBid = pathName.includes('purchase-orders');
+  const pageIsSales = pathName.includes('sales-orders');
   const userId = LocalStorageService.get('user_profile');
   const [bulkNegotiateOrder, setBulkNegotiateOrder] = useState([]);
   const [historyVisible, setHistoryVisible] = useState({});
@@ -189,12 +190,12 @@ const NegotiationComponent = ({
             <React.Fragment key={item?.id}>
               <TableRow>
                 <TableCell colSpan={1}>
-                  {item?.productDetails?.productName ||
+                  {item?.productDetails?.productName ??
                     item?.productDetails?.serviceName}
                 </TableCell>
                 <TableCell colSpan={1}></TableCell>
                 <TableCell colSpan={1} className="text-center">
-                  {item.quantity}
+                  {item?.negotiation?.quantity ?? item?.quantity}
                 </TableCell>
                 <TableCell colSpan={1} className="flex justify-center">
                   <Input
@@ -206,7 +207,7 @@ const NegotiationComponent = ({
                   />
                 </TableCell>
                 <TableCell colSpan={1} className="text-center">
-                  {item.unitPrice}
+                  {item?.negotiation?.unitPrice ?? item?.unitPrice}
                 </TableCell>
                 <TableCell colSpan={1} className="flex justify-center">
                   <Input
@@ -218,7 +219,8 @@ const NegotiationComponent = ({
                   />
                 </TableCell>
                 <TableCell colSpan={1} className="text-center">
-                  {`₹${item?.totalAmount.toFixed(2)}`}
+                  {`₹${item?.negotiation?.price?.toFixed(2)}` ??
+                    `₹${item?.totalAmount.toFixed(2)}`}
                 </TableCell>
                 <TableCell colSpan={1} className="flex justify-center">
                   <Input
@@ -255,15 +257,27 @@ const NegotiationComponent = ({
                       className="text-xs font-semibold"
                     >
                       <TableCell colSpan={1}>
-                        {negoData?.status === 'OFFER_SUBMITTED' ? (
-                          <div className="flex items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
-                            YOU
-                          </div>
-                        ) : (
-                          <div className="rounded-md bg-yellow-500 p-2 text-center text-white">
-                            BUYER
-                          </div>
-                        )}
+                        {pageIsSales &&
+                          (negoData?.status === 'OFFER_SUBMITTED' ? (
+                            <div className="flex w-32 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
+                              YOU
+                            </div>
+                          ) : (
+                            <div className="w-32 rounded-md bg-yellow-500 p-2 text-center text-white">
+                              BUYER
+                            </div>
+                          ))}
+
+                        {!pageIsSales &&
+                          (negoData?.status === 'BID_SUBMITTED' ? (
+                            <div className="flex w-32 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
+                              YOU
+                            </div>
+                          ) : (
+                            <div className="w-32 rounded-md bg-yellow-500 p-2 text-center text-white">
+                              SELLER
+                            </div>
+                          ))}
                       </TableCell>
                       <TableCell colSpan={2}>
                         <div className="flex items-center justify-center gap-1 text-blue-400">

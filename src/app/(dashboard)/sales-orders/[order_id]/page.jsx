@@ -67,7 +67,7 @@ const ViewOrder = () => {
     });
   };
 
-  const OrderColumns = useSalesOrderColumns();
+  const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
   const subHeader = isPastInvoices ? (
     <>
@@ -123,19 +123,19 @@ const ViewOrder = () => {
             )}
           </SubHeader>
 
+          {!isPastInvoices && !isNegotiation && (
+            <DataTable
+              columns={OrderColumns}
+              data={orderDetails?.orderItems}
+            ></DataTable>
+          )}
+
           {isNegotiation && !isPastInvoices && (
             <NegotiationComponent
               orderDetails={orderDetails}
               isNegotiation={isNegotiation}
               setIsNegotiation={setIsNegotiation}
             />
-          )}
-
-          {!isPastInvoices && !isNegotiation && (
-            <DataTable
-              columns={OrderColumns}
-              data={orderDetails?.orderItems}
-            ></DataTable>
           )}
 
           {isPastInvoices && !isNegotiation && <PastInvoices />}

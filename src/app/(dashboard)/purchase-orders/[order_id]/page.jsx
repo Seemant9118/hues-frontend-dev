@@ -1,7 +1,8 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
-import BulkNegotiateModal from '@/components/Modals/BulkNegotiateModal';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
+import NegotiationComponent from '@/components/orders/NegotiationComponent';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -16,9 +17,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, MoveLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 // dynamic imports
 const PastInvoices = dynamic(
@@ -40,6 +40,11 @@ const ViewOrder = () => {
   const invoiceId = searchParams.get('invoiceId');
 
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
+  const [isNegotiation, setIsNegotiation] = useState(false);
+
+  useEffect(() => {
+    queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+  }, [isNegotiation]);
 
   const { isLoading, data: orderDetails } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey],
@@ -115,19 +120,30 @@ const ViewOrder = () => {
             )}
           </SubHeader>
 
-          {!isPastInvoices && (
+          {!isPastInvoices && !isNegotiation && (
             <DataTable
               columns={OrderColumns}
               data={orderDetails.orderItems}
             ></DataTable>
           )}
+          {isNegotiation && !isPastInvoices && (
+            <NegotiationComponent
+              orderDetails={orderDetails}
+              isNegotiation={isNegotiation}
+              setIsNegotiation={setIsNegotiation}
+            />
+          )}
 
-          {isPastInvoices && <PastInvoices invoiceId={invoiceId} />}
+          {isPastInvoices && !isNegotiation && (
+            <PastInvoices invoiceId={invoiceId} />
+          )}
 
-          <div className="mt-auto h-[1px] bg-neutral-300"></div>
+          {!isNegotiation && (
+            <div className="mt-auto h-[1px] bg-neutral-300"></div>
+          )}
 
           <div className="flex justify-between">
-            {!isPastInvoices && (
+            {!isPastInvoices && !isNegotiation && (
               <Button
                 variant="outline"
                 className="w-32"
@@ -151,14 +167,24 @@ const ViewOrder = () => {
                   )}
 
                   {orderDetails?.orderType === 'SALES' && (
-                    <div className="flex gap-2">
-                      <BulkNegotiateModal orderDetails={orderDetails} />
-                      <Button
-                        className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
-                        onClick={handleAccept}
-                      >
-                        Accept
-                      </Button>
+                    <div className="flex w-full justify-end gap-2">
+                      {/* <BulkNegotiateModal orderDetails={orderDetails} /> */}
+                      {!isNegotiation && (
+                        <>
+                          <Button
+                            className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
+                            onClick={() => setIsNegotiation(true)}
+                          >
+                            Negotiate
+                          </Button>
+                          <Button
+                            className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                            onClick={handleAccept}
+                          >
+                            Accept
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </>
@@ -170,14 +196,23 @@ const ViewOrder = () => {
               orderDetails?.buyerEnterpriseId === enterpriseId && (
                 <>
                   {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                    <div className="flex gap-2">
-                      <BulkNegotiateModal orderDetails={orderDetails} />
-                      <Button
-                        className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
-                        onClick={handleAccept}
-                      >
-                        Accept
-                      </Button>
+                    <div className="flex w-full justify-end gap-2">
+                      {!isNegotiation && (
+                        <>
+                          <Button
+                            className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
+                            onClick={() => setIsNegotiation(true)}
+                          >
+                            Negotiate
+                          </Button>
+                          <Button
+                            className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                            onClick={handleAccept}
+                          >
+                            Accept
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                   {orderDetails?.orderStatus === 'BID_SUBMITTED' && (

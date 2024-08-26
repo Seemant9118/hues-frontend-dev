@@ -2,7 +2,7 @@
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 
-export const useSalesOrderColumns = () => {
+export const useSalesOrderColumns = (status) => {
   return [
     {
       accessorKey: 'item',
@@ -20,16 +20,23 @@ export const useSalesOrderColumns = () => {
     },
     {
       accessorKey: 'quantity',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="INVOICE / QUANTITY" />
-      ),
+      header: ({ column }) => {
+        return status === 'ACCEPTED' ? (
+          <DataTableColumnHeader column={column} title="INVOICE / QUANTITY" />
+        ) : (
+          <DataTableColumnHeader column={column} title="QUANTITY" />
+        );
+      },
       cell: ({ row }) => {
         const { invoiceQuantity, quantity } = row.original;
         const negotiationQty = row.original?.negotiation?.quantity;
-        return (
+
+        return status === 'ACCEPTED' ? (
           <div>
             {invoiceQuantity} / {negotiationQty || quantity}
           </div>
+        ) : (
+          <div>{negotiationQty || quantity}</div>
         );
       },
     },
