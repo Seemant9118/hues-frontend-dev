@@ -297,7 +297,7 @@ const NegotiationComponent = ({
 
               {historyVisible[index] && negotiationDetails.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="border">
+                  <TableCell colSpan={9} className="border">
                     <div className="bg-gray-100 p-4">
                       <h4 className="font-semibold">
                         History for {item?.productDetails?.productName}
