@@ -122,7 +122,10 @@ const EditablePartialInvoiceModal = ({ orderDetails, setIsPastInvoices }) => {
   return (
     <Dialog open={open} onOpenChange={onHandleClose}>
       <DialogTrigger asChild>
-        <Button variant="blue_outline">
+        <Button
+          variant="blue_outline"
+          className="w-40 bg-blue-500/10 hover:bg-blue-500 hover:text-white"
+        >
           <FileText size={14} />
           Generate Invoice
         </Button>
