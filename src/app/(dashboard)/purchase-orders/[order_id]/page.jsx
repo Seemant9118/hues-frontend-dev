@@ -13,7 +13,7 @@ import {
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, MoveLeft } from 'lucide-react';
+import { Eye, MoveLeft, Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -79,12 +79,19 @@ const ViewOrder = () => {
   const OrderColumns = usePurchaseOrderColumns();
 
   const subHeader = isPastInvoices ? (
-    <>
-      ORDER ID: #{params.order_id} {' > '}
-      <span className="text-blue-400 underline">INVOICES</span>
-    </>
+    <section className="flex items-center gap-2">
+      <MoveLeft
+        className="hover:cursor-pointer"
+        onClick={() => setIsPastInvoices(false)}
+      />
+      ORDER ID: #{params.order_id}
+    </section>
   ) : (
     <div className="flex items-center gap-2">
+      <MoveLeft
+        className="hover:cursor-pointer"
+        onClick={() => router.back()}
+      />
       ORDER ID: #{params.order_id}{' '}
       <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
     </div>
@@ -96,33 +103,10 @@ const ViewOrder = () => {
       {!isLoading && orderDetails && (
         <>
           <SubHeader name={subHeader}>
-            {orderDetails.negotiationStatus === 'ACCEPTED' && (
-              <div className="flex gap-2">
-                {isPastInvoices ? (
-                  <Button
-                    variant="outline"
-                    className="flex w-32 items-center justify-center gap-2"
-                    onClick={() => {
-                      setIsPastInvoices(false);
-                    }}
-                  >
-                    <MoveLeft size={16} />
-                    Back{' '}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="blue_outline"
-                    className="w-40"
-                    onClick={() => {
-                      setIsPastInvoices(true);
-                    }}
-                  >
-                    <Eye size={16} />
-                    View Invoices{' '}
-                  </Button>
-                )}
-              </div>
-            )}
+            <Button variant="blue_outline">
+              <Share2 size={14} />
+              Share Order
+            </Button>
           </SubHeader>
 
           {!isPastInvoices && !isNegotiation && (
@@ -225,6 +209,22 @@ const ViewOrder = () => {
                     </span>
                   )}
                 </>
+              )}
+
+            {/* genrateInvoice CTA */}
+            {!isPastInvoices &&
+              orderDetails.negotiationStatus === 'ACCEPTED' && (
+                <div className="flex gap-2">
+                  {/* if any partial invoice generated then show view invoices */}
+                  <Button
+                    variant="blue_outline"
+                    className="w-40 border-yellow-500 bg-yellow-50 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                    onClick={() => setIsPastInvoices(true)}
+                  >
+                    <Eye size={16} />
+                    View Invoices
+                  </Button>
+                </div>
               )}
           </div>
         </>
