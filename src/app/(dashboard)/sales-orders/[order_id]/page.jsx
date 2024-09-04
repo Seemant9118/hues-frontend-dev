@@ -3,6 +3,7 @@
 import { orderApi } from '@/api/order_api/order_api';
 import EditablePartialInvoiceModal from '@/components/Modals/EditablePartialInvoiceModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -43,6 +44,29 @@ const ViewOrder = () => {
   const [isPastInvoices, setIsPastInvoices] = useState(false);
   const [isNegotiation, setIsNegotiation] = useState(false);
 
+  const salesOrdersBreadCrumbs = [
+    {
+      name: 'ORDERS',
+      path: '/sales-orders',
+      show: true, // Always show
+    },
+    {
+      name: `ORDER ID #${params.order_id}`,
+      path: `/sales-orders/${params.order_id}`,
+      show: true, // Always show
+    },
+    {
+      name: 'NEGOTIATION',
+      path: `/sales-orders/${params.order_id}`,
+      show: isNegotiation, // Show only if isNegotiation is true
+    },
+    {
+      name: 'INVOICES',
+      path: `/sales-orders/${params.order_id}`,
+      show: isPastInvoices, // Show only if isPastInvoices is true
+    },
+  ];
+
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
   }, [isNegotiation]);
@@ -74,24 +98,28 @@ const ViewOrder = () => {
 
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
-  const subHeader = isPastInvoices ? (
-    <section className="flex items-center gap-2">
-      <MoveLeft
-        className="hover:cursor-pointer"
-        onClick={() => setIsPastInvoices(false)}
-      />
-      ORDER ID: #{params.order_id}
-    </section>
-  ) : (
-    <div className="flex items-center gap-2">
-      <MoveLeft
-        className="hover:cursor-pointer"
-        onClick={() => router.back()}
-      />
-      ORDER ID: #{params.order_id}{' '}
-      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
-    </div>
-  );
+  const subHeader =
+    isPastInvoices || isNegotiation ? (
+      <section className="flex items-center gap-2">
+        <MoveLeft
+          className="hover:cursor-pointer"
+          onClick={() => {
+            setIsPastInvoices(false);
+            setIsNegotiation(false);
+          }}
+        />
+        ORDER ID: #{params.order_id}
+      </section>
+    ) : (
+      <div className="flex items-center gap-2">
+        <MoveLeft
+          className="hover:cursor-pointer"
+          onClick={() => router.back()}
+        />
+        ORDER ID: #{params.order_id}{' '}
+        <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      </div>
+    );
 
   return (
     <Wrapper className="relative">
@@ -105,6 +133,13 @@ const ViewOrder = () => {
               Share Order
             </Button>
           </SubHeader>
+
+          {/* breadcrumbs */}
+          <OrderBreadCrumbs
+            possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
+            setIsNegotiation={setIsNegotiation}
+            setIsPastInvoices={setIsPastInvoices}
+          />
 
           {!isPastInvoices && !isNegotiation && (
             <DataTable
