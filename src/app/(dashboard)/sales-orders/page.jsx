@@ -88,14 +88,14 @@ const SalesOrder = () => {
         <Wrapper>
           <SubHeader name={'Sales'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              <Button
+              {/* <Button
                 onClick={() => setIsCreatingInvoice(true)}
                 variant={'blue_outline'}
                 size="sm"
               >
                 <PlusCircle size={14} />
                 Invoice
-              </Button>
+              </Button> */}
               <Button
                 onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
                 variant={'blue_outline'}
