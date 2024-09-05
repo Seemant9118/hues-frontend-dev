@@ -108,13 +108,16 @@ const NegotiationComponent = ({
 
   const toggleHistory = (index, itemData) => {
     setHistoryVisible((prev) => ({
-      ...prev,
-      [index]: !prev[index],
+      [index]: !prev[index], // This ensures that only one row's history is visible at a time
     }));
-    getNegotiationDetailsMutation.mutate({
-      orderId: itemData.orderId,
-      itemId: itemData.id,
-    });
+
+    // Fetch negotiation details when the history is toggled open
+    if (!historyVisible[index]) {
+      getNegotiationDetailsMutation.mutate({
+        orderId: itemData.orderId,
+        itemId: itemData.id,
+      });
+    }
   };
 
   const handleSubmit = () => {
@@ -254,7 +257,7 @@ const NegotiationComponent = ({
                   ?.map((negoData) => (
                     <TableRow
                       key={negoData.id}
-                      className="text-xs font-semibold"
+                      className="animate-fadeInUp text-xs font-semibold"
                     >
                       <TableCell colSpan={1}>
                         {pageIsSales &&
