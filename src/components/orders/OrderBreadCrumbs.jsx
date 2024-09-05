@@ -34,7 +34,7 @@ const OrderBreadCrumbs = ({
             return isLast ? (
               <BreadcrumbItem key={page.path}>
                 <BreadcrumbPage>
-                  <span className="text-md font-bold">{page.name}</span>
+                  <span className="text-lg font-bold">{page.name}</span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
             ) : (
@@ -43,7 +43,7 @@ const OrderBreadCrumbs = ({
                   onClick={handleClick}
                   className="hover:cursor-pointer hover:text-blue-500"
                 >
-                  <span className="text-md font-bold">{page.name}</span>
+                  <span className="text-lg font-bold">{page.name}</span>
                 </BreadcrumbLink>
                 <BreadcrumbSeparator />
               </BreadcrumbItem>

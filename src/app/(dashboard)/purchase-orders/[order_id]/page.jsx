@@ -37,9 +37,7 @@ const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-
   const searchParams = useSearchParams();
   const showInvoice = searchParams.get('showInvoice');
   const invoiceId = searchParams.get('invoiceId');
@@ -69,6 +67,19 @@ const ViewOrder = () => {
       show: isPastInvoices, // Show only if isPastInvoices is true
     },
   ];
+
+  useEffect(() => {
+    // Read the state from the query parameters
+    const state = searchParams.get('state');
+    setIsNegotiation(state === 'negotiation');
+    setIsPastInvoices(state === 'past-invoices');
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Update URL based on the state
+    const newPath = `/purchase-orders/${params.order_id}${isNegotiation ? '?state=negotiation' : isPastInvoices ? '?state=past-invoices' : ''}`;
+    router.push(newPath, { shallow: true });
+  }, [isNegotiation, isPastInvoices, params.order_id, router]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);

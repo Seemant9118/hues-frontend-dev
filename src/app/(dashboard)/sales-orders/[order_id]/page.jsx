@@ -16,7 +16,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
@@ -39,6 +39,7 @@ const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [isPastInvoices, setIsPastInvoices] = useState(false);
   const [isNegotiation, setIsNegotiation] = useState(false);
@@ -65,6 +66,19 @@ const ViewOrder = () => {
       show: isPastInvoices, // Show only if isPastInvoices is true
     },
   ];
+
+  useEffect(() => {
+    // Read the state from the query parameters
+    const state = searchParams.get('state');
+    setIsNegotiation(state === 'negotiation');
+    setIsPastInvoices(state === 'past-invoices');
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Update URL based on the state
+    const newPath = `/sales-orders/${params.order_id}${isNegotiation ? '?state=negotiation' : isPastInvoices ? '?state=past-invoices' : ''}`;
+    router.push(newPath, { shallow: true });
+  }, [isNegotiation, isPastInvoices, params.order_id, router]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -103,7 +117,7 @@ const ViewOrder = () => {
 
       {!isLoading && orderDetails && (
         <>
-          <section className="flex items-start justify-between">
+          <section className="flex items-center justify-between">
             <div className="flex flex-col gap-2 pt-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
