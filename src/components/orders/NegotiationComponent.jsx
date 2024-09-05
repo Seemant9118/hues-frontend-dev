@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Wrapper from '../wrappers/Wrapper';
+import Loading from '../ui/Loading';
 
 const NegotiationComponent = ({
   orderDetails,
@@ -113,6 +114,7 @@ const NegotiationComponent = ({
 
     // Fetch negotiation details when the history is toggled open
     if (!historyVisible[index]) {
+      setNegotiationDetails([]); // Clear the details to trigger loading state
       getNegotiationDetailsMutation.mutate({
         orderId: itemData.orderId,
         itemId: itemData.id,
@@ -247,8 +249,19 @@ const NegotiationComponent = ({
                 </TableCell>
               </TableRow>
 
-              {/* Conditionally show history below each row */}
+              {/* Loading state */}
               {historyVisible[index] &&
+                getNegotiationDetailsMutation.isPending && (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center">
+                      <Loading />
+                    </TableCell>
+                  </TableRow>
+                )}
+
+              {/* DATA: Conditionally show history below each row */}
+              {historyVisible[index] &&
+                !getNegotiationDetailsMutation.isPending &&
                 negotiationDetails.length > 0 &&
                 negotiationDetails
                   ?.sort(
@@ -292,24 +305,27 @@ const NegotiationComponent = ({
                       </TableCell>
                       <TableCell colSpan={2}>{negoData?.quantity}</TableCell>
                       <TableCell colSpan={2}>{negoData?.unitPrice}</TableCell>
-                      <TableCell colSpan={2}>
-                        {`₹ ${negoData?.price.toFixed(2)}`}
-                      </TableCell>
+                      <TableCell
+                        colSpan={2}
+                      >{`₹ ${negoData?.price.toFixed(2)}`}</TableCell>
                     </TableRow>
                   ))}
 
-              {historyVisible[index] && negotiationDetails.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="border">
-                    <div className="bg-gray-100 p-4">
-                      <h4 className="font-semibold">
-                        History for {item?.productDetails?.productName}
-                      </h4>
-                      <p>There is no Negotiation history for this... </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
+              {/* PLaceholder Text: If no history is available, show a text */}
+              {historyVisible[index] &&
+                !getNegotiationDetailsMutation.isPending &&
+                negotiationDetails.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={9} className="border">
+                      <div className="bg-gray-100 p-4">
+                        <h4 className="font-semibold">
+                          History for {item?.productDetails?.productName}
+                        </h4>
+                        <p>There is no negotiation history for this item.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
             </React.Fragment>
           ))}
         </TableBody>
