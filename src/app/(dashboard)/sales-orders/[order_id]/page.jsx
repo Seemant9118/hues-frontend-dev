@@ -6,7 +6,6 @@ import ConditionalRenderingStatus from '@/components/orders/ConditionalRendering
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
-import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
@@ -15,7 +14,7 @@ import {
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, MoveLeft, Share2 } from 'lucide-react';
+import { Eye, Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -46,12 +45,12 @@ const ViewOrder = () => {
 
   const salesOrdersBreadCrumbs = [
     {
-      name: 'ORDERS',
+      name: 'SALES',
       path: '/sales-orders',
       show: true, // Always show
     },
     {
-      name: `ORDER ID #${params.order_id}`,
+      name: `${params.order_id}`,
       path: `/sales-orders/${params.order_id}`,
       show: true, // Always show
     },
@@ -98,48 +97,30 @@ const ViewOrder = () => {
 
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
-  const subHeader =
-    isPastInvoices || isNegotiation ? (
-      <section className="flex items-center gap-2">
-        <MoveLeft
-          className="hover:cursor-pointer"
-          onClick={() => {
-            setIsPastInvoices(false);
-            setIsNegotiation(false);
-          }}
-        />
-        ORDER ID: #{params.order_id}
-      </section>
-    ) : (
-      <div className="flex items-center gap-2">
-        <MoveLeft
-          className="hover:cursor-pointer"
-          onClick={() => router.back()}
-        />
-        ORDER ID: #{params.order_id}{' '}
-        <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
-      </div>
-    );
-
   return (
     <Wrapper className="relative">
       {isLoading && !orderDetails && <Loading />}
 
       {!isLoading && orderDetails && (
         <>
-          <SubHeader name={subHeader}>
+          <section className="flex items-start justify-between">
+            <div className="flex flex-col gap-2 pt-2">
+              {/* breadcrumbs */}
+              <OrderBreadCrumbs
+                possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
+                setIsNegotiation={setIsNegotiation}
+                setIsPastInvoices={setIsPastInvoices}
+              />
+              <ConditionalRenderingStatus
+                status={orderDetails?.negotiationStatus}
+              />
+            </div>
+
             <Button variant="blue_outline">
               <Share2 size={14} />
               Share Order
             </Button>
-          </SubHeader>
-
-          {/* breadcrumbs */}
-          <OrderBreadCrumbs
-            possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
-            setIsNegotiation={setIsNegotiation}
-            setIsPastInvoices={setIsPastInvoices}
-          />
+          </section>
 
           {!isPastInvoices && !isNegotiation && (
             <DataTable

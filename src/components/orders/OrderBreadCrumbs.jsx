@@ -24,7 +24,7 @@ const OrderBreadCrumbs = ({
             const isLast = index === array.length - 1;
             const handleClick = () => {
               // Handle state change when orderId breadcrumb is clicked
-              if (page.name.includes('ORDER')) {
+              if (page.path.includes('orders')) {
                 setIsPastInvoices(false);
                 setIsNegotiation(false);
               }
@@ -34,7 +34,7 @@ const OrderBreadCrumbs = ({
             return isLast ? (
               <BreadcrumbItem key={page.path}>
                 <BreadcrumbPage>
-                  <span className="text-xs font-bold">{page.name}</span>
+                  <span className="text-md font-bold">{page.name}</span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
             ) : (
@@ -43,7 +43,7 @@ const OrderBreadCrumbs = ({
                   onClick={handleClick}
                   className="hover:cursor-pointer hover:text-blue-500"
                 >
-                  <span className="text-xs font-bold">{page.name}</span>
+                  <span className="text-md font-bold">{page.name}</span>
                 </BreadcrumbLink>
                 <BreadcrumbSeparator />
               </BreadcrumbItem>

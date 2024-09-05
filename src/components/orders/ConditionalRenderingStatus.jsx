@@ -29,7 +29,7 @@ const ConditionalRenderingStatus = ({ status }) => {
 
   return (
     <div
-      className="flex max-w-fit items-center justify-center gap-1 rounded border px-1.5 py-2 text-sm font-bold"
+      className="flex max-w-fit items-center justify-center gap-1 rounded border px-1.5 py-2 text-xs font-bold"
       style={{
         color: statusColor,
         backgroundColor: statusBG,
