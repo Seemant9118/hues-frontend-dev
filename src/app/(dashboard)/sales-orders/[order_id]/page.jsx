@@ -172,6 +172,7 @@ const ViewOrder = () => {
                 </Button>
               )}
             </section>
+
             <section className="flex gap-2">
               {/* status NEW */}
               {!isPastInvoices &&
@@ -239,11 +240,14 @@ const ViewOrder = () => {
                     )}
                   </>
                 )}
+              {/* status Invoiced */}
+              {/* {!isPastInvoices && <CollectPaymentModal />} */}
 
               {/* genrateInvoice CTA */}
               {!isPastInvoices &&
                 (orderDetails.negotiationStatus === 'ACCEPTED' ||
-                  orderDetails.negotiationStatus === 'NEW') && (
+                  orderDetails.negotiationStatus === 'NEW') &&
+                orderDetails?.orderType === 'SALES' && (
                   <div className="flex gap-2">
                     {/* if any partial invoice generated then show view invoices */}
                     <Button
