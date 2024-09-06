@@ -39,9 +39,11 @@ const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const [isPastInvoices, setIsPastInvoices] = useState(false);
+  const searchParams = useSearchParams();
+  const showInvoice = searchParams.get('showInvoice');
+
+  const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
 
   const salesOrdersBreadCrumbs = [
@@ -71,13 +73,21 @@ const ViewOrder = () => {
     // Read the state from the query parameters
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
-    setIsPastInvoices(state === 'past-invoices');
+    setIsPastInvoices(state === 'showInvoice');
   }, [searchParams]);
 
   useEffect(() => {
-    // Update URL based on the state
-    const newPath = `/sales-orders/${params.order_id}${isNegotiation ? '?state=negotiation' : isPastInvoices ? '?state=past-invoices' : ''}`;
-    router.push(newPath, { shallow: true });
+    // Update URL based on the state (avoid shallow navigation for full update)
+    const newPath = `/sales-orders/${params.order_id}${
+      isNegotiation
+        ? '?state=negotiation'
+        : isPastInvoices
+          ? '?state=showInvoice'
+          : ''
+    }`;
+
+    // Use router.replace instead of push to avoid adding a new history entry
+    router.push(newPath);
   }, [isNegotiation, isPastInvoices, params.order_id, router]);
 
   useEffect(() => {
@@ -246,8 +256,8 @@ const ViewOrder = () => {
               {/* genrateInvoice CTA */}
               {!isPastInvoices &&
                 (orderDetails.negotiationStatus === 'ACCEPTED' ||
-                  orderDetails.negotiationStatus === 'NEW') &&
-                orderDetails?.orderType === 'SALES' && (
+                  (orderDetails.negotiationStatus === 'NEW' &&
+                    orderDetails?.orderType === 'SALES')) && (
                   <div className="flex gap-2">
                     {/* if any partial invoice generated then show view invoices */}
                     <Button

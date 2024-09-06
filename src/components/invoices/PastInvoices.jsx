@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import { Ban } from 'lucide-react';
@@ -8,7 +8,9 @@ import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import Loading from '../ui/Loading';
 
-function PastInvoices({ invoiceId }) {
+function PastInvoices() {
+  const searchParams = useSearchParams();
+  const invoiceId = searchParams.get('invoiceId');
   const params = useParams();
   const orderId = params.order_id;
 
@@ -43,10 +45,14 @@ function PastInvoices({ invoiceId }) {
   if (isLoading) {
     return <Loading />;
   }
+
   return (
     <div className="scrollBarStyles flex max-h-[100vh] flex-col gap-2 overflow-auto">
-      {sortedInvoicedDataList && sortedInvoicedDataList?.length > 0 ? (
-        sortedInvoicedDataList?.map((invoice) => {
+      {sortedInvoicedDataList && sortedInvoicedDataList.length > 0 ? (
+        sortedInvoicedDataList.map((invoice) => {
+          // Check if the invoiceId from searchParams matches the current invoice.id
+          const shouldOpenModal = String(invoice.id) === String(invoiceId);
+
           return (
             <div
               key={invoice?.id}
@@ -70,8 +76,9 @@ function PastInvoices({ invoiceId }) {
                     {formattedCurrency(invoice?.totalAmount)}
                   </h1>
                   <InvoicePDFViewModal
+                    invoiceId={invoice.id}
                     pvtUrl={invoice?.attachmentLink}
-                    shouldOpen={String(invoice.id) === String(invoiceId)} // Automatically open this modal if invoiceId matches
+                    shouldOpen={shouldOpenModal} // Automatically open this modal if invoiceId matches
                   />
                 </div>
               </section>

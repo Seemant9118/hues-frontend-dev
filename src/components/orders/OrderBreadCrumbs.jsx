@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const OrderBreadCrumbs = ({
   possiblePagesBreadcrumbs,
@@ -15,6 +16,29 @@ const OrderBreadCrumbs = ({
   setIsNegotiation,
 }) => {
   const router = useRouter();
+
+  const handleClick = (page) => {
+    if (!page || !page.path) {
+      toast.error('Invalid page or path:', page);
+      return;
+    }
+
+    if (page.name === 'SALES') {
+      // Directly navigate to /sales-orders for SALES breadcrumb
+      router.push('/sales-orders');
+    } else if (page.name === 'PURCHASES') {
+      // Directly navigate to /purchase-orders for PURCHASES breadcrumb
+      router.push('/purchase-orders');
+    } else {
+      // Reset the states if moving within the order detail pages
+      setIsPastInvoices(false);
+      setIsNegotiation(false);
+
+      // Navigate to the specified page's path
+      router.push(page.path);
+    }
+  };
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -22,15 +46,6 @@ const OrderBreadCrumbs = ({
           .filter((page) => page.show) // Filter based on the show property
           .map((page, index, array) => {
             const isLast = index === array.length - 1;
-            const handleClick = () => {
-              // Handle state change when orderId breadcrumb is clicked
-              if (page.path.includes('orders')) {
-                setIsPastInvoices(false);
-                setIsNegotiation(false);
-              }
-              router.push(page.path);
-            };
-
             return isLast ? (
               <BreadcrumbItem key={page.path}>
                 <BreadcrumbPage>
@@ -40,7 +55,7 @@ const OrderBreadCrumbs = ({
             ) : (
               <BreadcrumbItem key={page.path}>
                 <BreadcrumbLink
-                  onClick={handleClick}
+                  onClick={() => handleClick(page)}
                   className="hover:cursor-pointer hover:text-blue-500"
                 >
                   <span className="text-lg font-bold">{page.name}</span>

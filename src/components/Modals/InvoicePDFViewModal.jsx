@@ -8,48 +8,66 @@ import {
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ pvtUrl, shouldOpen }) => {
-  const [isOpen, setIsOpen] = useState(shouldOpen || false);
+const InvoicePDFViewModal = ({ pvtUrl, shouldOpen, invoiceId }) => {
+  const [isOpen, setIsOpen] = useState(shouldOpen); // State for managing modal open/close
+  const router = useRouter();
 
-  // Automatically open modal if shouldOpen is true
+  // Sync isOpen with shouldOpen prop
   useEffect(() => {
     setIsOpen(shouldOpen);
-  }, []);
+  }, [shouldOpen]);
 
   // Fetch the PDF document using react-query
   const { data: pdfDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, pvtUrl],
     queryFn: () => getDocument(pvtUrl),
-    enabled: !!pvtUrl,
+    enabled: !!pvtUrl, // Only fetch if pvtUrl is available
     select: (res) => res.data.data,
   });
+
+  // Handle the button click and update the URL with the invoiceId parameter
+  const handleInvoiceButtonClick = () => {
+    if (invoiceId) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('invoiceId', invoiceId);
+      router.push(newUrl.toString(), { shallow: true }); // Avoid full page reload
+    }
+    setIsOpen(true); // Open the modal
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-1/2 border-black">
+        <Button
+          variant="outline"
+          className="w-1/2 border-black"
+          onClick={handleInvoiceButtonClick}
+        >
           <Download size={16} />
           Invoice
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
         <DialogTitle>Invoice</DialogTitle>
-        {pdfDoc?.publicUrl && (
+        {pdfDoc && pdfDoc.publicUrl ? ( // Ensure pdfDoc is available before accessing publicUrl
           <>
             <Button asChild variant="outline" className="w-full">
-              <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
+              <a download={pdfDoc.publicUrl} href={pdfDoc.publicUrl}>
                 <Download size={14} />
                 Download Invoice
               </a>
             </Button>
             <div className="flex items-center justify-center">
-              <ViewPdf url={pdfDoc?.publicUrl} />
+              <ViewPdf url={pdfDoc.publicUrl} />
             </div>
           </>
+        ) : (
+          <p>Loading document...</p>
         )}
       </DialogContent>
     </Dialog>

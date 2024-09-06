@@ -40,14 +40,13 @@ const ViewOrder = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const searchParams = useSearchParams();
   const showInvoice = searchParams.get('showInvoice');
-  const invoiceId = searchParams.get('invoiceId');
 
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
 
   const purchaseOrdersBreadCrumbs = [
     {
-      name: 'PURCHASE',
+      name: 'PURCHASES',
       path: '/purchase-orders',
       show: true, // Always show
     },
@@ -72,13 +71,21 @@ const ViewOrder = () => {
     // Read the state from the query parameters
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
-    setIsPastInvoices(state === 'past-invoices');
+    setIsPastInvoices(state === 'showInvoice');
   }, [searchParams]);
 
   useEffect(() => {
-    // Update URL based on the state
-    const newPath = `/purchase-orders/${params.order_id}${isNegotiation ? '?state=negotiation' : isPastInvoices ? '?state=past-invoices' : ''}`;
-    router.push(newPath, { shallow: true });
+    // Update URL based on the state (avoid shallow navigation for full update)
+    const newPath = `/purchase-orders/${params.order_id}${
+      isNegotiation
+        ? '?state=negotiation'
+        : isPastInvoices
+          ? '?state=showInvoice'
+          : ''
+    }`;
+
+    // Use router.replace instead of push to avoid adding a new history entry
+    router.push(newPath);
   }, [isNegotiation, isPastInvoices, params.order_id, router]);
 
   useEffect(() => {
@@ -150,9 +157,7 @@ const ViewOrder = () => {
             />
           )}
 
-          {isPastInvoices && !isNegotiation && (
-            <PastInvoices invoiceId={invoiceId} />
-          )}
+          {isPastInvoices && !isNegotiation && <PastInvoices />}
 
           {!isNegotiation && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
