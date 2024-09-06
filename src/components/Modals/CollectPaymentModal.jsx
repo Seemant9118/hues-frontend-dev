@@ -17,12 +17,14 @@ const CollectPaymentModal = () => {
   const [isInvalidAmt, setIsInvalidAmt] = useState('');
 
   const handleChange = (e) => {
-    let { value } = e.target;
+    const { value } = e.target;
 
     // Ensure that the input value doesn't exceed the total payable amount
     if (parseInt(value) > totalPayable) {
-      value = totalPayable.toString();
+      setAmount(value);
       setIsInvalidAmt('Amount will not be exeecded with Total Payble Amount');
+    } else {
+      setIsInvalidAmt('');
     }
     setAmount(value);
 
@@ -93,7 +95,7 @@ const CollectPaymentModal = () => {
         </div>
         {isInvalidAmt && <ErrorBox msg={isInvalidAmt} />}
         <div className="mt-auto h-[1px] bg-neutral-300"></div>
-        <Button>Collect Payment</Button>
+        <Button disabled={isInvalidAmt}>Collect Payment</Button>
       </DialogContent>
     </Dialog>
   );
