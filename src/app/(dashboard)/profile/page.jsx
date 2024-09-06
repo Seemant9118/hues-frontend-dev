@@ -48,7 +48,7 @@ function Profile() {
         <div className="flex flex-col gap-4">
           <span className="text-xl font-bold">Profile</span>
 
-          {!profileDetails?.userDetails?.isOnboardingCompleted && (
+          {!profileDetails?.userDetails?.user?.isOnboardingCompleted && (
             <div className="relative">
               <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]">
                 {/* by clicking this , i am redirected to currStep 3 */}
@@ -87,19 +87,19 @@ function Profile() {
             </div>
           )}
 
-          {profileDetails?.userDetails?.isOnboardingCompleted && (
+          {profileDetails?.userDetails?.user?.isOnboardingCompleted && (
             <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
               <section className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
                   <Label className="text-md">Name : </Label>
                   <span className="text-md">
-                    {profileDetails?.userDetails?.name}
+                    {profileDetails?.userDetails?.user?.name}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label className="text-md">Mobile Number : </Label>
                   <span className="text-md">
-                    {profileDetails?.userDetails?.mobileNumber}
+                    {profileDetails?.userDetails?.user?.mobileNumber}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ function Profile() {
                 <div className="flex items-center gap-2">
                   <Label className="text-md">PAN Card : </Label>
                   <span className="text-md">
-                    {profileDetails?.userDetails?.panNumber}
+                    {profileDetails?.userDetails?.user?.panNumber}
                   </span>
                 </div>
               </section>

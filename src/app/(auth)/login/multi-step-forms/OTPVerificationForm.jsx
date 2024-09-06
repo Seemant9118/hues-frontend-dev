@@ -19,6 +19,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
   const userId = LocalStorageService.get('user_profile');
   const userMobileNumber = LocalStorageService.get('user_mobile_number');
   const operationType = LocalStorageService.get('operation_type');
+  const invitationData = LocalStorageService.get('invitationData');
   const router = useRouter();
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function OTPVerificationForm({ setCurrStep }) {
       otpCode: otp,
       userId,
       operationType,
+      data: invitationData ? invitationData.data.invitation : invitationData,
     });
   };
 
