@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { LocalStorageService } from '@/lib/utils';
 import { createInvoiceNew } from '@/services/Invoice_Services/Invoice_Services';
+import { createInvoice } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5, FileCog } from 'lucide-react';
@@ -21,6 +22,7 @@ import Loading from '../ui/Loading';
 import Slot from '../ui/Slot';
 
 const GenerateInvoiceModal = ({
+  orderDetails,
   invoicedData,
   setInvoicedData,
   generateOTP,
@@ -52,8 +54,25 @@ const GenerateInvoiceModal = ({
     return () => clearInterval(timer);
   }, [startFrom]); // Add dependency to stop timer when countdown ends
 
-  // mutation fn - generate Invoice
+  // mutation fn - generate Invoice : IF ACCEPTED
   const invoiceMutation = useMutation({
+    mutationKey: [invoiceApi.createInvoice.endpointKey],
+    mutationFn: createInvoice,
+    onSuccess: () => {
+      setOTPVerified(true);
+      toast.success('Invoice Generated Successfully');
+      queryClient.invalidateQueries([
+        invoiceApi.getInvoices.endpointKey,
+        orderId,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // mutation fn - new generate Invoice : IF NEW
+  const invoiceMutationNew = useMutation({
     mutationKey: [invoiceApi.createInvoiceNew.endpointKey],
     mutationFn: createInvoiceNew,
     onSuccess: () => {
@@ -78,6 +97,12 @@ const GenerateInvoiceModal = ({
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
+    if (orderDetails?.negotiationStatus === 'NEW') {
+      const { amount, gstAmount, invoiceItems, orderType, ...newInvoicedData } =
+        invoicedData;
+      invoiceMutationNew.mutate(newInvoicedData);
+      return;
+    }
     invoiceMutation.mutate(invoicedData);
   };
 

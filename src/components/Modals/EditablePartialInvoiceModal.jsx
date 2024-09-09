@@ -143,6 +143,7 @@ const EditablePartialInvoiceModal = ({ orderDetails, setIsPastInvoices }) => {
             />
 
             <GenerateInvoiceModal
+              orderDetails={orderDetails}
               invoicedData={invoicedData}
               setInvoicedData={setInvoicedData}
               generateOTP={handleGenerateOTP}

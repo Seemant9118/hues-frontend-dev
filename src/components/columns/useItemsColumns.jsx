@@ -22,11 +22,12 @@ export const useItemsColumns = ({
         );
 
     const totalAmount = updatedSelection.reduce(
-      (acc, item) => acc + item.totalAmount,
+      (acc, item) => acc + item.unitPrice * item.quantity,
       0,
     );
     const totalGstAmount = updatedSelection.reduce(
-      (acc, item) => acc + (item.totalAmount * item.gstPercentage) / 100,
+      (acc, item) =>
+        acc + (item.unitPrice * item.quantity * item.gstPercentage) / 100,
       0,
     );
 
