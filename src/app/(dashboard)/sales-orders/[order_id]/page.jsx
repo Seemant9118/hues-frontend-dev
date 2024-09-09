@@ -250,8 +250,14 @@ const ViewOrder = () => {
                     )}
                   </>
                 )}
-              {/* status Invoiced */}
+              {/* !PastInvoices && status = Invoiced && payment != paid then show : collect payement modal */}
               {/* {!isPastInvoices && <CollectPaymentModal />} */}
+
+              {/* !isPastInvoices && status = Invoiced && payment = paid && isRaised == "DebitNote", then show : debit note raised */}
+              {/* {!isPastInvoices &&
+                orderDetails.negotiationStatus === 'ACCEPTED' && (
+                  <DebitCreditNotesModal isDebitNoteRaised={true} />
+                )} */}
 
               {/* genrateInvoice CTA */}
               {!isPastInvoices &&

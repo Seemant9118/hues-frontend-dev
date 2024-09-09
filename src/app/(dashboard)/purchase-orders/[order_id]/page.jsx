@@ -164,100 +164,111 @@ const ViewOrder = () => {
           )}
 
           <div className="flex justify-between">
-            {!isPastInvoices && !isNegotiation && (
-              <Button
-                variant="outline"
-                className="w-32"
-                onClick={() => {
-                  router.push('/purchase-orders');
-                }}
-              >
-                {' '}
-                Close{' '}
-              </Button>
-            )}
-            {/* status NEW */}
-            {!isPastInvoices &&
-              orderDetails?.negotiationStatus === 'NEW' &&
-              orderDetails?.buyerEnterpriseId === enterpriseId && (
-                <>
-                  {orderDetails?.orderType === 'PURCHASE' && (
-                    <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
-                      Waiting for Response
-                    </span>
-                  )}
-
-                  {orderDetails?.orderType === 'SALES' && (
-                    <div className="flex w-full justify-end gap-2">
-                      {!isNegotiation && (
-                        <>
-                          <Button
-                            className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
-                            onClick={() => setIsNegotiation(true)}
-                          >
-                            Negotiate
-                          </Button>
-                          <Button
-                            className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
-                            onClick={handleAccept}
-                          >
-                            Accept
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </>
+            <section>
+              {!isPastInvoices && !isNegotiation && (
+                <Button
+                  variant="outline"
+                  className="w-32"
+                  onClick={() => {
+                    router.push('/purchase-orders');
+                  }}
+                >
+                  {' '}
+                  Close{' '}
+                </Button>
               )}
+            </section>
 
-            {/* status NEGOTIATION */}
-            {!isPastInvoices &&
-              orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-              orderDetails?.buyerEnterpriseId === enterpriseId && (
-                <>
-                  {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                    <div className="flex w-full justify-end gap-2">
-                      {!isNegotiation && (
-                        <>
-                          <Button
-                            className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
-                            onClick={() => setIsNegotiation(true)}
-                          >
-                            Negotiate
-                          </Button>
-                          <Button
-                            className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
-                            onClick={handleAccept}
-                          >
-                            Accept
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
-                    <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
-                      Waiting for Response
-                    </span>
-                  )}
-                </>
-              )}
+            <section className="flex gap-2">
+              {/* status NEW */}
+              {!isPastInvoices &&
+                orderDetails?.negotiationStatus === 'NEW' &&
+                orderDetails?.buyerEnterpriseId === enterpriseId && (
+                  <>
+                    {orderDetails?.orderType === 'PURCHASE' && (
+                      <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
+                        Waiting for Response
+                      </span>
+                    )}
 
-            {/* genrateInvoice CTA */}
-            {!isPastInvoices &&
-              orderDetails.negotiationStatus === 'ACCEPTED' && (
-                <div className="flex gap-2">
-                  {/* if any partial invoice generated then show view invoices */}
-                  <Button
-                    variant="blue_outline"
-                    className="w-40 border-yellow-500 bg-yellow-50 text-yellow-500 hover:bg-yellow-500 hover:text-white"
-                    onClick={() => setIsPastInvoices(true)}
-                  >
-                    <Eye size={16} />
-                    View Invoices
-                  </Button>
-                </div>
-              )}
+                    {orderDetails?.orderType === 'SALES' && (
+                      <div className="flex w-full justify-end gap-2">
+                        {!isNegotiation && (
+                          <>
+                            <Button
+                              className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
+                              onClick={() => setIsNegotiation(true)}
+                            >
+                              Negotiate
+                            </Button>
+                            <Button
+                              className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                              onClick={handleAccept}
+                            >
+                              Accept
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+
+              {/* status NEGOTIATION */}
+              {!isPastInvoices &&
+                orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+                orderDetails?.buyerEnterpriseId === enterpriseId && (
+                  <>
+                    {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
+                      <div className="flex w-full justify-end gap-2">
+                        {!isNegotiation && (
+                          <>
+                            <Button
+                              className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
+                              onClick={() => setIsNegotiation(true)}
+                            >
+                              Negotiate
+                            </Button>
+                            <Button
+                              className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                              onClick={handleAccept}
+                            >
+                              Accept
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
+                      <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
+                        Waiting for Response
+                      </span>
+                    )}
+                  </>
+                )}
+
+              {/* !isPastInvoices && status = Invoiced && payment = paid && isRaised == "CreditNote", then show : Credit note raised */}
+              {/* {!isPastInvoices &&
+                orderDetails.negotiationStatus === 'ACCEPTED' && (
+                  <DebitCreditNotesModal isDebitNoteRaised={false} />
+                )} */}
+
+              {/* genrateInvoice CTA */}
+              {!isPastInvoices &&
+                orderDetails.negotiationStatus === 'ACCEPTED' && (
+                  <div className="flex gap-2">
+                    {/* if any partial invoice generated then show view invoices */}
+                    <Button
+                      variant="blue_outline"
+                      className="w-40 border-yellow-500 bg-yellow-50 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                      onClick={() => setIsPastInvoices(true)}
+                    >
+                      <Eye size={16} />
+                      View Invoices
+                    </Button>
+                  </div>
+                )}
+            </section>
           </div>
         </>
       )}
