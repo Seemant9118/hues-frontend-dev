@@ -12,30 +12,45 @@ export const useItemsColumns = ({
   productDetailsList,
   initialQuantities,
 }) => {
-  // Function to handle row selection
   const handleRowSelection = (rows, isSelected) => {
+    // Map over rows and calculate totalAmount and totalGstAmount for each item
     const updatedSelection = isSelected
-      ? [...invoicedData.invoiceItems, ...rows.map((row) => row.original)]
+      ? [
+          ...invoicedData.invoiceItems,
+          ...rows.map((row) => ({
+            ...row.original,
+            totalAmount: row.original.quantity * row.original.unitPrice,
+            totalGstAmount:
+              (row.original.quantity *
+                row.original.unitPrice *
+                row.original.gstPercentage) /
+              100,
+          })),
+        ]
       : invoicedData.invoiceItems.filter(
           (item) =>
             !rows.some((row) => row.original.orderItemId === item.orderItemId),
         );
 
-    const totalAmount = updatedSelection.reduce(
+    // Calculate total amount for all selected items
+    const totalAmt = updatedSelection.reduce(
       (acc, item) => acc + item.unitPrice * item.quantity,
       0,
     );
-    const totalGstAmount = updatedSelection.reduce(
+
+    // Calculate total GST amount for all selected items
+    const totalGstAmt = updatedSelection.reduce(
       (acc, item) =>
         acc + (item.unitPrice * item.quantity * item.gstPercentage) / 100,
       0,
     );
 
+    // Update the invoiced data state with the new selection and calculated totals
     setInvoicedData({
       ...invoicedData,
       invoiceItems: updatedSelection,
-      amount: Number(totalAmount.toFixed(2)),
-      gstAmount: Number(totalGstAmount.toFixed(2)),
+      amount: Number(totalAmt.toFixed(2)), // Set the total amount with 2 decimal precision
+      gstAmount: Number(totalGstAmt.toFixed(2)), // Set the total GST amount with 2 decimal precision
     });
   };
 
@@ -60,20 +75,21 @@ export const useItemsColumns = ({
 
   // Function to update invoiced data for quantity changes
   const updateInvoicedDataForQuantity = (index, newQuantity) => {
-    const updatedItems = invoicedData.invoiceItems.map((item, idx) =>
-      idx === index
-        ? {
-            ...item,
-            quantity: newQuantity,
-            totalAmount: newQuantity * item.unitPrice,
-            totalGstAmount: parseFloat(
-              (newQuantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
-                2,
-              ),
-            ),
-          }
-        : item,
-    );
+    const updatedItems = invoicedData.invoiceItems.map((item, idx) => {
+      // Check if it's the last item (with a quantity of 1)
+      if (idx === index) {
+        return {
+          ...item,
+          quantity: newQuantity, // Ensure the correct quantity is used
+          totalAmount: newQuantity * item.unitPrice,
+          totalGstAmount: parseFloat(
+            (newQuantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
+          ),
+        };
+      }
+      return item;
+    });
+
     setInvoicedData({
       ...invoicedData,
       invoiceItems: updatedItems,
@@ -209,7 +225,7 @@ export const useItemsColumns = ({
             type="text"
             name="totalAmount"
             disabled
-            className="w-20 disabled:cursor-not-allowed"
+            className="w-32 disabled:cursor-not-allowed"
             value={`₹ ${totalAmt.toFixed(2)}`}
           />
         );

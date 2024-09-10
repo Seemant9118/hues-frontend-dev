@@ -105,7 +105,7 @@ function PastInvoices() {
                         <span>
                           {moment(item?.createdAt).format('DD-MM-YYYY')}
                         </span>
-                        <span>{formattedCurrency(item?.totalAmount)}</span>
+                        <span>{formattedCurrency(item?.grossAmount)}</span>
                       </li>
                     );
                   })}

@@ -3,6 +3,7 @@
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -93,45 +94,11 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
       ),
       cell: ({ row }) => {
         const status = row.original.negotiationStatus;
-
-        let statusText;
-        let statusColor;
-        let statusBG;
-        let statusBorder;
-
-        switch (status) {
-          case 'ACCEPTED':
-            statusText = 'Accepted';
-            statusColor = '#39C06F';
-            statusBG = '#39C06F1A';
-            statusBorder = '#39C06F';
-            break;
-          case 'NEW':
-            statusText = 'New';
-            statusColor = '#1863B7';
-            statusBG = '#1863B71A';
-            statusBorder = '#1863B7';
-            break;
-          case 'NEGOTIATION':
-            statusText = 'Negotiation';
-            statusColor = '#F8BA05';
-            statusBG = '#F8BA051A';
-            statusBorder = '#F8BA05';
-            break;
-          default:
-            return null;
-        }
-
+        const paymentStatus = row.original?.metaData?.payment?.status;
         return (
-          <div
-            className="flex w-24 items-center justify-center gap-1 rounded border p-1 font-bold"
-            style={{
-              color: statusColor,
-              backgroundColor: statusBG,
-              borderColor: statusBorder,
-            }}
-          >
-            {statusText}
+          <div className="flex gap-2">
+            <ConditionalRenderingStatus status={status} />
+            <ConditionalRenderingStatus status={paymentStatus} />
           </div>
         );
       },

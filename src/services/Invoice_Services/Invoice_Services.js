@@ -1,8 +1,11 @@
 import { APIinstance } from '@/services';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 
-export const createInvoice = (data) => {
-  return APIinstance.post(invoiceApi.createInvoice.endpoint, data);
+export const createInvoiceForAcceptedOrder = (data) => {
+  return APIinstance.post(
+    invoiceApi.createInvoiceForAcceptedOrder.endpoint,
+    data,
+  );
 };
 
 export const getInvoices = (id) => {
@@ -21,6 +24,6 @@ export const invoiceGenerateOTP = () => {
   return APIinstance.post(invoiceApi.generateOTPInvoice.endpoint);
 };
 
-export const createInvoiceNew = (data) => {
-  return APIinstance.post(invoiceApi.createInvoiceNew.endpoint, data);
+export const createInvoiceForNewOrder = (data) => {
+  return APIinstance.post(invoiceApi.createInvoiceForNewOrder.endpoint, data);
 };

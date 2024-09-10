@@ -1,8 +1,8 @@
 export const invoiceApi = {
-  // 1. create invoice
-  createInvoice: {
+  // 1. create invoice : for accepted order
+  createInvoiceForAcceptedOrder: {
     endpoint: `/order/invoice/create`,
-    endpointKey: 'create_Invoice',
+    endpointKey: 'create_Invoice_accepted_order',
   },
   //   2. get invoices
   getInvoices: {
@@ -24,9 +24,9 @@ export const invoiceApi = {
     endpoint: `/order/invoice/verifysignature/generateotp`,
     endpointKey: 'invoice_generate_otp',
   },
-  // 6.createInvoiceNew
-  createInvoiceNew: {
+  // 6.createInvoiceNew : for NEW Order
+  createInvoiceForNewOrder: {
     endpoint: `/order/invoice/generate`,
-    endpointKey: 'create_invoice_new',
+    endpointKey: 'create_invoice_new_order',
   },
 };

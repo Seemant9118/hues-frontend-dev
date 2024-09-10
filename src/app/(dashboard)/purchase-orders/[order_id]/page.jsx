@@ -132,9 +132,14 @@ const ViewOrder = () => {
                 setIsNegotiation={setIsNegotiation}
                 setIsPastInvoices={setIsPastInvoices}
               />
-              <ConditionalRenderingStatus
-                status={orderDetails?.negotiationStatus}
-              />
+              <div className="flex gap-2">
+                <ConditionalRenderingStatus
+                  status={orderDetails?.negotiationStatus}
+                />
+                <ConditionalRenderingStatus
+                  status={orderDetails?.metaData?.payment?.status}
+                />
+              </div>
             </div>
 
             <Button variant="blue_outline">
@@ -247,26 +252,30 @@ const ViewOrder = () => {
                   </>
                 )}
 
+              {/* DebitNote/Credit Note CTA */}
               {/* !isPastInvoices && status = Invoiced && payment = paid && isRaised == "CreditNote", then show : Credit note raised */}
               {/* {!isPastInvoices &&
-                orderDetails.negotiationStatus === 'ACCEPTED' && (
-                  <DebitCreditNotesModal isDebitNoteRaised={false} />
+                orderDetails?.metaData?.invoice?.status === 'INVOICED' &&
+                orderDetails?.metaData?.payment?.status === 'PAID' &&
+                orderDetails?.metaData?.creditNoteRaised && (
+                  <DebitCreditNotesModal
+                    isDebitNoteRaised={false}
+                  />
                 )} */}
 
-              {/* genrateInvoice CTA */}
+              {/* viewInvoice CTA */}
               {!isPastInvoices &&
-                orderDetails.negotiationStatus === 'ACCEPTED' && (
-                  <div className="flex gap-2">
-                    {/* if any partial invoice generated then show view invoices */}
-                    <Button
-                      variant="blue_outline"
-                      className="w-40 border-yellow-500 bg-yellow-50 text-yellow-500 hover:bg-yellow-500 hover:text-white"
-                      onClick={() => setIsPastInvoices(true)}
-                    >
-                      <Eye size={16} />
-                      View Invoices
-                    </Button>
-                  </div>
+                (orderDetails?.metaData?.invoice?.status ===
+                  'PARTIAL_INVOICED' ||
+                  orderDetails?.metaData?.invoice?.status === 'INVOICED') && (
+                  <Button
+                    variant="blue_outline"
+                    className="w-40 border-yellow-500 bg-yellow-50 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                    onClick={() => setIsPastInvoices(true)}
+                  >
+                    <Eye size={16} />
+                    View Invoices
+                  </Button>
                 )}
             </section>
           </div>

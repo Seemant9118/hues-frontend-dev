@@ -8,8 +8,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { LocalStorageService } from '@/lib/utils';
-import { createInvoiceNew } from '@/services/Invoice_Services/Invoice_Services';
-import { createInvoice } from '@/services/Orders_Services/Orders_Services';
+import {
+  createInvoiceForAcceptedOrder,
+  createInvoiceForNewOrder,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5, FileCog } from 'lucide-react';
@@ -33,14 +35,11 @@ const GenerateInvoiceModal = ({
   const queryClient = useQueryClient();
   const params = useParams();
   const orderId = params.order_id;
-  // const userId = LocalStorageService.get('user_profile');
+
   const userMobileNumber = LocalStorageService.get('user_mobile_number');
-  // const operationType = LocalStorageService.get('operation_type');
   const [open, setOpen] = useState(false);
   const [isOTPVerified, setOTPVerified] = useState(false);
   const [startFrom, setStartFrom] = useState(30);
-  // const [otp, setOtp] = useState(null);
-  // console.log(otp);
 
   //   timer for resend
   useEffect(() => {
@@ -56,8 +55,8 @@ const GenerateInvoiceModal = ({
 
   // mutation fn - generate Invoice : IF ACCEPTED
   const invoiceMutation = useMutation({
-    mutationKey: [invoiceApi.createInvoice.endpointKey],
-    mutationFn: createInvoice,
+    mutationKey: [invoiceApi.createInvoiceForAcceptedOrder.endpointKey],
+    mutationFn: createInvoiceForAcceptedOrder,
     onSuccess: () => {
       setOTPVerified(true);
       toast.success('Invoice Generated Successfully');
@@ -73,8 +72,8 @@ const GenerateInvoiceModal = ({
 
   // mutation fn - new generate Invoice : IF NEW
   const invoiceMutationNew = useMutation({
-    mutationKey: [invoiceApi.createInvoiceNew.endpointKey],
-    mutationFn: createInvoiceNew,
+    mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
+    mutationFn: createInvoiceForNewOrder,
     onSuccess: () => {
       setOTPVerified(true);
       toast.success('Invoice Generated Successfully');

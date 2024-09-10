@@ -28,9 +28,10 @@ import {
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import {
   CreateOrderService,
-  createInvoice,
+  createInvoiceForUninvited,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -53,6 +54,9 @@ const CreateOrder = ({
 }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+
+  const pathName = usePathname();
+  const isSales = pathName.includes('sales');
 
   const [errorMsg, setErrorMsg] = useState({});
   const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
@@ -228,9 +232,9 @@ const CreateOrder = ({
 
   // mutation - create invoice
   const invoiceMutation = useMutation({
-    mutationFn: createInvoice,
+    mutationFn: createInvoiceForUninvited,
     onSuccess: () => {
-      toast.success('Invoice Created Successfully');
+      toast.success('Order Created Successfully');
       onCancel();
       queryClient.invalidateQueries({
         queryKey: [orderApi.getSales.endpointKey],
@@ -355,7 +359,7 @@ const CreateOrder = ({
 
   return (
     <Wrapper>
-      <SubHeader name={name}></SubHeader>
+      <SubHeader name={isSales ? 'Order' : 'Bid'}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
