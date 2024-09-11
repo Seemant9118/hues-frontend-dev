@@ -35,13 +35,23 @@ const InvoicePDFViewModal = ({ pvtUrl, shouldOpen, invoiceId }) => {
     if (invoiceId) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set('invoiceId', invoiceId);
-      router.push(newUrl.toString(), { shallow: true }); // Avoid full page reload
+      router.push(newUrl.toString()); // Avoid full page reload
     }
     setIsOpen(true); // Open the modal
   };
 
+  // Cleanup URL when modal is closed
+  const handleModalClose = (open) => {
+    if (!open) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('invoiceId');
+      router.back(); // Remove invoiceId from URL
+    }
+    setIsOpen(open);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleModalClose}>
       <DialogTrigger asChild>
         <Button
           variant="outline"

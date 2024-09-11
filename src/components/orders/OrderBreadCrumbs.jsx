@@ -47,13 +47,13 @@ const OrderBreadCrumbs = ({
           .map((page, index, array) => {
             const isLast = index === array.length - 1;
             return isLast ? (
-              <BreadcrumbItem key={page.path}>
+              <BreadcrumbItem key={page.name}>
                 <BreadcrumbPage>
                   <span className="text-lg font-bold">{page.name}</span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
             ) : (
-              <BreadcrumbItem key={page.path}>
+              <BreadcrumbItem key={page.name}>
                 <BreadcrumbLink
                   onClick={() => handleClick(page)}
                   className="hover:cursor-pointer hover:text-blue-500"
