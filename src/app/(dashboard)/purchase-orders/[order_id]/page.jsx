@@ -1,5 +1,6 @@
 'use client';
 
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -8,6 +9,7 @@ import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
@@ -19,6 +21,12 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 // dynamic imports
+const OrdersOverview = dynamic(
+  () => import('@/components/orders/OrdersOverview'),
+  {
+    loading: () => <Loading />,
+  },
+);
 const PastInvoices = dynamic(
   () => import('@/components/invoices/PastInvoices'),
   {
@@ -116,7 +124,30 @@ const ViewOrder = () => {
     });
   };
 
+  // fetching vendor to get vendorName
+  const { data: vendors } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryFn: () => getVendors(enterpriseId),
+    select: (res) => res.data.data,
+  });
+  const vendor = vendors?.find(
+    (vendorData) => vendorData?.vendor?.id === orderDetails?.sellerEnterpriseId,
+  );
+  const vendorName =
+    vendor?.vendor?.name !== null
+      ? vendor?.vendor?.name
+      : vendor?.invitation?.userDetails?.name;
+
   const OrderColumns = usePurchaseOrderColumns();
+
+  const multiStatus = (
+    <div className="flex gap-2">
+      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.payment?.status}
+      />
+    </div>
+  );
 
   return (
     <Wrapper className="relative">
@@ -131,14 +162,6 @@ const ViewOrder = () => {
                 setIsNegotiation={setIsNegotiation}
                 setIsPastInvoices={setIsPastInvoices}
               />
-              <div className="flex gap-2">
-                <ConditionalRenderingStatus
-                  status={orderDetails?.negotiationStatus}
-                />
-                <ConditionalRenderingStatus
-                  status={orderDetails?.metaData?.payment?.status}
-                />
-              </div>
             </div>
 
             <div className="flex gap-2">
@@ -163,6 +186,17 @@ const ViewOrder = () => {
             </div>
           </section>
 
+          {/* orders overview */}
+          {!isPastInvoices && !isNegotiation && (
+            <OrdersOverview
+              orderId={params.order_id}
+              multiStatus={multiStatus}
+              Name={vendorName}
+              totalAmount={orderDetails?.amount}
+            />
+          )}
+
+          {/* orderDetail table */}
           {!isPastInvoices && !isNegotiation && (
             <DataTable
               columns={OrderColumns}

@@ -1,5 +1,6 @@
 'use client';
 
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -8,6 +9,7 @@ import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
@@ -21,6 +23,12 @@ import { toast } from 'sonner';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
 // dynamic imports
+const OrdersOverview = dynamic(
+  () => import('@/components/orders/OrdersOverview'),
+  {
+    loading: () => <Loading />,
+  },
+);
 const PastInvoices = dynamic(
   () => import('@/components/invoices/PastInvoices'),
   {
@@ -134,7 +142,32 @@ const ViewOrder = () => {
     });
   };
 
+  const { data: clients } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey],
+    queryFn: () => getClients(enterpriseId),
+    select: (res) => res.data.data,
+  });
+
+  const client = clients?.find((clientData) => {
+    const clientId = clientData?.client?.id ?? clientData?.id;
+    return clientId === orderDetails?.buyerEnterpriseId;
+  });
+
+  const clientName =
+    client?.client === null
+      ? client?.invitation?.userDetails?.name
+      : client?.client?.name;
+
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
+
+  const multiStatus = (
+    <div className="flex gap-2">
+      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.payment?.status}
+      />
+    </div>
+  );
 
   return (
     <Wrapper className="relative">
@@ -142,6 +175,7 @@ const ViewOrder = () => {
 
       {!isLoading && orderDetails && (
         <>
+          {/* headers */}
           <section className="flex items-center justify-between">
             <div className="flex flex-col gap-2 pt-2">
               {/* breadcrumbs */}
@@ -151,14 +185,6 @@ const ViewOrder = () => {
                 setIsPastInvoices={setIsPastInvoices}
                 setIsGenerateInvoice={setIsGenerateInvoice}
               />
-              <div className="flex gap-2">
-                <ConditionalRenderingStatus
-                  status={orderDetails?.negotiationStatus}
-                />
-                <ConditionalRenderingStatus
-                  status={orderDetails?.metaData?.payment?.status}
-                />
-              </div>
             </div>
             <div className="flex gap-2">
               {!isPastInvoices &&
@@ -212,6 +238,16 @@ const ViewOrder = () => {
             </div>
           </section>
 
+          {/* orders overview */}
+          {!isPastInvoices && !isGenerateInvoice && !isNegotiation && (
+            <OrdersOverview
+              orderId={params.order_id}
+              multiStatus={multiStatus}
+              Name={clientName}
+              totalAmount={orderDetails?.amount}
+            />
+          )}
+
           {/* orderDetail Table */}
           {!isPastInvoices && !isNegotiation && (
             <DataTable
@@ -244,8 +280,8 @@ const ViewOrder = () => {
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
           )}
 
-          <div className="flex justify-between">
-            <section>
+          <div className="flex justify-end">
+            {/* <section>
               {!isNegotiation && !isPastInvoices && (
                 <Button
                   variant="outline"
@@ -258,7 +294,7 @@ const ViewOrder = () => {
                   Close{' '}
                 </Button>
               )}
-            </section>
+            </section> */}
 
             <section className="flex gap-2">
               {/* status NEW */}
