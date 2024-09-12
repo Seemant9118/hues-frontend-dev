@@ -1,19 +1,21 @@
 'use client';
 
+import { useEffect } from 'react';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
 export const useItemsColumns = ({
+  isAutoSelect,
   setInvoicedData,
   invoicedData,
   setProductDetailsList,
   productDetailsList,
   initialQuantities,
+  tableInstance, // Assuming you're using a table instance from a library
 }) => {
   const handleRowSelection = (rows, isSelected) => {
-    // Map over rows and calculate totalAmount and totalGstAmount for each item
     const updatedSelection = isSelected
       ? [
           ...invoicedData.invoiceItems,
@@ -32,29 +34,34 @@ export const useItemsColumns = ({
             !rows.some((row) => row.original.orderItemId === item.orderItemId),
         );
 
-    // Calculate total amount for all selected items
     const totalAmt = updatedSelection.reduce(
       (acc, item) => acc + item.unitPrice * item.quantity,
       0,
     );
 
-    // Calculate total GST amount for all selected items
     const totalGstAmt = updatedSelection.reduce(
       (acc, item) =>
         acc + (item.unitPrice * item.quantity * item.gstPercentage) / 100,
       0,
     );
 
-    // Update the invoiced data state with the new selection and calculated totals
     setInvoicedData({
       ...invoicedData,
       invoiceItems: updatedSelection,
-      amount: Number(totalAmt.toFixed(2)), // Set the total amount with 2 decimal precision
-      gstAmount: Number(totalGstAmt.toFixed(2)), // Set the total GST amount with 2 decimal precision
+      amount: Number(totalAmt.toFixed(2)),
+      gstAmount: Number(totalGstAmt.toFixed(2)),
     });
   };
 
-  // Function to update product details list
+  // useEffect to trigger auto-selection of all rows if negotiationStatus is "NEW"
+  useEffect(() => {
+    if (isAutoSelect && tableInstance) {
+      const allRows = tableInstance.getRowModel().rows;
+      handleRowSelection(allRows, true); // Select all rows
+      tableInstance.toggleAllPageRowsSelected(true); // Visually toggle all rows as selected
+    }
+  }, [isAutoSelect, tableInstance]); // Dependency on negotiationStatus and tableInstance
+
   const updateProductDetailsList = (index, newQuantity) => {
     const updatedList = productDetailsList.map((item, idx) =>
       idx === index
@@ -73,14 +80,12 @@ export const useItemsColumns = ({
     setProductDetailsList(updatedList);
   };
 
-  // Function to update invoiced data for quantity changes
   const updateInvoicedDataForQuantity = (index, newQuantity) => {
     const updatedItems = invoicedData.invoiceItems.map((item, idx) => {
-      // Check if it's the last item (with a quantity of 1)
       if (idx === index) {
         return {
           ...item,
-          quantity: newQuantity, // Ensure the correct quantity is used
+          quantity: newQuantity,
           totalAmount: newQuantity * item.unitPrice,
           totalGstAmount: parseFloat(
             (newQuantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
@@ -103,28 +108,32 @@ export const useItemsColumns = ({
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
+            (table.getIsSomePageRowsSelected() && 'indeterminate') ||
+            isAutoSelect
           }
           onCheckedChange={(value) => {
-            table.toggleAllPageRowsSelected(!!value);
-            handleRowSelection(table.getRowModel().rows, !!value);
+            if (!isAutoSelect) {
+              table.toggleAllPageRowsSelected(!!value);
+              handleRowSelection(table.getRowModel().rows, !!value);
+            }
           }}
           aria-label="Select all"
-          // Disabled if there are no rows to select
-          disabled={table.getRowModel().rows.length === 0}
+          disabled={isAutoSelect || table.getRowModel().rows.length === 0} // Disable interaction if status is "NEW"
         />
       ),
       cell: ({ row }) => {
         const { quantity } = row.original;
         return (
           <Checkbox
-            checked={row.getIsSelected()}
+            checked={row.getIsSelected() || isAutoSelect}
             onCheckedChange={(value) => {
-              row.toggleSelected(!!value);
-              handleRowSelection([row], !!value);
+              if (!isAutoSelect) {
+                row.toggleSelected(!!value);
+                handleRowSelection([row], !!value);
+              }
             }}
             aria-label="Select row"
-            disabled={quantity === 0}
+            disabled={isAutoSelect || quantity === 0} // Disable interaction if status is "NEW"
           />
         );
       },
@@ -184,7 +193,7 @@ export const useItemsColumns = ({
               className="disabled:hover:cursor-not-allowed"
               variant="export"
               onClick={handleDecrement}
-              disabled={quantity <= 1}
+              disabled={quantity <= 1 || isAutoSelect}
             >
               -
             </Button>
@@ -194,12 +203,13 @@ export const useItemsColumns = ({
               className="w-20"
               value={quantity}
               onChange={handleInputChange}
+              disabled={isAutoSelect}
             />
             <Button
               className="disabled:cursor-not-allowed"
               variant="export"
               onClick={handleIncrement}
-              disabled={quantity >= initialQuantities?.[index]}
+              disabled={quantity >= initialQuantities?.[index] || isAutoSelect}
             >
               +
             </Button>

@@ -1,7 +1,6 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
-import EditablePartialInvoiceModal from '@/components/Modals/EditablePartialInvoiceModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -14,7 +13,7 @@ import {
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, Share2 } from 'lucide-react';
+import { FilePlus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -45,27 +44,33 @@ const ViewOrder = () => {
 
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
+  const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
 
   const salesOrdersBreadCrumbs = [
     {
-      name: 'SALES',
+      name: 'Sales',
       path: '/sales-orders',
       show: true, // Always show
     },
     {
-      name: `${params.order_id}`,
+      name: `Order Details`,
       path: `/sales-orders/${params.order_id}`,
       show: true, // Always show
     },
     {
-      name: 'NEGOTIATION',
+      name: 'Negotiation',
       path: `/sales-orders/${params.order_id}`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
-      name: 'INVOICES',
+      name: 'Invoices',
       path: `/sales-orders/${params.order_id}`,
       show: isPastInvoices, // Show only if isPastInvoices is true
+    },
+    {
+      name: 'New Invoice',
+      path: `/sales-orders/${params.order_id}/?state=showInvoice`,
+      show: isGenerateInvoice, // Show only if isGenerateInvoice is true
     },
   ];
 
@@ -74,21 +79,31 @@ const ViewOrder = () => {
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
     setIsPastInvoices(state === 'showInvoice');
+    // setIsGenerateInvoice(state === 'newInvoice');
   }, [searchParams]);
 
   useEffect(() => {
     // Update URL based on the state (avoid shallow navigation for full update)
-    const newPath = `/sales-orders/${params.order_id}${
-      isNegotiation
-        ? '?state=negotiation'
-        : isPastInvoices
-          ? '?state=showInvoice'
-          : ''
-    }`;
+    let newPath = `/sales-orders/${params.order_id}`;
+
+    if (isNegotiation) {
+      newPath += '?state=negotiation';
+    } else if (isPastInvoices) {
+      newPath += '?state=showInvoice';
+      if (isGenerateInvoice) {
+        newPath += '&state=newInvoice';
+      }
+    }
 
     // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
-  }, [isNegotiation, isPastInvoices, params.order_id, router]);
+  }, [
+    isNegotiation,
+    isPastInvoices,
+    isGenerateInvoice,
+    params.order_id,
+    router,
+  ]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -134,6 +149,7 @@ const ViewOrder = () => {
                 possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
                 setIsNegotiation={setIsNegotiation}
                 setIsPastInvoices={setIsPastInvoices}
+                setIsGenerateInvoice={setIsGenerateInvoice}
               />
               <div className="flex gap-2">
                 <ConditionalRenderingStatus
@@ -144,13 +160,59 @@ const ViewOrder = () => {
                 />
               </div>
             </div>
+            <div className="flex gap-2">
+              {!isPastInvoices &&
+                !isNegotiation &&
+                (orderDetails?.negotiationStatus === 'NEW' ||
+                  orderDetails?.negotiationStatus === 'ACCEPTED' ||
+                  orderDetails?.negotiationStatus === 'INVOICED') && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    className="w-20 cursor-not-allowed font-bold"
+                  >
+                    Payment
+                  </Button>
+                )}
+              {!isPastInvoices &&
+                !isNegotiation &&
+                (orderDetails?.negotiationStatus === 'NEW' ||
+                  orderDetails?.negotiationStatus === 'ACCEPTED' ||
+                  orderDetails?.negotiationStatus === 'INVOICED') && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    className="w-20 font-bold"
+                    onClick={() => setIsPastInvoices(true)}
+                  >
+                    Invoice
+                  </Button>
+                )}
 
-            <Button variant="blue_outline">
+              {/* generateInvoice CTA */}
+              {isPastInvoices &&
+                !isGenerateInvoice &&
+                !orderDetails?.invoiceGenerationCompleted &&
+                (orderDetails.negotiationStatus === 'ACCEPTED' ||
+                  (orderDetails.negotiationStatus === 'NEW' &&
+                    orderDetails?.orderType === 'SALES')) && (
+                  <Button
+                    onClick={() => setIsGenerateInvoice(true)}
+                    className="bg-[#288AF9] font-bold"
+                  >
+                    <FilePlus size={14} />
+                    New Invoice
+                  </Button>
+                )}
+
+              {/* <Button variant="blue_outline">
               <Share2 size={14} />
               Share Order
-            </Button>
+            </Button> */}
+            </div>
           </section>
 
+          {/* orderDetail Table */}
           {!isPastInvoices && !isNegotiation && (
             <DataTable
               columns={OrderColumns}
@@ -158,6 +220,7 @@ const ViewOrder = () => {
             ></DataTable>
           )}
 
+          {/* Negotiation Component */}
           {isNegotiation && !isPastInvoices && (
             <NegotiationComponent
               orderDetails={orderDetails}
@@ -166,20 +229,29 @@ const ViewOrder = () => {
             />
           )}
 
-          {isPastInvoices && !isNegotiation && <PastInvoices />}
+          {/* Invoices Component */}
+          {isPastInvoices && !isNegotiation && (
+            <PastInvoices
+              isGenerateInvoice={isGenerateInvoice}
+              setIsGenerateInvoice={setIsGenerateInvoice}
+              setIsPastInvoices={setIsPastInvoices}
+              orderDetails={orderDetails}
+            />
+          )}
 
-          {!isNegotiation && (
+          {/* seprator */}
+          {!isNegotiation && !isPastInvoices && !isGenerateInvoice && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
           )}
 
           <div className="flex justify-between">
             <section>
-              {!isPastInvoices && !isNegotiation && (
+              {!isNegotiation && !isPastInvoices && (
                 <Button
                   variant="outline"
                   className="w-32"
                   onClick={() => {
-                    router.push('/sales-orders');
+                    router.back();
                   }}
                 >
                   {' '}
@@ -273,7 +345,7 @@ const ViewOrder = () => {
                 )} */}
 
               {/* viewInvoice CTA */}
-              {!isPastInvoices &&
+              {/* {!isPastInvoices &&
                 (orderDetails?.metaData?.invoice?.status ===
                   'PARTIAL_INVOICED' ||
                   orderDetails?.metaData?.invoice?.status === 'INVOICED') && (
@@ -285,10 +357,10 @@ const ViewOrder = () => {
                     <Eye size={16} />
                     View Invoices
                   </Button>
-                )}
+                )} */}
 
               {/* generateInvoice CTA */}
-              {!isPastInvoices &&
+              {/* {!isPastInvoices &&
                 !orderDetails?.invoiceGenerationCompleted &&
                 (orderDetails.negotiationStatus === 'ACCEPTED' ||
                   (orderDetails.negotiationStatus === 'NEW' &&
@@ -297,7 +369,7 @@ const ViewOrder = () => {
                     orderDetails={orderDetails}
                     setIsPastInvoices={setIsPastInvoices}
                   />
-                )}
+                )} */}
             </section>
           </div>
         </>

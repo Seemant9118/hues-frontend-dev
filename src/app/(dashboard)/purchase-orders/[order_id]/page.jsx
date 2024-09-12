@@ -13,7 +13,6 @@ import {
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -46,22 +45,22 @@ const ViewOrder = () => {
 
   const purchaseOrdersBreadCrumbs = [
     {
-      name: 'PURCHASES',
+      name: 'Purchases',
       path: '/purchase-orders',
       show: true, // Always show
     },
     {
-      name: `${params.order_id}`,
+      name: `Order details`,
       path: `/purchase-orders/${params.order_id}`,
       show: true, // Always show
     },
     {
-      name: 'NEGOTIATION',
+      name: 'Negotiation',
       path: `/purchase-orders/${params.order_id}/`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
-      name: 'INVOICES',
+      name: 'Invoices',
       path: `/purchase-orders/${params.order_id}/`,
       show: isPastInvoices, // Show only if isPastInvoices is true
     },
@@ -124,7 +123,7 @@ const ViewOrder = () => {
       {isLoading && !orderDetails && <Loading />}
       {!isLoading && orderDetails && (
         <>
-          <section className="flex items-start justify-between">
+          <section className="flex items-center justify-between">
             <div className="flex flex-col gap-2 pt-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
@@ -142,10 +141,26 @@ const ViewOrder = () => {
               </div>
             </div>
 
-            <Button variant="blue_outline">
+            <div className="flex gap-2">
+              {!isPastInvoices &&
+                !isNegotiation &&
+                (orderDetails?.negotiationStatus === 'ACCEPTED' ||
+                  orderDetails?.negotiationStatus === 'INVOICED') && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    className="w-20 font-bold"
+                    onClick={() => setIsPastInvoices(true)}
+                  >
+                    Invoice
+                  </Button>
+                )}
+
+              {/* <Button variant="blue_outline">
               <Share2 size={14} />
               Share Order
-            </Button>
+            </Button> */}
+            </div>
           </section>
 
           {!isPastInvoices && !isNegotiation && (
@@ -264,7 +279,7 @@ const ViewOrder = () => {
                 )} */}
 
               {/* viewInvoice CTA */}
-              {!isPastInvoices &&
+              {/* {!isPastInvoices &&
                 (orderDetails?.metaData?.invoice?.status ===
                   'PARTIAL_INVOICED' ||
                   orderDetails?.metaData?.invoice?.status === 'INVOICED') && (
@@ -276,7 +291,7 @@ const ViewOrder = () => {
                     <Eye size={16} />
                     View Invoices
                   </Button>
-                )}
+                )} */}
             </section>
           </div>
         </>

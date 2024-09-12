@@ -15,7 +15,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5, FileCog } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,9 +30,11 @@ const GenerateInvoiceModal = ({
   generateOTP,
   disableCondition,
   setIsPastInvoices,
+  setIsGenerateInvoice,
   handleClose,
 }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const params = useParams();
   const orderId = params.order_id;
 
@@ -77,6 +79,7 @@ const GenerateInvoiceModal = ({
     onSuccess: () => {
       setOTPVerified(true);
       toast.success('Invoice Generated Successfully');
+      router.push('/sales-orders');
       queryClient.invalidateQueries([
         invoiceApi.getInvoices.endpointKey,
         orderId,
@@ -182,6 +185,8 @@ const GenerateInvoiceModal = ({
                   setOpen(false);
                   handleClose();
                   setIsPastInvoices(true);
+                  setIsGenerateInvoice(false);
+                  router.back();
                 }}
               >
                 View
