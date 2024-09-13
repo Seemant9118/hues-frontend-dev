@@ -29,7 +29,6 @@ const GenerateInvoiceModal = ({
   setInvoicedData,
   generateOTP,
   disableCondition,
-  setIsPastInvoices,
   setIsGenerateInvoice,
   handleClose,
 }) => {
@@ -184,7 +183,6 @@ const GenerateInvoiceModal = ({
                 onClick={() => {
                   setOpen(false);
                   handleClose();
-                  setIsPastInvoices(true);
                   setIsGenerateInvoice(false);
                   router.back();
                 }}

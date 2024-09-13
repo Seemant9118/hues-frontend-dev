@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useItemsColumns } from '../columns/useItemsColumns';
 import { DataTable } from '../table/data-table';
 import Loading from '../ui/Loading';
+import Wrapper from '../wrappers/Wrapper';
 
 // dynamic imports
 const GenerateInvoiceModal = dynamic(
@@ -25,11 +26,7 @@ const PreviewInvoice = dynamic(
     loading: () => <Loading />,
   },
 );
-const GenerateInvoice = ({
-  orderDetails,
-  setIsPastInvoices,
-  setIsGenerateInvoice,
-}) => {
+const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
 
   const [invoicedData, setInvoicedData] = useState({
@@ -117,35 +114,36 @@ const GenerateInvoice = ({
   const handleGenerateOTP = () => generateOTPMutation.mutate();
 
   return (
-    <section className="flex h-full flex-col justify-between">
-      <DataTable columns={itemColumns} data={productDetailsList} />
+    <Wrapper className="relative">
+      <section className="flex h-full flex-col justify-between">
+        <DataTable columns={itemColumns} data={productDetailsList} />
 
-      <div className="flex justify-end gap-4 border-t pt-4">
-        <div className="mt-auto h-[1px] bg-neutral-300"></div>
-        {/* previewInvoice */}
-        {!isAutoSelect && (
-          <PreviewInvoice
-            base64StrToRenderPDF={previewInvoiceBase64}
-            mutationFn={handlePreview}
-            disableCondition={invoicedData?.invoiceItems?.length === 0}
+        <div className="flex justify-end gap-4 border-t pt-4">
+          <div className="mt-auto h-[1px] bg-neutral-300"></div>
+          {/* previewInvoice */}
+          {!isAutoSelect && (
+            <PreviewInvoice
+              base64StrToRenderPDF={previewInvoiceBase64}
+              mutationFn={handlePreview}
+              disableCondition={invoicedData?.invoiceItems?.length === 0}
+            />
+          )}
+
+          {/* generateInvoice */}
+          <GenerateInvoiceModal
+            orderDetails={orderDetails}
+            invoicedData={invoicedData}
+            setInvoicedData={setInvoicedData}
+            generateOTP={handleGenerateOTP}
+            disableCondition={
+              isAutoSelect ? false : invoicedData?.invoiceItems?.length === 0
+            }
+            setIsGenerateInvoice={setIsGenerateInvoice}
+            handleClose={onHandleClose}
           />
-        )}
-
-        {/* generateInvoice */}
-        <GenerateInvoiceModal
-          orderDetails={orderDetails}
-          invoicedData={invoicedData}
-          setInvoicedData={setInvoicedData}
-          generateOTP={handleGenerateOTP}
-          disableCondition={
-            isAutoSelect ? false : invoicedData?.invoiceItems?.length === 0
-          }
-          setIsPastInvoices={setIsPastInvoices}
-          setIsGenerateInvoice={setIsGenerateInvoice}
-          handleClose={onHandleClose}
-        />
-      </div>
-    </section>
+        </div>
+      </section>
+    </Wrapper>
   );
 };
 

@@ -6,18 +6,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
 const OrderBreadCrumbs = ({
   possiblePagesBreadcrumbs,
-  setIsPastInvoices,
   setIsNegotiation,
   setIsGenerateInvoice,
 }) => {
   const router = useRouter();
-  const params = useParams();
   const pathName = usePathname();
 
   const handleClick = (page) => {
@@ -32,15 +30,10 @@ const OrderBreadCrumbs = ({
     } else if (page.name === 'Purchases') {
       // Directly navigate to /purchase-orders for PURCHASES breadcrumb
       router.push('/purchase-orders');
-    } else if (page.name === 'Invoices') {
-      router.push(`/sales-orders/${params.order_id}`);
-      setIsGenerateInvoice(false);
     } else {
       // Reset the states if moving within the order detail pages
-      setIsPastInvoices(false);
       pathName.includes('sales-orders') && setIsGenerateInvoice(false);
       setIsNegotiation(false);
-
       // Navigate to the specified page's path
       router.push(page.path);
     }

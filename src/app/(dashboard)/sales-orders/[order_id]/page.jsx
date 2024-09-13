@@ -7,6 +7,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
@@ -15,7 +16,7 @@ import {
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FilePlus } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -41,6 +42,12 @@ const NegotiationComponent = dynamic(
     loading: () => <Loading />,
   },
 );
+const GenerateInvoice = dynamic(
+  () => import('@/components/invoices/GenerateInvoice'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 const ViewOrder = () => {
   const queryClient = useQueryClient();
@@ -48,9 +55,6 @@ const ViewOrder = () => {
   const params = useParams();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const searchParams = useSearchParams();
-  const showInvoice = searchParams.get('showInvoice');
-
-  const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
 
@@ -71,13 +75,8 @@ const ViewOrder = () => {
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
-      name: 'Invoices',
+      name: 'Generate Invoice',
       path: `/sales-orders/${params.order_id}`,
-      show: isPastInvoices, // Show only if isPastInvoices is true
-    },
-    {
-      name: 'New Invoice',
-      path: `/sales-orders/${params.order_id}/?state=showInvoice`,
       show: isGenerateInvoice, // Show only if isGenerateInvoice is true
     },
   ];
@@ -86,8 +85,7 @@ const ViewOrder = () => {
     // Read the state from the query parameters
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
-    setIsPastInvoices(state === 'showInvoice');
-    // setIsGenerateInvoice(state === 'newInvoice');
+    setIsGenerateInvoice(state === 'generateInvoice');
   }, [searchParams]);
 
   useEffect(() => {
@@ -96,22 +94,15 @@ const ViewOrder = () => {
 
     if (isNegotiation) {
       newPath += '?state=negotiation';
-    } else if (isPastInvoices) {
-      newPath += '?state=showInvoice';
-      if (isGenerateInvoice) {
-        newPath += '&state=newInvoice';
-      }
+    } else if (isGenerateInvoice) {
+      newPath += '?state=generateInvoice';
+    } else {
+      newPath += '';
     }
 
     // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
-  }, [
-    isNegotiation,
-    isPastInvoices,
-    isGenerateInvoice,
-    params.order_id,
-    router,
-  ]);
+  }, [isNegotiation, isGenerateInvoice, params.order_id, router]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -142,17 +133,16 @@ const ViewOrder = () => {
     });
   };
 
+  // to get client name
   const { data: clients } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: () => getClients(enterpriseId),
     select: (res) => res.data.data,
   });
-
   const client = clients?.find((clientData) => {
     const clientId = clientData?.client?.id ?? clientData?.id;
     return clientId === orderDetails?.buyerEnterpriseId;
   });
-
   const clientName =
     client?.client === null
       ? client?.invitation?.userDetails?.name
@@ -160,6 +150,7 @@ const ViewOrder = () => {
 
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
+  // multiStatus components
   const multiStatus = (
     <div className="flex gap-2">
       <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
@@ -182,82 +173,97 @@ const ViewOrder = () => {
               <OrderBreadCrumbs
                 possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
                 setIsNegotiation={setIsNegotiation}
-                setIsPastInvoices={setIsPastInvoices}
                 setIsGenerateInvoice={setIsGenerateInvoice}
               />
             </div>
             <div className="flex gap-2">
-              {!isPastInvoices &&
-                !isNegotiation &&
-                (orderDetails?.negotiationStatus === 'NEW' ||
-                  orderDetails?.negotiationStatus === 'ACCEPTED' ||
-                  orderDetails?.negotiationStatus === 'INVOICED') && (
+              {/* record payment CTA */}
+              {!isGenerateInvoice &&
+                (orderDetails.negotiationStatus === 'INVOICED' ||
+                  orderDetails.negotiationStatus === 'ACCEPTED') && (
                   <Button
                     variant="blue_outline"
                     size="sm"
-                    className="w-20 cursor-not-allowed font-bold"
+                    onClick={() => {}}
+                    className="font-bold"
                   >
-                    Payment
+                    Record Payment
                   </Button>
                 )}
-              {!isPastInvoices &&
-                !isNegotiation &&
-                (orderDetails?.negotiationStatus === 'NEW' ||
-                  orderDetails?.negotiationStatus === 'ACCEPTED' ||
-                  orderDetails?.negotiationStatus === 'INVOICED') && (
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    className="w-20 font-bold"
-                    onClick={() => setIsPastInvoices(true)}
-                  >
-                    Invoice
-                  </Button>
-                )}
-
               {/* generateInvoice CTA */}
-              {isPastInvoices &&
-                !isGenerateInvoice &&
+              {!isGenerateInvoice &&
                 !orderDetails?.invoiceGenerationCompleted &&
                 (orderDetails.negotiationStatus === 'ACCEPTED' ||
                   (orderDetails.negotiationStatus === 'NEW' &&
                     orderDetails?.orderType === 'SALES')) && (
                   <Button
+                    variant="blue_outline"
+                    size="sm"
                     onClick={() => setIsGenerateInvoice(true)}
-                    className="bg-[#288AF9] font-bold"
+                    className="font-bold"
                   >
-                    <FilePlus size={14} />
-                    New Invoice
+                    Generate Invoice
                   </Button>
                 )}
 
-              {/* <Button variant="blue_outline">
-              <Share2 size={14} />
-              Share Order
-            </Button> */}
+              {/* share CTA */}
+              {!isGenerateInvoice && (
+                <Button variant="blue_outline" size="sm">
+                  <Share2 size={14} />
+                </Button>
+              )}
             </div>
           </section>
 
-          {/* orders overview */}
-          {!isPastInvoices && !isGenerateInvoice && !isNegotiation && (
-            <OrdersOverview
-              orderId={params.order_id}
-              multiStatus={multiStatus}
-              Name={clientName}
-              totalAmount={orderDetails?.amount}
-            />
-          )}
+          {/* swtich tabs */}
+          {!isGenerateInvoice && !isNegotiation && (
+            <section>
+              <Tabs defaultValue="overview" className="">
+                <TabsList>
+                  <TabsTrigger className="w-24" value="overview">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger className="w-24" value="invoices">
+                    Invoice
+                  </TabsTrigger>
+                  <TabsTrigger className="w-24" value="payment">
+                    Payment
+                  </TabsTrigger>
+                  <TabsTrigger className="w-24" value="timeline">
+                    Timeline
+                  </TabsTrigger>
+                </TabsList>
 
-          {/* orderDetail Table */}
-          {!isPastInvoices && !isNegotiation && (
-            <DataTable
-              columns={OrderColumns}
-              data={orderDetails?.orderItems}
-            ></DataTable>
+                <TabsContent value="overview" className="flex flex-col gap-4">
+                  {/* orders overview */}
+                  <OrdersOverview
+                    orderId={params.order_id}
+                    multiStatus={multiStatus}
+                    Name={clientName}
+                    totalAmount={orderDetails?.amount}
+                  />
+
+                  {/* orderDetail Table */}
+                  <DataTable
+                    columns={OrderColumns}
+                    data={orderDetails?.orderItems}
+                  ></DataTable>
+                </TabsContent>
+                <TabsContent value="invoices">
+                  <PastInvoices />
+                </TabsContent>
+                <TabsContent value="payment">
+                  Payment here. Coming Soon...
+                </TabsContent>
+                <TabsContent value="timeline">
+                  Timeline here. Coming Soon...
+                </TabsContent>
+              </Tabs>
+            </section>
           )}
 
           {/* Negotiation Component */}
-          {isNegotiation && !isPastInvoices && (
+          {isNegotiation && !isGenerateInvoice && (
             <NegotiationComponent
               orderDetails={orderDetails}
               isNegotiation={isNegotiation}
@@ -265,40 +271,23 @@ const ViewOrder = () => {
             />
           )}
 
-          {/* Invoices Component */}
-          {isPastInvoices && !isNegotiation && (
-            <PastInvoices
-              isGenerateInvoice={isGenerateInvoice}
-              setIsGenerateInvoice={setIsGenerateInvoice}
-              setIsPastInvoices={setIsPastInvoices}
-              orderDetails={orderDetails}
-            />
-          )}
-
           {/* seprator */}
-          {!isNegotiation && !isPastInvoices && !isGenerateInvoice && (
+          {!isNegotiation && !isGenerateInvoice && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
           )}
 
-          <div className="flex justify-end">
-            {/* <section>
-              {!isNegotiation && !isPastInvoices && (
-                <Button
-                  variant="outline"
-                  className="w-32"
-                  onClick={() => {
-                    router.back();
-                  }}
-                >
-                  {' '}
-                  Close{' '}
-                </Button>
-              )}
-            </section> */}
+          {/* generate Invoice component */}
+          {isGenerateInvoice && !isNegotiation && (
+            <GenerateInvoice
+              orderDetails={orderDetails}
+              setIsGenerateInvoice={setIsGenerateInvoice}
+            />
+          )}
 
+          <div className="flex justify-end">
             <section className="flex gap-2">
               {/* status NEW */}
-              {!isPastInvoices &&
+              {!isGenerateInvoice &&
                 orderDetails?.negotiationStatus === 'NEW' &&
                 orderDetails?.sellerEnterpriseId === enterpriseId && (
                   <>
@@ -332,7 +321,7 @@ const ViewOrder = () => {
                 )}
 
               {/* status NEGOTIATION */}
-              {!isPastInvoices &&
+              {!isGenerateInvoice &&
                 orderDetails?.negotiationStatus === 'NEGOTIATION' &&
                 orderDetails?.sellerEnterpriseId === enterpriseId && (
                   <>
@@ -363,49 +352,6 @@ const ViewOrder = () => {
                     )}
                   </>
                 )}
-
-              {/* CollectPayment CTA */}
-              {/* !PastInvoices && status = Invoiced && payment != paid then show : collect payement modal */}
-              {/* {!isPastInvoices && orderDetails?.metaData?.invoice?.status === 'INVOICED' &&
-                orderDetails?.metaData?.payment?.status === 'NOT_PAID' && <CollectPaymentModal />} */}
-
-              {/* DebitNote/Credit Note CTA */}
-              {/* !isPastInvoices && status = Invoiced && payment = paid && isRaised == "DebitNote", then show : debit note raised */}
-              {/* {!isPastInvoices &&
-                orderDetails?.metaData?.invoice?.status === 'INVOICED' &&
-                orderDetails?.metaData?.payment?.status === 'PAID' &&
-                orderDetails?.metaData?.debitNoteRaised && (
-                  <DebitCreditNotesModal
-                    isDebitNoteRaised={orderDetails?.metaData?.debitNoteRaised}
-                  />
-                )} */}
-
-              {/* viewInvoice CTA */}
-              {/* {!isPastInvoices &&
-                (orderDetails?.metaData?.invoice?.status ===
-                  'PARTIAL_INVOICED' ||
-                  orderDetails?.metaData?.invoice?.status === 'INVOICED') && (
-                  <Button
-                    variant="blue_outline"
-                    className="w-40 border-yellow-500 bg-yellow-50 text-yellow-500 hover:bg-yellow-500 hover:text-white"
-                    onClick={() => setIsPastInvoices(true)}
-                  >
-                    <Eye size={16} />
-                    View Invoices
-                  </Button>
-                )} */}
-
-              {/* generateInvoice CTA */}
-              {/* {!isPastInvoices &&
-                !orderDetails?.invoiceGenerationCompleted &&
-                (orderDetails.negotiationStatus === 'ACCEPTED' ||
-                  (orderDetails.negotiationStatus === 'NEW' &&
-                    orderDetails?.orderType === 'SALES')) && (
-                  <EditablePartialInvoiceModal
-                    orderDetails={orderDetails}
-                    setIsPastInvoices={setIsPastInvoices}
-                  />
-                )} */}
             </section>
           </div>
         </>
