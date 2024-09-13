@@ -4,6 +4,7 @@ import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/clien
 import { orderApi } from '@/api/order_api/order_api';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,10 @@ const GenerateInvoice = dynamic(
   },
 );
 
+const MakePayment = dynamic(() => import('@/components/payments/MakePayment'), {
+  loading: () => <Loading />,
+});
+
 const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -57,6 +62,13 @@ const ViewOrder = () => {
   const searchParams = useSearchParams();
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
+  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+
+  const [tab, setTab] = useState('overview');
+
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   const salesOrdersBreadCrumbs = [
     {
@@ -79,6 +91,11 @@ const ViewOrder = () => {
       path: `/sales-orders/${params.order_id}`,
       show: isGenerateInvoice, // Show only if isGenerateInvoice is true
     },
+    {
+      name: 'Record Payment',
+      path: `/sales-orders/${params.order_id}`,
+      show: isRecordingPayment, // Show only if isGenerateInvoice is true
+    },
   ];
 
   useEffect(() => {
@@ -86,6 +103,7 @@ const ViewOrder = () => {
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
     setIsGenerateInvoice(state === 'generateInvoice');
+    setIsRecordingPayment(state === 'recordPayment');
   }, [searchParams]);
 
   useEffect(() => {
@@ -96,13 +114,21 @@ const ViewOrder = () => {
       newPath += '?state=negotiation';
     } else if (isGenerateInvoice) {
       newPath += '?state=generateInvoice';
+    } else if (isRecordingPayment) {
+      newPath += '?state=recordPayment';
     } else {
       newPath += '';
     }
 
     // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
-  }, [isNegotiation, isGenerateInvoice, params.order_id, router]);
+  }, [
+    isNegotiation,
+    isGenerateInvoice,
+    isRecordingPayment,
+    params.order_id,
+    router,
+  ]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -167,7 +193,7 @@ const ViewOrder = () => {
       {!isLoading && orderDetails && (
         <>
           {/* headers */}
-          <section className="flex items-center justify-between">
+          <section className="sticky top-0 flex items-center justify-between bg-white">
             <div className="flex flex-col gap-2 pt-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
@@ -179,12 +205,13 @@ const ViewOrder = () => {
             <div className="flex gap-2">
               {/* record payment CTA */}
               {!isGenerateInvoice &&
+                !isRecordingPayment &&
                 (orderDetails.negotiationStatus === 'INVOICED' ||
                   orderDetails.negotiationStatus === 'ACCEPTED') && (
                   <Button
                     variant="blue_outline"
                     size="sm"
-                    onClick={() => {}}
+                    onClick={() => setIsRecordingPayment(true)}
                     className="font-bold"
                   >
                     Record Payment
@@ -192,6 +219,7 @@ const ViewOrder = () => {
                 )}
               {/* generateInvoice CTA */}
               {!isGenerateInvoice &&
+                !isRecordingPayment &&
                 !orderDetails?.invoiceGenerationCompleted &&
                 (orderDetails.negotiationStatus === 'ACCEPTED' ||
                   (orderDetails.negotiationStatus === 'NEW' &&
@@ -207,7 +235,7 @@ const ViewOrder = () => {
                 )}
 
               {/* share CTA */}
-              {!isGenerateInvoice && (
+              {!isGenerateInvoice && !isRecordingPayment && (
                 <Button variant="blue_outline" size="sm">
                   <Share2 size={14} />
                 </Button>
@@ -216,10 +244,14 @@ const ViewOrder = () => {
           </section>
 
           {/* swtich tabs */}
-          {!isGenerateInvoice && !isNegotiation && (
+          {!isGenerateInvoice && !isNegotiation && !isRecordingPayment && (
             <section>
-              <Tabs defaultValue="overview" className="">
-                <TabsList>
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'overview'}
+              >
+                <TabsList className="border">
                   <TabsTrigger className="w-24" value="overview">
                     Overview
                   </TabsTrigger>
@@ -253,7 +285,7 @@ const ViewOrder = () => {
                   <PastInvoices />
                 </TabsContent>
                 <TabsContent value="payment">
-                  Payment here. Coming Soon...
+                  <PaymentDetails />
                 </TabsContent>
                 <TabsContent value="timeline">
                   Timeline here. Coming Soon...
@@ -263,7 +295,7 @@ const ViewOrder = () => {
           )}
 
           {/* Negotiation Component */}
-          {isNegotiation && !isGenerateInvoice && (
+          {isNegotiation && !isGenerateInvoice && !isRecordingPayment && (
             <NegotiationComponent
               orderDetails={orderDetails}
               isNegotiation={isNegotiation}
@@ -272,22 +304,29 @@ const ViewOrder = () => {
           )}
 
           {/* seprator */}
-          {!isNegotiation && !isGenerateInvoice && (
+          {!isNegotiation && !isGenerateInvoice && !isRecordingPayment && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
           )}
 
           {/* generate Invoice component */}
-          {isGenerateInvoice && !isNegotiation && (
+          {isGenerateInvoice && !isNegotiation && !isRecordingPayment && (
             <GenerateInvoice
               orderDetails={orderDetails}
               setIsGenerateInvoice={setIsGenerateInvoice}
             />
           )}
 
+          {/* recordPayment component */}
+          {isRecordingPayment && !isGenerateInvoice && !isNegotiation && (
+            <MakePayment />
+          )}
+
           <div className="flex justify-end">
             <section className="flex gap-2">
               {/* status NEW */}
-              {!isGenerateInvoice &&
+              {tab === 'overview' &&
+                !isGenerateInvoice &&
+                !isRecordingPayment &&
                 orderDetails?.negotiationStatus === 'NEW' &&
                 orderDetails?.sellerEnterpriseId === enterpriseId && (
                   <>
@@ -321,7 +360,9 @@ const ViewOrder = () => {
                 )}
 
               {/* status NEGOTIATION */}
-              {!isGenerateInvoice &&
+              {tab === 'overview' &&
+                !isGenerateInvoice &&
+                !isRecordingPayment &&
                 orderDetails?.negotiationStatus === 'NEGOTIATION' &&
                 orderDetails?.sellerEnterpriseId === enterpriseId && (
                   <>

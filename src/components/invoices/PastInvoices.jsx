@@ -1,12 +1,13 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Ban } from 'lucide-react';
 import moment from 'moment';
+import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import React from 'react';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import Loading from '../ui/Loading';
+import emptyImg from '../../../public/Empty.png';
 
 function PastInvoices() {
   const searchParams = useSearchParams();
@@ -116,9 +117,14 @@ function PastInvoices() {
             );
           })
         ) : (
-          <div className="flex h-[50rem] flex-col items-center justify-center gap-2 rounded-lg border border-black bg-gray-50 p-4">
-            <Ban size={24} />
-            <div>There are no invoices for this order.</div>
+          <div className="flex h-[50rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+            <Image src={emptyImg} alt="emptyIcon" />
+            <p className="font-bold">No invoices yet</p>
+            <p className="max-w-96 text-center">
+              {
+                "You haven't created any invoices yet. Start by generating your first invoice to keep track of your transactions"
+              }
+            </p>
           </div>
         )}
       </div>
