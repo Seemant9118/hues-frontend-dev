@@ -61,7 +61,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
             return (
               <div
                 key={invoice?.id}
-                className="shadow-[box-shadow: 4px 4px 17.6px 0px #0000000F; ] flex flex-col gap-2 rounded-lg border bg-gray-50 p-4"
+                className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-customShadow"
               >
                 <section className="flex items-center justify-between">
                   <div className="flex flex-col gap-4">
