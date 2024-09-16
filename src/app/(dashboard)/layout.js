@@ -29,7 +29,7 @@ export default function DashBoardLayout({ children }) {
       {/* Notification KYC status */}
       {/* <KYCnotificationCard isExpireKYC={isExpireKYC} /> */}
 
-      <section className="scrollBarStyles relative grid max-h-full flex-grow grid-cols-[250px,_1fr] gap-5 overflow-y-auto px-10 pb-5">
+      <section className="relative grid max-h-full flex-grow grid-cols-[250px,_1fr] gap-5 overflow-y-hidden px-10 pb-5">
         <Sidebar />
         <main className="scrollBarStyles overflow-y-auto rounded-xl bg-white px-4 pb-4 shadow-[0_4px_6px_0_#3288ED1A]">
           {children}

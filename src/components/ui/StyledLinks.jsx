@@ -7,6 +7,16 @@ import { usePathname } from 'next/navigation';
 const StyledLinks = ({ link }) => {
   const pathname = usePathname();
 
+  // Check if the current link or any of its sub-tabs are active
+  const isActive =
+    link.path === '/'
+      ? pathname === '/' // Exact match for dashboard path
+      : pathname.includes(link.path); // Use 'includes' for other paths
+
+  const isSubTabActive = link.subTab?.some((subtabs) =>
+    pathname.includes(subtabs.path),
+  );
+
   return (
     <>
       {/* Tabs */}
@@ -14,7 +24,7 @@ const StyledLinks = ({ link }) => {
         href={link.path}
         className={cn(
           'flex w-full items-center gap-2 rounded-xl border-none p-4 text-xs',
-          pathname === link.path && pathname.includes(link.path)
+          isActive || isSubTabActive
             ? 'bg-[#288AF91A] text-[#288AF9]'
             : 'bg-transparent text-grey',
         )}
@@ -24,17 +34,15 @@ const StyledLinks = ({ link }) => {
       </Link>
 
       {/* Sub Tabs */}
-      {pathname === link.path ||
-      pathname === link.subTab?.[0].path ||
-      (pathname === link.subTab?.[1].path && link.subTab) ? (
+      {(isActive || isSubTabActive) && link.subTab ? (
         <ul className="flex w-full flex-col gap-2 pl-10">
-          {link.subTab?.map((subtabs) => (
+          {link.subTab.map((subtabs) => (
             <Link
               href={subtabs.path}
               key={subtabs.path}
               className={cn(
                 'flex gap-2 rounded-xl border-none p-4 text-xs',
-                pathname === subtabs.path
+                pathname.includes(subtabs.path)
                   ? 'bg-[#288AF91A] text-[#288AF9]'
                   : 'bg-transparent text-grey',
               )}
@@ -44,9 +52,7 @@ const StyledLinks = ({ link }) => {
             </Link>
           ))}
         </ul>
-      ) : (
-        ''
-      )}
+      ) : null}
     </>
   );
 };
