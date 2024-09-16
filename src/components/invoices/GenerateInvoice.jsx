@@ -322,28 +322,23 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                         -
                       </Button>
 
-                      <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          name="quantity"
-                          className="w-20 rounded-sm pr-4"
-                          value={product?.quantity}
-                          onChange={(e) => {
-                            const newQty = parseInt(e.target.value, 10);
-                            if (
-                              !Number.isNaN(newQty) &&
-                              newQty >= 1 &&
-                              newQty <= initialQuantities?.[index]
-                            ) {
-                              updateProductDetailsList(index, newQty);
-                            }
-                          }}
-                          disabled={isAutoSelect}
-                        />
-                        <span className="flex w-10 items-center justify-center rounded-sm border bg-[#A5ABBD1A] p-2">
-                          {initialQuantities[index]} {/* Maximum quantity */}
-                        </span>
-                      </div>
+                      <Input
+                        type="number"
+                        name="quantity"
+                        className="w-20 rounded-sm pr-4"
+                        value={product?.quantity}
+                        onChange={(e) => {
+                          const newQty = parseInt(e.target.value, 10);
+                          if (
+                            !Number.isNaN(newQty) &&
+                            newQty >= 1 &&
+                            newQty <= initialQuantities?.[index]
+                          ) {
+                            updateProductDetailsList(index, newQty);
+                          }
+                        }}
+                        disabled={isAutoSelect}
+                      />
 
                       <Button
                         className="disabled:cursor-not-allowed"

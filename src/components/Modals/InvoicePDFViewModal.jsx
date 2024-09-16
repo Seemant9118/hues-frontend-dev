@@ -55,11 +55,11 @@ const InvoicePDFViewModal = ({ pvtUrl, shouldOpen, invoiceId }) => {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="w-1/2 border-black"
+          className="border border-[#ABB0C1]"
+          size="sm"
           onClick={handleInvoiceButtonClick}
         >
           <Download size={16} />
-          Invoice
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">

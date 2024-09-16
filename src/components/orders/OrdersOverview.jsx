@@ -7,8 +7,9 @@ const OrdersOverview = ({
   orderId,
   multiStatus,
   Name,
-  paid = 100,
-  totalAmount = 150000,
+  mobileNumber,
+  amtPaid,
+  totalAmount,
 }) => {
   const pathName = usePathname();
   const isSalesDetailPage = pathName.includes('/sales-orders');
@@ -22,7 +23,7 @@ const OrdersOverview = ({
     return formatted;
   };
 
-  const paymentProgressPercent = (paid / totalAmount) * 100;
+  const paymentProgressPercent = (amtPaid / totalAmount) * 100;
   return (
     <section className="flex h-48 gap-2 rounded-md border p-5">
       <div className="flex w-1/2 flex-col gap-4">
@@ -36,7 +37,7 @@ const OrdersOverview = ({
             {isSalesDetailPage ? 'Client' : 'Vendor'} Name
           </p>
           <p className="text-lg font-bold">{Name ?? 'Name not available'}</p>
-          <p className="text-xs font-bold text-[#A5ABBD]">+91 7317414272</p>
+          <p className="text-xs font-bold text-[#A5ABBD]">+91 {mobileNumber}</p>
         </section>
       </div>
       <div className="flex w-1/2 flex-col gap-4">
@@ -51,7 +52,7 @@ const OrdersOverview = ({
             className="w-3/4 bg-[#F3F3F3]"
             value={paymentProgressPercent}
           />
-          <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(paid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
+          <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
         </section>
       </div>
       <div className="flex w-1/2 flex-col items-end gap-4">

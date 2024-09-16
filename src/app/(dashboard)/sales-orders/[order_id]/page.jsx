@@ -159,7 +159,7 @@ const ViewOrder = () => {
     });
   };
 
-  // to get client name
+  // to get client name and number
   const { data: clients } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: () => getClients(enterpriseId),
@@ -169,10 +169,16 @@ const ViewOrder = () => {
     const clientId = clientData?.client?.id ?? clientData?.id;
     return clientId === orderDetails?.buyerEnterpriseId;
   });
+
   const clientName =
     client?.client === null
       ? client?.invitation?.userDetails?.name
       : client?.client?.name;
+
+  const clientNumber =
+    client?.client === null
+      ? client?.invitation?.invitationIdentifier
+      : client?.client?.mobileNumber;
 
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
@@ -193,7 +199,7 @@ const ViewOrder = () => {
       {!isLoading && orderDetails && (
         <>
           {/* headers */}
-          <section className="sticky top-0 flex items-center justify-between bg-white">
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white">
             <div className="flex flex-col gap-2 pt-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
@@ -251,20 +257,22 @@ const ViewOrder = () => {
                 onValueChange={onTabChange}
                 defaultValue={'overview'}
               >
-                <TabsList className="border">
-                  <TabsTrigger className="w-24" value="overview">
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger className="w-24" value="invoices">
-                    Invoice
-                  </TabsTrigger>
-                  <TabsTrigger className="w-24" value="payment">
-                    Payment
-                  </TabsTrigger>
-                  <TabsTrigger className="w-24" value="timeline">
-                    Timeline
-                  </TabsTrigger>
-                </TabsList>
+                <section className="sticky top-10 z-10 bg-white">
+                  <TabsList className="border">
+                    <TabsTrigger className="w-24" value="overview">
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger className="w-24" value="invoices">
+                      Invoice
+                    </TabsTrigger>
+                    <TabsTrigger className="w-24" value="payment">
+                      Payment
+                    </TabsTrigger>
+                    <TabsTrigger className="w-24" value="timeline">
+                      Timeline
+                    </TabsTrigger>
+                  </TabsList>
+                </section>
 
                 <TabsContent value="overview" className="flex flex-col gap-4">
                   {/* orders overview */}
@@ -272,6 +280,8 @@ const ViewOrder = () => {
                     orderId={params.order_id}
                     multiStatus={multiStatus}
                     Name={clientName}
+                    mobileNumber={clientNumber}
+                    amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails?.amount}
                   />
 
@@ -282,10 +292,17 @@ const ViewOrder = () => {
                   ></DataTable>
                 </TabsContent>
                 <TabsContent value="invoices">
-                  <PastInvoices />
+                  <PastInvoices
+                    setIsGenerateInvoice={setIsGenerateInvoice}
+                    orderDetails={orderDetails}
+                  />
                 </TabsContent>
                 <TabsContent value="payment">
-                  <PaymentDetails />
+                  <PaymentDetails
+                    orderId={params.order_id}
+                    orderDetails={orderDetails}
+                    setIsRecordingPayment={setIsRecordingPayment}
+                  />
                 </TabsContent>
                 <TabsContent value="timeline">
                   Timeline here. Coming Soon...
@@ -318,10 +335,13 @@ const ViewOrder = () => {
 
           {/* recordPayment component */}
           {isRecordingPayment && !isGenerateInvoice && !isNegotiation && (
-            <MakePayment />
+            <MakePayment
+              orderId={params.order_id}
+              orderDetails={orderDetails}
+            />
           )}
 
-          <div className="flex justify-end">
+          <div className="sticky bottom-0 z-10 flex justify-end bg-white">
             <section className="flex gap-2">
               {/* status NEW */}
               {tab === 'overview' &&
@@ -331,7 +351,7 @@ const ViewOrder = () => {
                 orderDetails?.sellerEnterpriseId === enterpriseId && (
                   <>
                     {orderDetails?.orderType === 'SALES' && (
-                      <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
+                      <span className="rounded-sm border border-yellow-200 bg-yellow-50 p-2 text-sm font-bold text-yellow-500">
                         Waiting for Response
                       </span>
                     )}
@@ -341,13 +361,16 @@ const ViewOrder = () => {
                         {!isNegotiation && (
                           <>
                             <Button
-                              className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
+                              size="sm"
+                              variant="outline"
+                              className="w-32"
                               onClick={() => setIsNegotiation(true)}
                             >
                               Negotiate
                             </Button>
                             <Button
-                              className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                              size="sm"
+                              className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                               onClick={handleAccept}
                             >
                               Accept
@@ -371,13 +394,16 @@ const ViewOrder = () => {
                         {!isNegotiation && (
                           <>
                             <Button
-                              className="w-32 bg-[#F8BA05] text-white hover:bg-[#F8BA051A] hover:text-[#F8BA05]"
+                              size="sm"
+                              variant="outline"
+                              className="w-32"
                               onClick={() => setIsNegotiation(true)}
                             >
                               Negotiate
                             </Button>
                             <Button
-                              className="w-32 bg-[#39C06F] text-white hover:bg-[#39C06F1A] hover:text-[#39C06F]"
+                              size="sm"
+                              className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                               onClick={handleAccept}
                             >
                               Accept

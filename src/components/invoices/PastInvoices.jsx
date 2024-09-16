@@ -8,8 +8,11 @@ import React from 'react';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import Loading from '../ui/Loading';
 import emptyImg from '../../../public/Empty.png';
+import { Button } from '../ui/button';
+import { DataTable } from '../table/data-table';
+import { invoiceColumns } from './invoicesColumns';
 
-function PastInvoices() {
+function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get('invoiceId');
   const params = useParams();
@@ -58,33 +61,54 @@ function PastInvoices() {
             return (
               <div
                 key={invoice?.id}
-                className="flex flex-col gap-2 rounded-lg border border-black bg-gray-50 p-4"
+                className="shadow-[box-shadow: 4px 4px 17.6px 0px #0000000F; ] flex flex-col gap-2 rounded-lg border bg-gray-50 p-4"
               >
-                <section className="flex justify-between gap-2">
-                  <div className="flex flex-col gap-2">
+                <section className="flex items-center justify-between">
+                  <div className="flex flex-col gap-4">
                     <h1 className="text-sm font-bold">
-                      Invoice No. : {invoice?.referenceNumber}
+                      {invoice?.referenceNumber}
                     </h1>
-                    <h1 className="text-sm font-bold">
-                      Date : {moment(invoice?.createdAt).format('DD-MM-YYYY')}
-                    </h1>
-                    <h1 className="text-sm font-bold">
-                      Type: {capitalize(invoice?.invoiceType)}
-                    </h1>
+                    <div className="flex gap-10">
+                      <h1 className="text-sm">
+                        <span className="font-bold text-[#ABB0C1]">
+                          Date :{' '}
+                        </span>
+                        <span className="text-[#363940]">
+                          {moment(invoice?.createdAt).format('DD-MM-YYYY')}
+                        </span>
+                      </h1>
+                      <h1 className="text-sm">
+                        <span className="font-bold text-[#ABB0C1]">
+                          Total Amount :{' '}
+                        </span>
+                        <span className="font-bold text-[#363940]">
+                          {formattedCurrency(invoice?.totalAmount)}
+                        </span>
+                        <span> (inc. GST)</span>
+                      </h1>
+                      <h1 className="text-sm font-bold">
+                        <span className="font-bold text-[#ABB0C1]">
+                          Type :{' '}
+                        </span>
+                        <span className="font-bold text-[#363940]">
+                          {capitalize(invoice?.invoiceType)}
+                        </span>
+                      </h1>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <h1 className="text-sm font-bold">
-                      Total Amount <span className="text-xs">(inc. GST)</span> :{' '}
-                      {formattedCurrency(invoice?.totalAmount)}
-                    </h1>
-                    <InvoicePDFViewModal
-                      invoiceId={invoice.id}
-                      pvtUrl={invoice?.attachmentLink}
-                      shouldOpen={shouldOpenModal} // Automatically open this modal if invoiceId matches
-                    />
-                  </div>
+
+                  <InvoicePDFViewModal
+                    invoiceId={invoice.id}
+                    pvtUrl={invoice?.attachmentLink}
+                    shouldOpen={shouldOpenModal} // Automatically open this modal if invoiceId matches
+                  />
                 </section>
-                <div className="border border-gray-200"></div>
+
+                <DataTable
+                  columns={invoiceColumns}
+                  data={invoice?.invoiceItems}
+                />
+                {/* 
                 <div className="flex flex-col gap-2">
                   <ul className="scrollBarStyles flex max-h-24 flex-col gap-2 overflow-auto text-sm">
                     <li className="grid grid-cols-4 font-bold">
@@ -112,7 +136,7 @@ function PastInvoices() {
                       );
                     })}
                   </ul>
-                </div>
+                </div> */}
               </div>
             );
           })
@@ -125,6 +149,18 @@ function PastInvoices() {
                 "You haven't created any invoices yet. Start by generating your first invoice to keep track of your transactions"
               }
             </p>
+
+            {!orderDetails?.invoiceGenerationCompleted &&
+              (orderDetails.negotiationStatus === 'ACCEPTED' ||
+                (orderDetails.negotiationStatus === 'NEW' &&
+                  orderDetails?.orderType === 'SALES')) && (
+                <Button
+                  className="bg-[#288AF9]"
+                  onClick={() => setIsGenerateInvoice(true)}
+                >
+                  Generate Invoice
+                </Button>
+              )}
           </div>
         )}
       </div>
