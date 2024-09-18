@@ -3,25 +3,28 @@ import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import React from 'react';
-import { DataTable } from '../table/data-table';
-import Loading from '../ui/Loading';
 import emptyImg from '../../../public/Empty.png';
-import { paymentColumns } from './paymentColumns';
+import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
+import Loading from '../ui/Loading';
+import { usePaymentColumns } from './paymentColumns';
 
 const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const { data: paymentsList, isLoading } = useQuery({
     queryKey: [paymentApi.getPaymentsList.endpointKey, orderId],
     queryFn: () => getPaymentsList(orderId), // Make sure you're passing the orderId correctly
     enabled: !!orderId, // Ensure the query only runs if orderId is truthy
+    select: (paymentsList) => paymentsList.data.data,
   });
+
+  const paymentColumns = usePaymentColumns();
 
   if (isLoading) {
     return <Loading />;
   }
 
-  return paymentsList?.data?.length > 0 ? (
-    <DataTable columns={paymentColumns} data={paymentsList.data}></DataTable>
+  return paymentsList?.length > 0 ? (
+    <DataTable columns={paymentColumns} data={paymentsList}></DataTable>
   ) : (
     <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />
@@ -32,8 +35,7 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         }
       </p>
 
-      {(orderDetails.negotiationStatus === 'INVOICED' ||
-        orderDetails.negotiationStatus === 'ACCEPTED') && (
+      {orderDetails.negotiationStatus === 'INVOICED' && (
         <Button
           className="bg-[#288AF9]"
           onClick={() => setIsRecordingPayment(true)}

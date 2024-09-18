@@ -2,7 +2,7 @@ import { paymentApi } from '@/api/payments/payment_api';
 import { APIinstance } from '@/services';
 
 // 1.create payment
-export const createPayment = ({ data }) => {
+export const createPayment = (data) => {
   return APIinstance.post(paymentApi.createPayment.endpoint, data);
 };
 

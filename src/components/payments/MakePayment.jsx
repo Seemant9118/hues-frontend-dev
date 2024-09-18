@@ -1,13 +1,18 @@
 import { paymentApi } from '@/api/payments/payment_api';
-import { getInvoicesForPayments } from '@/services/Payment_Services/PaymentServices';
-import { useQuery } from '@tanstack/react-query';
+import {
+  createPayment,
+  getInvoicesForPayments,
+} from '@/services/Payment_Services/PaymentServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Upload, UploadCloud } from 'lucide-react';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
@@ -27,21 +32,204 @@ import {
   TableRow,
 } from '../ui/table';
 
-const MakePayment = ({ orderId, orderDetails }) => {
+const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
+
+  const [errorMsg, setErrorMsg] = useState({});
+  const [invoicesData, setInvoicesData] = useState([]);
+  // New state to store amountPaid values for invoices
+  const [invoiceAmounts, setInvoiceAmounts] = useState({});
+  const [paymentData, setPaymentData] = useState({
+    amount: null,
+    paymentMode: '',
+    transactionId: '',
+    attachmentLink: '',
+    invoices: invoicesData,
+  });
+
+  useEffect(() => {
+    setPaymentData((prevData) => ({
+      ...prevData,
+      invoices: invoicesData,
+    }));
+  }, [invoicesData]);
+
   const { data: invoicesForPayments, isLoading } = useQuery({
     queryKey: [paymentApi.getInvoicesForPayments.endpointKey, orderId],
-    queryFn: () => getInvoicesForPayments(orderId), // Make sure you're passing the orderId correctly
-    enabled: !!orderId, // Ensure the query only runs if orderId is truthy
+    queryFn: () => getInvoicesForPayments(orderId),
+    enabled: !!orderId,
     select: (invoicesForPayments) => invoicesForPayments.data.data,
   });
+
+  // Sync the current amountPaid from invoiceAmounts to invoicesForPayments
+  const syncAmountsToInvoices = () => {
+    return invoicesForPayments?.map((invoice) => ({
+      ...invoice,
+      amountPaid: invoiceAmounts[invoice.id] || 0, // Use stored amount or default to 0
+    }));
+  };
+
+  const splitFn = (amount) => {
+    let remainingAmount = amount;
+    const updatedInvoices = syncAmountsToInvoices().map((invoice) => {
+      const currentInvoiceAmount = parseFloat(invoice.invoicetotalamount);
+
+      if (remainingAmount >= currentInvoiceAmount) {
+        invoice.amountPaid = currentInvoiceAmount;
+        remainingAmount -= currentInvoiceAmount;
+      } else {
+        invoice.amountPaid = remainingAmount;
+        remainingAmount = 0;
+      }
+
+      return invoice;
+    });
+
+    // Update invoiceAmounts state with the new amounts
+    const newInvoiceAmounts = updatedInvoices.reduce((acc, invoice) => {
+      acc[invoice.id] = invoice.amountPaid;
+      return acc;
+    }, {});
+
+    setInvoiceAmounts(newInvoiceAmounts);
+    setInvoicesData(updatedInvoices);
+    setPaymentData((prevData) => ({
+      ...prevData,
+      invoices: updatedInvoices,
+      amount,
+    }));
+  };
+
+  const calculateTotalAmount = (updatedAmounts) => {
+    const totalAmount = invoicesData.reduce((sum, invoice) => {
+      const invoiceId = invoice.id;
+      return sum + (parseFloat(updatedAmounts[invoiceId]) || 0);
+    }, 0);
+
+    // Now update the paymentData state with the new total amount
+    setPaymentData((prevData) => ({
+      ...prevData,
+      amount: totalAmount,
+    }));
+  };
+
+  const handleFileChange = (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setPaymentData({ ...paymentData, attachmentLink: formData });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const balanceAmount = parseFloat(
+      orderDetails.amount + orderDetails.gstAmount,
+    );
+
+    setPaymentData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+
+    if (name === 'amount') {
+      if (value > balanceAmount) {
+        setErrorMsg((prevMsg) => ({
+          ...prevMsg,
+          amountPaid: 'Amount exceeds balance amount',
+        }));
+      } else {
+        splitFn(value); // Correctly split amount among invoices
+        setErrorMsg((prevMsg) => ({
+          ...prevMsg,
+          amountPaid: '',
+        }));
+      }
+    }
+  };
+
+  const handleAmountPaidChange = (e, invoiceId, invoice) => {
+    const value = parseFloat(e.target.value) || 0;
+
+    if (value <= invoice.invoicetotalamount) {
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        amountPaid: '',
+      }));
+    } else {
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        amountPaid: 'Amount exceeds balance amount',
+      }));
+    }
+
+    // Update the invoiceAmounts state with the new value
+    setInvoiceAmounts((prevAmounts) => {
+      const updatedAmounts = {
+        ...prevAmounts,
+        [invoiceId]: value,
+      };
+
+      // After updating invoiceAmounts, recalculate the total amount
+      calculateTotalAmount(updatedAmounts); // Pass the updated amounts
+
+      // Now sync the updated amounts with the invoicesData
+      const updatedInvoices = invoicesData.map((inv) => ({
+        ...inv,
+        amountPaid: updatedAmounts[inv.id] || 0, // Syncing the amount paid
+      }));
+
+      // Update invoicesData state
+      setInvoicesData(updatedInvoices);
+
+      return updatedAmounts;
+    });
+  };
+
+  const createPaymentMutationFn = useMutation({
+    mutationKey: [paymentApi.createPayment.endpointKey],
+    mutationFn: createPayment,
+    onSuccess: () => {
+      toast.success('Payment Recorded Successfully');
+      setPaymentData({
+        amount: '', // Consider using an empty string instead of null for consistency
+        paymentMode: '',
+        transactionId: '',
+        attachmentLink: '', // If it's a FormData object, consider setting it to null
+        invoices: [],
+      });
+      queryClient.invalidateQueries[paymentApi.getPaymentsList.endpointKey];
+      setIsRecordingPayment(false);
+    },
+    onError: (error) => {
+      const errorMessage =
+        error?.response?.data?.message || 'Something went wrong';
+      toast.error(errorMessage);
+    },
+  });
+
+  const handleSubmit = () => {
+    const formattedInvoices = paymentData?.invoices?.map((invoice) => ({
+      invoiceId: Number(invoice.invoicereceivableinvoiceid), // Ensure invoice.id is the correct identifier
+      amount: Number(invoice.amountPaid) || 0,
+    }));
+
+    const payload = {
+      amount: Number(paymentData.amount) || 0, // Ensure amount is set correctly
+      paymentMode: paymentData.paymentMode,
+      transactionId: paymentData.transactionId || '', // Optional
+      attachmentLink: paymentData.attachmentLink || '', // Optional
+      invoices: formattedInvoices,
+    };
+    createPaymentMutationFn.mutate(payload);
+  };
 
   return (
     <>
       <div className="scrollBarStyles flex flex-col gap-4 overflow-y-auto">
         <div className="flex flex-col gap-4 rounded-md border p-5">
           {/* inputs */}
-          <section className="grid grid-cols-2 grid-rows-2 gap-6">
+          <section className="grid grid-cols-2 grid-rows-2 gap-4">
             {/* select payment mode */}
             <div className="flex flex-col gap-2">
               <div>
@@ -49,7 +237,15 @@ const MakePayment = ({ orderId, orderDetails }) => {
                 <span className="text-red-600">*</span>
               </div>
 
-              <Select defaultValue="">
+              <Select
+                defaultValue={paymentData.paymentMode}
+                onValueChange={(value) =>
+                  setPaymentData((prevData) => ({
+                    ...prevData,
+                    paymentMode: value,
+                  }))
+                }
+              >
                 <SelectTrigger className="max-w-md">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
@@ -57,7 +253,7 @@ const MakePayment = ({ orderId, orderDetails }) => {
                   <SelectItem value="neft">NEFT</SelectItem>
                   <SelectItem value="rtgs">RTGS</SelectItem>
                   <SelectItem value="upi">UPI</SelectItem>
-                  <SelectItem value="crditDebitCard">
+                  <SelectItem value="creditDebitCard">
                     Credit / Debit Card
                   </SelectItem>
                   <SelectItem value="cheque">Cheque</SelectItem>
@@ -69,8 +265,12 @@ const MakePayment = ({ orderId, orderDetails }) => {
             <div className="flex flex-col gap-2">
               <Label>Transaction ID</Label>
               <div className="flex flex-col gap-1">
-                <Input className="max-w-md" />
-                {/* {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />} */}
+                <Input
+                  name="transactionId"
+                  value={paymentData.transactionId}
+                  onChange={handleInputChange}
+                  className="max-w-md"
+                />
               </div>
             </div>
 
@@ -81,8 +281,14 @@ const MakePayment = ({ orderId, orderDetails }) => {
                 <span className="text-red-600">*</span>
               </div>
               <div className="flex flex-col gap-1">
-                <Input className="max-w-md" />
-                {/* {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />} */}
+                <Input
+                  type="number"
+                  name="amount"
+                  className="max-w-md"
+                  value={paymentData.amount}
+                  onChange={handleInputChange}
+                />
+                {errorMsg.amountPaid && <ErrorBox msg={errorMsg.amountPaid} />}
               </div>
             </div>
 
@@ -93,9 +299,8 @@ const MakePayment = ({ orderId, orderDetails }) => {
                 <Input
                   disabled
                   className="max-w-md"
-                  value={orderDetails?.amount}
+                  value={orderDetails.amount + orderDetails.gstAmount}
                 />
-                {/* {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />} */}
               </div>
             </div>
           </section>
@@ -105,7 +310,7 @@ const MakePayment = ({ orderId, orderDetails }) => {
             <Label>Relevant Proof</Label>
 
             <FileUploader
-              handleChange={() => {}}
+              handleChange={handleFileChange}
               name="file"
               types={['png', 'pdf']}
             >
@@ -132,26 +337,6 @@ const MakePayment = ({ orderId, orderDetails }) => {
                 </Button>
               </div>
             </FileUploader>
-
-            {/* {files.map((file) => (
-          <div
-            key={file.name}
-            className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
-          >
-            <div className="flex items-center gap-4">
-              <p className="text-xs font-medium leading-[18px]">{file.name}</p>
-              <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
-              <div className="flex items-center gap-2">
-                <div className="rounded-full bg-green-500/10 p-2 text-green-500">
-                  <Check size={10} />
-                </div>
-                <p className="text-xs font-medium leading-5 text-green-500">
-                  Upload Successfully!
-                </p>
-              </div>
-            </div>
-          </div>
-        ))} */}
           </div>
         </div>
 
@@ -204,7 +389,7 @@ const MakePayment = ({ orderId, orderDetails }) => {
               </TableHeader>
 
               <TableBody className="shrink-0">
-                {invoicesForPayments?.map((invoice) => (
+                {syncAmountsToInvoices()?.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell colSpan={1}>
                       <Checkbox />
@@ -225,7 +410,14 @@ const MakePayment = ({ orderId, orderDetails }) => {
                     </TableCell>
 
                     <TableCell colSpan={2}>
-                      <Input className="w-32"></Input>
+                      <Input
+                        className="w-32"
+                        type="number"
+                        value={invoiceAmounts[invoice.id] || 0}
+                        onChange={(e) =>
+                          handleAmountPaidChange(e, invoice.id, invoice)
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -248,6 +440,8 @@ const MakePayment = ({ orderId, orderDetails }) => {
           Discard
         </Button>
         <Button
+          onClick={handleSubmit}
+          disabled={Object.values(errorMsg).some((msg) => msg !== '')}
           size="sm"
           className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
         >

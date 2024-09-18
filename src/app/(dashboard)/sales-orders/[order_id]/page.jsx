@@ -212,8 +212,7 @@ const ViewOrder = () => {
               {/* record payment CTA */}
               {!isGenerateInvoice &&
                 !isRecordingPayment &&
-                (orderDetails.negotiationStatus === 'INVOICED' ||
-                  orderDetails.negotiationStatus === 'ACCEPTED') && (
+                orderDetails.negotiationStatus === 'INVOICED' && (
                   <Button
                     variant="blue_outline"
                     size="sm"
@@ -282,7 +281,7 @@ const ViewOrder = () => {
                     Name={clientName}
                     mobileNumber={clientNumber}
                     amtPaid={orderDetails?.amountPaid}
-                    totalAmount={orderDetails?.amount}
+                    totalAmount={orderDetails.amount + orderDetails.gstAmount}
                   />
 
                   {/* orderDetail Table */}
@@ -338,6 +337,7 @@ const ViewOrder = () => {
             <MakePayment
               orderId={params.order_id}
               orderDetails={orderDetails}
+              setIsRecordingPayment={setIsRecordingPayment}
             />
           )}
 
