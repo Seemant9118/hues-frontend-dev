@@ -45,6 +45,12 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBG = '#39C06F1A';
       statusBorder = '#39C06F';
       break;
+    case 'PARTIAL_PAID':
+      statusText = 'Partial Paid';
+      statusColor = '#288AF9';
+      statusBG = '#288AF91A';
+      statusBorder = '#288AF9';
+      break;
     case 'NOT_PAID':
       statusText = (
         <>

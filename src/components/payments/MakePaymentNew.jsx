@@ -1,17 +1,17 @@
+import { orderApi } from '@/api/order_api/order_api';
 import { paymentApi } from '@/api/payments/payment_api';
 import {
   createPayment,
   getInvoicesForPayments,
 } from '@/services/Payment_Services/PaymentServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Upload, UploadCloud } from 'lucide-react';
+import { RotateCcw, Upload, UploadCloud } from 'lucide-react';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { Checkbox } from '../ui/checkbox';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -32,28 +32,9 @@ import {
   TableRow,
 } from '../ui/table';
 
-const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
-
-  const [errorMsg, setErrorMsg] = useState({});
-  const [invoicesData, setInvoicesData] = useState([]);
-  // New state to store amountPaid values for invoices
-  const [invoiceAmounts, setInvoiceAmounts] = useState({});
-  const [paymentData, setPaymentData] = useState({
-    amount: null,
-    paymentMode: '',
-    transactionId: '',
-    attachmentLink: '',
-    invoices: invoicesData,
-  });
-
-  useEffect(() => {
-    setPaymentData((prevData) => ({
-      ...prevData,
-      invoices: invoicesData,
-    }));
-  }, [invoicesData]);
 
   const { data: invoicesForPayments, isLoading } = useQuery({
     queryKey: [paymentApi.getInvoicesForPayments.endpointKey, orderId],
@@ -62,63 +43,55 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     select: (invoicesForPayments) => invoicesForPayments.data.data,
   });
 
-  // Sync the current amountPaid from invoiceAmounts to invoicesForPayments
-  const syncAmountsToInvoices = () => {
-    return invoicesForPayments?.map((invoice) => ({
-      ...invoice,
-      amountPaid: invoiceAmounts[invoice.id] || 0, // Use stored amount or default to 0
-    }));
-  };
+  const [isAutoSplitted, setIsAutoSplitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState({});
+  // Set initial state for invoices
+  const [invoices, setInvoices] = useState([]);
+  const [paymentData, setPaymentData] = useState({
+    amount: '',
+    paymentMode: '',
+    transactionId: '',
+    attachmentLink: '',
+    invoices,
+  });
 
-  const splitFn = (amount) => {
-    let remainingAmount = amount;
-    const updatedInvoices = syncAmountsToInvoices().map((invoice) => {
-      const currentInvoiceAmount = parseFloat(invoice.invoicetotalamount);
+  // Update the invoices state once invoicesForPayments data is fetched
+  useEffect(() => {
+    if (invoicesForPayments) {
+      const updatedInvoices = invoicesForPayments.map((invoice) => ({
+        ...invoice,
+        invoiceId: invoice.invoicereceivableinvoiceid,
+        amountPaid: 0, // Adding amountPaid to each invoice
+      }));
+      setInvoices(updatedInvoices);
+    }
+  }, [invoicesForPayments]);
 
-      if (remainingAmount >= currentInvoiceAmount) {
-        invoice.amountPaid = currentInvoiceAmount;
-        remainingAmount -= currentInvoiceAmount;
+  const splitFn = (totalAmount) => {
+    let remainingAmount = totalAmount;
+
+    const updatedInvoices = invoices.map((invoice) => {
+      const balanceAmount = invoice.invoicetotalamount;
+
+      if (remainingAmount > balanceAmount) {
+        // Pay full balance amount for this invoice
+        remainingAmount -= balanceAmount;
+        return {
+          ...invoice,
+          amountPaid: balanceAmount,
+        };
       } else {
-        invoice.amountPaid = remainingAmount;
+        // Pay remaining amount to this invoice
+        const amountToPay = remainingAmount;
         remainingAmount = 0;
+        return {
+          ...invoice,
+          amountPaid: amountToPay,
+        };
       }
-
-      return invoice;
     });
 
-    // Update invoiceAmounts state with the new amounts
-    const newInvoiceAmounts = updatedInvoices.reduce((acc, invoice) => {
-      acc[invoice.id] = invoice.amountPaid;
-      return acc;
-    }, {});
-
-    setInvoiceAmounts(newInvoiceAmounts);
-    setInvoicesData(updatedInvoices);
-    setPaymentData((prevData) => ({
-      ...prevData,
-      invoices: updatedInvoices,
-      amount,
-    }));
-  };
-
-  const calculateTotalAmount = (updatedAmounts) => {
-    const totalAmount = invoicesData.reduce((sum, invoice) => {
-      const invoiceId = invoice.id;
-      return sum + (parseFloat(updatedAmounts[invoiceId]) || 0);
-    }, 0);
-
-    // Now update the paymentData state with the new total amount
-    setPaymentData((prevData) => ({
-      ...prevData,
-      amount: totalAmount,
-    }));
-  };
-
-  const handleFileChange = (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    setPaymentData({ ...paymentData, attachmentLink: formData });
+    setInvoices(updatedInvoices);
   };
 
   const handleInputChange = (e) => {
@@ -139,7 +112,7 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
           amountPaid: 'Amount exceeds balance amount',
         }));
       } else {
-        splitFn(value); // Correctly split amount among invoices
+        // splitFn(value); // Correctly split amount among invoices
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
           amountPaid: '',
@@ -148,42 +121,52 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     }
   };
 
-  const handleAmountPaidChange = (e, invoiceId, invoice) => {
-    const value = parseFloat(e.target.value) || 0;
+  const handleAmountPaidChange = (e, invoiceId) => {
+    const { value } = e.target;
+    const newAmountPaid = parseFloat(value) || 0;
 
-    if (value <= invoice.invoicetotalamount) {
+    // Update the specific invoice's amountPaid
+    const updatedInvoices = invoices.map((invoice) =>
+      invoice.invoiceId === invoiceId
+        ? { ...invoice, amountPaid: newAmountPaid }
+        : invoice,
+    );
+
+    // Calculate total amount paid across all invoices
+    const totalAmountPaid = updatedInvoices.reduce(
+      (total, inv) => total + inv.amountPaid,
+      0,
+    );
+
+    // Update the invoices state with the new amounts
+    setInvoices(updatedInvoices);
+
+    // Check for errors and update error messages accordingly
+    if (totalAmountPaid > paymentData.amount) {
+      // If total amount paid exceeds the paymentData.amount
       setErrorMsg((prevMsg) => ({
         ...prevMsg,
-        amountPaid: '',
+        invoiceAmountPaid: 'Amount exceeds the total payment amount',
+      }));
+    } else if (totalAmountPaid < paymentData.amount) {
+      // If total amount paid is less than the paymentData.amount
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        invoiceAmountPaid: 'Amount is less than the total payment amount',
       }));
     } else {
+      // Clear error message if no issues
       setErrorMsg((prevMsg) => ({
         ...prevMsg,
-        amountPaid: 'Amount exceeds balance amount',
+        invoiceAmountPaid: '',
       }));
     }
 
-    // Update the invoiceAmounts state with the new value
-    setInvoiceAmounts((prevAmounts) => {
-      const updatedAmounts = {
-        ...prevAmounts,
-        [invoiceId]: value,
-      };
-
-      // After updating invoiceAmounts, recalculate the total amount
-      calculateTotalAmount(updatedAmounts); // Pass the updated amounts
-
-      // Now sync the updated amounts with the invoicesData
-      const updatedInvoices = invoicesData.map((inv) => ({
-        ...inv,
-        amountPaid: updatedAmounts[inv.id] || 0, // Syncing the amount paid
-      }));
-
-      // Update invoicesData state
-      setInvoicesData(updatedInvoices);
-
-      return updatedAmounts;
-    });
+    // Update paymentData with the new invoices
+    setPaymentData((prevData) => ({
+      ...prevData,
+      invoices: updatedInvoices,
+    }));
   };
 
   const createPaymentMutationFn = useMutation({
@@ -191,6 +174,8 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     mutationFn: createPayment,
     onSuccess: () => {
       toast.success('Payment Recorded Successfully');
+      setInvoices([]);
+      setErrorMsg({});
       setPaymentData({
         amount: '', // Consider using an empty string instead of null for consistency
         paymentMode: '',
@@ -198,7 +183,8 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         attachmentLink: '', // If it's a FormData object, consider setting it to null
         invoices: [],
       });
-      queryClient.invalidateQueries[paymentApi.getPaymentsList.endpointKey];
+      queryClient.invalidateQueries([paymentApi.getPaymentsList.endpointKey]); // Use parentheses here
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]); // Use parentheses here
       setIsRecordingPayment(false);
     },
     onError: (error) => {
@@ -209,29 +195,27 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   });
 
   const handleSubmit = () => {
-    const formattedInvoices = paymentData?.invoices?.map((invoice) => ({
-      invoiceId: Number(invoice.invoicereceivableinvoiceid), // Ensure invoice.id is the correct identifier
-      amount: Number(invoice.amountPaid) || 0,
-    }));
-
-    const payload = {
-      amount: Number(paymentData.amount) || 0, // Ensure amount is set correctly
-      paymentMode: paymentData.paymentMode,
-      transactionId: paymentData.transactionId || '', // Optional
-      attachmentLink: paymentData.attachmentLink || '', // Optional
-      invoices: formattedInvoices,
+    // Filter invoices where amountPaid > 0
+    const filteredInvoices = invoices.filter(
+      (invoice) => invoice.amountPaid > 0,
+    );
+    // Update paymentData with filtered invoices
+    const updatedPaymentData = {
+      ...paymentData,
+      invoices: filteredInvoices,
     };
-    createPaymentMutationFn.mutate(payload);
+
+    createPaymentMutationFn.mutate(updatedPaymentData);
   };
 
   return (
     <>
       <div className="scrollBarStyles flex flex-col gap-4 overflow-y-auto">
-        <div className="flex flex-col gap-4 rounded-md border p-5">
-          {/* inputs */}
-          <section className="grid grid-cols-2 grid-rows-2 gap-4">
+        {/* inputs */}
+        <section className="flex flex-col gap-4 rounded-md border p-4">
+          <div className="flex items-center">
             {/* select payment mode */}
-            <div className="flex flex-col gap-2">
+            <div className="flex w-1/2 flex-col gap-2">
               <div>
                 <Label className="flex-shrink-0">Payment Mode</Label>{' '}
                 <span className="text-red-600">*</span>
@@ -262,25 +246,27 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               </Select>
             </div>
             {/* transaction ID */}
-            <div className="flex flex-col gap-2">
+            <div className="flex w-1/2 flex-col gap-2">
               <Label>Transaction ID</Label>
               <div className="flex flex-col gap-1">
                 <Input
                   name="transactionId"
+                  className="max-w-md"
                   value={paymentData.transactionId}
                   onChange={handleInputChange}
-                  className="max-w-md"
                 />
               </div>
             </div>
+          </div>
 
+          <div className="flex items-center">
             {/* Amount */}
-            <div className="flex flex-col gap-2">
+            <div className="flex w-1/2 flex-col gap-2">
               <div>
                 <Label className="flex-shrink-0">Amount Paid</Label>{' '}
                 <span className="text-red-600">*</span>
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
                 <Input
                   type="number"
                   name="amount"
@@ -288,12 +274,45 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                   value={paymentData.amount}
                   onChange={handleInputChange}
                 />
-                {errorMsg.amountPaid && <ErrorBox msg={errorMsg.amountPaid} />}
+                {paymentData.amount && (
+                  <span
+                    onClick={() => {
+                      if (isAutoSplitted) {
+                        setIsAutoSplitted(false);
+                        // Reset the amountPaid for each invoice to 0
+                        const resetInvoices = invoices.map((invoice) => ({
+                          ...invoice,
+                          amountPaid: 0, // Reset amountPaid to 0
+                        }));
+
+                        setInvoices(resetInvoices); // Update invoices with the reset values
+
+                        setPaymentData((prevData) => ({
+                          ...prevData,
+                          amount: '',
+                          paymentMode: '',
+                          transactionId: '',
+                          attachmentLink: '',
+                          invoices: resetInvoices, // Use the reset invoices
+                        }));
+                        setErrorMsg({});
+                      } else {
+                        splitFn(paymentData.amount); // Call splitFn to distribute amount across invoices
+                        setIsAutoSplitted(true);
+                      }
+                    }}
+                    className="flex cursor-pointer items-center gap-0.5 text-xs font-bold text-[#288AF9] hover:underline"
+                  >
+                    <RotateCcw size={12} />
+                    {isAutoSplitted ? 'Revert' : 'Auto-split'}
+                  </span>
+                )}
               </div>
+              {errorMsg.amountPaid && <ErrorBox msg={errorMsg.amountPaid} />}
             </div>
 
             {/* Balance */}
-            <div className="flex flex-col gap-2">
+            <div className="flex w-1/2 flex-col gap-2">
               <Label>Balance</Label>
               <div className="flex flex-col gap-1">
                 <Input
@@ -303,45 +322,24 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                 />
               </div>
             </div>
-          </section>
-
-          {/* uploads payments proofs */}
-          <div className="flex flex-col gap-4">
-            <Label>Relevant Proof</Label>
-
-            <FileUploader
-              handleChange={handleFileChange}
-              name="file"
-              types={['png', 'pdf']}
-            >
-              <div className="mb-2 flex min-w-[700px] cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-[#288AF9] px-5 py-10">
-                <div className="flex items-center gap-4">
-                  <UploadCloud className="text-[#288AF9]" size={40} />
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs font-medium text-darkText">
-                      Drag & Drop or Select a File (Max 10MB,
-                      <span className="font-bold text-[#288AF9]">
-                        {' '}
-                        .png /.pdf Formats
-                      </span>
-                      )
-                    </p>
-                    <p className="text-xs font-normal text-[#288AF9]">
-                      Note - Upload Payment Proofs only.
-                    </p>
-                  </div>
-                </div>
-                <Button variant="blue_outline">
-                  <Upload />
-                  Select
-                </Button>
-              </div>
-            </FileUploader>
           </div>
-        </div>
+        </section>
 
         {/* Invoice table  */}
-        <div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-bold">Invoices</h2>
+          {isAutoSplitted && (
+            <div className="flex items-center justify-between px-2">
+              <span className="text-sm text-[#A5ABBD]">
+                Amount is auto-splitted, but you can customize it manually if
+                needed
+              </span>
+
+              {errorMsg.invoiceAmountPaid && (
+                <ErrorBox msg={errorMsg.invoiceAmountPaid} />
+              )}
+            </div>
+          )}
           {/* Invoice Selection Table */}
           {isLoading ? (
             <Loading />
@@ -349,12 +347,6 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead
-                    colSpan={1}
-                    className="shrink-0 text-xs font-bold text-black"
-                  >
-                    <Checkbox />
-                  </TableHead>
                   <TableHead
                     colSpan={3}
                     className="shrink-0 text-xs font-bold text-black"
@@ -389,12 +381,8 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               </TableHeader>
 
               <TableBody className="shrink-0">
-                {syncAmountsToInvoices()?.map((invoice) => (
+                {invoices?.map((invoice) => (
                   <TableRow key={invoice.id}>
-                    <TableCell colSpan={1}>
-                      <Checkbox />
-                    </TableCell>
-
                     <TableCell colSpan={3}>
                       {invoice.invoicereferencenumber}
                     </TableCell>
@@ -413,9 +401,10 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                       <Input
                         className="w-32"
                         type="number"
-                        value={invoiceAmounts[invoice.id] || 0}
+                        disabled={!isAutoSplitted}
+                        value={invoice.amountPaid}
                         onChange={(e) =>
-                          handleAmountPaidChange(e, invoice.id, invoice)
+                          handleAmountPaidChange(e, invoice.invoiceId)
                         }
                       />
                     </TableCell>
@@ -424,6 +413,40 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               </TableBody>
             </Table>
           )}
+        </div>
+
+        {/* uploads payments proofs */}
+        <div className="flex flex-col gap-4">
+          <Label>Relevant Proof</Label>
+
+          <FileUploader
+            handleChange={() => {}}
+            name="file"
+            types={['png', 'pdf']}
+          >
+            <div className="mb-2 flex min-w-[700px] cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-[#288AF9] px-5 py-10">
+              <div className="flex items-center gap-4">
+                <UploadCloud className="text-[#288AF9]" size={40} />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs font-medium text-darkText">
+                    Drag & Drop or Select a File (Max 10MB,
+                    <span className="font-bold text-[#288AF9]">
+                      {' '}
+                      .png /.pdf Formats
+                    </span>
+                    )
+                  </p>
+                  <p className="text-xs font-normal text-[#288AF9]">
+                    Note - Upload Payment Proofs only.
+                  </p>
+                </div>
+              </div>
+              <Button variant="blue_outline">
+                <Upload />
+                Select
+              </Button>
+            </div>
+          </FileUploader>
         </div>
       </div>
 
@@ -434,6 +457,7 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
           size="sm"
           onClick={() => {
             // state clear
+            setIsRecordingPayment(false);
             router.back();
           }}
         >
@@ -452,4 +476,4 @@ const MakePayment = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   );
 };
 
-export default MakePayment;
+export default MakePaymentNew;

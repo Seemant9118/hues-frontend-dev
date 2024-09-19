@@ -64,20 +64,27 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       setInitialQuantities(initialQtys);
 
       const getInitialProductDetailsList = orderDetails.orderItems.map(
-        (item) => ({
-          ...item.productDetails,
-          productType: item.productType,
-          orderItemId: item.id,
-          quantity: calculatedInvoiceQuantity(
+        (item) => {
+          const quantity = calculatedInvoiceQuantity(
             item.quantity,
             item.invoiceQuantity,
-          ),
-          unitPrice: item.unitPrice,
-          gstPerUnit: item.gstPerUnit,
-          totalAmount: item.totalAmount,
-          totalGstAmount: item.totalGstAmount,
-          isSelected: isAutoSelect,
-        }),
+          );
+          const { unitPrice } = item;
+          const totalAmount = quantity * unitPrice;
+          const totalGstAmount = totalAmount * (item.gstPerUnit / 100);
+
+          return {
+            ...item.productDetails,
+            productType: item.productType,
+            orderItemId: item.id,
+            quantity, // Calculated quantity
+            unitPrice, // Unit price
+            gstPerUnit: item.gstPerUnit,
+            totalAmount, // Calculated total amount
+            totalGstAmount: parseFloat(totalGstAmount.toFixed(2)), // Total GST amount
+            isSelected: isAutoSelect,
+          };
+        },
       );
 
       // Filter out items with quantity 0
@@ -369,7 +376,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                       name="totalAmount"
                       disabled
                       className="w-32 disabled:cursor-not-allowed"
-                      value={`₹ ${product?.totalAmount.toFixed(2)}`}
+                      value={`₹ ${product.totalAmount}`}
                     />
                   </TableCell>
                 </TableRow>

@@ -50,9 +50,12 @@ const GenerateInvoice = dynamic(
   },
 );
 
-const MakePayment = dynamic(() => import('@/components/payments/MakePayment'), {
-  loading: () => <Loading />,
-});
+const MakePaymentNew = dynamic(
+  () => import('@/components/payments/MakePaymentNew'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 const ViewOrder = () => {
   const queryClient = useQueryClient();
@@ -334,7 +337,7 @@ const ViewOrder = () => {
 
           {/* recordPayment component */}
           {isRecordingPayment && !isGenerateInvoice && !isNegotiation && (
-            <MakePayment
+            <MakePaymentNew
               orderId={params.order_id}
               orderDetails={orderDetails}
               setIsRecordingPayment={setIsRecordingPayment}
