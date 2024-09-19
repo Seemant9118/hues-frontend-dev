@@ -73,7 +73,7 @@ const SalesOrder = () => {
   const SalesColumns = useSalesColumns(setIsEditingOrder, setOrderId);
 
   const onRowClick = (row) => {
-    router.push(`/sales-orders/${row.id}`);
+    router.push(`/sales/sales-orders/${row.id}`);
   };
 
   const { isLoading, data } = useQuery({
@@ -98,12 +98,11 @@ const SalesOrder = () => {
               </Button> */}
               <Button
                 onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
-                variant={'blue_outline'}
-                className="border-neutral-300 bg-neutral-500/10 text-neutral-600 hover:bg-neutral-600/10"
+                variant="outline"
+                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                 size="sm"
               >
                 <Upload size={14} />
-                Export
               </Button>
 
               <Button

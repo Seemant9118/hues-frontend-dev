@@ -26,7 +26,7 @@ const OrderBreadCrumbs = ({
 
     if (page.name === 'Sales') {
       // Directly navigate to /sales-orders for SALES breadcrumb
-      router.push('/sales-orders');
+      router.push('/sales/sales-orders');
     } else if (page.name === 'Purchases') {
       // Directly navigate to /purchase-orders for PURCHASES breadcrumb
       router.push('/purchase-orders');

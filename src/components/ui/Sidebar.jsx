@@ -7,6 +7,7 @@ import {
   Gauge,
   HandPlatter,
   Package,
+  ReceiptText,
   ScrollText,
   Store,
   UserRound,
@@ -45,7 +46,19 @@ const Sidebar = () => {
     {
       name: 'Sales',
       icon: <ClipboardList size={16} />,
-      path: '/sales-orders',
+      path: '/sales/sales-orders',
+      subTab: [
+        {
+          name: 'Orders',
+          icon: <Boxes size={16} />,
+          path: '/sales/sales-orders',
+        },
+        {
+          name: 'Invoices',
+          icon: <ReceiptText size={16} />,
+          path: '/sales/sales-invoices',
+        },
+      ],
     },
     {
       name: 'Purchases',

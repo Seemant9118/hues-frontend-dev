@@ -76,27 +76,27 @@ const ViewOrder = () => {
   const salesOrdersBreadCrumbs = [
     {
       name: 'Sales',
-      path: '/sales-orders',
+      path: '/sales/sales-orders',
       show: true, // Always show
     },
     {
       name: `Order Details`,
-      path: `/sales-orders/${params.order_id}`,
+      path: `/sales/sales-orders/${params.order_id}`,
       show: true, // Always show
     },
     {
       name: 'Negotiation',
-      path: `/sales-orders/${params.order_id}`,
+      path: `/sales/sales-orders/${params.order_id}`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
       name: 'Generate Invoice',
-      path: `/sales-orders/${params.order_id}`,
+      path: `/sales/sales-orders/${params.order_id}`,
       show: isGenerateInvoice, // Show only if isGenerateInvoice is true
     },
     {
       name: 'Record Payment',
-      path: `/sales-orders/${params.order_id}`,
+      path: `/sales/sales-orders/${params.order_id}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true
     },
   ];
@@ -111,7 +111,7 @@ const ViewOrder = () => {
 
   useEffect(() => {
     // Update URL based on the state (avoid shallow navigation for full update)
-    let newPath = `/sales-orders/${params.order_id}`;
+    let newPath = `/sales/sales-orders/${params.order_id}`;
 
     if (isNegotiation) {
       newPath += '?state=negotiation';
