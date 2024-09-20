@@ -63,7 +63,19 @@ const Sidebar = () => {
     {
       name: 'Purchases',
       icon: <ScrollText size={16} />,
-      path: '/purchase-orders',
+      path: '/purchases/purchase-orders',
+      subTab: [
+        {
+          name: 'Orders',
+          icon: <Boxes size={16} />,
+          path: '/purchases/purchase-orders',
+        },
+        {
+          name: 'Invoices',
+          icon: <ReceiptText size={16} />,
+          path: '/purchases/purchase-invoices',
+        },
+      ],
     },
     // {
     //   name: "Invoices",

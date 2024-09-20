@@ -334,20 +334,24 @@ const NegotiationComponent = ({
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
       {isNegotiation && (
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => setIsNegotiation(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            className="w-32 bg-primary text-white hover:bg-blue-50 hover:text-primary"
-            onClick={handleSubmit}
-          >
-            Submit
-          </Button>
+        <div className="sticky bottom-0 z-10 flex justify-end">
+          <section className="flex gap-2">
+            <Button
+              variant="outline"
+              className="w-32"
+              size="sm"
+              onClick={() => setIsNegotiation(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+              size="sm"
+              onClick={handleSubmit}
+            >
+              Submit
+            </Button>
+          </section>
         </div>
       )}
     </Wrapper>

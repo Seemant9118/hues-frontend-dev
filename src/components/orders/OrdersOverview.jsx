@@ -4,6 +4,7 @@ import React from 'react';
 import { Progress } from '../ui/progress';
 
 const OrdersOverview = ({
+  orderDetails,
   orderId,
   multiStatus,
   Name,
@@ -29,7 +30,7 @@ const OrdersOverview = ({
       <div className="flex w-1/2 flex-col gap-4">
         <section className="flex flex-col gap-2">
           <p className="text-xs font-bold">Order ID</p>
-          <p className="text-lg font-bold">{orderId}</p>
+          <p className="text-sm font-bold">{orderId}</p>
         </section>
 
         <section className="flex flex-col gap-2">
@@ -49,19 +50,22 @@ const OrdersOverview = ({
         <section className="flex flex-col gap-5">
           <p className="text-xs font-bold">Payment Status</p>
           <Progress
-            className="w-3/4 bg-[#F3F3F3]"
+            className="w-1/2 bg-[#F3F3F3]"
             value={paymentProgressPercent}
           />
           <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
         </section>
       </div>
-      <div className="flex w-1/2 flex-col items-end gap-4">
-        <section className="flex flex-col gap-4">
-          <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
-            View Negotiation <MoveUpRight size={12} />
-          </p>
-        </section>
-      </div>
+      {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
+        orderDetails?.negotiationStatus === 'INVOICED') && (
+        <div className="flex w-1/2 flex-col items-end gap-4">
+          <section className="flex flex-col gap-4">
+            <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
+              View Negotiation <MoveUpRight size={12} />
+            </p>
+          </section>
+        </div>
+      )}
     </section>
   );
 };

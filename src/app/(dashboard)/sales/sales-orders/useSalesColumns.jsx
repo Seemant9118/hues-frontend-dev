@@ -52,7 +52,7 @@ export const useSalesColumns = (setIsEditingOrder, setOrderId) => {
     //   enableHiding: false,
     // },
     {
-      accessorKey: 'id',
+      accessorKey: 'referenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ORDER ID" />
       ),

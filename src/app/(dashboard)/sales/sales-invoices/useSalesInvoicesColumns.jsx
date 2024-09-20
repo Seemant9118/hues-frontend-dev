@@ -3,31 +3,31 @@
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import moment from 'moment';
 
-export const useinvoiceColumns = () => {
+export const useSalesInvoicesColumns = () => {
   return [
     {
-      accessorKey: 'invoiceId',
+      accessorKey: 'invoiceReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="INVOICE ID" />
       ),
     },
 
     {
-      accessorKey: 'date',
+      accessorKey: 'invoiceDate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="DATE" />
       ),
       cell: ({ row }) => {
-        const { createdAt } = row.original;
+        const { invoiceDate } = row.original;
         return (
           <div className="text-[#A5ABBD]">
-            {moment(createdAt).format('DD-MM-YYYY')}
+            {moment(invoiceDate).format('DD-MM-YYYY')}
           </div>
         );
       },
     },
     {
-      accessorKey: 'customer',
+      accessorKey: 'customerName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),

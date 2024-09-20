@@ -29,7 +29,7 @@ const OrderBreadCrumbs = ({
       router.push('/sales/sales-orders');
     } else if (page.name === 'Purchases') {
       // Directly navigate to /purchase-orders for PURCHASES breadcrumb
-      router.push('/purchase-orders');
+      router.push('/purchases/purchase-orders');
     } else {
       // Reset the states if moving within the order detail pages
       pathName.includes('sales-orders') && setIsGenerateInvoice(false);

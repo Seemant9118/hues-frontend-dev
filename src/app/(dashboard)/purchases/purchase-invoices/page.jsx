@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
+import { usePurchaseInvoicesColumns } from './usePurchaseInvoicesColumns';
 
-const SalesInvoices = () => {
+const PurchaseInvoices = () => {
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
     signatures."`,
@@ -93,7 +93,7 @@ const SalesInvoices = () => {
   }, [tab]);
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
-  const invoiceColumns = useSalesInvoicesColumns();
+  const invoiceColumns = usePurchaseInvoicesColumns();
 
   return (
     <>
@@ -208,4 +208,4 @@ const SalesInvoices = () => {
   );
 };
 
-export default SalesInvoices;
+export default PurchaseInvoices;

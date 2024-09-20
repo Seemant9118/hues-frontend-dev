@@ -88,30 +88,22 @@ const SalesOrder = () => {
         <Wrapper>
           <SubHeader name={'Sales'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              {/* <Button
-                onClick={() => setIsCreatingInvoice(true)}
-                variant={'blue_outline'}
+              <Button
+                onClick={() => setIsCreatingSales(true)}
+                className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                <PlusCircle size={14} />
-                Invoice
-              </Button> */}
+                <PlusCircle size={16} />
+                Offer
+              </Button>
+
               <Button
                 onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
                 variant="outline"
                 className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                 size="sm"
               >
-                <Upload size={14} />
-              </Button>
-
-              <Button
-                onClick={() => setIsCreatingSales(true)}
-                variant={'blue_outline'}
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Offer
+                <Upload size={16} />
               </Button>
             </div>
           </SubHeader>

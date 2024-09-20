@@ -69,7 +69,7 @@ const PurchaseOrders = () => {
   };
 
   const onRowClick = (row) => {
-    router.push(`/purchase-orders/${row.id}`);
+    router.push(`/purchases/purchase-orders/${row.id}`);
   };
 
   const PurchaseColumns = usePurchaseColumns(setIsEditingOrder, setOrderId);
@@ -87,23 +87,22 @@ const PurchaseOrders = () => {
           <SubHeader name={'Purchases'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
               <Button
-                onClick={() =>
-                  exportTableToExcel('purchase-orders', 'purchases_list', false)
-                }
-                variant={'blue_outline'}
-                className="border-neutral-300 bg-neutral-500/10 text-neutral-600 hover:bg-neutral-600/10"
+                onClick={() => setIsCreatingPurchase(true)}
+                className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                <Upload size={14} />
-                Export
+                <PlusCircle size={16} />
+                Bid
               </Button>
               <Button
-                onClick={() => setIsCreatingPurchase(true)}
-                variant={'blue_outline'}
+                onClick={() =>
+                  exportTableToExcel('purchase-orders', 'purchases_list')
+                }
+                variant="outline"
+                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                 size="sm"
               >
-                <PlusCircle size={14} />
-                Bid
+                <Upload size={16} />
               </Button>
             </div>
           </SubHeader>

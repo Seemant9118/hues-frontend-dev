@@ -17,7 +17,7 @@ import {
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Share2 } from 'lucide-react';
+import { Clock, Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -215,7 +215,7 @@ const ViewOrder = () => {
               {/* record payment CTA */}
               {!isGenerateInvoice &&
                 !isRecordingPayment &&
-                orderDetails.negotiationStatus === 'INVOICED' && (
+                orderDetails.negotiationStatus === 'ACCEPTED' && (
                   <Button
                     variant="blue_outline"
                     size="sm"
@@ -243,15 +243,19 @@ const ViewOrder = () => {
                 )}
 
               {/* share CTA */}
-              {!isGenerateInvoice && !isRecordingPayment && (
-                <Button variant="blue_outline" size="sm">
+              {!isGenerateInvoice && !isRecordingPayment && !isNegotiation && (
+                <Button
+                  variant="blue_outline"
+                  size="sm"
+                  className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                >
                   <Share2 size={14} />
                 </Button>
               )}
             </div>
           </section>
 
-          {/* swtich tabs */}
+          {/* switch tabs */}
           {!isGenerateInvoice && !isNegotiation && !isRecordingPayment && (
             <section>
               <Tabs
@@ -261,16 +265,28 @@ const ViewOrder = () => {
               >
                 <section className="sticky top-10 z-10 bg-white">
                   <TabsList className="border">
-                    <TabsTrigger className="w-24" value="overview">
+                    <TabsTrigger
+                      className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
+                      value="overview"
+                    >
                       Overview
                     </TabsTrigger>
-                    <TabsTrigger className="w-24" value="invoices">
+                    <TabsTrigger
+                      className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
+                      value="invoices"
+                    >
                       Invoice
                     </TabsTrigger>
-                    <TabsTrigger className="w-24" value="payment">
+                    <TabsTrigger
+                      className={`w-24 ${tab === 'payment' ? 'shadow-customShadow' : ''}`}
+                      value="payment"
+                    >
                       Payment
                     </TabsTrigger>
-                    <TabsTrigger className="w-24" value="timeline">
+                    <TabsTrigger
+                      className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
+                      value="timeline"
+                    >
                       Timeline
                     </TabsTrigger>
                   </TabsList>
@@ -279,7 +295,8 @@ const ViewOrder = () => {
                 <TabsContent value="overview" className="flex flex-col gap-4">
                   {/* orders overview */}
                   <OrdersOverview
-                    orderId={params.order_id}
+                    orderDetails={orderDetails}
+                    orderId={orderDetails?.referenceNumber}
                     multiStatus={multiStatus}
                     Name={clientName}
                     mobileNumber={clientNumber}
@@ -344,6 +361,7 @@ const ViewOrder = () => {
             />
           )}
 
+          {/* footer ctas */}
           <div className="sticky bottom-0 z-10 flex justify-end bg-white">
             <section className="flex gap-2">
               {/* status NEW */}
@@ -354,8 +372,8 @@ const ViewOrder = () => {
                 orderDetails?.sellerEnterpriseId === enterpriseId && (
                   <>
                     {orderDetails?.orderType === 'SALES' && (
-                      <span className="rounded-sm border border-yellow-200 bg-yellow-50 p-2 text-sm font-bold text-yellow-500">
-                        Waiting for Response
+                      <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
+                        <Clock size={12} /> Waiting for Response
                       </span>
                     )}
 
@@ -416,8 +434,8 @@ const ViewOrder = () => {
                       </div>
                     )}
                     {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                      <span className="rounded-md border border-yellow-500 bg-yellow-50 p-2 font-bold text-yellow-500">
-                        Waiting for Response
+                      <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
+                        <Clock size={12} /> Waiting for Response
                       </span>
                     )}
                   </>

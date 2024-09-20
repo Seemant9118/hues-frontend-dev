@@ -318,7 +318,11 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                 <Input
                   disabled
                   className="max-w-md"
-                  value={orderDetails.amount + orderDetails.gstAmount}
+                  value={
+                    orderDetails.amount +
+                    orderDetails.gstAmount -
+                    orderDetails.amountPaid
+                  }
                 />
               </div>
             </div>
