@@ -14,23 +14,27 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const Token = LocalStorageService.get('token');
-    // const profile = LocalStorageService.get('user_profile');
+    const userProfile = LocalStorageService.get('user_profile');
 
     if (!Token) {
-      router.push(`/login?redirect=${pathname}`);
-    }
-    if (Token) {
+      // Store the original URL in local storage
+      LocalStorageService.set('redirectUrl', pathname);
+      // Redirect to login if not authenticated
+      router.push(`/login`);
+    } else {
+      // Set token and profile if authenticated
       setToken(Token);
+      setProfile(userProfile);
     }
-  }, []);
+  }, [pathname, router]);
 
-  //   const logout = () => {
-  //     LocalStorageService.clear();
-  //     router.push("/auth/creator/login");
-  //   };
+  const logout = () => {
+    LocalStorageService.clear();
+    router.push('/login');
+  };
 
   return (
-    <UserContext.Provider value={{ profile, setProfile }}>
+    <UserContext.Provider value={{ profile, setProfile, token, logout }}>
       {token ? children : null}
     </UserContext.Provider>
   );
