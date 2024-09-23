@@ -14,4 +14,9 @@ export const paymentApi = {
     endpoint: `/invoice-receivable/getpendinginvoices/`,
     endpointKey: 'get_Invoices_payments',
   },
+
+  uploadPaymentProof: {
+    endpoint: `/payment/upload`,
+    endpointKey: 'upload_payment_proofs',
+  },
 };

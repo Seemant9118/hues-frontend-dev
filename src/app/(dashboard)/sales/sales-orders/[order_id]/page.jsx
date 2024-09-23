@@ -215,7 +215,8 @@ const ViewOrder = () => {
               {/* record payment CTA */}
               {!isGenerateInvoice &&
                 !isRecordingPayment &&
-                orderDetails.negotiationStatus === 'ACCEPTED' && (
+                orderDetails.negotiationStatus === 'INVOICED' &&
+                orderDetails?.metaData?.payment?.status !== 'PAID' && (
                   <Button
                     variant="blue_outline"
                     size="sm"

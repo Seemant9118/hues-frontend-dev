@@ -162,8 +162,12 @@ const GenerateInvoiceModal = ({
                 )}
               </span>
             </p>
-            <Button type="submit" className="w-full">
-              {invoiceMutation.isLoading ? <Loading /> : 'Verify To Generate'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={invoiceMutation.isPending}
+            >
+              {invoiceMutation.isPending ? <Loading /> : 'Verify To Generate'}
             </Button>
           </form>
         )}

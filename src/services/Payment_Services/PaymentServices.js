@@ -15,3 +15,11 @@ export const getPaymentsList = (id) => {
 export const getInvoicesForPayments = (id) => {
   return APIinstance.get(`${paymentApi.getInvoicesForPayments.endpoint}${id}`);
 };
+
+// 4. upload payment proofs
+export const uploadPaymentProofs = (id, file) => {
+  return APIinstance.post(
+    `${paymentApi.uploadPaymentProof.endpoint}?enterpriseId=${id}`,
+    file,
+  );
+};

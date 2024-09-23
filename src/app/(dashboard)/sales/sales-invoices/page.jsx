@@ -1,5 +1,7 @@
 'use client';
 
+import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
+import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import { DataTable } from '@/components/table/data-table';
@@ -10,9 +12,11 @@ import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
+import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
+import { getAllDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getAllInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { Tabs } from '@radix-ui/react-tabs';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -20,8 +24,11 @@ import {
   KeySquare,
   Upload,
 } from 'lucide-react';
+import moment from 'moment';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import emptyImg from '../../../../../public/Empty.png';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 
 const SalesInvoices = () => {
@@ -65,6 +72,14 @@ const SalesInvoices = () => {
     setTab(value);
   };
 
+  const formattedAmount = (amount) => {
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'INR',
+    }).format(amount);
+    return formattedAmount;
+  };
+
   // Mutation for fetching invoices
   const getInvoiceMutation = useMutation({
     mutationKey: [invoiceApi.getAllInvoices.endpointKey],
@@ -75,6 +90,20 @@ const SalesInvoices = () => {
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
     },
+  });
+
+  const { data: debitNotesList, isLoading: debitNoteIsLoading } = useQuery({
+    queryKey: [DebitNoteApi.getAllDebitNotes.endpointKey, enterpriseId],
+    queryFn: () => getAllDebitNotes(enterpriseId),
+    enabled: tab === 'debitNote',
+    select: (debitNotesList) => debitNotesList.data.data,
+  });
+
+  const { data: creditNotesList, isLoading: creditNoteIsLoading } = useQuery({
+    queryKey: [CreditNoteApi.getAllCreditNotes.endpointKey, enterpriseId],
+    queryFn: () => getAllCreditNotes(enterpriseId),
+    enabled: tab === 'creditNote',
+    select: (creditNotesList) => creditNotesList.data.data,
   });
 
   // Effect to trigger the invoice fetching API call when component mounts or when enterpriseId changes
@@ -120,8 +149,8 @@ const SalesInvoices = () => {
               <TabsList className="border">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="debitNote">Debit Note</TabsTrigger>
-                <TabsTrigger value="creditNote">Credit Note</TabsTrigger>
+                <TabsTrigger value="debitNote">Debit Notes</TabsTrigger>
+                <TabsTrigger value="creditNote">Credit Notes</TabsTrigger>
               </TabsList>
             </section>
 
@@ -153,54 +182,90 @@ const SalesInvoices = () => {
                 />
               )}
             </TabsContent>
-            <TabsContent value="debitNote">
-              <div className="flex flex-col gap-4 rounded-lg border bg-white p-4 shadow-customShadow">
-                <section className="flex items-center justify-between">
-                  <div className="flex flex-col gap-4">
-                    <h1 className="text-sm font-bold">JQQRXF/INV/2425/0120</h1>
-                    <div className="flex gap-10">
-                      <h1 className="text-sm">
-                        <span className="font-bold text-[#ABB0C1]">
-                          Date :{' '}
-                        </span>
-                        <span className="text-[#363940]">28/08/2024</span>
-                      </h1>
-                      <h1 className="text-sm">
-                        <span className="font-bold text-[#ABB0C1]">
-                          Total Amount :{' '}
-                        </span>
-                        <span className="font-bold text-[#363940]">
-                          2000.00
-                        </span>
-                        <span> (inc. GST)</span>
-                      </h1>
-                      <h1 className="text-sm font-bold">
-                        <span className="font-bold text-[#ABB0C1]">
-                          Type :{' '}
-                        </span>
-                        <span className="font-bold text-[#363940]">Goods</span>
-                      </h1>
+            <TabsContent value="debitNote" className="flex flex-col gap-4">
+              {debitNoteIsLoading && <Loading />}
+              {!debitNoteIsLoading &&
+                debitNotesList?.length > 0 &&
+                debitNotesList?.map((debitNote) => (
+                  <div
+                    key={debitNote}
+                    className="flex flex-col gap-4 rounded-lg border bg-white p-4 shadow-customShadow"
+                  >
+                    <section className="flex items-center justify-between">
+                      <div className="flex flex-col gap-4">
+                        <h1 className="text-sm font-bold">
+                          {debitNote.referenceNumber}
+                        </h1>
+                        <div className="flex gap-10">
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Date :{' '}
+                            </span>
+                            <span className="text-[#363940]">
+                              {moment(debitNote.createdAt).format('DD/MM/YYYY')}
+                            </span>
+                          </h1>
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Total Amount :{' '}
+                            </span>
+                            <span className="font-bold text-[#363940]">
+                              {formattedAmount(debitNote.amount)}
+                            </span>
+                            <span> (inc. GST)</span>
+                          </h1>
+                          <h1 className="text-sm font-bold">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Type :{' '}
+                            </span>
+                            <span className="font-bold text-[#363940]">
+                              Goods
+                            </span>
+                          </h1>
+                        </div>
+                      </div>
+                    </section>
+
+                    <h1 className="text-sm">
+                      <span className="font-bold text-[#ABB0C1]">
+                        Reason :{' '}
+                      </span>
+                      <span className="text-[#363940]">{debitNote.reason}</span>
+                    </h1>
+
+                    {/* debitNotes lists */}
+
+                    <div className="flex justify-end gap-2">
+                      <DebitNoteModal cta="reject" debitNoteId={debitNote.id} />
+                      <DebitNoteModal
+                        cta="accept"
+                        balance={debitNote.amount}
+                        debitNoteId={debitNote.id}
+                      />
                     </div>
                   </div>
-                </section>
-
-                <h1 className="text-sm">
-                  <span className="font-bold text-[#ABB0C1]">Reason : </span>
-                  <span className="text-[#363940]">
-                    2 out of 100 soaps were expired and 5 of the total shampoo
-                    bottles were empty
-                  </span>
-                </h1>
-
-                {/* debitNotes lists */}
-
-                <div className="sticky bottom-0 z-10 flex justify-end gap-2">
-                  <DebitNoteModal cta="reject" />
-                  <DebitNoteModal cta="accept" />
+                ))}
+              {!debitNoteIsLoading && debitNotesList?.length === 0 && (
+                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p>No Debit Note Raised</p>
                 </div>
-              </div>
+              )}
             </TabsContent>
-            <TabsContent value="creditNote">Credit Notes</TabsContent>
+            <TabsContent value="creditNote">
+              {creditNoteIsLoading && <Loading />}
+              {!creditNoteIsLoading &&
+                creditNotesList?.length > 0 &&
+                creditNotesList?.map((creditNote) => (
+                  <h1 key={creditNote}>Credit Notes</h1>
+                ))}
+              {!creditNoteIsLoading && creditNotesList?.length === 0 && (
+                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p>No Credit Note Raised</p>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         </section>
       </Wrapper>
