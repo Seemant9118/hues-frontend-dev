@@ -1,7 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
 import * as React from 'react';
-
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -24,7 +23,7 @@ const buttonVariants = cva(
         warning:
           'border border-input bg-background hover:bg-accent hover:text-accent-foreground text-[#CE9D0C]',
         export:
-          'bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10 border underline-offset-4 ',
+          'bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10 border underline-offset-4',
       },
       size: {
         default: 'h-10 rounded-md px-4 py-2',
@@ -49,25 +48,45 @@ const Button = React.forwardRef(
       size,
       asChild = false,
       onClick,
+      debounceTime = 2000, // Default debounce time set to 2000ms
       ...props
     },
     ref,
   ) => {
     const Comp = asChild ? Slot : 'button';
+    const clickTimeoutRef = React.useRef(null);
+
+    const handleClick = (e) => {
+      e.stopPropagation();
+      if (clickTimeoutRef.current) return;
+
+      onClick && onClick(e);
+
+      clickTimeoutRef.current = setTimeout(() => {
+        clickTimeoutRef.current = null; // Reset timeout after delay
+      }, debounceTime);
+    };
+
+    React.useEffect(() => {
+      return () => {
+        if (clickTimeoutRef.current) {
+          clearTimeout(clickTimeoutRef.current);
+        }
+      };
+    }, []);
+
     return (
       <Comp
         type={type}
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick && onClick(e);
-        }}
+        onClick={handleClick}
         {...props}
       />
     );
   },
 );
+
 Button.displayName = 'Button';
 
 export { Button, buttonVariants };

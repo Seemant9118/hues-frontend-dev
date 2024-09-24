@@ -44,7 +44,7 @@ const OrdersOverview = ({
       <div className="flex w-1/2 flex-col gap-4">
         <section className="flex flex-col gap-4">
           <p className="text-xs font-bold">Order Status</p>
-          <p>{multiStatus}</p>
+          <div>{multiStatus}</div>
         </section>
 
         <section className="flex flex-col gap-5">

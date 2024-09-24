@@ -62,21 +62,25 @@ const ViewOrder = () => {
 
   const purchaseOrdersBreadCrumbs = [
     {
+      id: 1,
       name: 'Purchases',
       path: '/purchases/purchase-orders',
       show: true, // Always show
     },
     {
+      id: 2,
       name: `Order details`,
       path: `/purchases/purchase-orders/${params.order_id}`,
       show: true, // Always show
     },
     {
+      id: 3,
       name: 'Negotiation',
       path: `/purchases/purchase-orders/${params.order_id}/`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
+      id: 4,
       name: 'Invoices',
       path: `/purchases/purchase-orders/${params.order_id}/`,
       show: isPastInvoices, // Show only if isPastInvoices is true

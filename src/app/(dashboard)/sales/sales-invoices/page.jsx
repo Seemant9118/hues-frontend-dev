@@ -4,6 +4,7 @@ import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import DebitNoteModal from '@/components/Modals/DebitNoteModal';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -188,13 +189,16 @@ const SalesInvoices = () => {
                 debitNotesList?.length > 0 &&
                 debitNotesList?.map((debitNote) => (
                   <div
-                    key={debitNote}
+                    key={debitNote.id}
                     className="flex flex-col gap-4 rounded-lg border bg-white p-4 shadow-customShadow"
                   >
                     <section className="flex items-center justify-between">
                       <div className="flex flex-col gap-4">
-                        <h1 className="text-sm font-bold">
+                        <h1 className="flex items-center gap-2 text-sm font-bold">
                           {debitNote.referenceNumber}
+                          <ConditionalRenderingStatus
+                            status={debitNote.status}
+                          />
                         </h1>
                         <div className="flex gap-10">
                           <h1 className="text-sm">
@@ -214,34 +218,36 @@ const SalesInvoices = () => {
                             </span>
                             <span> (inc. GST)</span>
                           </h1>
-                          <h1 className="text-sm font-bold">
-                            <span className="font-bold text-[#ABB0C1]">
-                              Type :{' '}
-                            </span>
-                            <span className="font-bold text-[#363940]">
-                              Goods
-                            </span>
-                          </h1>
                         </div>
                       </div>
                     </section>
 
-                    <h1 className="text-sm">
-                      <span className="font-bold text-[#ABB0C1]">
-                        Reason :{' '}
-                      </span>
-                      <span className="text-[#363940]">{debitNote.reason}</span>
-                    </h1>
+                    {debitNote.status === 'REJECTED' && (
+                      <h1 className="text-sm">
+                        <span className="font-bold text-[#ABB0C1]">
+                          Reason :{' '}
+                        </span>
+                        <span className="text-[#363940]">
+                          {debitNote.reason}
+                        </span>
+                      </h1>
+                    )}
 
-                    {/* debitNotes lists */}
+                    {(debitNote.status === 'PENDING' ||
+                      debitNote.status === 'ACCEPTED') && (
+                      <h1 className="text-sm">
+                        <span className="font-bold text-[#ABB0C1]">
+                          Remark :{' '}
+                        </span>
+                        <span className="text-[#363940]">
+                          {debitNote.remark}
+                        </span>
+                      </h1>
+                    )}
 
                     <div className="flex justify-end gap-2">
-                      <DebitNoteModal cta="reject" debitNoteId={debitNote.id} />
-                      <DebitNoteModal
-                        cta="accept"
-                        balance={debitNote.amount}
-                        debitNoteId={debitNote.id}
-                      />
+                      <DebitNoteModal cta="reject" debitNote={debitNote} />
+                      <DebitNoteModal cta="accept" debitNote={debitNote} />
                     </div>
                   </div>
                 ))}
@@ -252,12 +258,56 @@ const SalesInvoices = () => {
                 </div>
               )}
             </TabsContent>
-            <TabsContent value="creditNote">
+            <TabsContent value="creditNote" className="flex flex-col gap-4">
               {creditNoteIsLoading && <Loading />}
               {!creditNoteIsLoading &&
                 creditNotesList?.length > 0 &&
                 creditNotesList?.map((creditNote) => (
-                  <h1 key={creditNote}>Credit Notes</h1>
+                  <div
+                    key={creditNote.id}
+                    className="flex flex-col gap-4 rounded-lg border bg-white p-4 shadow-customShadow"
+                  >
+                    <section className="flex items-center justify-between">
+                      <div className="flex flex-col gap-4">
+                        <h1 className="flex items-center gap-2 text-sm font-bold">
+                          {creditNote.referenceNumber}
+                          <ConditionalRenderingStatus
+                            status={creditNote.status}
+                          />
+                        </h1>
+                        <div className="flex gap-10">
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Date :{' '}
+                            </span>
+                            <span className="text-[#363940]">
+                              {moment(creditNote.createdAt).format(
+                                'DD/MM/YYYY',
+                              )}
+                            </span>
+                          </h1>
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Total Amount :{' '}
+                            </span>
+                            <span className="font-bold text-[#363940]">
+                              {formattedAmount(creditNote.amount)}
+                            </span>
+                            <span> (inc. GST)</span>
+                          </h1>
+                        </div>
+                      </div>
+                    </section>
+
+                    <h1 className="text-sm">
+                      <span className="font-bold text-[#ABB0C1]">
+                        Remark :{' '}
+                      </span>
+                      <span className="text-[#363940]">
+                        {creditNote.remark}
+                      </span>
+                    </h1>
+                  </div>
                 ))}
               {!creditNoteIsLoading && creditNotesList?.length === 0 && (
                 <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">

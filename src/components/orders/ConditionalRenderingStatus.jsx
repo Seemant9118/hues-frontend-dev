@@ -37,6 +37,12 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBG = '#F16B6B1A';
       statusBorder = '#F16B6B';
       break;
+    case 'REJECTED':
+      statusText = 'Rejected';
+      statusColor = '#F16B6B';
+      statusBG = '#F16B6B1A';
+      statusBorder = '#F16B6B';
+      break;
 
     // paymentStatus
     case 'PAID':
@@ -67,7 +73,7 @@ const ConditionalRenderingStatus = ({ status }) => {
   }
 
   return (
-    <div
+    <p
       className="flex items-center justify-center gap-1 rounded border px-1.5 py-1 text-xs font-bold"
       style={{
         color: statusColor,
@@ -76,7 +82,7 @@ const ConditionalRenderingStatus = ({ status }) => {
       }}
     >
       {statusText}
-    </div>
+    </p>
   );
 };
 

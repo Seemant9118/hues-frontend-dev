@@ -75,26 +75,31 @@ const ViewOrder = () => {
 
   const salesOrdersBreadCrumbs = [
     {
+      id: 1,
       name: 'Sales',
       path: '/sales/sales-orders',
       show: true, // Always show
     },
     {
+      id: 2,
       name: `Order Details`,
       path: `/sales/sales-orders/${params.order_id}`,
       show: true, // Always show
     },
     {
+      id: 3,
       name: 'Negotiation',
       path: `/sales/sales-orders/${params.order_id}`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
+      id: 4,
       name: 'Generate Invoice',
       path: `/sales/sales-orders/${params.order_id}`,
       show: isGenerateInvoice, // Show only if isGenerateInvoice is true
     },
     {
+      id: 5,
       name: 'Record Payment',
       path: `/sales/sales-orders/${params.order_id}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true

@@ -1,5 +1,6 @@
 'use client';
 
+import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import {
   Dialog,
@@ -12,15 +13,16 @@ import {
   rejectDebitNote,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { Label } from '@radix-ui/react-label';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
 import Loading from '../ui/Loading';
+import { Textarea } from '../ui/textarea';
 
-const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
+const DebitNoteModal = ({ cta, debitNote }) => {
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [dataToCreateCreditNote, setDataToCreateCreditNote] = useState({
     amount: '',
@@ -51,7 +53,7 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
   const acceptCreateCreditNoteMutationFn = useMutation({
     mutationKey: [
       DebitNoteApi.acceptDebitAndCreateCreditNote.endpointKey,
-      debitNoteId,
+      debitNote.id,
     ],
     mutationFn: acceptDebitCreateCreditNote,
     onSuccess: () => {
@@ -61,6 +63,12 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
         remark: '',
       });
       setIsOpen(false);
+      queryClient.invalidateQueries([
+        DebitNoteApi.getAllDebitNotes.endpointKey,
+      ]);
+      queryClient.invalidateQueries([
+        CreditNoteApi.getAllCreditNotes.endpointKey,
+      ]);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Something went wrong');
@@ -69,7 +77,7 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
 
   // mutation Fn : reject debit note
   const rejectDebitNoteMutationFn = useMutation({
-    mutationKey: [DebitNoteApi.rejectDebitNote.endpointKey, debitNoteId],
+    mutationKey: [DebitNoteApi.rejectDebitNote.endpointKey, debitNote.id],
     mutationFn: rejectDebitNote,
     onSuccess: () => {
       toast.success('Debit Note Rejected');
@@ -77,6 +85,12 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
         reason: '',
       });
       setIsOpen(false);
+      queryClient.invalidateQueries([
+        DebitNoteApi.getAllDebitNotes.endpointKey,
+      ]);
+      queryClient.invalidateQueries([
+        CreditNoteApi.getAllCreditNotes.endpointKey,
+      ]);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Something went wrong');
@@ -85,13 +99,13 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
 
   const handleAccept = () =>
     acceptCreateCreditNoteMutationFn.mutate({
-      id: debitNoteId,
+      id: debitNote.id,
       data: dataToCreateCreditNote,
     });
 
   const handleReject = () => {
     rejectDebitNoteMutationFn.mutate({
-      id: debitNoteId,
+      id: debitNote.id,
       data: dataToRejection,
     });
   };
@@ -99,19 +113,18 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {cta === 'accept' ? (
-          <Button size="sm" className="bg-[#288AF9]">
-            Accept & create credit note
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            className="border border-[#F04949] text-[#F04949] hover:bg-[#F04949] hover:text-white"
-          >
-            Reject
-          </Button>
-        )}
+        <Button
+          size="sm"
+          className={
+            debitNote.status === 'PENDING' && cta === 'accept'
+              ? 'bg-[#288AF9]'
+              : debitNote.status === 'PENDING' && cta === 'reject'
+                ? 'border border-[#F04949] bg-[#F04949] text-white hover:bg-white hover:text-[#F04949]'
+                : 'hidden'
+          }
+        >
+          {cta === 'accept' ? 'Accept & create credit note' : 'Reject'}
+        </Button>
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center gap-5">
         {cta === 'accept' && (
@@ -145,7 +158,7 @@ const DebitNoteModal = ({ cta, balance, debitNoteId }) => {
                     name="balance"
                     className="max-w-md rounded-sm"
                     disabled
-                    value={balance.toFixed(2)}
+                    value={debitNote.amount.toFixed(2)}
                   />
                 </div>
               </div>

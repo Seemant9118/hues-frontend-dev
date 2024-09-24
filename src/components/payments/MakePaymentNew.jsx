@@ -7,7 +7,7 @@ import {
   uploadPaymentProofs,
 } from '@/services/Payment_Services/PaymentServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, RotateCcw, Upload, UploadCloud } from 'lucide-react';
+import { Check, RotateCcw, Upload, UploadCloud, X } from 'lucide-react';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -49,6 +49,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
   const [isAutoSplitted, setIsAutoSplitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
+
   // Set initial state for invoices
   const [invoices, setInvoices] = useState([]);
   const [paymentData, setPaymentData] = useState({
@@ -96,6 +97,10 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     });
 
     setInvoices(updatedInvoices);
+    setPaymentData((prevData) => ({
+      ...prevData,
+      invoices: updatedInvoices, // Only include invoices with amount > 0
+    }));
   };
 
   const handleInputChange = (e) => {
@@ -115,6 +120,11 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
           ...prevMsg,
           amountPaid: 'Amount exceeds balance amount',
         }));
+      } else if (value === '') {
+        setErrorMsg((prevMsg) => ({
+          ...prevMsg,
+          amountPaid: 'Amount should not be empty',
+        }));
       } else {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
@@ -124,51 +134,54 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     }
   };
 
-  const handleAmountPaidChange = (e, invoiceId) => {
+  const handleAmountPaidChange = (e, invoiceId, invoiceIndex) => {
     const { value } = e.target;
-    const newAmountPaid = parseFloat(value) || '0';
+    const newAmountPaid = parseFloat(value) || 0; // Parse the input as a number or default to 0
 
-    // Update the specific invoice's amountPaid
-    const updatedInvoices = invoices.map((invoice) =>
-      invoice.invoiceId === invoiceId
-        ? { ...invoice, amount: newAmountPaid }
-        : invoice,
+    // Clone the error messages for invoices to update the specific error
+    const newErrorMessages = { ...errorMsg };
+
+    // Validate if the entered amount exceeds the invoice's balance amount
+    if (newAmountPaid > invoices[invoiceIndex].invoicereceivabledueamount) {
+      newErrorMessages[invoiceId] =
+        `Amount Paid should not be greater than ₹${invoices[invoiceIndex].invoicereceivabledueamount}`;
+    } else {
+      newErrorMessages[invoiceId] = ''; // Clear the error if no issue
+    }
+
+    // Update the specific invoice's amount
+    const updatedInvoices = invoices.map((inv, idx) =>
+      idx === invoiceIndex
+        ? { ...inv, amount: newAmountPaid } // Update the amount for the selected invoice
+        : inv,
     );
 
     // Calculate total amount paid across all invoices
     const totalAmountPaid = updatedInvoices.reduce(
-      (total, inv) => total + inv.amount,
+      (total, inv) => total + Number(inv.amount),
       0,
     );
 
-    // Update the invoices state with the new amounts
-    setInvoices(updatedInvoices);
-
-    // Check for errors and update error messages accordingly
+    // Validate if the total amount paid matches the payment amount
     if (totalAmountPaid > paymentData.amount) {
-      // If total amount paid exceeds the paymentData.amount
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        invoiceAmountPaid: 'Amount exceeds the total payment amount',
-      }));
+      newErrorMessages.invoiceAmountPaid =
+        'Amount exceeds the total payment amount';
     } else if (totalAmountPaid < paymentData.amount) {
-      // If total amount paid is less than the paymentData.amount
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        invoiceAmountPaid: 'Amount is less than the total payment amount',
-      }));
+      newErrorMessages.invoiceAmountPaid =
+        'Amount is less than the total payment amount';
     } else {
-      // Clear error message if no issues
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        invoiceAmountPaid: '',
-      }));
+      newErrorMessages.invoiceAmountPaid = ''; // Clear the error when amounts match
     }
 
-    // Update paymentData with the new invoices
+    // Update the error state for individual invoices
+    setErrorMsg(newErrorMessages);
+
+    // Update the paymentData with the new invoices state
+    setInvoices(updatedInvoices);
+
     setPaymentData((prevData) => ({
       ...prevData,
-      invoices: updatedInvoices,
+      invoices: updatedInvoices, // Ensure paymentData's invoices field is updated
     }));
   };
 
@@ -224,9 +237,35 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
       ...paymentData,
       invoices: filteredInvoices,
     };
-    // console.log(updatedPaymentData);
 
-    createPaymentMutationFn.mutate(updatedPaymentData);
+    // validation
+    if (updatedPaymentData.paymentMode === '') {
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        paymentMode: 'Required! Please select payment mode',
+      }));
+    } else {
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        paymentMode: '',
+      }));
+    }
+
+    if (updatedPaymentData.amount === '') {
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        amountPaid: 'Required!, Amount should not be empty',
+      }));
+    } else {
+      setErrorMsg((prevMsg) => ({
+        ...prevMsg,
+        amountPaid: '',
+      }));
+    }
+
+    if (Object.values(errorMsg).some((msg) => msg === '')) {
+      createPaymentMutationFn.mutate(updatedPaymentData);
+    }
   };
 
   return (
@@ -244,12 +283,19 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
               <Select
                 defaultValue={paymentData.paymentMode}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  // Check if a payment mode is selected (non-empty value)
+                  if (value) {
+                    setErrorMsg((prevMsg) => ({
+                      ...prevMsg,
+                      paymentMode: '', // Clear the payment mode error message
+                    }));
+                  }
                   setPaymentData((prevData) => ({
                     ...prevData,
                     paymentMode: value,
-                  }))
-                }
+                  }));
+                }}
               >
                 <SelectTrigger className="max-w-md">
                   <SelectValue placeholder="Select" />
@@ -265,6 +311,8 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                   <SelectItem value="cash">Cash</SelectItem>
                 </SelectContent>
               </Select>
+
+              {errorMsg.paymentMode && <ErrorBox msg={errorMsg.paymentMode} />}
             </div>
             {/* transaction ID */}
             <div className="flex w-1/2 flex-col gap-2">
@@ -323,8 +371,20 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                     }}
                     className="flex cursor-pointer items-center gap-0.5 text-xs font-bold text-[#288AF9] hover:underline"
                   >
-                    <RotateCcw size={12} />
-                    {isAutoSplitted ? 'Revert' : 'Auto-split'}
+                    {Object.values(errorMsg).some((msg) => msg === '') && (
+                      <>
+                        {isAutoSplitted ? (
+                          <>
+                            <X size={12} />
+                            Revert
+                          </>
+                        ) : (
+                          <>
+                            <RotateCcw size={12} /> Auto-split
+                          </>
+                        )}
+                      </>
+                    )}
                   </span>
                 )}
               </div>
@@ -338,11 +398,11 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                 <Input
                   disabled
                   className="max-w-md"
-                  value={
+                  value={(
                     orderDetails.amount +
                     orderDetails.gstAmount -
                     orderDetails.amountPaid
-                  }
+                  ).toFixed(2)}
                 />
               </div>
             </div>
@@ -405,8 +465,8 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               </TableHeader>
 
               <TableBody className="shrink-0">
-                {invoices?.map((invoice) => (
-                  <TableRow key={invoice.id}>
+                {invoices?.map((invoice, index) => (
+                  <TableRow key={invoice.invoicereceivableinvoiceid}>
                     <TableCell colSpan={3}>
                       {invoice.invoicereferencenumber}
                     </TableCell>
@@ -418,21 +478,24 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                     <TableCell colSpan={2}>{invoice.totalquantity}</TableCell>
 
                     <TableCell colSpan={2}>
-                      {invoice.invoicereceivabledueamount}
+                      {invoice.invoicereceivabledueamount.toFixed(2)}
                     </TableCell>
 
                     <TableCell colSpan={2}>
                       <Input
-                        className="w-32"
+                        className="mb-2 w-32"
                         disabled={
                           !isAutoSplitted ||
                           invoice.invoicereceivabledueamount === 0
                         }
-                        value={invoice.amount}
+                        value={invoice.amount.toFixed(2)}
                         onChange={(e) =>
-                          handleAmountPaidChange(e, invoice.invoiceId)
+                          handleAmountPaidChange(e, invoice.invoiceId, index)
                         }
                       />
+                      {errorMsg[invoice.invoiceId] && (
+                        <ErrorBox msg={errorMsg[invoice.invoiceId]} />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -520,11 +583,14 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={Object.values(errorMsg).some((msg) => msg !== '')}
+          disabled={
+            Object.values(errorMsg).some((msg) => msg !== '') ||
+            createPaymentMutationFn.isPending
+          }
           size="sm"
           className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
         >
-          Create
+          {createPaymentMutationFn.isPending ? <Loading /> : 'Create'}
         </Button>
       </div>
     </>

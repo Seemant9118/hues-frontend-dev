@@ -47,21 +47,23 @@ const OrderBreadCrumbs = ({
           .map((page, index, array) => {
             const isLast = index === array.length - 1;
             return isLast ? (
-              <BreadcrumbItem key={page.name}>
+              <BreadcrumbItem key={page.id}>
                 <BreadcrumbPage>
                   <span className="text-lg font-bold">{page.name}</span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
             ) : (
-              <BreadcrumbItem key={page.name}>
-                <BreadcrumbLink
-                  onClick={() => handleClick(page)}
-                  className="hover:cursor-pointer hover:text-blue-500"
-                >
-                  <span className="text-lg font-bold">{page.name}</span>
-                </BreadcrumbLink>
+              <div key={page.id} className="flex items-center gap-1">
+                <BreadcrumbItem>
+                  <BreadcrumbLink
+                    onClick={() => handleClick(page)}
+                    className="hover:cursor-pointer hover:text-blue-500"
+                  >
+                    <span className="text-lg font-bold">{page.name}</span>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
                 <BreadcrumbSeparator />
-              </BreadcrumbItem>
+              </div>
             );
           })}
       </BreadcrumbList>
