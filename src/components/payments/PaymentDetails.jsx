@@ -2,6 +2,7 @@ import { paymentApi } from '@/api/payments/payment_api';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import emptyImg from '../../../public/Empty.png';
 import { DataTable } from '../table/data-table';
@@ -10,6 +11,9 @@ import Loading from '../ui/Loading';
 import { usePaymentColumns } from './paymentColumns';
 
 const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+  const pathName = usePathname();
+  const isPurchasesPage = pathName.includes('purchase-orders');
+
   const { data: paymentsList, isLoading } = useQuery({
     queryKey: [paymentApi.getPaymentsList.endpointKey, orderId],
     queryFn: () => getPaymentsList(orderId), // Make sure you're passing the orderId correctly
@@ -35,7 +39,7 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         }
       </p>
 
-      {orderDetails.negotiationStatus === 'INVOICED' && (
+      {!isPurchasesPage && orderDetails.negotiationStatus === 'INVOICED' && (
         <Button
           className="bg-[#288AF9]"
           onClick={() => setIsRecordingPayment(true)}

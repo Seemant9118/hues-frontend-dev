@@ -301,6 +301,7 @@ const ViewOrder = () => {
                 <TabsContent value="overview" className="flex flex-col gap-4">
                   {/* orders overview */}
                   <OrdersOverview
+                    isCollapsableOverview={false}
                     orderDetails={orderDetails}
                     orderId={orderDetails?.referenceNumber}
                     multiStatus={multiStatus}

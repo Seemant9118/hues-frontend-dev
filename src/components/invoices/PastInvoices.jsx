@@ -3,7 +3,7 @@ import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import Image from 'next/image';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import React from 'react';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import Loading from '../ui/Loading';
@@ -13,6 +13,8 @@ import { DataTable } from '../table/data-table';
 import { invoiceColumns } from './invoicesColumns';
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
+  const pathName = usePathname();
+  const isPurchasesPage = pathName.includes('purchase-orders');
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get('invoiceId');
   const params = useParams();
@@ -150,7 +152,8 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
               }
             </p>
 
-            {!orderDetails?.invoiceGenerationCompleted &&
+            {!isPurchasesPage &&
+              !orderDetails?.invoiceGenerationCompleted &&
               (orderDetails.negotiationStatus === 'ACCEPTED' ||
                 (orderDetails.negotiationStatus === 'NEW' &&
                   orderDetails?.orderType === 'SALES')) && (

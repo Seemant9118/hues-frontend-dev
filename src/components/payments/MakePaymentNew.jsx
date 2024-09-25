@@ -1,6 +1,8 @@
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import { paymentApi } from '@/api/payments/payment_api';
 import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   createPayment,
   getInvoicesForPayments,
@@ -13,6 +15,8 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
+import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
+import OrdersOverview from '../orders/OrdersOverview';
 import { Button } from '../ui/button';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
@@ -268,8 +272,50 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     }
   };
 
+  // to get client name and number
+  const { data: clients } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey],
+    queryFn: () => getClients(enterpriseId),
+    select: (res) => res.data.data,
+  });
+  const client = clients?.find((clientData) => {
+    const clientId = clientData?.client?.id ?? clientData?.id;
+    return clientId === orderDetails?.buyerEnterpriseId;
+  });
+
+  const clientName =
+    client?.client === null
+      ? client?.invitation?.userDetails?.name
+      : client?.client?.name;
+
+  const clientNumber =
+    client?.client === null
+      ? client?.invitation?.invitationIdentifier
+      : client?.client?.mobileNumber;
+
+  // multiStatus components
+  const multiStatus = (
+    <div className="flex gap-2">
+      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.payment?.status}
+      />
+    </div>
+  );
+
   return (
     <>
+      {/* Collapsable overview */}
+      <OrdersOverview
+        isCollapsableOverview={true}
+        orderDetails={orderDetails}
+        orderId={orderDetails?.referenceNumber}
+        multiStatus={multiStatus}
+        Name={clientName}
+        mobileNumber={clientNumber}
+        amtPaid={orderDetails?.amountPaid}
+        totalAmount={orderDetails.amount + orderDetails.gstAmount}
+      />
       <div className="scrollBarStyles flex flex-col gap-4 overflow-y-auto">
         {/* inputs */}
         <section className="flex flex-col gap-4 rounded-md border p-4">
@@ -315,7 +361,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               {errorMsg.paymentMode && <ErrorBox msg={errorMsg.paymentMode} />}
             </div>
             {/* transaction ID */}
-            <div className="flex w-1/2 flex-col gap-2">
+            <div className="flex w-1/2 flex-col gap-3">
               <Label>Transaction ID</Label>
               <div className="flex flex-col gap-1">
                 <Input
@@ -392,7 +438,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
             </div>
 
             {/* Balance */}
-            <div className="flex w-1/2 flex-col gap-2">
+            <div className="flex w-1/2 flex-col gap-3">
               <Label>Balance</Label>
               <div className="flex flex-col gap-1">
                 <Input
@@ -488,7 +534,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                           !isAutoSplitted ||
                           invoice.invoicereceivabledueamount === 0
                         }
-                        value={invoice.amount.toFixed(2)}
+                        value={invoice.amount}
                         onChange={(e) =>
                           handleAmountPaidChange(e, invoice.invoiceId, index)
                         }
@@ -506,7 +552,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
         {/* uploads payments proofs */}
         <div className="flex flex-col gap-4">
-          <Label>Relevant Proof</Label>
+          <Label>Upload Proof</Label>
           {files.map((file) => (
             <div
               key={file.name}
