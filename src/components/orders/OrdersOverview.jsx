@@ -88,7 +88,7 @@ const OrdersOverview = ({
         <Collapsible
           open={isOpen}
           onOpenChange={setIsOpen}
-          className="w-full rounded-md border px-2 py-4"
+          className="w-full rounded-md border py-4 pl-2 pr-14"
         >
           <div
             className={

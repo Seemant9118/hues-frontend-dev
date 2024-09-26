@@ -3,7 +3,6 @@
 import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -27,9 +26,11 @@ import {
 } from 'lucide-react';
 import moment from 'moment';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
+import { useDebitNotesColumns } from './useDebitNotesColumns';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 
 const SalesInvoices = () => {
@@ -61,16 +62,20 @@ const SalesInvoices = () => {
       },
     ],
   };
-
   // Assuming LocalStorageService is fetching enterpriseId correctly
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const router = useRouter();
   const [tab, setTab] = useState('all');
   const [invoices, setInvoices] = useState([]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
+  };
+
+  const onRowClick = (row) => {
+    router.push(`/sales/sales-invoices/${row.id}`);
   };
 
   const formattedAmount = (amount) => {
@@ -124,6 +129,7 @@ const SalesInvoices = () => {
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
   const invoiceColumns = useSalesInvoicesColumns();
+  const debitNotesColumns = useDebitNotesColumns();
 
   return (
     <>
@@ -185,72 +191,15 @@ const SalesInvoices = () => {
             </TabsContent>
             <TabsContent value="debitNote" className="flex flex-col gap-4">
               {debitNoteIsLoading && <Loading />}
-              {!debitNoteIsLoading &&
-                debitNotesList?.length > 0 &&
-                debitNotesList?.map((debitNote) => (
-                  <div
-                    key={debitNote.id}
-                    className="flex flex-col gap-4 rounded-lg border bg-white p-4 shadow-customShadow"
-                  >
-                    <section className="flex items-center justify-between">
-                      <div className="flex flex-col gap-4">
-                        <h1 className="flex items-center gap-2 text-sm font-bold">
-                          {debitNote.referenceNumber}
-                          <ConditionalRenderingStatus
-                            status={debitNote.status}
-                          />
-                        </h1>
-                        <div className="flex gap-10">
-                          <h1 className="text-sm">
-                            <span className="font-bold text-[#ABB0C1]">
-                              Date :{' '}
-                            </span>
-                            <span className="text-[#363940]">
-                              {moment(debitNote.createdAt).format('DD/MM/YYYY')}
-                            </span>
-                          </h1>
-                          <h1 className="text-sm">
-                            <span className="font-bold text-[#ABB0C1]">
-                              Total Amount :{' '}
-                            </span>
-                            <span className="font-bold text-[#363940]">
-                              {formattedAmount(debitNote.amount)}
-                            </span>
-                            <span> (inc. GST)</span>
-                          </h1>
-                        </div>
-                      </div>
-                    </section>
+              {!debitNoteIsLoading && debitNotesList?.length > 0 && (
+                <DataTable
+                  id={'sale-invoice'}
+                  columns={debitNotesColumns}
+                  onRowClick={onRowClick}
+                  data={debitNotesList}
+                />
+              )}
 
-                    {debitNote.status === 'REJECTED' && (
-                      <h1 className="text-sm">
-                        <span className="font-bold text-[#ABB0C1]">
-                          Reason :{' '}
-                        </span>
-                        <span className="text-[#363940]">
-                          {debitNote.reason}
-                        </span>
-                      </h1>
-                    )}
-
-                    {(debitNote.status === 'PENDING' ||
-                      debitNote.status === 'ACCEPTED') && (
-                      <h1 className="text-sm">
-                        <span className="font-bold text-[#ABB0C1]">
-                          Remark :{' '}
-                        </span>
-                        <span className="text-[#363940]">
-                          {debitNote.remark}
-                        </span>
-                      </h1>
-                    )}
-
-                    <div className="flex justify-end gap-2">
-                      <DebitNoteModal cta="reject" debitNote={debitNote} />
-                      <DebitNoteModal cta="accept" debitNote={debitNote} />
-                    </div>
-                  </div>
-                ))}
               {!debitNoteIsLoading && debitNotesList?.length === 0 && (
                 <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />

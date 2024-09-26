@@ -11,4 +11,12 @@ export const DebitNoteApi = {
     endpoint: `/order/debitnote/reject/`,
     endpointKey: 'reject_debit_note',
   },
+  getDebitNote: {
+    endpoint: `/order/debitnote/`,
+    endpointKey: 'get_debit_note',
+  },
+  getComments: {
+    endpoint: `/order/debitnote/getcomments/`,
+    endpointKey: 'get_comments',
+  },
 };

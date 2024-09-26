@@ -101,3 +101,20 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* global.css */
+.quill-container .ql-toolbar {
+  @apply rounded-t-lg border-b border-gray-300 bg-gray-100;
+}
+
+.quill-container .ql-container {
+  @apply rounded-b-lg bg-white; /* Adjust height */
+}
+
+.quill-container .ql-editor {
+  @apply p-4 leading-relaxed text-gray-800;
+}
+
+.quill-container .ql-toolbar .ql-formats button {
+  @apply hover:bg-gray-200;
+}

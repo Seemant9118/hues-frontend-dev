@@ -208,7 +208,7 @@ const ViewOrder = () => {
         <>
           {/* headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white">
-            <div className="flex flex-col gap-2 pt-2">
+            <div className="flex gap-2 pt-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
                 possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}

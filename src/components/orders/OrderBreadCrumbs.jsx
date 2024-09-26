@@ -33,7 +33,7 @@ const OrderBreadCrumbs = ({
     } else {
       // Reset the states if moving within the order detail pages
       pathName.includes('sales-orders') && setIsGenerateInvoice(false);
-      setIsNegotiation(false);
+      setIsNegotiation && setIsNegotiation(false);
       // Navigate to the specified page's path
       router.push(page.path);
     }

@@ -18,3 +18,11 @@ export const acceptDebitCreateCreditNote = ({ id, data }) => {
 export const rejectDebitNote = ({ id, data }) => {
   return APIinstance.put(`${DebitNoteApi.rejectDebitNote.endpoint}${id}`, data);
 };
+
+export const getDebitNote = (id) => {
+  return APIinstance.get(`${DebitNoteApi.getDebitNote.endpoint}${id}`);
+};
+
+export const getComments = (id) => {
+  return APIinstance.get(`${DebitNoteApi.getComments.endpoint}${id}`);
+};
