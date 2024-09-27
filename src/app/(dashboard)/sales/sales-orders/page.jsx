@@ -40,6 +40,7 @@ const SalesOrder = () => {
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const [selectedOrders, setSelectedOrders] = useState([]);
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -70,7 +71,11 @@ const SalesOrder = () => {
     ],
   };
 
-  const SalesColumns = useSalesColumns(setIsEditingOrder, setOrderId);
+  const SalesColumns = useSalesColumns(
+    setIsEditingOrder,
+    setOrderId,
+    setSelectedOrders,
+  );
 
   const onRowClick = (row) => {
     router.push(`/sales/sales-orders/${row.id}`);
@@ -98,6 +103,7 @@ const SalesOrder = () => {
               </Button>
 
               <Button
+                disabled={selectedOrders.length === 0}
                 onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
                 variant="outline"
                 className="border border-[#A5ABBD] hover:bg-neutral-600/10"
