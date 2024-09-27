@@ -118,3 +118,9 @@ input[type='number'] {
 .quill-container .ql-toolbar .ql-formats button {
   @apply hover:bg-gray-200;
 }
+
+.quill-container img {
+  max-width: 100%; /* Ensure images don't exceed container width */
+  height: auto; /* Maintain aspect ratio */
+  width: 25%; /* Set default width to 50% of the container */
+}

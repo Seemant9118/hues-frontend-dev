@@ -19,10 +19,19 @@ export const rejectDebitNote = ({ id, data }) => {
   return APIinstance.put(`${DebitNoteApi.rejectDebitNote.endpoint}${id}`, data);
 };
 
+// 4. get Debit note
 export const getDebitNote = (id) => {
   return APIinstance.get(`${DebitNoteApi.getDebitNote.endpoint}${id}`);
 };
 
+export const createComments = (data) => {
+  return APIinstance.post(DebitNoteApi.createComments.endpoint, data);
+};
+
 export const getComments = (id) => {
   return APIinstance.get(`${DebitNoteApi.getComments.endpoint}${id}`);
+};
+
+export const uploadMediaInComments = (data) => {
+  return APIinstance.post(DebitNoteApi.uploadMediaInComments.endpoint, data);
 };

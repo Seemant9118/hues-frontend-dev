@@ -3,7 +3,6 @@
 import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -24,7 +23,6 @@ import {
   KeySquare,
   Upload,
 } from 'lucide-react';
-import moment from 'moment';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -76,14 +74,6 @@ const SalesInvoices = () => {
 
   const onRowClick = (row) => {
     router.push(`/sales/sales-invoices/${row.id}`);
-  };
-
-  const formattedAmount = (amount) => {
-    const formattedAmount = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-    return formattedAmount;
   };
 
   // Mutation for fetching invoices
@@ -189,11 +179,11 @@ const SalesInvoices = () => {
                 />
               )}
             </TabsContent>
-            <TabsContent value="debitNote" className="flex flex-col gap-4">
+            <TabsContent value="debitNote">
               {debitNoteIsLoading && <Loading />}
               {!debitNoteIsLoading && debitNotesList?.length > 0 && (
                 <DataTable
-                  id={'sale-invoice'}
+                  id={'sale-invoice-debits'}
                   columns={debitNotesColumns}
                   onRowClick={onRowClick}
                   data={debitNotesList}
@@ -207,57 +197,16 @@ const SalesInvoices = () => {
                 </div>
               )}
             </TabsContent>
-            <TabsContent value="creditNote" className="flex flex-col gap-4">
+            <TabsContent value="creditNote">
               {creditNoteIsLoading && <Loading />}
-              {!creditNoteIsLoading &&
-                creditNotesList?.length > 0 &&
-                creditNotesList?.map((creditNote) => (
-                  <div
-                    key={creditNote.id}
-                    className="flex flex-col gap-4 rounded-lg border bg-white p-4 shadow-customShadow"
-                  >
-                    <section className="flex items-center justify-between">
-                      <div className="flex flex-col gap-4">
-                        <h1 className="flex items-center gap-2 text-sm font-bold">
-                          {creditNote.referenceNumber}
-                          <ConditionalRenderingStatus
-                            status={creditNote.status}
-                          />
-                        </h1>
-                        <div className="flex gap-10">
-                          <h1 className="text-sm">
-                            <span className="font-bold text-[#ABB0C1]">
-                              Date :{' '}
-                            </span>
-                            <span className="text-[#363940]">
-                              {moment(creditNote.createdAt).format(
-                                'DD/MM/YYYY',
-                              )}
-                            </span>
-                          </h1>
-                          <h1 className="text-sm">
-                            <span className="font-bold text-[#ABB0C1]">
-                              Total Amount :{' '}
-                            </span>
-                            <span className="font-bold text-[#363940]">
-                              {formattedAmount(creditNote.amount)}
-                            </span>
-                            <span> (inc. GST)</span>
-                          </h1>
-                        </div>
-                      </div>
-                    </section>
+              {!creditNoteIsLoading && creditNotesList?.length > 0 && (
+                <DataTable
+                  id={'sale-invoice-credits'}
+                  columns={debitNotesColumns}
+                  data={creditNotesList}
+                />
+              )}
 
-                    <h1 className="text-sm">
-                      <span className="font-bold text-[#ABB0C1]">
-                        Remark :{' '}
-                      </span>
-                      <span className="text-[#363940]">
-                        {creditNote.remark}
-                      </span>
-                    </h1>
-                  </div>
-                ))}
               {!creditNoteIsLoading && creditNotesList?.length === 0 && (
                 <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />

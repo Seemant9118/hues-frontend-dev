@@ -1,9 +1,25 @@
 import { Building2 } from 'lucide-react';
+import moment from 'moment';
 import Image from 'next/image';
 import React from 'react';
 import GoogleImage from '../../../public/google-icon.png';
 
 const DebitNoteComment = ({ comment }) => {
+  // Date & time formatter
+  const formatDateTime = (itemDateT) => {
+    const itemDateTime = moment(itemDateT);
+    const now = moment();
+    let displayDate;
+
+    if (itemDateTime.isSame(now, 'day')) {
+      displayDate = 'Today';
+    } else if (itemDateTime.isSame(now.clone().subtract(1, 'days'), 'day')) {
+      displayDate = 'Yesterday';
+    } else {
+      displayDate = itemDateTime.format('DD-MM-YYYY');
+    }
+    return `${displayDate} ${itemDateTime.format('HH:mm:ss')}`;
+  };
   return (
     <div className="flex justify-start gap-2">
       <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
@@ -13,7 +29,7 @@ const DebitNoteComment = ({ comment }) => {
         <div className="flex flex-col gap-1">
           <h1 className="text-sm font-bold">{comment.enterpriseName}</h1>
           <p className="text-sm font-bold text-[#A5ABBD]">
-            {comment.commentedAt}
+            {formatDateTime(comment.commentedAt)}
           </p>
         </div>
 

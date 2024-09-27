@@ -27,7 +27,7 @@ export const useDebitNotesColumns = () => {
       },
     },
     {
-      accessorKey: 'toEnterprise',
+      accessorKey: 'enterprise',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),

@@ -8,7 +8,6 @@ import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
-import RichTextEditorNew from '@/components/ui/RichTextEditorNew';
 import Wrapper from '@/components/wrappers/Wrapper';
 import {
   getComments,
@@ -20,8 +19,14 @@ import { useParams } from 'next/navigation';
 import React from 'react';
 
 const ViewDebitNote = () => {
+  // const queryClient = useQueryClient();
   const params = useParams();
   const debitNoteId = params.debit_id;
+
+  // const [comment, setComment] = useState({
+  //   text: '',
+  //   debitNoteId,
+  // });
 
   const debitNoteBreadCrumbs = [
     {
@@ -60,6 +65,31 @@ const ViewDebitNote = () => {
     }).format(amount);
     return formattedAmount;
   };
+
+  // const createCommentMutation = useMutation({
+  //   mutationKey: [DebitNoteApi.createComments.endpointKey],
+  //   mutationFn: createComments,
+  //   onSuccess: () => {
+  //     toast.success('Comment Successfully');
+  //     queryClient.invalidateQueries([
+  //       DebitNoteApi.getComments.endpointKey,
+  //       debitNoteId,
+  //     ]);
+  //     setComment('');
+  //   },
+  //   onError: (error) => {
+  //     toast.error(error.response.data.message || 'Something went wrong');
+  //   },
+  // });
+
+  // const handleSubmitComment = () => {
+  //   if (!comment.text.trim()) {
+  //     toast.error('Comment cannot be empty');
+  //     return;
+  //   }
+
+  //   createCommentMutation.mutate(comment);
+  // };
 
   return (
     <Wrapper className="relative">
@@ -114,7 +144,7 @@ const ViewDebitNote = () => {
         )}
 
         {/* comments box */}
-        <div className="flex flex-col gap-6 rounded-lg p-2 shadow-customShadow">
+        <div className="flex flex-col gap-6 p-2">
           <h1 className="text-sm font-bold">Comments</h1>
           <section className="flex flex-col gap-2">
             {isCommentLoading && <Loading />}
@@ -135,9 +165,13 @@ const ViewDebitNote = () => {
 
         {/* comment input - rich text editor : show if status is pending */}
 
-        <div className="w-full bg-white">
-          <RichTextEditorNew />
-        </div>
+        {/* <div className="w-full bg-white">
+          <RichTextEditorNew
+            value={comment}
+            setValue={setComment}
+            onSubmit={handleSubmitComment}
+          />
+        </div> */}
       </section>
     </Wrapper>
   );

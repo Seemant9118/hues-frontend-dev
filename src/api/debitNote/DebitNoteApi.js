@@ -15,8 +15,20 @@ export const DebitNoteApi = {
     endpoint: `/order/debitnote/`,
     endpointKey: 'get_debit_note',
   },
+
+  // comments
+  createComments: {
+    endpoint: `/order/debitnote/comment`,
+    endpointKey: 'create_comments',
+  },
   getComments: {
     endpoint: `/order/debitnote/getcomments/`,
     endpointKey: 'get_comments',
+  },
+
+  // upload media in comments
+  uploadMediaInComments: {
+    endpoint: `/order/debitnote/upload`,
+    endpointKey: 'upload_media_comments',
   },
 };
