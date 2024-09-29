@@ -52,7 +52,9 @@ export default function OTPVerificationForm({ setCurrStep }) {
         data.data.data.user.isOnboardingComplete &&
         data.data.data.user.isEnterpriseOnboardingComplete
       ) {
-        router.push('/');
+        const redirectUrl = LocalStorageService.get('redirectUrl');
+        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+        router.push(redirectUrl || '/');
       }
       // if userOnboarding is completed but enterpriseOnboarding is not completed, then redirected to enterpriseOnboarding page
       else if (
