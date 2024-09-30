@@ -120,7 +120,14 @@ input[type='number'] {
 }
 
 .quill-container img {
+  display: flex;
+  gap: 2rem;
   max-width: 100%; /* Ensure images don't exceed container width */
   height: auto; /* Maintain aspect ratio */
-  width: 25%; /* Set default width to 50% of the container */
+  width: 15%; /* Set default width to 50% of the container */
+}
+
+.isImageComment img {
+  max-width: 25%; /* Ensure images are responsive */
+  height: auto; /* Maintain aspect ratio */
 }

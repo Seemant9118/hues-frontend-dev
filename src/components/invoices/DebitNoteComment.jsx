@@ -2,7 +2,6 @@ import { Building2 } from 'lucide-react';
 import moment from 'moment';
 import Image from 'next/image';
 import React from 'react';
-import GoogleImage from '../../../public/google-icon.png';
 
 const DebitNoteComment = ({ comment }) => {
   // Date & time formatter
@@ -33,16 +32,23 @@ const DebitNoteComment = ({ comment }) => {
           </p>
         </div>
 
-        <p className="text-sm text-[#7F8185]">{comment.comment}</p>
+        <p
+          className="isImageComment text-sm text-[#7F8185]"
+          dangerouslySetInnerHTML={{ __html: comment.comment }}
+        ></p>
 
-        {/* if Image contains */}
-        <Image
-          className="rounded-sm"
-          src={GoogleImage}
-          alt="comment-attahced-img"
-          width={50}
-          height={50}
-        />
+        <div className="flex gap-2">
+          {comment?.mediaLinks?.map((mediaImage) => (
+            <Image
+              key={mediaImage}
+              className="rounded-sm"
+              src={mediaImage}
+              alt="comment-attahced-img"
+              width={50}
+              height={50}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -8,25 +8,29 @@ import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
+import RichTextEditorNew from '@/components/ui/RichTextEditorNew';
 import Wrapper from '@/components/wrappers/Wrapper';
 import {
+  createComments,
   getComments,
   getDebitNote,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import { useParams } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 const ViewDebitNote = () => {
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
   const params = useParams();
   const debitNoteId = params.debit_id;
 
-  // const [comment, setComment] = useState({
-  //   text: '',
-  //   debitNoteId,
-  // });
+  const [comment, setComment] = useState({
+    debitNoteId,
+    comment: '',
+    mediaLinks: [],
+  });
 
   const debitNoteBreadCrumbs = [
     {
@@ -37,7 +41,7 @@ const ViewDebitNote = () => {
     },
 
     {
-      id: 1,
+      id: 2,
       name: 'Debit Note Details',
       path: `/sales/sales-invoices/${debitNoteId}`,
       show: true, // Always show
@@ -66,30 +70,37 @@ const ViewDebitNote = () => {
     return formattedAmount;
   };
 
-  // const createCommentMutation = useMutation({
-  //   mutationKey: [DebitNoteApi.createComments.endpointKey],
-  //   mutationFn: createComments,
-  //   onSuccess: () => {
-  //     toast.success('Comment Successfully');
-  //     queryClient.invalidateQueries([
-  //       DebitNoteApi.getComments.endpointKey,
-  //       debitNoteId,
-  //     ]);
-  //     setComment('');
-  //   },
-  //   onError: (error) => {
-  //     toast.error(error.response.data.message || 'Something went wrong');
-  //   },
-  // });
+  const createCommentMutation = useMutation({
+    mutationKey: [DebitNoteApi.createComments.endpointKey],
+    mutationFn: createComments,
+    onSuccess: () => {
+      toast.success('Comment Successfully');
+      queryClient.invalidateQueries([
+        DebitNoteApi.getComments.endpointKey,
+        debitNoteId,
+      ]);
+      setComment({
+        debitNoteId,
+        comment: '',
+        mediaLinks: [],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
 
-  // const handleSubmitComment = () => {
-  //   if (!comment.text.trim()) {
-  //     toast.error('Comment cannot be empty');
-  //     return;
-  //   }
+  const handleSubmitComment = () => {
+    if (!comment.comment.trim()) {
+      toast.error('Comment cannot be empty');
+      return;
+    }
 
-  //   createCommentMutation.mutate(comment);
-  // };
+    createCommentMutation.mutate({
+      ...comment,
+      mediaLinks: [...comment.mediaLinks], // Ensure mediaLinks is correctly passed
+    });
+  };
 
   return (
     <Wrapper className="relative">
@@ -157,7 +168,7 @@ const ViewDebitNote = () => {
             {!isCommentLoading && comments.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
                 <h1>No Comments yet</h1>
-                <p>Say Something ti start the conversation</p>
+                <p>Say Something to start the conversation</p>
               </div>
             )}
           </section>
@@ -165,13 +176,15 @@ const ViewDebitNote = () => {
 
         {/* comment input - rich text editor : show if status is pending */}
 
-        {/* <div className="w-full bg-white">
-          <RichTextEditorNew
-            value={comment}
-            setValue={setComment}
-            onSubmit={handleSubmitComment}
-          />
-        </div> */}
+        {debitNote?.status === 'PENDING' && (
+          <div className="w-full bg-white">
+            <RichTextEditorNew
+              comment={comment}
+              setComment={setComment}
+              onSubmit={handleSubmitComment}
+            />
+          </div>
+        )}
       </section>
     </Wrapper>
   );

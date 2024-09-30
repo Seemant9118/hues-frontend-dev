@@ -11,6 +11,7 @@ import {
   ScrollText,
   Store,
   UserRound,
+  Users,
 } from 'lucide-react';
 import StyledLinks from './StyledLinks';
 
@@ -103,6 +104,11 @@ const Sidebar = () => {
       name: 'Vendors',
       icon: <Store size={16} />,
       path: '/vendors',
+    },
+    {
+      name: 'Members',
+      icon: <Users size={16} />,
+      path: '/members',
     },
     {
       name: 'Notifications',
