@@ -1,8 +1,13 @@
 'use client';
 
+import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
+import { LocalStorageService } from '@/lib/utils';
+import { createAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { Label } from '@radix-ui/react-label';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -11,6 +16,7 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import { Input } from '../ui/input';
+import Loading from '../ui/Loading';
 import {
   Select,
   SelectContent,
@@ -20,7 +26,56 @@ import {
 } from '../ui/select';
 
 const MemberInviteModal = () => {
+  const queryClient = useQueryClient();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+
   const [open, setOpen] = useState(false);
+  const [member, setMember] = useState({
+    name: '',
+    countryCode: '+91',
+    mobileNumber: '',
+    email: '',
+    enterpriseId,
+    role: '',
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setMember({ ...member, [name]: value });
+  };
+
+  const handleRoleChange = (value) => {
+    setMember({ ...member, role: value });
+  };
+
+  const createMemberMutation = useMutation({
+    mutationKey: [associateMemberApi.createAssociateMembers.endpointKey],
+    mutationFn: createAssociateMembers,
+    onSuccess: () => {
+      toast.success('Members Added Successfully');
+      setMember({
+        name: '',
+        countryCode: '+91',
+        mobileNumber: '',
+        email: '',
+        enterpriseId,
+        role: '',
+      });
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+      setOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handleSubmit = () => {
+    createMemberMutation.mutate(member);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -47,9 +102,10 @@ const MemberInviteModal = () => {
 
               <Input
                 className="text-sm font-semibold"
-                name="Name"
                 type="text"
-                id="name"
+                name="name"
+                value={member.name}
+                onChange={handleChange}
               />
               {/* {errorMsg.name && <ErrorBox msg={errorMsg.name} />} */}
             </div>
@@ -62,9 +118,10 @@ const MemberInviteModal = () => {
               </div>
               <Input
                 className="text-sm font-semibold"
-                name="Phone"
                 type="tel"
-                id="mobileNumber"
+                name="mobileNumber"
+                value={member.mobileNumber}
+                onChange={handleChange}
               />
               {/* {errorMsg.mobileNumber && (
                   <ErrorBox msg={errorMsg.mobileNumber} />
@@ -81,9 +138,10 @@ const MemberInviteModal = () => {
               </div>
               <Input
                 className="text-sm font-semibold"
-                name="Phone"
-                type="tel"
-                id="mobileNumber"
+                type="email"
+                name="email"
+                value={member.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -93,7 +151,7 @@ const MemberInviteModal = () => {
                 <Label className="text-sm font-bold">Role</Label>
                 <span className="text-red-600">*</span>
               </div>
-              <Select required>
+              <Select onValueChange={handleRoleChange} required>
                 <SelectTrigger className="text-sm font-semibold">
                   <SelectValue
                     className="text-sm font-semibold"
@@ -101,9 +159,9 @@ const MemberInviteModal = () => {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="commentator">Commentator</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="COMMENTATOR">Commentator</SelectItem>
+                  <SelectItem value="VIEWER">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -112,16 +170,21 @@ const MemberInviteModal = () => {
               <Button
                 size="sm"
                 variant={'outline'}
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setMember({});
+                  setOpen(false);
+                }}
               >
                 Discard
               </Button>
 
               <Button
+                onClick={handleSubmit}
+                disabled={createMemberMutation.isPending}
                 className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                Create
+                {createMemberMutation.isPending ? <Loading /> : 'Create'}
               </Button>
             </div>
           </div>

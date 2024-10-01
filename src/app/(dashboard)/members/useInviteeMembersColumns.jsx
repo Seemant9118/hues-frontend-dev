@@ -66,35 +66,59 @@ export const useInviteeMembersColumns = (setSelectedOrders) => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="NAME" />
       ),
+      cell: ({ row }) => {
+        const { name } = row.original.invitation.userDetails;
+        return <div>{name}</div>;
+      },
     },
     {
-      accessorKey: 'joiningDate',
+      accessorKey: 'createdAt',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="JOINING DATE" />
       ),
       cell: ({ row }) => {
-        const { joiningDate } = row.original;
-        const date = moment(joiningDate).format('DD-MM-YYYY');
+        const { createdAt } = row.original;
+        const date = moment(createdAt).format('DD-MM-YYYY');
         return <div className="text-[#A5ABBD]">{date}</div>;
       },
     },
     {
-      accessorKey: 'phoneNumber',
+      accessorKey: 'mobileNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PHONE NUMBER" />
       ),
+      cell: ({ row }) => {
+        const { mobileNumber } = row.original.invitation.userDetails;
+        return <div>{mobileNumber}</div>;
+      },
     },
     {
-      accessorKey: 'emailId',
+      accessorKey: 'email',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="EMAIL ID" />
       ),
+      cell: ({ row }) => {
+        const { email } = row.original.invitation.userDetails;
+        return <div>{email}</div>;
+      },
     },
     {
       accessorKey: 'role',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ROLE" />
       ),
+      cell: ({ row }) => {
+        const { role } = row.original;
+        // fn for capitalization
+        function capitalize(str) {
+          return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        }
+        return (
+          <div className="w-fit rounded-[5px] border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-sm">
+            {capitalize(role)}
+          </div>
+        );
+      },
     },
   ];
 };
