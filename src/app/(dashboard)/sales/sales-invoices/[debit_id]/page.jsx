@@ -96,8 +96,12 @@ const ViewDebitNote = () => {
       return;
     }
 
+    // Remove all <img> tags from the comment content
+    const sanitizedComment = comment.comment.replace(/<img[^>]*>/g, '');
+
     createCommentMutation.mutate({
       ...comment,
+      comment: sanitizedComment, // Use the sanitized comment without <img> tags
       mediaLinks: [...comment.mediaLinks], // Ensure mediaLinks is correctly passed
     });
   };

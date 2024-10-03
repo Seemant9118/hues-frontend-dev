@@ -1,7 +1,7 @@
 import { Building2 } from 'lucide-react';
 import moment from 'moment';
-import Image from 'next/image';
 import React from 'react';
+import ViewImage from '../ui/ViewImage';
 
 const DebitNoteComment = ({ comment }) => {
   // Date & time formatter
@@ -39,14 +39,9 @@ const DebitNoteComment = ({ comment }) => {
 
         <div className="flex gap-2">
           {comment?.mediaLinks?.map((mediaImage) => (
-            <Image
-              key={mediaImage}
-              className="rounded-sm"
-              src={mediaImage}
-              alt="comment-attahced-img"
-              width={50}
-              height={50}
-            />
+            <div key={mediaImage}>
+              <ViewImage mediaImage={mediaImage} />
+            </div>
           ))}
         </div>
       </div>
