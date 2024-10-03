@@ -124,12 +124,16 @@ const SalesInvoices = () => {
   const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
   const debitNotesColumns = useDebitNotesColumns();
 
-  const downloadBase64File = (base64Data, fileName) => {
-    const linkSource = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64Data}`;
-    const downloadLink = document.createElement('a');
-    downloadLink.href = linkSource;
-    downloadLink.download = fileName;
-    downloadLink.click();
+  // Function to trigger the download of a .xlsx file from Blob data
+  const downloadBlobFile = (blobData, fileName) => {
+    const el = document.createElement('a');
+    const blobFile = window.URL.createObjectURL(blobData);
+    el.href = blobFile;
+    el.download = fileName;
+    el.click();
+
+    // Clean up the object URL after the download is triggered
+    window.URL.revokeObjectURL(blobFile);
   };
 
   // export invoice mutation
@@ -137,8 +141,8 @@ const SalesInvoices = () => {
     mutationKey: [invoiceApi.exportInvoice.endpointKey],
     mutationFn: exportInvoice,
     onSuccess: (response) => {
-      const base64Data = response.data.data;
-      downloadBase64File(base64Data, 'sales_invoices.xlsx');
+      const blobData = response.data;
+      downloadBlobFile(blobData, 'sales_invoices.xlsx');
       toast.success('Invoice exported and downloaded successfully');
     },
     onError: (error) => {

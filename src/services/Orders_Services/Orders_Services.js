@@ -64,5 +64,7 @@ export const updateOrder = (id, data) => {
 };
 
 export const exportOrder = (data) => {
-  return APIinstance.post(orderApi.exportOrder.endpoint, data);
+  return APIinstance.post(orderApi.exportOrder.endpoint, data, {
+    responseType: 'blob', // Specify response type here
+  });
 };

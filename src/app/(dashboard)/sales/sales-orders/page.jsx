@@ -7,7 +7,7 @@ import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
+import { LocalStorageService } from '@/lib/utils';
 import {
   exportOrder,
   GetSales,
@@ -91,26 +91,30 @@ const SalesOrder = () => {
     select: (res) => res.data.data,
   });
 
-  // Function to trigger the download of a .xlsx file from Base64
-  const downloadBase64File = (base64Data, fileName) => {
-    const linkSource = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64Data}`;
-    const downloadLink = document.createElement('a');
-    downloadLink.href = linkSource;
-    downloadLink.download = fileName;
-    downloadLink.click();
+  // Function to trigger the download of a .xlsx file from Blob data
+  const downloadBlobFile = (blobData, fileName) => {
+    const el = document.createElement('a');
+    const blobFile = window.URL.createObjectURL(blobData);
+    el.href = blobFile;
+    el.download = fileName;
+    el.click();
+
+    // Clean up the object URL after the download is triggered
+    window.URL.revokeObjectURL(blobFile);
   };
 
-  // export order mutation
+  // Export order mutation
   const exportOrderMutation = useMutation({
     mutationKey: [orderApi.exportOrder.endpointKey],
     mutationFn: exportOrder,
     onSuccess: (response) => {
-      const base64Data = response.data.data;
-      downloadBase64File(base64Data, 'sales_orders.xlsx');
+      // Assuming the API response is in Blob format
+      const blobData = response.data; // This should be a Blob
+      downloadBlobFile(blobData, 'sales_orders.xlsx');
       toast.success('Order exported and downloaded successfully');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response?.data?.message || 'Something went wrong');
     },
   });
 
@@ -138,7 +142,7 @@ const SalesOrder = () => {
                 disabled={selectedOrders.length === 0}
                 onClick={() => {
                   handleExportOrder();
-                  exportTableToExcel('sale-orders', 'sales_list');
+                  // exportTableToExcel('sale-orders', 'sales_list');
                 }}
                 variant="outline"
                 className="border border-[#A5ABBD] hover:bg-neutral-600/10"

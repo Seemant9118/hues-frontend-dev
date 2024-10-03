@@ -33,5 +33,7 @@ export const getAllInvoices = ({ id, data }) => {
 };
 
 export const exportInvoice = (data) => {
-  return APIinstance.post(invoiceApi.exportInvoice.endpoint, data);
+  return APIinstance.post(invoiceApi.exportInvoice.endpoint, data, {
+    responseType: 'blob', // Specify response type here
+  });
 };
