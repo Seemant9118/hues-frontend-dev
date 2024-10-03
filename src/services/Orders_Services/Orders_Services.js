@@ -62,3 +62,7 @@ export const createBulkNegotiaion = (data) => {
 export const updateOrder = (id, data) => {
   return APIinstance.post(`${orderApi.updateOrder.endpoint}${id}`, data);
 };
+
+export const exportOrder = (data) => {
+  return APIinstance.post(orderApi.exportOrder.endpoint, data);
+};

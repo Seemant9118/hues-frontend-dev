@@ -34,4 +34,9 @@ export const invoiceApi = {
     endpoint: `/order/invoice/getallinvoicelist/`,
     endpointKey: 'get_all_invoices',
   },
+  // 8. export invoice
+  exportInvoice: {
+    endpoint: `/order/invoice/export`,
+    endpointKey: 'export_invoice',
+  },
 };

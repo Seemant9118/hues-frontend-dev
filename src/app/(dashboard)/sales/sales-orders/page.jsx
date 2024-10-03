@@ -7,9 +7,12 @@ import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
-import { GetSales } from '@/services/Orders_Services/Orders_Services';
-import { useQuery } from '@tanstack/react-query';
+import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
+import {
+  exportOrder,
+  GetSales,
+} from '@/services/Orders_Services/Orders_Services';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -21,6 +24,7 @@ import {
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { useSalesColumns } from './useSalesColumns';
 
 // dynamic imports
@@ -87,6 +91,34 @@ const SalesOrder = () => {
     select: (res) => res.data.data,
   });
 
+  // Function to trigger the download of a .xlsx file from Base64
+  const downloadBase64File = (base64Data, fileName) => {
+    const linkSource = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64Data}`;
+    const downloadLink = document.createElement('a');
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    downloadLink.click();
+  };
+
+  // export order mutation
+  const exportOrderMutation = useMutation({
+    mutationKey: [orderApi.exportOrder.endpointKey],
+    mutationFn: exportOrder,
+    onSuccess: (response) => {
+      const base64Data = response.data.data;
+      downloadBase64File(base64Data, 'sales_orders.xlsx');
+      toast.success('Order exported and downloaded successfully');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // handle export order click
+  const handleExportOrder = () => {
+    exportOrderMutation.mutate(selectedOrders);
+  };
+
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
@@ -104,7 +136,10 @@ const SalesOrder = () => {
 
               <Button
                 disabled={selectedOrders.length === 0}
-                onClick={() => exportTableToExcel('sale-orders', 'sales_list')}
+                onClick={() => {
+                  handleExportOrder();
+                  exportTableToExcel('sale-orders', 'sales_list');
+                }}
                 variant="outline"
                 className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                 size="sm"

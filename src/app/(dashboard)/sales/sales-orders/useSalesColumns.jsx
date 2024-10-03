@@ -33,10 +33,25 @@ export const useSalesColumns = (
     select: (res) => res.data.data,
   });
 
+  // Function to get customer name from clients list
+  const getCustomerName = (buyerEnterpriseId) => {
+    const client = clients?.find((clientData) => {
+      const clientId = clientData?.client?.id ?? clientData?.id;
+      return clientId === buyerEnterpriseId;
+    });
+
+    return client?.client === null
+      ? client?.invitation?.userDetails?.name
+      : client?.client?.name;
+  };
+
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
+    const customerName = getCustomerName(row.original.buyerEnterpriseId);
+    const orderWithCustomer = { ...row.original, customerName };
+
     if (isSelected) {
-      setSelectedOrders((prev) => [...prev, row.original]);
+      setSelectedOrders((prev) => [...prev, orderWithCustomer]);
     } else {
       setSelectedOrders((prev) =>
         prev.filter((order) => order.id !== row.original.id),
@@ -47,7 +62,10 @@ export const useSalesColumns = (
   // Function to handle "Select All" functionality
   const handleSelectAll = (isAllSelected, rows) => {
     if (isAllSelected) {
-      const allOrders = rows.map((row) => row.original);
+      const allOrders = rows.map((row) => {
+        const customerName = getCustomerName(row.original.buyerEnterpriseId);
+        return { ...row.original, customerName };
+      });
       setSelectedOrders(allOrders);
     } else {
       setSelectedOrders([]); // Clear all selections
@@ -112,17 +130,8 @@ export const useSalesColumns = (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),
       cell: ({ row }) => {
-        const client = clients?.find((clientData) => {
-          const clientId = clientData?.client?.id ?? clientData?.id;
-          return clientId === row.original.buyerEnterpriseId;
-        });
-
-        const clientName =
-          client?.client === null
-            ? client?.invitation?.userDetails?.name
-            : client?.client?.name;
-
-        return <div>{clientName}</div>;
+        const { buyerEnterpriseId } = row.original;
+        return <div>{getCustomerName(buyerEnterpriseId)}</div>;
       },
     },
     {

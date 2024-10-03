@@ -10,10 +10,13 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
+import { LocalStorageService } from '@/lib/utils';
 import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
 import { getAllDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { getAllInvoices } from '@/services/Invoice_Services/Invoice_Services';
+import {
+  exportInvoice,
+  getAllInvoices,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { Tabs } from '@radix-ui/react-tabs';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -60,12 +63,12 @@ const SalesInvoices = () => {
       },
     ],
   };
-  // Assuming LocalStorageService is fetching enterpriseId correctly
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [invoices, setInvoices] = useState([]);
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -118,8 +121,35 @@ const SalesInvoices = () => {
   }, [tab]);
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
-  const invoiceColumns = useSalesInvoicesColumns();
+  const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
   const debitNotesColumns = useDebitNotesColumns();
+
+  const downloadBase64File = (base64Data, fileName) => {
+    const linkSource = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64Data}`;
+    const downloadLink = document.createElement('a');
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    downloadLink.click();
+  };
+
+  // export invoice mutation
+  const exportInvoiceMutation = useMutation({
+    mutationKey: [invoiceApi.exportInvoice.endpointKey],
+    mutationFn: exportInvoice,
+    onSuccess: (response) => {
+      const base64Data = response.data.data;
+      downloadBase64File(base64Data, 'sales_invoices.xlsx');
+      toast.success('Invoice exported and downloaded successfully');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // handle export order click
+  const handleExportInvoice = () => {
+    exportInvoiceMutation.mutate(selectedInvoices);
+  };
 
   return (
     <>
@@ -130,7 +160,11 @@ const SalesInvoices = () => {
         >
           <div className="flex items-center justify-center gap-4">
             <Button
-              onClick={() => exportTableToExcel('sale-invoice', 'invoice_list')}
+              disabled={selectedInvoices.length === 0}
+              onClick={() => {
+                handleExportInvoice();
+                // exportTableToExcel('sale-invoice', 'invoice_list');
+              }}
               variant="outline"
               className="border border-[#A5ABBD] hover:bg-neutral-600/10"
               size="sm"

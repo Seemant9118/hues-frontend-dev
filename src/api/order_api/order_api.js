@@ -84,4 +84,10 @@ export const orderApi = {
     endpoint: `/order/update/`,
     endpointKey: 'update_order',
   },
+
+  // 16. export order
+  exportOrder: {
+    endpoint: `/order/export`,
+    endpointKey: 'export_order',
+  },
 };

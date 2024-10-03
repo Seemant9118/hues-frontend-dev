@@ -1,10 +1,69 @@
 'use client';
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Checkbox } from '@/components/ui/checkbox';
 import moment from 'moment';
 
-export const useSalesInvoicesColumns = () => {
+export const useSalesInvoicesColumns = (setSelectedInvoices) => {
+  // Function to handle row selection
+  const handleRowSelection = (isSelected, row) => {
+    const orderWithCustomer = { ...row.original };
+
+    if (isSelected) {
+      setSelectedInvoices((prev) => [...prev, orderWithCustomer]);
+    } else {
+      setSelectedInvoices((prev) =>
+        prev.filter((order) => order.id !== row.original.id),
+      );
+    }
+  };
+
+  // Function to handle "Select All" functionality
+  const handleSelectAll = (isAllSelected, rows) => {
+    if (isAllSelected) {
+      const allOrders = rows.map((row) => {
+        return { ...row.original };
+      });
+      setSelectedInvoices(allOrders);
+    } else {
+      setSelectedInvoices([]); // Clear all selections
+    }
+  };
   return [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => {
+            table.toggleAllPageRowsSelected(!!value);
+            handleSelectAll(!!value, table.getRowModel().rows);
+          }}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <div
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click from being triggered
+          }}
+        >
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+              handleRowSelection(!!value, row);
+            }}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: 'invoiceReferenceNumber',
       header: ({ column }) => (

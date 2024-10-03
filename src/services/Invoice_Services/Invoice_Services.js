@@ -31,3 +31,7 @@ export const createInvoiceForNewOrder = (data) => {
 export const getAllInvoices = ({ id, data }) => {
   return APIinstance.post(`${invoiceApi.getAllInvoices.endpoint}${id}`, data);
 };
+
+export const exportInvoice = (data) => {
+  return APIinstance.post(invoiceApi.exportInvoice.endpoint, data);
+};
