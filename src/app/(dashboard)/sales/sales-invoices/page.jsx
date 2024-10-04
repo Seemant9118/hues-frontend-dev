@@ -152,6 +152,10 @@ const SalesInvoices = () => {
 
   // handle export order click
   const handleExportInvoice = () => {
+    if (selectedInvoices.length === 0) {
+      toast.error('Please select atleast One Invoice to export');
+      return;
+    }
     exportInvoiceMutation.mutate(selectedInvoices);
   };
 
@@ -164,16 +168,12 @@ const SalesInvoices = () => {
         >
           <div className="flex items-center justify-center gap-4">
             <Button
-              disabled={selectedInvoices.length === 0}
-              onClick={() => {
-                handleExportInvoice();
-                // exportTableToExcel('sale-invoice', 'invoice_list');
-              }}
+              onClick={handleExportInvoice}
               variant="outline"
               className="border border-[#A5ABBD] hover:bg-neutral-600/10"
               size="sm"
             >
-              <Upload size={16} />
+              <Upload size={14} />
             </Button>
           </div>
         </SubHeader>

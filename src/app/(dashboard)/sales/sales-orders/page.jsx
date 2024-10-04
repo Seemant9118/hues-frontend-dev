@@ -6,6 +6,7 @@ import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -40,11 +41,17 @@ const SalesOrder = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
+
+  // Function to handle tab change
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   const SaleEmptyStageData = {
     heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
@@ -85,7 +92,7 @@ const SalesOrder = () => {
     router.push(`/sales/sales-orders/${row.id}`);
   };
 
-  const { isLoading, data } = useQuery({
+  const { isLoading: isLoadingSales, data: allSales } = useQuery({
     queryKey: [orderApi.getSales.endpointKey],
     queryFn: () => GetSales(enterpriseId),
     select: (res) => res.data.data,
@@ -111,7 +118,7 @@ const SalesOrder = () => {
       // Assuming the API response is in Blob format
       const blobData = response.data; // This should be a Blob
       downloadBlobFile(blobData, 'sales_orders.xlsx');
-      toast.success('Order exported and downloaded successfully');
+      toast.success('Order exported and download starts automatically');
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Something went wrong');
@@ -120,6 +127,10 @@ const SalesOrder = () => {
 
   // handle export order click
   const handleExportOrder = () => {
+    if (selectedOrders.length === 0) {
+      toast.error('Please select atleast One Order to export');
+      return;
+    }
     exportOrderMutation.mutate(selectedOrders);
   };
 
@@ -127,8 +138,19 @@ const SalesOrder = () => {
     <>
       {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
         <Wrapper>
-          <SubHeader name={'Sales'} className="z-10 bg-white">
+          <SubHeader
+            name={'Sales'}
+            className="sticky top-0 z-10 flex items-center justify-between bg-white"
+          >
             <div className="flex items-center justify-center gap-4">
+              <Button
+                onClick={handleExportOrder}
+                variant="outline"
+                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                size="sm"
+              >
+                <Upload size={14} />
+              </Button>
               <Button
                 onClick={() => setIsCreatingSales(true)}
                 className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
@@ -137,43 +159,56 @@ const SalesOrder = () => {
                 <PlusCircle size={16} />
                 Offer
               </Button>
-
-              <Button
-                disabled={selectedOrders.length === 0}
-                onClick={() => {
-                  handleExportOrder();
-                  // exportTableToExcel('sale-orders', 'sales_list');
-                }}
-                variant="outline"
-                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                size="sm"
-              >
-                <Upload size={16} />
-              </Button>
             </div>
           </SubHeader>
+          <section>
+            <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
+              <section className="sticky top-14 z-10 bg-white">
+                <TabsList className="border">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                  <TabsTrigger value="bidRecieved">Bid Recieved</TabsTrigger>
+                  <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
+                </TabsList>
+              </section>
 
-          {isLoading && <Loading />}
+              <TabsContent value="all">
+                {isLoadingSales && <Loading />}
+                {!isLoadingSales &&
+                  (allSales && allSales?.length > 0 ? (
+                    <DataTable
+                      id={'sale-orders'}
+                      columns={SalesColumns}
+                      onRowClick={onRowClick}
+                      data={allSales}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={SaleEmptyStageData.heading}
+                      desc={SaleEmptyStageData.desc}
+                      subHeading={SaleEmptyStageData.subHeading}
+                      subItems={SaleEmptyStageData.subItems}
+                    />
+                  ))}
+              </TabsContent>
 
-          {!isLoading &&
-            (data && data?.length > 0 ? (
-              <DataTable
-                id={'sale-orders'}
-                columns={SalesColumns}
-                onRowClick={onRowClick}
-                data={data}
-              />
-            ) : (
-              <EmptyStageComponent
-                heading={SaleEmptyStageData.heading}
-                desc={SaleEmptyStageData.desc}
-                subHeading={SaleEmptyStageData.subHeading}
-                subItems={SaleEmptyStageData.subItems}
-              />
-            ))}
+              <TabsContent value="pending">
+                Payment Pending Data ...{' '}
+              </TabsContent>
+
+              <TabsContent value="bidRecieved">
+                Bid Recieved Data ...
+              </TabsContent>
+
+              <TabsContent value="unconfirmed">
+                Unconfirmed Data ...{' '}
+              </TabsContent>
+            </Tabs>
+          </section>
         </Wrapper>
       )}
 
+      {/* create order component */}
       {isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
         <CreateOrder
           type="sales"
@@ -186,6 +221,7 @@ const SalesOrder = () => {
         />
       )}
 
+      {/* create invoice component */}
       {isCreatingInvoice && !isCreatingSales && !isEditingOrder && (
         <CreateOrder
           type="sales"
@@ -196,6 +232,7 @@ const SalesOrder = () => {
         />
       )}
 
+      {/* editOrder Component */}
       {isEditingOrder && !isCreatingSales && !isCreatingInvoice && (
         <EditOrder
           type="sales"
