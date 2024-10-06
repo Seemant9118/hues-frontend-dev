@@ -1,6 +1,7 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
+import FilterModal from '@/components/orders/FilterModal';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -143,6 +144,8 @@ const SalesOrder = () => {
             className="sticky top-0 z-10 flex items-center justify-between bg-white"
           >
             <div className="flex items-center justify-center gap-4">
+              <FilterModal />
+
               <Button
                 onClick={handleExportOrder}
                 variant="outline"
@@ -151,6 +154,7 @@ const SalesOrder = () => {
               >
                 <Upload size={14} />
               </Button>
+
               <Button
                 onClick={() => setIsCreatingSales(true)}
                 className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
