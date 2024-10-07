@@ -6,6 +6,7 @@ import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +19,11 @@ import { useQuery } from '@tanstack/react-query';
 import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
-export const usePurchaseColumns = (setIsEditingOrder, setOrderId) => {
+export const usePurchaseColumns = (
+  setIsEditingOrder,
+  setOrderId,
+  setSelectedOrders,
+) => {
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -28,29 +33,79 @@ export const usePurchaseColumns = (setIsEditingOrder, setOrderId) => {
     select: (res) => res.data.data,
   });
 
+  // Function to get customer name from clients list
+  const getCustomerName = (sellerEnterpriseId) => {
+    const vendor = vendors?.find(
+      (vendorData) => vendorData?.vendor?.id === sellerEnterpriseId,
+    );
+
+    return vendor?.vendor?.name !== null
+      ? vendor?.vendor?.name
+      : vendor?.invitation?.userDetails?.name;
+  };
+
+  // Function to handle row selection
+  const handleRowSelection = (isSelected, row) => {
+    const customerName = getCustomerName(row.original.sellerEnterpriseId);
+    const orderWithCustomer = { ...row.original, customerName };
+
+    if (isSelected) {
+      setSelectedOrders((prev) => [...prev, orderWithCustomer]);
+    } else {
+      setSelectedOrders((prev) =>
+        prev.filter((order) => order.id !== row.original.id),
+      );
+    }
+  };
+
+  // Function to handle "Select All" functionality
+  const handleSelectAll = (isAllSelected, rows) => {
+    if (isAllSelected) {
+      const allOrders = rows.map((row) => {
+        const customerName = getCustomerName(row.original.sellerEnterpriseId);
+        return { ...row.original, customerName };
+      });
+      setSelectedOrders(allOrders);
+    } else {
+      setSelectedOrders([]); // Clear all selections
+    }
+  };
+
   return [
-    // {
-    //   id: 'select',
-    //   header: ({ table }) => (
-    //     <Checkbox
-    //       checked={
-    //         table.getIsAllPageRowsSelected() ||
-    //         (table.getIsSomePageRowsSelected() && 'indeterminate')
-    //       }
-    //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-    //       aria-label="Select all"
-    //     />
-    //   ),
-    //   cell: ({ row }) => (
-    //     <Checkbox
-    //       checked={row.getIsSelected()}
-    //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-    //       aria-label="Select row"
-    //     />
-    //   ),
-    //   enableSorting: false,
-    //   enableHiding: false,
-    // },
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => {
+            table.toggleAllPageRowsSelected(!!value);
+            handleSelectAll(!!value, table.getRowModel().rows);
+          }}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <div
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click from being triggered
+          }}
+        >
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+              handleRowSelection(!!value, row);
+            }}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: 'referenceNumber',
       header: ({ column }) => (
@@ -74,17 +129,8 @@ export const usePurchaseColumns = (setIsEditingOrder, setOrderId) => {
         <DataTableColumnHeader column={column} title="VENDORS" />
       ),
       cell: ({ row }) => {
-        const vendor = vendors?.find(
-          (vendorData) =>
-            vendorData?.vendor?.id === row.original.sellerEnterpriseId,
-        );
-        return (
-          <div>
-            {vendor?.vendor?.name !== null
-              ? vendor?.vendor?.name
-              : vendor?.invitation?.userDetails?.name}
-          </div>
-        );
+        const { sellerEnterpriseId } = row.original;
+        return <div>{getCustomerName(sellerEnterpriseId)}</div>;
       },
     },
     {

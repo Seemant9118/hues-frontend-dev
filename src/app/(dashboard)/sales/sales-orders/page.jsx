@@ -143,7 +143,7 @@ const SalesOrder = () => {
             name={'Sales'}
             className="sticky top-0 z-10 flex items-center justify-between bg-white"
           >
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-3">
               <FilterModal />
 
               <Button
@@ -160,7 +160,7 @@ const SalesOrder = () => {
                 className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                <PlusCircle size={16} />
+                <PlusCircle size={14} />
                 Offer
               </Button>
             </div>
