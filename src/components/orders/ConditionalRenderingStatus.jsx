@@ -19,6 +19,30 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBG = '#288AF91A';
       statusBorder = '#288AF9';
       break;
+    case 'OFFER_SENT':
+      statusText = 'Offer sent';
+      statusColor = '#DD9745';
+      statusBG = '#DD97451A';
+      statusBorder = '#DD9745';
+      break;
+    case 'OFFER_RECEIVED':
+      statusText = 'Offer received';
+      statusColor = '#DD9745';
+      statusBG = '#DD97451A';
+      statusBorder = '#DD9745';
+      break;
+    case 'BID_SENT':
+      statusText = 'Bid sent';
+      statusColor = '#DD9745';
+      statusBG = '#DD97451A';
+      statusBorder = '#DD9745';
+      break;
+    case 'BID_RECEIVED':
+      statusText = 'Bid received';
+      statusColor = '#DD9745';
+      statusBG = '#DD97451A';
+      statusBorder = '#DD9745';
+      break;
     case 'NEGOTIATION':
       statusText = 'Negotiation';
       statusColor = '#F8BA05';

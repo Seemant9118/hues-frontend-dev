@@ -255,7 +255,9 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   // multiStatus components
   const multiStatus = (
     <div className="flex gap-2">
-      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.sellerData?.orderStatus}
+      />
       <ConditionalRenderingStatus
         status={orderDetails?.metaData?.payment?.status}
       />

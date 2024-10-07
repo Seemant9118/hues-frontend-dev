@@ -183,7 +183,13 @@ const NegotiationComponent = ({
   // multiStatus components
   const multiStatus = (
     <div className="flex gap-2">
-      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      <ConditionalRenderingStatus
+        status={
+          pageIsSales
+            ? orderDetails?.metaData?.sellerData?.orderStatus
+            : orderDetails?.metaData?.buyerData?.orderStatus
+        }
+      />
       <ConditionalRenderingStatus
         status={orderDetails?.metaData?.payment?.status}
       />

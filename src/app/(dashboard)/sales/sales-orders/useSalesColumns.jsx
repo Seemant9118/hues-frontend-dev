@@ -135,16 +135,16 @@ export const useSalesColumns = (
       },
     },
     {
-      accessorKey: 'negotiationStatus',
+      accessorKey: 'status',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="STATUS" />
       ),
       cell: ({ row }) => {
-        const status = row.original.negotiationStatus;
+        const sellerStatus = row.original?.metaData?.sellerData?.orderStatus;
         const paymentStatus = row.original?.metaData?.payment?.status;
         return (
           <div className="flex gap-2">
-            <ConditionalRenderingStatus status={status} />
+            <ConditionalRenderingStatus status={sellerStatus} />
             <ConditionalRenderingStatus status={paymentStatus} />
           </div>
         );

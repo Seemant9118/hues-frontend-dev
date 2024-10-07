@@ -160,7 +160,9 @@ const ViewOrder = () => {
 
   const multiStatus = (
     <div className="flex gap-2">
-      <ConditionalRenderingStatus status={orderDetails?.negotiationStatus} />
+      <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.buyerData?.orderStatus}
+      />
       <ConditionalRenderingStatus
         status={orderDetails?.metaData?.payment?.status}
       />
