@@ -12,6 +12,7 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import MultiSelect from '../ui/MultiSelect';
 import { RangeSlider } from '../ui/RangeSlider';
 import {
   Select,
@@ -21,39 +22,66 @@ import {
   SelectValue,
 } from '../ui/select';
 
-const FilterModal = () => {
+const FilterModal = ({ setFilterData }) => {
+  const statusLists = [
+    { value: 'BID_SENT', label: 'Bid sent' },
+    { value: 'BID_RECEIVED', label: 'Bid received' },
+    { value: 'OFFER_SENT', label: 'Offer sent' },
+    { value: 'OFFER_RECEIVED', label: 'Offer received' },
+    { value: 'ACCEPTED', label: 'Accepted' },
+    { value: 'REJECTED', label: 'Rejected' },
+    { value: 'WITHDRAWN', label: 'Withdrawn' },
+  ];
+
   const [isOpen, setIsOpen] = useState(false);
-  const [filterData, setFilterData] = useState({
-    fromDate: null,
-    toDate: null,
-    selectedRangeValues: [0, 1000000],
-    status: '',
-    client: '',
-    invoiceGenerated: '',
+
+  const [filters, setFilters] = useState({
+    dateRange: {
+      fromDate: '',
+      toDate: '',
+    },
+    amountRange: {
+      minAmount: 0,
+      maxAmount: 1000000,
+    },
+    status: [],
+    clientIds: [],
+    invoiceStatus: '',
   });
 
   const handleRangeChange = (newValues) => {
-    setFilterData((prev) => ({
+    setFilters((prev) => ({
       ...prev,
-      selectedRangeValues: newValues, // Update in filterData
+      amountRange: {
+        minAmount: newValues[0], // Update minAmount
+        maxAmount: newValues[1], // Update maxAmount
+      },
     }));
   };
 
   //   hanlde close modal fn
   const onClose = () => {
-    setFilterData({
-      fromDate: null,
-      toDate: null,
-      selectedRangeValues: [0, 1000000],
-      status: '',
-      client: '',
-      invoiceGenerated: '',
+    setFilters({
+      dateRange: {
+        fromDate: '',
+        toDate: '',
+      },
+      amountRange: {
+        minAmount: 0,
+        maxAmount: 1000000,
+      },
+      status: [],
+      clientIds: [],
+      invoiceStatus: '',
     });
     setIsOpen(false);
   };
 
   const handleSubmit = () => {
-    // console.log(filterData);
+    setFilterData((prevFilterData) => ({
+      ...prevFilterData,
+      ...filters, // Merge filters into the existing filterData
+    }));
   };
 
   return (
@@ -78,10 +106,13 @@ const FilterModal = () => {
               <Label className="text-[#A5ABBD]">Select Date</Label>
               <span
                 onClick={() => {
-                  setFilterData((prev) => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    fromDate: null,
-                    toDate: null,
+                    dateRange: {
+                      ...prev.dateRange,
+                      fromDate: '',
+                      toDate: '',
+                    },
                   }));
                 }}
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
@@ -92,9 +123,15 @@ const FilterModal = () => {
             <div className="grid grid-cols-2 gap-2">
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={filterData.fromDate}
+                  selected={filters?.dateRange?.fromDate}
                   onChange={(date) =>
-                    setFilterData((prev) => ({ ...prev, fromDate: date }))
+                    setFilters((prev) => ({
+                      ...prev,
+                      dateRange: {
+                        ...prev.dateRange,
+                        fromDate: date,
+                      },
+                    }))
                   }
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="top-right"
@@ -104,9 +141,15 @@ const FilterModal = () => {
               </div>
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={filterData.toDate}
+                  selected={filters?.dateRange?.toDate}
                   onChange={(date) =>
-                    setFilterData((prev) => ({ ...prev, toDate: date }))
+                    setFilters((prev) => ({
+                      ...prev,
+                      dateRange: {
+                        ...prev.dateRange,
+                        toDate: date,
+                      },
+                    }))
                   }
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="top-right"
@@ -123,9 +166,13 @@ const FilterModal = () => {
               <Label className="text-[#A5ABBD]">Select Amount Range</Label>
               <span
                 onClick={() => {
-                  setFilterData((prev) => ({
+                  setFilters((prev) => ({
                     ...prev,
-                    selectedRangeValues: [0, 1000000],
+                    amountRange: {
+                      ...prev.amountRange,
+                      minAmount: 0,
+                      maxAmount: 1000000,
+                    },
                   }));
                 }}
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
@@ -140,14 +187,14 @@ const FilterModal = () => {
                 <Input
                   className="pl-6 font-semibold"
                   type="number"
-                  value={filterData.selectedRangeValues[0]}
+                  value={filters?.amountRange?.minAmount}
                   onChange={(e) =>
-                    setFilterData((prev) => ({
+                    setFilters((prev) => ({
                       ...prev,
-                      selectedRangeValues: [
-                        Number(e.target.value),
-                        filterData.selectedRangeValues[1],
-                      ],
+                      amountRange: {
+                        ...prev.amountRange,
+                        minAmount: Number(e.target.value), // Update minAmount with the new value
+                      },
                     }))
                   }
                   placeholder="Min"
@@ -160,14 +207,14 @@ const FilterModal = () => {
                 <Input
                   className="pl-6 font-semibold"
                   type="number"
-                  value={filterData.selectedRangeValues[1]}
+                  value={filters?.amountRange?.maxAmount}
                   onChange={(e) =>
-                    setFilterData((prev) => ({
+                    setFilters((prev) => ({
                       ...prev,
-                      selectedRangeValues: [
-                        filterData.selectedRangeValues[0],
-                        Number(e.target.value),
-                      ],
+                      amountRange: {
+                        ...prev.amountRange,
+                        maxAmount: Number(e.target.value), // Update minAmount with the new value
+                      },
                     }))
                   }
                   placeholder="Max"
@@ -183,7 +230,10 @@ const FilterModal = () => {
               </span>
               {/* RangeSlider component */}
               <RangeSlider
-                value={filterData.selectedRangeValues}
+                value={[
+                  filters?.amountRange?.minAmount,
+                  filters?.amountRange?.maxAmount,
+                ]}
                 onValueChange={handleRangeChange} // Handle slider change
                 max={1000000} // Adjust according to your range scale (1,000,000)
                 step={1}
@@ -191,68 +241,35 @@ const FilterModal = () => {
             </div>
           </div>
 
-          {/* select status */}
+          {/* select status : multi select */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
               <Label className="text-[#A5ABBD]">Select Status</Label>
               <span
                 onClick={() =>
-                  setFilterData((prev) => ({ ...prev, status: '' }))
+                  setFilterData((prev) => ({ ...prev, status: [] }))
                 }
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
                 Clear
               </span>
             </span>
-            <Select
-              value={filterData.status}
-              onValueChange={(value) => {
-                setFilterData((prev) => ({ ...prev, status: value }));
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  className="text-[#A5ABBD]"
-                  placeholder="Select status"
-                />
-              </SelectTrigger>
-              <SelectContent className="font-semibold">
-                <SelectItem value="status1">status1</SelectItem>
-                <SelectItem value="status2">status2</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* select client */}
-          <div className="flex flex-col gap-2">
-            <span className="flex justify-between">
-              <Label className="text-[#A5ABBD]">Select Client</Label>
-              <span
-                onClick={() =>
-                  setFilterData((prev) => ({ ...prev, client: '' }))
-                }
-                className="cursor-pointer text-xs font-bold text-primary hover:underline"
-              >
-                Clear
-              </span>
-            </span>
-            <Select
-              value={filterData.client}
-              onValueChange={(value) => {
-                setFilterData((prev) => ({ ...prev, client: value }));
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  className="text-[#A5ABBD]"
-                  placeholder="Select Client"
-                />
-              </SelectTrigger>
-              <SelectContent className="font-semibold">
-                <SelectItem value="client1">client1</SelectItem>
-                <SelectItem value="client2">client2</SelectItem>
-              </SelectContent>
-            </Select>
+            <MultiSelect
+              options={statusLists}
+              onValueChange={setFilters}
+              defaultValue={filters?.status}
+              placeholder="Select Status"
+              variant="inverted"
+              animation={2}
+              maxCount={3}
+            />
+            <div className="mt-4">
+              <ul className="list-inside list-disc">
+                {filters?.status?.map((status) => (
+                  <li key={status}>{status}</li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* select invoice generated */}
@@ -269,17 +286,17 @@ const FilterModal = () => {
               </span>
             </span>
             <Select
-              value={filterData.invoiceGenerated}
+              value={filters?.invoiceStatus}
               onValueChange={(value) => {
-                setFilterData((prev) => ({ ...prev, invoiceGenerated: value }));
+                setFilters((prev) => ({ ...prev, invoiceStatus: value }));
               }}
             >
               <SelectTrigger>
                 <SelectValue className="text-[#A5ABBD]" placeholder="Select" />
               </SelectTrigger>
               <SelectContent className="font-semibold">
-                <SelectItem value="partially">partially</SelectItem>
-                <SelectItem value="complete">complete</SelectItem>
+                <SelectItem value="PARTIAL">Partially</SelectItem>
+                <SelectItem value="INVOICED">Invoiced</SelectItem>
               </SelectContent>
             </Select>
           </div>

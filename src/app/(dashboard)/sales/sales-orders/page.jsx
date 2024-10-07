@@ -14,7 +14,7 @@ import {
   exportOrder,
   GetSales,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useSalesColumns } from './useSalesColumns';
 
@@ -43,11 +43,19 @@ const SalesOrder = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [tab, setTab] = useState('all');
+  const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
+  const [paginationData, setPaginationData] = useState([]);
+  const [allSales, setAllSales] = useState([]);
+
+  const [filterData, setFilterData] = useState({
+    page: 1,
+    limit: 10,
+  });
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -93,11 +101,49 @@ const SalesOrder = () => {
     router.push(`/sales/sales-orders/${row.id}`);
   };
 
-  const { isLoading: isLoadingSales, data: allSales } = useQuery({
-    queryKey: [orderApi.getSales.endpointKey],
-    queryFn: () => GetSales(enterpriseId),
-    select: (res) => res.data.data,
+  const getSalesMutation = useMutation({
+    mutationKey: [orderApi.getSales.endpointKey],
+    mutationFn: ({ id, data }) => GetSales(id, data), // destructuring the payload to pass correct arguments
+    onSuccess: (data) => {
+      setPaginationData(data.data.data);
+      setAllSales(data.data.data.data);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
   });
+
+  useEffect(() => {
+    if (enterpriseId) {
+      if (tab === 'pending') {
+        setFilterData({
+          page: 1,
+          limit: 10,
+          paymentStatus: 'NOT_PAID',
+        });
+      } else if (tab === 'bidRecieved') {
+        setFilterData({
+          page: 1,
+          limit: 10,
+          bidReceived: true,
+        });
+      } else {
+        setFilterData({
+          page: 1,
+          limit: 10,
+        }); // Reset or set other defaults if needed
+      }
+    }
+  }, [tab, enterpriseId]);
+
+  useEffect(() => {
+    if (enterpriseId) {
+      getSalesMutation.mutate({
+        id: enterpriseId,
+        data: filterData,
+      });
+    }
+  }, [filterData, enterpriseId, isOrderCreationSuccess, tab]);
 
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
@@ -144,7 +190,7 @@ const SalesOrder = () => {
             className="sticky top-0 z-10 flex items-center justify-between bg-white"
           >
             <div className="flex items-center justify-center gap-3">
-              <FilterModal />
+              <FilterModal setFilterData={setFilterData} />
 
               <Button
                 onClick={handleExportOrder}
@@ -177,14 +223,17 @@ const SalesOrder = () => {
               </section>
 
               <TabsContent value="all">
-                {isLoadingSales && <Loading />}
-                {!isLoadingSales &&
+                {getSalesMutation.isPending && <Loading />}
+                {!getSalesMutation.isPending &&
                   (allSales && allSales?.length > 0 ? (
                     <DataTable
                       id={'sale-orders'}
                       columns={SalesColumns}
                       onRowClick={onRowClick}
                       data={allSales}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      paginationData={paginationData}
                     />
                   ) : (
                     <EmptyStageComponent
@@ -197,11 +246,49 @@ const SalesOrder = () => {
               </TabsContent>
 
               <TabsContent value="pending">
-                Payment Pending Data ...{' '}
+                {getSalesMutation.isPending && <Loading />}
+                {!getSalesMutation.isPending &&
+                  (allSales && allSales?.length > 0 ? (
+                    <DataTable
+                      id={'sale-orders'}
+                      columns={SalesColumns}
+                      onRowClick={onRowClick}
+                      data={allSales}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={SaleEmptyStageData.heading}
+                      desc={SaleEmptyStageData.desc}
+                      subHeading={SaleEmptyStageData.subHeading}
+                      subItems={SaleEmptyStageData.subItems}
+                    />
+                  ))}
               </TabsContent>
 
               <TabsContent value="bidRecieved">
-                Bid Recieved Data ...
+                {getSalesMutation.isPending && <Loading />}
+                {!getSalesMutation.isPending &&
+                  (allSales && allSales?.length > 0 ? (
+                    <DataTable
+                      id={'sale-orders'}
+                      columns={SalesColumns}
+                      onRowClick={onRowClick}
+                      data={allSales}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={SaleEmptyStageData.heading}
+                      desc={SaleEmptyStageData.desc}
+                      subHeading={SaleEmptyStageData.subHeading}
+                      subItems={SaleEmptyStageData.subItems}
+                    />
+                  ))}
               </TabsContent>
 
               <TabsContent value="unconfirmed">
@@ -222,6 +309,7 @@ const SalesOrder = () => {
           setIsCreatingSales={setIsCreatingSales}
           setIsCreatingInvoice={setIsCreatingInvoice}
           onCancel={() => setIsCreatingSales(false)}
+          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
 
@@ -245,6 +333,7 @@ const SalesOrder = () => {
           isOrder="order"
           orderId={orderId}
           onCancel={() => setIsEditingOrder(false)}
+          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
     </>

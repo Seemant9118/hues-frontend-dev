@@ -15,28 +15,42 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 
-export function DataTable({ columns, data, onRowClick, id }) {
+export function DataTable({
+  columns,
+  data,
+  onRowClick,
+  id,
+  filterData,
+  setFilterData,
+  paginationData,
+}) {
+  const [pagination, setPagination] = React.useState({
+    pageIndex: paginationData?.currentPage,
+    pageSize: paginationData?.totalPages,
+  });
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      pagination,
+      sorting,
+      columnFilters,
+    },
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
+    onPaginationChange: setPagination,
+    // getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
   });
 
   return (
@@ -95,7 +109,11 @@ export function DataTable({ columns, data, onRowClick, id }) {
         </Table>
       </div>
 
-      {data.length > 10 && <DataTablePagination table={table} />}
+      <DataTablePagination
+        table={table}
+        filterData={filterData}
+        setFilterData={setFilterData}
+      />
     </div>
   );
 }

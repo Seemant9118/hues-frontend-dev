@@ -5,12 +5,12 @@ export const CreateOrderService = (data) => {
   return APIinstance.post(orderApi.createOrder.endpoint, data);
 };
 
-export const GetSales = (id) => {
-  return APIinstance.get(`${orderApi.getSales.endpoint}${id}`);
+export const GetSales = (id, data) => {
+  return APIinstance.post(`${orderApi.getSales.endpoint}${id}`, data);
 };
 
-export const GetPurchases = (id) => {
-  return APIinstance.get(`${orderApi.getPurchases.endpoint}${id}`);
+export const GetPurchases = (id, data) => {
+  return APIinstance.post(`${orderApi.getPurchases.endpoint}${id}`, data);
 };
 
 export const OrderDetails = (id) => {

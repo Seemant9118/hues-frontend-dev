@@ -51,6 +51,7 @@ const CreateOrder = ({
   isOrder,
   setIsCreatingSales,
   setIsCreatingInvoice,
+  setIsOrderCreationSuccess,
 }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -218,12 +219,7 @@ const CreateOrder = ({
           : 'Purchase Order Created Successfully',
       );
       onCancel();
-      queryClient.invalidateQueries({
-        queryKey:
-          cta === 'offer'
-            ? [orderApi.getSales.endpointKey]
-            : [orderApi.getPurchases.endpointKey],
-      });
+      setIsOrderCreationSuccess((prev) => !prev);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -236,6 +232,7 @@ const CreateOrder = ({
     onSuccess: () => {
       toast.success('Order Created Successfully');
       onCancel();
+      setIsOrderCreationSuccess((prev) => !prev);
       queryClient.invalidateQueries({
         queryKey: [orderApi.getSales.endpointKey],
       });

@@ -13,7 +13,7 @@ import {
   exportOrder,
   GetPurchases,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { usePurchaseColumns } from './usePurchaseColumns';
 
@@ -40,11 +40,17 @@ const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
 const PurchaseOrders = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-
+  const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
+  const [paginationData, setPaginationData] = useState([]);
+  const [allPurchase, setAllPurchase] = useState([]);
+  const [filterData, setFilterData] = useState({
+    page: 1,
+    limit: 10,
+  });
 
   const PurchaseEmptyStageData = {
     heading: `~"Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
@@ -84,11 +90,26 @@ const PurchaseOrders = () => {
     setSelectedOrders,
   );
 
-  const { isLoading, data } = useQuery({
-    queryKey: [orderApi.getPurchases.endpointKey],
-    queryFn: () => GetPurchases(enterpriseId),
-    select: (res) => res.data.data,
+  const purchaseMutation = useMutation({
+    mutationKey: [orderApi.getPurchases.endpointKey, enterpriseId],
+    mutationFn: ({ id, data }) => GetPurchases(id, data), // destructuring the payload to pass correct arguments
+    onSuccess: (data) => {
+      setPaginationData(data.data.data);
+      setAllPurchase(data.data.data.data);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
   });
+
+  useEffect(() => {
+    if (enterpriseId) {
+      purchaseMutation.mutate({
+        id: enterpriseId,
+        data: filterData,
+      });
+    }
+  }, [filterData, enterpriseId, isOrderCreationSuccess]);
 
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
@@ -154,15 +175,18 @@ const PurchaseOrders = () => {
             </div>
           </SubHeader>
 
-          {isLoading && <Loading />}
+          {purchaseMutation.isPending && <Loading />}
 
-          {!isLoading &&
-            (data && data?.length > 0 ? (
+          {!purchaseMutation.isPending &&
+            (allPurchase && allPurchase?.length > 0 ? (
               <DataTable
-                id={'sale-orders'}
+                id={'purchase-orders'}
                 columns={PurchaseColumns}
+                data={allPurchase}
                 onRowClick={onRowClick}
-                data={data}
+                filterData={filterData}
+                setFilterData={setFilterData}
+                paginationData={paginationData}
               />
             ) : (
               <EmptyStageComponent
@@ -184,6 +208,7 @@ const PurchaseOrders = () => {
           onSubmit={() => {
             setIsCreatingPurchase(false);
           }}
+          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
 
@@ -194,6 +219,7 @@ const PurchaseOrders = () => {
           cta="purchase"
           orderId={orderId}
           onCancel={() => setIsEditingOrder(false)}
+          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
     </>
