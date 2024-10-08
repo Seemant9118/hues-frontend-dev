@@ -7,6 +7,7 @@ import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -37,6 +38,9 @@ const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
   loading: () => <Loading />,
 });
 
+// macros
+const PAGE_LIMIT = 10;
+
 const PurchaseOrders = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -47,10 +51,15 @@ const PurchaseOrders = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState([]);
   const [allPurchase, setAllPurchase] = useState([]);
-  const [filterData, setFilterData] = useState({
-    page: 1,
-    limit: 10,
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterData, setFilterData] = useState(null);
+
+  const [tab, setTab] = useState('all');
+
+  // Function to handle tab change
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   const PurchaseEmptyStageData = {
     heading: `~"Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
@@ -94,8 +103,14 @@ const PurchaseOrders = () => {
     mutationKey: [orderApi.getPurchases.endpointKey, enterpriseId],
     mutationFn: ({ id, data }) => GetPurchases(id, data), // destructuring the payload to pass correct arguments
     onSuccess: (data) => {
+      const _newPurchaseData = data.data.data.data;
       setPaginationData(data.data.data);
-      setAllPurchase(data.data.data.data);
+
+      if (filterData) {
+        setAllPurchase(_newPurchaseData);
+      } else {
+        setAllPurchase([...allPurchase, ..._newPurchaseData]);
+      }
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
@@ -104,12 +119,42 @@ const PurchaseOrders = () => {
 
   useEffect(() => {
     if (enterpriseId) {
+      if (tab === 'pending') {
+        setFilterData({
+          paymentStatus: 'NOT_PAID',
+        });
+      } else if (tab === 'offerRecieved') {
+        setFilterData({
+          offerReceived: true,
+        });
+      } else {
+        setAllPurchase([]);
+        setCurrentPage(1);
+        setFilterData(null);
+      }
+    }
+  }, [tab, enterpriseId]);
+
+  useEffect(() => {
+    if (enterpriseId) {
+      let _reqFilters = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+      if (filterData) {
+        _reqFilters = {
+          ..._reqFilters,
+          ...filterData,
+        };
+      } else {
+        _reqFilters.page = currentPage;
+      }
       purchaseMutation.mutate({
         id: enterpriseId,
-        data: filterData,
+        data: _reqFilters,
       });
     }
-  }, [filterData, enterpriseId, isOrderCreationSuccess]);
+  }, [filterData, enterpriseId, isOrderCreationSuccess, currentPage]);
 
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
@@ -153,8 +198,6 @@ const PurchaseOrders = () => {
         <Wrapper>
           <SubHeader name={'Purchases'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-3">
-              <FilterModal />
-
               <Button
                 onClick={handleExportOrder}
                 variant="outline"
@@ -175,27 +218,93 @@ const PurchaseOrders = () => {
             </div>
           </SubHeader>
 
-          {purchaseMutation.isPending && <Loading />}
+          <section>
+            <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
+              <section className="sticky top-14 z-10 flex justify-between bg-white">
+                <TabsList className="border">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="offerRecieved">
+                    Offer Recieved
+                  </TabsTrigger>
+                  <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                </TabsList>
+                <FilterModal setFilterData={setFilterData} />
+              </section>
 
-          {!purchaseMutation.isPending &&
-            (allPurchase && allPurchase?.length > 0 ? (
-              <DataTable
-                id={'purchase-orders'}
-                columns={PurchaseColumns}
-                data={allPurchase}
-                onRowClick={onRowClick}
-                filterData={filterData}
-                setFilterData={setFilterData}
-                paginationData={paginationData}
-              />
-            ) : (
-              <EmptyStageComponent
-                heading={PurchaseEmptyStageData.heading}
-                desc={PurchaseEmptyStageData.desc}
-                subHeading={PurchaseEmptyStageData.subHeading}
-                subItems={PurchaseEmptyStageData.subItems}
-              />
-            ))}
+              <TabsContent value="all">
+                {purchaseMutation.isPending && <Loading />}
+
+                {!purchaseMutation.isPending &&
+                  (allPurchase && allPurchase?.length > 0 ? (
+                    <DataTable
+                      id={'purchase-orders'}
+                      columns={PurchaseColumns}
+                      data={allPurchase}
+                      onRowClick={onRowClick}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      setCurrentPage={setCurrentPage}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={PurchaseEmptyStageData.heading}
+                      desc={PurchaseEmptyStageData.desc}
+                      subHeading={PurchaseEmptyStageData.subHeading}
+                      subItems={PurchaseEmptyStageData.subItems}
+                    />
+                  ))}
+              </TabsContent>
+              <TabsContent value="offerRecieved">
+                {purchaseMutation.isPending && <Loading />}
+
+                {!purchaseMutation.isPending &&
+                  (allPurchase && allPurchase?.length > 0 ? (
+                    <DataTable
+                      id={'purchase-orders'}
+                      columns={PurchaseColumns}
+                      data={allPurchase}
+                      onRowClick={onRowClick}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      setCurrentPage={setCurrentPage}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={PurchaseEmptyStageData.heading}
+                      desc={PurchaseEmptyStageData.desc}
+                      subHeading={PurchaseEmptyStageData.subHeading}
+                      subItems={PurchaseEmptyStageData.subItems}
+                    />
+                  ))}
+              </TabsContent>
+              <TabsContent value="pending">
+                {purchaseMutation.isPending && <Loading />}
+
+                {!purchaseMutation.isPending &&
+                  (allPurchase && allPurchase?.length > 0 ? (
+                    <DataTable
+                      id={'purchase-orders'}
+                      columns={PurchaseColumns}
+                      data={allPurchase}
+                      onRowClick={onRowClick}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      setCurrentPage={setCurrentPage}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={PurchaseEmptyStageData.heading}
+                      desc={PurchaseEmptyStageData.desc}
+                      subHeading={PurchaseEmptyStageData.subHeading}
+                      subItems={PurchaseEmptyStageData.subItems}
+                    />
+                  ))}
+              </TabsContent>
+            </Tabs>
+          </section>
         </Wrapper>
       )}
       {isCreatingPurchase && !isEditingOrder && (

@@ -2,8 +2,11 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { APIinstance } from '@/services';
 
 // 1. get all debit notes
-export const getAllDebitNotes = (id) => {
-  return APIinstance.get(`${DebitNoteApi.getAllDebitNotes.endpoint}${id}`);
+export const getAllDebitNotes = ({ id, data }) => {
+  return APIinstance.post(
+    `${DebitNoteApi.getAllDebitNotes.endpoint}${id}`,
+    data,
+  );
 };
 
 // 2. accept debit & create credit notes

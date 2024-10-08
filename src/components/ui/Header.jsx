@@ -49,7 +49,7 @@ const Header = () => {
   });
 
   return (
-    <div className="flex items-center justify-between bg-white px-10 py-5 shadow-[0_4px_6px_0_#3288ED1A]">
+    <div className="flex items-center justify-between bg-white px-8 py-4 shadow-[0_4px_6px_0_#3288ED1A]">
       <Link href={'/'}>
         <Image
           src={'/hues_logo.png'}

@@ -8,8 +8,10 @@ export const createInvoiceForAcceptedOrder = (data) => {
   );
 };
 
-export const getInvoices = (id) => {
-  return APIinstance.get(`${invoiceApi.getInvoices.endpoint}${id}`);
+export const getInvoices = (id, page, limit) => {
+  return APIinstance.get(
+    `${invoiceApi.getInvoices.endpoint}${id}?page=${page}&limit=${limit}`,
+  );
 };
 
 export const getInvoice = (id) => {

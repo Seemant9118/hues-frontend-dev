@@ -18,7 +18,7 @@ import {
   getAllInvoices,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { Tabs } from '@radix-ui/react-tabs';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -33,6 +33,9 @@ import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
+
+// macros
+const PAGE_LIMIT = 10;
 
 const SalesInvoices = () => {
   const SaleEmptyStageData = {
@@ -67,8 +70,13 @@ const SalesInvoices = () => {
 
   const router = useRouter();
   const [tab, setTab] = useState('all');
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState([]); // invoices
+  const [debitNotes, setDebitNotes] = useState([]); // debitNotes
+  const [creditNotes, setCreditNotes] = useState([]); // debitNotes
   const [selectedInvoices, setSelectedInvoices] = useState([]);
+  const [paginationData, setPaginationData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterData, setFilterData] = useState(null);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -79,46 +87,141 @@ const SalesInvoices = () => {
     router.push(`/sales/sales-invoices/${row.id}`);
   };
 
+  // [INVOICES_FETCHING]
   // Mutation for fetching invoices
   const getInvoiceMutation = useMutation({
     mutationKey: [invoiceApi.getAllInvoices.endpointKey],
     mutationFn: getAllInvoices,
     onSuccess: (data) => {
-      setInvoices(data?.data?.data || []); // Ensure to avoid undefined issues
+      const _newInvoicesData = data.data.data.data;
+      setPaginationData(data.data.data);
+
+      if (filterData) {
+        setInvoices(_newInvoicesData);
+      } else {
+        setInvoices([...invoices, ..._newInvoicesData]);
+      }
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
-
-  const { data: debitNotesList, isLoading: debitNoteIsLoading } = useQuery({
-    queryKey: [DebitNoteApi.getAllDebitNotes.endpointKey, enterpriseId],
-    queryFn: () => getAllDebitNotes(enterpriseId),
-    enabled: tab === 'debitNote',
-    select: (debitNotesList) => debitNotesList.data.data,
-  });
-
-  const { data: creditNotesList, isLoading: creditNoteIsLoading } = useQuery({
-    queryKey: [CreditNoteApi.getAllCreditNotes.endpointKey, enterpriseId],
-    queryFn: () => getAllCreditNotes(enterpriseId),
-    enabled: tab === 'creditNote',
-    select: (creditNotesList) => creditNotesList.data.data,
-  });
-
-  // Effect to trigger the invoice fetching API call when component mounts or when enterpriseId changes
+  //  invoice condition for invoke
   useEffect(() => {
-    if (tab === 'all') {
+    if (enterpriseId) {
+      if (tab === 'pending') {
+        setFilterData({
+          pendingInvoiceNeeded: true,
+        });
+      } else {
+        setInvoices([]);
+        setCurrentPage(1);
+        setFilterData({
+          pendingInvoiceNeeded: false,
+        });
+      }
+    }
+  }, [tab, enterpriseId]);
+  // invoice inovke fn
+  useEffect(() => {
+    if (enterpriseId) {
+      let _reqFilters = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+      if (filterData) {
+        _reqFilters = {
+          ..._reqFilters,
+          ...filterData,
+        };
+      } else {
+        _reqFilters.page = currentPage;
+      }
       getInvoiceMutation.mutate({
         id: enterpriseId,
-        data: { pendingInvoiceNeeded: false },
-      });
-    } else if (tab === 'pending') {
-      getInvoiceMutation.mutate({
-        id: enterpriseId,
-        data: { pendingInvoiceNeeded: true },
+        data: _reqFilters,
       });
     }
-  }, [tab]);
+  }, [filterData, enterpriseId, currentPage]);
+
+  // [DEBIT_NOTES_FETCHING]
+  // Mutation for fetching debitNotes
+  const getDebitNotesMutation = useMutation({
+    mutationKey: [DebitNoteApi.getAllDebitNotes.endpointKey],
+    mutationFn: getAllDebitNotes,
+    onSuccess: (data) => {
+      const _newDebitNotesData = data.data.data.data;
+      setPaginationData(data.data.data);
+
+      if (filterData) {
+        setDebitNotes(_newDebitNotesData);
+      } else {
+        setDebitNotes([...debitNotes, ..._newDebitNotesData]);
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+  // debitNotes condition for invoke
+  useEffect(() => {
+    if (enterpriseId) {
+      let _reqFilters = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+      if (filterData) {
+        _reqFilters = {
+          ..._reqFilters,
+        };
+      } else {
+        _reqFilters.page = currentPage;
+      }
+      getDebitNotesMutation.mutate({
+        id: enterpriseId,
+        data: _reqFilters,
+      });
+    }
+  }, [filterData, enterpriseId, currentPage]);
+
+  // [CREDIT_NOTES_FETCHING]
+  const getCreditNotesMutation = useMutation({
+    mutationKey: [CreditNoteApi.getAllCreditNotes.endpointKey],
+    mutationFn: getAllCreditNotes,
+    onSuccess: (data) => {
+      const _newCreditNotesData = data.data.data.data;
+      setPaginationData(data.data.data);
+
+      if (filterData) {
+        setCreditNotes(_newCreditNotesData);
+      } else {
+        setCreditNotes([...debitNotes, ..._newCreditNotesData]);
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+  // creditNotes condition for invoke
+  useEffect(() => {
+    if (enterpriseId) {
+      let _reqFilters = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+      if (filterData) {
+        _reqFilters = {
+          ..._reqFilters,
+        };
+      } else {
+        _reqFilters.page = currentPage;
+      }
+      getCreditNotesMutation.mutate({
+        id: enterpriseId,
+        data: _reqFilters,
+      });
+    }
+  }, [filterData, enterpriseId, currentPage]);
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
   const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
@@ -196,6 +299,9 @@ const SalesInvoices = () => {
                   id={'sale-invoice'}
                   columns={invoiceColumns}
                   data={invoices}
+                  filterData={filterData}
+                  setFilterData={setFilterData}
+                  paginationData={paginationData}
                 />
               )}
               {!getInvoiceMutation.isPending && invoices?.length === 0 && (
@@ -214,21 +320,27 @@ const SalesInvoices = () => {
                   id={'sale-invoice'}
                   columns={invoiceColumns}
                   data={invoices}
+                  filterData={filterData}
+                  setFilterData={setFilterData}
+                  paginationData={paginationData}
                 />
               )}
             </TabsContent>
             <TabsContent value="debitNote">
-              {debitNoteIsLoading && <Loading />}
-              {!debitNoteIsLoading && debitNotesList?.length > 0 && (
+              {getDebitNotesMutation.isPending && <Loading />}
+              {!getDebitNotesMutation.isPending && debitNotes?.length > 0 && (
                 <DataTable
                   id={'sale-invoice-debits'}
                   columns={debitNotesColumns}
                   onRowClick={onRowClick}
-                  data={debitNotesList}
+                  data={debitNotes}
+                  filterData={filterData}
+                  setFilterData={setFilterData}
+                  paginationData={paginationData}
                 />
               )}
 
-              {!debitNoteIsLoading && debitNotesList?.length === 0 && (
+              {!getDebitNotesMutation.isPending && debitNotes?.length === 0 && (
                 <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p>No Debit Note Raised</p>
@@ -236,21 +348,25 @@ const SalesInvoices = () => {
               )}
             </TabsContent>
             <TabsContent value="creditNote">
-              {creditNoteIsLoading && <Loading />}
-              {!creditNoteIsLoading && creditNotesList?.length > 0 && (
+              {getCreditNotesMutation.isPending && <Loading />}
+              {!getCreditNotesMutation.isPending && creditNotes?.length > 0 && (
                 <DataTable
                   id={'sale-invoice-credits'}
                   columns={debitNotesColumns}
-                  data={creditNotesList}
+                  data={creditNotes}
+                  filterData={filterData}
+                  setFilterData={setFilterData}
+                  paginationData={paginationData}
                 />
               )}
 
-              {!creditNoteIsLoading && creditNotesList?.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No Credit Note Raised</p>
-                </div>
-              )}
+              {!getCreditNotesMutation.isPending &&
+                creditNotes.length === 0 && (
+                  <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>No Credit Note Raised</p>
+                  </div>
+                )}
             </TabsContent>
           </Tabs>
         </section>

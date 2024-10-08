@@ -12,7 +12,7 @@ import { Button } from '../ui/button';
 import { DataTable } from '../table/data-table';
 import { invoiceColumns } from './invoicesColumns';
 
-function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
+function PastInvoices({ setIsGenerateInvoice, orderDetails, filterData }) {
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
   const searchParams = useSearchParams();
@@ -23,12 +23,12 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   // api calling
   const { isLoading, data: invoicedDataList } = useQuery({
     queryKey: [invoiceApi.getInvoices.endpointKey, orderId],
-    queryFn: () => getInvoices(orderId),
+    queryFn: () => getInvoices(orderId, filterData.page, filterData.limit),
     select: (data) => data.data.data,
   });
 
   // Sort the invoicedDataList by createdAt in descending order : latest invoice shows first
-  const sortedInvoicedDataList = invoicedDataList?.sort(
+  const sortedInvoicedDataList = invoicedDataList?.data?.sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   );
 

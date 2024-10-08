@@ -7,8 +7,10 @@ export const createPayment = (data) => {
 };
 
 // 2.get payments list
-export const getPaymentsList = (id) => {
-  return APIinstance.post(`${paymentApi.getPaymentsList.endpoint}${id}`);
+export const getPaymentsList = (id, page, limit) => {
+  return APIinstance.post(
+    `${paymentApi.getPaymentsList.endpoint}${id}?page=${page}&limit=${limit}`,
+  );
 };
 
 // 3.get invoices for payments

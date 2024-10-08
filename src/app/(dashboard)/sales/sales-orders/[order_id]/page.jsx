@@ -66,7 +66,10 @@ const ViewOrder = () => {
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
-
+  const [filterData, setFilterData] = useState({
+    page: 1,
+    limit: 10,
+  });
   const [tab, setTab] = useState('overview');
 
   const onTabChange = (value) => {
@@ -317,12 +320,16 @@ const ViewOrder = () => {
                   <DataTable
                     columns={OrderColumns}
                     data={orderDetails?.orderItems}
+                    filterData={filterData}
+                    setFilterData={setFilterData}
                   ></DataTable>
                 </TabsContent>
                 <TabsContent value="invoices">
                   <PastInvoices
                     setIsGenerateInvoice={setIsGenerateInvoice}
                     orderDetails={orderDetails}
+                    filterData={filterData}
+                    setFilterData={setFilterData}
                   />
                 </TabsContent>
                 <TabsContent value="payment">
@@ -330,6 +337,8 @@ const ViewOrder = () => {
                     orderId={params.order_id}
                     orderDetails={orderDetails}
                     setIsRecordingPayment={setIsRecordingPayment}
+                    filterData={filterData}
+                    setFilterData={setFilterData}
                   />
                 </TabsContent>
                 <TabsContent value="timeline">

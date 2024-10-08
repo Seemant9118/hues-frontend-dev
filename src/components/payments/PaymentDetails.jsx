@@ -10,13 +10,18 @@ import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import { usePaymentColumns } from './paymentColumns';
 
-const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+const PaymentDetails = ({
+  orderId,
+  orderDetails,
+  setIsRecordingPayment,
+  filterData,
+}) => {
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
 
   const { data: paymentsList, isLoading } = useQuery({
     queryKey: [paymentApi.getPaymentsList.endpointKey, orderId],
-    queryFn: () => getPaymentsList(orderId), // Make sure you're passing the orderId correctly
+    queryFn: () => getPaymentsList(orderId, filterData.page, filterData.limit), // Make sure you're passing the orderId correctly
     enabled: !!orderId, // Ensure the query only runs if orderId is truthy
     select: (paymentsList) => paymentsList.data.data,
   });

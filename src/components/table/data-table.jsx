@@ -26,20 +26,18 @@ export function DataTable({
   id,
   filterData,
   setFilterData,
+  setCurrentPage,
   paginationData,
 }) {
-  const [pagination, setPagination] = React.useState({
-    pageIndex: paginationData?.currentPage,
-    pageSize: paginationData?.totalPages,
-  });
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
+  const [isFetching, setIsFetching] = React.useState(false); // To prevent multiple fetches
+  const containerRef = React.useRef(null);
 
   const table = useReactTable({
     data,
     columns,
     state: {
-      pagination,
       sorting,
       columnFilters,
     },
@@ -48,14 +46,52 @@ export function DataTable({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: setPagination,
-    // getPaginationRowModel: getPaginationRowModel(),
-    manualPagination: true,
   });
+
+  // Handle scroll event for infinite scrolling
+  const handleScroll = () => {
+    if (!containerRef.current || isFetching) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+
+    // Check if we are near the bottom (second last row)
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      // Update page in filterData (increase page number by 1)
+      if (paginationData.currentPage < paginationData.totalPages) {
+        setIsFetching(true);
+        /*  setFilterData((prevData) => ({
+          ...prevData,
+          page: prevData.page + 1,
+        })); */
+        setCurrentPage((prev) => prev + 1);
+      }
+
+      setTimeout(() => {
+        setIsFetching(false);
+      }, 1000); // Simulate a delay or await API call
+    }
+  };
+
+  // Add scroll event listener
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [isFetching]);
 
   return (
     <div>
-      <div className="rounded-[6px]">
+      <div
+        ref={containerRef}
+        className="scrollBarStyles max-h-[380px] overflow-y-auto rounded-[6px]"
+      >
         <Table id={id}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -109,11 +145,13 @@ export function DataTable({
         </Table>
       </div>
 
-      <DataTablePagination
-        table={table}
-        filterData={filterData}
-        setFilterData={setFilterData}
-      />
+      {data?.length > 0 && (
+        <DataTablePagination
+          table={table}
+          filterData={filterData}
+          setFilterData={setFilterData}
+        />
+      )}
     </div>
   );
 }

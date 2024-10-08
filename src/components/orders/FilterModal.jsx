@@ -1,7 +1,12 @@
 'use client';
 
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, ListFilter } from 'lucide-react';
-import React, { useState } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import DatePickers from '../ui/DatePickers';
 import {
@@ -12,33 +17,19 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import MultiSelect from '../ui/MultiSelect';
+import MultiSelects from '../ui/MultiSelects';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { RangeSlider } from '../ui/RangeSlider';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
 
-const FilterModal = ({ setFilterData }) => {
-  const statusLists = [
-    { value: 'BID_SENT', label: 'Bid sent' },
-    { value: 'BID_RECEIVED', label: 'Bid received' },
-    { value: 'OFFER_SENT', label: 'Offer sent' },
-    { value: 'OFFER_RECEIVED', label: 'Offer received' },
-    { value: 'ACCEPTED', label: 'Accepted' },
-    { value: 'REJECTED', label: 'Rejected' },
-    { value: 'WITHDRAWN', label: 'Withdrawn' },
-  ];
+const FilterModal = ({ tab, setFilterData }) => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isOpen, setIsOpen] = useState(false);
-
+  const [isFilteredApplied, setIsFilteredApplied] = useState(false);
   const [filters, setFilters] = useState({
     dateRange: {
       fromDate: '',
-      toDate: '',
+      toDate: new Date(),
     },
     amountRange: {
       minAmount: 0,
@@ -46,7 +37,7 @@ const FilterModal = ({ setFilterData }) => {
     },
     status: [],
     clientIds: [],
-    invoiceStatus: '',
+    invoiceStatus: null,
   });
 
   const handleRangeChange = (newValues) => {
@@ -64,7 +55,7 @@ const FilterModal = ({ setFilterData }) => {
     setFilters({
       dateRange: {
         fromDate: '',
-        toDate: '',
+        toDate: new Date(),
       },
       amountRange: {
         minAmount: 0,
@@ -74,13 +65,105 @@ const FilterModal = ({ setFilterData }) => {
       clientIds: [],
       invoiceStatus: '',
     });
+    setFilterData({
+      page: 1,
+      limit: 10,
+    });
+    setIsFilteredApplied(false);
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    onClose();
+  }, [tab]);
+
   const handleSubmit = () => {
+    const formattedFilters = {
+      ...filters,
+      dateRange: {
+        fromDate: filters.dateRange.fromDate
+          ? moment(filters.dateRange.fromDate).format('YYYY/MM/DD')
+          : null,
+        toDate: filters.dateRange.toDate
+          ? moment(filters.dateRange.toDate).format('YYYY/MM/DD')
+          : null,
+      },
+    };
     setFilterData((prevFilterData) => ({
       ...prevFilterData,
-      ...filters, // Merge filters into the existing filterData
+      ...formattedFilters, // Merge formatted filters into the existing filterData
+    }));
+    setIsFilteredApplied(true);
+    setIsOpen(false);
+  };
+
+  // options data: status
+  const option = [
+    { value: 'BID_SENT', label: 'Bid sent' },
+    { value: 'BID_RECEIVED', label: 'Bid received' },
+    { value: 'OFFER_SENT', label: 'Offer sent' },
+    { value: 'OFFER_RECEIVED', label: 'Offer received' },
+    { value: 'ACCEPTED', label: 'Accepted' },
+    { value: 'REJECTED', label: 'Rejected' },
+    { value: 'WITHDRAWN', label: 'Withdrawn' },
+  ];
+  // value : status
+  const valueStatus = filters.status.map((status) => ({
+    value: status,
+    label: option.find((opt) => opt.value === status)?.label,
+  }));
+  // hanlderChangeFn : status
+  const handleChangeForStatus = (value) => {
+    // Update filters with new status values
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      status: value ? value.map((item) => item.value) : [], // Map selected options to their values
+    }));
+  };
+
+  // get clients
+  const { data: clientData } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey],
+    queryFn: () => getClients(enterpriseId),
+    select: (res) => res.data.data,
+  });
+  // flatten array to get exact data
+  let formattedData = [];
+  if (clientData) {
+    formattedData = clientData.flatMap((user) => {
+      let userDetails;
+      if (user.client && user?.client?.name !== null) {
+        userDetails = { ...user.client };
+      } else {
+        userDetails = { ...user?.invitation?.userDetails };
+      }
+
+      return {
+        ...userDetails,
+        id: user.id,
+        invitationId: user.invitation?.id,
+        invitationStatus: user.invitation?.status,
+      };
+    });
+  }
+  // options data : clients
+  const updatedData = formattedData.map((item) => {
+    return {
+      value: item.id,
+      label: item.name,
+    };
+  });
+  // value : client
+  const valueClient = filters.clientIds.map((client) => ({
+    value: client,
+    label: updatedData.find((opt) => opt.value === client)?.label,
+  }));
+  // handlerChangeFn : clients
+  const handleChangeForClient = (value) => {
+    // Update filters with new status values
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      clientIds: value ? value.map((item) => item.value) : [], // Map selected options to their values
     }));
   };
 
@@ -89,10 +172,15 @@ const FilterModal = ({ setFilterData }) => {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+          className={
+            isFilteredApplied
+              ? 'border border-[#A5ABBD] font-bold text-[#288AF9] hover:bg-neutral-600/10'
+              : 'border border-[#A5ABBD] hover:bg-neutral-600/10'
+          }
           size="sm"
         >
           <ListFilter size={14} />
+          <span>Filter</span>
         </Button>
       </DialogTrigger>
 
@@ -111,7 +199,7 @@ const FilterModal = ({ setFilterData }) => {
                     dateRange: {
                       ...prev.dateRange,
                       fromDate: '',
-                      toDate: '',
+                      toDate: new Date(),
                     },
                   }));
                 }}
@@ -241,35 +329,44 @@ const FilterModal = ({ setFilterData }) => {
             </div>
           </div>
 
-          {/* select status : multi select */}
+          {/* select status : multi select  */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
               <Label className="text-[#A5ABBD]">Select Status</Label>
               <span
+                onClick={() => setFilters((prev) => ({ ...prev, status: [] }))}
+                className="cursor-pointer text-xs font-bold text-primary hover:underline"
+              >
+                Clear
+              </span>
+            </span>
+            <MultiSelects
+              placeholder="Select status..."
+              option={option}
+              value={valueStatus}
+              handleChange={handleChangeForStatus}
+            />
+          </div>
+
+          {/* select client : multi select */}
+          <div className="flex flex-col gap-2">
+            <span className="flex justify-between">
+              <Label className="text-[#A5ABBD]">Select Client</Label>
+              <span
                 onClick={() =>
-                  setFilterData((prev) => ({ ...prev, status: [] }))
+                  setFilters((prev) => ({ ...prev, clientIds: [] }))
                 }
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
                 Clear
               </span>
             </span>
-            <MultiSelect
-              options={statusLists}
-              onValueChange={setFilters}
-              defaultValue={filters?.status}
-              placeholder="Select Status"
-              variant="inverted"
-              animation={2}
-              maxCount={3}
+            <MultiSelects
+              placeholder="Select client..."
+              option={updatedData}
+              value={valueClient}
+              handleChange={handleChangeForClient}
             />
-            <div className="mt-4">
-              <ul className="list-inside list-disc">
-                {filters?.status?.map((status) => (
-                  <li key={status}>{status}</li>
-                ))}
-              </ul>
-            </div>
           </div>
 
           {/* select invoice generated */}
@@ -278,27 +375,32 @@ const FilterModal = ({ setFilterData }) => {
               <Label className="text-[#A5ABBD]">Invoice Generated</Label>
               <span
                 onClick={() =>
-                  setFilterData((prev) => ({ ...prev, invoiceGenerated: '' }))
+                  setFilters((prev) => ({ ...prev, invoiceStatus: '' }))
                 }
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
                 Clear
               </span>
             </span>
-            <Select
-              value={filters?.invoiceStatus}
+            <RadioGroup
+              className="flex gap-4"
+              value={filters.invoiceStatus}
               onValueChange={(value) => {
-                setFilters((prev) => ({ ...prev, invoiceStatus: value }));
+                setFilters((prevFilters) => ({
+                  ...prevFilters,
+                  invoiceStatus: value, // Update the invoiceGenerated field with the selected value
+                }));
               }}
             >
-              <SelectTrigger>
-                <SelectValue className="text-[#A5ABBD]" placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent className="font-semibold">
-                <SelectItem value="PARTIAL">Partially</SelectItem>
-                <SelectItem value="INVOICED">Invoiced</SelectItem>
-              </SelectContent>
-            </Select>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="true" id="true" />
+                <span className="text-sm">True</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="false" id="false" />
+                <span className="text-sm">False</span>
+              </div>
+            </RadioGroup>
           </div>
 
           {/* cta's */}
