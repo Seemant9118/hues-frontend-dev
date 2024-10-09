@@ -393,11 +393,11 @@ const FilterModal = ({ tab, setFilterData }) => {
               }}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="true" id="true" />
+                <RadioGroupItem value={true} id="true" />
                 <span className="text-sm">True</span>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="false" id="false" />
+                <RadioGroupItem value={false} id="false" />
                 <span className="text-sm">False</span>
               </div>
             </RadioGroup>

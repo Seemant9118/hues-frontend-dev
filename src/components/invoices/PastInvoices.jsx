@@ -1,5 +1,4 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { LocalStorageService } from '@/lib/utils';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation } from '@tanstack/react-query';
 import moment from 'moment';
@@ -18,7 +17,6 @@ import { invoiceColumns } from './invoicesColumns';
 const PAGE_LIMIT = 10;
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
   const searchParams = useSearchParams();
@@ -49,25 +47,23 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   });
 
   useEffect(() => {
-    if (enterpriseId) {
-      let _reqFilters = {
-        page: 1,
-        limit: PAGE_LIMIT,
+    let _reqFilters = {
+      page: 1,
+      limit: PAGE_LIMIT,
+    };
+    if (filterData) {
+      _reqFilters = {
+        ..._reqFilters,
+        ...filterData,
       };
-      if (filterData) {
-        _reqFilters = {
-          ..._reqFilters,
-          ...filterData,
-        };
-      } else {
-        _reqFilters.page = currentPage;
-      }
-      invoiceMutation.mutate({
-        id: enterpriseId,
-        data: _reqFilters,
-      });
+    } else {
+      _reqFilters.page = currentPage;
     }
-  }, [filterData, enterpriseId, currentPage]);
+    invoiceMutation.mutate({
+      id: orderId,
+      data: _reqFilters,
+    });
+  }, [filterData, currentPage]);
 
   // Sort the invoicedDataList by createdAt in descending order : latest invoice shows first
   const sortedInvoicedDataList = invoices?.sort(

@@ -18,6 +18,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { usePathname } from 'next/navigation';
 
 export function DataTable({
   columns,
@@ -29,6 +30,8 @@ export function DataTable({
   setCurrentPage,
   paginationData,
 }) {
+  const pathName = usePathname();
+  const isSales = pathName.includes('sales');
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [isFetching, setIsFetching] = React.useState(false); // To prevent multiple fetches
@@ -59,10 +62,6 @@ export function DataTable({
       // Update page in filterData (increase page number by 1)
       if (paginationData.currentPage < paginationData.totalPages) {
         setIsFetching(true);
-        /*  setFilterData((prevData) => ({
-          ...prevData,
-          page: prevData.page + 1,
-        })); */
         setCurrentPage((prev) => prev + 1);
       }
 
@@ -113,24 +112,40 @@ export function DataTable({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : () => {}
+              table.getRowModel().rows.map((row) => {
+                let isRead;
+                if (row.original?.readTracker) {
+                  if (isSales) {
+                    isRead = row.original?.readTracker?.sellerIsRead;
+                  } else {
+                    isRead = row.original?.readTracker?.buyerIsRead;
                   }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-xl shrink-0">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+                }
+
+                return (
+                  <TableRow
+                    className={
+                      isRead
+                        ? 'border-y border-[#A5ABBD33] bg-[#A5ABBD17]'
+                        : 'border-y border-[#A5ABBD33] font-semibold'
+                    }
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    onClick={
+                      onRowClick ? () => onRowClick(row.original) : () => {}
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="max-w-xl shrink-0">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell

@@ -1,6 +1,7 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import FilterModal from '@/components/orders/FilterModal';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -14,6 +15,7 @@ import {
   exportOrder,
   GetSales,
 } from '@/services/Orders_Services/Orders_Services';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { useMutation } from '@tanstack/react-query';
 import {
   DatabaseZap,
@@ -97,8 +99,23 @@ const SalesOrder = () => {
     setSelectedOrders,
   );
 
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   const onRowClick = (row) => {
-    router.push(`/sales/sales-orders/${row.id}`);
+    const isSalesOrderRead = row?.readTracker?.sellerIsRead;
+
+    if (isSalesOrderRead) {
+      router.push(`/sales/sales-orders/${row.id}`);
+    } else {
+      updateReadTrackerMutation.mutate(row.id);
+      router.push(`/sales/sales-orders/${row.id}`);
+    }
   };
 
   const getSalesMutation = useMutation({

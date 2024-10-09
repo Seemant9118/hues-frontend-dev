@@ -16,7 +16,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
-import { MoreVertical, Pencil } from 'lucide-react';
+import { Dot, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
 export const useSalesColumns = (
@@ -112,6 +112,16 @@ export const useSalesColumns = (
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ORDER ID" />
       ),
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isSaleRead = row.original?.readTracker?.sellerIsRead;
+        return (
+          <div className="flex items-center">
+            {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'createdAt',
@@ -121,7 +131,7 @@ export const useSalesColumns = (
       cell: ({ row }) => {
         const { createdAt } = row.original;
         const date = moment(createdAt).format('DD-MM-YYYY');
-        return <div className="text-[#A5ABBD]">{date}</div>;
+        return <div>{date}</div>;
       },
     },
     {
@@ -163,7 +173,7 @@ export const useSalesColumns = (
           currency: 'INR',
         }).format(amount);
 
-        return <div className="font-medium">{formatted}</div>;
+        return <div>{formatted}</div>;
       },
     },
     {

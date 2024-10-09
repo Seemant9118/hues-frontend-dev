@@ -1,5 +1,4 @@
 import { paymentApi } from '@/api/payments/payment_api';
-import { LocalStorageService } from '@/lib/utils';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
 import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
@@ -16,10 +15,8 @@ import { usePaymentColumns } from './paymentColumns';
 const PAGE_LIMIT = 10;
 
 const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
-
   const [paginationData, setPaginationData] = useState([]);
   const [payments, setPayments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +41,7 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   });
 
   useEffect(() => {
-    if (enterpriseId) {
+    if (orderId) {
       let _reqFilters = {
         page: 1,
         limit: PAGE_LIMIT,
@@ -58,11 +55,11 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         _reqFilters.page = currentPage;
       }
       getPaymentsMutation.mutate({
-        id: enterpriseId,
+        id: orderId,
         data: _reqFilters,
       });
     }
-  }, [filterData, enterpriseId, currentPage]);
+  }, [filterData, orderId, currentPage]);
 
   const paymentColumns = usePaymentColumns();
 

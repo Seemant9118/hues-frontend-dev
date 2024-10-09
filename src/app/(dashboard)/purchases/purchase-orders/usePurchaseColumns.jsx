@@ -16,7 +16,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
-import { MoreVertical, Pencil } from 'lucide-react';
+import { Dot, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
 export const usePurchaseColumns = (
@@ -111,6 +111,16 @@ export const usePurchaseColumns = (
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="PURCHASE ID" />
       ),
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isPurchaseRead = row.original?.readTracker?.buyerIsRead;
+        return (
+          <div className="flex items-center">
+            {!isPurchaseRead && <Dot size={32} className="text-[#3288ED]" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'createdAt',
@@ -163,7 +173,7 @@ export const usePurchaseColumns = (
           currency: 'INR',
         }).format(amount);
 
-        return <div className="font-medium">{formatted}</div>;
+        return <div>{formatted}</div>;
       },
     },
     {

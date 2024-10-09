@@ -67,7 +67,7 @@ export const useSalesOrderColumns = (status) => {
           style: 'currency',
           currency: 'INR',
         }).format(isNegotiation ? negotiateAmt : amount);
-        return <div className="font-medium">{formatted}</div>;
+        return <div>{formatted}</div>;
       },
     },
   ];

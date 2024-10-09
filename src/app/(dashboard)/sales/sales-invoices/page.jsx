@@ -3,6 +3,7 @@
 import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -17,6 +18,7 @@ import {
   exportInvoice,
   getAllInvoices,
 } from '@/services/Invoice_Services/Invoice_Services';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -83,8 +85,23 @@ const SalesInvoices = () => {
     setTab(value);
   };
 
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   const onRowClick = (row) => {
-    router.push(`/sales/sales-invoices/${row.id}`);
+    const isSaleOrderRead = row?.readTracker?.sellerIsRead;
+
+    if (isSaleOrderRead) {
+      router.push(`/sales/sales-invoices/${row.id}`);
+    } else {
+      updateReadTrackerMutation.mutate(row.id);
+      router.push(`/sales/sales-invoices/${row.id}`);
+    }
   };
 
   // [INVOICES_FETCHING]

@@ -1,6 +1,7 @@
 'use client';
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 
 export const useDebitNotesColumns = () => {
@@ -10,6 +11,16 @@ export const useDebitNotesColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="INVOICE ID" />
       ),
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isSaleRead = row.original?.readTracker?.sellerIsRead;
+        return (
+          <div className="flex items-center">
+            {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
     },
 
     {

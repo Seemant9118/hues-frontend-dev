@@ -3,6 +3,7 @@
 import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -14,6 +15,7 @@ import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
 import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
 import { getAllDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getAllInvoices } from '@/services/Invoice_Services/Invoice_Services';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -79,8 +81,23 @@ const PurchaseInvoices = () => {
     setTab(value);
   };
 
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   const onRowClick = (row) => {
-    router.push(`/purchase/purchase-invoices/${row.id}`);
+    const isPurchaseOrderRead = row?.readTracker?.buyerIsRead;
+
+    if (isPurchaseOrderRead) {
+      router.push(`/purchase/purchase-invoices/${row.id}`);
+    } else {
+      updateReadTrackerMutation.mutate(row.id);
+      router.push(`/purchase/purchase-invoices/${row.id}`);
+    }
   };
 
   // [INVOICES_FETCHING]
