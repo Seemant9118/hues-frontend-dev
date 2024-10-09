@@ -1,39 +1,84 @@
 import { paymentApi } from '@/api/payments/payment_api';
+import { LocalStorageService } from '@/lib/utils';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import emptyImg from '../../../public/Empty.png';
 import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import { usePaymentColumns } from './paymentColumns';
 
-const PaymentDetails = ({
-  orderId,
-  orderDetails,
-  setIsRecordingPayment,
-  filterData,
-}) => {
+// macros
+const PAGE_LIMIT = 10;
+
+const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
 
-  const { data: paymentsList, isLoading } = useQuery({
-    queryKey: [paymentApi.getPaymentsList.endpointKey, orderId],
-    queryFn: () => getPaymentsList(orderId, filterData.page, filterData.limit), // Make sure you're passing the orderId correctly
-    enabled: !!orderId, // Ensure the query only runs if orderId is truthy
-    select: (paymentsList) => paymentsList.data.data,
+  const [paginationData, setPaginationData] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterData, setFilterData] = useState(null);
+
+  const getPaymentsMutation = useMutation({
+    mutationKey: [paymentApi.getPaymentsList.endpointKey, orderId],
+    mutationFn: getPaymentsList,
+    onSuccess: (data) => {
+      const _newPaymentsData = data.data.data.data;
+      setPaginationData(data.data.data);
+
+      if (filterData) {
+        setPayments(_newPaymentsData);
+      } else {
+        setPayments([...payments, ..._newPaymentsData]);
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
   });
+
+  useEffect(() => {
+    if (enterpriseId) {
+      let _reqFilters = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+      if (filterData) {
+        _reqFilters = {
+          ..._reqFilters,
+          ...filterData,
+        };
+      } else {
+        _reqFilters.page = currentPage;
+      }
+      getPaymentsMutation.mutate({
+        id: enterpriseId,
+        data: _reqFilters,
+      });
+    }
+  }, [filterData, enterpriseId, currentPage]);
 
   const paymentColumns = usePaymentColumns();
 
-  if (isLoading) {
+  if (getPaymentsMutation.isPending) {
     return <Loading />;
   }
 
-  return paymentsList?.length > 0 ? (
-    <DataTable columns={paymentColumns} data={paymentsList}></DataTable>
+  return payments?.length > 0 ? (
+    <DataTable
+      columns={paymentColumns}
+      data={payments}
+      filterData={filterData}
+      setFilterData={setFilterData}
+      setCurrentPage={setCurrentPage}
+      paginationData={paginationData}
+    ></DataTable>
   ) : (
     <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />

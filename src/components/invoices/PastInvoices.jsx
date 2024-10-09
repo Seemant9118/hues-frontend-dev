@@ -1,34 +1,76 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { LocalStorageService } from '@/lib/utils';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import moment from 'moment';
 import Image from 'next/image';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
-import React from 'react';
-import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
-import Loading from '../ui/Loading';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import emptyImg from '../../../public/Empty.png';
-import { Button } from '../ui/button';
+import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { DataTable } from '../table/data-table';
+import { Button } from '../ui/button';
+import Loading from '../ui/Loading';
 import { invoiceColumns } from './invoicesColumns';
 
-function PastInvoices({ setIsGenerateInvoice, orderDetails, filterData }) {
+// macros
+const PAGE_LIMIT = 10;
+
+function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get('invoiceId');
   const params = useParams();
   const orderId = params.order_id;
+  const [paginationData, setPaginationData] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterData, setFilterData] = useState(null);
 
-  // api calling
-  const { isLoading, data: invoicedDataList } = useQuery({
-    queryKey: [invoiceApi.getInvoices.endpointKey, orderId],
-    queryFn: () => getInvoices(orderId, filterData.page, filterData.limit),
-    select: (data) => data.data.data,
+  const invoiceMutation = useMutation({
+    mutationKey: [invoiceApi.getInvoices.endpointKey, orderId],
+    mutationFn: getInvoices,
+    onSuccess: (data) => {
+      const _newInvoicesData = data.data.data.data;
+      setPaginationData(data.data.data);
+
+      if (filterData) {
+        setInvoices(_newInvoicesData);
+      } else {
+        setInvoices([...invoices, ..._newInvoicesData]);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
   });
 
+  useEffect(() => {
+    if (enterpriseId) {
+      let _reqFilters = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+      if (filterData) {
+        _reqFilters = {
+          ..._reqFilters,
+          ...filterData,
+        };
+      } else {
+        _reqFilters.page = currentPage;
+      }
+      invoiceMutation.mutate({
+        id: enterpriseId,
+        data: _reqFilters,
+      });
+    }
+  }, [filterData, enterpriseId, currentPage]);
+
   // Sort the invoicedDataList by createdAt in descending order : latest invoice shows first
-  const sortedInvoicedDataList = invoicedDataList?.data?.sort(
+  const sortedInvoicedDataList = invoices?.sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   );
 
@@ -48,7 +90,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails, filterData }) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-  if (isLoading) {
+  if (invoiceMutation.isPending) {
     return <Loading />;
   }
 
@@ -109,6 +151,10 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails, filterData }) {
                 <DataTable
                   columns={invoiceColumns}
                   data={invoice?.invoiceItems}
+                  filterData={filterData}
+                  setFilterData={setFilterData}
+                  setCurrentPage={setCurrentPage}
+                  paginationData={paginationData}
                 />
                 {/* 
                 <div className="flex flex-col gap-2">
