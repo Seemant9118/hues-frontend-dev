@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-
 import { DataTablePagination } from '@/components/table/DataTablePagination';
 import {
   Table,
@@ -25,16 +24,17 @@ export function DataTable({
   data,
   onRowClick,
   id,
+  fetchNextPage,
+  isFetching,
   filterData,
   setFilterData,
-  setCurrentPage,
   paginationData,
 }) {
   const pathName = usePathname();
   const isSales = pathName.includes('sales');
+  const [showLoadingState, setShowLoadingState] = React.useState(false);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
-  const [isFetching, setIsFetching] = React.useState(false); // To prevent multiple fetches
   const containerRef = React.useRef(null);
 
   const table = useReactTable({
@@ -51,27 +51,21 @@ export function DataTable({
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // Handle scroll event for infinite scrolling
-  const handleScroll = () => {
-    if (!containerRef.current || isFetching) return;
+  const handleScroll = React.useCallback(() => {
+    if (!containerRef.current || isFetching || !paginationData) return;
 
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
 
-    // Check if we are near the bottom (second last row)
+    // Check if we're near the bottom of the container
     if (scrollHeight - scrollTop <= clientHeight + 50) {
-      // Update page in filterData (increase page number by 1)
       if (paginationData.currentPage < paginationData.totalPages) {
-        setIsFetching(true);
-        setCurrentPage((prev) => prev + 1);
+        setShowLoadingState(true);
+        fetchNextPage(); // Fetch the next page if available
       }
-
-      setTimeout(() => {
-        setIsFetching(false);
-      }, 1000); // Simulate a delay or await API call
     }
-  };
+  }, [isFetching, paginationData]);
 
-  // Add scroll event listener
+  // Attach and detach the scroll event listener
   React.useEffect(() => {
     const container = containerRef.current;
     if (container) {
@@ -83,6 +77,13 @@ export function DataTable({
         container.removeEventListener('scroll', handleScroll);
       }
     };
+  }, [handleScroll]);
+
+  // Hide the loading state after data is fetched
+  React.useEffect(() => {
+    if (!isFetching) {
+      setShowLoadingState(false);
+    }
   }, [isFetching]);
 
   return (
@@ -156,10 +157,23 @@ export function DataTable({
                 </TableCell>
               </TableRow>
             )}
+
+            {/* Loading bar at the last row */}
+            {showLoadingState && (
+              <TableRow className="border border-red-600">
+                <TableCell
+                  colSpan={columns.length}
+                  className="py-2 text-center"
+                >
+                  Loading...
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
 
+      {/* Render Pagination only if there's data */}
       {data?.length > 0 && (
         <DataTablePagination
           table={table}

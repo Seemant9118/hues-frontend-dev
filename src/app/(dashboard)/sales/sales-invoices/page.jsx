@@ -26,8 +26,10 @@ import {
   FileCheck,
   FileText,
   KeySquare,
+  PlusCircle,
   Upload,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -35,6 +37,11 @@ import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
+
+// dynamic imports
+const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
+  loading: () => <Loading />,
+});
 
 // macros
 const PAGE_LIMIT = 10;
@@ -72,6 +79,9 @@ const SalesInvoices = () => {
 
   const router = useRouter();
   const [tab, setTab] = useState('all');
+  const [isInvoiceCreationSuccess, setIsInvoiceCreationSuccess] =
+    useState(false);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [invoices, setInvoices] = useState([]); // invoices
   const [debitNotes, setDebitNotes] = useState([]); // debitNotes
   const [creditNotes, setCreditNotes] = useState([]); // debitNotes
@@ -159,7 +169,7 @@ const SalesInvoices = () => {
         data: _reqFilters,
       });
     }
-  }, [filterData, enterpriseId, currentPage]);
+  }, [filterData, enterpriseId, isInvoiceCreationSuccess, currentPage]);
 
   // [DEBIT_NOTES_FETCHING]
   // Mutation for fetching debitNotes
@@ -281,113 +291,138 @@ const SalesInvoices = () => {
 
   return (
     <>
-      <Wrapper>
-        <SubHeader
-          name={'Invoices'}
-          className="sticky top-0 z-10 flex items-center justify-between bg-white"
-        >
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              onClick={handleExportInvoice}
-              variant="outline"
-              className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-              size="sm"
-            >
-              <Upload size={14} />
-            </Button>
-          </div>
-        </SubHeader>
+      {!isCreatingInvoice && (
+        <Wrapper>
+          <SubHeader
+            name={'Invoices'}
+            className="sticky top-0 z-10 flex items-center justify-between bg-white"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                onClick={handleExportInvoice}
+                variant="outline"
+                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                size="sm"
+              >
+                <Upload size={14} />
+              </Button>
 
-        <section>
-          <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
-            <section className="sticky top-14 z-10 bg-white">
-              <TabsList className="border">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="debitNote">Debit Notes</TabsTrigger>
-                <TabsTrigger value="creditNote">Credit Notes</TabsTrigger>
-              </TabsList>
-            </section>
+              <Button
+                onClick={() => setIsCreatingInvoice(true)}
+                className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                size="sm"
+              >
+                <PlusCircle size={14} />
+                Invoice
+              </Button>
+            </div>
+          </SubHeader>
 
-            <TabsContent value="all">
-              {getInvoiceMutation.isPending && <Loading />}
-              {!getInvoiceMutation.isPending && invoices?.length > 0 && (
-                <DataTable
-                  id={'sale-invoice'}
-                  columns={invoiceColumns}
-                  data={invoices}
-                  filterData={filterData}
-                  setFilterData={setFilterData}
-                  paginationData={paginationData}
-                />
-              )}
-              {!getInvoiceMutation.isPending && invoices?.length === 0 && (
-                <EmptyStageComponent
-                  heading={SaleEmptyStageData.heading}
-                  desc={SaleEmptyStageData.desc}
-                  subHeading={SaleEmptyStageData.subHeading}
-                  subItems={SaleEmptyStageData.subItems}
-                />
-              )}
-            </TabsContent>
-            <TabsContent value="pending">
-              {getInvoiceMutation.isPending && <Loading />}
-              {!getInvoiceMutation.isPending && invoices?.length > 0 && (
-                <DataTable
-                  id={'sale-invoice'}
-                  columns={invoiceColumns}
-                  data={invoices}
-                  filterData={filterData}
-                  setFilterData={setFilterData}
-                  paginationData={paginationData}
-                />
-              )}
-            </TabsContent>
-            <TabsContent value="debitNote">
-              {getDebitNotesMutation.isPending && <Loading />}
-              {!getDebitNotesMutation.isPending && debitNotes?.length > 0 && (
-                <DataTable
-                  id={'sale-invoice-debits'}
-                  columns={debitNotesColumns}
-                  onRowClick={onRowClick}
-                  data={debitNotes}
-                  filterData={filterData}
-                  setFilterData={setFilterData}
-                  paginationData={paginationData}
-                />
-              )}
+          <section>
+            <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
+              <section className="sticky top-14 z-10 bg-white">
+                <TabsList className="border">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsTrigger value="debitNote">Debit Notes</TabsTrigger>
+                  <TabsTrigger value="creditNote">Credit Notes</TabsTrigger>
+                </TabsList>
+              </section>
 
-              {!getDebitNotesMutation.isPending && debitNotes?.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No Debit Note Raised</p>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="creditNote">
-              {getCreditNotesMutation.isPending && <Loading />}
-              {!getCreditNotesMutation.isPending && creditNotes?.length > 0 && (
-                <DataTable
-                  id={'sale-invoice-credits'}
-                  columns={debitNotesColumns}
-                  data={creditNotes}
-                  filterData={filterData}
-                  setFilterData={setFilterData}
-                  paginationData={paginationData}
-                />
-              )}
-
-              {!getCreditNotesMutation.isPending &&
-                creditNotes.length === 0 && (
-                  <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                    <Image src={emptyImg} alt="emptyIcon" />
-                    <p>No Credit Note Raised</p>
-                  </div>
+              <TabsContent value="all">
+                {getInvoiceMutation.isPending && <Loading />}
+                {!getInvoiceMutation.isPending && invoices?.length > 0 && (
+                  <DataTable
+                    id={'sale-invoice'}
+                    columns={invoiceColumns}
+                    data={invoices}
+                    filterData={filterData}
+                    setFilterData={setFilterData}
+                    paginationData={paginationData}
+                  />
                 )}
-            </TabsContent>
-          </Tabs>
-        </section>
-      </Wrapper>
+                {!getInvoiceMutation.isPending && invoices?.length === 0 && (
+                  <EmptyStageComponent
+                    heading={SaleEmptyStageData.heading}
+                    desc={SaleEmptyStageData.desc}
+                    subHeading={SaleEmptyStageData.subHeading}
+                    subItems={SaleEmptyStageData.subItems}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="pending">
+                {getInvoiceMutation.isPending && <Loading />}
+                {!getInvoiceMutation.isPending && invoices?.length > 0 && (
+                  <DataTable
+                    id={'sale-invoice'}
+                    columns={invoiceColumns}
+                    data={invoices}
+                    filterData={filterData}
+                    setFilterData={setFilterData}
+                    paginationData={paginationData}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="debitNote">
+                {getDebitNotesMutation.isPending && <Loading />}
+                {!getDebitNotesMutation.isPending && debitNotes?.length > 0 && (
+                  <DataTable
+                    id={'sale-invoice-debits'}
+                    columns={debitNotesColumns}
+                    onRowClick={onRowClick}
+                    data={debitNotes}
+                    filterData={filterData}
+                    setFilterData={setFilterData}
+                    paginationData={paginationData}
+                  />
+                )}
+
+                {!getDebitNotesMutation.isPending &&
+                  debitNotes?.length === 0 && (
+                    <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p>No Debit Note Raised</p>
+                    </div>
+                  )}
+              </TabsContent>
+              <TabsContent value="creditNote">
+                {getCreditNotesMutation.isPending && <Loading />}
+                {!getCreditNotesMutation.isPending &&
+                  creditNotes?.length > 0 && (
+                    <DataTable
+                      id={'sale-invoice-credits'}
+                      columns={debitNotesColumns}
+                      data={creditNotes}
+                      filterData={filterData}
+                      setFilterData={setFilterData}
+                      paginationData={paginationData}
+                    />
+                  )}
+
+                {!getCreditNotesMutation.isPending &&
+                  creditNotes.length === 0 && (
+                    <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p>No Credit Note Raised</p>
+                    </div>
+                  )}
+              </TabsContent>
+            </Tabs>
+          </section>
+        </Wrapper>
+      )}
+
+      {/* create invoice component */}
+      {isCreatingInvoice && (
+        <CreateOrder
+          type="invoice"
+          name="Invoice"
+          cta="offer"
+          isOrder="invoice"
+          onCancel={() => setIsCreatingInvoice(false)}
+          setIsOrderCreationSuccess={setIsInvoiceCreationSuccess}
+        />
+      )}
     </>
   );
 };

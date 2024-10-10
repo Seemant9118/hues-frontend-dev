@@ -16,7 +16,12 @@ import {
   GetSales,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
-import { useMutation } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -42,8 +47,37 @@ const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
 
 // macros
 const PAGE_LIMIT = 10;
+const SaleEmptyStageData = {
+  heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
+  signatures."`,
+  subHeading: 'Features',
+  subItems: [
+    {
+      id: 1,
+      icon: <FileCheck size={14} />,
+      subItemtitle: `Initiate sales and deals by receiving bids or making offers.`,
+    },
+    // { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
+    {
+      id: 3,
+      icon: <FileText size={14} />,
+      subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.`,
+    },
+    {
+      id: 4,
+      icon: <KeySquare size={14} />,
+      subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.`,
+    },
+    {
+      id: 5,
+      icon: <DatabaseZap size={14} />,
+      subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. `,
+    },
+  ],
+};
 
 const SalesOrder = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -52,53 +86,117 @@ const SalesOrder = () => {
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
+
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [paginationData, setPaginationData] = useState([]);
-  const [allSales, setAllSales] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filterData, setFilterData] = useState(null);
+  const [paginationData, setPaginationData] = useState([]); // pagination data
+  const [allSales, setAllSales] = useState([]); // salesList
+  const [filterData, setFilterData] = useState(null); // filterPayload
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
+
+    // Update filterData based on the selected tab
+    let newFilterData;
+    if (value === 'bidRecieved') {
+      newFilterData = {
+        page: 1,
+        limit: PAGE_LIMIT,
+        bidReceived: true,
+      };
+    } else if (value === 'pending') {
+      newFilterData = {
+        page: 1,
+        limit: PAGE_LIMIT,
+        paymentStatus: 'NOT_PAID',
+      };
+    } else {
+      newFilterData = {
+        page: 1,
+        limit: PAGE_LIMIT,
+      };
+    }
+
+    // Update the filterData state
+    setFilterData(newFilterData);
+
+    // Refetch sales data with the new filterData
+    queryClient.invalidateQueries([
+      orderApi.getSales.endpointKey,
+      enterpriseId,
+      filterData,
+    ]);
   };
 
-  const SaleEmptyStageData = {
-    heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
-    signatures."`,
-    subHeading: 'Features',
-    subItems: [
-      {
-        id: 1,
-        icon: <FileCheck size={14} />,
-        subItemtitle: `Initiate sales and deals by receiving bids or making offers.`,
-      },
-      // { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
-      {
-        id: 3,
-        icon: <FileText size={14} />,
-        subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.`,
-      },
-      {
-        id: 4,
-        icon: <KeySquare size={14} />,
-        subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.`,
-      },
-      {
-        id: 5,
-        icon: <DatabaseZap size={14} />,
-        subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. `,
-      },
-    ],
-  };
+  const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
+    queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
+    queryFn: async ({ pageParam = filterData?.page || 1 }) => {
+      const fetchedSalesData = await GetSales(enterpriseId, {
+        ...filterData,
+        page: pageParam,
+        limit: PAGE_LIMIT,
+      });
+      return fetchedSalesData;
+    },
+    initialPageParam: filterData?.page || 1,
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage.data.data;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
-  const SalesColumns = useSalesColumns(
-    setIsEditingOrder,
-    setOrderId,
-    setSelectedOrders,
-  );
+  useEffect(() => {
+    if (data) {
+      const lastPage = data.pages[data.pages.length - 1];
+      const { currentPage, totalPages } = lastPage.data.data;
 
+      // Only update pagination if necessary
+      if (
+        paginationData.currentPage !== currentPage ||
+        paginationData.totalPages !== totalPages
+      ) {
+        setPaginationData({ currentPage, totalPages });
+      }
+
+      // Get the sales data for the current page
+      const currentPageData = lastPage.data.data.data;
+
+      setAllSales((prevSales) => {
+        if (currentPage === 1) {
+          // If it's the first page, reset the sales data
+          return currentPageData;
+        } else {
+          // Append new unique entries to the existing sales data
+          const uniqueSales = currentPageData.filter(
+            (sale) => !prevSales.some((prevSale) => prevSale.id === sale.id),
+          );
+          return [...prevSales, ...uniqueSales];
+        }
+      });
+    }
+  }, [data, paginationData]);
+
+  // To keep filterData updated on page or success change
+  useEffect(() => {
+    setFilterData({
+      ...filterData,
+      page: paginationData.currentPage,
+      limit: PAGE_LIMIT,
+    });
+  }, [paginationData.currentPage]);
+
+  useEffect(() => {
+    queryClient.invalidateQueries([
+      orderApi.getSales.endpointKey,
+      enterpriseId,
+      filterData,
+    ]);
+  }, [isOrderCreationSuccess]);
+
+  // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
     mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
     mutationFn: updateReadTracker,
@@ -106,7 +204,6 @@ const SalesOrder = () => {
       toast.error(error.response.data.message || 'Something went wrong');
     },
   });
-
   const onRowClick = (row) => {
     const isSalesOrderRead = row?.readTracker?.sellerIsRead;
 
@@ -118,63 +215,7 @@ const SalesOrder = () => {
     }
   };
 
-  const getSalesMutation = useMutation({
-    mutationKey: [orderApi.getSales.endpointKey],
-    mutationFn: ({ id, data }) => GetSales(id, data), // destructuring the payload to pass correct arguments
-    onSuccess: (data) => {
-      const _newSalesData = data.data.data.data;
-      setPaginationData(data.data.data);
-
-      if (filterData) {
-        setAllSales(_newSalesData);
-      } else {
-        setAllSales([...allSales, ..._newSalesData]);
-      }
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
-  useEffect(() => {
-    if (enterpriseId) {
-      if (tab === 'pending') {
-        setFilterData({
-          paymentStatus: 'NOT_PAID',
-        });
-      } else if (tab === 'bidRecieved') {
-        setFilterData({
-          bidReceived: true,
-        });
-      } else {
-        setAllSales([]);
-        setCurrentPage(1);
-        setFilterData(null);
-      }
-    }
-  }, [tab, enterpriseId]);
-
-  useEffect(() => {
-    if (enterpriseId) {
-      let _reqFilters = {
-        page: 1,
-        limit: PAGE_LIMIT,
-      };
-      if (filterData) {
-        _reqFilters = {
-          ..._reqFilters,
-          ...filterData,
-        };
-      } else {
-        _reqFilters.page = currentPage;
-      }
-      getSalesMutation.mutate({
-        id: enterpriseId,
-        data: _reqFilters,
-      });
-    }
-  }, [filterData, enterpriseId, isOrderCreationSuccess, currentPage]);
-
+  // [EXPORT ORDER Fn] ✅
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
     const el = document.createElement('a');
@@ -186,7 +227,6 @@ const SalesOrder = () => {
     // Clean up the object URL after the download is triggered
     window.URL.revokeObjectURL(blobFile);
   };
-
   // Export order mutation
   const exportOrderMutation = useMutation({
     mutationKey: [orderApi.exportOrder.endpointKey],
@@ -201,7 +241,6 @@ const SalesOrder = () => {
       toast.error(error.response?.data?.message || 'Something went wrong');
     },
   });
-
   // handle export order click
   const handleExportOrder = () => {
     if (selectedOrders.length === 0) {
@@ -210,6 +249,13 @@ const SalesOrder = () => {
     }
     exportOrderMutation.mutate(selectedOrders);
   };
+
+  // columns
+  const SalesColumns = useSalesColumns(
+    setIsEditingOrder,
+    setOrderId,
+    setSelectedOrders,
+  );
 
   return (
     <>
@@ -252,17 +298,17 @@ const SalesOrder = () => {
               </section>
 
               <TabsContent value="all">
-                {getSalesMutation.isPending && <Loading />}
-                {!getSalesMutation.isPending &&
-                  (allSales && allSales?.length > 0 ? (
+                {isLoading && <Loading />}
+                {!isLoading &&
+                  (allSales?.length > 0 ? (
                     <DataTable
-                      id={'sale-orders'}
+                      id="sale-orders"
                       columns={SalesColumns}
                       onRowClick={onRowClick}
                       data={allSales}
+                      isFetching={isFetching}
+                      fetchNextPage={fetchNextPage}
                       filterData={filterData}
-                      setFilterData={setFilterData}
-                      setCurrentPage={setCurrentPage}
                       paginationData={paginationData}
                     />
                   ) : (
@@ -275,16 +321,17 @@ const SalesOrder = () => {
                   ))}
               </TabsContent>
               <TabsContent value="bidRecieved">
-                {getSalesMutation.isPending && <Loading />}
-                {!getSalesMutation.isPending &&
-                  (allSales && allSales?.length > 0 ? (
+                {isLoading && <Loading />}
+                {!isLoading &&
+                  (allSales?.length > 0 ? (
                     <DataTable
                       id={'sale-orders'}
                       columns={SalesColumns}
                       onRowClick={onRowClick}
                       data={allSales}
+                      isFetching={isFetching}
+                      fetchNextPage={fetchNextPage}
                       filterData={filterData}
-                      setFilterData={setFilterData}
                       paginationData={paginationData}
                     />
                   ) : (
@@ -297,16 +344,17 @@ const SalesOrder = () => {
                   ))}
               </TabsContent>
               <TabsContent value="pending">
-                {getSalesMutation.isPending && <Loading />}
-                {!getSalesMutation.isPending &&
-                  (allSales && allSales?.length > 0 ? (
+                {isLoading && <Loading />}
+                {!isLoading &&
+                  (allSales?.length > 0 ? (
                     <DataTable
                       id={'sale-orders'}
                       columns={SalesColumns}
                       onRowClick={onRowClick}
                       data={allSales}
+                      isFetching={isFetching}
+                      fetchNextPage={fetchNextPage}
                       filterData={filterData}
-                      setFilterData={setFilterData}
                       paginationData={paginationData}
                     />
                   ) : (

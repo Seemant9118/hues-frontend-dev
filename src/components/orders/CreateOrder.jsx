@@ -31,7 +31,6 @@ import {
   createInvoiceForUninvited,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -56,8 +55,8 @@ const CreateOrder = ({
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
-  const pathName = usePathname();
-  const isSales = pathName.includes('sales');
+  // const pathName = usePathname();
+  // const isSales = pathName.includes('sales');
 
   const [errorMsg, setErrorMsg] = useState({});
   const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
@@ -218,8 +217,8 @@ const CreateOrder = ({
           ? 'Sales Order Created Successfully'
           : 'Purchase Order Created Successfully',
       );
-      onCancel();
       setIsOrderCreationSuccess((prev) => !prev);
+      onCancel();
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -230,7 +229,7 @@ const CreateOrder = ({
   const invoiceMutation = useMutation({
     mutationFn: createInvoiceForUninvited,
     onSuccess: () => {
-      toast.success('Order Created Successfully');
+      toast.success('Invoice Created Successfully');
       onCancel();
       setIsOrderCreationSuccess((prev) => !prev);
       queryClient.invalidateQueries({
@@ -356,7 +355,7 @@ const CreateOrder = ({
 
   return (
     <Wrapper>
-      <SubHeader name={isSales ? 'Order' : 'Bid'}></SubHeader>
+      <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
