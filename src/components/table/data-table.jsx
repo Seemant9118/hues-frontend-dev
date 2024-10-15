@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { DataTablePagination } from '@/components/table/DataTablePagination';
 import {
   Table,
@@ -17,7 +16,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePathname } from 'next/navigation';
+import * as React from 'react';
 
 export function DataTable({
   columns,
@@ -40,6 +42,7 @@ export function DataTable({
   const table = useReactTable({
     data,
     columns,
+    manualPagination: true,
     state: {
       sorting,
       columnFilters,
@@ -86,6 +89,21 @@ export function DataTable({
     }
   }, [isFetching]);
 
+  const { rows } = table.getRowModel();
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    estimateSize: () => 10, // estimate row height for accurate scrollbar dragging
+    getScrollElement: () => containerRef.current,
+    // measure dynamic row height, except in firefox because it measures table border height incorrectly
+    measureElement:
+      typeof window !== 'undefined' &&
+      navigator.userAgent.indexOf('Firefox') === -1
+        ? (element) => element?.getBoundingClientRect().height
+        : undefined,
+    overscan: 5,
+  });
+
   return (
     <div>
       <div
@@ -112,7 +130,44 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const row = rows[virtualRow.index];
+              let isRead;
+              if (row.original?.readTracker) {
+                if (isSales) {
+                  isRead = row.original?.readTracker?.sellerIsRead;
+                } else {
+                  isRead = row.original?.readTracker?.buyerIsRead;
+                }
+              }
+              return (
+                <TableRow
+                  data-index={virtualRow.index} // needed for dynamic row height measurement
+                  ref={(node) => rowVirtualizer.measureElement(node)} // measure dynamic row height
+                  key={row.id}
+                  className={
+                    isRead
+                      ? 'border-y border-[#A5ABBD33] bg-[#A5ABBD17]'
+                      : 'border-y border-[#A5ABBD33] font-semibold'
+                  }
+                  data-state={row.getIsSelected() && 'selected'}
+                  onClick={
+                    onRowClick ? () => onRowClick(row.original) : () => {}
+                  }
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="max-w-xl shrink-0">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })}
+
+            {/* {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
                 let isRead;
                 if (row.original?.readTracker) {
@@ -156,7 +211,7 @@ export function DataTable({
                   No results.
                 </TableCell>
               </TableRow>
-            )}
+            )} */}
 
             {/* Loading bar at the last row */}
             {showLoadingState && (

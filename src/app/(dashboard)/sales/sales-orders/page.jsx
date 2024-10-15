@@ -89,57 +89,51 @@ const SalesOrder = () => {
 
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [paginationData, setPaginationData] = useState([]); // pagination data
+  const [paginationData, setPaginationData] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  }); // Ensure default structure
   const [allSales, setAllSales] = useState([]); // salesList
-  const [filterData, setFilterData] = useState(null); // filterPayload
+  const [filterData, setFilterData] = useState({ page: 1, limit: PAGE_LIMIT }); // Initialize with default filterPayload
+  const [previousTab, setPreviousTab] = useState(''); // To track the previous tab
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
 
-    // Update filterData based on the selected tab
-    let newFilterData;
-    if (value === 'bidRecieved') {
-      newFilterData = {
-        page: 1,
-        limit: PAGE_LIMIT,
-        bidReceived: true,
-      };
-    } else if (value === 'pending') {
-      newFilterData = {
-        page: 1,
-        limit: PAGE_LIMIT,
-        paymentStatus: 'NOT_PAID',
-      };
-    } else {
-      newFilterData = {
-        page: 1,
-        limit: PAGE_LIMIT,
-      };
+    // Check if tab context truly changes, then reset sales data
+    if (value !== previousTab) {
+      setAllSales([]); // Clear sales data only when switching tabs
+      setPreviousTab(value); // Update the previous tab
     }
 
-    // Update the filterData state
+    const newFilterData = { page: 1, limit: PAGE_LIMIT };
+    if (value === 'bidRecieved') {
+      newFilterData.bidReceived = true;
+    } else if (value === 'pending') {
+      newFilterData.paymentStatus = 'NOT_PAID';
+    }
+
     setFilterData(newFilterData);
 
-    // Refetch sales data with the new filterData
+    // Fetch only the first page when switching tabs (prevent fetching all pages)
     queryClient.invalidateQueries([
       orderApi.getSales.endpointKey,
       enterpriseId,
-      filterData,
     ]);
   };
 
+  // Fetch sales data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
     queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
-    queryFn: async ({ pageParam = filterData?.page || 1 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const fetchedSalesData = await GetSales(enterpriseId, {
         ...filterData,
         page: pageParam,
-        limit: PAGE_LIMIT,
       });
       return fetchedSalesData;
     },
-    initialPageParam: filterData?.page || 1,
+    initialPageParam: filterData.page || 1,
     getNextPageParam: (lastPage) => {
       const { currentPage, totalPages } = lastPage.data.data;
       return currentPage < totalPages ? currentPage + 1 : undefined;
@@ -148,53 +142,31 @@ const SalesOrder = () => {
     placeholderData: keepPreviousData,
   });
 
+  const refactoredData = data?.pages[0]?.data?.data?.data;
+
   useEffect(() => {
     if (data) {
       const lastPage = data.pages[data.pages.length - 1];
       const { currentPage, totalPages } = lastPage.data.data;
 
-      // Only update pagination if necessary
-      if (
-        paginationData.currentPage !== currentPage ||
-        paginationData.totalPages !== totalPages
-      ) {
-        setPaginationData({ currentPage, totalPages });
-      }
-
-      // Get the sales data for the current page
-      const currentPageData = lastPage.data.data.data;
-
-      setAllSales((prevSales) => {
-        if (currentPage === 1) {
-          // If it's the first page, reset the sales data
-          return currentPageData;
-        } else {
-          // Append new unique entries to the existing sales data
-          const uniqueSales = currentPageData.filter(
-            (sale) => !prevSales.some((prevSale) => prevSale.id === sale.id),
-          );
-          return [...prevSales, ...uniqueSales];
+      // Update pagination state
+      setPaginationData((prev) => {
+        if (
+          prev.currentPage !== currentPage ||
+          prev.totalPages !== totalPages
+        ) {
+          return { currentPage, totalPages };
         }
+        return prev;
+      });
+
+      // Append or replace sales data based on the page
+      const currentPageData = lastPage.data.data.data || [];
+      setAllSales((prevSales) => {
+        return [...prevSales, ...currentPageData]; // Return the updated sales list
       });
     }
-  }, [data, paginationData]);
-
-  // To keep filterData updated on page or success change
-  useEffect(() => {
-    setFilterData({
-      ...filterData,
-      page: paginationData.currentPage,
-      limit: PAGE_LIMIT,
-    });
-  }, [paginationData.currentPage]);
-
-  useEffect(() => {
-    queryClient.invalidateQueries([
-      orderApi.getSales.endpointKey,
-      enterpriseId,
-      filterData,
-    ]);
-  }, [isOrderCreationSuccess]);
+  }, [data, isOrderCreationSuccess]);
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -300,12 +272,12 @@ const SalesOrder = () => {
               <TabsContent value="all">
                 {isLoading && <Loading />}
                 {!isLoading &&
-                  (allSales?.length > 0 ? (
+                  (refactoredData?.length > 0 ? (
                     <DataTable
                       id="sale-orders"
                       columns={SalesColumns}
                       onRowClick={onRowClick}
-                      data={allSales}
+                      data={refactoredData}
                       isFetching={isFetching}
                       fetchNextPage={fetchNextPage}
                       filterData={filterData}
