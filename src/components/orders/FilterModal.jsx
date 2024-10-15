@@ -135,14 +135,13 @@ const FilterModal = ({ tab, setFilterData }) => {
       if (user.client && user?.client?.name !== null) {
         userDetails = { ...user.client };
       } else {
-        userDetails = { ...user?.invitation?.userDetails };
+        userDetails = { ...user };
       }
 
       return {
         ...userDetails,
         id: user.id,
-        invitationId: user.invitation?.id,
-        invitationStatus: user.invitation?.status,
+        name: user?.client?.name || user?.invitation?.userDetails?.name,
       };
     });
   }
@@ -155,7 +154,7 @@ const FilterModal = ({ tab, setFilterData }) => {
   });
   // value : client
   const valueClient = filters.clientIds.map((client) => ({
-    value: client,
+    value: client.id,
     label: updatedData.find((opt) => opt.value === client)?.label,
   }));
   // handlerChangeFn : clients
