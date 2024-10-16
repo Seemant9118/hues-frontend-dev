@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../public/Empty.png';
-import { DataTable } from '../table/data-table';
+import { InfiniteDataTable } from '../table/infinite-data-table';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import { usePaymentColumns } from './paymentColumns';
@@ -68,14 +68,14 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   }
 
   return payments?.length > 0 ? (
-    <DataTable
+    <InfiniteDataTable
       columns={paymentColumns}
       data={payments}
       filterData={filterData}
       setFilterData={setFilterData}
       setCurrentPage={setCurrentPage}
       paginationData={paginationData}
-    ></DataTable>
+    ></InfiniteDataTable>
   ) : (
     <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />

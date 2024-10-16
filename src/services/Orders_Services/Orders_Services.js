@@ -5,11 +5,11 @@ export const CreateOrderService = (data) => {
   return APIinstance.post(orderApi.createOrder.endpoint, data);
 };
 
-export const GetSales = (id, data) => {
+export const GetSales = ({ id, data }) => {
   return APIinstance.post(`${orderApi.getSales.endpoint}${id}`, data);
 };
 
-export const GetPurchases = (id, data) => {
+export const GetPurchases = ({ id, data }) => {
   return APIinstance.post(`${orderApi.getPurchases.endpoint}${id}`, data);
 };
 

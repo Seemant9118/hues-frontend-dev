@@ -2,7 +2,7 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import AddModal from '@/components/Modals/AddModal';
-import { DataTable } from '@/components/table/data-table';
+import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -136,7 +136,7 @@ const VendorsPage = () => {
       {!isLoading &&
         !isUploading &&
         (formattedData && formattedData.length !== 0 ? (
-          <DataTable
+          <InfiniteDataTable
             id={'vendor table'}
             columns={VendorsColumns}
             data={formattedData}

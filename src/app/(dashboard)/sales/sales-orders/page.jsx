@@ -3,7 +3,7 @@
 import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import FilterModal from '@/components/orders/FilterModal';
-import { DataTable } from '@/components/table/data-table';
+import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -16,12 +16,7 @@ import {
   GetSales,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
-import {
-  keepPreviousData,
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -77,7 +72,6 @@ const SaleEmptyStageData = {
 };
 
 const SalesOrder = () => {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -89,84 +83,115 @@ const SalesOrder = () => {
 
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [paginationData, setPaginationData] = useState({
-    currentPage: 1,
-    totalPages: 1,
-  }); // Ensure default structure
-  const [allSales, setAllSales] = useState([]); // salesList
-  const [filterData, setFilterData] = useState({ page: 1, limit: PAGE_LIMIT }); // Initialize with default filterPayload
-  const [previousTab, setPreviousTab] = useState(''); // To track the previous tab
+  const [paginationData, setPaginationData] = useState(); // Ensure default structure
+  const [salesListing, setSalesListing] = useState([]);
+  const [salesDataByTab, setSalesDataByTab] = useState({
+    all: [],
+    bidReceived: [],
+    pending: [],
+  });
+  const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
 
-  // Function to handle tab change
+  // Handle tab change
   const onTabChange = (value) => {
     setTab(value);
+  };
 
-    // Check if tab context truly changes, then reset sales data
-    if (value !== previousTab) {
-      setAllSales([]); // Clear sales data only when switching tabs
-      setPreviousTab(value); // Update the previous tab
-    }
+  useEffect(() => {
+    // Clear existing salesListing and paginationData when the tab changes
+    setSalesListing([]); // Reset salesListing
+    setPaginationData(null); // Reset paginationData
 
-    const newFilterData = { page: 1, limit: PAGE_LIMIT };
-    if (value === 'bidRecieved') {
-      newFilterData.bidReceived = true;
-    } else if (value === 'pending') {
-      newFilterData.paymentStatus = 'NOT_PAID';
+    // Apply filters based on the selected tab
+    let newFilterData = {};
+    if (tab === 'bidReceived') {
+      newFilterData = { bidReceived: true };
+    } else if (tab === 'pending') {
+      newFilterData = { paymentStatus: 'NOT_PAID' };
+    } else if (isOrderCreationSuccess) {
+      newFilterData = {};
     }
 
     setFilterData(newFilterData);
 
-    // Fetch only the first page when switching tabs (prevent fetching all pages)
-    queryClient.invalidateQueries([
-      orderApi.getSales.endpointKey,
-      enterpriseId,
-    ]);
-  };
+    // Check if data for this tab already exists to prevent unnecessary API calls
+    if (salesDataByTab[tab]?.length > 0) {
+      setSalesListing(salesDataByTab[tab]); // Use cached data for this tab
+    }
+  }, [tab]);
 
   // Fetch sales data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
     queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
     queryFn: async ({ pageParam = 1 }) => {
-      const fetchedSalesData = await GetSales(enterpriseId, {
-        ...filterData,
-        page: pageParam,
+      const response = await GetSales({
+        id: enterpriseId,
+        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
       });
-      return fetchedSalesData;
+      return response;
     },
-    initialPageParam: filterData.page || 1,
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage.data.data;
+      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
   });
 
-  const refactoredData = data?.pages[0]?.data?.data?.data;
-
   useEffect(() => {
-    if (data) {
-      const lastPage = data.pages[data.pages.length - 1];
-      const { currentPage, totalPages } = lastPage.data.data;
+    if (data?.pages.length > 0) {
+      const latestPage = data.pages[data.pages.length - 1].data.data;
+      const newSalesData = latestPage.data;
 
-      // Update pagination state
-      setPaginationData((prev) => {
-        if (
-          prev.currentPage !== currentPage ||
-          prev.totalPages !== totalPages
-        ) {
-          return { currentPage, totalPages };
-        }
-        return prev;
+      // Set the pagination data
+      setPaginationData({
+        currentPage: latestPage.currentPage,
+        totalPages: latestPage.totalPages,
       });
 
-      // Append or replace sales data based on the page
-      const currentPageData = lastPage.data.data.data || [];
-      setAllSales((prevSales) => {
-        return [...prevSales, ...currentPageData]; // Return the updated sales list
+      // Check if the current tab already has data to avoid duplicates
+      setSalesDataByTab((prevData) => {
+        if (prevData[tab]?.length === 0) {
+          // Only store the fresh data if it's not already there
+          return {
+            ...prevData,
+            [tab]: newSalesData, // Replace with fresh data for the current tab
+          };
+        }
+
+        // Append unique data by filtering out duplicates
+        const updatedTabData = [
+          ...prevData[tab],
+          ...newSalesData.filter(
+            (item) =>
+              !prevData[tab].some((prevItem) => prevItem.id === item.id),
+          ),
+        ];
+
+        return {
+          ...prevData,
+          [tab]: updatedTabData, // Append only unique data
+        };
+      });
+
+      // Update the current display data without appending duplicates
+      setSalesListing((prevSales) => {
+        if (prevSales.length === 0) {
+          return newSalesData; // Set fresh data for the first time
+        }
+
+        // Append unique data to the sales listing
+        const updatedSales = [
+          ...prevSales,
+          ...newSalesData.filter(
+            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
+          ),
+        ];
+
+        return updatedSales;
       });
     }
-  }, [data, isOrderCreationSuccess]);
+  }, [data, filterData]);
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -262,7 +287,7 @@ const SalesOrder = () => {
               <section className="sticky top-14 z-10 flex justify-between bg-white">
                 <TabsList className="border">
                   <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="bidRecieved">Bid Recieved</TabsTrigger>
+                  <TabsTrigger value="bidReceived">Bid Recieved</TabsTrigger>
                   <TabsTrigger value="pending">Payment Pending</TabsTrigger>
                   {/* <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger> */}
                 </TabsList>
@@ -272,12 +297,12 @@ const SalesOrder = () => {
               <TabsContent value="all">
                 {isLoading && <Loading />}
                 {!isLoading &&
-                  (refactoredData?.length > 0 ? (
-                    <DataTable
+                  (salesListing?.length > 0 ? (
+                    <InfiniteDataTable
                       id="sale-orders"
                       columns={SalesColumns}
                       onRowClick={onRowClick}
-                      data={refactoredData}
+                      data={salesListing}
                       isFetching={isFetching}
                       fetchNextPage={fetchNextPage}
                       filterData={filterData}
@@ -292,15 +317,15 @@ const SalesOrder = () => {
                     />
                   ))}
               </TabsContent>
-              <TabsContent value="bidRecieved">
+              <TabsContent value="bidReceived">
                 {isLoading && <Loading />}
                 {!isLoading &&
-                  (allSales?.length > 0 ? (
-                    <DataTable
+                  (salesListing?.length > 0 ? (
+                    <InfiniteDataTable
                       id={'sale-orders'}
                       columns={SalesColumns}
                       onRowClick={onRowClick}
-                      data={allSales}
+                      data={salesListing}
                       isFetching={isFetching}
                       fetchNextPage={fetchNextPage}
                       filterData={filterData}
@@ -318,12 +343,12 @@ const SalesOrder = () => {
               <TabsContent value="pending">
                 {isLoading && <Loading />}
                 {!isLoading &&
-                  (allSales?.length > 0 ? (
-                    <DataTable
+                  (salesListing?.length > 0 ? (
+                    <InfiniteDataTable
                       id={'sale-orders'}
                       columns={SalesColumns}
                       onRowClick={onRowClick}
-                      data={allSales}
+                      data={salesListing}
                       isFetching={isFetching}
                       fetchNextPage={fetchNextPage}
                       filterData={filterData}

@@ -4,7 +4,7 @@ import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
-import { DataTable } from '@/components/table/data-table';
+import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -295,7 +295,7 @@ const PurchaseInvoices = () => {
               <TabsContent value="all">
                 {getInvoiceMutation.isPending && <Loading />}
                 {!getInvoiceMutation.isPending && invoices?.length > 0 && (
-                  <DataTable
+                  <InfiniteDataTable
                     id={'sale-invoice'}
                     columns={invoiceColumns}
                     data={invoices}
@@ -316,7 +316,7 @@ const PurchaseInvoices = () => {
               <TabsContent value="pending">
                 {getInvoiceMutation.isPending && <Loading />}
                 {!getInvoiceMutation.isPending && invoices?.length > 0 && (
-                  <DataTable
+                  <InfiniteDataTable
                     id={'sale-invoice'}
                     columns={invoiceColumns}
                     data={invoices}
@@ -329,7 +329,7 @@ const PurchaseInvoices = () => {
               <TabsContent value="debitNote">
                 {getDebitNotesMutation.isPending && <Loading />}
                 {!getDebitNotesMutation.isPending && debitNotes?.length > 0 && (
-                  <DataTable
+                  <InfiniteDataTable
                     id={'sale-invoice-debits'}
                     columns={purchaseDebitNotesColumns}
                     onRowClick={onRowClick}
@@ -352,7 +352,7 @@ const PurchaseInvoices = () => {
                 {getCreditNotesMutation.isPending && <Loading />}
                 {!getCreditNotesMutation.isPending &&
                   creditNotes?.length > 0 && (
-                    <DataTable
+                    <InfiniteDataTable
                       id={'sale-invoice-credits'}
                       columns={purchaseDebitNotesColumns}
                       data={creditNotes}

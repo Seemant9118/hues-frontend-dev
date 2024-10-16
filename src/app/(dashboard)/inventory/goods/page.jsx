@@ -1,7 +1,7 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { DataTable } from '@/components/table/data-table';
+import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -171,7 +171,7 @@ function Goods() {
           {!isLoading &&
             // isSuccess &&
             (productGoods && productGoods.length !== 0 ? (
-              <DataTable
+              <InfiniteDataTable
                 id={'goods table'}
                 columns={GoodsColumns}
                 data={searchProductGoods}

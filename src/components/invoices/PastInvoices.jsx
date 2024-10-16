@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../public/Empty.png';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
-import { DataTable } from '../table/data-table';
+import { InfiniteDataTable } from '../table/infinite-data-table';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import { invoiceColumns } from './invoicesColumns';
@@ -144,7 +144,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                   />
                 </section>
 
-                <DataTable
+                <InfiniteDataTable
                   columns={invoiceColumns}
                   data={invoice?.invoiceItems}
                   filterData={filterData}

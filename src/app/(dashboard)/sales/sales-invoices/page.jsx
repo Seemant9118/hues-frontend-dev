@@ -4,7 +4,7 @@ import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
-import { DataTable } from '@/components/table/data-table';
+import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -93,25 +93,6 @@ const SalesInvoices = () => {
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
-  };
-
-  const updateReadTrackerMutation = useMutation({
-    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
-    mutationFn: updateReadTracker,
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
-  const onRowClick = (row) => {
-    const isSaleOrderRead = row?.readTracker?.sellerIsRead;
-
-    if (isSaleOrderRead) {
-      router.push(`/sales/sales-invoices/${row.id}`);
-    } else {
-      updateReadTrackerMutation.mutate(row.id);
-      router.push(`/sales/sales-invoices/${row.id}`);
-    }
   };
 
   // [INVOICES_FETCHING]
@@ -229,6 +210,7 @@ const SalesInvoices = () => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
+
   // creditNotes condition for invoke
   useEffect(() => {
     if (enterpriseId) {
@@ -250,9 +232,24 @@ const SalesInvoices = () => {
     }
   }, [filterData, enterpriseId, currentPage]);
 
-  // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
-  const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
-  const debitNotesColumns = useDebitNotesColumns();
+  // [updateReadTracker Mutation : onRowClick] ✅
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+  const onRowClick = (row) => {
+    const isSaleOrderRead = row?.readTracker?.sellerIsRead;
+
+    if (isSaleOrderRead) {
+      router.push(`/sales/sales-invoices/${row.id}`);
+    } else {
+      updateReadTrackerMutation.mutate(row.id);
+      router.push(`/sales/sales-invoices/${row.id}`);
+    }
+  };
 
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
@@ -265,7 +262,6 @@ const SalesInvoices = () => {
     // Clean up the object URL after the download is triggered
     window.URL.revokeObjectURL(blobFile);
   };
-
   // export invoice mutation
   const exportInvoiceMutation = useMutation({
     mutationKey: [invoiceApi.exportInvoice.endpointKey],
@@ -279,7 +275,6 @@ const SalesInvoices = () => {
       toast.error(error.response.data.message || 'Something went wrong');
     },
   });
-
   // handle export order click
   const handleExportInvoice = () => {
     if (selectedInvoices.length === 0) {
@@ -288,6 +283,10 @@ const SalesInvoices = () => {
     }
     exportInvoiceMutation.mutate(selectedInvoices);
   };
+
+  // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
+  const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
+  const debitNotesColumns = useDebitNotesColumns();
 
   return (
     <>
@@ -332,7 +331,7 @@ const SalesInvoices = () => {
               <TabsContent value="all">
                 {getInvoiceMutation.isPending && <Loading />}
                 {!getInvoiceMutation.isPending && invoices?.length > 0 && (
-                  <DataTable
+                  <InfiniteDataTable
                     id={'sale-invoice'}
                     columns={invoiceColumns}
                     data={invoices}
@@ -353,7 +352,7 @@ const SalesInvoices = () => {
               <TabsContent value="pending">
                 {getInvoiceMutation.isPending && <Loading />}
                 {!getInvoiceMutation.isPending && invoices?.length > 0 && (
-                  <DataTable
+                  <InfiniteDataTable
                     id={'sale-invoice'}
                     columns={invoiceColumns}
                     data={invoices}
@@ -366,7 +365,7 @@ const SalesInvoices = () => {
               <TabsContent value="debitNote">
                 {getDebitNotesMutation.isPending && <Loading />}
                 {!getDebitNotesMutation.isPending && debitNotes?.length > 0 && (
-                  <DataTable
+                  <InfiniteDataTable
                     id={'sale-invoice-debits'}
                     columns={debitNotesColumns}
                     onRowClick={onRowClick}
@@ -389,7 +388,7 @@ const SalesInvoices = () => {
                 {getCreditNotesMutation.isPending && <Loading />}
                 {!getCreditNotesMutation.isPending &&
                   creditNotes?.length > 0 && (
-                    <DataTable
+                    <InfiniteDataTable
                       id={'sale-invoice-credits'}
                       columns={debitNotesColumns}
                       data={creditNotes}
