@@ -1,7 +1,7 @@
 'use client';
 
 import { servicesApi } from '@/api/inventories/services/services';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
+import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SearchInput from '@/components/ui/SearchInput';
@@ -173,7 +173,7 @@ function Services() {
           {!isLoading &&
             // isSuccess &&
             (productService && productService.length !== 0 ? (
-              <InfiniteDataTable
+              <DataTable
                 id={'services table'}
                 columns={ServicesColumns}
                 data={searchProductServices}

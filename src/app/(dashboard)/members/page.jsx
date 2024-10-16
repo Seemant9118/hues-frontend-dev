@@ -2,7 +2,7 @@
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import MemberInviteModal from '@/components/membersInvite/MemberInviteModal';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
+import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -57,7 +57,7 @@ const MembersPage = () => {
       {isLoading && <Loading />}
 
       {!isLoading && membersList?.length > 0 && (
-        <InfiniteDataTable columns={inviteeMembersColumns} data={membersList} />
+        <DataTable columns={inviteeMembersColumns} data={membersList} />
       )}
 
       {!isLoading && membersList?.length === 0 && (

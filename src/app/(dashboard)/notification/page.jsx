@@ -2,7 +2,7 @@
 
 import { notificationApi } from '@/api/notifications/notificationApi';
 import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPopUp';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
+import { DataTable } from '@/components/table/data-table';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
@@ -44,7 +44,7 @@ const Notification = () => {
           setFilteredNotification={setFilteredNotification}
         />
       </SubHeader>
-      <InfiniteDataTable
+      <DataTable
         id="notification table"
         columns={NotificationColumns}
         data={notifications}
