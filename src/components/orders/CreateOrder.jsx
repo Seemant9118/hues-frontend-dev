@@ -230,8 +230,8 @@ const CreateOrder = ({
     mutationFn: createInvoiceForUninvited,
     onSuccess: () => {
       toast.success('Invoice Created Successfully');
-      onCancel();
       setIsOrderCreationSuccess((prev) => !prev);
+      onCancel();
       queryClient.invalidateQueries({
         queryKey: [orderApi.getSales.endpointKey],
       });

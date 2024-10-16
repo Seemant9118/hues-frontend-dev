@@ -83,7 +83,7 @@ const SalesOrder = () => {
 
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [paginationData, setPaginationData] = useState(); // Ensure default structure
+  const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
   const [salesDataByTab, setSalesDataByTab] = useState({
     all: [],
