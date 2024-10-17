@@ -1,20 +1,14 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import Image from 'next/image';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import React from 'react';
 import emptyImg from '../../../public/Empty.png';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
-import { InfiniteDataTable } from '../table/infinite-data-table';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
-import { invoiceColumns } from './invoicesColumns';
-
-// macros
-const PAGE_LIMIT = 10;
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const pathName = usePathname();
@@ -23,52 +17,13 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const invoiceId = searchParams.get('invoiceId');
   const params = useParams();
   const orderId = params.order_id;
-  const [paginationData, setPaginationData] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filterData, setFilterData] = useState(null);
 
-  const invoiceMutation = useMutation({
-    mutationKey: [invoiceApi.getInvoices.endpointKey, orderId],
-    mutationFn: getInvoices,
-    onSuccess: (data) => {
-      const _newInvoicesData = data.data.data.data;
-      setPaginationData(data.data.data);
-
-      if (filterData) {
-        setInvoices(_newInvoicesData);
-      } else {
-        setInvoices([...invoices, ..._newInvoicesData]);
-      }
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
+  // FETCH INVOICES API
+  const { data: invoiceList, isLoading: isInvoicesLoading } = useQuery({
+    queryKey: [invoiceApi.getInvoices.endpointKey, orderId],
+    queryFn: () => getInvoices(orderId),
+    select: (invoiceList) => invoiceList?.data?.data,
   });
-
-  useEffect(() => {
-    let _reqFilters = {
-      page: 1,
-      limit: PAGE_LIMIT,
-    };
-    if (filterData) {
-      _reqFilters = {
-        ..._reqFilters,
-        ...filterData,
-      };
-    } else {
-      _reqFilters.page = currentPage;
-    }
-    invoiceMutation.mutate({
-      id: orderId,
-      data: _reqFilters,
-    });
-  }, [filterData, currentPage]);
-
-  // Sort the invoicedDataList by createdAt in descending order : latest invoice shows first
-  const sortedInvoicedDataList = invoices?.sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
 
   // fn for formatted currency
   const formattedCurrency = React.useMemo(
@@ -86,15 +41,15 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-  if (invoiceMutation.isPending) {
+  if (isInvoicesLoading) {
     return <Loading />;
   }
 
   return (
     <>
       <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
-        {sortedInvoicedDataList && sortedInvoicedDataList.length > 0 ? (
-          sortedInvoicedDataList.map((invoice) => {
+        {invoiceList && invoiceList?.length > 0 ? (
+          invoiceList?.map((invoice) => {
             // Check if the invoiceId from searchParams matches the current invoice.id
             const shouldOpenModal = String(invoice.id) === String(invoiceId);
 
@@ -144,43 +99,10 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                   />
                 </section>
 
-                <InfiniteDataTable
+                {/* <DataTable
                   columns={invoiceColumns}
                   data={invoice?.invoiceItems}
-                  filterData={filterData}
-                  setFilterData={setFilterData}
-                  setCurrentPage={setCurrentPage}
-                  paginationData={paginationData}
-                />
-                {/* 
-                <div className="flex flex-col gap-2">
-                  <ul className="scrollBarStyles flex max-h-24 flex-col gap-2 overflow-auto text-sm">
-                    <li className="grid grid-cols-4 font-bold">
-                      <span>ITEM</span>
-                      <span>QUANTITY</span>
-                      <span>DATE</span>
-                      <span>AMOUNT</span>
-                    </li>
-                    {invoice?.invoiceItems?.map((item) => {
-                      // Extract product name from productDetails
-                      const productName =
-                        item?.orderItemId?.productDetails?.productName ||
-                        item?.orderItemId?.productDetails?.serviceName ||
-                        'N/A';
-
-                      return (
-                        <li key={item?.id} className="grid grid-cols-4">
-                          <span>{productName}</span>
-                          <span>{item?.quantity}</span>
-                          <span>
-                            {moment(item?.createdAt).format('DD-MM-YYYY')}
-                          </span>
-                          <span>{formattedCurrency(item?.grossAmount)}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div> */}
+                /> */}
               </div>
             );
           })
@@ -190,7 +112,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
             <p className="font-bold">No invoices yet</p>
             <p className="max-w-96 text-center">
               {
-                "You haven't created any invoices yet. Start by generating your first invoice to keep track of your transactions"
+                "You haven't created any invoices yet. Start by generating your first invoice to keep track of your orders"
               }
             </p>
 

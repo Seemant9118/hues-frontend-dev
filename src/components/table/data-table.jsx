@@ -38,7 +38,7 @@ export function DataTable({ columns, data, id }) {
 
   return (
     <div>
-      <div className="infinite-datatable-scrollable-body scrollBarStyles max-h-[380px] overflow-y-auto rounded-[6px]">
+      <div className="scrollBarStyles max-h-[220px] overflow-y-auto rounded-[6px]">
         <Table id={id}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -63,6 +63,7 @@ export function DataTable({ columns, data, id }) {
               table.getRowModel().rows.map((row) => {
                 return (
                   <TableRow
+                    className="border-y border-[#A5ABBD33]"
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
                   >

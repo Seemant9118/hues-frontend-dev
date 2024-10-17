@@ -204,8 +204,14 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         invoices: [],
       });
       setFiles([]);
-      queryClient.invalidateQueries([paymentApi.getPaymentsList.endpointKey]);
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      queryClient.invalidateQueries([
+        paymentApi.getPaymentsList.endpointKey,
+        orderId,
+      ]);
+      queryClient.invalidateQueries([
+        orderApi.getOrderDetails.endpointKey,
+        orderId,
+      ]);
       setIsRecordingPayment(false);
     },
     onError: (error) => {

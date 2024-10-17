@@ -165,7 +165,7 @@ export function InfiniteDataTable({
             })}
             {/* Loading bar at the last row */}
             {showLoadingState && (
-              <TableRow className="border border-red-600">
+              <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="py-2 text-center"
