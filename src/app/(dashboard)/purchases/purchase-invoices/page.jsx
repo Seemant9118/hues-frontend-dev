@@ -1,7 +1,5 @@
 'use client';
 
-import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
-import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
@@ -12,8 +10,6 @@ import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
-import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
-import { getAllDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
 import {
   exportInvoice,
   getAllInvoices,
@@ -35,7 +31,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
-import { usePurchaseDebitNotesColumns } from './usePurchaseDebitNotesColumns';
 import { usePurchaseInvoicesColumns } from './usePurchaseInvoicesColumns';
 
 // dynamic imports
@@ -88,8 +83,6 @@ const PurchaseInvoices = () => {
     debitNotes: [],
     creditNotes: [],
   });
-  const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
-  const [creditNotesListing, setCreditNotesListing] = useState([]); // creditNotes
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
@@ -108,8 +101,10 @@ const PurchaseInvoices = () => {
     let newFilterData = {};
     if (tab === 'pending') {
       newFilterData = { paymentStatus: 'NOT_PAID' };
-    } else if (tab === 'debitNotes' || tab === 'creditNotes' || tab === 'all') {
-      newFilterData = {};
+    } else if (tab === 'debitNotes') {
+      newFilterData = { debitNotes: true };
+    } else if (tab === 'creditNotes') {
+      newFilterData = { creditNotes: true };
     }
 
     setFilterData(newFilterData);
@@ -127,6 +122,7 @@ const PurchaseInvoices = () => {
     fetchNextPage: invoiceFetchNextPage,
     isFetching: isInvoicesFetching,
     isLoading: isInvoiceLoading,
+    refetch,
   } = useInfiniteQuery({
     queryKey: [invoiceApi.getAllInvoices.endpointKey, enterpriseId, filterData],
     queryFn: async ({ pageParam = 1 }) => {
@@ -142,8 +138,12 @@ const PurchaseInvoices = () => {
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     refetchOnWindowFocus: false,
-    enabled: tab === 'all' || tab === 'pending' || isInvoiceCreationSuccess,
   });
+
+  useEffect(() => {
+    refetch();
+  }, [isInvoiceCreationSuccess]);
+
   useEffect(() => {
     if (invoicesData?.pages.length > 0) {
       const latestPage =
@@ -182,16 +182,16 @@ const PurchaseInvoices = () => {
       });
 
       // Update the current display data without appending duplicates
-      setInvoiceListing((prevSales) => {
-        if (prevSales.length === 0) {
+      setInvoiceListing((prevInvoices) => {
+        if (prevInvoices.length === 0) {
           return newInvoicesData; // Set fresh data for the first time
         }
 
         // Append unique data to the invoices listing
         const updatedInvoices = [
-          ...prevSales,
+          ...prevInvoices,
           ...newInvoicesData.filter(
-            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
+            (item) => !prevInvoices.some((prevItem) => prevItem.id === item.id),
           ),
         ];
 
@@ -199,174 +199,6 @@ const PurchaseInvoices = () => {
       });
     }
   }, [invoicesData, filterData]);
-
-  // [DEBIT_NOTES_FETCHING]
-  // Fetch debitNotes data with infinite scroll
-  const {
-    data: debitNotesData,
-    fetchNextPage: debitNotesFetchNextPage,
-    isFetching: isDebitNotesFetching,
-    isLoading: isDebitNotesLoading,
-  } = useInfiniteQuery({
-    queryKey: [
-      DebitNoteApi.getAllDebitNotes.endpointKey,
-      enterpriseId,
-      filterData,
-    ],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await getAllDebitNotes({
-        id: enterpriseId,
-        data: { page: pageParam, limit: PAGE_LIMIT },
-      });
-      return response;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    refetchOnWindowFocus: false,
-    enabled: tab === 'debitNotes',
-  });
-  useEffect(() => {
-    if (debitNotesData?.pages.length > 0) {
-      const latestPage =
-        debitNotesData.pages[debitNotesData.pages.length - 1].data.data;
-      const newDebitNotesData = latestPage.data;
-
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
-
-      // Check if the current tab already has data to avoid duplicates
-      setInvoicesTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
-          return {
-            ...prevData,
-            [tab]: newDebitNotesData, // Replace with fresh data for the current tab
-          };
-        }
-
-        // Append unique data by filtering out duplicates
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newDebitNotesData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return {
-          ...prevData,
-          [tab]: updatedTabData, // Append only unique data
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setDebitNotesListing((prevdebits) => {
-        if (prevdebits.length === 0) {
-          return newDebitNotesData; // Set fresh data for the first time
-        }
-
-        // Append unique data to the invoices listing
-        const updatedDebitNotes = [
-          ...prevdebits,
-          ...newDebitNotesData.filter(
-            (item) => !prevdebits.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedDebitNotes;
-      });
-    }
-  }, [debitNotesData, filterData]);
-
-  // [CREDIT_NOTES_FETCHING]
-  // Fetch creditNotes data with infinite scroll
-  const {
-    data: creditNotesData,
-    fetchNextPage: creditNotesFetchNextPage,
-    isFetching: isCreditNotesFetching,
-    isLoading: isCreditNotesLoading,
-  } = useInfiniteQuery({
-    queryKey: [
-      CreditNoteApi.getAllCreditNotes.endpointKey,
-      enterpriseId,
-      filterData,
-    ],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await getAllCreditNotes({
-        id: enterpriseId,
-        data: { page: pageParam, limit: PAGE_LIMIT },
-      });
-      return response;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    refetchOnWindowFocus: false,
-    enabled: tab === 'creditNotes',
-  });
-  useEffect(() => {
-    if (creditNotesData?.pages.length > 0) {
-      const latestPage =
-        creditNotesData.pages[creditNotesData.pages.length - 1].data.data;
-      const newCreditNotesData = latestPage.data;
-
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
-
-      // Check if the current tab already has data to avoid duplicates
-      setInvoicesTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
-          return {
-            ...prevData,
-            [tab]: newCreditNotesData, // Replace with fresh data for the current tab
-          };
-        }
-
-        // Append unique data by filtering out duplicates
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newCreditNotesData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return {
-          ...prevData,
-          [tab]: updatedTabData, // Append only unique data
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setCreditNotesListing((prevCredits) => {
-        if (prevCredits.length === 0) {
-          return newCreditNotesData; // Set fresh data for the first time
-        }
-
-        // Append unique data to the invoices listing
-        const updatedCreditNotes = [
-          ...prevCredits,
-          ...newCreditNotesData.filter(
-            (item) => !prevCredits.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedCreditNotes;
-      });
-    }
-  }, [creditNotesData, filterData]);
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -380,10 +212,10 @@ const PurchaseInvoices = () => {
     const isPurchaseOrderRead = row?.readTracker?.buyerIsRead;
 
     if (isPurchaseOrderRead) {
-      router.push(`/purchase/purchase-invoices/${row.id}`);
+      router.push(`/purchases/purchase-invoices/${row.invoiceId}`);
     } else {
-      updateReadTrackerMutation.mutate(row.id);
-      router.push(`/purchase/purchase-invoices/${row.id}`);
+      updateReadTrackerMutation.mutate(row.invoiceId);
+      router.push(`/purchases/purchase-invoices/${row.invoiceId}`);
     }
   };
 
@@ -422,7 +254,6 @@ const PurchaseInvoices = () => {
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
   const invoiceColumns = usePurchaseInvoicesColumns(setSelectedInvoices);
-  const purchaseDebitNotesColumns = usePurchaseDebitNotesColumns();
 
   return (
     <>
@@ -471,6 +302,7 @@ const PurchaseInvoices = () => {
                     id={'sale-invoice'}
                     columns={invoiceColumns}
                     data={invoiceListing}
+                    onRowClick={onRowClick}
                     isFetching={isInvoicesFetching}
                     fetchNextPage={invoiceFetchNextPage}
                     filterData={filterData}
@@ -493,6 +325,7 @@ const PurchaseInvoices = () => {
                     id={'sale-invoice'}
                     columns={invoiceColumns}
                     data={invoiceListing}
+                    onRowClick={onRowClick}
                     isFetching={isInvoicesFetching}
                     fetchNextPage={invoiceFetchNextPage}
                     filterData={filterData}
@@ -501,21 +334,21 @@ const PurchaseInvoices = () => {
                 )}
               </TabsContent>
               <TabsContent value="debitNotes">
-                {isDebitNotesLoading && <Loading />}
-                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                {isInvoiceLoading && <Loading />}
+                {!isInvoiceLoading && invoiceListing?.length > 0 && (
                   <InfiniteDataTable
                     id={'sale-invoice-debits'}
-                    columns={purchaseDebitNotesColumns}
+                    columns={invoiceColumns}
                     onRowClick={onRowClick}
-                    data={debitNotesListing}
-                    isFetching={isDebitNotesFetching}
-                    fetchNextPage={debitNotesFetchNextPage}
+                    data={invoiceListing}
+                    isFetching={isInvoicesFetching}
+                    fetchNextPage={invoiceFetchNextPage}
                     filterData={filterData}
                     paginationData={paginationData}
                   />
                 )}
 
-                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                {!isInvoiceLoading && invoiceListing?.length === 0 && (
                   <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                     <Image src={emptyImg} alt="emptyIcon" />
                     <p>No Debit Note Raised</p>
@@ -523,20 +356,21 @@ const PurchaseInvoices = () => {
                 )}
               </TabsContent>
               <TabsContent value="creditNotes">
-                {isCreditNotesLoading && <Loading />}
-                {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
+                {isInvoiceLoading && <Loading />}
+                {!isInvoiceLoading && invoiceListing?.length > 0 && (
                   <InfiniteDataTable
                     id={'sale-invoice-credits'}
-                    columns={purchaseDebitNotesColumns}
-                    data={creditNotesListing}
-                    isFetching={isCreditNotesFetching}
-                    fetchNextPage={creditNotesFetchNextPage}
+                    columns={invoiceColumns}
+                    data={invoiceListing}
+                    onRowClick={onRowClick}
+                    isFetching={isInvoicesFetching}
+                    fetchNextPage={invoiceFetchNextPage}
                     filterData={filterData}
                     paginationData={paginationData}
                   />
                 )}
 
-                {!isCreditNotesLoading && creditNotesListing.length === 0 && (
+                {!isInvoiceLoading && invoiceListing.length === 0 && (
                   <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                     <Image src={emptyImg} alt="emptyIcon" />
                     <p>No Credit Note Raised</p>

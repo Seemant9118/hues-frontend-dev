@@ -658,6 +658,7 @@ const CreateOrder = ({
         </div>
         <div className="flex items-center justify-end gap-4">
           <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               setSelectedItem((prev) => ({
@@ -673,6 +674,7 @@ const CreateOrder = ({
             Cancel
           </Button>
           <Button
+            size="sm"
             disabled={Object.values(selectedItem).some(
               (value) => value === '' || value === null || value === undefined,
             )} // if any item of selectedItem is empty then button must be disabled
@@ -705,7 +707,7 @@ const CreateOrder = ({
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-bold">Gross Amount : </span>
@@ -722,10 +724,11 @@ const CreateOrder = ({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onCancel} variant={'outline'}>
+          <Button size="sm" onClick={onCancel} variant={'outline'}>
             Cancel
           </Button>
           <Button
+            size="sm"
             onClick={
               handleSubmit // invoke handle submit fn
             }

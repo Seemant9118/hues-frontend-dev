@@ -1,11 +1,70 @@
 'use client';
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dot } from 'lucide-react';
 import moment from 'moment';
 
-export const usePurchaseDebitNotesColumns = () => {
+export const useDebitNotesColumns = (setSelectedDebit) => {
+  // Function to handle row selection
+  const handleRowSelection = (isSelected, row) => {
+    const debits = { ...row.original };
+
+    if (isSelected) {
+      setSelectedDebit((prev) => [...prev, debits]);
+    } else {
+      setSelectedDebit((prev) =>
+        prev.filter((order) => order.id !== row.original.id),
+      );
+    }
+  };
+
+  // Function to handle "Select All" functionality
+  const handleSelectAll = (isAllSelected, rows) => {
+    if (isAllSelected) {
+      const allOrders = rows.map((row) => {
+        return { ...row.original };
+      });
+      setSelectedDebit(allOrders);
+    } else {
+      setSelectedDebit([]); // Clear all selections
+    }
+  };
   return [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => {
+            table.toggleAllPageRowsSelected(!!value);
+            handleSelectAll(!!value, table.getRowModel().rows);
+          }}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <div
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row click from being triggered
+          }}
+        >
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+              handleRowSelection(!!value, row);
+            }}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: 'referenceNumber',
       header: ({ column }) => (
@@ -13,11 +72,10 @@ export const usePurchaseDebitNotesColumns = () => {
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-        const isPurchaseRead = row.original?.readTracker?.buyerIsRead;
-
+        const isSaleRead = row.original?.readTracker?.sellerIsRead;
         return (
           <div className="flex items-center">
-            {!isPurchaseRead && <Dot size={32} className="text-[#3288ED]" />}
+            {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
             <span>{referenceNumber}</span>
           </div>
         );

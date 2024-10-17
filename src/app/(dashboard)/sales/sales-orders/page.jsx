@@ -135,7 +135,7 @@ const SalesOrder = () => {
       const { currentPage, totalPages } = lastPage?.data?.data ?? {};
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {

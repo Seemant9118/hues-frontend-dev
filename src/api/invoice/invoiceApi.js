@@ -11,7 +11,7 @@ export const invoiceApi = {
   },
   //   3. get Invoice by Id
   getInvoice: {
-    endpoint: `/order/invoice/:invoiceId`,
+    endpoint: `/order/invoice/`,
     endpointKey: 'get_Invoice',
   },
   // 4. Preview Invoice

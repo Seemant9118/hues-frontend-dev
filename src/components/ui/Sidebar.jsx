@@ -4,6 +4,7 @@ import {
   Bell,
   Boxes,
   ClipboardList,
+  FileSymlink,
   Gauge,
   HandPlatter,
   Package,
@@ -59,6 +60,11 @@ const Sidebar = () => {
           icon: <ReceiptText size={16} />,
           path: '/sales/sales-invoices',
         },
+        {
+          name: 'Debit Notes',
+          icon: <FileSymlink size={16} />,
+          path: '/sales/sales-debitNotes',
+        },
       ],
     },
     {
@@ -76,25 +82,13 @@ const Sidebar = () => {
           icon: <ReceiptText size={16} />,
           path: '/purchases/purchase-invoices',
         },
+        {
+          name: 'Debit Notes',
+          icon: <FileSymlink size={16} />,
+          path: '/purchases/purchase-debitNotes',
+        },
       ],
     },
-    // {
-    //   name: "Invoices",
-    //   icon: <ReceiptText size={16} />,
-    //   path: "/invoice",
-    //   subTab: [
-    //     {
-    //       name: "Sale Invoices",
-    //       icon: <BadgeIndianRupee size={16} />,
-    //       path: "/invoice/sales-invoices"
-    //     },
-    //     {
-    //       name: "Purchase Invoices",
-    //       icon: <ReceiptIndianRupee size={16} />,
-    //       path: "/invoice/purchases-invoices"
-    //     },
-    //   ],
-    // },
     {
       name: 'Clients',
       icon: <UserRound size={16} />,
