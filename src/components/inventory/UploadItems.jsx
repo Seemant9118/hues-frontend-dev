@@ -80,7 +80,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
   }
 
   return (
-    <Wrapper>
+    <Wrapper className="pt-4">
       <MoveLeft
         className="hover:cursor-pointer"
         onClick={() => setisUploading(false)}

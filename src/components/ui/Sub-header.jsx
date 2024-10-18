@@ -5,7 +5,7 @@ const SubHeader = ({ name, children, className }) => {
   return (
     <div
       className={cn(
-        'sticky left-0 right-0 top-0 flex items-center justify-between gap-2.5 bg-white pt-4',
+        'sticky top-0 z-10 flex items-center justify-between bg-white pt-4',
         className,
       )}
     >

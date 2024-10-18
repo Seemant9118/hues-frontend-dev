@@ -13,7 +13,7 @@ const StyledLinks = ({ link }) => {
     link.subTab?.some((subtab) => pathname === subtab.path);
 
   return (
-    <>
+        <>
       {/* Main Tab */}
       <Link
         href={link.path}
