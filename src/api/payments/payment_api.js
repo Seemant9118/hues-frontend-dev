@@ -14,6 +14,11 @@ export const paymentApi = {
     endpoint: `/invoice-receivable/getpendinginvoices/`,
     endpointKey: 'get_Invoices_payments',
   },
+  // 4. getPaymentsByInvoiceId
+  getPaymentsByInvoiceId: {
+    endpoint: `/payment/getpaymentsbyinvoice/`,
+    endpointKey: 'get_payments_by_invoiceId',
+  },
 
   uploadPaymentProof: {
     endpoint: `/payment/upload`,

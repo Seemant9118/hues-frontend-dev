@@ -166,14 +166,15 @@ export const useSalesColumns = (
         <DataTableColumnHeader column={column} title="TOTAL AMOUNT" />
       ),
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue('amount'));
+        const { amount, gstAmount } = row.original;
+        const totalAmount = parseFloat(amount + gstAmount);
 
-        const formatted = new Intl.NumberFormat('en-US', {
+        const formattedAmt = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'INR',
-        }).format(amount);
+        }).format(totalAmount);
 
-        return <div>{formatted}</div>;
+        return <div>{formattedAmt}</div>;
       },
     },
     {

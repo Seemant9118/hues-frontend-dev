@@ -1,7 +1,11 @@
 export const DebitNoteApi = {
-  getAllDebitNotes: {
-    endpoint: `/order/debitnote/getalldebitnotes/`,
-    endpointKey: 'get_All_debit_notes',
+  getAllSalesDebitNotes: {
+    endpoint: `/order/debitnote/getallsalesdebitnotes/`,
+    endpointKey: 'get_All_Sales_debit_notes',
+  },
+  getAllPurchaseDebitNotes: {
+    endpoint: `/order/debitnote/getallpurchasedebitnotes/`,
+    endpointKey: 'get_All_Purchase_debit_notes',
   },
   acceptDebitAndCreateCreditNote: {
     endpoint: `/order/debitnote/accept/`,

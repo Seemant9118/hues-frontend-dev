@@ -1,9 +1,10 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
+import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import Image from 'next/image';
-import { useParams, usePathname, useSearchParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import emptyImg from '../../../public/Empty.png';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
@@ -13,8 +14,6 @@ import Loading from '../ui/Loading';
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
-  const searchParams = useSearchParams();
-  const invoiceId = searchParams.get('invoiceId');
   const params = useParams();
   const orderId = params.order_id;
 
@@ -23,6 +22,25 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
     queryKey: [invoiceApi.getInvoices.endpointKey, orderId],
     queryFn: () => getInvoices(orderId),
     select: (invoiceList) => invoiceList?.data?.data,
+  });
+
+  // CONCURRENT API CALL TO GET PUBLIC URLs
+  const getPublicUrls = async (invoices) => {
+    const urls = await Promise.all(
+      invoices.map((invoice) =>
+        getDocument(invoice?.attachmentLink).then((publicUrl) => ({
+          ...invoice,
+          publicUrl,
+        })),
+      ),
+    );
+    return urls;
+  };
+
+  const { data: invoiceListWithUrls, isLoading: isLoadingUrls } = useQuery({
+    queryKey: ['invoicesWithUrls', invoiceList],
+    queryFn: () => getPublicUrls(invoiceList),
+    enabled: !!invoiceList, // Only run this query if invoiceList is available
   });
 
   // fn for formatted currency
@@ -41,18 +59,15 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-  if (isInvoicesLoading) {
+  if (isInvoicesLoading || isLoadingUrls) {
     return <Loading />;
   }
 
   return (
     <>
       <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
-        {invoiceList && invoiceList?.length > 0 ? (
-          invoiceList?.map((invoice) => {
-            // Check if the invoiceId from searchParams matches the current invoice.id
-            const shouldOpenModal = String(invoice.id) === String(invoiceId);
-
+        {invoiceListWithUrls && invoiceListWithUrls?.length > 0 ? (
+          invoiceListWithUrls?.map((invoice) => {
             return (
               <div
                 key={invoice?.id}
@@ -93,16 +108,9 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                   </div>
 
                   <InvoicePDFViewModal
-                    invoiceId={invoice.id}
-                    pvtUrl={invoice?.attachmentLink}
-                    shouldOpen={shouldOpenModal} // Automatically open this modal if invoiceId matches
+                    Url={invoice.publicUrl} // Use pre-fetched public URL
                   />
                 </section>
-
-                {/* <DataTable
-                  columns={invoiceColumns}
-                  data={invoice?.invoiceItems}
-                /> */}
               </div>
             );
           })

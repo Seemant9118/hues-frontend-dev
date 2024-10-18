@@ -28,8 +28,18 @@ export const createInvoiceForNewOrder = (data) => {
   return APIinstance.post(invoiceApi.createInvoiceForNewOrder.endpoint, data);
 };
 
-export const getAllInvoices = ({ id, data }) => {
-  return APIinstance.post(`${invoiceApi.getAllInvoices.endpoint}${id}`, data);
+export const getAllSalesInvoices = ({ id, data }) => {
+  return APIinstance.post(
+    `${invoiceApi.getAllSalesInvoices.endpoint}${id}`,
+    data,
+  );
+};
+
+export const getAllPurchaseInvoices = ({ id, data }) => {
+  return APIinstance.post(
+    `${invoiceApi.getAllPurchaseInvoices.endpoint}${id}`,
+    data,
+  );
 };
 
 export const exportInvoice = (data) => {

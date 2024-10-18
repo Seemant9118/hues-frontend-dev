@@ -16,6 +16,11 @@ export const getInvoicesForPayments = (id) => {
   return APIinstance.get(`${paymentApi.getInvoicesForPayments.endpoint}${id}`);
 };
 
+// 4. get payments for invoiceId
+export const getPaymentsByInvoiceId = (id) => {
+  return APIinstance.get(`${paymentApi.getPaymentsByInvoiceId.endpoint}${id}`);
+};
+
 // 4. upload payment proofs
 export const uploadPaymentProofs = (id, file) => {
   return APIinstance.post(

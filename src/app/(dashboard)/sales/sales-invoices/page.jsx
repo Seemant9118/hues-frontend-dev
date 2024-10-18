@@ -12,7 +12,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import {
   exportInvoice,
-  getAllInvoices,
+  getAllSalesInvoices,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
@@ -74,8 +74,6 @@ const SalesInvoices = () => {
 
   const router = useRouter();
   const [tab, setTab] = useState('all');
-  const [isInvoiceCreationSuccess, setIsInvoiceCreationSuccess] =
-    useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
   const [invoicesTabs, setInvoicesTab] = useState({
@@ -123,11 +121,14 @@ const SalesInvoices = () => {
     fetchNextPage: invoiceFetchNextPage,
     isFetching: isInvoicesFetching,
     isLoading: isInvoiceLoading,
-    refetch,
   } = useInfiniteQuery({
-    queryKey: [invoiceApi.getAllInvoices.endpointKey, enterpriseId, filterData],
+    queryKey: [
+      invoiceApi.getAllSalesInvoices.endpointKey,
+      enterpriseId,
+      filterData,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await getAllInvoices({
+      const response = await getAllSalesInvoices({
         id: enterpriseId,
         data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
       });
@@ -140,10 +141,6 @@ const SalesInvoices = () => {
     },
     refetchOnWindowFocus: false,
   });
-
-  useEffect(() => {
-    refetch();
-  }, [isInvoiceCreationSuccess]);
 
   useEffect(() => {
     if (invoicesData?.pages.length > 0) {
@@ -398,8 +395,8 @@ const SalesInvoices = () => {
           name="Invoice"
           cta="offer"
           isOrder="invoice"
+          setInvoiceListing={setInvoiceListing}
           onCancel={() => setIsCreatingInvoice(false)}
-          setIsOrderCreationSuccess={setIsInvoiceCreationSuccess}
         />
       )}
     </>

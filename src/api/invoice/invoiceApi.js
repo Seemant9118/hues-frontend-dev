@@ -29,12 +29,17 @@ export const invoiceApi = {
     endpoint: `/order/invoice/generate`,
     endpointKey: 'create_invoice_new_order',
   },
-  // 7. getAllInvoices : enterpriseLevel
-  getAllInvoices: {
-    endpoint: `/order/invoice/getallinvoicelist/`,
-    endpointKey: 'get_all_invoices',
+  // 7. getAllSalesInvoices : enterpriseLevel
+  getAllSalesInvoices: {
+    endpoint: `/order/invoice/getallsalesinvoicelist/`,
+    endpointKey: 'get_all_sales_invoices',
   },
-  // 8. export invoice
+  // 8. getAllPurchaseInvoices : enterpriseLevel
+  getAllPurchaseInvoices: {
+    endpoint: `/order/invoice/getallpurchaseinvoicelist/`,
+    endpointKey: 'get_all_sales_invoices',
+  },
+  // 9. export invoice
   exportInvoice: {
     endpoint: `/order/invoice/export`,
     endpointKey: 'export_invoice',

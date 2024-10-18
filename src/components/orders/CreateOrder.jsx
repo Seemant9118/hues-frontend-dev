@@ -2,7 +2,6 @@ import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/clien
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
-import { orderApi } from '@/api/order_api/order_api';
 import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
@@ -30,7 +29,7 @@ import {
   CreateOrderService,
   createInvoiceForUninvited,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -43,6 +42,7 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
+  setSalesListing,
   onCancel,
   name,
   cta,
@@ -50,13 +50,8 @@ const CreateOrder = ({
   isOrder,
   setIsCreatingSales,
   setIsCreatingInvoice,
-  setIsOrderCreationSuccess,
 }) => {
-  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-
-  // const pathName = usePathname();
-  // const isSales = pathName.includes('sales');
 
   const [errorMsg, setErrorMsg] = useState({});
   const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
@@ -211,14 +206,14 @@ const CreateOrder = ({
   // mutation - create order
   const orderMutation = useMutation({
     mutationFn: CreateOrderService,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(
         cta === 'offer'
           ? 'Sales Order Created Successfully'
           : 'Purchase Order Created Successfully',
       );
-      setIsOrderCreationSuccess((prev) => !prev);
       onCancel();
+      setSalesListing((prev) => [res.data.data, ...prev]);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -230,11 +225,8 @@ const CreateOrder = ({
     mutationFn: createInvoiceForUninvited,
     onSuccess: () => {
       toast.success('Invoice Created Successfully');
-      setIsOrderCreationSuccess((prev) => !prev);
       onCancel();
-      queryClient.invalidateQueries({
-        queryKey: [orderApi.getSales.endpointKey],
-      });
+      // setInvoiceListing((prev) => [res.data.data, ...prev]);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
-import { getAllDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { getAllPurchaseDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { exportInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
@@ -76,12 +76,12 @@ const PurchaseDebitNotes = () => {
     isLoading: isDebitNotesLoading,
   } = useInfiniteQuery({
     queryKey: [
-      DebitNoteApi.getAllDebitNotes.endpointKey,
+      DebitNoteApi.getAllPurchaseDebitNotes.endpointKey,
       enterpriseId,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await getAllDebitNotes({
+      const response = await getAllPurchaseDebitNotes({
         id: enterpriseId,
         data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
       });
@@ -160,13 +160,13 @@ const PurchaseDebitNotes = () => {
     },
   });
   const onRowClick = (row) => {
-    const isSaleDebitRead = row?.readTracker?.sellerIsRead;
+    const isPurchaseDebitRead = row?.readTracker?.buyerIsRead;
 
-    if (isSaleDebitRead) {
-      router.push(`/sales/sales-debitNotes/${row.id}`);
+    if (isPurchaseDebitRead) {
+      router.push(`/purchases/purchase-debitNotes/${row.id}`);
     } else {
       updateReadTrackerMutation.mutate(row.id);
-      router.push(`/sales/sales-debitNotes/${row.id}`);
+      router.push(`/purchases/purchase-debitNotes/${row.id}`);
     }
   };
 

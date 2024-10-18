@@ -76,7 +76,7 @@ const SalesOrder = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [tab, setTab] = useState('all');
-  const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
+  // const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
@@ -108,8 +108,6 @@ const SalesOrder = () => {
       newFilterData = { bidReceived: true };
     } else if (tab === 'pending') {
       newFilterData = { paymentStatus: 'NOT_PAID' };
-    } else if (isOrderCreationSuccess) {
-      newFilterData = {};
     }
 
     setFilterData(newFilterData);
@@ -135,7 +133,7 @@ const SalesOrder = () => {
       const { currentPage, totalPages } = lastPage?.data?.data ?? {};
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -381,8 +379,8 @@ const SalesOrder = () => {
           isOrder="order"
           setIsCreatingSales={setIsCreatingSales}
           setIsCreatingInvoice={setIsCreatingInvoice}
+          setSalesListing={setSalesListing}
           onCancel={() => setIsCreatingSales(false)}
-          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
 
@@ -394,7 +392,6 @@ const SalesOrder = () => {
           cta="offer"
           isOrder="invoice"
           onCancel={() => setIsCreatingInvoice(false)}
-          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
 
@@ -407,7 +404,6 @@ const SalesOrder = () => {
           isOrder="order"
           orderId={orderId}
           onCancel={() => setIsEditingOrder(false)}
-          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
         />
       )}
     </>
