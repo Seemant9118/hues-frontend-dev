@@ -54,3 +54,8 @@ export function getProfileDetails(id) {
 export function generateSignOTP() {
   return APIinstance.post(userAuth.generateVerifySignOTP.endpoint);
 }
+
+// 12 . logging out
+export function LoggingOut() {
+  return APIinstance.post(userAuth.logout.endpoint);
+}

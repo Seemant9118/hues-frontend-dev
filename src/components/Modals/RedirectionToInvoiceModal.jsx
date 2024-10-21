@@ -22,7 +22,7 @@ const RedirectionToInvoiceModal = ({
         <div className="flex flex-col gap-10 p-2">
           <span className="flex flex-col gap-1">
             This enterprise has not accepted your invitation and will not be
-            able to accept your offer. You can generate an invoice instead.
+            able to accept your offer. But You can create an invoice instead.
             Proceed ?
           </span>
           <div className="flex justify-end gap-2">

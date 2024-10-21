@@ -1,3 +1,5 @@
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import {
   Table,
@@ -8,11 +10,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   createBulkNegotiaion,
   GetNegotiationDetails,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, History } from 'lucide-react';
 import moment from 'moment';
 import { usePathname } from 'next/navigation';
@@ -20,13 +24,17 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
+import ConditionalRenderingStatus from './ConditionalRenderingStatus';
+import OrdersOverview from './OrdersOverview';
 
 const NegotiationComponent = ({
   orderDetails,
   isNegotiation,
   setIsNegotiation,
 }) => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
   const pathName = usePathname();
   const isBid = pathName.includes('purchase-orders');
@@ -108,13 +116,17 @@ const NegotiationComponent = ({
 
   const toggleHistory = (index, itemData) => {
     setHistoryVisible((prev) => ({
-      ...prev,
-      [index]: !prev[index],
+      [index]: !prev[index], // This ensures that only one row's history is visible at a time
     }));
-    getNegotiationDetailsMutation.mutate({
-      orderId: itemData.orderId,
-      itemId: itemData.id,
-    });
+
+    // Fetch negotiation details when the history is toggled open
+    if (!historyVisible[index]) {
+      setNegotiationDetails([]); // Clear the details to trigger loading state
+      getNegotiationDetailsMutation.mutate({
+        orderId: itemData.orderId,
+        itemId: itemData.id,
+      });
+    }
   };
 
   const handleSubmit = () => {
@@ -126,8 +138,77 @@ const NegotiationComponent = ({
     createBulkNegotiationMutation.mutate(extractedData);
   };
 
+  // to get client name and number
+  const { data: clients } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey],
+    queryFn: () => getClients(enterpriseId),
+    select: (res) => res.data.data,
+    enabled: pageIsSales,
+  });
+  const client = clients?.find((clientData) => {
+    const clientId = clientData?.client?.id ?? clientData?.id;
+    return clientId === orderDetails?.buyerEnterpriseId;
+  });
+
+  const clientName =
+    client?.client === null
+      ? client?.invitation?.userDetails?.name
+      : client?.client?.name;
+
+  const clientNumber =
+    client?.client === null
+      ? client?.invitation?.invitationIdentifier
+      : client?.client?.mobileNumber;
+
+  // fetching vendor to get vendorName
+  const { data: vendors } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryFn: () => getVendors(enterpriseId),
+    select: (res) => res.data.data,
+    enabled: isBid,
+  });
+  const vendor = vendors?.find(
+    (vendorData) => vendorData?.vendor?.id === orderDetails?.sellerEnterpriseId,
+  );
+  const vendorName =
+    vendor?.vendor?.name !== null
+      ? vendor?.vendor?.name
+      : vendor?.invitation?.userDetails?.name;
+
+  const vendorNumber =
+    vendor?.vendor === null
+      ? vendor?.invitation?.invitationIdentifier
+      : vendor?.vendor?.mobileNumber;
+
+  // multiStatus components
+  const multiStatus = (
+    <div className="flex gap-2">
+      <ConditionalRenderingStatus
+        status={
+          pageIsSales
+            ? orderDetails?.metaData?.sellerData?.orderStatus
+            : orderDetails?.metaData?.buyerData?.orderStatus
+        }
+      />
+      <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.payment?.status}
+      />
+    </div>
+  );
+
   return (
     <Wrapper className="relative">
+      {/* Collapsable overview */}
+      <OrdersOverview
+        isCollapsableOverview={true}
+        orderDetails={orderDetails}
+        orderId={orderDetails?.referenceNumber}
+        multiStatus={multiStatus}
+        Name={isBid ? vendorName : clientName}
+        mobileNumber={isBid ? vendorNumber : clientNumber}
+        amtPaid={orderDetails?.amountPaid}
+        totalAmount={orderDetails.amount + orderDetails.gstAmount}
+      />
       <Table>
         <TableHeader>
           {/* Main Header Row */}
@@ -244,8 +325,19 @@ const NegotiationComponent = ({
                 </TableCell>
               </TableRow>
 
-              {/* Conditionally show history below each row */}
+              {/* Loading state */}
               {historyVisible[index] &&
+                getNegotiationDetailsMutation.isPending && (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center">
+                      <Loading />
+                    </TableCell>
+                  </TableRow>
+                )}
+
+              {/* DATA: Conditionally show history below each row */}
+              {historyVisible[index] &&
+                !getNegotiationDetailsMutation.isPending &&
                 negotiationDetails.length > 0 &&
                 negotiationDetails
                   ?.sort(
@@ -254,7 +346,7 @@ const NegotiationComponent = ({
                   ?.map((negoData) => (
                     <TableRow
                       key={negoData.id}
-                      className="text-xs font-semibold"
+                      className="animate-fadeInUp text-xs font-semibold"
                     >
                       <TableCell colSpan={1}>
                         {pageIsSales &&
@@ -289,24 +381,27 @@ const NegotiationComponent = ({
                       </TableCell>
                       <TableCell colSpan={2}>{negoData?.quantity}</TableCell>
                       <TableCell colSpan={2}>{negoData?.unitPrice}</TableCell>
-                      <TableCell colSpan={2}>
-                        {`₹ ${negoData?.price.toFixed(2)}`}
-                      </TableCell>
+                      <TableCell
+                        colSpan={2}
+                      >{`₹ ${negoData?.price.toFixed(2)}`}</TableCell>
                     </TableRow>
                   ))}
 
-              {historyVisible[index] && negotiationDetails.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="border">
-                    <div className="bg-gray-100 p-4">
-                      <h4 className="font-semibold">
-                        History for {item?.productDetails?.productName}
-                      </h4>
-                      <p>There is no Negotiation history for this... </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
+              {/* PLaceholder Text: If no history is available, show a text */}
+              {historyVisible[index] &&
+                !getNegotiationDetailsMutation.isPending &&
+                negotiationDetails.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={9} className="border">
+                      <div className="bg-gray-100 p-4">
+                        <h4 className="font-semibold">
+                          History for {item?.productDetails?.productName}
+                        </h4>
+                        <p>There is no negotiation history for this item.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
             </React.Fragment>
           ))}
         </TableBody>
@@ -315,20 +410,24 @@ const NegotiationComponent = ({
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
       {isNegotiation && (
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => setIsNegotiation(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            className="w-32 bg-primary text-white hover:bg-blue-50 hover:text-primary"
-            onClick={handleSubmit}
-          >
-            Submit
-          </Button>
+        <div className="sticky bottom-0 z-10 flex justify-end">
+          <section className="flex gap-2">
+            <Button
+              variant="outline"
+              className="w-32"
+              size="sm"
+              onClick={() => setIsNegotiation(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+              size="sm"
+              onClick={handleSubmit}
+            >
+              Submit
+            </Button>
+          </section>
         </div>
       )}
     </Wrapper>

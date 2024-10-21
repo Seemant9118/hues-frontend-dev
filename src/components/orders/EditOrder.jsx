@@ -47,7 +47,13 @@ import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
-const EditOrder = ({ onCancel, type, name, cta, orderId }) => {
+const EditOrder = ({
+  onCancel,
+  name,
+  cta,
+  orderId,
+  setIsOrderCreationSuccess,
+}) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [itemToSearch, setItemToSearch] = useState('');
@@ -308,11 +314,7 @@ const EditOrder = ({ onCancel, type, name, cta, orderId }) => {
     mutationFn: (data) => updateOrder(orderId, data),
     onSuccess: () => {
       toast.success('Order Updated Successfully');
-      queryClient.invalidateQueries(
-        type === 'sales'
-          ? [orderApi.getSales.endpointKey]
-          : [orderApi.getPurchases.endpointKey],
-      );
+      setIsOrderCreationSuccess((prev) => !prev);
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       onCancel();
     },

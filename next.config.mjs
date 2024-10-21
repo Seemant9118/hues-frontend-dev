@@ -5,6 +5,9 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    domains: ['hues-dev.s3.ap-south-1.amazonaws.com'],
+  },
 };
 
 export default nextConfig;

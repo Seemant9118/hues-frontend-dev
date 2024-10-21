@@ -101,3 +101,37 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* global.css */
+.quill-container .ql-toolbar {
+  @apply rounded-t-lg border-b border-gray-300 bg-gray-100;
+}
+
+.quill-container .ql-container {
+  @apply rounded-b-lg bg-white; /* Adjust height */
+}
+
+.quill-container .ql-editor {
+  @apply p-4 leading-relaxed text-gray-800;
+}
+
+.quill-container .ql-toolbar .ql-formats button {
+  @apply hover:bg-gray-200;
+}
+
+.quill-container img {
+  display: flex;
+  gap: 2rem;
+  max-width: 100%; /* Ensure images don't exceed container width */
+  height: auto; /* Maintain aspect ratio */
+  width: 15%; /* Set default width to 50% of the container */
+}
+
+.isImageComment img {
+  max-width: 25%; /* Ensure images are responsive */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.infinite-datatable-scrollable-body {
+  overflow-anchor: none;
+}

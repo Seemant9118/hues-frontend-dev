@@ -1,44 +1,67 @@
 'use client';
 
+import { useEffect } from 'react';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
 export const useItemsColumns = ({
+  isAutoSelect,
   setInvoicedData,
   invoicedData,
   setProductDetailsList,
   productDetailsList,
   initialQuantities,
+  tableInstance, // Assuming you're using a table instance from a library
 }) => {
-  // Function to handle row selection
   const handleRowSelection = (rows, isSelected) => {
     const updatedSelection = isSelected
-      ? [...invoicedData.invoiceItems, ...rows.map((row) => row.original)]
+      ? [
+          ...invoicedData.invoiceItems,
+          ...rows.map((row) => ({
+            ...row.original,
+            totalAmount: row.original.quantity * row.original.unitPrice,
+            totalGstAmount:
+              (row.original.quantity *
+                row.original.unitPrice *
+                row.original.gstPercentage) /
+              100,
+          })),
+        ]
       : invoicedData.invoiceItems.filter(
           (item) =>
             !rows.some((row) => row.original.orderItemId === item.orderItemId),
         );
 
-    const totalAmount = updatedSelection.reduce(
-      (acc, item) => acc + item.totalAmount,
+    const totalAmt = updatedSelection.reduce(
+      (acc, item) => acc + item.unitPrice * item.quantity,
       0,
     );
-    const totalGstAmount = updatedSelection.reduce(
-      (acc, item) => acc + (item.totalAmount * item.gstPercentage) / 100,
+
+    const totalGstAmt = updatedSelection.reduce(
+      (acc, item) =>
+        acc + (item.unitPrice * item.quantity * item.gstPercentage) / 100,
       0,
     );
 
     setInvoicedData({
       ...invoicedData,
       invoiceItems: updatedSelection,
-      amount: Number(totalAmount.toFixed(2)),
-      gstAmount: Number(totalGstAmount.toFixed(2)),
+      amount: Number(totalAmt.toFixed(2)),
+      gstAmount: Number(totalGstAmt.toFixed(2)),
     });
   };
 
-  // Function to update product details list
+  // useEffect to trigger auto-selection of all rows if negotiationStatus is "NEW"
+  useEffect(() => {
+    if (isAutoSelect && tableInstance) {
+      const allRows = tableInstance.getRowModel().rows;
+      handleRowSelection(allRows, true); // Select all rows
+      tableInstance.toggleAllPageRowsSelected(true); // Visually toggle all rows as selected
+    }
+  }, [isAutoSelect, tableInstance]); // Dependency on negotiationStatus and tableInstance
+
   const updateProductDetailsList = (index, newQuantity) => {
     const updatedList = productDetailsList.map((item, idx) =>
       idx === index
@@ -57,22 +80,21 @@ export const useItemsColumns = ({
     setProductDetailsList(updatedList);
   };
 
-  // Function to update invoiced data for quantity changes
   const updateInvoicedDataForQuantity = (index, newQuantity) => {
-    const updatedItems = invoicedData.invoiceItems.map((item, idx) =>
-      idx === index
-        ? {
-            ...item,
-            quantity: newQuantity,
-            totalAmount: newQuantity * item.unitPrice,
-            totalGstAmount: parseFloat(
-              (newQuantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
-                2,
-              ),
-            ),
-          }
-        : item,
-    );
+    const updatedItems = invoicedData.invoiceItems.map((item, idx) => {
+      if (idx === index) {
+        return {
+          ...item,
+          quantity: newQuantity,
+          totalAmount: newQuantity * item.unitPrice,
+          totalGstAmount: parseFloat(
+            (newQuantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
+          ),
+        };
+      }
+      return item;
+    });
+
     setInvoicedData({
       ...invoicedData,
       invoiceItems: updatedItems,
@@ -86,28 +108,32 @@ export const useItemsColumns = ({
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
+            (table.getIsSomePageRowsSelected() && 'indeterminate') ||
+            isAutoSelect
           }
           onCheckedChange={(value) => {
-            table.toggleAllPageRowsSelected(!!value);
-            handleRowSelection(table.getRowModel().rows, !!value);
+            if (!isAutoSelect) {
+              table.toggleAllPageRowsSelected(!!value);
+              handleRowSelection(table.getRowModel().rows, !!value);
+            }
           }}
           aria-label="Select all"
-          // Disabled if there are no rows to select
-          disabled={table.getRowModel().rows.length === 0}
+          disabled={isAutoSelect || table.getRowModel().rows.length === 0} // Disable interaction if status is "NEW"
         />
       ),
       cell: ({ row }) => {
         const { quantity } = row.original;
         return (
           <Checkbox
-            checked={row.getIsSelected()}
+            checked={row.getIsSelected() || isAutoSelect}
             onCheckedChange={(value) => {
-              row.toggleSelected(!!value);
-              handleRowSelection([row], !!value);
+              if (!isAutoSelect) {
+                row.toggleSelected(!!value);
+                handleRowSelection([row], !!value);
+              }
             }}
             aria-label="Select row"
-            disabled={quantity === 0}
+            disabled={isAutoSelect || quantity === 0} // Disable interaction if status is "NEW"
           />
         );
       },
@@ -167,7 +193,7 @@ export const useItemsColumns = ({
               className="disabled:hover:cursor-not-allowed"
               variant="export"
               onClick={handleDecrement}
-              disabled={quantity <= 1}
+              disabled={quantity <= 1 || isAutoSelect}
             >
               -
             </Button>
@@ -177,12 +203,13 @@ export const useItemsColumns = ({
               className="w-20"
               value={quantity}
               onChange={handleInputChange}
+              disabled={isAutoSelect}
             />
             <Button
               className="disabled:cursor-not-allowed"
               variant="export"
               onClick={handleIncrement}
-              disabled={quantity >= initialQuantities?.[index]}
+              disabled={quantity >= initialQuantities?.[index] || isAutoSelect}
             >
               +
             </Button>
@@ -208,7 +235,7 @@ export const useItemsColumns = ({
             type="text"
             name="totalAmount"
             disabled
-            className="w-20 disabled:cursor-not-allowed"
+            className="w-32 disabled:cursor-not-allowed"
             value={`₹ ${totalAmt.toFixed(2)}`}
           />
         );

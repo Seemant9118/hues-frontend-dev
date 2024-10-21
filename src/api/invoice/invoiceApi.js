@@ -1,8 +1,8 @@
 export const invoiceApi = {
-  // 1. create invoice
-  createInvoiceNew: {
+  // 1. create invoice : for accepted order
+  createInvoiceForAcceptedOrder: {
     endpoint: `/order/invoice/create`,
-    endpointKey: 'create_Invoice',
+    endpointKey: 'create_Invoice_accepted_order',
   },
   //   2. get invoices
   getInvoices: {
@@ -11,7 +11,7 @@ export const invoiceApi = {
   },
   //   3. get Invoice by Id
   getInvoice: {
-    endpoint: `/order/invoice/:invoiceId`,
+    endpoint: `/order/invoice/`,
     endpointKey: 'get_Invoice',
   },
   // 4. Preview Invoice
@@ -23,5 +23,25 @@ export const invoiceApi = {
   generateOTPInvoice: {
     endpoint: `/order/invoice/verifysignature/generateotp`,
     endpointKey: 'invoice_generate_otp',
+  },
+  // 6.createInvoiceNew : for NEW Order
+  createInvoiceForNewOrder: {
+    endpoint: `/order/invoice/generate`,
+    endpointKey: 'create_invoice_new_order',
+  },
+  // 7. getAllSalesInvoices : enterpriseLevel
+  getAllSalesInvoices: {
+    endpoint: `/order/invoice/getallsalesinvoicelist/`,
+    endpointKey: 'get_all_sales_invoices',
+  },
+  // 8. getAllPurchaseInvoices : enterpriseLevel
+  getAllPurchaseInvoices: {
+    endpoint: `/order/invoice/getallpurchaseinvoicelist/`,
+    endpointKey: 'get_all_sales_invoices',
+  },
+  // 9. export invoice
+  exportInvoice: {
+    endpoint: `/order/invoice/export`,
+    endpointKey: 'export_invoice',
   },
 };

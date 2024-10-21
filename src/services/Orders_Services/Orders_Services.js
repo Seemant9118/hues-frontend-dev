@@ -5,12 +5,12 @@ export const CreateOrderService = (data) => {
   return APIinstance.post(orderApi.createOrder.endpoint, data);
 };
 
-export const GetSales = (id) => {
-  return APIinstance.get(`${orderApi.getSales.endpoint}${id}`);
+export const GetSales = ({ id, data }) => {
+  return APIinstance.post(`${orderApi.getSales.endpoint}${id}`, data);
 };
 
-export const GetPurchases = (id) => {
-  return APIinstance.get(`${orderApi.getPurchases.endpoint}${id}`);
+export const GetPurchases = ({ id, data }) => {
+  return APIinstance.post(`${orderApi.getPurchases.endpoint}${id}`, data);
 };
 
 export const OrderDetails = (id) => {
@@ -43,8 +43,8 @@ export const getPurchaseInvoices = (id) => {
   return APIinstance.get(`${orderApi.getPurchaseInvoice.endpoint}${id}`);
 };
 
-export const createInvoice = (data) => {
-  return APIinstance.post(orderApi.createInvoice.endpoint, data);
+export const createInvoiceForUninvited = (data) => {
+  return APIinstance.post(orderApi.createInvoiceForUninvited.endpoint, data);
 };
 
 export const generateInvoice = (id) => {
@@ -61,4 +61,10 @@ export const createBulkNegotiaion = (data) => {
 
 export const updateOrder = (id, data) => {
   return APIinstance.post(`${orderApi.updateOrder.endpoint}${id}`, data);
+};
+
+export const exportOrder = (data) => {
+  return APIinstance.post(orderApi.exportOrder.endpoint, data, {
+    responseType: 'blob', // Specify response type here
+  });
 };

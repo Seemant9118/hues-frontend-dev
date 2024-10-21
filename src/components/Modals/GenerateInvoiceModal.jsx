@@ -8,11 +8,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { LocalStorageService } from '@/lib/utils';
-import { createInvoiceNew } from '@/services/Invoice_Services/Invoice_Services';
+import {
+  createInvoiceForAcceptedOrder,
+  createInvoiceForNewOrder,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5, FileCog } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,24 +24,23 @@ import Loading from '../ui/Loading';
 import Slot from '../ui/Slot';
 
 const GenerateInvoiceModal = ({
+  orderDetails,
   invoicedData,
   setInvoicedData,
   generateOTP,
   disableCondition,
-  setIsPastInvoices,
+  setIsGenerateInvoice,
   handleClose,
 }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const params = useParams();
   const orderId = params.order_id;
-  // const userId = LocalStorageService.get('user_profile');
+
   const userMobileNumber = LocalStorageService.get('user_mobile_number');
-  // const operationType = LocalStorageService.get('operation_type');
   const [open, setOpen] = useState(false);
   const [isOTPVerified, setOTPVerified] = useState(false);
   const [startFrom, setStartFrom] = useState(30);
-  // const [otp, setOtp] = useState(null);
-  // console.log(otp);
 
   //   timer for resend
   useEffect(() => {
@@ -52,13 +54,31 @@ const GenerateInvoiceModal = ({
     return () => clearInterval(timer);
   }, [startFrom]); // Add dependency to stop timer when countdown ends
 
-  // mutation fn - generate Invoice
+  // mutation fn - generate Invoice : IF ACCEPTED
   const invoiceMutation = useMutation({
-    mutationKey: [invoiceApi.createInvoiceNew.endpointKey],
-    mutationFn: createInvoiceNew,
+    mutationKey: [invoiceApi.createInvoiceForAcceptedOrder.endpointKey],
+    mutationFn: createInvoiceForAcceptedOrder,
     onSuccess: () => {
       setOTPVerified(true);
       toast.success('Invoice Generated Successfully');
+      queryClient.invalidateQueries([
+        invoiceApi.getInvoices.endpointKey,
+        orderId,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // mutation fn - new generate Invoice : IF NEW
+  const invoiceMutationNew = useMutation({
+    mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
+    mutationFn: createInvoiceForNewOrder,
+    onSuccess: () => {
+      setOTPVerified(true);
+      toast.success('Invoice Generated Successfully');
+      router.push('/sales-orders');
       queryClient.invalidateQueries([
         invoiceApi.getInvoices.endpointKey,
         orderId,
@@ -78,6 +98,12 @@ const GenerateInvoiceModal = ({
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
+    if (orderDetails?.negotiationStatus === 'NEW') {
+      const { amount, gstAmount, invoiceItems, orderType, ...newInvoicedData } =
+        invoicedData;
+      invoiceMutationNew.mutate(newInvoicedData);
+      return;
+    }
     invoiceMutation.mutate(invoicedData);
   };
 
@@ -136,8 +162,12 @@ const GenerateInvoiceModal = ({
                 )}
               </span>
             </p>
-            <Button type="submit" className="w-full">
-              {invoiceMutation.isLoading ? <Loading /> : 'Verify To Generate'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={invoiceMutation.isPending}
+            >
+              {invoiceMutation.isPending ? <Loading /> : 'Verify To Generate'}
             </Button>
           </form>
         )}
@@ -157,7 +187,8 @@ const GenerateInvoiceModal = ({
                 onClick={() => {
                   setOpen(false);
                   handleClose();
-                  setIsPastInvoices(true);
+                  setIsGenerateInvoice(false);
+                  router.back();
                 }}
               >
                 View

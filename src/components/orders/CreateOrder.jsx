@@ -2,7 +2,6 @@ import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/clien
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
-import { orderApi } from '@/api/order_api/order_api';
 import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
@@ -28,9 +27,9 @@ import {
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import {
   CreateOrderService,
-  createInvoice,
+  createInvoiceForUninvited,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -43,6 +42,7 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
+  setSalesListing,
   onCancel,
   name,
   cta,
@@ -51,7 +51,6 @@ const CreateOrder = ({
   setIsCreatingSales,
   setIsCreatingInvoice,
 }) => {
-  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -207,19 +206,14 @@ const CreateOrder = ({
   // mutation - create order
   const orderMutation = useMutation({
     mutationFn: CreateOrderService,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(
         cta === 'offer'
           ? 'Sales Order Created Successfully'
           : 'Purchase Order Created Successfully',
       );
       onCancel();
-      queryClient.invalidateQueries({
-        queryKey:
-          cta === 'offer'
-            ? [orderApi.getSales.endpointKey]
-            : [orderApi.getPurchases.endpointKey],
-      });
+      setSalesListing((prev) => [res.data.data, ...prev]);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -228,13 +222,11 @@ const CreateOrder = ({
 
   // mutation - create invoice
   const invoiceMutation = useMutation({
-    mutationFn: createInvoice,
+    mutationFn: createInvoiceForUninvited,
     onSuccess: () => {
       toast.success('Invoice Created Successfully');
       onCancel();
-      queryClient.invalidateQueries({
-        queryKey: [orderApi.getSales.endpointKey],
-      });
+      // setInvoiceListing((prev) => [res.data.data, ...prev]);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -658,6 +650,7 @@ const CreateOrder = ({
         </div>
         <div className="flex items-center justify-end gap-4">
           <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               setSelectedItem((prev) => ({
@@ -673,6 +666,7 @@ const CreateOrder = ({
             Cancel
           </Button>
           <Button
+            size="sm"
             disabled={Object.values(selectedItem).some(
               (value) => value === '' || value === null || value === undefined,
             )} // if any item of selectedItem is empty then button must be disabled
@@ -705,7 +699,7 @@ const CreateOrder = ({
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-bold">Gross Amount : </span>
@@ -722,10 +716,11 @@ const CreateOrder = ({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onCancel} variant={'outline'}>
+          <Button size="sm" onClick={onCancel} variant={'outline'}>
             Cancel
           </Button>
           <Button
+            size="sm"
             onClick={
               handleSubmit // invoke handle submit fn
             }

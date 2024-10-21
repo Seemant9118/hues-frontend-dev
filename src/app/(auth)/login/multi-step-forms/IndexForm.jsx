@@ -62,6 +62,7 @@ export default function IndexForm({ setCurrStep }) {
       LocalStorageService.set('user_profile', data.data.data.userId);
       LocalStorageService.set('user_mobile_number', inviteData.mobile_number);
       LocalStorageService.set('operation_type', data.data.data.operation_type);
+      LocalStorageService.set('invitationData', data.data.data.invitationData);
       toast.success(data.data.message);
       setCurrStep(2);
     },
@@ -79,6 +80,7 @@ export default function IndexForm({ setCurrStep }) {
         formDataWithMob.mobileNumber,
       );
       LocalStorageService.set('operation_type', data.data.data.operation_type);
+      LocalStorageService.set('invitationData', data.data.data.invitationData);
       toast.success(data.data.message);
       setCurrStep(2);
     },

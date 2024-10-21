@@ -6,7 +6,7 @@ const Wrapper = ({ children, className, id }) => {
     <div
       id={id}
       className={cn(
-        'scrollBarStyles flex h-full grow flex-col gap-4 overflow-y-auto',
+        'flex h-full grow flex-col gap-4 overflow-y-hidden p-2',
         className,
       )}
     >

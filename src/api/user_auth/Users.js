@@ -54,4 +54,9 @@ export const userAuth = {
     endpoint: `/iam/auth/verifysignature/generateotp`,
     endpointKey: 'generate_verify_sign_otp',
   },
+  // 12. logout
+  logout: {
+    endpoint: `/iam/auth/logout`,
+    endpointKey: 'logging_out',
+  },
 };

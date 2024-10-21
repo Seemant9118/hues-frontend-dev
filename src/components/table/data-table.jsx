@@ -1,8 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import { DataTablePagination } from '@/components/table/DataTablePagination';
 import {
   Table,
   TableBody,
@@ -15,33 +12,33 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 
-export function DataTable({ columns, data, onRowClick, id }) {
+import * as React from 'react';
+
+export function DataTable({ columns, data, id }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
     },
+    getCoreRowModel: getCoreRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
   });
 
   return (
     <div>
-      <div className="rounded-[6px]">
+      <div className="scrollBarStyles max-h-[220px] overflow-y-auto rounded-[6px]">
         <Table id={id}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -63,24 +60,24 @@ export function DataTable({ columns, data, onRowClick, id }) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : () => {}
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-xl shrink-0">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                return (
+                  <TableRow
+                    className="border-y border-[#A5ABBD33]"
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="max-w-xl shrink-0">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
@@ -94,8 +91,6 @@ export function DataTable({ columns, data, onRowClick, id }) {
           </TableBody>
         </Table>
       </div>
-
-      {data.length > 10 && <DataTablePagination table={table} />}
     </div>
   );
 }

@@ -4,12 +4,15 @@ import {
   Bell,
   Boxes,
   ClipboardList,
+  FileSymlink,
   Gauge,
   HandPlatter,
   Package,
+  ReceiptText,
   ScrollText,
   Store,
   UserRound,
+  Users,
 } from 'lucide-react';
 import StyledLinks from './StyledLinks';
 
@@ -45,30 +48,47 @@ const Sidebar = () => {
     {
       name: 'Sales',
       icon: <ClipboardList size={16} />,
-      path: '/sales-orders',
+      path: '/sales/sales-orders',
+      subTab: [
+        {
+          name: 'Orders',
+          icon: <Boxes size={16} />,
+          path: '/sales/sales-orders',
+        },
+        {
+          name: 'Invoices',
+          icon: <ReceiptText size={16} />,
+          path: '/sales/sales-invoices',
+        },
+        {
+          name: 'Debit Notes',
+          icon: <FileSymlink size={16} />,
+          path: '/sales/sales-debitNotes',
+        },
+      ],
     },
     {
       name: 'Purchases',
       icon: <ScrollText size={16} />,
-      path: '/purchase-orders',
+      path: '/purchases/purchase-orders',
+      subTab: [
+        {
+          name: 'Orders',
+          icon: <Boxes size={16} />,
+          path: '/purchases/purchase-orders',
+        },
+        {
+          name: 'Invoices',
+          icon: <ReceiptText size={16} />,
+          path: '/purchases/purchase-invoices',
+        },
+        {
+          name: 'Debit Notes',
+          icon: <FileSymlink size={16} />,
+          path: '/purchases/purchase-debitNotes',
+        },
+      ],
     },
-    // {
-    //   name: "Invoices",
-    //   icon: <ReceiptText size={16} />,
-    //   path: "/invoice",
-    //   subTab: [
-    //     {
-    //       name: "Sale Invoices",
-    //       icon: <BadgeIndianRupee size={16} />,
-    //       path: "/invoice/sales-invoices"
-    //     },
-    //     {
-    //       name: "Purchase Invoices",
-    //       icon: <ReceiptIndianRupee size={16} />,
-    //       path: "/invoice/purchases-invoices"
-    //     },
-    //   ],
-    // },
     {
       name: 'Clients',
       icon: <UserRound size={16} />,
@@ -78,6 +98,11 @@ const Sidebar = () => {
       name: 'Vendors',
       icon: <Store size={16} />,
       path: '/vendors',
+    },
+    {
+      name: 'Members',
+      icon: <Users size={16} />,
+      path: '/members',
     },
     {
       name: 'Notifications',

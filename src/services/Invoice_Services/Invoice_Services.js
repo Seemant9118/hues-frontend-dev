@@ -1,8 +1,11 @@
 import { APIinstance } from '@/services';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 
-export const createInvoiceNew = (data) => {
-  return APIinstance.post(invoiceApi.createInvoiceNew.endpoint, data);
+export const createInvoiceForAcceptedOrder = (data) => {
+  return APIinstance.post(
+    invoiceApi.createInvoiceForAcceptedOrder.endpoint,
+    data,
+  );
 };
 
 export const getInvoices = (id) => {
@@ -19,4 +22,28 @@ export const previewInvoice = (data) => {
 
 export const invoiceGenerateOTP = () => {
   return APIinstance.post(invoiceApi.generateOTPInvoice.endpoint);
+};
+
+export const createInvoiceForNewOrder = (data) => {
+  return APIinstance.post(invoiceApi.createInvoiceForNewOrder.endpoint, data);
+};
+
+export const getAllSalesInvoices = ({ id, data }) => {
+  return APIinstance.post(
+    `${invoiceApi.getAllSalesInvoices.endpoint}${id}`,
+    data,
+  );
+};
+
+export const getAllPurchaseInvoices = ({ id, data }) => {
+  return APIinstance.post(
+    `${invoiceApi.getAllPurchaseInvoices.endpoint}${id}`,
+    data,
+  );
+};
+
+export const exportInvoice = (data) => {
+  return APIinstance.post(invoiceApi.exportInvoice.endpoint, data, {
+    responseType: 'blob', // Specify response type here
+  });
 };
