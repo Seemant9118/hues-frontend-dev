@@ -32,6 +32,16 @@ export const getDebitNote = (id) => {
   return APIinstance.get(`${DebitNoteApi.getDebitNote.endpoint}${id}`);
 };
 
+export const raisedDebitNote = (data) => {
+  return APIinstance.post(`${DebitNoteApi.raisedDebitNote.endpoint}`, data);
+};
+
+export const getDebitNoteByInvoice = (id) => {
+  return APIinstance.get(
+    `${DebitNoteApi.getDebitNoteByInvoiceId.endpoint}${id}`,
+  );
+};
+
 export const createComments = (data) => {
   return APIinstance.post(DebitNoteApi.createComments.endpoint, data);
 };

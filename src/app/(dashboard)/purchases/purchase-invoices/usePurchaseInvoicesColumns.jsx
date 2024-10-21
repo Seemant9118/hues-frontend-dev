@@ -86,9 +86,9 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
       },
     },
     {
-      accessorKey: 'customerName',
+      accessorKey: 'vendorName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="CUSTOMERS" />
+        <DataTableColumnHeader column={column} title="VENDORS" />
       ),
     },
     {

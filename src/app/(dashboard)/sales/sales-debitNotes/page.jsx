@@ -58,7 +58,6 @@ const SalesDebitNotes = () => {
     } else if (tab === 'rejected') {
       newFilterData = { status: 'REJECTED' };
     }
-
     setFilterData(newFilterData);
 
     // Check if data for this tab already exists to prevent unnecessary API calls

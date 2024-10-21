@@ -117,13 +117,13 @@ const DebitNoteModal = ({ cta, debitNote }) => {
           size="sm"
           className={
             debitNote.status === 'PENDING' && cta === 'accept'
-              ? 'bg-[#288AF9]'
+              ? 'w-24 bg-[#288AF9]'
               : debitNote.status === 'PENDING' && cta === 'reject'
-                ? 'border border-[#F04949] bg-[#F04949] text-white hover:bg-white hover:text-[#F04949]'
+                ? 'w-24 border border-[#F04949] bg-white text-[#F04949] hover:bg-[#F04949] hover:text-white'
                 : 'hidden'
           }
         >
-          {cta === 'accept' ? 'Accept & create credit note' : 'Reject'}
+          {cta === 'accept' ? 'Accept' : 'Reject'}
         </Button>
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center gap-5">
@@ -170,7 +170,7 @@ const DebitNoteModal = ({ cta, debitNote }) => {
                 </div>
                 <Textarea
                   name="remark"
-                  className="w-full rounded-sm"
+                  className="min-h-[80px] w-full rounded-sm"
                   value={dataToCreateCreditNote.remark}
                   onChange={handleChange}
                 />
@@ -223,7 +223,7 @@ const DebitNoteModal = ({ cta, debitNote }) => {
                 </div>
                 <Textarea
                   name="reason"
-                  className="w-full rounded-sm"
+                  className="min-h-[80px] w-full rounded-sm"
                   value={dataToRejection.reason}
                   onChange={handleRejectionChange}
                 />

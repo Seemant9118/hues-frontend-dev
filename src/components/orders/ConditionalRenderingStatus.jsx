@@ -92,12 +92,18 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBorder = '#F8BA05';
       break;
 
-    // debit/credit note raised
+    // debit/credit note status
     case 'NOT_RAISED':
       statusText = 'Not Raised';
       statusColor = '#288AF9';
       statusBG = '#288AF91A';
       statusBorder = '#288AF9';
+      break;
+    case 'RAISED':
+      statusText = 'Raised';
+      statusColor = '#DD9745';
+      statusBG = '#DD97451A';
+      statusBorder = '#DD9745';
       break;
     default:
       return null;

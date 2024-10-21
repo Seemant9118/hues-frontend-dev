@@ -1,5 +1,6 @@
 'use client';
 
+import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
@@ -15,15 +16,17 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
+import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Share2 } from 'lucide-react';
+import { Download, MoveUpRight, Share2 } from 'lucide-react';
+import moment from 'moment';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import emptyImg from '../../../../../../public/Empty.png';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
 
@@ -96,6 +99,17 @@ const ViewInvoice = () => {
     enabled: tab === 'payment',
   });
 
+  // fetch debitNotes of invoice
+  const { isLoading: isDebitNoteLoading, data: debitNotes } = useQuery({
+    queryKey: [
+      DebitNoteApi.getDebitNoteByInvoiceId.endpointKey,
+      params.invoiceId,
+    ],
+    queryFn: () => getDebitNoteByInvoice(params.invoiceId),
+    select: (data) => data.data.data,
+    enabled: tab === 'debitNotes',
+  });
+
   // to get client name
   const { data: clients } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
@@ -121,6 +135,22 @@ const ViewInvoice = () => {
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = useSalesInvoiceColumns();
 
+  // fn for formatted currency
+  const formattedCurrency = useMemo(
+    () => (amount) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'INR',
+      }).format(amount);
+    },
+    [],
+  );
+
+  // fn for capitalization
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
   return (
     <Wrapper className="relative">
       {/* headers */}
@@ -133,7 +163,7 @@ const ViewInvoice = () => {
         </div>
         <div className="flex gap-2">
           {/* View CTA modal */}
-          <InvoicePDFViewModal Url={pdfDoc?.publicUrl} />
+          <InvoicePDFViewModal Url={pvtUrl} />
 
           {/* share CTA */}
           <Button
@@ -184,7 +214,6 @@ const ViewInvoice = () => {
         </TabsContent>
         <TabsContent value="payment">
           {isPaymentsLoading && <Loading />}
-          {/* orders overview */}
           {!isPaymentsLoading && paymentsListing?.length > 0 && (
             <DataTable data={paymentsListing} columns={paymentsColumns} />
           )}
@@ -195,7 +224,96 @@ const ViewInvoice = () => {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="debitNotes"></TabsContent>
+        <TabsContent value="debitNotes">
+          <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
+            {isDebitNoteLoading && <Loading />}
+            {!isDebitNoteLoading &&
+              debitNotes?.length > 0 &&
+              debitNotes?.map((debitNote) => {
+                return (
+                  <div
+                    key={debitNote?.id}
+                    className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-customShadow"
+                  >
+                    <section className="flex items-center justify-between">
+                      <div className="flex w-full flex-col gap-4">
+                        <div className="flex justify-between">
+                          <h1 className="flex items-center gap-4">
+                            <span className="text-sm font-bold">
+                              {debitNote?.referenceNumber}
+                            </span>
+                            <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
+                              {capitalize(debitNote?.status)}
+                            </span>
+                          </h1>
+
+                          <p
+                            onClick={() => {
+                              router.push(
+                                `/sales/sales-debitNotes/${debitNote?.id}`,
+                              );
+                            }}
+                            className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline"
+                          >
+                            View Debit Note <MoveUpRight size={12} />
+                          </p>
+                        </div>
+
+                        <div className="flex gap-10">
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Date :{' '}
+                            </span>
+                            <span className="text-[#363940]">
+                              {moment(debitNote?.createdAt).format(
+                                'DD-MM-YYYY',
+                              )}
+                            </span>
+                          </h1>
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Total Amount :{' '}
+                            </span>
+                            <span className="font-bold text-[#363940]">
+                              {formattedCurrency(debitNote?.amount)}
+                            </span>
+                            <span> (inc. GST)</span>
+                          </h1>
+                          <h1 className="text-sm font-bold">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Type :{' '}
+                            </span>
+                            <span className="font-bold text-[#363940]">
+                              {capitalize('ss')}
+                            </span>
+                          </h1>
+                        </div>
+                        <div className="flex gap-2">
+                          <h1 className="text-sm">
+                            <span className="font-bold text-[#ABB0C1]">
+                              Reason :{' '}
+                            </span>
+                            <span className="font-bold text-[#363940]">
+                              {debitNote?.remark}
+                            </span>
+                          </h1>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                );
+              })}
+          </div>
+          {!isDebitNoteLoading && debitNotes?.length === 0 && (
+            <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+              <Image src={emptyImg} alt="emptyIcon" />
+              <p className="font-bold">No debit notes raised yet</p>
+              <p className="max-w-96 text-center">
+                {"You haven't any debit notes yet. "}
+              </p>
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
     </Wrapper>
   );
