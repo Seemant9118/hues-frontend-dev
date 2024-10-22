@@ -158,11 +158,15 @@ const ViewOrder = () => {
 
   const OrderColumns = usePurchaseOrderColumns();
 
+  // multiStatus components
+  const buyerStatus =
+    orderDetails?.negotiationStatus === 'WITHDRAWN'
+      ? 'WITHDRAWN'
+      : orderDetails?.metaData?.buyerData?.orderStatus;
+
   const multiStatus = (
     <div className="flex gap-2">
-      <ConditionalRenderingStatus
-        status={orderDetails?.metaData?.buyerData?.orderStatus}
-      />
+      <ConditionalRenderingStatus status={buyerStatus} />
       <ConditionalRenderingStatus
         status={orderDetails?.metaData?.payment?.status}
       />
@@ -240,6 +244,7 @@ const ViewOrder = () => {
 
                 <TabsContent value="overview" className="flex flex-col gap-4">
                   <OrdersOverview
+                    orderDetails={orderDetails}
                     orderId={orderDetails?.referenceNumber}
                     multiStatus={multiStatus}
                     Name={vendorName}

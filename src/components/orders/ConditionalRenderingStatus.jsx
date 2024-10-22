@@ -55,6 +55,12 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBG = '#6EAFFC1A';
       statusBorder = '#6EAFFC';
       break;
+    case 'PARTIAL_INVOICED':
+      statusText = 'Partial Invoiced';
+      statusColor = '#6EAFFC';
+      statusBG = '#6EAFFC1A';
+      statusBorder = '#6EAFFC';
+      break;
     case 'WITHDRAWN':
       statusText = 'Withdrawn';
       statusColor = '#F16B6B';

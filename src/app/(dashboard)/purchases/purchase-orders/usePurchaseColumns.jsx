@@ -149,7 +149,10 @@ export const usePurchaseColumns = (
         <DataTableColumnHeader column={column} title="STATUS" />
       ),
       cell: ({ row }) => {
-        const buyerStatus = row.original?.metaData?.buyerData?.orderStatus;
+        const buyerStatus =
+          row.original?.negotiationStatus === 'WITHDRAWN'
+            ? 'WITHDRAWN'
+            : row.original?.metaData?.buyerData?.orderStatus;
         const paymentStatus = row.original?.metaData?.payment?.status;
         return (
           <div className="flex gap-2">
@@ -165,15 +168,15 @@ export const usePurchaseColumns = (
         <DataTableColumnHeader column={column} title="AMOUNT" />
       ),
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue('amount'));
+        const { amount, gstAmount } = row.original;
+        const totalAmount = parseFloat(amount + gstAmount);
 
-        // Format the amount as a currency value
-        const formatted = new Intl.NumberFormat('en-US', {
+        const formattedAmt = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'INR',
-        }).format(amount);
+        }).format(totalAmount);
 
-        return <div>{formatted}</div>;
+        return <div>{formattedAmt}</div>;
       },
     },
     {

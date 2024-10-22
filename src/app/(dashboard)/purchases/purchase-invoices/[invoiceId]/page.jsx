@@ -1,7 +1,6 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
@@ -16,9 +15,7 @@ import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService } from '@/lib/utils';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import { getDocument } from '@/services/Template_Services/Template_Services';
@@ -34,13 +31,12 @@ import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 const ViewInvoice = () => {
   const router = useRouter();
   const params = useParams();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [tab, setTab] = useState('overview');
 
   const invoiceOrdersBreadCrumbs = [
     {
       id: 1,
-      name: 'Invoice',
+      name: 'Invoices',
       path: '/purchases/purchase-invoices/',
       show: true, // Always show
     },
@@ -109,33 +105,11 @@ const ViewInvoice = () => {
     enabled: tab === 'debitNotes',
   });
 
-  // fetch vendors
-  const { data: vendors } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
-  });
-
-  // Function to get customer name from clients list
-  const getCustomerName = (sellerEnterpriseId) => {
-    const vendor = vendors?.find(
-      (vendorData) => vendorData?.vendor?.id === sellerEnterpriseId,
-    );
-
-    return vendor?.vendor?.name !== null
-      ? vendor?.vendor?.name
-      : vendor?.invitation?.userDetails?.name;
-  };
-
-  const vendorName = getCustomerName(
-    invoiceDetails?.invoiceDetails?.sellerEnterpriseId,
-  );
-
   const paymentStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.metaData?.payment?.status,
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
   const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.metaData?.debitNote?.status,
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
   });
 
   const paymentsColumns = usePaymentColumns();
@@ -174,10 +148,8 @@ const ViewInvoice = () => {
             <div className="flex gap-2">
               {/* raised debit note CTA */}
               <RaisedDebitNoteModal
-                orderId={
-                  invoiceDetails?.invoiceItemDetails[0]?.orderItemId?.orderId
-                }
-                invoiceId={invoiceDetails?.invoiceDetails?.id}
+                orderId={invoiceDetails?.invoiceDetails?.orderId}
+                invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
               />
 
               {/* View CTA modal */}
@@ -219,14 +191,15 @@ const ViewInvoice = () => {
                   <InvoiceOverview
                     isCollapsableOverview={false}
                     invoiceDetails={invoiceDetails.invoiceDetails}
-                    invoiceId={invoiceDetails?.invoiceDetails?.referenceNumber}
+                    invoiceId={
+                      invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
+                    }
                     orderId={
-                      invoiceDetails?.invoiceItemDetails[0]?.orderItemId
-                        ?.orderId
+                      invoiceDetails?.invoiceDetails?.orderReferenceNumber
                     }
                     paymentStatus={paymentStatus}
                     debitNoteStatus={debitNoteStatus}
-                    Name={vendorName}
+                    Name={invoiceDetails?.invoiceDetails?.vendorName}
                     type={invoiceDetails?.invoiceDetails?.invoiceType}
                     date={invoiceDetails?.invoiceDetails?.createdAt}
                     amount={invoiceDetails?.invoiceDetails?.totalAmount}
@@ -312,7 +285,9 @@ const ViewInvoice = () => {
                                   Type :{' '}
                                 </span>
                                 <span className="font-bold text-[#363940]">
-                                  {capitalize('ss')}
+                                  {capitalize(
+                                    invoiceDetails?.invoiceDetails?.invoiceType,
+                                  )}
                                 </span>
                               </h1>
                             </div>

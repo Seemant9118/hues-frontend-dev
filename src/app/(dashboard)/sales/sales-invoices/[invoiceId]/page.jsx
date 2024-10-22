@@ -1,7 +1,6 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
@@ -15,9 +14,7 @@ import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService } from '@/lib/utils';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import { getDocument } from '@/services/Template_Services/Template_Services';
@@ -33,13 +30,12 @@ import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
 const ViewInvoice = () => {
   const router = useRouter();
   const params = useParams();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [tab, setTab] = useState('overview');
 
   const invoiceOrdersBreadCrumbs = [
     {
       id: 1,
-      name: 'Invoice',
+      name: 'Invoices',
       path: '/sales/sales-invoices',
       show: true, // Always show
     },
@@ -110,26 +106,11 @@ const ViewInvoice = () => {
     enabled: tab === 'debitNotes',
   });
 
-  // to get client name
-  const { data: clients } = useQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-  });
-  const client = clients?.find((clientData) => {
-    const clientId = clientData?.client?.id ?? clientData?.id;
-    return clientId === invoiceDetails?.invoiceDetails?.buyerEnterpriseId;
-  });
-
-  const clientName =
-    client?.client === null
-      ? client?.invitation?.userDetails?.name
-      : client?.client?.name;
   const paymentStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.metaData?.payment?.status,
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
   const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.metaData?.creditNote?.status,
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
   });
 
   const paymentsColumns = usePaymentColumns();
@@ -196,13 +177,13 @@ const ViewInvoice = () => {
               <InvoiceOverview
                 isCollapsableOverview={false}
                 invoiceDetails={invoiceDetails.invoiceDetails}
-                invoiceId={invoiceDetails?.invoiceDetails?.referenceNumber}
-                orderId={
-                  invoiceDetails?.invoiceItemDetails[0]?.orderItemId?.orderId
+                invoiceId={
+                  invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
                 }
+                orderId={invoiceDetails?.invoiceDetails?.orderReferenceNumber}
                 paymentStatus={paymentStatus}
                 debitNoteStatus={debitNoteStatus}
-                Name={clientName}
+                Name={invoiceDetails?.invoiceDetails?.customerName}
                 type={invoiceDetails?.invoiceDetails?.invoiceType}
                 date={invoiceDetails?.invoiceDetails?.createdAt}
                 amount={invoiceDetails?.invoiceDetails?.totalAmount}

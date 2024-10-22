@@ -1,7 +1,9 @@
 'use client';
 
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 
 export const useSalesInvoicesColumns = (setSelectedInvoices) => {
@@ -69,6 +71,16 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="INVOICE ID" />
       ),
+      cell: ({ row }) => {
+        const { invoiceReferenceNumber } = row.original;
+        const isSaleRead = row.original?.readTracker?.sellerIsRead;
+        return (
+          <div className="flex items-center">
+            {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
+            <span>{invoiceReferenceNumber}</span>
+          </div>
+        );
+      },
     },
 
     {
@@ -92,15 +104,37 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
       ),
     },
     {
-      accessorKey: 'orderId',
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="STATUS" />
+      ),
+      cell: ({ row }) => {
+        const paymentStatus = row.original?.invoiceMetaData?.payment?.status;
+        const debitNoteStatus =
+          row.original?.invoiceMetaData?.debitNote?.status === 'NOT_RAISED'
+            ? ''
+            : row.original?.invoiceMetaData?.debitNote?.status;
+
+        return (
+          <div className="flex items-start gap-2">
+            <ConditionalRenderingStatus status={paymentStatus} />
+            {debitNoteStatus !== '' && (
+              <ConditionalRenderingStatus status={debitNoteStatus} />
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'orderReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ORDER ID" />
       ),
       cell: ({ row }) => {
-        const { orderId } = row.original;
+        const { orderReferenceNumber } = row.original;
         return (
-          <div className="w-14 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
-            {orderId}
+          <div className="w-48 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
+            {orderReferenceNumber}
           </div>
         );
       },

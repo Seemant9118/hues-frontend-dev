@@ -4,7 +4,6 @@
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import DebitNoteComment from '@/components/invoices/DebitNoteComment';
-import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
@@ -276,13 +275,6 @@ const ViewDebitNote = () => {
           </section>
         </div>
       </section>
-      {/* cta's for accept/reject debit note */}
-      {debitNote?.status === 'PENDING' && (
-        <div className="sticky bottom-0 z-10 flex w-full justify-end gap-2 bg-white">
-          <DebitNoteModal cta="reject" debitNote={debitNote} />
-          <DebitNoteModal cta="accept" debitNote={debitNote} />
-        </div>
-      )}
     </Wrapper>
   );
 };

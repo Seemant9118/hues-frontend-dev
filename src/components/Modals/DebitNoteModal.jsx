@@ -1,6 +1,5 @@
 'use client';
 
-import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import {
   Dialog,
@@ -64,10 +63,14 @@ const DebitNoteModal = ({ cta, debitNote }) => {
       });
       setIsOpen(false);
       queryClient.invalidateQueries([
-        DebitNoteApi.getAllDebitNotes.endpointKey,
+        DebitNoteApi.getAllSalesDebitNotes.endpointKey,
       ]);
       queryClient.invalidateQueries([
-        CreditNoteApi.getAllCreditNotes.endpointKey,
+        DebitNoteApi.getAllPurchaseDebitNotes.endpointKey,
+      ]);
+      queryClient.invalidateQueries([
+        DebitNoteApi.getDebitNote.endpointKey,
+        debitNote.id,
       ]);
     },
     onError: (error) => {
@@ -86,10 +89,14 @@ const DebitNoteModal = ({ cta, debitNote }) => {
       });
       setIsOpen(false);
       queryClient.invalidateQueries([
-        DebitNoteApi.getAllDebitNotes.endpointKey,
+        DebitNoteApi.getAllSalesDebitNotes.endpointKey,
       ]);
       queryClient.invalidateQueries([
-        CreditNoteApi.getAllCreditNotes.endpointKey,
+        DebitNoteApi.getAllPurchaseDebitNotes.endpointKey,
+      ]);
+      queryClient.invalidateQueries([
+        DebitNoteApi.getDebitNote.endpointKey,
+        debitNote.id,
       ]);
     },
     onError: (error) => {

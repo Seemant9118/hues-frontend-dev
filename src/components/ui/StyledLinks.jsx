@@ -7,13 +7,13 @@ import { usePathname } from 'next/navigation';
 const StyledLinks = ({ link }) => {
   const pathname = usePathname();
 
-  // Check if current pathname matches the main tab or any of the sub-tabs
+  // Check if current pathname matches the main tab or starts with the sub-tab path
   const isActive =
     pathname === link.path ||
-    link.subTab?.some((subtab) => pathname === subtab.path);
+    link.subTab?.some((subtab) => pathname.startsWith(subtab.path));
 
   return (
-        <>
+    <>
       {/* Main Tab */}
       <Link
         href={link.path}
@@ -37,7 +37,7 @@ const StyledLinks = ({ link }) => {
               key={subtab.path}
               className={cn(
                 'flex gap-2 rounded-sm border-none p-3 text-xs',
-                pathname === subtab.path
+                pathname.startsWith(subtab.path)
                   ? 'bg-[#288AF91A] text-[#288AF9]'
                   : 'bg-transparent text-grey',
               )}

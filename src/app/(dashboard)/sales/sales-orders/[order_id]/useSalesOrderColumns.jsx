@@ -21,22 +21,23 @@ export const useSalesOrderColumns = (status) => {
     {
       accessorKey: 'quantity',
       header: ({ column }) => {
-        return status === 'ACCEPTED' ? (
+        return status === 'ACCEPTED' || status === 'PARTIAL_INVOICED' ? (
           <DataTableColumnHeader column={column} title="INVOICE / QUANTITY" />
         ) : (
           <DataTableColumnHeader column={column} title="QUANTITY" />
         );
       },
       cell: ({ row }) => {
+        const isNegotiation = row.original?.negotiation;
         const { invoiceQuantity, quantity } = row.original;
         const negotiationQty = row.original?.negotiation?.quantity;
 
-        return status === 'ACCEPTED' ? (
+        return status === 'ACCEPTED' || status === 'PARTIAL_INVOICED' ? (
           <div>
-            {invoiceQuantity} / {negotiationQty || quantity}
+            {invoiceQuantity} / {isNegotiation ? negotiationQty : quantity}
           </div>
         ) : (
-          <div>{negotiationQty || quantity}</div>
+          <div>{isNegotiation ? negotiationQty : quantity}</div>
         );
       },
     },

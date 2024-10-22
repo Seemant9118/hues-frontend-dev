@@ -20,7 +20,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, History } from 'lucide-react';
 import moment from 'moment';
 import { usePathname } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -43,8 +43,28 @@ const NegotiationComponent = ({
   const [bulkNegotiateOrder, setBulkNegotiateOrder] = useState([]);
   const [historyVisible, setHistoryVisible] = useState({});
   const [negotiationDetails, setNegotiationDetails] = useState([]);
+  // Initialize bulkNegotiateOrder state
+  useEffect(() => {
+    if (orderDetails?.orderItems) {
+      const initialOrders = orderDetails.orderItems.map((item) => ({
+        orderId: item.orderId,
+        orderItemId: item.id,
+        priceType: isBid ? 'BID' : 'OFFER',
+        createdBy: userId,
+        date: moment(new Date()).format('DD/MM/YYYY'),
+        status: isBid ? 'BID_SUBMITTED' : 'OFFER_SUBMITTED',
+        quantity: item?.negotiation?.quantity ?? item?.quantity,
+        unitPrice: item?.negotiation?.unitPrice ?? item?.unitPrice,
+        totalAmount: (
+          (item?.negotiation?.quantity ?? item.quantity) *
+          (item?.negotiation?.unitPrice ?? item.unitPrice)
+        ).toFixed(2),
+      }));
+      setBulkNegotiateOrder(initialOrders);
+    }
+  }, [orderDetails]);
 
-  //  fetch negotiationDetails
+  // Fetch negotiationDetails
   const getNegotiationDetailsMutation = useMutation({
     mutationKey: [orderApi.getNegotiationDetails.endpointKey],
     mutationFn: GetNegotiationDetails,
@@ -52,11 +72,11 @@ const NegotiationComponent = ({
       setNegotiationDetails(data?.data?.data);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong!');
+      toast.error(error.response?.data?.message || 'Something went wrong!');
     },
   });
 
-  // create bulkNegotiation
+  // Create bulkNegotiation
   const createBulkNegotiationMutation = useMutation({
     mutationKey: orderApi.createBulkNegotiation.endpointKey,
     mutationFn: createBulkNegotiaion,
@@ -67,23 +87,16 @@ const NegotiationComponent = ({
       setIsNegotiation(false);
     },
     onError: (error) => {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message);
     },
   });
 
   const handleChange = (e, index, field) => {
     const { value } = e.target;
     const updatedOrder = [...bulkNegotiateOrder];
-    const orderItem = orderDetails?.orderItems?.[index];
 
     updatedOrder[index] = {
       ...updatedOrder[index],
-      orderId: orderItem?.orderId,
-      orderItemId: orderItem?.id,
-      priceType: isBid ? 'BID' : 'OFFER',
-      createdBy: userId,
-      date: moment(new Date()).format('DD/MM/YYYY'),
-      status: isBid ? 'BID_SUBMITTED' : 'OFFER_SUBMITTED',
       [field]: Number(value),
     };
 
@@ -95,12 +108,8 @@ const NegotiationComponent = ({
   };
 
   const extractData = () => {
-    const filteredOrders = bulkNegotiateOrder.filter(
-      (item) => item && item.quantity && item.unitPrice,
-    );
-
     return {
-      negotiations: filteredOrders.map((item) => ({
+      negotiations: bulkNegotiateOrder.map((item) => ({
         orderId: item.orderId,
         orderItemId: item.orderItemId,
         priceType: item.priceType,
@@ -116,12 +125,12 @@ const NegotiationComponent = ({
 
   const toggleHistory = (index, itemData) => {
     setHistoryVisible((prev) => ({
-      [index]: !prev[index], // This ensures that only one row's history is visible at a time
+      ...prev,
+      [index]: !prev[index],
     }));
 
-    // Fetch negotiation details when the history is toggled open
     if (!historyVisible[index]) {
-      setNegotiationDetails([]); // Clear the details to trigger loading state
+      setNegotiationDetails([]); // Clear details to trigger loading state
       getNegotiationDetailsMutation.mutate({
         orderId: itemData.orderId,
         itemId: itemData.id,
@@ -283,8 +292,14 @@ const NegotiationComponent = ({
                     className="w-24"
                     type="number"
                     placeholder="0"
-                    value={bulkNegotiateOrder?.[index]?.quantity || ''}
-                    onChange={(e) => handleChange(e, index, 'quantity')}
+                    value={bulkNegotiateOrder?.[index]?.quantity}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (value >= 0) {
+                        handleChange(e, index, 'quantity');
+                      }
+                    }}
+                    min="0" // Prevents user from entering values less than 0
                   />
                 </TableCell>
                 <TableCell colSpan={1} className="text-center">
@@ -295,8 +310,14 @@ const NegotiationComponent = ({
                     className="w-24"
                     type="number"
                     placeholder="0"
-                    value={bulkNegotiateOrder?.[index]?.unitPrice || ''}
-                    onChange={(e) => handleChange(e, index, 'unitPrice')}
+                    value={bulkNegotiateOrder?.[index]?.unitPrice}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (value >= 0) {
+                        handleChange(e, index, 'unitPrice');
+                      }
+                    }}
+                    min="0" // Restricting user from typing a value less than 0
                   />
                 </TableCell>
                 <TableCell colSpan={1} className="text-center">

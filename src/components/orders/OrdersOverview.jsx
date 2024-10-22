@@ -62,14 +62,17 @@ const OrdersOverview = ({
               <div>{multiStatus}</div>
             </section>
 
-            <section className="flex flex-col gap-5">
-              <p className="text-xs font-bold">Payment Status</p>
-              <Progress
-                className="w-1/2 bg-[#F3F3F3]"
-                value={paymentProgressPercent}
-              />
-              <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
-            </section>
+            {(orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
+              orderDetails?.negotiationStatus === 'INVOICED') && (
+              <section className="flex flex-col gap-5">
+                <p className="text-xs font-bold">Payment Status</p>
+                <Progress
+                  className="w-1/2 bg-[#F3F3F3]"
+                  value={paymentProgressPercent}
+                />
+                <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
+              </section>
+            )}
           </div>
           {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
             orderDetails?.negotiationStatus === 'INVOICED') && (
