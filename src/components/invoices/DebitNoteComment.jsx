@@ -19,6 +19,7 @@ const DebitNoteComment = ({ comment }) => {
     }
     return `${displayDate} ${itemDateTime.format('HH:mm:ss')}`;
   };
+
   return (
     <div className="flex justify-start gap-2">
       <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
@@ -32,10 +33,7 @@ const DebitNoteComment = ({ comment }) => {
           </p>
         </div>
 
-        <p
-          className="isImageComment text-sm text-[#7F8185]"
-          dangerouslySetInnerHTML={{ __html: comment.comment }}
-        ></p>
+        <p className="text-sm text-[#7F8185]">{comment.comment}</p>
 
         <div className="flex gap-2">
           {comment?.mediaLinks?.map((mediaImage) => (

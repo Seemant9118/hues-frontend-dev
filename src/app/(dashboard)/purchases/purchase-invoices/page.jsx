@@ -90,11 +90,21 @@ const PurchaseInvoices = () => {
     // Apply filters based on the selected tab
     let newFilterData = {};
     if (tab === 'pending') {
-      newFilterData = { paymentStatus: 'NOT_PAID' };
+      newFilterData = {
+        filterData: {
+          payment: {
+            status: 'NOT_PAID',
+          },
+        },
+      };
     } else if (tab === 'debitNotes') {
-      newFilterData = { debitNotes: true };
-    } else if (tab === 'creditNotes') {
-      newFilterData = { creditNotes: true };
+      newFilterData = {
+        filterData: {
+          debitNote: {
+            status: 'RAISED',
+          },
+        },
+      };
     }
 
     setFilterData(newFilterData);
@@ -269,8 +279,10 @@ const PurchaseInvoices = () => {
               <TabsList className="border">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="debitNotes">Debit Note</TabsTrigger>
-                <TabsTrigger value="creditNotes">Credit Note</TabsTrigger>
+                <TabsTrigger value="debitNotes">
+                  {' '}
+                  Debit/Credit Notes
+                </TabsTrigger>
               </TabsList>
             </section>
 
@@ -331,28 +343,6 @@ const PurchaseInvoices = () => {
                 <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p>No Debit Note Raised</p>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="creditNotes">
-              {isInvoiceLoading && <Loading />}
-              {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                <InfiniteDataTable
-                  id={'sale-invoice-credits'}
-                  columns={invoiceColumns}
-                  data={invoiceListing}
-                  onRowClick={onRowClick}
-                  isFetching={isInvoicesFetching}
-                  fetchNextPage={invoiceFetchNextPage}
-                  filterData={filterData}
-                  paginationData={paginationData}
-                />
-              )}
-
-              {!isInvoiceLoading && invoiceListing.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No Credit Note Raised</p>
                 </div>
               )}
             </TabsContent>

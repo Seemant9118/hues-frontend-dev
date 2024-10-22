@@ -1,6 +1,5 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
-import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import Image from 'next/image';
@@ -24,25 +23,6 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
     select: (invoiceList) => invoiceList?.data?.data,
   });
 
-  // CONCURRENT API CALL TO GET PUBLIC URLs
-  const getPublicUrls = async (invoices) => {
-    const urls = await Promise.all(
-      invoices.map((invoice) =>
-        getDocument(invoice?.attachmentLink).then((publicUrl) => ({
-          ...invoice,
-          publicUrl,
-        })),
-      ),
-    );
-    return urls;
-  };
-
-  const { data: invoiceListWithUrls, isLoading: isLoadingUrls } = useQuery({
-    queryKey: ['invoicesWithUrls', invoiceList],
-    queryFn: () => getPublicUrls(invoiceList),
-    enabled: !!invoiceList, // Only run this query if invoiceList is available
-  });
-
   // fn for formatted currency
   const formattedCurrency = React.useMemo(
     () => (amount) => {
@@ -59,15 +39,15 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-  if (isInvoicesLoading || isLoadingUrls) {
+  if (isInvoicesLoading) {
     return <Loading />;
   }
 
   return (
     <>
       <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
-        {invoiceListWithUrls && invoiceListWithUrls?.length > 0 ? (
-          invoiceListWithUrls?.map((invoice) => {
+        {invoiceList && invoiceList?.length > 0 ? (
+          invoiceList?.map((invoice) => {
             return (
               <div
                 key={invoice?.id}
@@ -107,9 +87,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                     </div>
                   </div>
 
-                  <InvoicePDFViewModal
-                    Url={invoice.publicUrl} // Use pre-fetched public URL
-                  />
+                  <InvoicePDFViewModal Url={invoice?.attachmentLink} />
                 </section>
               </div>
             );

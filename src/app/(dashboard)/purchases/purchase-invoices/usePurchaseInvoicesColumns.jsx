@@ -1,7 +1,9 @@
 'use client';
 
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 
 export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
@@ -69,6 +71,16 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="INVOICE ID" />
       ),
+      cell: ({ row }) => {
+        const { invoiceReferenceNumber } = row.original;
+        const isPurchaseRead = row.original?.readTracker?.buyerIsRead;
+        return (
+          <div className="flex items-center">
+            {!isPurchaseRead && <Dot size={32} className="text-[#3288ED]" />}
+            <span>{invoiceReferenceNumber}</span>
+          </div>
+        );
+      },
     },
 
     {
@@ -86,21 +98,44 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
       },
     },
     {
-      accessorKey: 'customerName',
+      accessorKey: 'vendorName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="CUSTOMERS" />
+        <DataTableColumnHeader column={column} title="VENDORS" />
       ),
     },
     {
-      accessorKey: 'orderId',
+      accessorKey: 'orderReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ORDER ID" />
       ),
       cell: ({ row }) => {
-        const { orderId } = row.original;
+        const { orderReferenceNumber } = row.original;
         return (
-          <div className="w-14 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
-            {orderId}
+          <div className="w-48 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
+            {orderReferenceNumber}
+          </div>
+        );
+      },
+    },
+
+    {
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="STATUS" />
+      ),
+      cell: ({ row }) => {
+        const paymentStatus = row.original?.invoiceMetaData?.payment?.status;
+        const debitNoteStatus =
+          row.original?.invoiceMetaData?.debitNote?.status === 'NOT_RAISED'
+            ? ''
+            : row.original?.invoiceMetaData?.debitNote?.status;
+
+        return (
+          <div className="flex items-start gap-2">
+            <ConditionalRenderingStatus status={paymentStatus} />
+            {debitNoteStatus !== '' && (
+              <ConditionalRenderingStatus status={debitNoteStatus} />
+            )}
           </div>
         );
       },

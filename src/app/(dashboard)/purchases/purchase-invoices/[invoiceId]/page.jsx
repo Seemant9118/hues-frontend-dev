@@ -1,10 +1,11 @@
 'use client';
 
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
+import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -14,29 +15,28 @@ import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService } from '@/lib/utils';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Share2 } from 'lucide-react';
+import { Download, MoveUpRight, Share2 } from 'lucide-react';
+import moment from 'moment';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import emptyImg from '../../../../../../public/Empty.png';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
 const ViewInvoice = () => {
   const router = useRouter();
   const params = useParams();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [tab, setTab] = useState('overview');
 
   const invoiceOrdersBreadCrumbs = [
     {
       id: 1,
-      name: 'Invoice',
+      name: 'Invoices',
       path: '/purchases/purchase-invoices/',
       show: true, // Always show
     },
@@ -94,37 +94,42 @@ const ViewInvoice = () => {
     enabled: tab === 'payment',
   });
 
-  // fetch vendors
-  const { data: vendors } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
+  // fetch debitNotes of invoice
+  const { isLoading: isDebitNoteLoading, data: debitNotes } = useQuery({
+    queryKey: [
+      DebitNoteApi.getDebitNoteByInvoiceId.endpointKey,
+      params.invoiceId,
+    ],
+    queryFn: () => getDebitNoteByInvoice(params.invoiceId),
+    select: (data) => data.data.data,
+    enabled: tab === 'debitNotes',
   });
-
-  // Function to get customer name from clients list
-  const getCustomerName = (sellerEnterpriseId) => {
-    const vendor = vendors?.find(
-      (vendorData) => vendorData?.vendor?.id === sellerEnterpriseId,
-    );
-
-    return vendor?.vendor?.name !== null
-      ? vendor?.vendor?.name
-      : vendor?.invitation?.userDetails?.name;
-  };
-
-  const vendorName = getCustomerName(
-    invoiceDetails?.invoiceDetails?.sellerEnterpriseId,
-  );
 
   const paymentStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.metaData?.payment?.status,
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
   const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.metaData?.creditNote?.status,
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
   });
 
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
+
+  // fn for formatted currency
+  const formattedCurrency = useMemo(
+    () => (amount) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'INR',
+      }).format(amount);
+    },
+    [],
+  );
+
+  // fn for capitalization
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
 
   return (
     <Wrapper className="relative">
@@ -142,17 +147,13 @@ const ViewInvoice = () => {
             </div>
             <div className="flex gap-2">
               {/* raised debit note CTA */}
-              <Button
-                disabled
-                variant="blue_outline"
-                size="sm"
-                className="flex items-center justify-center bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-              >
-                Raised Debit Note
-              </Button>
+              <RaisedDebitNoteModal
+                orderId={invoiceDetails?.invoiceDetails?.orderId}
+                invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
+              />
 
               {/* View CTA modal */}
-              <InvoicePDFViewModal Url={pdfDoc?.publicUrl} />
+              <InvoicePDFViewModal Url={pvtUrl} />
 
               {/* share CTA */}
               <Button
@@ -190,14 +191,15 @@ const ViewInvoice = () => {
                   <InvoiceOverview
                     isCollapsableOverview={false}
                     invoiceDetails={invoiceDetails.invoiceDetails}
-                    invoiceId={invoiceDetails?.invoiceDetails?.referenceNumber}
+                    invoiceId={
+                      invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
+                    }
                     orderId={
-                      invoiceDetails?.invoiceItemDetails[0]?.orderItemId
-                        ?.orderId
+                      invoiceDetails?.invoiceDetails?.orderReferenceNumber
                     }
                     paymentStatus={paymentStatus}
                     debitNoteStatus={debitNoteStatus}
-                    Name={vendorName}
+                    Name={invoiceDetails?.invoiceDetails?.vendorName}
                     type={invoiceDetails?.invoiceDetails?.invoiceType}
                     date={invoiceDetails?.invoiceDetails?.createdAt}
                     amount={invoiceDetails?.invoiceDetails?.totalAmount}
@@ -223,7 +225,98 @@ const ViewInvoice = () => {
                 </div>
               )}
             </TabsContent>
-            <TabsContent value="debitNotes"></TabsContent>
+            <TabsContent value="debitNotes">
+              <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
+                {isDebitNoteLoading && <Loading />}
+                {!isDebitNoteLoading &&
+                  debitNotes?.length > 0 &&
+                  debitNotes?.map((debitNote) => {
+                    return (
+                      <div
+                        key={debitNote?.id}
+                        className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-customShadow"
+                      >
+                        <section className="flex items-center justify-between">
+                          <div className="flex w-full flex-col gap-4">
+                            <div className="flex justify-between">
+                              <h1 className="flex items-center gap-4">
+                                <span className="text-sm font-bold">
+                                  {debitNote?.referenceNumber}
+                                </span>
+                                <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
+                                  {capitalize(debitNote?.status)}
+                                </span>
+                              </h1>
+
+                              <p
+                                onClick={() => {
+                                  router.push(
+                                    `/purchases/purchase-debitNotes/${debitNote?.id}`,
+                                  );
+                                }}
+                                className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline"
+                              >
+                                View Debit Note <MoveUpRight size={12} />
+                              </p>
+                            </div>
+
+                            <div className="flex gap-10">
+                              <h1 className="text-sm">
+                                <span className="font-bold text-[#ABB0C1]">
+                                  Date :{' '}
+                                </span>
+                                <span className="text-[#363940]">
+                                  {moment(debitNote?.createdAt).format(
+                                    'DD-MM-YYYY',
+                                  )}
+                                </span>
+                              </h1>
+                              <h1 className="text-sm">
+                                <span className="font-bold text-[#ABB0C1]">
+                                  Total Amount :{' '}
+                                </span>
+                                <span className="font-bold text-[#363940]">
+                                  {formattedCurrency(debitNote?.amount)}
+                                </span>
+                                <span> (inc. GST)</span>
+                              </h1>
+                              <h1 className="text-sm font-bold">
+                                <span className="font-bold text-[#ABB0C1]">
+                                  Type :{' '}
+                                </span>
+                                <span className="font-bold text-[#363940]">
+                                  {capitalize(
+                                    invoiceDetails?.invoiceDetails?.invoiceType,
+                                  )}
+                                </span>
+                              </h1>
+                            </div>
+                            <div className="flex gap-2">
+                              <h1 className="text-sm">
+                                <span className="font-bold text-[#ABB0C1]">
+                                  Reason :{' '}
+                                </span>
+                                <span className="font-bold text-[#363940]">
+                                  {debitNote?.remark}
+                                </span>
+                              </h1>
+                            </div>
+                          </div>
+                        </section>
+                      </div>
+                    );
+                  })}
+              </div>
+              {!isDebitNoteLoading && debitNotes?.length === 0 && (
+                <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p className="font-bold">No debit notes raised yet</p>
+                  <p className="max-w-96 text-center">
+                    {"You haven't any debit notes yet. "}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         </>
       )}

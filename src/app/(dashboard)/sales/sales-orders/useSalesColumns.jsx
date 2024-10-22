@@ -150,7 +150,10 @@ export const useSalesColumns = (
         <DataTableColumnHeader column={column} title="STATUS" />
       ),
       cell: ({ row }) => {
-        const sellerStatus = row.original?.metaData?.sellerData?.orderStatus;
+        const sellerStatus =
+          row.original?.negotiationStatus === 'WITHDRAWN'
+            ? 'WITHDRAWN'
+            : row.original?.metaData?.sellerData?.orderStatus;
         const paymentStatus = row.original?.metaData?.payment?.status;
         return (
           <div className="flex gap-2">

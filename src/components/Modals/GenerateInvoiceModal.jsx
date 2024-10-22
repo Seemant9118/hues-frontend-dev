@@ -78,7 +78,7 @@ const GenerateInvoiceModal = ({
     onSuccess: () => {
       setOTPVerified(true);
       toast.success('Invoice Generated Successfully');
-      router.push('/sales-orders');
+      router.push('/sales/sales-orders');
       queryClient.invalidateQueries([
         invoiceApi.getInvoices.endpointKey,
         orderId,
