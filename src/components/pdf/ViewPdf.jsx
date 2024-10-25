@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import React, { useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 // for hiding redundant text
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -13,41 +14,67 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 const ViewPdf = ({ url }) => {
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
+  const [pageWidth, setPageWidth] = useState(0);
+  const containerRef = useRef(null);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setPages(numPages);
   };
 
+  useEffect(() => {
+    // Set the width dynamically based on the parent container size
+    const resizeObserver = new ResizeObserver(() => {
+      if (containerRef.current) {
+        setPageWidth(containerRef.current.offsetWidth);
+      }
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    // Clean up observer on component unmount
+    return () => {
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className="scrollBarStyles flex max-h-[40rem] max-w-[60rem] flex-col gap-2 overflow-auto px-2">
-      <div className="sticky right-0 top-0 z-50 flex items-center justify-end gap-2 bg-white">
-        <span className="rounded-md bg-gray-100 px-2 py-1.5">{`${pageNo} of ${pages} pages`}</span>
-        {/* <Button
-          variant="outline "
-          className="border border-black"
-          onClick={() => setIsOpen(false)}
-        >
-          Back
-        </Button> */}
+    <section className="flex w-full flex-col items-center gap-2 bg-[#F4F4F4] py-4">
+      <div className="flex items-center gap-4">
         <Button
           size="sm"
+          className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
+          variant="outline"
           disabled={pageNo === 1}
           onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
         >
-          Prev
+          <ArrowLeft size={18} />
         </Button>
+        <div
+          ref={containerRef}
+          className="scrollBarStyles h-[400px] w-[650px] overflow-y-auto overflow-x-hidden border shadow-2xl"
+        >
+          <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+            <Page width={pageWidth} pageNumber={pageNo} />
+          </Document>
+        </div>
+
         <Button
           size="sm"
+          className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
+          variant="outline"
           disabled={pageNo === pages}
           onClick={() => setPageNo((prev) => (prev < pages ? prev + 1 : pages))}
         >
-          Next
+          <ArrowRight size={18} />
         </Button>
       </div>
-      <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-        <Page size="A4" pageNumber={pageNo} />
-      </Document>
-    </div>
+
+      <div className="p-2 text-sm font-bold">{`${pageNo} of ${pages} page`}</div>
+    </section>
   );
 };
 
