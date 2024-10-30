@@ -14,6 +14,7 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   exportOrder,
   GetPurchases,
+  getUnconfirmedPurchases,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
@@ -82,10 +83,14 @@ const PurchaseOrders = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState(); // Ensure default structure
   const [purchaseListing, setPurchaseListing] = useState([]);
+  const [unconfirmedPurchaseListing, setUnconfirmedPurhchaseListing] = useState(
+    [],
+  );
   const [purchasesDataByTab, setPurchasesDataByTab] = useState({
     all: [],
     offerReceived: [],
     pending: [],
+    unconfirmed: [],
   });
   const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
 
@@ -190,6 +195,92 @@ const PurchaseOrders = () => {
     }
   }, [data, filterData]);
 
+  // fetch unconfirmed sales with infinite scroll
+  const {
+    data: unconfirmedPurchaseLists,
+    fetchNextPage: unconfirmedPurchaseFetchNextPage,
+    isFetching: unconfirmedPurchaseListsIsFetching,
+    isLoading: unconfirmedPurchaseListsIsLoading,
+  } = useInfiniteQuery({
+    queryKey: [
+      orderApi.getUnconfirmedPurchases.endpointKey,
+      enterpriseId,
+      filterData,
+    ],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getUnconfirmedPurchases({
+        id: enterpriseId,
+        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    refetchOnWindowFocus: false,
+    enabled: tab === 'unconfirmed',
+  });
+
+  useEffect(() => {
+    if (unconfirmedPurchaseLists?.pages.length > 0) {
+      const latestPage =
+        unconfirmedPurchaseLists.pages[
+          unconfirmedPurchaseLists.pages.length - 1
+        ].data.data;
+      const newUnconfirmedPurchaseData = latestPage.data;
+
+      // Set the pagination data
+      setPaginationData({
+        currentPage: latestPage.currentPage,
+        totalPages: latestPage.totalPages,
+      });
+
+      // Check if the current tab already has data to avoid duplicates
+      setPurchasesDataByTab((prevData) => {
+        if (prevData[tab]?.length === 0) {
+          // Only store the fresh data if it's not already there
+          return {
+            ...prevData,
+            [tab]: newUnconfirmedPurchaseData, // Replace with fresh data for the current tab
+          };
+        }
+
+        // Append unique data by filtering out duplicates
+        const updatedTabData = [
+          ...prevData[tab],
+          ...newUnconfirmedPurchaseData.filter(
+            (item) =>
+              !prevData[tab].some((prevItem) => prevItem.id === item.id),
+          ),
+        ];
+
+        return {
+          ...prevData,
+          [tab]: updatedTabData, // Append only unique data
+        };
+      });
+
+      // Update the current display data without appending duplicates
+      setUnconfirmedPurhchaseListing((prevSales) => {
+        if (prevSales.length === 0) {
+          return newUnconfirmedPurchaseData; // Set fresh data for the first time
+        }
+
+        // Append unique data to the sales listing
+        const updatedSales = [
+          ...prevSales,
+          ...newUnconfirmedPurchaseData.filter(
+            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
+          ),
+        ];
+
+        return updatedSales;
+      });
+    }
+  }, [unconfirmedPurchaseLists, filterData]);
+
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
     mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
@@ -284,6 +375,7 @@ const PurchaseOrders = () => {
                     Offer Recieved
                   </TabsTrigger>
                   <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                  <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
                 </TabsList>
                 <FilterModal setFilterData={setFilterData} />
               </section>
@@ -348,6 +440,31 @@ const PurchaseOrders = () => {
                       onRowClick={onRowClick}
                       isFetching={isFetching}
                       fetchNextPage={fetchNextPage}
+                      filterData={filterData}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={PurchaseEmptyStageData.heading}
+                      desc={PurchaseEmptyStageData.desc}
+                      subHeading={PurchaseEmptyStageData.subHeading}
+                      subItems={PurchaseEmptyStageData.subItems}
+                    />
+                  ))}
+              </TabsContent>
+
+              <TabsContent value="unconfirmed">
+                {unconfirmedPurchaseListsIsLoading && <Loading />}
+
+                {!unconfirmedPurchaseListsIsLoading &&
+                  (unconfirmedPurchaseListing?.length > 0 ? (
+                    <InfiniteDataTable
+                      id={'purchase-orders'}
+                      columns={PurchaseColumns}
+                      data={unconfirmedPurchaseListing}
+                      onRowClick={onRowClick}
+                      isFetching={unconfirmedPurchaseListsIsFetching}
+                      fetchNextPage={unconfirmedPurchaseFetchNextPage}
                       filterData={filterData}
                       paginationData={paginationData}
                     />

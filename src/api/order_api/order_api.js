@@ -90,4 +90,16 @@ export const orderApi = {
     endpoint: `/order/export`,
     endpointKey: 'export_order',
   },
+
+  // 17. get Unconfirmed Sales
+  getUnconfirmedSales: {
+    endpoint: `/order/getunconfirmedsales/`,
+    endpointKey: 'get_Unconfirmed_Sales',
+  },
+
+  // 18.get Unconfirmed Purchases
+  getUnconfirmedPurchases: {
+    endpoint: `/order/getunconfirmedpurchases/`,
+    endpointKey: 'get_Unconfirmed_Purchases',
+  },
 };
