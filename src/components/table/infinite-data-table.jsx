@@ -16,7 +16,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -52,18 +51,21 @@ export function InfiniteDataTable({
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  // handleScroll fn
   const handleScroll = React.useCallback(() => {
     if (!containerRef.current || isFetching || !paginationData) return;
-
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+
+    const bottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+
     // Check if we're at the bottom of the container
-    if (scrollTop + clientHeight >= scrollHeight - 1) {
+    if (bottom) {
       if (paginationData.currentPage < paginationData.totalPages) {
         setShowLoadingState(true);
         fetchNextPage(); // Fetch the next page if available
       }
     }
-  }, [isFetching, paginationData]);
+  }, [isFetching, paginationData, fetchNextPage]);
 
   // Attach and detach the scroll event listener
   React.useEffect(() => {
@@ -86,11 +88,13 @@ export function InfiniteDataTable({
     }
   }, [isFetching]);
 
+  // take rows
   const { rows } = table.getRowModel();
 
+  // row virtualizer fn
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 10, // estimate row height for accurate scrollbar dragging
+    estimateSize: () => 48, // estimate row height for accurate scrollbar dragging
     getScrollElement: () => containerRef.current,
     // measure dynamic row height, except in firefox because it measures table border height incorrectly
     measureElement:
@@ -98,7 +102,7 @@ export function InfiniteDataTable({
       navigator.userAgent.indexOf('Firefox') === -1
         ? (element) => element?.getBoundingClientRect().height
         : undefined,
-    overscan: 5,
+    overscan: 21,
   });
 
   return (

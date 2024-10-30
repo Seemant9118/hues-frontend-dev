@@ -68,3 +68,17 @@ export const exportOrder = (data) => {
     responseType: 'blob', // Specify response type here
   });
 };
+
+export const getUnconfirmedSales = ({ id, data }) => {
+  return APIinstance.post(
+    `${orderApi.getUnconfirmedSales.endpoint}${id}`,
+    data,
+  );
+};
+
+export const getUnconfirmedPurchases = ({ id, data }) => {
+  return APIinstance.post(
+    `${orderApi.getUnconfirmedPurchases.endpoint}${id}`,
+    data,
+  );
+};

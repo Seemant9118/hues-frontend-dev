@@ -2,17 +2,19 @@ import { templateApi } from '@/api/templates_api/template_api';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Eye } from 'lucide-react';
-import React from 'react';
+import { Eye } from 'lucide-react';
+import React, { useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
 const InvoicePDFViewModal = ({ Url }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const { data: pdfDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, Url],
     queryFn: () => getDocument(Url),
@@ -20,7 +22,7 @@ const InvoicePDFViewModal = ({ Url }) => {
     select: (res) => res.data.data,
   });
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -30,23 +32,33 @@ const InvoicePDFViewModal = ({ Url }) => {
           <Eye size={14} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
-        <DialogTitle>Invoice</DialogTitle>
+      <DialogContent className="max-h-[40rem] max-w-[60rem] p-1">
+        <DialogTitle className="p-2">Invoice</DialogTitle>
+
         {pdfDoc?.publicUrl ? (
-          <>
-            <Button asChild variant="outline" className="w-full">
-              <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-                <Download size={14} />
-                Download Invoice
-              </a>
-            </Button>
-            <div className="flex items-center justify-center">
-              <ViewPdf url={pdfDoc?.publicUrl} />
-            </div>
-          </>
+          <div className="flex items-center justify-center">
+            <ViewPdf url={pdfDoc?.publicUrl} />
+          </div>
         ) : (
           <p>Loading document...</p>
         )}
+
+        <DialogFooter>
+          <div className="flex w-full items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button size="sm" asChild className="bg-[#288AF9] text-white">
+              <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
+                Download
+              </a>
+            </Button>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

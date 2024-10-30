@@ -14,6 +14,7 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   exportOrder,
   GetSales,
+  getUnconfirmedSales,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
@@ -85,10 +86,13 @@ const SalesOrder = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
+  const [unconfirmedSalesListing, setUnconfirmedSalesListing] = useState([]);
+
   const [salesDataByTab, setSalesDataByTab] = useState({
     all: [],
     bidReceived: [],
     pending: [],
+    unconfirmed: [],
   });
   const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
 
@@ -135,7 +139,6 @@ const SalesOrder = () => {
     },
     refetchOnWindowFocus: false,
   });
-
   useEffect(() => {
     if (data?.pages.length > 0) {
       const latestPage = data.pages[data.pages.length - 1].data.data;
@@ -190,6 +193,91 @@ const SalesOrder = () => {
       });
     }
   }, [data, filterData]);
+
+  // fetch unconfirmed sales with infinite scroll
+  const {
+    data: unconfirmedSalesLists,
+    fetchNextPage: unconfirmedSalesFetchNextPage,
+    isFetching: unconfirmedSalesListsIsFetching,
+    isLoading: unconfirmedSalesListsIsLoading,
+  } = useInfiniteQuery({
+    queryKey: [
+      orderApi.getUnconfirmedSales.endpointKey,
+      enterpriseId,
+      filterData,
+    ],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getUnconfirmedSales({
+        id: enterpriseId,
+        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    refetchOnWindowFocus: false,
+    enabled: tab === 'unconfirmed',
+  });
+
+  useEffect(() => {
+    if (unconfirmedSalesLists?.pages.length > 0) {
+      const latestPage =
+        unconfirmedSalesLists.pages[unconfirmedSalesLists.pages.length - 1].data
+          .data;
+      const newUnconfirmedSalesData = latestPage.data;
+
+      // Set the pagination data
+      setPaginationData({
+        currentPage: latestPage.currentPage,
+        totalPages: latestPage.totalPages,
+      });
+
+      // Check if the current tab already has data to avoid duplicates
+      setSalesDataByTab((prevData) => {
+        if (prevData[tab]?.length === 0) {
+          // Only store the fresh data if it's not already there
+          return {
+            ...prevData,
+            [tab]: newUnconfirmedSalesData, // Replace with fresh data for the current tab
+          };
+        }
+
+        // Append unique data by filtering out duplicates
+        const updatedTabData = [
+          ...prevData[tab],
+          ...newUnconfirmedSalesData.filter(
+            (item) =>
+              !prevData[tab].some((prevItem) => prevItem.id === item.id),
+          ),
+        ];
+
+        return {
+          ...prevData,
+          [tab]: updatedTabData, // Append only unique data
+        };
+      });
+
+      // Update the current display data without appending duplicates
+      setUnconfirmedSalesListing((prevSales) => {
+        if (prevSales.length === 0) {
+          return newUnconfirmedSalesData; // Set fresh data for the first time
+        }
+
+        // Append unique data to the sales listing
+        const updatedSales = [
+          ...prevSales,
+          ...newUnconfirmedSalesData.filter(
+            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
+          ),
+        ];
+
+        return updatedSales;
+      });
+    }
+  }, [unconfirmedSalesLists, filterData]);
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -287,7 +375,7 @@ const SalesOrder = () => {
                   <TabsTrigger value="all">All</TabsTrigger>
                   <TabsTrigger value="bidReceived">Bid Recieved</TabsTrigger>
                   <TabsTrigger value="pending">Payment Pending</TabsTrigger>
-                  {/* <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger> */}
+                  <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
                 </TabsList>
                 <FilterModal tab={tab} setFilterData={setFilterData} />
               </section>
@@ -362,9 +450,29 @@ const SalesOrder = () => {
                   ))}
               </TabsContent>
 
-              {/* <TabsContent value="unconfirmed">
-                Unconfirmed Data ...{' '}
-              </TabsContent> */}
+              <TabsContent value="unconfirmed">
+                {unconfirmedSalesListsIsLoading && <Loading />}
+                {!unconfirmedSalesListsIsLoading &&
+                  (unconfirmedSalesListing?.length > 0 ? (
+                    <InfiniteDataTable
+                      id="sale-orders"
+                      columns={SalesColumns}
+                      onRowClick={onRowClick}
+                      data={unconfirmedSalesListing}
+                      isFetching={unconfirmedSalesListsIsFetching}
+                      fetchNextPage={unconfirmedSalesFetchNextPage}
+                      filterData={filterData}
+                      paginationData={paginationData}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={SaleEmptyStageData.heading}
+                      desc={SaleEmptyStageData.desc}
+                      subHeading={SaleEmptyStageData.subHeading}
+                      subItems={SaleEmptyStageData.subItems}
+                    />
+                  ))}
+              </TabsContent>
             </Tabs>
           </section>
         </Wrapper>
