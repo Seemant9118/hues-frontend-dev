@@ -19,10 +19,10 @@ export default function Login() {
     <>
       <Suspense fallback={Loading}>
         {/* Header */}
-        <div className="bg-transparent px-10 py-5 shadow-[0_4px_6px_0_#3288ED1A]">
+        <div className="bg-transparent px-10 py-5">
           <Link href={'/'}>
             <Image
-              src={'/hues_logo_2.png'}
+              src={'/hues_logo.png'}
               height={30}
               width={100}
               placeholder="blur"
