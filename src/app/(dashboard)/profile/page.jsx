@@ -29,7 +29,7 @@ function Profile() {
   };
 
   const handleEnterpriseOnboarding = () => {
-    setCurrStep(4);
+    setCurrStep(5);
     router.push('/login');
   };
 

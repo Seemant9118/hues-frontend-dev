@@ -59,4 +59,10 @@ export const userAuth = {
     endpoint: `/iam/auth/logout`,
     endpointKey: 'logging_out',
   },
+
+  // 13. verify din
+  verifyDIN: {
+    endpoint: `/iam/kyc/verify-din`,
+    endpointKey: 'verify_din',
+  },
 };

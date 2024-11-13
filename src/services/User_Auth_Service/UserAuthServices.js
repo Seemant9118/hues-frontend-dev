@@ -59,3 +59,8 @@ export function generateSignOTP() {
 export function LoggingOut() {
   return APIinstance.post(userAuth.logout.endpoint);
 }
+
+// 13. verify DIN
+export function VerifyDIN(data) {
+  return APIinstance.post(userAuth.verifyDIN.endpoint, data);
+}

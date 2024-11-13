@@ -28,3 +28,7 @@ export const validationBase64 = (token) => {
 export const sendInvitation = (data) => {
   return APIinstance.post(invitation.sendInvitation.endpoint, data);
 };
+
+export const sendDirectorInvitation = (data) => {
+  return APIinstance.post(invitation.sendDirectorInvitation.endpoint, data);
+};

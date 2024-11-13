@@ -21,6 +21,10 @@ module.exports = {
       boxShadow: {
         customShadow: '4px 4px 17.6px 0px #0000000F',
       },
+      backgroundImage: {
+        'custom-linear':
+          'linear-gradient(161.66deg, rgba(40, 138, 249, 0.1) 1.42%, rgba(147, 24, 94, 0.1) 87.55%)',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
