@@ -21,8 +21,9 @@ const ShareLinkToDirectorNew = ({ invitationUrl }) => {
         </Label>
 
         <div className="flex w-full items-center justify-between truncate rounded-sm border p-2 text-sm text-[#121212]">
-          {invitationUrl}
+          <span className="w-3/4 truncate font-semibold">{invitationUrl}</span>
           <Button
+            className="w-1/4"
             size="sm"
             variant="blue_outline"
             onClick={() => {

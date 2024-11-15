@@ -43,23 +43,23 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
 
       toast.success('Your Profile Completed & Verified');
 
-      // 1. invitation present as client
-      if (invitationData?.data?.id) {
-        router.push('/login/confirmation_invite_as_client');
-      }
-      // 2. invitation absent as client && isUserHaveValidDirectorInvites
-      else if (!invitationData?.data?.id && isUserHaveValidDirectorInvites) {
-        router.push('/login/select_enterprise');
-      }
-      // 3. invitation absent as client && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete
-      else if (
+      // 1. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete
+      if (
         !invitationData?.data?.id &&
         !isUserHaveValidDirectorInvites &&
         isEnterpriseOnboardingComplete
       ) {
         router.push('/');
       }
-      // 3. invitation absent as client && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
+      // 2. invitation is present && isUserHaveValidDirectorInvites
+      else if (invitationData?.data?.id && isUserHaveValidDirectorInvites) {
+        router.push('/login/select_enterprise');
+      }
+      // 3. invitation present && !isUserHaveValidDirectorInvites
+      else if (invitationData?.data?.id && !isUserHaveValidDirectorInvites) {
+        router.push('/login/confirmation_invite_as_client');
+      }
+      // 4. invitation absent  && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
       else {
         router.push('/login/enterpriseOnboardingSearch');
       }

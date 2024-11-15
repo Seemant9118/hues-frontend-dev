@@ -52,7 +52,11 @@ const EnterpriseDetailsSecond = ({
       );
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       toast.success(data.data.message);
-      router.push('/login/isDirector'); // moved for director consent
+      if (enterpriseOnboardData.type === 'proprietorship') {
+        router.push('/');
+      } else {
+        router.push('/login/isDirector'); // moved for director consent
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Oops, Something went wrong!');

@@ -33,7 +33,7 @@ const ConfirmationInviteAsClientPage = () => {
             type="Submit"
             className="w-full bg-[#288AF9] p-2"
             onClick={() => {
-              router.push('/login/verify_enterprise_details');
+              router.push('/login/enterpriseDetails');
             }}
           >
             Yes
