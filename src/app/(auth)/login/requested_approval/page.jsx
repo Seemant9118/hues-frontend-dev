@@ -3,9 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const RequestedApprovalPage = () => {
+  const router = useRouter();
   return (
     <div className="flex h-full items-center justify-center">
       <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
@@ -19,7 +21,12 @@ const RequestedApprovalPage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-5">
-          <Button variant="ghost" size="sm" className="w-full p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full p-2"
+            onClick={() => router.push('/login/enterpriseOnboardingSearch')}
+          >
             <ArrowLeft size={14} />
             Back
           </Button>

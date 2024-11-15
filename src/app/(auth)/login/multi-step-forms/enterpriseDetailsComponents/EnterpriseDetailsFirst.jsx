@@ -1,23 +1,52 @@
 'use client';
 
+import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import Tooltips from '@/components/auth/Tooltips';
 import ErrorBox from '@/components/ui/ErrorBox';
 import RadioSelect from '@/components/ui/RadioSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseById } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const EnterpriseDetailsFirst = ({
   setEnterpriseDetailsCurrStep,
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
+  const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState({});
+  const { data: enterpriseData } = useQuery({
+    queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseID],
+    queryFn: () => getEnterpriseById(enterpriseID),
+    select: (data) => data?.data?.data,
+    enabled: !!enterpriseID,
+  });
+
+  useEffect(() => {
+    if (enterpriseData) {
+      setEnterpriseOnboardData({
+        name: enterpriseData.name || '',
+        type: enterpriseData.type.toLowerCase() || '',
+        email: enterpriseData.email || '',
+        panNumber: enterpriseData.panNumber || '',
+        address: enterpriseData.address || '',
+        gstNumber: enterpriseData.gstNumber || '',
+        udyam: enterpriseData.udyam || '',
+        doi: enterpriseData.doi || '',
+        isDeclerationConsent: enterpriseData.isDeclerationConsent || null,
+        LLPIN: enterpriseData.LLPIN || '',
+        CIN: enterpriseData.CIN || '',
+      });
+    }
+  }, [enterpriseData]);
 
   const handleEnterpriseType = (enterpriseType) => {
     setEnterpriseOnboardData((values) => ({
@@ -25,6 +54,7 @@ const EnterpriseDetailsFirst = ({
       type: enterpriseType,
     }));
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEnterpriseOnboardData((values) => ({ ...values, [name]: value }));
@@ -110,7 +140,6 @@ const EnterpriseDetailsFirst = ({
               onChange={handleChange}
             />
           </div>
-          {/* {errorMsg.email && <ErrorBox msg={errorMsg.email} />} */}
         </div>
 
         {/* show selected radio */}
@@ -122,41 +151,22 @@ const EnterpriseDetailsFirst = ({
             Enterprise Type <span className="text-red-600">*</span>{' '}
           </Label>
           <div className="flex max-w-full flex-wrap gap-5">
-            <RadioSelect
-              name="enterpriseType"
-              option={'Proprietorship'}
-              value="proprietorship"
-              checkBoxName="options"
-              handleChange={handleEnterpriseType}
-            />
-            <RadioSelect
-              name="enterpriseType"
-              option={'Partnership'}
-              value="partnership"
-              checkBoxName="options"
-              handleChange={handleEnterpriseType}
-            />
-            <RadioSelect
-              name="enterpriseType"
-              option={'LLP'}
-              value="llp"
-              checkBoxName="options"
-              handleChange={handleEnterpriseType}
-            />
-            <RadioSelect
-              name="enterpriseType"
-              option={'Pvt Ltd'}
-              value="privateLimited"
-              checkBoxName="options"
-              handleChange={handleEnterpriseType}
-            />
-            <RadioSelect
-              name="enterpriseType"
-              option={'Public Ltd'}
-              value="publicLimited"
-              checkBoxName="options"
-              handleChange={handleEnterpriseType}
-            />
+            {[
+              'Proprietorship',
+              'Partnership',
+              'LLP',
+              'Pvt Ltd',
+              'Public Ltd',
+            ].map((type) => (
+              <RadioSelect
+                key={type}
+                name="enterpriseType"
+                option={type}
+                value={type.toLowerCase()}
+                checked={enterpriseOnboardData.type === type.toLowerCase()}
+                handleChange={() => handleEnterpriseType(type.toLowerCase())}
+              />
+            ))}
           </div>
         </div>
 

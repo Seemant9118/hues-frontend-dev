@@ -8,7 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LocalStorageService } from '@/lib/utils';
-import { CreateEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import {
+  CreateEnterprise,
+  UpdateEnterprise,
+} from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import moment from 'moment';
@@ -22,6 +25,7 @@ const EnterpriseDetailsSecond = ({
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
+  const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(null);
   const [errorMsg, setErrorMsg] = useState({});
@@ -29,12 +33,15 @@ const EnterpriseDetailsSecond = ({
   useEffect(() => {
     setEnterpriseOnboardData((prevUserData) => ({
       ...prevUserData,
-      doi: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '',
+      // Only update doi if it's empty in enterpriseOnboardData
+      doi:
+        prevUserData.doi ||
+        (selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : ''),
     }));
   }, [selectedDate]);
 
-  // mutationFn
-  const enterpriseOnboardMutation = useMutation({
+  // mutationFn : create enterprise
+  const enterpriseOnboardCreateMutation = useMutation({
     mutationKey: [enterpriseUser.createEnterprise.endpointKey],
     mutationFn: CreateEnterprise,
     onSuccess: (data) => {
@@ -43,8 +50,31 @@ const EnterpriseDetailsSecond = ({
         'isEnterpriseOnboardingComplete',
         data.data.data.isOnboardingCompleted,
       );
+      LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       toast.success(data.data.message);
       router.push('/login/isDirector'); // moved for director consent
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+    },
+  });
+
+  // mutation fn : update enterprise
+  const enterpriseOnboardUpdateMutation = useMutation({
+    mutationFn: UpdateEnterprise,
+    onSuccess: (data) => {
+      LocalStorageService.set('enterprise_Id', data.data.data.id);
+      LocalStorageService.set(
+        'isEnterpriseOnboardingComplete',
+        data.data.data.isOnboardingCompleted,
+      );
+      toast.success(data?.data?.message);
+      LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
+      if (enterpriseOnboardData.type === 'proprietorship') {
+        router.push('/');
+      } else {
+        router.push('/login/din');
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Oops, Something went wrong!');
@@ -72,8 +102,8 @@ const EnterpriseDetailsSecond = ({
       error.LLPIN = '* Required LLP IN';
     }
     if (
-      (enterpriseOnboardD.type === 'privateLimited' ||
-        enterpriseOnboardD.type === 'publicLimited') &&
+      (enterpriseOnboardD.type === 'pvt ltd' ||
+        enterpriseOnboardD.type === 'public ltd') &&
       enterpriseOnboardD.CIN === ''
     ) {
       error.CIN = '* Required CIN';
@@ -125,7 +155,14 @@ const EnterpriseDetailsSecond = ({
 
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
-      enterpriseOnboardMutation.mutate(enterpriseOnboardData);
+      if (enterpriseID) {
+        enterpriseOnboardUpdateMutation.mutate({
+          id: enterpriseID,
+          data: enterpriseOnboardData,
+        });
+      } else {
+        enterpriseOnboardCreateMutation.mutate(enterpriseOnboardData);
+      }
     } else {
       setErrorMsg(isError);
     }
@@ -148,6 +185,29 @@ const EnterpriseDetailsSecond = ({
       <div className="flex flex-col gap-5">
         {enterpriseOnboardData.type === 'proprietorship' && (
           <>
+            <div className="grid w-full max-w-md items-center gap-1">
+              <Label
+                htmlFor="panNumber"
+                className="flex items-center gap-1 font-medium text-[#414656]"
+              >
+                PAN <span className="text-red-600">*</span>{' '}
+                <Tooltips
+                  trigger={<Info size={12} />}
+                  content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
+                />
+              </Label>
+              <div className="relative">
+                <Input
+                  className="focus:font-bold"
+                  type="text"
+                  placeholder="FGHJ1456T"
+                  name="panNumber"
+                  value={enterpriseOnboardData.panNumber}
+                  onChange={handleChange}
+                />
+              </div>
+              {errorMsg.panNumber && <ErrorBox msg={errorMsg.panNumber} />}
+            </div>
             <div className="grid w-full max-w-md items-center gap-1.5">
               <Label
                 htmlFor="doi"
@@ -162,7 +222,11 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={selectedDate}
+                  selected={
+                    enterpriseOnboardData?.doi
+                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
+                      : selectedDate
+                  }
                   onChange={(date) => setSelectedDate(date)}
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
@@ -275,7 +339,11 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={selectedDate}
+                  selected={
+                    enterpriseOnboardData?.doi
+                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
+                      : selectedDate
+                  }
                   onChange={(date) => setSelectedDate(date)}
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
@@ -389,7 +457,11 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={selectedDate}
+                  selected={
+                    enterpriseOnboardData?.doi
+                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
+                      : selectedDate
+                  }
                   onChange={(date) => setSelectedDate(date)}
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
@@ -484,8 +556,8 @@ const EnterpriseDetailsSecond = ({
           </>
         )}
 
-        {(enterpriseOnboardData.type === 'privateLimited' ||
-          enterpriseOnboardData.type === 'publicLimited') && (
+        {(enterpriseOnboardData.type === 'pvt ltd' ||
+          enterpriseOnboardData.type === 'public ltd') && (
           <>
             <div className="grid w-full max-w-md items-center gap-1">
               <Label
@@ -525,7 +597,11 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={selectedDate}
+                  selected={
+                    enterpriseOnboardData?.doi
+                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
+                      : selectedDate
+                  }
                   onChange={(date) => setSelectedDate(date)}
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"

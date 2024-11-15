@@ -36,6 +36,10 @@ const DINVerifyPage = () => {
       enterpriseId,
     ],
     mutationFn: UpdateEnterpriseAfterDINVerification,
+    onSuccess: () => {
+      toast.success('DIN number verified successfully');
+      router.push('/login/kyc');
+    },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
     },
@@ -46,8 +50,6 @@ const DINVerifyPage = () => {
     mutationFn: VerifyDIN,
     onSuccess: () => {
       updateAfterDINVerifyMutation.mutate(enterpriseId);
-      toast.success('DIN number verified successfully');
-      router.push('/login/kyc');
     },
     onError: (error) => {
       toast.error(error.response.data.message);

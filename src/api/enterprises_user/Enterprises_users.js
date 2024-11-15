@@ -40,4 +40,15 @@ export const enterpriseUser = {
     endpoint: `/enterprise/updateenterprisestatus/`,
     endpointKey: 'update_enterprise_after_DIN_verification',
   },
+  // update enterprise
+  updateEnterprise: {
+    endpoint: `/enterprise/update/`,
+    endpointKey: 'update_enterprise',
+  },
+
+  // get enterprise
+  getEnterprise: {
+    endpoint: `/enterprise/get/`,
+    endpointKey: 'get_enterprise',
+  },
 };

@@ -1,3 +1,6 @@
+'use client';
+
+import { userAuth } from '@/api/user_auth/Users';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,7 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
-import { userUpdate } from '@/services/User_Auth_Service/UserAuthServices';
+import {
+  generateMailOTP,
+  userUpdate,
+} from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import moment from 'moment';
@@ -74,15 +80,27 @@ const UserOnboardingDetails = ({ setUserOnboardingStep }) => {
     return message;
   };
 
+  // generateOTP mutation
+  const generateMailOTPMutation = useMutation({
+    mutationKey: [userAuth.generateMailOTP.endpointKey],
+    mutationFn: generateMailOTP,
+    onSuccess: () => {
+      toast.success('OTP Sent');
+      setUserOnboardingStep(2); // verify mail OTP
+    },
+  });
+
   const mutation = useMutation({
     mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
-      toast.success('OTP Sent');
       LocalStorageService.set(
         'isOnboardingComplete',
-        data.data.data.user.isOnboardingComplete,
+        data?.data?.data?.user?.isOnboardingComplete,
       );
-      setUserOnboardingStep(2); // verify mail OTP
+      // otp generate to veriy mail
+      generateMailOTPMutation.mutate({
+        email: userData.email,
+      });
     },
     onError: (error) => {
       const message = erpCommunication(error, 'en-IN');

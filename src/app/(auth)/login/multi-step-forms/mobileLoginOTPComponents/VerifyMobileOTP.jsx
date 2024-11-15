@@ -1,9 +1,11 @@
+import { directorApi } from '@/api/director/directorApi';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
 import { LocalStorageService } from '@/lib/utils';
+import { directorInviteList } from '@/services/Director_Services/DirectorServices';
 import { userVerifyOtp } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { ArrowLeft, Clock5 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -14,6 +16,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 const VerifyMobileOTP = ({ setMobileLoginStep }) => {
   const router = useRouter();
+
+  const queryClient = useQueryClient();
 
   const [startFrom, setStartFrom] = useState(30);
   const [otp, setOtp] = useState();
@@ -32,54 +36,72 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
 
   const mutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
-    onSuccess: (data) => {
-      LocalStorageService.set('token', data.data.data.access_token);
+    onSuccess: async (data) => {
+      LocalStorageService.set('token', data?.data?.data?.access_token);
       LocalStorageService.set(
         'enterprise_Id',
-        data.data.data.user.enterpriseId,
+        data?.data?.data?.user?.enterpriseId,
       );
       LocalStorageService.set(
         'isOnboardingComplete',
-        data.data.data.user.isOnboardingComplete,
+        data?.data?.data?.user?.isOnboardingComplete,
       );
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data.data.data.user.isEnterpriseOnboardingComplete,
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
       );
       LocalStorageService.set(
         'isKycVerified',
-        data.data.data.user.isKycVerified,
+        data?.data?.data?.user?.isKycVerified,
       );
+
+      // check by calling api : directorInviteList
+      const directorInviteListData = await queryClient.fetchQuery({
+        queryKey: [directorApi.getDirectorInviteList.endpointKey],
+        queryFn: directorInviteList,
+      });
+
+      const isUserHaveValidDirectorInvites =
+        directorInviteListData?.data?.data?.length > 0;
+
       toast.success('OTP verified successfully');
 
-      // if both userOnboarding, enterpriseOnboarding & kyc completed, then redirect to Home Page
+      // 1. isUserOnboardingComplete && isInviteAsClient
       if (
-        data.data.data.user.isOnboardingComplete &&
-        data.data.data.user.isEnterpriseOnboardingComplete &&
-        data.data.data.user.isKycVerified
+        data?.data?.data?.user?.isOnboardingComplete &&
+        invitationData?.data?.id
       ) {
-        const redirectUrl = LocalStorageService.get('redirectUrl');
-        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-        router.push(redirectUrl || '/');
+        router.push('/login/confirmation_invite_as_client');
       }
-      // if userOnboarding & enterpriseOnboarding completed but kyc not verified, then moved to kyc
+      // 2. isUserOnboardingComplete && !isInviteAsClient && isUserHaveValidDirectorInvites
       else if (
-        data.data.data.user.isOnboardingComplete &&
-        data.data.data.user.isEnterpriseOnboardingComplete &&
-        !data.data.data.user.isKycVerified
+        data?.data?.data?.user?.isOnboardingComplete &&
+        !invitationData?.data?.id &&
+        isUserHaveValidDirectorInvites
       ) {
-        router.push('/login/kyc');
+        router.push('/login/select_enterprise');
       }
-      // if userOnboarding is completed but enterpriseOnboarding is not completed, then redirected to enterpriseOnboarding page
+      // 3. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
       else if (
-        data.data.data.user.isOnboardingComplete &&
-        !data.data.data.user.isEnterpriseOnboardingComplete
+        data?.data?.data?.user?.isOnboardingComplete &&
+        !invitationData?.data?.id &&
+        !isUserHaveValidDirectorInvites &&
+        !data?.data?.data?.user?.isEnterpriseOnboardingComplete
       ) {
-        router.push('/login/enterpriseOnboardingSearch'); // enterprise onboarding search
+        router.push('/login/enterpriseOnboardingSearch');
       }
-      // if both userOnboarding and enterpriseOnboarding is inCompleted, then stay in normal flow.
+      // 4. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete
+      else if (
+        data?.data?.data?.user?.isOnboardingComplete &&
+        !invitationData?.data?.id &&
+        !isUserHaveValidDirectorInvites &&
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete
+      ) {
+        router.push('/');
+      }
+      // 5. !isUserOnboardingComplete
       else {
-        router.push('/login/userOnboarding'); // user onboarding
+        router.push('/login/userOnboarding');
       }
     },
     onError: (error) => {

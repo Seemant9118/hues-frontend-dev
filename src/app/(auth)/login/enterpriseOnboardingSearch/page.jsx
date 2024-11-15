@@ -1,27 +1,36 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
+import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { useQuery } from '@tanstack/react-query';
+import { requestExist } from '@/services/User_Auth_Service/UserAuthServices';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
 
 const EnterpriseOnboardSearchPage = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
-  const isUserOnboardingComplete = LocalStorageService.get(
-    'isOnboardingComplete',
-  );
+  const [isUserOnboardingComplete, setIsUserOnboardingComplete] =
+    useState(false); // Client-only state
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     panNumber: '',
   });
   const [errorMsg, setErrorMsg] = useState({});
+
+  // Set client-only data in a useEffect
+  useEffect(() => {
+    setIsUserOnboardingComplete(
+      LocalStorageService.get('isOnboardingComplete'),
+    );
+  }, []);
 
   const validatePanNumber = (panNumber) => {
     const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
@@ -38,15 +47,10 @@ const EnterpriseOnboardSearchPage = () => {
 
   const handleChangePan = (e) => {
     const panValue = e.target.value.toUpperCase();
-    setEnterpriseOnboardData((values) => ({
-      ...values,
-      panNumber: panValue,
-    }));
-
+    setEnterpriseOnboardData((values) => ({ ...values, panNumber: panValue }));
     const errors = validatePanNumber(panValue);
-    setErrorMsg(errors); // Update errorMsg based on validation result
+    setErrorMsg(errors);
 
-    // Clear errorMsg if validation passes
     if (Object.keys(errors).length === 0) {
       setErrorMsg({});
     }
@@ -65,6 +69,42 @@ const EnterpriseOnboardSearchPage = () => {
     select: (data) => data.data.data,
   });
 
+  const handleProceedWithExistingEnterprise = async (
+    enterpriseName,
+    enterpriseID,
+    isEnterpriseOnboardingComplete,
+  ) => {
+    LocalStorageService.set('enterpriseName', enterpriseName);
+    LocalStorageService.set('enterpriseReqId', enterpriseID);
+
+    const requestExistData = await queryClient.fetchQuery({
+      queryKey: [userAuth.requestExist.endpointKey],
+      queryFn: () => requestExist({ enterpriseId: enterpriseID }),
+    });
+
+    const hasUserRequestAccessToEnterprise = requestExistData?.data?.data;
+    const isUserRequestIsApproved =
+      requestExistData?.data?.data?.status === 'APPROVED';
+
+    if (isEnterpriseOnboardingComplete) {
+      router.push('/');
+    } else if (
+      !isEnterpriseOnboardingComplete &&
+      hasUserRequestAccessToEnterprise &&
+      isUserRequestIsApproved
+    ) {
+      router.push('/');
+    } else if (
+      !isEnterpriseOnboardingComplete &&
+      hasUserRequestAccessToEnterprise &&
+      !isUserRequestIsApproved
+    ) {
+      router.push('/login/requested_approval');
+    } else {
+      router.push('/login/request_access');
+    }
+  };
+
   return (
     <div className="flex h-full items-center justify-center">
       <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
@@ -73,7 +113,7 @@ const EnterpriseOnboardSearchPage = () => {
             Onboard your Enterprise
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Enter all the details to unlock Hues completely{' '}
+            Enter all the details to unlock Hues completely
           </p>
         </div>
 
@@ -102,28 +142,26 @@ const EnterpriseOnboardSearchPage = () => {
             )}
 
             {(isSearchedDataLoading || isSearchedDataFetching) && <Loading />}
-            {/* id enterprise found */}
             {!isSearchedDataFetching && searchedData?.length > 0 && (
               <div className="flex items-center justify-between rounded-md border border-[#288AF9] p-2">
                 <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                   {searchedData?.[0]?.name}
                 </span>
-
                 <Button
                   size="sm"
                   className="h-8 w-16 bg-[#288AF9]"
-                  onClick={() => {
-                    LocalStorageService.set(
-                      'enterprisePanNumber',
-                      enterpriseOnboardData.panNumber,
-                    );
-                  }}
+                  onClick={() =>
+                    handleProceedWithExistingEnterprise(
+                      searchedData?.[0]?.name,
+                      searchedData?.[0]?.id,
+                      searchedData?.[0]?.isOnboardingCompleted,
+                    )
+                  }
                 >
                   Proceed
                 </Button>
               </div>
             )}
-            {/* if enterprise not found */}
             {!isSearchedDataFetching && searchedData?.length === 0 && (
               <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
                 <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
@@ -139,7 +177,7 @@ const EnterpriseOnboardSearchPage = () => {
                       'enterprisePanNumber',
                       enterpriseOnboardData.panNumber,
                     );
-                  }} // add enterprise details
+                  }}
                 >
                   Add
                 </Button>
@@ -159,13 +197,13 @@ const EnterpriseOnboardSearchPage = () => {
               Back
             </Button>
           )}
-          <Link
-            href="/"
-            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-          >
-            Skip for Now
-          </Link>
         </div>
+        <Link
+          href="/"
+          className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
+        >
+          Skip for Now
+        </Link>
       </div>
     </div>
   );

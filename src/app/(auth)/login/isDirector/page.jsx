@@ -1,13 +1,17 @@
 'use client';
 
 import RadioSelect from '@/components/ui/RadioSelect';
+import { LocalStorageService } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const DirectorConsentPage = () => {
   const router = useRouter();
-  const [setIsDirectorConsent] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [isDirectorConsent, setIsDirectorConsent] = useState(null);
+
+  const enterpriseType = LocalStorageService.get('enterpriseType');
 
   return (
     <div className="flex h-full items-center justify-center">
@@ -29,6 +33,9 @@ const DirectorConsentPage = () => {
             checkBoxName="options"
             handleChange={() => {
               setIsDirectorConsent(true);
+              if (enterpriseType === 'proprietorship') {
+                router.push('/');
+              }
               router.push('/login/din');
             }}
           />

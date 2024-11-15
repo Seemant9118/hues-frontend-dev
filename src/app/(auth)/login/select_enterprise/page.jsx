@@ -1,19 +1,24 @@
 'use client';
 
+import { directorApi } from '@/api/director/directorApi';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
+import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
+import { directorInviteList } from '@/services/Director_Services/DirectorServices';
 import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { useQuery } from '@tanstack/react-query';
+import { requestExist } from '@/services/User_Auth_Service/UserAuthServices';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const SelectEnterprisePage = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     panNumber: '',
@@ -62,6 +67,61 @@ const SelectEnterprisePage = () => {
     select: (data) => data.data.data,
   });
 
+  // check by calling api : directorInviteList
+  const { data: directorInviteListData, isLoading } = useQuery({
+    queryKey: [directorApi.getDirectorInviteList.endpointKey],
+    queryFn: directorInviteList,
+    select: (data) => data?.data?.data,
+  });
+
+  const handleProccedWithEnterprise = (enterpriseId) => {
+    LocalStorageService.set('enterpriseIdByDirectorInvite', enterpriseId);
+    router.push('/login/enterpriseDetails');
+  };
+
+  // mutation call
+  const handleProceedWithExistingEnterprise = async (
+    enterpriseName,
+    enterpriseID,
+    isEnterpriseOnboardingComplete,
+  ) => {
+    // save enterpriseName to show in request access page
+    LocalStorageService.set('enterpriseName', enterpriseName);
+    LocalStorageService.set('enterpriseReqId', enterpriseID);
+
+    // check by calling api : requestExistData
+    const requestExistData = await queryClient.fetchQuery({
+      queryKey: [userAuth.requestExist.endpointKey],
+      queryFn: () =>
+        requestExist({
+          enterpriseId: enterpriseID,
+        }),
+    });
+
+    const hasUserRequestAccessToEnterprise = requestExistData?.data?.data;
+    const isUserRequestIsApproved =
+      requestExistData?.data?.data?.status === 'APPROVED';
+
+    // onSuccessEvent
+    if (isEnterpriseOnboardingComplete) {
+      router.push('/');
+    } else if (
+      !isEnterpriseOnboardingComplete &&
+      hasUserRequestAccessToEnterprise &&
+      isUserRequestIsApproved
+    ) {
+      router.push('/');
+    } else if (
+      !isEnterpriseOnboardingComplete &&
+      hasUserRequestAccessToEnterprise &&
+      !isUserRequestIsApproved
+    ) {
+      router.push('/login/requested_approval');
+    } else {
+      router.push('/login/request_access');
+    }
+  };
+
   return (
     <div className="flex h-full items-center justify-center">
       <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
@@ -80,15 +140,38 @@ const SelectEnterprisePage = () => {
           <span className="text-sm font-medium text-[#121212]">
             Select Enterprise
           </span>
-          <div className="flex items-center justify-between rounded-md border border-[#288AF9] p-2">
-            <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-              Name
-            </span>
+          {isLoading && <Loading />}
+          {!isLoading &&
+            directorInviteListData?.length > 0 &&
+            directorInviteListData.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-md border border-[#288AF9] p-2"
+              >
+                <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+                  {item.fromEnterprise?.name}
+                </span>
 
-            <Button size="sm" className="h-8 w-16 bg-[#288AF9]">
-              Proceed
-            </Button>
-          </div>
+                <Button
+                  size="sm"
+                  className="h-8 w-16 bg-[#288AF9]"
+                  onClick={() =>
+                    handleProccedWithEnterprise(item.fromEnterprise?.id)
+                  }
+                >
+                  Proceed
+                </Button>
+              </div>
+            ))}
+
+          {!isLoading && directorInviteListData?.length === 0 && (
+            <div className="flex items-center justify-between rounded-sm bg-gray-100 p-2">
+              <span className="flex items-center gap-1 text-sm text-[#121212]">
+                <Info size={14} />
+                No Director Invites Found
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex w-full flex-col gap-5">
@@ -120,19 +203,29 @@ const SelectEnterprisePage = () => {
           {(isSearchedDataLoading || isSearchedDataFetching) && <Loading />}
           {/* id enterprise found */}
           {!isSearchedDataFetching && searchedData?.length > 0 && (
-            <div className="flex items-center justify-between rounded-md border border-[#288AF9] p-2">
+            <div className="flex items-center justify-between rounded-sm border border-[#288AF9] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 {searchedData?.[0]?.name}
               </span>
 
-              <Button size="sm" className="h-8 w-16 bg-[#288AF9]">
+              <Button
+                size="sm"
+                className="h-8 w-16 bg-[#288AF9]"
+                onClick={() =>
+                  handleProceedWithExistingEnterprise(
+                    searchedData?.[0]?.name,
+                    searchedData?.[0]?.id,
+                    searchedData?.[0]?.isOnboardingCompleted,
+                  )
+                }
+              >
                 Proceed
               </Button>
             </div>
           )}
           {/* if enterprise not found */}
           {!isSearchedDataFetching && searchedData?.length === 0 && (
-            <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+            <div className="flex items-center justify-between rounded-sm bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
                 Enterprise Not Found

@@ -15,7 +15,7 @@ const EnterpriseDetails = () => {
     email: '',
     gstNumber: '',
     udyam: '',
-    panNumber,
+    panNumber: panNumber ?? '',
     doi: '',
     isDeclerationConsent: null,
     LLPIN: '',

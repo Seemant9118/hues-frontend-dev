@@ -51,3 +51,14 @@ export function UpdateEnterpriseAfterDINVerification(id) {
     `${enterpriseUser.updateEnterpriseAfterDINVerify.endpoint}${id}`,
   );
 }
+
+export function UpdateEnterprise({ id, data }) {
+  return APIinstance.put(
+    `${enterpriseUser.updateEnterprise.endpoint}${id}`,
+    data,
+  );
+}
+
+export function getEnterpriseById(id) {
+  return APIinstance.get(`${enterpriseUser.getEnterprise.endpoint}${id}`);
+}

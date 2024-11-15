@@ -1,6 +1,13 @@
+'use client';
+
+import { directorApi } from '@/api/director/directorApi';
+import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import Slot from '@/components/ui/Slot';
 import { LocalStorageService } from '@/lib/utils';
+import { directorInviteList } from '@/services/Director_Services/DirectorServices';
+import { verifyMailOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -9,26 +16,62 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
 const VerifyMailUser = ({ setUserOnboardingStep }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
-  const [otp, setOtp] = useState();
+  const [Otp, setOtp] = useState();
+  const invitationData = LocalStorageService.get('invitationData');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const handleChangeOtp = (value) => {
     setOtp(value);
   };
 
+  const verifyMailOTPMutation = useMutation({
+    mutationKey: [userAuth.verifyMailOTP.endpointKey],
+    mutationFn: verifyMailOTP,
+    onSuccess: async () => {
+      // check by calling api : directorInviteList
+      const directorInviteListData = await queryClient.fetchQuery({
+        queryKey: [directorApi.getDirectorInviteList.endpoint],
+        queryFn: directorInviteList,
+      });
+
+      const isUserHaveValidDirectorInvites =
+        directorInviteListData?.data?.data?.length > 0;
+
+      toast.success('Your Profile Completed & Verified');
+
+      // 1. invitation present as client
+      if (invitationData?.data?.id) {
+        router.push('/login/confirmation_invite_as_client');
+      }
+      // 2. invitation absent as client && isUserHaveValidDirectorInvites
+      else if (!invitationData?.data?.id && isUserHaveValidDirectorInvites) {
+        router.push('/login/select_enterprise');
+      }
+      // 3. invitation absent as client && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete
+      else if (
+        !invitationData?.data?.id &&
+        !isUserHaveValidDirectorInvites &&
+        isEnterpriseOnboardingComplete
+      ) {
+        router.push('/');
+      }
+      // 3. invitation absent as client && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
+      else {
+        router.push('/login/enterpriseOnboardingSearch');
+      }
+    },
+  });
+
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
-    toast.success('Your Profile Completed & Verified');
-    if (isEnterpriseOnboardingComplete && isKycVerified) {
-      router.push('/');
-    } else if (isEnterpriseOnboardingComplete && !isKycVerified) {
-      router.push('/login/kyc'); // kyc page
-    }
-    router.push('/login/enterpriseOnboardingSearch'); // enterpriseOnboardingSearch
+
+    verifyMailOTPMutation.mutate({
+      otp: Otp,
+    });
   };
 
   return (
@@ -46,10 +89,10 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
       </div>
 
       <OTPInput
-        name="otp"
+        name="Otp"
         onChange={handleChangeOtp}
         maxLength={4}
-        value={otp}
+        value={Otp}
         containerClassName="group flex items-center has-[:disabled]:opacity-30"
         render={({ slots }) => (
           <div className="flex gap-4">

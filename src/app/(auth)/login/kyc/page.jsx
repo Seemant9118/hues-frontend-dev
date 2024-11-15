@@ -19,7 +19,8 @@ const CompleteKycPage = () => {
   // user_id get from localStorage
   const userId = LocalStorageService.get('user_profile');
   const router = useRouter();
-  const [setDigio] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [digio, setDigio] = useState(null);
 
   const { refetch: refetchKycStatus } = useQuery({
     queryKey: [userAuth.getUserById.endpointKey, userId],
@@ -40,7 +41,7 @@ const CompleteKycPage = () => {
         }
       })
       .catch(() => {
-        toast.error('KYC failed. Please try again.');
+        toast.error('KYC failed. Please try again after some time');
       });
   }
 
