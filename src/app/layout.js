@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`flex h-screen flex-col gap-5 bg-[#F6F9FF]`}>
+      <body>
         <div className="absolute">
           <Toaster richColors position="top-right" duration="2500" />
         </div>

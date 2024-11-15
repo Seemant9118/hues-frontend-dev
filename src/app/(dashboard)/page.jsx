@@ -58,36 +58,24 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex h-full flex-col gap-10">
+      <SubHeader name={'Dashboard'}></SubHeader>
+
       {/* Invitation table */}
-      <div>
-        {isReceivedInviteLoading && <Loading />}
-
-        {filteredData?.length > 0 && (
-          <div className="scrollBarStyles mx-2 my-5 max-h-[200px] overflow-y-auto rounded-xl px-2">
-            <SubHeader name={'Pending Invites'} className="mb-2"></SubHeader>
-            <DataTable columns={InviteColumns} data={filteredData} />
-          </div>
-        )}
-      </div>
-
-      {/* dashboard */}
-      <div className={receivedInviteData.length !== 0 ? 'px-2' : ''}>
-        <SubHeader name={'Dashboard'}></SubHeader>
-
+      {isReceivedInviteLoading && <Loading />}
+      {!isReceivedInviteLoading && filteredData?.length > 0 && (
+        <div className="scrollBarStyles mx-2 my-5 max-h-[200px] overflow-y-auto rounded-md border px-2">
+          <SubHeader name={'Pending Invites'} className="mb-2"></SubHeader>
+          <DataTable columns={InviteColumns} data={filteredData} />
+        </div>
+      )}
+      <div className="h-full rounded-md">
         <EmptyStageComponent
           heading={dashBoardEmptyStagedata.heading}
           subHeading={dashBoardEmptyStagedata.subHeading}
           subItems={dashBoardEmptyStagedata.subItems}
         />
       </div>
-      {/* <div className="flex flex-wrap gap-2">
-        {
-          dashBoardData.map((cardItem) => (
-            <DashCard key={cardItem.id} title={cardItem.title} numbers={cardItem.numbers} growth={cardItem.growth} icon={cardItem.icon}/>
-          ))
-        }
-      </div> */}
     </div>
   );
 }

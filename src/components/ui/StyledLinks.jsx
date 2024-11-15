@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,20 +13,45 @@ const StyledLinks = ({ link }) => {
     pathname === link.path ||
     link.subTab?.some((subtab) => pathname.startsWith(subtab.path));
 
+  const isMainTabActive = pathname === link.path;
+
+  const isSubTabActive = link.subTab?.some((subtab) =>
+    pathname.startsWith(subtab.path),
+  );
+
   return (
     <>
       {/* Main Tab */}
       <Link
         href={link.path}
         className={cn(
-          'flex w-full items-center gap-2 rounded-sm border-none p-3 text-xs',
-          isActive
+          'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
+          isMainTabActive && !isSubTabActive
             ? 'bg-[#288AF91A] text-[#288AF9]'
             : 'bg-transparent text-grey',
         )}
       >
-        {link.icon}
-        {link.name}
+        <span
+          className={
+            isSubTabActive
+              ? 'flex gap-2 font-bold text-[#363940]'
+              : 'flex gap-2'
+          }
+        >
+          {link.icon}
+          {link.name}
+        </span>
+        <span>
+          {link?.subTab?.length > 0 ? (
+            isActive ? (
+              <ChevronUp size={14} />
+            ) : (
+              <ChevronDown size={14} />
+            )
+          ) : (
+            ''
+          )}
+        </span>
       </Link>
 
       {/* Sub Tabs */}

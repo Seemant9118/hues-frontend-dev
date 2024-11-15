@@ -11,9 +11,12 @@ import {
   ReceiptText,
   ScrollText,
   Store,
+  User,
   UserRound,
   Users,
 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
@@ -104,11 +107,6 @@ const Sidebar = () => {
       icon: <Users size={16} />,
       path: '/members',
     },
-    {
-      name: 'Notifications',
-      icon: <Bell size={16} />,
-      path: '/notification',
-    },
     // {
     //   name: "Insights",
     //   icon: <PieChart size={16} />,
@@ -116,11 +114,45 @@ const Sidebar = () => {
     // },
   ];
 
+  const actionLinks = [
+    {
+      name: 'Notifications',
+      icon: <Bell size={16} />,
+      path: '/notification',
+    },
+    {
+      name: 'Profile',
+      icon: <User size={16} />,
+      path: '/profile',
+    },
+  ];
+
   return (
-    <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-[0_4px_6px_0_#3288ED1A]">
-      {links.map((link) => (
-        <StyledLinks key={link.name} link={link} />
-      ))}
+    <div className="flex flex-col justify-between bg-[#F6F9FF] p-3">
+      <div className="flex w-full flex-col gap-10 py-2">
+        <Link href={'/'}>
+          <Image
+            src={'/hues_logo.png'}
+            height={25}
+            width={100}
+            placeholder="blur"
+            alt="Logo"
+            blurDataURL="/hues_logo.png"
+          />
+        </Link>
+
+        <div className="flex flex-col gap-2">
+          {links.map((link) => (
+            <StyledLinks key={link.name} link={link} />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {actionLinks.map((link) => (
+          <StyledLinks key={link.name} link={link} />
+        ))}
+      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { Orbit } from 'lucide-react';
 
 const EmptyStageComponent = ({ heading, subItems }) => {
   return (
-    <div className="my-5 flex flex-col justify-center gap-2 rounded-md bg-gray-100 p-5">
+    <div className="flex flex-col justify-center gap-2 rounded-md bg-gray-100 p-5">
       <h1 className="text-sm font-bold italic">{heading}</h1>
       <div className="flex flex-col gap-1 px-2">
         {/* <h2 className="text-sm font-bold">{subHeading} : </h2> */}
