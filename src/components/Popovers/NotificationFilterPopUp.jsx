@@ -62,7 +62,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant={'export'}>
+        <Button size="sm" variant={'export'}>
           <SlidersHorizontal size={16} />
           Filters
         </Button>

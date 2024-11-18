@@ -37,7 +37,7 @@ const MembersPage = () => {
   const inviteeMembersColumns = useInviteeMembersColumns(setSelectedMembers);
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full py-2">
       <SubHeader name={'Members'} className="z-10 bg-white">
         <div className="flex items-center justify-center gap-4">
           <MemberInviteModal />

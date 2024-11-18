@@ -323,6 +323,15 @@ const PurchaseInvoices = () => {
                   paginationData={paginationData}
                 />
               )}
+
+              {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                <EmptyStageComponent
+                  heading={SaleEmptyStageData.heading}
+                  desc={SaleEmptyStageData.desc}
+                  subHeading={SaleEmptyStageData.subHeading}
+                  subItems={SaleEmptyStageData.subItems}
+                />
+              )}
             </TabsContent>
             <TabsContent value="debitNotes">
               {isInvoiceLoading && <Loading />}
@@ -340,7 +349,7 @@ const PurchaseInvoices = () => {
               )}
 
               {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p>No Debit Note Raised</p>
                 </div>

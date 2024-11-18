@@ -204,14 +204,14 @@ const ViewOrder = () => {
   );
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full py-2">
       {isLoading && !orderDetails && <Loading />}
 
       {!isLoading && orderDetails && (
         <>
           {/* headers */}
-          <section className="sticky top-0 z-10 flex items-center justify-between bg-white">
-            <div className="flex gap-2 pt-2">
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+            <div className="flex gap-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
                 possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
@@ -273,7 +273,7 @@ const ViewOrder = () => {
                 onValueChange={onTabChange}
                 defaultValue={'overview'}
               >
-                <section className="sticky top-10 z-10 bg-white">
+                <section className="sticky top-12 z-10 bg-white py-2">
                   <TabsList className="border">
                     <TabsTrigger
                       className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}

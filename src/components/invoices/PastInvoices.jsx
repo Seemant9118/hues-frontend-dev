@@ -9,6 +9,7 @@ import emptyImg from '../../../public/Empty.png';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
+import Wrapper from '../wrappers/Wrapper';
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const pathName = usePathname();
@@ -44,8 +45,8 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   }
 
   return (
-    <>
-      <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
+    <Wrapper className="h-full">
+      <div className="flex flex-col gap-4">
         {invoiceList && invoiceList?.length > 0 ? (
           invoiceList?.map((invoice) => {
             return (
@@ -93,7 +94,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
             );
           })
         ) : (
-          <div className="flex h-[50rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+          <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
             <Image src={emptyImg} alt="emptyIcon" />
             <p className="font-bold">No invoices yet</p>
             <p className="max-w-96 text-center">
@@ -108,6 +109,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                 (orderDetails.negotiationStatus === 'NEW' &&
                   orderDetails?.orderType === 'SALES')) && (
                 <Button
+                  size="sm"
                   className="bg-[#288AF9]"
                   onClick={() => setIsGenerateInvoice(true)}
                 >
@@ -117,7 +119,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
           </div>
         )}
       </div>
-    </>
+    </Wrapper>
   );
 }
 

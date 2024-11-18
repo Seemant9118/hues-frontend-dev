@@ -63,54 +63,24 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col">
-      {/* kyc is pending */}
-      {!isKycVerified && (
-        <div className="my-2 flex items-center justify-between rounded-sm border border-[#288AF9] bg-[#288AF90A] p-2">
-          <span className="text-sm">
-            Your KYC is still pending, click to <b>proceed</b> to complete KYC
-          </span>
-          <Button
-            size="sm"
-            className="bg-[#288AF9]"
-            onClick={() => {
-              router.push('/login/kyc');
-            }}
-          >
-            Proceed
-          </Button>
-        </div>
-      )}
+    <div className="flex h-full flex-col gap-10">
+      <SubHeader name={'Dashboard'}></SubHeader>
 
       {/* Invitation table */}
-      <div>
-        {isReceivedInviteLoading && <Loading />}
-
-        {filteredData?.length > 0 && (
-          <div className="max-h-[250px] overflow-y-hidden py-4">
-            <h1 className="py-2 text-xl font-bold">Pending Invites</h1>
-            <DataTable columns={InviteColumns} data={filteredData} />
-          </div>
-        )}
-      </div>
-
-      {/* dashboard */}
-      <div className={receivedInviteData.length !== 0 ? 'px-2' : ''}>
-        <SubHeader name={'Dashboard'}></SubHeader>
-
+      {isReceivedInviteLoading && <Loading />}
+      {!isReceivedInviteLoading && filteredData?.length > 0 && (
+        <div className="scrollBarStyles mx-2 my-5 max-h-[200px] overflow-y-auto rounded-md border px-2">
+          <SubHeader name={'Pending Invites'} className="mb-2"></SubHeader>
+          <DataTable columns={InviteColumns} data={filteredData} />
+        </div>
+      )}
+      <div className="h-full rounded-md">
         <EmptyStageComponent
           heading={dashBoardEmptyStagedata.heading}
           subHeading={dashBoardEmptyStagedata.subHeading}
           subItems={dashBoardEmptyStagedata.subItems}
         />
       </div>
-      {/* <div className="flex flex-wrap gap-2">
-        {
-          dashBoardData.map((cardItem) => (
-            <DashCard key={cardItem.id} title={cardItem.title} numbers={cardItem.numbers} growth={cardItem.growth} icon={cardItem.icon}/>
-          ))
-        }
-      </div> */}
     </div>
   );
 }

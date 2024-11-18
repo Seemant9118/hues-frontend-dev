@@ -9,7 +9,7 @@ const SubHeader = ({ name, children, className }) => {
         className,
       )}
     >
-      <h2 className="text-2xl font-bold text-zinc-900">{name}</h2>
+      <h2 className="text-xl font-bold text-zinc-900">{name}</h2>
       {children}
     </div>
   );

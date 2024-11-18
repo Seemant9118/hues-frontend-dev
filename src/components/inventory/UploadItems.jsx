@@ -80,13 +80,13 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
   }
 
   return (
-    <Wrapper className="pt-4">
+    <Wrapper className="flex h-full flex-col py-2">
       <MoveLeft
         className="hover:cursor-pointer"
         onClick={() => setisUploading(false)}
       />
 
-      <div className="flex flex-col items-center justify-start gap-4">
+      <div className="flex grow flex-col items-center justify-center gap-4 rounded-md border">
         <FileUploader
           handleChange={uploadFile}
           name="file"
@@ -147,7 +147,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
         ))}
       </div>
 
-      <div className="mt-auto h-[1px] w-full bg-neutral-300"></div>
+      {/* <div className="mt-auto h-[1px] w-full bg-neutral-300"></div> */}
     </Wrapper>
   );
 };

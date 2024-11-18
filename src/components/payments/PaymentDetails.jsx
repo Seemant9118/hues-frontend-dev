@@ -30,7 +30,7 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   return paymentsList?.length > 0 ? (
     <DataTable columns={paymentColumns} data={paymentsList} />
   ) : (
-    <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+    <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />
       <p className="font-bold">No payments yet</p>
       <p className="max-w-96 text-center">
@@ -41,6 +41,7 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
       {!isPurchasesPage && orderDetails.negotiationStatus === 'INVOICED' && (
         <Button
+          size="sm"
           className="bg-[#288AF9]"
           onClick={() => setIsRecordingPayment(true)}
         >

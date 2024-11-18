@@ -44,6 +44,7 @@ const Notification = () => {
           setFilteredNotification={setFilteredNotification}
         />
       </SubHeader>
+
       <DataTable
         id="notification table"
         columns={NotificationColumns}

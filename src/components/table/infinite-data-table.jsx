@@ -109,7 +109,7 @@ export function InfiniteDataTable({
     <div>
       <div
         ref={containerRef}
-        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[400px] overflow-y-auto rounded-[6px]"
+        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[565px] overflow-y-auto rounded-[6px]"
       >
         <Table id={id}>
           <TableHeader>

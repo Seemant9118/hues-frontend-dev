@@ -125,37 +125,10 @@ const EditItem = ({
     <form
       onSubmit={handleEditSubmit}
       className={cn(
-        'scrollBarStyles flex h-full grow flex-col gap-4 overflow-y-auto p-2',
+        'scrollBarStyles flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
       <h2 className="text-2xl font-bold text-zinc-900">Edit Item</h2>
-
-      {/* <div className="grid grid-cols-2 gap-2.5">
-        {cta === "Item" && !goodsToEdit && (
-          <div className="flex flex-col gap-4 ">
-            <div>
-              <Label className="flex-shrink-0">Type</Label>{" "}
-              <span className="text-red-600">*</span>
-            </div>
-
-            <Select
-              required
-              value={item.type}
-              onValueChange={(value) =>
-                setItem((prev) => ({ ...prev, type: value }))
-              }
-            >
-              <SelectTrigger className="max-w-xs gap-5">
-                <SelectValue placeholder="Select Item Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="goods">Goods</SelectItem>
-                <SelectItem value="services">Services</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </div> */}
 
       {/* mandatory data fields */}
       {item.type === 'goods' ? (
@@ -337,8 +310,9 @@ const EditItem = ({
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-end justify-end gap-4">
         <Button
+          size="sm"
           onClick={() => {
             setIsEditing((prev) => !prev);
             goodsToEdit ? setGoodsToEdit(null) : setServicesToEdit(null);
@@ -347,7 +321,9 @@ const EditItem = ({
         >
           Cancel
         </Button>
-        <Button type="submit">Edit</Button>
+        <Button size="sm" type="submit">
+          Edit
+        </Button>
       </div>
     </form>
   );

@@ -5,17 +5,35 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useStep } from '@/context/StepsContext';
 import { LocalStorageService } from '@/lib/utils';
-import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
-import { useQuery } from '@tanstack/react-query';
-import { MoveLeft } from 'lucide-react';
+import {
+  getProfileDetails,
+  LoggingOut,
+} from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 function Profile() {
   const userId = LocalStorageService.get('user_profile');
   const router = useRouter();
-  const { setCurrStep } = useStep();
+
+  const logoutMutation = useMutation({
+    mutationKey: [userAuth.logout.endpointKey],
+    mutationFn: LoggingOut,
+    onSuccess: (res) => {
+      LocalStorageService.clear();
+      router.push('/login');
+      toast.success(res.data.message || 'User Logged Out');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const logout = () => {
+    logoutMutation.mutate();
+  };
 
   const { data: profileDetails } = useQuery({
     queryKey: [userAuth.getProfileDetails.endpointKey],
@@ -24,23 +42,19 @@ function Profile() {
   });
 
   const handleUserOnboarding = () => {
-    setCurrStep(3);
-    router.push('/login');
+    router.push('/login/userOnboarding');
   };
 
   const handleEnterpriseOnboarding = () => {
-    setCurrStep(5);
-    router.push('/login');
+    router.push('/login/enterpriseOnboardingSearch');
   };
 
   return (
     <Wrapper>
-      <SubHeader className="flex justify-start">
-        <MoveLeft
-          className="hover:cursor-pointer"
-          size={26}
-          onClick={() => router.back()}
-        />
+      <SubHeader className="flex justify-end">
+        <Button variant="blue_outline" size="sm" onClick={logout}>
+          Logout
+        </Button>
       </SubHeader>
 
       <div className="my-5 flex flex-col gap-4">
