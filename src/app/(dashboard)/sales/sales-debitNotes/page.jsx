@@ -206,7 +206,7 @@ const SalesDebitNotes = () => {
 
   return (
     <>
-      <Wrapper>
+      <Wrapper className="h-full">
         <SubHeader
           name={'Debit Notes'}
           className="sticky top-0 z-10 flex items-center justify-between bg-white"
@@ -249,7 +249,7 @@ const SalesDebitNotes = () => {
               )}
 
               {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p>No Debit Note Raised</p>
                 </div>
@@ -272,7 +272,7 @@ const SalesDebitNotes = () => {
               )}
 
               {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p>No Debit Note Raised</p>
                 </div>
@@ -295,7 +295,7 @@ const SalesDebitNotes = () => {
               )}
 
               {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                <div className="flex h-[26rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p>No Debit Note Raised</p>
                 </div>

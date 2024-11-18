@@ -22,11 +22,13 @@ const GenerateLink = ({ invitationStatus, invitationId, mutationFunc }) => {
   };
 
   return invitationStatus === 'PENDING' || invitationStatus === 'REJECTED' ? (
-    <Button onClick={handleClick}>Link</Button>
-  ) : (
-    <Button className="bg-green-100 font-bold text-green-600 hover:cursor-text hover:bg-green-100 hover:text-green-600">
-      Accepted
+    <Button size="sm" onClick={handleClick}>
+      Link
     </Button>
+  ) : (
+    <span className="rounded-sm border border-green-600 bg-green-100 p-2 font-bold text-green-600">
+      Accepted
+    </span>
   );
 };
 

@@ -39,6 +39,7 @@ const PreviewInvoice = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
+          size="sm"
           variant="outline"
           className="border-black"
           onClick={mutationFn}

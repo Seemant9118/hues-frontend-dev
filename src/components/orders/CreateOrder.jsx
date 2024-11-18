@@ -346,7 +346,7 @@ const CreateOrder = ({
   }
 
   return (
-    <Wrapper>
+    <Wrapper className="flex h-full flex-col py-2">
       <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (

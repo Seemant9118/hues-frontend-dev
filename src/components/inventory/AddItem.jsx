@@ -277,7 +277,7 @@ const AddItem = ({ name, onCancel, cta }) => {
         item.type === 'goods' ? handleSubmitGoods : handleSubmitServices
       }
       className={cn(
-        'scrollBarStyles flex h-full grow flex-col gap-4 overflow-y-auto p-2',
+        'scrollBarStyles flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
       <h2 className="text-2xl font-bold text-zinc-900">{name}</h2>
@@ -562,8 +562,9 @@ const AddItem = ({ name, onCancel, cta }) => {
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-end justify-end gap-4">
         <Button
+          size="sm"
           onClick={() => {
             onCancel();
           }}
@@ -571,7 +572,7 @@ const AddItem = ({ name, onCancel, cta }) => {
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={cta === 'Template'}>
+        <Button size="sm" type="submit" disabled={cta === 'Template'}>
           Add
         </Button>
       </div>

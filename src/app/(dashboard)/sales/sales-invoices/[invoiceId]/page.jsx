@@ -133,7 +133,7 @@ const ViewInvoice = () => {
   }
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full py-2">
       {/* headers */}
       <section className="sticky top-0 z-10 flex items-center justify-between bg-white">
         <div className="flex gap-2 pt-2">

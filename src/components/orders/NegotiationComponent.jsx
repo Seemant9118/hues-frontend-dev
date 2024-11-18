@@ -206,7 +206,7 @@ const NegotiationComponent = ({
   );
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full py-2">
       {/* Collapsable overview */}
       <OrdersOverview
         isCollapsableOverview={true}

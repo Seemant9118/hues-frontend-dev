@@ -265,7 +265,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   );
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full">
       {/* Collapsable overview */}
       <OrdersOverview
         isCollapsableOverview={true}

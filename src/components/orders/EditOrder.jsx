@@ -335,7 +335,7 @@ const EditOrder = ({
   };
 
   return (
-    <Wrapper>
+    <Wrapper className="flex h-full flex-col py-2">
       <SubHeader name={name}></SubHeader>
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex w-1/2 items-center gap-2">

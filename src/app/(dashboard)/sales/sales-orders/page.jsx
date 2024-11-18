@@ -343,7 +343,7 @@ const SalesOrder = () => {
   return (
     <>
       {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
-        <Wrapper>
+        <Wrapper className="h-full">
           <SubHeader
             name={'Sales'}
             className="sticky top-0 z-10 flex items-center justify-between bg-white"

@@ -110,7 +110,7 @@ const GenerateInvoiceModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button onClick={generateOTP} disabled={disableCondition}>
+        <Button size="sm" onClick={generateOTP} disabled={disableCondition}>
           <FileCog size={16} />
           Generate
         </Button>
@@ -156,13 +156,14 @@ const GenerateInvoiceModal = ({
                     00:{startFrom.toString().padStart(2, '0')}
                   </span>
                 ) : (
-                  <Button variant="outline" onClick={generateOTP}>
+                  <Button size="sm" variant="outline" onClick={generateOTP}>
                     Resend
                   </Button>
                 )}
               </span>
             </p>
             <Button
+              size="sm"
               type="submit"
               className="w-full"
               disabled={invoiceMutation.isPending}
@@ -182,6 +183,7 @@ const GenerateInvoiceModal = ({
             </div>
             <div className="mt-auto flex items-center justify-end gap-4">
               <Button
+                size="sm"
                 className="bg-green-700 text-white hover:bg-green-800 hover:text-white"
                 variant="outline"
                 onClick={() => {

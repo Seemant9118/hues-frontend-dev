@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
+import Wrapper from '../wrappers/Wrapper';
 
 const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const queryClient = useQueryClient();
@@ -312,7 +313,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   );
 
   return (
-    <>
+    <Wrapper className="h-full py-2">
       {/* Collapsable overview */}
       <OrdersOverview
         isCollapsableOverview={true}
@@ -324,7 +325,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         amtPaid={orderDetails?.amountPaid}
         totalAmount={orderDetails.amount + orderDetails.gstAmount}
       />
-      <div className="scrollBarStyles flex flex-col gap-4 overflow-y-auto">
+      <div className="flex flex-col gap-4">
         {/* inputs */}
         <section className="flex flex-col gap-4 rounded-md border p-4">
           <div className="flex items-center">
@@ -613,7 +614,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         </div>
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div className="sticky bottom-0 flex w-full justify-end gap-2 border-t-2 bg-white p-2">
         <Button
           variant="outline"
           className="w-32"
@@ -647,7 +648,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
           {createPaymentMutationFn.isPending ? <Loading /> : 'Create'}
         </Button>
       </div>
-    </>
+    </Wrapper>
   );
 };
 
