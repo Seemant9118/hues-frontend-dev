@@ -3,14 +3,19 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { useInviteColumns } from '@/components/columns/useInviteColumns';
 import { DataTable } from '@/components/table/data-table';
+import { Button } from '@/components/ui/button';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
+import { LocalStorageService } from '@/lib/utils';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const InviteColumns = useInviteColumns();
+  const router = useRouter();
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
@@ -59,13 +64,31 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
+      {/* kyc is pending */}
+      {!isKycVerified && (
+        <div className="my-2 flex items-center justify-between rounded-sm border border-[#288AF9] bg-[#288AF90A] p-2">
+          <span className="text-sm">
+            Your KYC is still pending, click to <b>proceed</b> to complete KYC
+          </span>
+          <Button
+            size="sm"
+            className="bg-[#288AF9]"
+            onClick={() => {
+              router.push('/login/kyc');
+            }}
+          >
+            Proceed
+          </Button>
+        </div>
+      )}
+
       {/* Invitation table */}
       <div>
         {isReceivedInviteLoading && <Loading />}
 
         {filteredData?.length > 0 && (
-          <div className="scrollBarStyles mx-2 my-5 max-h-[200px] overflow-y-auto rounded-xl px-2">
-            <SubHeader name={'Pending Invites'} className="mb-2"></SubHeader>
+          <div className="max-h-[250px] overflow-y-hidden py-4">
+            <h1 className="py-2 text-xl font-bold">Pending Invites</h1>
             <DataTable columns={InviteColumns} data={filteredData} />
           </div>
         )}

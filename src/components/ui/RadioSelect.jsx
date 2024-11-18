@@ -24,7 +24,7 @@ const RadioSelect = ({
       />
       <label
         htmlFor={option}
-        className={`rounded-md border border-gray-600 bg-gray-100 p-2 text-slate-700 hover:bg-primary hover:text-white ${
+        className={`rounded-sm border border-[#EDEEF2] p-2 text-[#A5ABBD] hover:border-[#288AF9] hover:font-semibold hover:text-black ${
           disabled ? 'cursor-not-allowed' : 'cursor-pointer'
         }`}
       >
