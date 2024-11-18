@@ -3,19 +3,14 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { useInviteColumns } from '@/components/columns/useInviteColumns';
 import { DataTable } from '@/components/table/data-table';
-import { Button } from '@/components/ui/button';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
-import { LocalStorageService } from '@/lib/utils';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const InviteColumns = useInviteColumns();
-  const router = useRouter();
-  const isKycVerified = LocalStorageService.get('isKycVerified');
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
