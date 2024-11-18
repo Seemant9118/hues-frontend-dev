@@ -39,3 +39,26 @@ export function SearchEnterprise(identifier, identifierType) {
     `${enterpriseUser.searchEnterprise.endpoint}?identifier=${identifier}&identifier_type=${identifierType}`,
   );
 }
+
+// create enterprise
+export function CreateEnterprise(data) {
+  return APIinstance.post(enterpriseUser.createEnterprise.endpoint, data);
+}
+
+// update enterprise after DIN verification
+export function UpdateEnterpriseAfterDINVerification(id) {
+  return APIinstance.put(
+    `${enterpriseUser.updateEnterpriseAfterDINVerify.endpoint}${id}`,
+  );
+}
+
+export function UpdateEnterprise({ id, data }) {
+  return APIinstance.put(
+    `${enterpriseUser.updateEnterprise.endpoint}${id}`,
+    data,
+  );
+}
+
+export function getEnterpriseById(id) {
+  return APIinstance.get(`${enterpriseUser.getEnterprise.endpoint}${id}`);
+}

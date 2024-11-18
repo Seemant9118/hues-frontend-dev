@@ -59,4 +59,34 @@ export const userAuth = {
     endpoint: `/iam/auth/logout`,
     endpointKey: 'logging_out',
   },
+
+  // 13. verify din
+  verifyDIN: {
+    endpoint: `/iam/kyc/verify-din`,
+    endpointKey: 'verify_din',
+  },
+
+  // 14. generateVerifyMailOTP
+  generateMailOTP: {
+    endpoint: `/iam/auth/email/generate_otp`,
+    endpointKey: 'generate_Verify_Mail_otp',
+  },
+
+  // 15. verifyMailOTP
+  verifyMailOTP: {
+    endpoint: `/iam/auth/email/verify_otp`,
+    endpointKey: 'verify_mail_OTP',
+  },
+
+  // 16. request exist or not
+  requestExist: {
+    endpoint: `/enterprise/invitation/requestexists`,
+    endpointKey: 'request_exist',
+  },
+
+  // 17. create request
+  createRequestAccess: {
+    endpoint: `/enterprise/invitation/request`,
+    endpointKey: 'create_request_access',
+  },
 };

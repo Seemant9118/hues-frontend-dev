@@ -59,3 +59,28 @@ export function generateSignOTP() {
 export function LoggingOut() {
   return APIinstance.post(userAuth.logout.endpoint);
 }
+
+// 13. verify DIN
+export function VerifyDIN(data) {
+  return APIinstance.post(userAuth.verifyDIN.endpoint, data);
+}
+
+// 14. generate Mail OTP
+export function generateMailOTP(data) {
+  return APIinstance.post(userAuth.generateMailOTP.endpoint, data);
+}
+
+// 15. verify Mail OTP
+export function verifyMailOTP(data) {
+  return APIinstance.post(userAuth.verifyMailOTP.endpoint, data);
+}
+
+// 16. request exist
+export function requestExist(data) {
+  return APIinstance.post(userAuth.requestExist.endpoint, data);
+}
+
+// 17. create request to access
+export function createRequestAccess(data) {
+  return APIinstance.post(userAuth.createRequestAccess.endpoint, data);
+}

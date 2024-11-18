@@ -30,4 +30,25 @@ export const enterpriseUser = {
     endpoint: `/enterprise/search`,
     endpointKey: 'search_enterprise',
   },
+  // create enterprise
+  createEnterprise: {
+    endpoint: `/enterprise/create`,
+    endpointKey: 'create_enterprise',
+  },
+  // update enterprise after DIN verification
+  updateEnterpriseAfterDINVerify: {
+    endpoint: `/enterprise/updateenterprisestatus/`,
+    endpointKey: 'update_enterprise_after_DIN_verification',
+  },
+  // update enterprise
+  updateEnterprise: {
+    endpoint: `/enterprise/update/`,
+    endpointKey: 'update_enterprise',
+  },
+
+  // get enterprise
+  getEnterprise: {
+    endpoint: `/enterprise/get/`,
+    endpointKey: 'get_enterprise',
+  },
 };
