@@ -4,12 +4,10 @@ import RadioSelect from '@/components/ui/RadioSelect';
 import { LocalStorageService } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React from 'react';
 
 const DirectorConsentPage = () => {
   const router = useRouter();
-  // eslint-disable-next-line no-unused-vars
-  const [isDirectorConsent, setIsDirectorConsent] = useState(null);
 
   const enterpriseType = LocalStorageService.get('enterpriseType');
 
@@ -32,7 +30,6 @@ const DirectorConsentPage = () => {
             value="yes"
             checkBoxName="options"
             handleChange={() => {
-              setIsDirectorConsent(true);
               if (enterpriseType === 'proprietorship') {
                 router.push('/');
               }
@@ -45,7 +42,6 @@ const DirectorConsentPage = () => {
             value="no"
             checkBoxName="options"
             handleChange={() => {
-              setIsDirectorConsent(false);
               router.push('/login/inviteDirector');
             }}
           />

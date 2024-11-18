@@ -12,15 +12,13 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const CompleteKycPage = () => {
   // user_id get from localStorage
   const userId = LocalStorageService.get('user_profile');
   const router = useRouter();
-  // eslint-disable-next-line no-unused-vars
-  const [digio, setDigio] = useState(null);
 
   const { refetch: refetchKycStatus } = useQuery({
     queryKey: [userAuth.getUserById.endpointKey, userId],
@@ -61,7 +59,7 @@ const CompleteKycPage = () => {
     event_listener: () => {
       // console.log(data, "event_l");
     },
-    logo: 'https://hues-frontend.vercel.app/_next/image?url=%2Fhues_logo.png&w=128&q=75',
+    logo: process.env.NEXT_PUBLIC_DIGIO_LOGO,
     theme: {
       primaryColor: '#288AF9',
       secondaryColor: '#ffffff',
@@ -70,13 +68,9 @@ const CompleteKycPage = () => {
 
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'https://ext-gateway.digio.in/sdk/v11/digio.js';
+    script.src = process.env.NEXT_PUBLIC_DIGIO_SCRIPT_URL;
     // script.src = "https://app.digio.in/sdk/v11/digio.js";
     script.async = true;
-    script.onload = async () => {
-      const digioInstance = new window.Digio(options);
-      setDigio(digioInstance);
-    };
     document.body.appendChild(script);
   }, []);
 
