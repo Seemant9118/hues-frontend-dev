@@ -83,7 +83,7 @@ const EnterpriseDetailsFirst = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-[550px] w-[450px] flex-col items-center gap-10"
+      className="flex w-[450px] flex-col items-center gap-10"
     >
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">

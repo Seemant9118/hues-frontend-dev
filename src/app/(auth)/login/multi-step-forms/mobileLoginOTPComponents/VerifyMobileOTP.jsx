@@ -126,7 +126,7 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
   return (
     <form
       onSubmit={handleVerifiyOTP}
-      className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-10"
+      className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10"
     >
       <div className="flex flex-col gap-4">
         <h2 className="w-full text-center text-2xl font-bold">

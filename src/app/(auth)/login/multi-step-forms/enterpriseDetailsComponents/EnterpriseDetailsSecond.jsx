@@ -182,7 +182,7 @@ const EnterpriseDetailsSecond = ({
   return (
     <form
       onSubmit={handleEnterpriseSubmit}
-      className="h-550px] flex w-[450px] flex-col items-center justify-between gap-4"
+      className="flex w-[450px] flex-col items-center justify-between gap-4"
     >
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
