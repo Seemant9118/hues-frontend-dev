@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const EnterpriseOnboardSearchPage = () => {
   const queryClient = useQueryClient();
@@ -86,16 +86,14 @@ const EnterpriseOnboardSearchPage = () => {
     const isUserRequestIsApproved =
       requestExistData?.data?.data?.status === 'APPROVED';
 
-    if (isEnterpriseOnboardingComplete) {
-      router.push('/');
-    } else if (
-      !isEnterpriseOnboardingComplete &&
+    if (
+      isEnterpriseOnboardingComplete &&
       hasUserRequestAccessToEnterprise &&
       isUserRequestIsApproved
     ) {
       router.push('/');
     } else if (
-      !isEnterpriseOnboardingComplete &&
+      (!isEnterpriseOnboardingComplete || isEnterpriseOnboardingComplete) &&
       hasUserRequestAccessToEnterprise &&
       !isUserRequestIsApproved
     ) {
