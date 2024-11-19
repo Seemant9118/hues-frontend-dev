@@ -143,7 +143,7 @@ const EnterpriseDetailsFirst = ({
         </div>
 
         {/* show selected radio */}
-        <div className="grid w-full items-center gap-2">
+        <div className="grid w-full items-center gap-3">
           <Label
             htmlFor="enterpriseType"
             className="flex items-center font-medium text-[#414656]"
