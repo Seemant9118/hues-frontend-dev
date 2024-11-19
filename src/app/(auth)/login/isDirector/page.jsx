@@ -1,14 +1,11 @@
 'use client';
 
-import RadioSelect from '@/components/ui/RadioSelect';
+import CustomLinks from '@/components/ui/CustomLinks';
 import { LocalStorageService } from '@/lib/utils';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const DirectorConsentPage = () => {
-  const router = useRouter();
-
   const enterpriseType = LocalStorageService.get('enterpriseType');
 
   return (
@@ -23,27 +20,14 @@ const DirectorConsentPage = () => {
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <RadioSelect
-            name="isDirector"
-            option="Yes! I am the director"
-            value="yes"
-            checkBoxName="options"
-            handleChange={() => {
-              if (enterpriseType === 'proprietorship') {
-                router.push('/');
-              }
-              router.push('/login/din');
-            }}
+        <div className="flex max-w-md gap-2 p-2">
+          <CustomLinks
+            href={enterpriseType === 'proprietorship' ? '/' : '/login/din'}
+            linkName="Yes! I am the director"
           />
-          <RadioSelect
-            name="isDirector"
-            option="No, I am an associate"
-            value="no"
-            checkBoxName="options"
-            handleChange={() => {
-              router.push('/login/inviteDirector');
-            }}
+          <CustomLinks
+            href={'/login/inviteDirector'}
+            linkName="No, I am an associate"
           />
         </div>
 
