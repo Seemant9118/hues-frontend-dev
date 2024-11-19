@@ -20,6 +20,7 @@ const EnterpriseDetailsFirst = ({
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
+  const invitationData = LocalStorageService.get('invitationData');
   const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState({});
@@ -33,12 +34,20 @@ const EnterpriseDetailsFirst = ({
   useEffect(() => {
     if (enterpriseData) {
       setEnterpriseOnboardData({
-        name: enterpriseData.name || '',
+        name: invitationData?.toEnterprise?.name || enterpriseData.name || '',
         type: enterpriseData.type.toLowerCase() || '',
-        email: enterpriseData.email || '',
-        panNumber: enterpriseData.panNumber || '',
-        address: enterpriseData.address || '',
-        gstNumber: enterpriseData.gstNumber || '',
+        email:
+          invitationData?.toEnterprise?.email || enterpriseData.email || '',
+        panNumber:
+          invitationData?.toEnterprise?.panNumber ||
+          enterpriseData.panNumber ||
+          '',
+        address:
+          invitationData?.toEnterprise?.address || enterpriseData.address || '',
+        gstNumber:
+          invitationData?.toEnterprise?.gstNumber ||
+          enterpriseData.gstNumber ||
+          '',
         udyam: enterpriseData.udyam || '',
         doi: enterpriseData.doi || '',
         isDeclerationConsent: enterpriseData.isDeclerationConsent || null,
@@ -83,7 +92,7 @@ const EnterpriseDetailsFirst = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-[550px] w-[450px] flex-col items-center gap-10"
+      className="flex w-[450px] flex-col items-center gap-10"
     >
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">

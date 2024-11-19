@@ -1,14 +1,37 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const ConfirmationInviteAsClientPage = () => {
   const router = useRouter();
-  const inviteData = LocalStorageService.get('invitationData');
+
+  const [inviteData, setInviteData] = useState(null);
+  const [isEnterpriseOnboardingComplete, setIsEnterpriseOnboardingComplete] =
+    useState(false);
+  const [isKycVerified, setIsKycVerified] = useState(false);
+
+  // Fetch data from localStorage on the client side
+  useEffect(() => {
+    const fetchedInviteData = LocalStorageService.get('invitationData');
+    const fetchedIsEnterpriseOnboardingComplete = LocalStorageService.get(
+      'isEnterpriseOnboardingComplete',
+    );
+    const fetchedIsKycVerified = LocalStorageService.get('isKycVerified');
+
+    setInviteData(fetchedInviteData);
+    setIsEnterpriseOnboardingComplete(!!fetchedIsEnterpriseOnboardingComplete);
+    setIsKycVerified(!!fetchedIsKycVerified);
+  }, []);
+
+  // Render only when client-side data is loaded
+  if (!inviteData) {
+    return <Loading />;
+  }
 
   return (
     <div className="flex h-full items-center justify-center">
@@ -23,7 +46,7 @@ const ConfirmationInviteAsClientPage = () => {
 
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
             Continue with{' '}
-            {inviteData?.data?.invitation?.toEnterprise?.name ?? 'You'} ?
+            {inviteData?.data?.invitation?.toEnterprise?.name ?? 'You'}?
           </h1>
         </div>
 
@@ -33,7 +56,13 @@ const ConfirmationInviteAsClientPage = () => {
             type="Submit"
             className="w-full bg-[#288AF9] p-2"
             onClick={() => {
-              router.push('/login/enterpriseDetails');
+              if (isEnterpriseOnboardingComplete && isKycVerified) {
+                router.push('/');
+              } else if (isEnterpriseOnboardingComplete && !isKycVerified) {
+                router.push('/login/kyc');
+              } else {
+                router.push('/login/enterpriseDetails');
+              }
             }}
           >
             Yes

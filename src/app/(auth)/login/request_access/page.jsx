@@ -20,7 +20,7 @@ const RequestAccessPage = () => {
     mutationKey: [userAuth.createRequestAccess.endpointKey, enterpriseReqId],
     mutationFn: createRequestAccess,
     onSuccess: () => {
-      toast.success(`Request sent to ${enterpriseName}`);
+      toast.success(`Request sent Successfully`);
       router.push('/login/requested_approval');
     },
     onError: (error) => {

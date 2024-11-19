@@ -111,7 +111,7 @@ const MobileLogin = ({ setMobileLoginStep }) => {
   };
 
   return (
-    <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
+    <div className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10">
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
           Welcome to Hues
