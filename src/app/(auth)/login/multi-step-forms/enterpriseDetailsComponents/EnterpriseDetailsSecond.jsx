@@ -27,18 +27,25 @@ const EnterpriseDetailsSecond = ({
 }) => {
   const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(
+    enterpriseOnboardData?.doi
+      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate()
+      : null,
+  );
   const [errorMsg, setErrorMsg] = useState({});
 
   useEffect(() => {
-    setEnterpriseOnboardData((prevUserData) => ({
-      ...prevUserData,
-      // Only update doi if it's empty in enterpriseOnboardData
-      doi:
-        prevUserData.doi ||
-        (selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : ''),
-    }));
+    if (selectedDate) {
+      setEnterpriseOnboardData((prevUserData) => ({
+        ...prevUserData,
+        doi: moment(selectedDate).format('DD/MM/YYYY'),
+      }));
+    }
   }, [selectedDate]);
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date); // Update the selected date
+  };
 
   // mutationFn : create enterprise
   const enterpriseOnboardCreateMutation = useMutation({
@@ -53,7 +60,7 @@ const EnterpriseDetailsSecond = ({
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       toast.success(data.data.message);
       if (enterpriseOnboardData.type === 'proprietorship') {
-        router.push('/');
+        router.push('/kyc');
       } else {
         router.push('/login/isDirector'); // moved for director consent
       }
@@ -75,7 +82,7 @@ const EnterpriseDetailsSecond = ({
       toast.success(data?.data?.message);
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       if (enterpriseOnboardData.type === 'proprietorship') {
-        router.push('/');
+        router.push('/kyc');
       } else {
         router.push('/login/din');
       }
@@ -226,12 +233,8 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={
-                    enterpriseOnboardData?.doi
-                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
-                      : selectedDate
-                  }
-                  onChange={(date) => setSelectedDate(date)}
+                  selected={selectedDate} // Display the current date in the picker
+                  onChange={handleDateChange} // Update selected date
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
                 />
@@ -343,12 +346,8 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={
-                    enterpriseOnboardData?.doi
-                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
-                      : selectedDate
-                  }
-                  onChange={(date) => setSelectedDate(date)}
+                  selected={selectedDate} // Display the current date in the picker
+                  onChange={handleDateChange} // Update selected date
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
                 />
@@ -461,12 +460,8 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={
-                    enterpriseOnboardData?.doi
-                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
-                      : selectedDate
-                  }
-                  onChange={(date) => setSelectedDate(date)}
+                  selected={selectedDate} // Display the current date in the picker
+                  onChange={handleDateChange} // Update selected date
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
                 />
@@ -601,12 +596,8 @@ const EnterpriseDetailsSecond = ({
 
               <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
-                  selected={
-                    enterpriseOnboardData?.doi
-                      ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate() // Convert formatted doi to Date object
-                      : selectedDate
-                  }
-                  onChange={(date) => setSelectedDate(date)}
+                  selected={selectedDate} // Display the current date in the picker
+                  onChange={handleDateChange} // Update selected date
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="bottom-end"
                 />
