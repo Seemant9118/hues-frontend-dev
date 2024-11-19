@@ -5,6 +5,7 @@ import MemberInviteModal from '@/components/membersInvite/MemberInviteModal';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
@@ -37,43 +38,54 @@ const MembersPage = () => {
   const inviteeMembersColumns = useInviteeMembersColumns(setSelectedMembers);
 
   return (
-    <Wrapper className="h-full py-2">
-      <SubHeader name={'Members'} className="z-10 bg-white">
-        <div className="flex items-center justify-center gap-4">
-          <MemberInviteModal />
-
-          <Button
-            disabled={selectedMembers?.length === 0}
-            onClick={() => {}}
-            variant="outline"
-            className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-            size="sm"
-          >
-            <Upload size={16} />
-          </Button>
-        </div>
-      </SubHeader>
-
-      {isLoading && <Loading />}
-
-      {!isLoading && membersList?.length > 0 && (
-        <DataTable columns={inviteeMembersColumns} data={membersList} />
+    <>
+      {!enterpriseId && (
+        <>
+          <SubHeader name="Members" />
+          <RestrictedComponent />
+        </>
       )}
 
-      {!isLoading && membersList?.length === 0 && (
-        <div className="flex h-[50rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-          <Users size={28} />
-          <p className="font-bold">No Members Invited yet</p>
-          <p className="max-w-96 text-center">
-            {
-              "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
-            }
-          </p>
+      {enterpriseId && (
+        <Wrapper className="h-full py-2">
+          <SubHeader name={'Members'} className="z-10 bg-white">
+            <div className="flex items-center justify-center gap-4">
+              <MemberInviteModal />
 
-          <MemberInviteModal />
-        </div>
+              <Button
+                disabled={selectedMembers?.length === 0}
+                onClick={() => {}}
+                variant="outline"
+                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                size="sm"
+              >
+                <Upload size={16} />
+              </Button>
+            </div>
+          </SubHeader>
+
+          {isLoading && <Loading />}
+
+          {!isLoading && membersList?.length > 0 && (
+            <DataTable columns={inviteeMembersColumns} data={membersList} />
+          )}
+
+          {!isLoading && membersList?.length === 0 && (
+            <div className="flex h-[50rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+              <Users size={28} />
+              <p className="font-bold">No Members Invited yet</p>
+              <p className="max-w-96 text-center">
+                {
+                  "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
+                }
+              </p>
+
+              <MemberInviteModal />
+            </div>
+          )}
+        </Wrapper>
       )}
-    </Wrapper>
+    </>
   );
 };
 

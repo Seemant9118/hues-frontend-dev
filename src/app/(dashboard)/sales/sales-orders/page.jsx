@@ -6,6 +6,7 @@ import FilterModal from '@/components/orders/FilterModal';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -342,177 +343,193 @@ const SalesOrder = () => {
 
   return (
     <>
-      {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
-        <Wrapper className="h-full">
-          <SubHeader
-            name={'Sales'}
-            className="sticky top-0 z-10 flex items-center justify-between bg-white"
-          >
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                onClick={handleExportOrder}
-                variant="outline"
-                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                size="sm"
+      {!enterpriseId && (
+        <>
+          <SubHeader name="Sales" />
+          <RestrictedComponent />
+        </>
+      )}
+      {enterpriseId && (
+        <>
+          {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
+            <Wrapper className="h-full">
+              <SubHeader
+                name={'Sales'}
+                className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
-                <Upload size={14} />
-              </Button>
+                <div className="flex items-center justify-center gap-3">
+                  <Button
+                    onClick={handleExportOrder}
+                    variant="outline"
+                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                    size="sm"
+                  >
+                    <Upload size={14} />
+                  </Button>
 
-              <Button
-                onClick={() => setIsCreatingSales(true)}
-                className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Offer
-              </Button>
-            </div>
-          </SubHeader>
-          <section>
-            <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
-              <section className="sticky top-14 z-10 flex justify-between bg-white">
-                <TabsList className="border">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="bidReceived">Bid Recieved</TabsTrigger>
-                  <TabsTrigger value="pending">Payment Pending</TabsTrigger>
-                  <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
-                </TabsList>
-                <FilterModal tab={tab} setFilterData={setFilterData} />
+                  <Button
+                    onClick={() => setIsCreatingSales(true)}
+                    className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                    size="sm"
+                  >
+                    <PlusCircle size={14} />
+                    Offer
+                  </Button>
+                </div>
+              </SubHeader>
+              <section>
+                <Tabs
+                  value={tab}
+                  onValueChange={onTabChange}
+                  defaultValue={'all'}
+                >
+                  <section className="sticky top-14 z-10 flex justify-between bg-white">
+                    <TabsList className="border">
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="bidReceived">
+                        Bid Recieved
+                      </TabsTrigger>
+                      <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                      <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
+                    </TabsList>
+                    <FilterModal tab={tab} setFilterData={setFilterData} />
+                  </section>
+
+                  <TabsContent value="all">
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          onRowClick={onRowClick}
+                          data={salesListing}
+                          isFetching={isFetching}
+                          fetchNextPage={fetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="bidReceived">
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id={'sale-orders'}
+                          columns={SalesColumns}
+                          onRowClick={onRowClick}
+                          data={salesListing}
+                          isFetching={isFetching}
+                          fetchNextPage={fetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="pending">
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id={'sale-orders'}
+                          columns={SalesColumns}
+                          onRowClick={onRowClick}
+                          data={salesListing}
+                          isFetching={isFetching}
+                          fetchNextPage={fetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent value="unconfirmed">
+                    {unconfirmedSalesListsIsLoading && <Loading />}
+                    {!unconfirmedSalesListsIsLoading &&
+                      (unconfirmedSalesListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          onRowClick={onRowClick}
+                          data={unconfirmedSalesListing}
+                          isFetching={unconfirmedSalesListsIsFetching}
+                          fetchNextPage={unconfirmedSalesFetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                </Tabs>
               </section>
+            </Wrapper>
+          )}
 
-              <TabsContent value="all">
-                {isLoading && <Loading />}
-                {!isLoading &&
-                  (salesListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id="sale-orders"
-                      columns={SalesColumns}
-                      onRowClick={onRowClick}
-                      data={salesListing}
-                      isFetching={isFetching}
-                      fetchNextPage={fetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={SaleEmptyStageData.heading}
-                      desc={SaleEmptyStageData.desc}
-                      subHeading={SaleEmptyStageData.subHeading}
-                      subItems={SaleEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-              <TabsContent value="bidReceived">
-                {isLoading && <Loading />}
-                {!isLoading &&
-                  (salesListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id={'sale-orders'}
-                      columns={SalesColumns}
-                      onRowClick={onRowClick}
-                      data={salesListing}
-                      isFetching={isFetching}
-                      fetchNextPage={fetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={SaleEmptyStageData.heading}
-                      desc={SaleEmptyStageData.desc}
-                      subHeading={SaleEmptyStageData.subHeading}
-                      subItems={SaleEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-              <TabsContent value="pending">
-                {isLoading && <Loading />}
-                {!isLoading &&
-                  (salesListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id={'sale-orders'}
-                      columns={SalesColumns}
-                      onRowClick={onRowClick}
-                      data={salesListing}
-                      isFetching={isFetching}
-                      fetchNextPage={fetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={SaleEmptyStageData.heading}
-                      desc={SaleEmptyStageData.desc}
-                      subHeading={SaleEmptyStageData.subHeading}
-                      subItems={SaleEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
+          {/* create order component */}
+          {isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
+            <CreateOrder
+              type="sales"
+              name="Offer"
+              cta="offer"
+              isOrder="order"
+              setIsCreatingSales={setIsCreatingSales}
+              setIsCreatingInvoice={setIsCreatingInvoice}
+              setSalesListing={setSalesListing}
+              onCancel={() => setIsCreatingSales(false)}
+            />
+          )}
 
-              <TabsContent value="unconfirmed">
-                {unconfirmedSalesListsIsLoading && <Loading />}
-                {!unconfirmedSalesListsIsLoading &&
-                  (unconfirmedSalesListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id="sale-orders"
-                      columns={SalesColumns}
-                      onRowClick={onRowClick}
-                      data={unconfirmedSalesListing}
-                      isFetching={unconfirmedSalesListsIsFetching}
-                      fetchNextPage={unconfirmedSalesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={SaleEmptyStageData.heading}
-                      desc={SaleEmptyStageData.desc}
-                      subHeading={SaleEmptyStageData.subHeading}
-                      subItems={SaleEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-            </Tabs>
-          </section>
-        </Wrapper>
-      )}
+          {/* create invoice component */}
+          {isCreatingInvoice && !isCreatingSales && !isEditingOrder && (
+            <CreateOrder
+              type="sales"
+              name="Invoice"
+              cta="offer"
+              isOrder="invoice"
+              onCancel={() => setIsCreatingInvoice(false)}
+            />
+          )}
 
-      {/* create order component */}
-      {isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
-        <CreateOrder
-          type="sales"
-          name="Offer"
-          cta="offer"
-          isOrder="order"
-          setIsCreatingSales={setIsCreatingSales}
-          setIsCreatingInvoice={setIsCreatingInvoice}
-          setSalesListing={setSalesListing}
-          onCancel={() => setIsCreatingSales(false)}
-        />
-      )}
-
-      {/* create invoice component */}
-      {isCreatingInvoice && !isCreatingSales && !isEditingOrder && (
-        <CreateOrder
-          type="sales"
-          name="Invoice"
-          cta="offer"
-          isOrder="invoice"
-          onCancel={() => setIsCreatingInvoice(false)}
-        />
-      )}
-
-      {/* editOrder Component */}
-      {isEditingOrder && !isCreatingSales && !isCreatingInvoice && (
-        <EditOrder
-          type="sales"
-          name="Edit"
-          cta="offer"
-          isOrder="order"
-          orderId={orderId}
-          onCancel={() => setIsEditingOrder(false)}
-        />
+          {/* editOrder Component */}
+          {isEditingOrder && !isCreatingSales && !isCreatingInvoice && (
+            <EditOrder
+              type="sales"
+              name="Edit"
+              cta="offer"
+              isOrder="order"
+              orderId={orderId}
+              onCancel={() => setIsEditingOrder(false)}
+            />
+          )}
+        </>
       )}
     </>
   );

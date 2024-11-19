@@ -1,9 +1,12 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
+import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
+import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -23,11 +26,9 @@ import {
   Share2,
   Upload,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import Tooltips from '@/components/auth/Tooltips';
-import SearchInput from '@/components/ui/SearchInput';
-import dynamic from 'next/dynamic';
 import { useGoodsColumns } from './GoodsColumns';
 
 // dynamic imports
@@ -43,7 +44,7 @@ const UploadItems = dynamic(
 );
 
 function Goods() {
-  const enpterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const templateId = 1;
 
   const queryClient = useQueryClient();
@@ -85,7 +86,7 @@ function Goods() {
 
   const { data: productGoods, isLoading } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
-    queryFn: () => GetAllProductGoods(enpterpriseId),
+    queryFn: () => GetAllProductGoods(enterpriseId),
     select: (res) => res.data.data,
   });
 
@@ -98,7 +99,7 @@ function Goods() {
   const uploadFile = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('enterpriseId', enpterpriseId);
+    formData.append('enterpriseId', enterpriseId);
     formData.append('templateId', templateId);
 
     try {
@@ -115,105 +116,117 @@ function Goods() {
 
   return (
     <>
-      {!isAdding && !isUploading && !isEditing && (
-        <Wrapper>
-          <SubHeader name={'Goods'}>
-            <div className="flex items-center justify-center gap-4">
-              <SearchInput
-                toSearchTerm={searchTerm}
-                setToSearchTerm={setSearchTerm}
-              />
-              {/* coming soon */}
-              <Tooltips
-                trigger={
+      {!enterpriseId && (
+        <>
+          <SubHeader name={'Goods'}></SubHeader>
+          <RestrictedComponent />
+        </>
+      )}
+      {enterpriseId && (
+        <div>
+          {!isAdding && !isUploading && !isEditing && (
+            <Wrapper>
+              <SubHeader name={'Goods'}>
+                <div className="flex items-center justify-center gap-4">
+                  <SearchInput
+                    toSearchTerm={searchTerm}
+                    setToSearchTerm={setSearchTerm}
+                  />
+                  {/* coming soon */}
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => {}}
+                        variant={'export'}
+                        size="sm"
+                        className="cursor-not-allowed"
+                      >
+                        <Share2 size={14} />
+                        Share
+                      </Button>
+                    }
+                    content={'This feature Coming Soon...'}
+                  />
+
                   <Button
-                    onClick={() => {}}
                     variant={'export'}
                     size="sm"
-                    className="cursor-not-allowed"
+                    onClick={() =>
+                      exportTableToExcel('goods table', 'goods_list')
+                    }
                   >
-                    <Share2 size={14} />
-                    Share
+                    <Upload size={14} />
+                    Export
                   </Button>
-                }
-                content={'This feature Coming Soon...'}
-              />
+                  <Button
+                    onClick={() => setIsUploading(true)}
+                    variant={'blue_outline'}
+                    size="sm"
+                  >
+                    <Upload size={14} />
+                    Upload
+                  </Button>
+                  <Button
+                    onClick={() => setIsAdding(true)}
+                    variant={'blue_outline'}
+                    size="sm"
+                  >
+                    <CircleFadingPlus size={14} />
+                    Add
+                  </Button>
+                </div>
+              </SubHeader>
 
-              <Button
-                variant={'export'}
-                size="sm"
-                onClick={() => exportTableToExcel('goods table', 'goods_list')}
-              >
-                <Upload size={14} />
-                Export
-              </Button>
-              <Button
-                onClick={() => setIsUploading(true)}
-                variant={'blue_outline'}
-                size="sm"
-              >
-                <Upload size={14} />
-                Upload
-              </Button>
-              <Button
-                onClick={() => setIsAdding(true)}
-                variant={'blue_outline'}
-                size="sm"
-              >
-                <CircleFadingPlus size={14} />
-                Add
-              </Button>
-            </div>
-          </SubHeader>
+              {isLoading && <Loading />}
 
-          {isLoading && <Loading />}
+              {!isLoading &&
+                // isSuccess &&
+                (productGoods && productGoods.length !== 0 ? (
+                  <DataTable
+                    id={'goods table'}
+                    columns={GoodsColumns}
+                    data={searchProductGoods}
+                  />
+                ) : (
+                  <EmptyStageComponent
+                    heading={InventoryEmptyStageData.heading}
+                    desc={InventoryEmptyStageData.desc}
+                    subHeading={InventoryEmptyStageData.subHeading}
+                    subItems={InventoryEmptyStageData.subItems}
+                  />
+                ))}
+            </Wrapper>
+          )}
 
-          {!isLoading &&
-            // isSuccess &&
-            (productGoods && productGoods.length !== 0 ? (
-              <DataTable
-                id={'goods table'}
-                columns={GoodsColumns}
-                data={searchProductGoods}
-              />
-            ) : (
-              <EmptyStageComponent
-                heading={InventoryEmptyStageData.heading}
-                desc={InventoryEmptyStageData.desc}
-                subHeading={InventoryEmptyStageData.subHeading}
-                subItems={InventoryEmptyStageData.subItems}
-              />
-            ))}
-        </Wrapper>
-      )}
+          {isAdding && (
+            <AddItem
+              setIsAdding={setIsAdding}
+              name={'Item'}
+              cta={'Item'}
+              onCancel={() => setIsAdding(false)}
+            />
+          )}
 
-      {isAdding && (
-        <AddItem
-          setIsAdding={setIsAdding}
-          name={'Item'}
-          cta={'Item'}
-          onCancel={() => setIsAdding(false)}
-        />
-      )}
+          {isEditing && (
+            <EditItem
+              setIsEditing={setIsEditing}
+              goodsToEdit={goodsToEdit}
+              setGoodsToEdit={setGoodsToEdit}
+              mutationFunc={UpdateProductGoods}
+              queryKey={[goodsApi.getAllProductGoods.endpointKey]}
+            />
+          )}
 
-      {isEditing && (
-        <EditItem
-          setIsEditing={setIsEditing}
-          goodsToEdit={goodsToEdit}
-          setGoodsToEdit={setGoodsToEdit}
-          mutationFunc={UpdateProductGoods}
-          queryKey={[goodsApi.getAllProductGoods.endpointKey]}
-        />
-      )}
-
-      {isUploading && (
-        <UploadItems
-          type="goods"
-          uploadFile={uploadFile}
-          files={files}
-          setisUploading={setIsUploading}
-          setFiles={setFiles}
-        />
+          {isUploading && (
+            <UploadItems
+              type="goods"
+              uploadFile={uploadFile}
+              files={files}
+              setisUploading={setIsUploading}
+              setFiles={setFiles}
+            />
+          )}
+        </div>
       )}
     </>
   );

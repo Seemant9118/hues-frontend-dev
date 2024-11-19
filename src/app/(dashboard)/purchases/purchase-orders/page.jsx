@@ -6,6 +6,7 @@ import FilterModal from '@/components/orders/FilterModal';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -342,168 +343,183 @@ const PurchaseOrders = () => {
 
   return (
     <>
-      {!isCreatingPurchase && !isEditingOrder && (
-        <Wrapper>
-          <SubHeader name={'Purchases'} className="z-10 bg-white">
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                onClick={handleExportOrder}
-                variant="outline"
-                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                size="sm"
-              >
-                <Upload size={14} />
-              </Button>
+      {!enterpriseId && (
+        <>
+          <SubHeader name="Purchases" />
+          <RestrictedComponent />
+        </>
+      )}
 
-              <Button
-                onClick={() => setIsCreatingPurchase(true)}
-                className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Bid
-              </Button>
-            </div>
-          </SubHeader>
+      {enterpriseId && (
+        <>
+          {!isCreatingPurchase && !isEditingOrder && (
+            <Wrapper>
+              <SubHeader name={'Purchases'} className="z-10 bg-white">
+                <div className="flex items-center justify-center gap-3">
+                  <Button
+                    onClick={handleExportOrder}
+                    variant="outline"
+                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                    size="sm"
+                  >
+                    <Upload size={14} />
+                  </Button>
 
-          <section>
-            <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
-              <section className="sticky top-14 z-10 flex justify-between bg-white">
-                <TabsList className="border">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="offerReceived">
-                    Offer Recieved
-                  </TabsTrigger>
-                  <TabsTrigger value="pending">Payment Pending</TabsTrigger>
-                  <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
-                </TabsList>
-                <FilterModal setFilterData={setFilterData} />
+                  <Button
+                    onClick={() => setIsCreatingPurchase(true)}
+                    className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                    size="sm"
+                  >
+                    <PlusCircle size={14} />
+                    Bid
+                  </Button>
+                </div>
+              </SubHeader>
+
+              <section>
+                <Tabs
+                  value={tab}
+                  onValueChange={onTabChange}
+                  defaultValue={'all'}
+                >
+                  <section className="sticky top-14 z-10 flex justify-between bg-white">
+                    <TabsList className="border">
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="offerReceived">
+                        Offer Recieved
+                      </TabsTrigger>
+                      <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                      <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
+                    </TabsList>
+                    <FilterModal setFilterData={setFilterData} />
+                  </section>
+
+                  <TabsContent value="all">
+                    {isLoading && <Loading />}
+
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id={'purchase-orders'}
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          onRowClick={onRowClick}
+                          isFetching={isFetching}
+                          fetchNextPage={fetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={PurchaseEmptyStageData.heading}
+                          desc={PurchaseEmptyStageData.desc}
+                          subHeading={PurchaseEmptyStageData.subHeading}
+                          subItems={PurchaseEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="offerReceived">
+                    {isLoading && <Loading />}
+
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id={'purchase-orders'}
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          onRowClick={onRowClick}
+                          isFetching={isFetching}
+                          fetchNextPage={fetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={PurchaseEmptyStageData.heading}
+                          desc={PurchaseEmptyStageData.desc}
+                          subHeading={PurchaseEmptyStageData.subHeading}
+                          subItems={PurchaseEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="pending">
+                    {isLoading && <Loading />}
+
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id={'purchase-orders'}
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          onRowClick={onRowClick}
+                          isFetching={isFetching}
+                          fetchNextPage={fetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={PurchaseEmptyStageData.heading}
+                          desc={PurchaseEmptyStageData.desc}
+                          subHeading={PurchaseEmptyStageData.subHeading}
+                          subItems={PurchaseEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent value="unconfirmed">
+                    {unconfirmedPurchaseListsIsLoading && <Loading />}
+
+                    {!unconfirmedPurchaseListsIsLoading &&
+                      (unconfirmedPurchaseListing?.length > 0 ? (
+                        <InfiniteDataTable
+                          id={'purchase-orders'}
+                          columns={PurchaseColumns}
+                          data={unconfirmedPurchaseListing}
+                          onRowClick={onRowClick}
+                          isFetching={unconfirmedPurchaseListsIsFetching}
+                          fetchNextPage={unconfirmedPurchaseFetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={PurchaseEmptyStageData.heading}
+                          desc={PurchaseEmptyStageData.desc}
+                          subHeading={PurchaseEmptyStageData.subHeading}
+                          subItems={PurchaseEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                </Tabs>
               </section>
+            </Wrapper>
+          )}
+          {isCreatingPurchase && !isEditingOrder && (
+            <CreateOrder
+              type="purchase"
+              name={'Bid'}
+              cta="bid"
+              isOrder="order"
+              onCancel={() => setIsCreatingPurchase(false)}
+              onSubmit={() => {
+                setIsCreatingPurchase(false);
+              }}
+              setIsOrderCreationSuccess={setIsOrderCreationSuccess}
+            />
+          )}
 
-              <TabsContent value="all">
-                {isLoading && <Loading />}
-
-                {!isLoading &&
-                  (purchaseListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id={'purchase-orders'}
-                      columns={PurchaseColumns}
-                      data={purchaseListing}
-                      onRowClick={onRowClick}
-                      isFetching={isFetching}
-                      fetchNextPage={fetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={PurchaseEmptyStageData.heading}
-                      desc={PurchaseEmptyStageData.desc}
-                      subHeading={PurchaseEmptyStageData.subHeading}
-                      subItems={PurchaseEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-              <TabsContent value="offerReceived">
-                {isLoading && <Loading />}
-
-                {!isLoading &&
-                  (purchaseListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id={'purchase-orders'}
-                      columns={PurchaseColumns}
-                      data={purchaseListing}
-                      onRowClick={onRowClick}
-                      isFetching={isFetching}
-                      fetchNextPage={fetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={PurchaseEmptyStageData.heading}
-                      desc={PurchaseEmptyStageData.desc}
-                      subHeading={PurchaseEmptyStageData.subHeading}
-                      subItems={PurchaseEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-              <TabsContent value="pending">
-                {isLoading && <Loading />}
-
-                {!isLoading &&
-                  (purchaseListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id={'purchase-orders'}
-                      columns={PurchaseColumns}
-                      data={purchaseListing}
-                      onRowClick={onRowClick}
-                      isFetching={isFetching}
-                      fetchNextPage={fetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={PurchaseEmptyStageData.heading}
-                      desc={PurchaseEmptyStageData.desc}
-                      subHeading={PurchaseEmptyStageData.subHeading}
-                      subItems={PurchaseEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-
-              <TabsContent value="unconfirmed">
-                {unconfirmedPurchaseListsIsLoading && <Loading />}
-
-                {!unconfirmedPurchaseListsIsLoading &&
-                  (unconfirmedPurchaseListing?.length > 0 ? (
-                    <InfiniteDataTable
-                      id={'purchase-orders'}
-                      columns={PurchaseColumns}
-                      data={unconfirmedPurchaseListing}
-                      onRowClick={onRowClick}
-                      isFetching={unconfirmedPurchaseListsIsFetching}
-                      fetchNextPage={unconfirmedPurchaseFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
-                    />
-                  ) : (
-                    <EmptyStageComponent
-                      heading={PurchaseEmptyStageData.heading}
-                      desc={PurchaseEmptyStageData.desc}
-                      subHeading={PurchaseEmptyStageData.subHeading}
-                      subItems={PurchaseEmptyStageData.subItems}
-                    />
-                  ))}
-              </TabsContent>
-            </Tabs>
-          </section>
-        </Wrapper>
-      )}
-      {isCreatingPurchase && !isEditingOrder && (
-        <CreateOrder
-          type="purchase"
-          name={'Bid'}
-          cta="bid"
-          isOrder="order"
-          onCancel={() => setIsCreatingPurchase(false)}
-          onSubmit={() => {
-            setIsCreatingPurchase(false);
-          }}
-          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
-        />
-      )}
-
-      {isEditingOrder && !isCreatingPurchase && (
-        <EditOrder
-          type="purchase"
-          name="Edit"
-          cta="purchase"
-          orderId={orderId}
-          onCancel={() => setIsEditingOrder(false)}
-          setIsOrderCreationSuccess={setIsOrderCreationSuccess}
-        />
+          {isEditingOrder && !isCreatingPurchase && (
+            <EditOrder
+              type="purchase"
+              name="Edit"
+              cta="purchase"
+              orderId={orderId}
+              onCancel={() => setIsEditingOrder(false)}
+              setIsOrderCreationSuccess={setIsOrderCreationSuccess}
+            />
+          )}
+        </>
       )}
     </>
   );

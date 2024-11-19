@@ -139,112 +139,120 @@ function Profile() {
         {/* enterprise profile */}
         <div className="flex flex-col gap-4">
           <span className="text-xl font-bold">Enterprise Details</span>
+          {!profileDetails?.enterpriseDetails && (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-md border bg-gray-100 p-20">
+              <span className="text-xl font-bold">Enterprise Not Present</span>
+              <span>Already Request sent, Wait for approval</span>
+            </div>
+          )}
 
-          {!profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
-            <div className="relative">
-              <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]">
-                {/* by clicking this , i am redirected to currStep 4 */}
-                <Button
-                  variant="warning"
-                  className="w-2/3 shadow-xl"
-                  onClick={
-                    !profileDetails?.userDetails?.isOnboardingCompleted &&
-                    !profileDetails?.enterpriseDetails?.isOnboardingCompleted
-                      ? handleUserOnboarding
-                      : handleEnterpriseOnboarding
-                  }
-                >
-                  Complete Your Profile
-                </Button>
+          {profileDetails?.enterpriseDetails &&
+            !profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
+              <div className="relative">
+                <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]">
+                  {/* by clicking this , i am redirected to currStep 4 */}
+                  <Button
+                    variant="warning"
+                    className="w-2/3 shadow-xl"
+                    onClick={
+                      !profileDetails?.userDetails?.isOnboardingCompleted &&
+                      !profileDetails?.enterpriseDetails?.isOnboardingCompleted
+                        ? handleUserOnboarding
+                        : handleEnterpriseOnboarding
+                    }
+                  >
+                    Complete Your Profile
+                  </Button>
+                </div>
+                <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
+                  <section className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">Name : </Label>
+                      <span className="text-md">Enterprise Name</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">Type : </Label>
+                      <span className="text-md">Enteprise Type</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">Mobile Number : </Label>
+                      <span className="text-md">+91 1234567980</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">Email ID : </Label>
+                      <span className="text-md">test@gmail.com</span>
+                    </div>
+                  </section>
+
+                  <section className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">PAN Card : </Label>
+                      <span className="text-md">XXXX1234X</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">GST IN : </Label>
+                      <span className="text-md">XXX48489XX15454</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-md">UDYAM : </Label>
+                      <span className="text-md">XXXXXXXXX1234</span>
+                    </div>
+                  </section>
+                </div>
               </div>
+            )}
+          {profileDetails?.enterpriseDetails &&
+            profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
               <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
                 <section className="flex flex-col gap-4">
                   <div className="flex items-center gap-2">
                     <Label className="text-md">Name : </Label>
-                    <span className="text-md">Enterprise Name</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.name}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-md">Type : </Label>
-                    <span className="text-md">Enteprise Type</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.type}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-md">Mobile Number : </Label>
-                    <span className="text-md">+91 1234567980</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.mobileNumber}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-md">Email ID : </Label>
-                    <span className="text-md">test@gmail.com</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.email}
+                    </span>
                   </div>
                 </section>
 
                 <section className="flex flex-col gap-4">
                   <div className="flex items-center gap-2">
                     <Label className="text-md">PAN Card : </Label>
-                    <span className="text-md">XXXX1234X</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.panNumber}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-md">GST IN : </Label>
-                    <span className="text-md">XXX48489XX15454</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.gstNumber}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-md">UDYAM : </Label>
-                    <span className="text-md">XXXXXXXXX1234</span>
+                    <span className="text-md">
+                      {profileDetails?.enterpriseDetails?.udyam}
+                    </span>
                   </div>
                 </section>
               </div>
-            </div>
-          )}
-          {profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
-            <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
-              <section className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Name : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Type : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.type}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Mobile Number : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.mobileNumber}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Email ID : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.email}
-                  </span>
-                </div>
-              </section>
-
-              <section className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">PAN Card : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.panNumber}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">GST IN : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.gstNumber}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">UDYAM : </Label>
-                  <span className="text-md">
-                    {profileDetails?.enterpriseDetails?.udyam}
-                  </span>
-                </div>
-              </section>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </Wrapper>

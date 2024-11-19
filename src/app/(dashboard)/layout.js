@@ -10,7 +10,7 @@ export default function DashBoardLayout({ children }) {
 
       <section className="scrollBarStyles relative grid h-screen flex-grow grid-cols-[225px,_1fr] overflow-y-auto">
         <Sidebar />
-        <main className="scrollBarStyles overflow-y-auto bg-white px-2">
+        <main className="scrollBarStyles overflow-y-auto bg-white px-4">
           {children}
         </main>
       </section>

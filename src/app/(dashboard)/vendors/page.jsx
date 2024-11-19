@@ -5,6 +5,7 @@ import AddModal from '@/components/Modals/AddModal';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -102,65 +103,75 @@ const VendorsPage = () => {
 
   return (
     <>
-      <Wrapper>
-        {!isUploading && (
-          <SubHeader name={'Vendors'}>
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                variant="blue_outline"
-                size="sm"
-                onClick={() => setIsUploading(true)}
-              >
-                <Upload size={14} />
-                Upload
-              </Button>
-              <Button
-                variant={'export'}
-                size="sm"
-                onClick={() =>
-                  exportTableToExcel('vendor table', 'vendors_list')
-                }
-              >
-                <Upload size={14} />
-                Export
-              </Button>
-              <AddModal
-                type={'Add'}
-                cta="vendor"
-                btnName="Add"
-                mutationFunc={createVendor}
-              />
-            </div>
-          </SubHeader>
-        )}
+      {!enterpriseId && (
+        <>
+          <SubHeader name={'Vendors'}></SubHeader>
+          <RestrictedComponent />
+        </>
+      )}
+      {enterpriseId && (
+        <div>
+          <Wrapper>
+            {!isUploading && (
+              <SubHeader name={'Vendors'}>
+                <div className="flex items-center justify-center gap-4">
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    onClick={() => setIsUploading(true)}
+                  >
+                    <Upload size={14} />
+                    Upload
+                  </Button>
+                  <Button
+                    variant={'export'}
+                    size="sm"
+                    onClick={() =>
+                      exportTableToExcel('vendor table', 'vendors_list')
+                    }
+                  >
+                    <Upload size={14} />
+                    Export
+                  </Button>
+                  <AddModal
+                    type={'Add'}
+                    cta="vendor"
+                    btnName="Add"
+                    mutationFunc={createVendor}
+                  />
+                </div>
+              </SubHeader>
+            )}
 
-        {isLoading && <Loading />}
+            {isLoading && <Loading />}
 
-        {!isLoading &&
-          !isUploading &&
-          (formattedData && formattedData.length !== 0 ? (
-            <DataTable
-              id={'vendor table'}
-              columns={VendorsColumns}
-              data={formattedData}
+            {!isLoading &&
+              !isUploading &&
+              (formattedData && formattedData.length !== 0 ? (
+                <DataTable
+                  id={'vendor table'}
+                  columns={VendorsColumns}
+                  data={formattedData}
+                />
+              ) : (
+                <EmptyStageComponent
+                  heading={VendorsEmptyStageData.heading}
+                  desc={VendorsEmptyStageData.desc}
+                  subHeading={VendorsEmptyStageData.subHeading}
+                  subItems={VendorsEmptyStageData.subItems}
+                />
+              ))}
+          </Wrapper>
+          {isUploading && (
+            <UploadItems
+              type="vendor"
+              uploadFile={uploadFile}
+              files={files}
+              setisUploading={setIsUploading}
+              setFiles={setFiles}
             />
-          ) : (
-            <EmptyStageComponent
-              heading={VendorsEmptyStageData.heading}
-              desc={VendorsEmptyStageData.desc}
-              subHeading={VendorsEmptyStageData.subHeading}
-              subItems={VendorsEmptyStageData.subItems}
-            />
-          ))}
-      </Wrapper>
-      {isUploading && (
-        <UploadItems
-          type="vendor"
-          uploadFile={uploadFile}
-          files={files}
-          setisUploading={setIsUploading}
-          setFiles={setFiles}
-        />
+          )}
+        </div>
       )}
     </>
   );

@@ -5,6 +5,7 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -207,104 +208,119 @@ const PurchaseDebitNotes = () => {
 
   return (
     <>
-      <Wrapper>
-        <SubHeader
-          name={'Debit Notes'}
-          className="sticky top-0 z-10 flex items-center justify-between bg-white"
-        >
-          <div className="flex items-center justify-center gap-3">
-            <Button
-              onClick={handleExportDebitNotes}
-              variant="outline"
-              className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-              size="sm"
+      {!enterpriseId && (
+        <>
+          <SubHeader name="Debit Notes" />
+          <RestrictedComponent />
+        </>
+      )}
+
+      {enterpriseId && (
+        <>
+          <Wrapper>
+            <SubHeader
+              name={'Debit Notes'}
+              className="sticky top-0 z-10 flex items-center justify-between bg-white"
             >
-              <Upload size={14} />
-            </Button>
-          </div>
-        </SubHeader>
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  onClick={handleExportDebitNotes}
+                  variant="outline"
+                  className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                  size="sm"
+                >
+                  <Upload size={14} />
+                </Button>
+              </div>
+            </SubHeader>
 
-        <section>
-          <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
-            <section className="sticky top-14 z-10 bg-white">
-              <TabsList className="border">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="accepted">Accepted</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected</TabsTrigger>
-              </TabsList>
+            <section>
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'all'}
+              >
+                <section className="sticky top-14 z-10 bg-white">
+                  <TabsList className="border">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="accepted">Accepted</TabsTrigger>
+                    <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                  </TabsList>
+                </section>
+
+                <TabsContent value="all">
+                  {isDebitNotesLoading && <Loading />}
+                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                    <InfiniteDataTable
+                      id={'sale-invoice-debits'}
+                      columns={debitNotesColumns}
+                      onRowClick={onRowClick}
+                      data={debitNotesListing}
+                      isFetching={isDebitNotesFetching}
+                      fetchNextPage={debitNotesFetchNextPage}
+                      filterData={filterData}
+                      paginationData={paginationData}
+                    />
+                  )}
+
+                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p>No Debit Note Raised</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="accepted">
+                  {isDebitNotesLoading && <Loading />}
+                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                    <InfiniteDataTable
+                      id={'sale-invoice-debits'}
+                      columns={debitNotesColumns}
+                      onRowClick={onRowClick}
+                      data={debitNotesListing}
+                      isFetching={isDebitNotesFetching}
+                      fetchNextPage={debitNotesFetchNextPage}
+                      filterData={filterData}
+                      paginationData={paginationData}
+                    />
+                  )}
+
+                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p>No Debit Note Raised</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="rejected">
+                  {isDebitNotesLoading && <Loading />}
+                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                    <InfiniteDataTable
+                      id={'sale-invoice-debits'}
+                      columns={debitNotesColumns}
+                      onRowClick={onRowClick}
+                      data={debitNotesListing}
+                      isFetching={isDebitNotesFetching}
+                      fetchNextPage={debitNotesFetchNextPage}
+                      filterData={filterData}
+                      paginationData={paginationData}
+                    />
+                  )}
+
+                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p>No Debit Note Raised</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </section>
-
-            <TabsContent value="all">
-              {isDebitNotesLoading && <Loading />}
-              {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                <InfiniteDataTable
-                  id={'sale-invoice-debits'}
-                  columns={debitNotesColumns}
-                  onRowClick={onRowClick}
-                  data={debitNotesListing}
-                  isFetching={isDebitNotesFetching}
-                  fetchNextPage={debitNotesFetchNextPage}
-                  filterData={filterData}
-                  paginationData={paginationData}
-                />
-              )}
-
-              {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No Debit Note Raised</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="accepted">
-              {isDebitNotesLoading && <Loading />}
-              {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                <InfiniteDataTable
-                  id={'sale-invoice-debits'}
-                  columns={debitNotesColumns}
-                  onRowClick={onRowClick}
-                  data={debitNotesListing}
-                  isFetching={isDebitNotesFetching}
-                  fetchNextPage={debitNotesFetchNextPage}
-                  filterData={filterData}
-                  paginationData={paginationData}
-                />
-              )}
-
-              {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No Debit Note Raised</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="rejected">
-              {isDebitNotesLoading && <Loading />}
-              {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                <InfiniteDataTable
-                  id={'sale-invoice-debits'}
-                  columns={debitNotesColumns}
-                  onRowClick={onRowClick}
-                  data={debitNotesListing}
-                  isFetching={isDebitNotesFetching}
-                  fetchNextPage={debitNotesFetchNextPage}
-                  filterData={filterData}
-                  paginationData={paginationData}
-                />
-              )}
-
-              {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No Debit Note Raised</p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </section>
-      </Wrapper>
+          </Wrapper>
+        </>
+      )}
     </>
   );
 };

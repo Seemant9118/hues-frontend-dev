@@ -5,12 +5,15 @@ import { useInviteColumns } from '@/components/columns/useInviteColumns';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { LocalStorageService } from '@/lib/utils';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Home() {
   const InviteColumns = useInviteColumns();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
@@ -69,13 +72,18 @@ export default function Home() {
           <DataTable columns={InviteColumns} data={filteredData} />
         </div>
       )}
-      <div className="h-full rounded-md">
-        <EmptyStageComponent
-          heading={dashBoardEmptyStagedata.heading}
-          subHeading={dashBoardEmptyStagedata.subHeading}
-          subItems={dashBoardEmptyStagedata.subItems}
-        />
-      </div>
+
+      {enterpriseId && (
+        <div className="h-full rounded-md">
+          <EmptyStageComponent
+            heading={dashBoardEmptyStagedata.heading}
+            subHeading={dashBoardEmptyStagedata.subHeading}
+            subItems={dashBoardEmptyStagedata.subItems}
+          />
+        </div>
+      )}
+
+      {!enterpriseId && <RestrictedComponent />}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -265,128 +266,145 @@ const SalesInvoices = () => {
 
   return (
     <>
-      {!isCreatingInvoice && (
-        <Wrapper>
-          <SubHeader
-            name={'Invoices'}
-            className="sticky top-0 z-10 flex items-center justify-between bg-white"
-          >
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                onClick={handleExportInvoice}
-                variant="outline"
-                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                size="sm"
-              >
-                <Upload size={14} />
-              </Button>
-
-              <Button
-                onClick={() => setIsCreatingInvoice(true)}
-                className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                size="sm"
-              >
-                <PlusCircle size={14} />
-                Invoice
-              </Button>
-            </div>
-          </SubHeader>
-
-          <section>
-            <Tabs value={tab} onValueChange={onTabChange} defaultValue={'all'}>
-              <section className="sticky top-14 z-10 bg-white">
-                <TabsList className="border">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="pending">Pending</TabsTrigger>
-                  <TabsTrigger value="debitNotes">
-                    Debit/Credit Notes
-                  </TabsTrigger>
-                </TabsList>
-              </section>
-
-              <TabsContent value="all">
-                {isInvoiceLoading && <Loading />}
-                {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                  <InfiniteDataTable
-                    id={'sale-invoice'}
-                    columns={invoiceColumns}
-                    data={invoiceListing}
-                    onRowClick={onRowClick}
-                    isFetching={isInvoicesFetching}
-                    fetchNextPage={invoiceFetchNextPage}
-                    filterData={filterData}
-                    paginationData={paginationData}
-                  />
-                )}
-                {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                  <EmptyStageComponent
-                    heading={SaleEmptyStageData.heading}
-                    desc={SaleEmptyStageData.desc}
-                    subHeading={SaleEmptyStageData.subHeading}
-                    subItems={SaleEmptyStageData.subItems}
-                  />
-                )}
-              </TabsContent>
-              <TabsContent value="pending">
-                {isInvoiceLoading && <Loading />}
-                {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                  <InfiniteDataTable
-                    id={'sale-invoice'}
-                    columns={invoiceColumns}
-                    data={invoiceListing}
-                    onRowClick={onRowClick}
-                    isFetching={isInvoicesFetching}
-                    fetchNextPage={invoiceFetchNextPage}
-                    filterData={filterData}
-                    paginationData={paginationData}
-                  />
-                )}
-                {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                  <EmptyStageComponent
-                    heading={SaleEmptyStageData.heading}
-                    desc={SaleEmptyStageData.desc}
-                    subHeading={SaleEmptyStageData.subHeading}
-                    subItems={SaleEmptyStageData.subItems}
-                  />
-                )}
-              </TabsContent>
-              <TabsContent value="debitNotes">
-                {isInvoiceLoading && <Loading />}
-                {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                  <InfiniteDataTable
-                    id={'sale-invoice-debits'}
-                    columns={invoiceColumns}
-                    onRowClick={onRowClick}
-                    data={invoiceListing}
-                    isFetching={isInvoicesFetching}
-                    fetchNextPage={invoiceFetchNextPage}
-                    filterData={filterData}
-                    paginationData={paginationData}
-                  />
-                )}
-
-                {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                  <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                    <Image src={emptyImg} alt="emptyIcon" />
-                    <p>No Debit Note Raised</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </section>
-        </Wrapper>
+      {!enterpriseId && (
+        <>
+          <SubHeader name="Invoices" />
+          <RestrictedComponent />
+        </>
       )}
 
-      {/* create invoice component */}
-      {isCreatingInvoice && (
-        <CreateOrder
-          type="invoice"
-          name="Invoice"
-          cta="offer"
-          isOrder="invoice"
-          setInvoiceListing={setInvoiceListing}
-          onCancel={() => setIsCreatingInvoice(false)}
-        />
+      {enterpriseId && (
+        <div>
+          <>
+            {!isCreatingInvoice && (
+              <Wrapper>
+                <SubHeader
+                  name={'Invoices'}
+                  className="sticky top-0 z-10 flex items-center justify-between bg-white"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <Button
+                      onClick={handleExportInvoice}
+                      variant="outline"
+                      className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                      size="sm"
+                    >
+                      <Upload size={14} />
+                    </Button>
+
+                    <Button
+                      onClick={() => setIsCreatingInvoice(true)}
+                      className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                      size="sm"
+                    >
+                      <PlusCircle size={14} />
+                      Invoice
+                    </Button>
+                  </div>
+                </SubHeader>
+
+                <section>
+                  <Tabs
+                    value={tab}
+                    onValueChange={onTabChange}
+                    defaultValue={'all'}
+                  >
+                    <section className="sticky top-14 z-10 bg-white">
+                      <TabsList className="border">
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="pending">Pending</TabsTrigger>
+                        <TabsTrigger value="debitNotes">
+                          Debit/Credit Notes
+                        </TabsTrigger>
+                      </TabsList>
+                    </section>
+
+                    <TabsContent value="all">
+                      {isInvoiceLoading && <Loading />}
+                      {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                        <InfiniteDataTable
+                          id={'sale-invoice'}
+                          columns={invoiceColumns}
+                          data={invoiceListing}
+                          onRowClick={onRowClick}
+                          isFetching={isInvoicesFetching}
+                          fetchNextPage={invoiceFetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      )}
+                      {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      )}
+                    </TabsContent>
+                    <TabsContent value="pending">
+                      {isInvoiceLoading && <Loading />}
+                      {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                        <InfiniteDataTable
+                          id={'sale-invoice'}
+                          columns={invoiceColumns}
+                          data={invoiceListing}
+                          onRowClick={onRowClick}
+                          isFetching={isInvoicesFetching}
+                          fetchNextPage={invoiceFetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      )}
+                      {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      )}
+                    </TabsContent>
+                    <TabsContent value="debitNotes">
+                      {isInvoiceLoading && <Loading />}
+                      {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                        <InfiniteDataTable
+                          id={'sale-invoice-debits'}
+                          columns={invoiceColumns}
+                          onRowClick={onRowClick}
+                          data={invoiceListing}
+                          isFetching={isInvoicesFetching}
+                          fetchNextPage={invoiceFetchNextPage}
+                          filterData={filterData}
+                          paginationData={paginationData}
+                        />
+                      )}
+
+                      {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                        <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                          <Image src={emptyImg} alt="emptyIcon" />
+                          <p>No Debit Note Raised</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </section>
+              </Wrapper>
+            )}
+
+            {/* create invoice component */}
+            {isCreatingInvoice && (
+              <CreateOrder
+                type="invoice"
+                name="Invoice"
+                cta="offer"
+                isOrder="invoice"
+                setInvoiceListing={setInvoiceListing}
+                onCancel={() => setIsCreatingInvoice(false)}
+              />
+            )}
+          </>
+        </div>
       )}
     </>
   );
