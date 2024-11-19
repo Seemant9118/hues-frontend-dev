@@ -60,7 +60,7 @@ const EnterpriseDetailsSecond = ({
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       toast.success(data.data.message);
       if (enterpriseOnboardData.type === 'proprietorship') {
-        router.push('/kyc');
+        router.push('/login/kyc');
       } else {
         router.push('/login/isDirector'); // moved for director consent
       }
@@ -82,7 +82,7 @@ const EnterpriseDetailsSecond = ({
       toast.success(data?.data?.message);
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       if (enterpriseOnboardData.type === 'proprietorship') {
-        router.push('/kyc');
+        router.push('/login/kyc');
       } else {
         router.push('/login/din');
       }
