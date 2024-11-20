@@ -22,7 +22,9 @@ const DirectorConsentPage = () => {
 
         <div className="flex max-w-md gap-2 p-2">
           <CustomLinks
-            href={enterpriseType === 'proprietorship' ? '/' : '/login/din'}
+            href={
+              enterpriseType === 'proprietorship' ? '/login/kyc' : '/login/din'
+            }
             linkName="Yes! I am the director"
           />
           <CustomLinks
