@@ -37,6 +37,9 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
   const mutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
     onSuccess: async (data) => {
+      // set refresh token
+      LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
+      // set access token
       LocalStorageService.set('token', data?.data?.data?.access_token);
       LocalStorageService.set(
         'enterprise_Id',
@@ -90,16 +93,27 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       ) {
         router.push('/login/enterpriseOnboardingSearch');
       }
-      // 4. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete
+      // 4. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && isKycVerified
       else if (
         data?.data?.data?.user?.isOnboardingComplete &&
         !invitationData?.data?.id &&
         !isUserHaveValidDirectorInvites &&
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
+        data?.data?.data?.user?.isKycVerified
       ) {
         router.push('/');
       }
-      // 5. !isUserOnboardingComplete
+      // 5. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && !sKycVerified
+      else if (
+        data?.data?.data?.user?.isOnboardingComplete &&
+        !invitationData?.data?.id &&
+        !isUserHaveValidDirectorInvites &&
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
+        !data?.data?.data?.user?.isKycVerified
+      ) {
+        router.push('/login/kyc');
+      }
+      // 6. !isUserOnboardingComplete
       else {
         router.push('/login/userOnboarding');
       }

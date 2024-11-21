@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 const DINVerifyPage = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const [dinNumber, setDinNumber] = useState({
     din: '',
@@ -38,7 +39,11 @@ const DINVerifyPage = () => {
     mutationFn: UpdateEnterpriseAfterDINVerification,
     onSuccess: () => {
       toast.success('DIN number verified successfully');
-      router.push('/login/kyc');
+      if (isKycVerified) {
+        router.push('/');
+      } else {
+        router.push('/login/kyc');
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');

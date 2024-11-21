@@ -67,8 +67,8 @@ export default function Home() {
       {/* Invitation table */}
       {isReceivedInviteLoading && <Loading />}
       {!isReceivedInviteLoading && filteredData?.length > 0 && (
-        <div className="scrollBarStyles mx-2 my-5 max-h-[200px] overflow-y-auto rounded-md border px-2">
-          <SubHeader name={'Pending Invites'} className="mb-2"></SubHeader>
+        <div className="scrollBarStyles min-h-[200px] overflow-y-auto">
+          <SubHeader name={'Pending Invites'} className="mb-1"></SubHeader>
           <DataTable columns={InviteColumns} data={filteredData} />
         </div>
       )}

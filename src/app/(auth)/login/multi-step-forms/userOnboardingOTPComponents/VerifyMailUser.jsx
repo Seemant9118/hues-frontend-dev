@@ -23,6 +23,7 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const handleChangeOtp = (value) => {
     setOtp(value);
@@ -43,23 +44,33 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
 
       toast.success('Your Profile Completed & Verified');
 
-      // 1. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete
+      // 1. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && isKycVerified
       if (
         !invitationData?.data?.id &&
         !isUserHaveValidDirectorInvites &&
-        isEnterpriseOnboardingComplete
+        isEnterpriseOnboardingComplete &&
+        isKycVerified
       ) {
         router.push('/');
       }
-      // 2. invitation is present && isUserHaveValidDirectorInvites
+      // 2. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && !isKycVerified
+      else if (
+        !invitationData?.data?.id &&
+        !isUserHaveValidDirectorInvites &&
+        isEnterpriseOnboardingComplete &&
+        !isKycVerified
+      ) {
+        router.push('/login/kyc');
+      }
+      // 3. invitation is present && isUserHaveValidDirectorInvites
       else if (invitationData?.data?.id && isUserHaveValidDirectorInvites) {
         router.push('/login/select_enterprise');
       }
-      // 3. invitation present && !isUserHaveValidDirectorInvites
+      // 4. invitation present && !isUserHaveValidDirectorInvites
       else if (invitationData?.data?.id && !isUserHaveValidDirectorInvites) {
         router.push('/login/confirmation_invite_as_client');
       }
-      // 4. invitation absent  && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
+      // 5. invitation absent  && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
       else {
         router.push('/login/enterpriseOnboardingSearch');
       }

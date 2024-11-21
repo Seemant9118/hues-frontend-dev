@@ -89,4 +89,10 @@ export const userAuth = {
     endpoint: `/enterprise/invitation/request`,
     endpointKey: 'create_request_access',
   },
+
+  // 18. verifykycstatusandupdate
+  verifykycstatusandupdate: {
+    endpoint: '/iam/kyc/verifykycstatusandupdate',
+    endpointKey: 'verify_kyc_status_update',
+  },
 };

@@ -1,5 +1,7 @@
 import { LocalStorageService } from '@/lib/utils';
 import axios from 'axios';
+import { toast } from 'sonner';
+import { refreshToken } from './Token_Services/TokenServices';
 
 export const APIinstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -15,26 +17,48 @@ APIinstance.interceptors.request.use(
     return request;
   },
   (error) => {
+    toast.error('Session expired. Please log in again.');
     return Promise.reject(error);
   },
 );
+
 APIinstance.interceptors.response.use(
-  (response) => {
-    if (
-      response?.data?.data?.statusCode === 401 ||
-      response?.data?.data?.statusCode === 403
-    ) {
-      window.location.href = '/login';
-    }
+  async (response) => {
     return response;
   },
-  (error) => {
+
+  async (error) => {
+    const refreshTokenValue = LocalStorageService.get('refreshtoken');
+    // Handle errors
     if (
-      error?.response?.data?.statusCode === 401 ||
-      error?.response?.data?.statusCode === 403
+      !refreshTokenValue &&
+      (error?.response?.data?.statusCode === 401 ||
+        error?.response?.data?.statusCode === 403)
     ) {
+      LocalStorageService.clear();
       window.location.href = '/login';
     }
+    // Refresh token logic when status is 401 or 403
+    if (
+      refreshTokenValue &&
+      (error?.response?.data?.statusCode === 401 ||
+        error?.response?.data?.statusCode === 403)
+    ) {
+      try {
+        // Fetch new token
+        const refreshTokenData = await refreshToken(); // api call we can pass refreshToken not access_token
+        const newAccessToken = refreshTokenData?.data?.data?.access_token;
+
+        if (newAccessToken) {
+          LocalStorageService.set('token', newAccessToken); // Save new access token
+        }
+      } catch (error) {
+        toast.error('Session expired. Please log in again.');
+        LocalStorageService.clear();
+        window.location.href = '/login';
+      }
+    }
+
     return Promise.reject(error);
   },
 );

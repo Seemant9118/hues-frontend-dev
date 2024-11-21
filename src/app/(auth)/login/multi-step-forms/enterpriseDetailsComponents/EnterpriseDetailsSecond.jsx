@@ -1,6 +1,7 @@
 'use client';
 
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
+import { tokenApi } from '@/api/tokenApi/tokenApi';
 import Tooltips from '@/components/auth/Tooltips';
 import DatePickers from '@/components/ui/DatePickers';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -12,7 +13,8 @@ import {
   CreateEnterprise,
   UpdateEnterprise,
 } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { useMutation } from '@tanstack/react-query';
+import { refreshToken } from '@/services/Token_Services/TokenServices';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import moment from 'moment';
 import Link from 'next/link';
@@ -25,7 +27,9 @@ const EnterpriseDetailsSecond = ({
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
+  const queryClient = useQueryClient();
   const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(
     enterpriseOnboardData?.doi
@@ -51,7 +55,16 @@ const EnterpriseDetailsSecond = ({
   const enterpriseOnboardCreateMutation = useMutation({
     mutationKey: [enterpriseUser.createEnterprise.endpointKey],
     mutationFn: CreateEnterprise,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // refreshToken
+      const refreshTokenValue = await queryClient.fetchQuery({
+        queryKey: [tokenApi.refreshToken.endpointKey],
+        queryFn: refreshToken,
+      });
+      // set new access token
+      const newAccessToken = refreshTokenValue?.data?.data?.access_token;
+      LocalStorageService.set('token', newAccessToken);
+
       LocalStorageService.set('enterprise_Id', data.data.data.id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
@@ -60,7 +73,11 @@ const EnterpriseDetailsSecond = ({
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       toast.success(data.data.message);
       if (enterpriseOnboardData.type === 'proprietorship') {
-        router.push('/login/kyc');
+        if (isKycVerified) {
+          router.push('/');
+        } else {
+          router.push('/login/kyc');
+        }
       } else {
         router.push('/login/isDirector'); // moved for director consent
       }
@@ -73,7 +90,15 @@ const EnterpriseDetailsSecond = ({
   // mutation fn : update enterprise
   const enterpriseOnboardUpdateMutation = useMutation({
     mutationFn: UpdateEnterprise,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // refreshToken
+      const refreshTokenValue = await queryClient.fetchQuery({
+        queryKey: [tokenApi.refreshToken.endpointKey],
+        queryFn: refreshToken,
+      });
+      // set new access token
+      const newAccessToken = refreshTokenValue?.data?.data?.access_token;
+      LocalStorageService.set('token', newAccessToken);
       LocalStorageService.set('enterprise_Id', data.data.data.id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
@@ -82,7 +107,11 @@ const EnterpriseDetailsSecond = ({
       toast.success(data?.data?.message);
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
       if (enterpriseOnboardData.type === 'proprietorship') {
-        router.push('/login/kyc');
+        if (isKycVerified) {
+          router.push('/');
+        } else {
+          router.push('/login/kyc');
+        }
       } else {
         router.push('/login/din');
       }
