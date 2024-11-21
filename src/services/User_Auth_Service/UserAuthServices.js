@@ -84,3 +84,8 @@ export function requestExist(data) {
 export function createRequestAccess(data) {
   return APIinstance.post(userAuth.createRequestAccess.endpoint, data);
 }
+
+// 18 .verifyKYCstatusandUpdate
+export function verifyKYCstatusandUpdate() {
+  return APIinstance.post(userAuth.verifykycstatusandupdate.endpoint);
+}
