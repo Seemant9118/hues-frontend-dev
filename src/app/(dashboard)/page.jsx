@@ -21,6 +21,7 @@ export default function Home() {
       queryKey: [invitation.getReceivedInvitation.endpointKey],
       queryFn: () => getReceivedInvitation(),
       select: (data) => data.data.data,
+      enabled: enterpriseId,
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
@@ -66,8 +67,8 @@ export default function Home() {
       <SubHeader name={'Dashboard'}></SubHeader>
 
       {/* Invitation table */}
-      {isReceivedInviteLoading && <Loading />}
-      {!isReceivedInviteLoading && filteredData?.length > 0 && (
+      {enterpriseId && isReceivedInviteLoading && <Loading />}
+      {enterpriseId && !isReceivedInviteLoading && filteredData?.length > 0 && (
         <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
           <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
             <Info size={14} />
