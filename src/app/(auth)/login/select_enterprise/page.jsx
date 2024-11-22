@@ -103,16 +103,14 @@ const SelectEnterprisePage = () => {
       requestExistData?.data?.data?.status === 'APPROVED';
 
     // onSuccessEvent
-    if (isEnterpriseOnboardingComplete) {
-      router.push('/');
-    } else if (
-      !isEnterpriseOnboardingComplete &&
+    if (
+      isEnterpriseOnboardingComplete &&
       hasUserRequestAccessToEnterprise &&
       isUserRequestIsApproved
     ) {
       router.push('/');
     } else if (
-      !isEnterpriseOnboardingComplete &&
+      (!isEnterpriseOnboardingComplete || isEnterpriseOnboardingComplete) &&
       hasUserRequestAccessToEnterprise &&
       !isUserRequestIsApproved
     ) {

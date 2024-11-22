@@ -1,6 +1,7 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { sendDirectorInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { Label } from '@radix-ui/react-label';
@@ -134,9 +135,10 @@ const InviteDirectorIndexNew = ({
         <Button
           size="sm"
           onClick={handleSendInviteToDirector}
+          disabled={sendInvitationMutation.isPending}
           className="bg-[#288AF9]"
         >
-          Send Invite
+          {sendInvitationMutation.isPending ? <Loading /> : 'Send Invite'}
         </Button>
 
         <Button

@@ -5,6 +5,7 @@ import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { UpdateEnterpriseAfterDINVerification } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { VerifyDIN } from '@/services/User_Auth_Service/UserAuthServices';
@@ -98,8 +99,9 @@ const DINVerifyPage = () => {
             size="sm"
             className="w-full bg-[#288AF9] p-2"
             onClick={handleProceedDIN}
+            disabled={verifyDINMutation.isPending}
           >
-            Proceed
+            {verifyDINMutation.isPending ? <Loading /> : 'Proceed'}
           </Button>
           <Button
             variant="ghost"
