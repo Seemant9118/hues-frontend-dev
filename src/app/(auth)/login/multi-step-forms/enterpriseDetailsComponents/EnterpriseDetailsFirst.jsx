@@ -20,7 +20,6 @@ const EnterpriseDetailsFirst = ({
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
-  const invitationData = LocalStorageService.get('invitationData');
   const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState({});
@@ -34,20 +33,12 @@ const EnterpriseDetailsFirst = ({
   useEffect(() => {
     if (enterpriseData) {
       setEnterpriseOnboardData({
-        name: invitationData?.toEnterprise?.name || enterpriseData.name || '',
+        name: enterpriseData.name || '',
         type: enterpriseData.type.toLowerCase() || '',
-        email:
-          invitationData?.toEnterprise?.email || enterpriseData.email || '',
-        panNumber:
-          invitationData?.toEnterprise?.panNumber ||
-          enterpriseData.panNumber ||
-          '',
-        address:
-          invitationData?.toEnterprise?.address || enterpriseData.address || '',
-        gstNumber:
-          invitationData?.toEnterprise?.gstNumber ||
-          enterpriseData.gstNumber ||
-          '',
+        email: enterpriseData.email || '',
+        panNumber: enterpriseData.panNumber || '',
+        address: enterpriseData.address || '',
+        gstNumber: enterpriseData.gstNumber || '',
         udyam: enterpriseData.udyam || '',
         doi: enterpriseData.doi || '',
         isDeclerationConsent: enterpriseData.isDeclerationConsent || null,

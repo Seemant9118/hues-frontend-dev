@@ -6,16 +6,20 @@ import EnterpriseDetailsFirst from '../multi-step-forms/enterpriseDetailsCompone
 import EnterpriseDetailsSecond from '../multi-step-forms/enterpriseDetailsComponents/EnterpriseDetailsSecond';
 
 const EnterpriseDetails = () => {
+  const invitationData = LocalStorageService.get('invitationData');
   const panNumber = LocalStorageService.get('enterprisePanNumber');
   const [enterpriseDetailsCurrStep, setEnterpriseDetailsCurrStep] = useState(1);
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
-    name: '',
+    name: invitationData?.data?.invitation?.toEnterprise?.name || '',
     type: '',
-    address: '',
-    email: '',
-    gstNumber: '',
+    email: invitationData?.data?.invitation?.toEnterprise?.email || '',
+    panNumber:
+      invitationData?.data?.invitation?.toEnterprise?.panNumber ||
+      panNumber ||
+      '',
+    address: invitationData?.data?.invitation?.toEnterprise?.address || '',
+    gstNumber: invitationData?.data?.invitation?.toEnterprise?.gstNumber || '',
     udyam: '',
-    panNumber: panNumber ?? '',
     doi: '',
     isDeclerationConsent: null,
     LLPIN: '',
