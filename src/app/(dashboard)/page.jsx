@@ -21,7 +21,7 @@ export default function Home() {
       queryKey: [invitation.getReceivedInvitation.endpointKey],
       queryFn: () => getReceivedInvitation(),
       select: (data) => data.data.data,
-      enabled: enterpriseId,
+      enabled: !!enterpriseId,
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
@@ -63,7 +63,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex h-full flex-col gap-5">
       <SubHeader name={'Dashboard'}></SubHeader>
 
       {/* Invitation table */}
