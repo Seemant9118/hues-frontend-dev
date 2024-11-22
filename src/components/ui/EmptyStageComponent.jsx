@@ -1,16 +1,21 @@
 import { Orbit } from 'lucide-react';
+import Wrapper from '../wrappers/Wrapper';
 
 const EmptyStageComponent = ({ heading, subItems }) => {
   return (
-    <div className="flex flex-col justify-center gap-2 rounded-md bg-gray-100 p-5">
-      <h1 className="text-sm font-bold italic">{heading}</h1>
-      <div className="flex flex-col gap-1 px-2">
-        {/* <h2 className="text-sm font-bold">{subHeading} : </h2> */}
-        <ul className="flex flex-col gap-2 px-6 text-sm text-neutral-500">
+    <Wrapper className="flex h-[85vh] items-center justify-center rounded-md border bg-gray-50">
+      <div className="flex w-1/2 flex-col gap-8">
+        <h1 className="text-center text-xl font-bold">{heading}</h1>
+        <ul className="grid grid-cols-2 grid-rows-2 gap-5">
           {subItems?.map((subItem) => (
-            <li key={subItem.id} className="flex items-center gap-2">
-              <span>{subItem.icon ? subItem.icon : <Orbit size={10} />}</span>
-              <span className="font-semibold text-neutral-500">
+            <li
+              key={subItem.id}
+              className="flex items-center gap-2 rounded-sm border p-2"
+            >
+              <span className="rounded-full bg-[#F6F9FF] p-3">
+                {subItem.icon ? subItem.icon : <Orbit size={10} />}
+              </span>
+              <span className="text-sm font-semibold text-[#A5ABBD]">
                 {subItem.subItemtitle}
               </span>{' '}
               {subItem.item}
@@ -18,7 +23,7 @@ const EmptyStageComponent = ({ heading, subItems }) => {
           ))}
         </ul>
       </div>
-    </div>
+    </Wrapper>
   );
 };
 
