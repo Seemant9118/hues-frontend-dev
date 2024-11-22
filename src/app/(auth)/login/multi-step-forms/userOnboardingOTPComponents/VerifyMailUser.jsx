@@ -3,6 +3,7 @@
 import { directorApi } from '@/api/director/directorApi';
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
 import { LocalStorageService } from '@/lib/utils';
 import { directorInviteList } from '@/services/Director_Services/DirectorServices';
@@ -117,8 +118,13 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
       <p className="flex w-full items-center justify-center gap-2 text-sm text-[#A5ABBD]">
         OTP valid for 5 minutes
       </p>
-      <Button size="sm" type="Submit" className="w-full bg-[#288AF9] p-2">
-        Verify
+      <Button
+        size="sm"
+        type="Submit"
+        className="w-full bg-[#288AF9] p-2"
+        disabled={verifyMailOTPMutation.isPending}
+      >
+        {verifyMailOTPMutation.isPending ? <Loading /> : 'Verify'}
       </Button>
 
       <Button

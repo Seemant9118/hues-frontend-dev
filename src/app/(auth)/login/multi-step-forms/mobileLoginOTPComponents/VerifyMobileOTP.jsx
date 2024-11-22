@@ -181,7 +181,12 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
           )}
         </span>
       </p>
-      <Button size="sm" type="Submit" className="w-full bg-[#288AF9] p-2">
+      <Button
+        size="sm"
+        type="Submit"
+        className="w-full bg-[#288AF9] p-2"
+        disabled={mutation.isPending}
+      >
         {mutation.isPending ? <Loading /> : 'Verify'}
       </Button>
 

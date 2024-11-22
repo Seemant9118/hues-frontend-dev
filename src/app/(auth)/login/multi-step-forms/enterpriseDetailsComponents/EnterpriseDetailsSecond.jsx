@@ -5,6 +5,7 @@ import { tokenApi } from '@/api/tokenApi/tokenApi';
 import Tooltips from '@/components/auth/Tooltips';
 import DatePickers from '@/components/ui/DatePickers';
 import ErrorBox from '@/components/ui/ErrorBox';
+import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -716,8 +717,21 @@ const EnterpriseDetailsSecond = ({
         )}
 
         <div className="flex w-full flex-col gap-4">
-          <Button size="sm" type="submit" className="w-full bg-[#288AF9]">
-            Submit
+          <Button
+            size="sm"
+            type="submit"
+            className="w-full bg-[#288AF9]"
+            disabled={
+              enterpriseOnboardCreateMutation.isPending ||
+              enterpriseOnboardUpdateMutation.isPending
+            }
+          >
+            {enterpriseOnboardCreateMutation.isPending ||
+            enterpriseOnboardUpdateMutation.isPending ? (
+              <Loading />
+            ) : (
+              'Submit'
+            )}
           </Button>
 
           <Button

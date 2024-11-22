@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import Tooltips from '@/components/auth/Tooltips';
+import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import DatePickers from '@/components/ui/DatePickers';
@@ -22,21 +23,15 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const UserOnboardingDetails = ({ setUserOnboardingStep }) => {
+const UserOnboardingDetails = ({
+  setUserOnboardingStep,
+  selectedDate,
+  setSelectedDate,
+  userData,
+  setUserData,
+}) => {
   const router = useRouter();
-  const userID = LocalStorageService.get('user_profile');
-
-  const [selectedDate, setSelectedDate] = useState(null);
-
-  const [userData, setUserData] = useState({
-    userId: userID,
-    name: '',
-    email: '',
-    dateOfBirth: '',
-    panNumber: '',
-    isTermsAndConditionApplied: false,
-  });
-
+  const [isTandCModalOpen, setIsTandCModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
 
   useEffect(() => {
@@ -140,6 +135,13 @@ const UserOnboardingDetails = ({ setUserOnboardingStep }) => {
     }
 
     return error;
+  };
+
+  const onCheckedChangeTermsCondition = (checked) => {
+    setUserData((prev) => ({
+      ...prev,
+      isTermsAndConditionApplied: checked,
+    }));
   };
 
   const handleChange = (e) => {
@@ -294,16 +296,28 @@ const UserOnboardingDetails = ({ setUserOnboardingStep }) => {
             <div className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={userData.isTermsAndConditionApplied}
-                onCheckedChange={(checked) =>
-                  setUserData((prev) => ({
-                    ...prev,
-                    isTermsAndConditionApplied: checked,
-                  }))
-                }
+                onCheckedChange={() => setIsTandCModalOpen(true)}
               />
               <div className="text-[#121212]">
                 By selecting this box, I agree to all the{' '}
-                <span className="text-[#288AF9]">terms & conditions</span>
+                <span
+                  className="cursor-pointer text-primary hover:underline"
+                  onClick={() => setIsTandCModalOpen(true)}
+                >
+                  Terms and Conditions
+                </span>
+                <TermsAnsConditionModal
+                  isOpen={isTandCModalOpen}
+                  onClose={() => setIsTandCModalOpen(false)} // Close modal without changing state
+                  onDecline={() => {
+                    onCheckedChangeTermsCondition(false); // Update checkbox state
+                    setIsTandCModalOpen(false); // Close modal
+                  }}
+                  onAgree={() => {
+                    onCheckedChangeTermsCondition(true); // Update checkbox state
+                    setIsTandCModalOpen(false); // Close modal
+                  }}
+                />
               </div>
             </div>
             {errorMsg?.isTermsAndConditionApplied && (

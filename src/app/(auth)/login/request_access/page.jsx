@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { createRequestAccess } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
@@ -52,8 +53,13 @@ const RequestAccessPage = () => {
             type="Submit"
             className="w-full bg-[#288AF9] p-2"
             onClick={handleRequestApiSuccess}
+            disabled={createRequestAccessMutation.isPending}
           >
-            Request Access
+            {createRequestAccessMutation.isPending ? (
+              <Loading />
+            ) : (
+              'Request Access'
+            )}
           </Button>
 
           <Button

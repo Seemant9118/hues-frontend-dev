@@ -156,7 +156,7 @@ const MobileLogin = ({ setMobileLoginStep }) => {
         </div>
 
         <Button
-          disabled={errorMsg}
+          disabled={errorMsg || mutation.isPending}
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"

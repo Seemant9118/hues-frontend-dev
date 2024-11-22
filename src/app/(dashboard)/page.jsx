@@ -1,8 +1,7 @@
 'use client';
 
 import { invitation } from '@/api/invitation/Invitation';
-import { useInviteColumns } from '@/components/columns/useInviteColumns';
-import { DataTable } from '@/components/table/data-table';
+import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -10,16 +9,19 @@ import SubHeader from '@/components/ui/Sub-header';
 import { LocalStorageService } from '@/lib/utils';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
+import { Info } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Home() {
-  const InviteColumns = useInviteColumns();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
       queryKey: [invitation.getReceivedInvitation.endpointKey],
       queryFn: () => getReceivedInvitation(),
       select: (data) => data.data.data,
+      enabled: enterpriseId,
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
@@ -61,26 +63,31 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-full flex-col gap-10">
+    <div className="flex flex-col gap-5">
       <SubHeader name={'Dashboard'}></SubHeader>
 
       {/* Invitation table */}
-      {isReceivedInviteLoading && <Loading />}
-      {!isReceivedInviteLoading && filteredData?.length > 0 && (
-        <div className="scrollBarStyles min-h-[200px] overflow-y-auto">
-          <SubHeader name={'Pending Invites'} className="mb-1"></SubHeader>
-          <DataTable columns={InviteColumns} data={filteredData} />
+      {enterpriseId && isReceivedInviteLoading && <Loading />}
+      {enterpriseId && !isReceivedInviteLoading && filteredData?.length > 0 && (
+        <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+          <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+            <Info size={14} />
+            You have {filteredData?.length} invites pending. Please take action
+          </span>
+          <PendingInvitesModal
+            data={filteredData}
+            isInviteModalOpen={isInviteModalOpen}
+            setIsInviteModalOpen={setIsInviteModalOpen}
+          />
         </div>
       )}
 
       {enterpriseId && (
-        <div className="h-full rounded-md">
-          <EmptyStageComponent
-            heading={dashBoardEmptyStagedata.heading}
-            subHeading={dashBoardEmptyStagedata.subHeading}
-            subItems={dashBoardEmptyStagedata.subItems}
-          />
-        </div>
+        <EmptyStageComponent
+          heading={dashBoardEmptyStagedata.heading}
+          subHeading={dashBoardEmptyStagedata.subHeading}
+          subItems={dashBoardEmptyStagedata.subItems}
+        />
       )}
 
       {!enterpriseId && <RestrictedComponent />}
