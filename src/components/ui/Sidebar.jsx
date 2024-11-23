@@ -2,6 +2,7 @@ import React from 'react';
 
 import {
   Bell,
+  BookOpenText,
   Boxes,
   ClipboardList,
   FileSymlink,
@@ -106,6 +107,11 @@ const Sidebar = () => {
       name: 'Members',
       icon: <Users size={16} />,
       path: '/members',
+    },
+    {
+      name: 'Catalogue',
+      icon: <BookOpenText size={16} />,
+      path: '/catalogue',
     },
     // {
     //   name: "Insights",

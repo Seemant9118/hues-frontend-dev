@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { Edit3, MoreHorizontal } from 'lucide-react';
+import { Edit3, MoreVertical } from 'lucide-react';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   return [
@@ -62,7 +62,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">

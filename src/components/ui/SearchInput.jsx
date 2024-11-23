@@ -1,13 +1,14 @@
+import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
 import { Input } from './input';
 
-const SearchInput = ({ toSearchTerm, setToSearchTerm }) => {
+const SearchInput = ({ toSearchTerm, setToSearchTerm, className }) => {
   return (
     <div className="relative">
       <Input
         type="text"
         placeholder="Search ..."
-        className="p-2"
+        className={cn('p-2', className)}
         name="customer-name"
         value={toSearchTerm}
         onChange={(e) => setToSearchTerm(e.target.value)}
