@@ -15,12 +15,14 @@ import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { useCatlogueColumns } from './CatalogueColumns';
 
 const Catalogue = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const [selectedCatalogue, setSelectedCatalogue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   // we use catalogue api to fetch data, rn we are using only goods foe testing component
@@ -35,13 +37,23 @@ const Catalogue = () => {
     return productName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  const CatlogueColumns = useCatlogueColumns();
+  // handle export catalogue click
+  const handleExportOrder = () => {
+    if (selectedCatalogue.length === 0) {
+      toast.error('Please select atleast One Order to export');
+      return;
+    }
+    // api call to export catalogues
+    toast.success('Selected Catalogue exported');
+  };
+
+  const CatlogueColumns = useCatlogueColumns(setSelectedCatalogue);
 
   return (
     <Wrapper className="h-full">
       {!enterpriseId && <RestrictedComponent />}
       {enterpriseId && (
-        <div className="flex flex-col">
+        <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex w-full justify-between gap-2 py-2">
             <SubHeader name="Catalogue" />
@@ -53,7 +65,7 @@ const Catalogue = () => {
               >
                 Update
               </Button>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={handleExportOrder}>
                 <Upload size={14} />
               </Button>
               <Button size="sm" variant="outline">
@@ -92,10 +104,10 @@ const Catalogue = () => {
                 height={100}
                 alt="emptyIcon"
               />
-              <p className="font-bold">No item in the catalogue</p>
+              <p className="font-bold">No catalogue available</p>
               <p className="max-w-96 text-center">
                 {
-                  "You haven't added any item in thr catalogues. Start by clicking on the add item button"
+                  "You haven't make any catalogues. Start by clicking on the Update button"
                 }
               </p>
 
