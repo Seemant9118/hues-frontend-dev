@@ -1,6 +1,7 @@
 'use client';
 
 import { LocalStorageService } from '@/lib/utils';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
 
@@ -11,6 +12,7 @@ export const UserProvider = ({ children }) => {
   const pathname = usePathname();
   const [profile, setProfile] = useState(null);
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const Token = LocalStorageService.get('token');
@@ -34,12 +36,30 @@ export const UserProvider = ({ children }) => {
       setToken(Token);
       setProfile(userProfile);
     }
+    setLoading(false); // Mark initialization as complete
   }, [pathname, router]);
 
   const logout = () => {
     LocalStorageService.clear();
     router.push('/login');
   };
+
+  // Render loading state during initialization
+  if (loading) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-2">
+        <Image
+          src={'/hues_logo.png'}
+          height={40}
+          width={100}
+          placeholder="blur"
+          alt="Logo"
+          blurDataURL="/hues_logo.png"
+        />
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <UserContext.Provider value={{ profile, setProfile, token, logout }}>
