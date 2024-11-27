@@ -16,13 +16,21 @@ export const UserProvider = ({ children }) => {
     const Token = LocalStorageService.get('token');
     const userProfile = LocalStorageService.get('user_profile');
 
+    // Use regex to match `/login/*` paths
+    const isLoginChildPage = /^\/login(\/.*)?$/.test(pathname);
+
     if (!Token) {
-      // Store the original URL in local storage
-      LocalStorageService.set('redirectUrl', pathname);
-      // Redirect to login if not authenticated
-      router.push(`/login`);
+      if (isLoginChildPage) {
+        // Redirect to base /login if user tries to access child pages of /login without token
+        router.push('/login');
+      } else {
+        // Store the original URL for post-login redirection
+        LocalStorageService.set('redirectUrl', pathname);
+        // Redirect to /login if not authenticated
+        router.push('/login');
+      }
     } else {
-      // Set token and profile if authenticated
+      // If authenticated, set token and user profile
       setToken(Token);
       setProfile(userProfile);
     }

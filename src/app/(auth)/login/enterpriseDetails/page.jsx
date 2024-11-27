@@ -1,5 +1,6 @@
 'use client';
 
+import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
 import React, { useState } from 'react';
 import EnterpriseDetailsFirst from '../multi-step-forms/enterpriseDetailsComponents/EnterpriseDetailsFirst';
@@ -27,22 +28,24 @@ const EnterpriseDetails = () => {
   });
 
   return (
-    <div className="flex h-full items-center justify-center">
-      {enterpriseDetailsCurrStep === 1 && (
-        <EnterpriseDetailsFirst
-          setEnterpriseDetailsCurrStep={setEnterpriseDetailsCurrStep}
-          enterpriseOnboardData={enterpriseOnboardData}
-          setEnterpriseOnboardData={setEnterpriseOnboardData}
-        />
-      )}
-      {enterpriseDetailsCurrStep === 2 && (
-        <EnterpriseDetailsSecond
-          setEnterpriseDetailsCurrStep={setEnterpriseDetailsCurrStep}
-          enterpriseOnboardData={enterpriseOnboardData}
-          setEnterpriseOnboardData={setEnterpriseOnboardData}
-        />
-      )}
-    </div>
+    <UserProvider>
+      <div className="flex h-full items-center justify-center">
+        {enterpriseDetailsCurrStep === 1 && (
+          <EnterpriseDetailsFirst
+            setEnterpriseDetailsCurrStep={setEnterpriseDetailsCurrStep}
+            enterpriseOnboardData={enterpriseOnboardData}
+            setEnterpriseOnboardData={setEnterpriseOnboardData}
+          />
+        )}
+        {enterpriseDetailsCurrStep === 2 && (
+          <EnterpriseDetailsSecond
+            setEnterpriseDetailsCurrStep={setEnterpriseDetailsCurrStep}
+            enterpriseOnboardData={enterpriseOnboardData}
+            setEnterpriseOnboardData={setEnterpriseOnboardData}
+          />
+        )}
+      </div>
+    </UserProvider>
   );
 };
 

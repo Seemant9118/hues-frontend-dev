@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
+import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
 import { directorInviteList } from '@/services/Director_Services/DirectorServices';
 import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
@@ -108,7 +109,9 @@ const SelectEnterprisePage = () => {
       hasUserRequestAccessToEnterprise &&
       isUserRequestIsApproved
     ) {
-      router.push('/');
+      const redirectUrl = LocalStorageService.get('redirectUrl');
+      LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+      router.push(redirectUrl || '/');
     } else if (
       (!isEnterpriseOnboardingComplete || isEnterpriseOnboardingComplete) &&
       hasUserRequestAccessToEnterprise &&
@@ -121,138 +124,140 @@ const SelectEnterprisePage = () => {
   };
 
   return (
-    <div className="flex h-full items-center justify-center">
-      <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
-        <div className="flex flex-col gap-4">
-          <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            Onboard Your Enterprise
-          </h1>
+    <UserProvider>
+      <div className="flex h-full items-center justify-center">
+        <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
+          <div className="flex flex-col gap-4">
+            <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
+              Onboard Your Enterprise
+            </h1>
 
-          <p className="w-full text-center text-sm text-[#A5ABBD]">
-            Enter your enterprise PAN to proceed further
-          </p>
-        </div>
+            <p className="w-full text-center text-sm text-[#A5ABBD]">
+              Enter your enterprise PAN to proceed further
+            </p>
+          </div>
 
-        {/* api call to check all possible invites to director */}
-        <div className="flex w-full flex-col gap-2">
-          <span className="text-sm font-medium text-[#121212]">
-            Select Enterprise
-          </span>
-          {isLoading && <Loading />}
-          {!isLoading &&
-            directorInviteListData?.length > 0 &&
-            directorInviteListData.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between rounded-md border border-[#288AF9] p-2"
+          {/* api call to check all possible invites to director */}
+          <div className="flex w-full flex-col gap-2">
+            <span className="text-sm font-medium text-[#121212]">
+              Select Enterprise
+            </span>
+            {isLoading && <Loading />}
+            {!isLoading &&
+              directorInviteListData?.length > 0 &&
+              directorInviteListData.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between rounded-md border border-[#288AF9] p-2"
+                >
+                  <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+                    {item.fromEnterprise?.name}
+                  </span>
+
+                  <Button
+                    size="sm"
+                    className="h-8 w-16 bg-[#288AF9]"
+                    onClick={() =>
+                      handleProccedWithEnterprise(item.fromEnterprise?.id)
+                    }
+                  >
+                    Proceed
+                  </Button>
+                </div>
+              ))}
+
+            {!isLoading && directorInviteListData?.length === 0 && (
+              <div className="flex items-center justify-between rounded-sm bg-gray-100 p-2">
+                <span className="flex items-center gap-1 text-sm text-[#121212]">
+                  <Info size={14} />
+                  No Director Invites Found
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex w-full flex-col gap-5">
+            <span className="text-sm font-bold">Add a new Enterprise</span>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="mobile-number"
+                className="font-medium text-[#121212]"
               >
+                Enterprise PAN <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex items-center hover:border-gray-600">
+                <Input
+                  type="text"
+                  name="pan"
+                  placeholder="ABCDE1234F"
+                  className="uppercase focus:font-bold"
+                  onChange={handleChangePan}
+                  value={enterpriseOnboardData.panNumber}
+                />
+              </div>
+              {errorMsg.panNumber && (
+                <span className="w-full px-1 text-sm font-semibold text-red-600">
+                  {errorMsg.panNumber}
+                </span>
+              )}
+            </div>
+
+            {(isSearchedDataLoading || isSearchedDataFetching) && <Loading />}
+            {/* id enterprise found */}
+            {!isSearchedDataFetching && searchedData?.length > 0 && (
+              <div className="flex items-center justify-between rounded-sm border border-[#288AF9] p-2">
                 <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-                  {item.fromEnterprise?.name}
+                  {searchedData?.[0]?.name}
                 </span>
 
                 <Button
                   size="sm"
                   className="h-8 w-16 bg-[#288AF9]"
                   onClick={() =>
-                    handleProccedWithEnterprise(item.fromEnterprise?.id)
+                    handleProceedWithExistingEnterprise(
+                      searchedData?.[0]?.name,
+                      searchedData?.[0]?.id,
+                      searchedData?.[0]?.isOnboardingCompleted,
+                    )
                   }
                 >
                   Proceed
                 </Button>
               </div>
-            ))}
-
-          {!isLoading && directorInviteListData?.length === 0 && (
-            <div className="flex items-center justify-between rounded-sm bg-gray-100 p-2">
-              <span className="flex items-center gap-1 text-sm text-[#121212]">
-                <Info size={14} />
-                No Director Invites Found
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex w-full flex-col gap-5">
-          <span className="text-sm font-bold">Add a new Enterprise</span>
-          <div className="flex flex-col gap-2">
-            <Label
-              htmlFor="mobile-number"
-              className="font-medium text-[#121212]"
-            >
-              Enterprise PAN <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex items-center hover:border-gray-600">
-              <Input
-                type="text"
-                name="pan"
-                placeholder="ABCDE1234F"
-                className="uppercase focus:font-bold"
-                onChange={handleChangePan}
-                value={enterpriseOnboardData.panNumber}
-              />
-            </div>
-            {errorMsg.panNumber && (
-              <span className="w-full px-1 text-sm font-semibold text-red-600">
-                {errorMsg.panNumber}
-              </span>
+            )}
+            {/* if enterprise not found */}
+            {!isSearchedDataFetching && searchedData?.length === 0 && (
+              <div className="flex items-center justify-between rounded-sm bg-[#288AF90A] p-2">
+                <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+                  <Info size={14} />
+                  Enterprise Not Found
+                </span>
+                <Button
+                  size="sm"
+                  className="h-8 w-10 bg-[#288AF9]"
+                  onClick={() => {
+                    router.push('/login/enterpriseDetails');
+                    LocalStorageService.set(
+                      'enterprisePanNumber',
+                      enterpriseOnboardData.panNumber,
+                    );
+                  }} // add enterprise details
+                >
+                  Add
+                </Button>
+              </div>
             )}
           </div>
 
-          {(isSearchedDataLoading || isSearchedDataFetching) && <Loading />}
-          {/* id enterprise found */}
-          {!isSearchedDataFetching && searchedData?.length > 0 && (
-            <div className="flex items-center justify-between rounded-sm border border-[#288AF9] p-2">
-              <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-                {searchedData?.[0]?.name}
-              </span>
-
-              <Button
-                size="sm"
-                className="h-8 w-16 bg-[#288AF9]"
-                onClick={() =>
-                  handleProceedWithExistingEnterprise(
-                    searchedData?.[0]?.name,
-                    searchedData?.[0]?.id,
-                    searchedData?.[0]?.isOnboardingCompleted,
-                  )
-                }
-              >
-                Proceed
-              </Button>
-            </div>
-          )}
-          {/* if enterprise not found */}
-          {!isSearchedDataFetching && searchedData?.length === 0 && (
-            <div className="flex items-center justify-between rounded-sm bg-[#288AF90A] p-2">
-              <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-                <Info size={14} />
-                Enterprise Not Found
-              </span>
-              <Button
-                size="sm"
-                className="h-8 w-10 bg-[#288AF9]"
-                onClick={() => {
-                  router.push('/login/enterpriseDetails');
-                  LocalStorageService.set(
-                    'enterprisePanNumber',
-                    enterpriseOnboardData.panNumber,
-                  );
-                }} // add enterprise details
-              >
-                Add
-              </Button>
-            </div>
-          )}
+          <Link
+            href="/"
+            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
+          >
+            Skip for Now
+          </Link>
         </div>
-
-        <Link
-          href="/"
-          className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-        >
-          Skip for Now
-        </Link>
       </div>
-    </div>
+    </UserProvider>
   );
 };
 

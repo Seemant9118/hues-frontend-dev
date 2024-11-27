@@ -1,5 +1,6 @@
 'use client';
 
+import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
 import React, { useState } from 'react';
 import UserOnboardingDetails from '../multi-step-forms/userOnboardingOTPComponents/UserOnboardingDetails';
@@ -19,20 +20,22 @@ const UserOnboardingPage = () => {
   });
 
   return (
-    <div className="flex h-full items-center justify-center">
-      {userOnboardingStep === 1 && (
-        <UserOnboardingDetails
-          setUserOnboardingStep={setUserOnboardingStep}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          userData={userData}
-          setUserData={setUserData}
-        />
-      )}
-      {userOnboardingStep === 2 && (
-        <VerifyMailUser setUserOnboardingStep={setUserOnboardingStep} />
-      )}
-    </div>
+    <UserProvider>
+      <div className="flex h-full items-center justify-center">
+        {userOnboardingStep === 1 && (
+          <UserOnboardingDetails
+            setUserOnboardingStep={setUserOnboardingStep}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            userData={userData}
+            setUserData={setUserData}
+          />
+        )}
+        {userOnboardingStep === 2 && (
+          <VerifyMailUser setUserOnboardingStep={setUserOnboardingStep} />
+        )}
+      </div>
+    </UserProvider>
   );
 };
 

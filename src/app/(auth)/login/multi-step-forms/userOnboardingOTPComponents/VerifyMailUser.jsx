@@ -52,7 +52,9 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
         isEnterpriseOnboardingComplete &&
         isKycVerified
       ) {
-        router.push('/');
+        const redirectUrl = LocalStorageService.get('redirectUrl');
+        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+        router.push(redirectUrl || '/');
       }
       // 2. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && !isKycVerified
       else if (
