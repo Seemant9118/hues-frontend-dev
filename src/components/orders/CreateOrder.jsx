@@ -90,8 +90,11 @@ const CreateOrder = ({
           orderItems: [],
         },
   );
-
-  const createSalesColumns = useCreateSalesColumns(setOrder, setSelectedItem);
+  const createSalesColumns = useCreateSalesColumns(
+    isOrder,
+    setOrder,
+    setSelectedItem,
+  );
 
   // client/vendor fetching
   const { data: customerData } = useQuery({
@@ -637,7 +640,7 @@ const CreateOrder = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <Label>Amount:</Label>
+            <Label>{isOrder === 'invoice' ? 'Invoice Value' : 'Amount'}</Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
