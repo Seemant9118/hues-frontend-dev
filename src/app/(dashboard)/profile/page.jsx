@@ -1,9 +1,12 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import Tooltips from '@/components/auth/Tooltips';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -12,11 +15,18 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 function Profile() {
   const userId = LocalStorageService.get('user_profile');
   const router = useRouter();
+  const [tab, setTab] = useState('userOverview');
+
+  // Handle tab change
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   const logoutMutation = useMutation({
     mutationKey: [userAuth.logout.endpointKey],
@@ -49,212 +59,294 @@ function Profile() {
     router.push('/login/enterpriseOnboardingSearch');
   };
 
+  const bgColorClass = getRandomBgColor();
+
   return (
-    <Wrapper>
-      <SubHeader className="flex justify-end">
-        <Button variant="blue_outline" size="sm" onClick={logout}>
+    <Wrapper className="h-full gap-8">
+      <SubHeader name="Profile">
+        <Button size="sm" variant="blue_outline" onClick={logout}>
           Logout
         </Button>
       </SubHeader>
 
-      <div className="my-5 flex flex-col gap-4">
+      <Tabs
+        className="flex flex-col gap-4"
+        value={tab}
+        onValueChange={onTabChange}
+        defaultValue={'userOverview'}
+      >
+        <TabsList className="w-fit border">
+          <TabsTrigger value="userOverview">Overview</TabsTrigger>
+          <TabsTrigger value="enterpriseOverview">
+            Enterprise Overview
+          </TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+        </TabsList>
         {/* user details */}
-        <div className="flex flex-col gap-4">
-          <span className="text-xl font-bold">Profile</span>
-
+        <TabsContent value="userOverview">
+          {/* if userOnboarding is not completed */}
           {!profileDetails?.userDetails?.user?.isOnboardingCompleted && (
             <div className="relative">
               <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]">
-                {/* by clicking this , i am redirected to currStep 3 */}
                 <Button
-                  variant="warning"
-                  className="w-2/3 shadow-xl"
+                  size="sm"
+                  variant="outline"
+                  className="w-1/2 shadow-xl"
                   onClick={handleUserOnboarding}
                 >
                   Complete Your Profile
                 </Button>
               </div>
 
-              <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Name : </Label>
-                    <span className="text-md">Your Name</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Mobile Number : </Label>
-                    <span className="text-md">+91 1234567890</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Email ID : </Label>
-                    <span className="text-md">test@gmail.com</span>
-                  </div>
-                </section>
-
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">PAN Card : </Label>
-                    <span className="text-md">XXXXX1234X</span>
-                  </div>
-                </section>
+              <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">PAN Card Number</Label>
+                  <span className="text-lg font-bold">{'XXXXXX1234'}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Full Name</Label>
+                  <span className="text-lg font-bold">{'Your Full Name'}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Type</Label>
+                  <span className="text-lg font-bold">{'Individual'}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Mobile Number</Label>
+                  <span className="text-lg font-bold">+91 {'9876543210'}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Email Address</Label>
+                  <span className="text-lg font-bold">
+                    {'youremail@gmail.com'}
+                  </span>
+                </div>
               </div>
             </div>
           )}
-
+          {/* if userOnboarding is completed */}
           {profileDetails?.userDetails?.user?.isOnboardingCompleted && (
-            <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
-              <section className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Name : </Label>
-                  <span className="text-md">
-                    {profileDetails?.userDetails?.user?.name}
-                  </span>
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between gap-2 rounded-sm border p-4">
+                <div className="flex w-full items-center justify-start gap-4">
+                  <div
+                    className={`${bgColorClass} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
+                  >
+                    {getInitialsNames(profileDetails?.userDetails?.user?.name)}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold">Profile Picture</span>
+                    <span className="text-xs text-grey">
+                      JPEG and PNG format
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Mobile Number : </Label>
-                  <span className="text-md">
-                    {profileDetails?.userDetails?.user?.mobileNumber}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">Email ID : </Label>
-                  <span className="text-md">
-                    {profileDetails?.userDetails?.email}
-                  </span>
-                </div>
-              </section>
+                <div className="flex w-full items-center justify-end gap-2">
+                  <Tooltips
+                    trigger={
+                      <Button size="sm" variant="blue_outline" disabled>
+                        Upload
+                      </Button>
+                    }
+                    content={'This feature Coming Soon...'}
+                  />
 
-              <section className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-md">PAN Card : </Label>
-                  <span className="text-md">
+                  <Tooltips
+                    trigger={
+                      <Button size="sm" variant="outline" disabled>
+                        Delete
+                      </Button>
+                    }
+                    content={'This feature Coming Soon...'}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">PAN Card Number</Label>
+                  <span className="text-lg font-bold">
                     {profileDetails?.userDetails?.user?.panNumber}
                   </span>
                 </div>
-              </section>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Full Name</Label>
+                  <span className="text-lg font-bold">
+                    {profileDetails?.userDetails?.user?.name}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Type</Label>
+                  <span className="text-lg font-bold">{'Individual'}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Mobile Number</Label>
+                  <span className="text-lg font-bold">
+                    +91 {profileDetails?.userDetails?.user?.mobileNumber}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Email Address</Label>
+                  <span className="text-lg font-bold">
+                    {profileDetails?.userDetails?.email ?? '-'}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
-        </div>
+        </TabsContent>
 
-        {/* enterprise profile */}
-        <div className="flex flex-col gap-4">
-          <span className="text-xl font-bold">Enterprise Details</span>
-          {!profileDetails?.enterpriseDetails && (
-            <div className="flex flex-col items-center justify-center gap-2 rounded-md border bg-gray-100 p-20">
-              <span className="text-xl font-bold">Enterprise Not Present</span>
-              <span>Already Request sent, Wait for approval</span>
-            </div>
-          )}
-
+        <TabsContent value="enterpriseOverview">
+          {/* if enterpriseOnboarding is not completed */}
           {profileDetails?.enterpriseDetails &&
             !profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
               <div className="relative">
                 <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]">
-                  {/* by clicking this , i am redirected to currStep 4 */}
                   <Button
-                    variant="warning"
-                    className="w-2/3 shadow-xl"
-                    onClick={
-                      !profileDetails?.userDetails?.isOnboardingCompleted &&
-                      !profileDetails?.enterpriseDetails?.isOnboardingCompleted
-                        ? handleUserOnboarding
-                        : handleEnterpriseOnboarding
-                    }
+                    size="sm"
+                    variant="outline"
+                    className="w-1/2 shadow-xl"
+                    onClick={handleEnterpriseOnboarding}
                   >
-                    Complete Your Profile
+                    Complete Your Enterprise Details
                   </Button>
                 </div>
-                <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
-                  <section className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">Name : </Label>
-                      <span className="text-md">Enterprise Name</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">Type : </Label>
-                      <span className="text-md">Enteprise Type</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">Mobile Number : </Label>
-                      <span className="text-md">+91 1234567980</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">Email ID : </Label>
-                      <span className="text-md">test@gmail.com</span>
-                    </div>
-                  </section>
-
-                  <section className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">PAN Card : </Label>
-                      <span className="text-md">XXXX1234X</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">GST IN : </Label>
-                      <span className="text-md">XXX48489XX15454</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-md">UDYAM : </Label>
-                      <span className="text-md">XXXXXXXXX1234</span>
-                    </div>
-                  </section>
+                <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">PAN Card Number</Label>
+                    <span className="text-lg font-bold">{'XXXXXX1234'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Full Name</Label>
+                    <span className="text-lg font-bold">
+                      {'Your Enterprise Name'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Type</Label>
+                    <span className="text-lg font-bold">{'pvt. ltd.'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Mobile Number</Label>
+                    <span className="text-lg font-bold">
+                      +91 {'9876543210'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Email Address</Label>
+                    <span className="text-lg font-bold">
+                      {'yourenterprise@gmail.com'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">GST IN</Label>
+                    <span className="text-lg font-bold">
+                      {'1385HFKS848JHFI4949ER'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">UDYAM</Label>
+                    <span className="text-lg font-bold">
+                      {'0987654321865447'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
+          {/* if enterpriseOnboardingComplete */}
           {profileDetails?.enterpriseDetails &&
             profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
-              <div className="flex justify-between gap-2 rounded-sm border px-28 py-4">
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Name : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.name}
-                    </span>
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between gap-2 rounded-sm border p-4">
+                  <div className="flex w-full items-center justify-start gap-4">
+                    <div
+                      className={`${bgColorClass} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
+                    >
+                      {getInitialsNames(
+                        profileDetails?.enterpriseDetails?.name,
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold">Enterprise Logo</span>
+                      <span className="text-xs text-grey">
+                        JPEG and PNG format
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Type : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.type}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Mobile Number : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.mobileNumber}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">Email ID : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.email}
-                    </span>
-                  </div>
-                </section>
+                  <div className="flex w-full items-center justify-end gap-2">
+                    <Tooltips
+                      trigger={
+                        <Button size="sm" variant="blue_outline" disabled>
+                          Upload
+                        </Button>
+                      }
+                      content={'This feature Coming Soon...'}
+                    />
 
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">PAN Card : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.panNumber}
+                    <Tooltips
+                      trigger={
+                        <Button size="sm" variant="outline" disabled>
+                          Delete
+                        </Button>
+                      }
+                      content={'This feature Coming Soon...'}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">PAN Card Number</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.panNumber ?? '-'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">GST IN : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.gstNumber}
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Full Name</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.name ?? '-'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-md">UDYAM : </Label>
-                    <span className="text-md">
-                      {profileDetails?.enterpriseDetails?.udyam}
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Type</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.type ?? '-'}
                     </span>
                   </div>
-                </section>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Mobile Number</Label>
+                    <span className="text-lg font-bold">
+                      +91{' '}
+                      {profileDetails?.enterpriseDetails?.mobileNumber ?? '-'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Email Address</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.email ?? '-'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">GST IN</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.gstNumber === ''
+                        ? '-'
+                        : profileDetails?.enterpriseDetails?.gstNumber}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">UDYAM</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.udyam === ''
+                        ? '-'
+                        : profileDetails?.enterpriseDetails?.udyam}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="permissions">Coming Soon...</TabsContent>
+      </Tabs>
     </Wrapper>
   );
 }

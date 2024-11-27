@@ -1,6 +1,7 @@
 'use client';
 
 import { invitation } from '@/api/invitation/Invitation';
+import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import {
   Dialog,
   DialogContent,
@@ -66,26 +67,6 @@ const PendingInvitesModal = ({
     });
   };
 
-  const getInitials = (name) => {
-    if (!name) return 'PR'; // Default initials
-    const words = name.split(' ');
-    const initials =
-      words[0].charAt(0).toUpperCase() +
-      (words[1].charAt(0).toUpperCase() || '');
-    return initials || 'PR'; // Fallback if no valid initials
-  };
-
-  const getRandomBgColor = () => {
-    const colors = [
-      'bg-purple-600',
-      'bg-blue-600',
-      'bg-green-600',
-      'bg-yellow-600',
-      'bg-pink-600',
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
-
   const bgColorClass = getRandomBgColor();
 
   return (
@@ -108,7 +89,7 @@ const PendingInvitesModal = ({
                   <span
                     className={`flex items-center justify-center rounded-full ${bgColorClass} p-2 text-sm text-white`}
                   >
-                    {getInitials(inviteItem?.name)}
+                    {getInitialsNames(inviteItem?.name)}
                   </span>
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-bold">
