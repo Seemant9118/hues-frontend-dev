@@ -75,7 +75,9 @@ const EnterpriseDetailsSecond = ({
       toast.success(data.data.message);
       if (enterpriseOnboardData.type === 'proprietorship') {
         if (isKycVerified) {
-          router.push('/');
+          const redirectUrl = LocalStorageService.get('redirectUrl');
+          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+          router.push(redirectUrl || '/');
         } else {
           router.push('/login/kyc');
         }
