@@ -76,6 +76,9 @@ const SaleEmptyStageData = {
 const SalesOrder = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
 
   const [tab, setTab] = useState('all');
   // const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
@@ -343,13 +346,13 @@ const SalesOrder = () => {
 
   return (
     <>
-      {!enterpriseId && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name="Sales" />
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
           {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
             <Wrapper className="h-full">

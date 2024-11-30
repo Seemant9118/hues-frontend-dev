@@ -3,6 +3,7 @@
 import { notificationApi } from '@/api/notifications/notificationApi';
 import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPopUp';
 import { DataTable } from '@/components/table/data-table';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
@@ -14,6 +15,9 @@ import { NotificationColumns } from './NotificationsColumns';
 
 const Notification = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
   const [filteredNotification, setFilteredNotification] = useState({}); // filtered data for filteration notification
   const [notifications, setNotifications] = useState([]); // response data set to this state
 
@@ -35,22 +39,32 @@ const Notification = () => {
   }, [enterpriseId, filteredNotification]);
 
   return (
-    <Wrapper>
-      <SubHeader
-        name="Notifications"
-        className="z-10 flex justify-between bg-white"
-      >
-        <NotificationFilterPopUp
-          setFilteredNotification={setFilteredNotification}
-        />
-      </SubHeader>
+    <>
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+        <>
+          <SubHeader name={'Notifications'}></SubHeader>
+          <RestrictedComponent />
+        </>
+      )}
+      {enterpriseId && isEnterpriseOnboardingComplete && (
+        <Wrapper>
+          <SubHeader
+            name="Notifications"
+            className="z-10 flex justify-between bg-white"
+          >
+            <NotificationFilterPopUp
+              setFilteredNotification={setFilteredNotification}
+            />
+          </SubHeader>
 
-      <DataTable
-        id="notification table"
-        columns={NotificationColumns}
-        data={notifications}
-      />
-    </Wrapper>
+          <DataTable
+            id="notification table"
+            columns={NotificationColumns}
+            data={notifications}
+          />
+        </Wrapper>
+      )}
+    </>
   );
 };
 
