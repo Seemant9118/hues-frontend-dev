@@ -14,6 +14,9 @@ import { useState } from 'react';
 
 export default function Home() {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
@@ -21,7 +24,7 @@ export default function Home() {
       queryKey: [invitation.getReceivedInvitation.endpointKey],
       queryFn: () => getReceivedInvitation(),
       select: (data) => data.data.data,
-      enabled: !!enterpriseId,
+      enabled: !!enterpriseId && isEnterpriseOnboardingComplete,
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
@@ -67,22 +70,28 @@ export default function Home() {
       <SubHeader name={'Dashboard'}></SubHeader>
 
       {/* Invitation table */}
-      {enterpriseId && isReceivedInviteLoading && <Loading />}
-      {enterpriseId && !isReceivedInviteLoading && filteredData?.length > 0 && (
-        <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
-          <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-            <Info size={14} />
-            You have {filteredData?.length} invites pending. Please take action
-          </span>
-          <PendingInvitesModal
-            data={filteredData}
-            isInviteModalOpen={isInviteModalOpen}
-            setIsInviteModalOpen={setIsInviteModalOpen}
-          />
-        </div>
-      )}
+      {enterpriseId &&
+        isEnterpriseOnboardingComplete &&
+        isReceivedInviteLoading && <Loading />}
+      {enterpriseId &&
+        isEnterpriseOnboardingComplete &&
+        !isReceivedInviteLoading &&
+        filteredData?.length > 0 && (
+          <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+            <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+              <Info size={14} />
+              You have {filteredData?.length} invites pending. Please take
+              action
+            </span>
+            <PendingInvitesModal
+              data={filteredData}
+              isInviteModalOpen={isInviteModalOpen}
+              setIsInviteModalOpen={setIsInviteModalOpen}
+            />
+          </div>
+        )}
 
-      {enterpriseId && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <EmptyStageComponent
           heading={dashBoardEmptyStagedata.heading}
           subHeading={dashBoardEmptyStagedata.subHeading}
@@ -90,7 +99,9 @@ export default function Home() {
         />
       )}
 
-      {!enterpriseId && <RestrictedComponent />}
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+        <RestrictedComponent />
+      )}
     </div>
   );
 }

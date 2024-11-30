@@ -30,6 +30,7 @@ import {
   createInvoiceForUninvited,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -51,6 +52,8 @@ const CreateOrder = ({
   setIsCreatingSales,
   setIsCreatingInvoice,
 }) => {
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -169,7 +172,10 @@ const CreateOrder = ({
     ],
     queryFn: () => GetProductGoodsVendor(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.sellerEnterpriseId,
+    enabled:
+      isPurchasePage &&
+      order.invoiceType === 'GOODS' &&
+      !!order.sellerEnterpriseId,
   });
   const formattedVendorGoodsData =
     vendorGoodsData?.map((good) => ({
@@ -186,7 +192,10 @@ const CreateOrder = ({
     ],
     queryFn: () => GetServicesVendor(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.sellerEnterpriseId,
+    enabled:
+      isPurchasePage &&
+      order.invoiceType === 'SERVICE' &&
+      !!order.sellerEnterpriseId,
   });
   const formattedVendorServicesData =
     vendorServicesData?.map((service) => ({

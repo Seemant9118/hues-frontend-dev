@@ -29,6 +29,9 @@ const PAGE_LIMIT = 10;
 
 const PurchaseDebitNotes = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
 
   const router = useRouter();
   const [tab, setTab] = useState('all');
@@ -208,14 +211,14 @@ const PurchaseDebitNotes = () => {
 
   return (
     <>
-      {!enterpriseId && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name="Debit Notes" />
           <RestrictedComponent />
         </>
       )}
 
-      {enterpriseId && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
           <Wrapper>
             <SubHeader

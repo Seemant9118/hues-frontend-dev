@@ -29,6 +29,9 @@ const UploadItems = dynamic(
 
 const ClientPage = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const queryClient = useQueryClient();
@@ -103,13 +106,13 @@ const ClientPage = () => {
 
   return (
     <>
-      {!enterpriseId && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={'Clients'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
           <Wrapper>
             {!isUploading && (

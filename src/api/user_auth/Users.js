@@ -95,4 +95,9 @@ export const userAuth = {
     endpoint: '/iam/kyc/verifykycstatusandupdate',
     endpointKey: 'verify_kyc_status_update',
   },
+  // 19. create user session
+  createUserSession: {
+    endpoint: `/iam/user/createusersession`,
+    endpointKey: 'create_user_session',
+  },
 };

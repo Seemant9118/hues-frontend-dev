@@ -1,6 +1,5 @@
 'use client';
 
-import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
-import { UpdateEnterpriseAfterDINVerification } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { VerifyDIN } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -19,7 +17,6 @@ import { toast } from 'sonner';
 
 const DINVerifyPage = () => {
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const [dinNumber, setDinNumber] = useState({
@@ -32,13 +29,9 @@ const DINVerifyPage = () => {
     setDinNumber({ ...dinNumber, din: value });
   };
 
-  //  update enterprise after success of verify DIN Number
-  const updateAfterDINVerifyMutation = useMutation({
-    mutationKey: [
-      enterpriseUser.updateEnterpriseAfterDINVerify.endpointKey,
-      enterpriseId,
-    ],
-    mutationFn: UpdateEnterpriseAfterDINVerification,
+  const verifyDINMutation = useMutation({
+    mutationKey: [userAuth.verifyDIN.endpointKey],
+    mutationFn: VerifyDIN,
     onSuccess: () => {
       toast.success('DIN number verified successfully');
       if (isKycVerified) {
@@ -48,17 +41,6 @@ const DINVerifyPage = () => {
       } else {
         router.push('/login/kyc');
       }
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
-  const verifyDINMutation = useMutation({
-    mutationKey: [userAuth.verifyDIN.endpointKey],
-    mutationFn: VerifyDIN,
-    onSuccess: () => {
-      updateAfterDINVerifyMutation.mutate(enterpriseId);
     },
     onError: (error) => {
       toast.error(error.response.data.message);
