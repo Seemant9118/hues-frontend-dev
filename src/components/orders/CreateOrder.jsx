@@ -30,6 +30,7 @@ import {
   createInvoiceForUninvited,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -51,6 +52,8 @@ const CreateOrder = ({
   setIsCreatingSales,
   setIsCreatingInvoice,
 }) => {
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -90,8 +93,11 @@ const CreateOrder = ({
           orderItems: [],
         },
   );
-
-  const createSalesColumns = useCreateSalesColumns(setOrder, setSelectedItem);
+  const createSalesColumns = useCreateSalesColumns(
+    isOrder,
+    setOrder,
+    setSelectedItem,
+  );
 
   // client/vendor fetching
   const { data: customerData } = useQuery({
@@ -166,7 +172,10 @@ const CreateOrder = ({
     ],
     queryFn: () => GetProductGoodsVendor(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.sellerEnterpriseId,
+    enabled:
+      isPurchasePage &&
+      order.invoiceType === 'GOODS' &&
+      !!order.sellerEnterpriseId,
   });
   const formattedVendorGoodsData =
     vendorGoodsData?.map((good) => ({
@@ -183,7 +192,10 @@ const CreateOrder = ({
     ],
     queryFn: () => GetServicesVendor(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.sellerEnterpriseId,
+    enabled:
+      isPurchasePage &&
+      order.invoiceType === 'SERVICE' &&
+      !!order.sellerEnterpriseId,
   });
   const formattedVendorServicesData =
     vendorServicesData?.map((service) => ({
@@ -637,7 +649,7 @@ const CreateOrder = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <Label>Amount:</Label>
+            <Label>{isOrder === 'invoice' ? 'Invoice Value' : 'Amount'}</Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled

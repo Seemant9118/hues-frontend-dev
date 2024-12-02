@@ -45,6 +45,9 @@ const UploadItems = dynamic(
 
 function Goods() {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
   const templateId = 1;
 
   const queryClient = useQueryClient();
@@ -116,13 +119,13 @@ function Goods() {
 
   return (
     <>
-      {!enterpriseId && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={'Goods'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>

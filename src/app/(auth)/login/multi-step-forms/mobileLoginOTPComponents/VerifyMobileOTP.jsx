@@ -101,7 +101,9 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
         data?.data?.data?.user?.isKycVerified
       ) {
-        router.push('/');
+        const redirectUrl = LocalStorageService.get('redirectUrl');
+        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+        router.push(redirectUrl || '/');
       }
       // 5. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && !sKycVerified
       else if (

@@ -89,3 +89,8 @@ export function createRequestAccess(data) {
 export function verifyKYCstatusandUpdate() {
   return APIinstance.post(userAuth.verifykycstatusandupdate.endpoint);
 }
+
+// 19. create user session
+export function createUserSession() {
+  return APIinstance.post(userAuth.createUserSession.endpoint);
+}

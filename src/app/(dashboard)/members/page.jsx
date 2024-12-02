@@ -18,6 +18,9 @@ import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 
 const MembersPage = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
   const [selectedMembers, setSelectedMembers] = useState([]);
 
   const { data: membersList, isLoading } = useQuery({
@@ -39,7 +42,7 @@ const MembersPage = () => {
 
   return (
     <>
-      {!enterpriseId && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name="Members" />
           <RestrictedComponent />

@@ -3,6 +3,7 @@
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
+import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
 import '@/services/Digio';
 import {
@@ -136,38 +137,40 @@ const CompleteKycPage = () => {
   });
 
   return (
-    <div className="flex h-full items-center justify-center">
-      <div className="flex h-[500px] w-[450px] flex-col items-center justify-center gap-16">
-        <div className="flex w-full flex-col gap-5">
-          <h1 className="w-full text-center text-xl font-bold text-[#121212]">
-            {isKycProcessStarted
-              ? 'KYC Process started...'
-              : 'Please Complete Your KYC'}
-          </h1>
+    <UserProvider>
+      <div className="flex h-full items-center justify-center">
+        <div className="flex h-[500px] w-[450px] flex-col items-center justify-center gap-16">
+          <div className="flex w-full flex-col gap-5">
+            <h1 className="w-full text-center text-xl font-bold text-[#121212]">
+              {isKycProcessStarted
+                ? 'KYC Process started...'
+                : 'Please Complete Your KYC'}
+            </h1>
 
-          <Button
-            onClick={() => digioMutation.mutate(userId)}
-            size="sm"
-            type="submit"
-            className="w-full bg-[#288AF9]"
-            disabled={digioMutation.isPending || iskycStatusFetching}
+            <Button
+              onClick={() => digioMutation.mutate(userId)}
+              size="sm"
+              type="submit"
+              className="w-full bg-[#288AF9]"
+              disabled={digioMutation.isPending || iskycStatusFetching}
+            >
+              {digioMutation.isPending || iskycStatusFetching ? (
+                <Loading />
+              ) : (
+                'Start KYC'
+              )}
+            </Button>
+          </div>
+
+          <Link
+            href="/"
+            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
           >
-            {digioMutation.isPending || iskycStatusFetching ? (
-              <Loading />
-            ) : (
-              'Start KYC'
-            )}
-          </Button>
+            Later
+          </Link>
         </div>
-
-        <Link
-          href="/"
-          className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-        >
-          Later
-        </Link>
       </div>
-    </div>
+    </UserProvider>
   );
 };
 

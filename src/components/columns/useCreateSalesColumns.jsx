@@ -4,7 +4,7 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import { Edit2, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 
-export const useCreateSalesColumns = (setOrder, setSelectedItem) => {
+export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
   return [
     {
       accessorKey: 'productName',
@@ -34,7 +34,10 @@ export const useCreateSalesColumns = (setOrder, setSelectedItem) => {
     {
       accessorKey: 'totalAmount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="AMOUNT" />
+        <DataTableColumnHeader
+          column={column}
+          title={isOrder === 'invoice' ? 'INVOICE VALUE' : 'AMOUNT'}
+        />
       ),
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('totalAmount'));

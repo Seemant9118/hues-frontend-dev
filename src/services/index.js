@@ -17,7 +17,6 @@ APIinstance.interceptors.request.use(
     return request;
   },
   (error) => {
-    toast.error('Session expired. Please log in again.');
     return Promise.reject(error);
   },
 );
