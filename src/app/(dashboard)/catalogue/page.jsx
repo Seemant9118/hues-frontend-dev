@@ -1,6 +1,7 @@
 'use client';
 
-import { goodsApi } from '@/api/inventories/goods/goods';
+import { catalogueApis } from '@/api/catalogue/catalogueApi';
+import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -9,14 +10,14 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
-import { GetAllProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
+import { getCatalogues } from '@/services/Catalogue_Services/CatalogueServices';
 import { useQuery } from '@tanstack/react-query';
 import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { useCatlogueColumns } from './CatalogueColumns';
+import { useCatalogueColumns } from './CatalogueColumns';
 
 const Catalogue = () => {
   const router = useRouter();
@@ -26,28 +27,28 @@ const Catalogue = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // we use catalogue api to fetch data, rn we are using only goods foe testing component
-  const { data: productGoods, isLoading } = useQuery({
-    queryKey: [goodsApi.getAllProductGoods.endpointKey],
-    queryFn: () => GetAllProductGoods(enterpriseId),
+  const { data: catalogues, isLoading } = useQuery({
+    queryKey: [catalogueApis.getCatalogues.endpointKey, enterpriseId],
+    queryFn: () => getCatalogues(enterpriseId),
     select: (res) => res.data.data,
   });
   // get product via search
-  const searchCatalogueItems = productGoods?.filter((product) => {
-    const productName = product.productName ?? '';
+  const searchCatalogueItems = catalogues?.filter((catalogue) => {
+    const productName = catalogue.productName ?? '';
     return productName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   // handle export catalogue click
-  const handleExportOrder = () => {
+  const handleExportCatalogue = () => {
     if (selectedCatalogue.length === 0) {
-      toast.error('Please select atleast One Order to export');
+      toast.error('Please select atleast One Catalogue to export');
       return;
     }
     // api call to export catalogues
     toast.success('Selected Catalogue exported');
   };
 
-  const CatlogueColumns = useCatlogueColumns(setSelectedCatalogue);
+  const CatlogueColumns = useCatalogueColumns(setSelectedCatalogue);
 
   return (
     <Wrapper className="h-full">
@@ -58,22 +59,48 @@ const Catalogue = () => {
           <div className="flex w-full justify-between gap-2 py-2">
             <SubHeader name="Catalogue" />
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="blue_outline"
-                onClick={() => router.push('/catalogue/update_catalogue')}
-              >
-                Update
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleExportOrder}>
-                <Upload size={14} />
-              </Button>
-              <Button size="sm" variant="outline">
-                <Eye size={14} />
-              </Button>
-              <Button size="sm" variant="outline">
-                <Share2 size={14} />
-              </Button>
+              <Tooltips
+                trigger={
+                  <Button
+                    size="sm"
+                    variant="blue_outline"
+                    onClick={() => router.push('/catalogue/update_catalogue')}
+                  >
+                    Update
+                  </Button>
+                }
+                content={'Update a Catalogue'}
+              />
+
+              <Tooltips
+                trigger={
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleExportCatalogue}
+                  >
+                    <Upload size={14} />
+                  </Button>
+                }
+                content={'Export a Catalogue'}
+              />
+              <Tooltips
+                trigger={
+                  <Button disabled size="sm" variant="outline">
+                    <Eye size={14} />
+                  </Button>
+                }
+                content={'This feature Coming Soon...'}
+              />
+
+              <Tooltips
+                trigger={
+                  <Button disabled size="sm" variant="outline">
+                    <Share2 size={14} />
+                  </Button>
+                }
+                content={'This feature Coming Soon...'}
+              />
             </div>
           </div>
           {/* Header2 action */}
@@ -83,20 +110,25 @@ const Catalogue = () => {
               toSearchTerm={searchTerm}
               setToSearchTerm={setSearchTerm}
             />
-            <Button size="sm" variant="outline">
-              <ListFilter size={14} />
-            </Button>
+            <Tooltips
+              trigger={
+                <Button disabled size="sm" variant="outline">
+                  <ListFilter size={14} />
+                </Button>
+              }
+              content={'This feature Coming Soon...'}
+            />
           </div>
 
           {isLoading && <Loading />}
-          {!isLoading && productGoods?.length > 0 && (
+          {!isLoading && catalogues?.length > 0 && (
             <DataTable
               id={'catalogue'}
               columns={CatlogueColumns}
               data={searchCatalogueItems ?? []}
             />
           )}
-          {!isLoading && productGoods?.length === 0 && (
+          {!isLoading && catalogues?.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-[#939090]">
               <Image
                 src={'/empty.png'}

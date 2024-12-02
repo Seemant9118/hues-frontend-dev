@@ -9,42 +9,45 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
+const ConfirmAction = ({
+  name,
+  id,
+  invalidateKey,
+  mutationKey,
+  mutationFunc,
+}) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
-  const deleteHandler = async (idToDelete) => {
-    try {
-      await mutationFunc(idToDelete);
+  const deleteMutation = useMutation({
+    mutationKey: [mutationKey],
+    mutationFn: mutationFunc,
+    onSuccess: () => {
+      setOpen(false);
       toast.success('Deleted successfully');
-      setOpen((prev) => !prev);
-      queryClient.invalidateQueries({
-        queryKey: [mutationKey],
-      });
-    } catch (error) {
+      queryClient.invalidateQueries([invalidateKey]);
+    },
+    onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
-    }
-  };
+    },
+  });
 
-  // const mutation = useMutation({
-  //   mutationKey: [id],
-  //   mutationFn: mutationFunc,
-  //   onSuccess: () => {
-  //     toast.success("Deleted successfully");
-  //     setOpen((prev) => !prev);
-  //     queryClient.invalidateQueries({
-  //       queryKey: [mutationKey],
-  //     });
-  //   },
-  //   onError: (error) => {
-  //     toast.error(error.response.data.message || "Something went wrong");
-  //   },
-  // });
+  // const deleteHandler = async (idToDelete) => {
+  //   try {
+  //     await mutationFunc(idToDelete);
+  //     toast.success('Deleted successfully');
+  //     setOpen(false);
+  //     queryClient.invalidateQueries([mutationKey]);
+  //   } catch (error) {
+  //     toast.error(error.response.data.message || 'Something went wrong');
+  //   }
+
+  // };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -68,7 +71,7 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
           <DialogClose asChild>
             <Button
               onClick={() => {
-                setOpen((prev) => !prev);
+                setOpen(false);
               }}
               variant={'outline'}
             >
@@ -77,8 +80,7 @@ const ConfirmAction = ({ name, id, mutationKey, mutationFunc }) => {
           </DialogClose>
           <Button
             onClick={() => {
-              // mutation.mutate(id);
-              deleteHandler(id);
+              deleteMutation.mutate(id);
             }}
           >
             Delete

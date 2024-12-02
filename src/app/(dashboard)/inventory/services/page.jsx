@@ -27,7 +27,8 @@ import {
   Upload,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useServicesColumns } from './ServicesColumns';
 
@@ -44,6 +45,8 @@ const UploadItems = dynamic(
 );
 
 function Services() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -85,6 +88,29 @@ function Services() {
       },
     ],
   };
+
+  useEffect(() => {
+    // Read the state from the query parameters
+    const state = searchParams.get('action');
+    setIsAdding(state === 'add');
+    setIsEditing(state === 'edit');
+    setIsUploading(state === 'upload');
+  }, [searchParams]);
+
+  useEffect(() => {
+    let newPath = `/inventory/services`;
+    if (isAdding) {
+      newPath += `?action=add`;
+    } else if (isEditing) {
+      newPath += `?action=edit`;
+    } else if (isUploading) {
+      newPath += `?action=upload`;
+    } else {
+      newPath += '';
+    }
+
+    router.push(newPath);
+  }, [router, isAdding, isEditing, isUploading]);
 
   const { data: productService, isLoading } = useQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],

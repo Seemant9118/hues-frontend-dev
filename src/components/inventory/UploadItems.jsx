@@ -12,6 +12,7 @@ import React from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
+import SubHeader from '../ui/Sub-header';
 
 const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
   const handleFileRemove = () => {
@@ -80,13 +81,17 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
   }
 
   return (
-    <Wrapper className="flex h-full flex-col py-2">
-      <MoveLeft
-        className="hover:cursor-pointer"
-        onClick={() => setisUploading(false)}
-      />
+    <Wrapper className="h-full">
+      <div className="flex items-end gap-4">
+        <MoveLeft
+          className="hover:cursor-pointer"
+          onClick={() => setisUploading(false)}
+        />
 
-      <div className="flex grow flex-col items-center justify-center gap-4 rounded-md border">
+        <SubHeader name="Upload" />
+      </div>
+
+      <div className="flex grow flex-col items-center justify-center gap-4">
         <FileUploader
           handleChange={uploadFile}
           name="file"

@@ -27,7 +27,8 @@ import {
   Upload,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useGoodsColumns } from './GoodsColumns';
 
@@ -44,13 +45,14 @@ const UploadItems = dynamic(
 );
 
 function Goods() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const templateId = 1;
-
-  const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -86,6 +88,29 @@ function Goods() {
       },
     ],
   };
+
+  useEffect(() => {
+    // Read the state from the query parameters
+    const state = searchParams.get('action');
+    setIsAdding(state === 'add');
+    setIsEditing(state === 'edit');
+    setIsUploading(state === 'upload');
+  }, [searchParams]);
+
+  useEffect(() => {
+    let newPath = `/inventory/goods`;
+    if (isAdding) {
+      newPath += `?action=add`;
+    } else if (isEditing) {
+      newPath += `?action=edit`;
+    } else if (isUploading) {
+      newPath += `?action=upload`;
+    } else {
+      newPath += '';
+    }
+
+    router.push(newPath);
+  }, [router, isAdding, isEditing, isUploading]);
 
   const { data: productGoods, isLoading } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
@@ -145,7 +170,6 @@ function Goods() {
                         className="cursor-not-allowed"
                       >
                         <Share2 size={14} />
-                        Share
                       </Button>
                     }
                     content={'This feature Coming Soon...'}
