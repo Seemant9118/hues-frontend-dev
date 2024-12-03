@@ -75,6 +75,7 @@ const Catalogue = () => {
               <Tooltips
                 trigger={
                   <Button
+                    disabled
                     size="sm"
                     variant="outline"
                     onClick={handleExportCatalogue}
@@ -82,7 +83,7 @@ const Catalogue = () => {
                     <Upload size={14} />
                   </Button>
                 }
-                content={'Export a Catalogue'}
+                content={'This feature Coming Soon...'}
               />
               <Tooltips
                 trigger={
