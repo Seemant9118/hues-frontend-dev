@@ -125,7 +125,7 @@ const EditItem = ({
     <form
       onSubmit={handleEditSubmit}
       className={cn(
-        'scrollBarStyles flex h-full flex-col gap-3 overflow-y-auto p-2',
+        'scrollBarStyles relative flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
       <h2 className="text-2xl font-bold text-zinc-900">Edit Item</h2>
@@ -308,9 +308,7 @@ const EditItem = ({
         value={item.applications}
       />
 
-      <div className="mt-auto h-[1px] bg-neutral-300"></div>
-
-      <div className="flex items-end justify-end gap-4">
+      <div className="sticky bottom-0 z-10 flex items-end justify-end gap-4 bg-white">
         <Button
           size="sm"
           onClick={() => {

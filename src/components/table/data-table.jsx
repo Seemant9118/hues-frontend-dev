@@ -62,7 +62,7 @@ export function DataTable({ columns, data, id }) {
             table.getRowModel().rows.map((row) => {
               return (
                 <TableRow
-                  className="border-y border-[#A5ABBD33]"
+                  className="border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700"
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >

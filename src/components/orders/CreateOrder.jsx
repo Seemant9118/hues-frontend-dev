@@ -1,7 +1,6 @@
+import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
-import { goodsApi } from '@/api/inventories/goods/goods';
-import { servicesApi } from '@/api/inventories/services/services';
 import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
@@ -14,20 +13,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LocalStorageService } from '@/lib/utils';
+import {
+  getProductCatalogue,
+  getServiceCatalogue,
+  getVendorProductCatalogue,
+  getVendorServiceCatalogue,
+} from '@/services/Catalogue_Services/CatalogueServices';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { CreateEnterpriseUser } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
-  GetAllProductGoods,
-  GetProductGoodsVendor,
-} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import {
-  GetAllProductServices,
-  GetServicesVendor,
-} from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import {
   CreateOrderService,
-  createInvoiceForUninvited,
+  createInvoice,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
@@ -50,7 +47,6 @@ const CreateOrder = ({
   type,
   isOrder,
   setIsCreatingSales,
-  setIsCreatingInvoice,
 }) => {
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
@@ -126,10 +122,10 @@ const CreateOrder = ({
     );
   });
 
-  // client goods fetching
+  // client catalogue goods fetching
   const { data: goodsData } = useQuery({
-    queryKey: [goodsApi.getAllProductGoods.endpointKey],
-    queryFn: () => GetAllProductGoods(enterpriseId),
+    queryKey: [catalogueApis.getProductCatalogue.endpointKey, enterpriseId],
+    queryFn: () => getProductCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'GOODS',
   });
@@ -137,13 +133,13 @@ const CreateOrder = ({
     goodsData?.map((good) => ({
       ...good,
       productType: 'GOODS',
-      productName: good.productName,
+      productName: good.name,
     })) || [];
 
-  // client services fetching
+  // client catalogue services fetching
   const { data: servicesData } = useQuery({
-    queryKey: [servicesApi.getAllProductServices.endpointKey],
-    queryFn: () => GetAllProductServices(enterpriseId),
+    queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
+    queryFn: () => getServiceCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'SERVICE',
   });
@@ -151,7 +147,7 @@ const CreateOrder = ({
     servicesData?.map((service) => ({
       ...service,
       productType: 'SERVICE',
-      productName: service.serviceName,
+      productName: service.name,
     })) || [];
 
   // selected data on the basis of itemType
@@ -164,13 +160,13 @@ const CreateOrder = ({
     return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
   });
 
-  // vendor goods fetching
+  // vendor catalogue goods fetching
   const { data: vendorGoodsData } = useQuery({
     queryKey: [
-      goodsApi.vendorProductGoods.endpointKey,
+      catalogueApis.getVendorProductCatalogue.endpointKey,
       order.sellerEnterpriseId,
     ],
-    queryFn: () => GetProductGoodsVendor(order.sellerEnterpriseId),
+    queryFn: () => getVendorProductCatalogue(order.sellerEnterpriseId),
     select: (res) => res.data.data,
     enabled:
       isPurchasePage &&
@@ -181,16 +177,16 @@ const CreateOrder = ({
     vendorGoodsData?.map((good) => ({
       ...good,
       productType: 'GOODS',
-      productName: good.productName,
+      productName: good.name,
     })) || [];
 
-  // vendor services fetching
+  // vendor catalogue services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
-      servicesApi.vendorServices.endpointKey,
+      catalogueApis.getVendorServiceCatalogue.endpointKey,
       order.sellerEnterpriseId,
     ],
-    queryFn: () => GetServicesVendor(order.sellerEnterpriseId),
+    queryFn: () => getVendorServiceCatalogue(order.sellerEnterpriseId),
     select: (res) => res.data.data,
     enabled:
       isPurchasePage &&
@@ -201,7 +197,7 @@ const CreateOrder = ({
     vendorServicesData?.map((service) => ({
       ...service,
       productType: 'SERVICE',
-      productName: service.serviceName,
+      productName: service.name,
     })) || [];
 
   const vendorItemData =
@@ -234,7 +230,7 @@ const CreateOrder = ({
 
   // mutation - create invoice
   const invoiceMutation = useMutation({
-    mutationFn: createInvoiceForUninvited,
+    mutationFn: createInvoice,
     onSuccess: () => {
       toast.success('Invoice Created Successfully');
       onCancel();
@@ -358,14 +354,13 @@ const CreateOrder = ({
   }
 
   return (
-    <Wrapper className="flex h-full flex-col py-2">
+    <Wrapper className="relative flex h-full flex-col py-2">
       <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
           redirectPopupOnFail={redirectPopupOnFail}
           setIsCreatingSales={setIsCreatingSales}
-          setIsCreatingInvoice={setIsCreatingInvoice}
         />
       )}
 
@@ -392,6 +387,10 @@ const CreateOrder = ({
                       buyerEnterperiseId: id,
                     }));
                   } else if (name !== 'Invoice') {
+                    setOrder((prev) => ({
+                      ...prev,
+                      buyerEnterperiseId: id,
+                    }));
                     setRedirectPopUpOnFail(true);
                   }
                 } else {
@@ -440,9 +439,7 @@ const CreateOrder = ({
                       <SelectItem
                         key={customer.id}
                         value={JSON.stringify({
-                          id:
-                            customer?.client?.id ??
-                            (name === 'Invoice' ? customer?.id : undefined),
+                          id: customer?.client?.id ?? customer?.id,
                           isAcceptedCustomer:
                             customer?.invitation === null ||
                             customer?.invitation === undefined
@@ -715,13 +712,13 @@ const CreateOrder = ({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-bold">Gross Amount : </span>
-            <span className="rounded-md border bg-slate-100 p-2">
+            <span className="rounded-sm border bg-slate-100 p-2">
               {grossAmt.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>
-            <span className="rounded-md border bg-slate-100 p-2">
+            <span className="rounded-sm border bg-slate-100 p-2">
               {totalAmtWithGst.toFixed(2)}
             </span>
           </div>

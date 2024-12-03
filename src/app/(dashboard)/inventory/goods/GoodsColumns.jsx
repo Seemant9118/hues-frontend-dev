@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import { Edit3, Info, MoreHorizontal } from 'lucide-react';
+import { Edit3, Info, MoreVertical } from 'lucide-react';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   return [
@@ -67,7 +67,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">

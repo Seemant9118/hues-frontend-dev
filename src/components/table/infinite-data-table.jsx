@@ -148,8 +148,8 @@ export function InfiniteDataTable({
                   key={row.id}
                   className={
                     isRead
-                      ? 'border-y border-[#A5ABBD33] bg-[#A5ABBD17]'
-                      : 'border-y border-[#A5ABBD33] font-semibold'
+                      ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700 hover:text-black'
+                      : 'hover:text-text-gray-700 cursor-pointer border-y border-[#A5ABBD33] font-semibold text-black'
                   }
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={

@@ -56,7 +56,7 @@ export const orderApi = {
   },
 
   // 11. create Invoice : for uninvited client
-  createInvoiceForUninvited: {
+  createInvoice: {
     endpoint: `/order/createinvoice`,
     endpointKey: 'create_invoice',
   },

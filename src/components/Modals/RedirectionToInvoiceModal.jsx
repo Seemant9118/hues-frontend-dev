@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 const RedirectionToInvoiceModal = ({
   redirectPopupOnFail,
   setIsCreatingSales,
-  setIsCreatingInvoice,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -22,15 +21,13 @@ const RedirectionToInvoiceModal = ({
         <div className="flex flex-col gap-10 p-2">
           <span className="flex flex-col gap-1">
             This enterprise has not accepted your invitation and will not be
-            able to accept your offer. But You can create an invoice instead.
-            Proceed ?
+            able to respond your offer. Do you want to proceed?
           </span>
           <div className="flex justify-end gap-2">
             <Button
               className="w-36 bg-green-600 text-white hover:bg-green-700"
               onClick={() => {
-                setIsCreatingSales(false);
-                setIsCreatingInvoice(true);
+                setIsOpen(false);
               }}
             >
               Yes

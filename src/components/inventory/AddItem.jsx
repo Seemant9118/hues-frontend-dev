@@ -277,7 +277,7 @@ const AddItem = ({ name, onCancel, cta }) => {
         item.type === 'goods' ? handleSubmitGoods : handleSubmitServices
       }
       className={cn(
-        'scrollBarStyles flex h-full flex-col gap-3 overflow-y-auto p-2',
+        'scrollBarStyles relative flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
       <h2 className="text-2xl font-bold text-zinc-900">{name}</h2>
@@ -560,9 +560,7 @@ const AddItem = ({ name, onCancel, cta }) => {
         </>
       )}
 
-      <div className="mt-auto h-[1px] bg-neutral-300"></div>
-
-      <div className="flex items-end justify-end gap-4">
+      <div className="sticky bottom-0 z-10 flex items-end justify-end gap-4 bg-white">
         <Button
           size="sm"
           onClick={() => {
