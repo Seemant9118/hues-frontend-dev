@@ -22,6 +22,9 @@ import { useCatalogueColumns } from './CatalogueColumns';
 const Catalogue = () => {
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
 
   const [selectedCatalogue, setSelectedCatalogue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,110 +54,123 @@ const Catalogue = () => {
   const CatlogueColumns = useCatalogueColumns(setSelectedCatalogue);
 
   return (
-    <Wrapper className="h-full">
-      {!enterpriseId && <RestrictedComponent />}
-      {enterpriseId && (
-        <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex w-full justify-between gap-2 py-2">
-            <SubHeader name="Catalogue" />
-            <div className="flex gap-2">
-              <Tooltips
-                trigger={
+    <>
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+        <>
+          <SubHeader name={'Catalogue'}></SubHeader>
+          <RestrictedComponent />
+        </>
+      )}
+
+      {enterpriseId && isEnterpriseOnboardingComplete && (
+        <Wrapper className="h-full">
+          {!enterpriseId && <RestrictedComponent />}
+          {enterpriseId && (
+            <div className="flex h-full flex-col">
+              {/* Header */}
+              <div className="flex w-full justify-between gap-2 py-2">
+                <SubHeader name="Catalogue" />
+                <div className="flex gap-2">
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        variant="blue_outline"
+                        onClick={() =>
+                          router.push('/catalogue/update_catalogue')
+                        }
+                      >
+                        Update
+                      </Button>
+                    }
+                    content={'Update a Catalogue'}
+                  />
+
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled
+                        size="sm"
+                        variant="outline"
+                        onClick={handleExportCatalogue}
+                      >
+                        <Upload size={14} />
+                      </Button>
+                    }
+                    content={'This feature Coming Soon...'}
+                  />
+                  <Tooltips
+                    trigger={
+                      <Button disabled size="sm" variant="outline">
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    content={'This feature Coming Soon...'}
+                  />
+
+                  <Tooltips
+                    trigger={
+                      <Button disabled size="sm" variant="outline">
+                        <Share2 size={14} />
+                      </Button>
+                    }
+                    content={'This feature Coming Soon...'}
+                  />
+                </div>
+              </div>
+              {/* Header2 action */}
+              <div className="flex w-full justify-between gap-2 py-2">
+                <SearchInput
+                  className="w-[28rem]"
+                  toSearchTerm={searchTerm}
+                  setToSearchTerm={setSearchTerm}
+                />
+                <Tooltips
+                  trigger={
+                    <Button disabled size="sm" variant="outline">
+                      <ListFilter size={14} />
+                    </Button>
+                  }
+                  content={'This feature Coming Soon...'}
+                />
+              </div>
+
+              {isLoading && <Loading />}
+              {!isLoading && catalogues?.length > 0 && (
+                <DataTable
+                  id={'catalogue'}
+                  columns={CatlogueColumns}
+                  data={searchCatalogueItems ?? []}
+                />
+              )}
+              {!isLoading && catalogues?.length === 0 && (
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-[#939090]">
+                  <Image
+                    src={'/empty.png'}
+                    width={100}
+                    height={100}
+                    alt="emptyIcon"
+                  />
+                  <p className="font-bold">No catalogue available</p>
+                  <p className="max-w-96 text-center">
+                    {
+                      "You haven't make any catalogues. Start by clicking on the Update button"
+                    }
+                  </p>
+
                   <Button
                     size="sm"
-                    variant="blue_outline"
                     onClick={() => router.push('/catalogue/update_catalogue')}
                   >
                     Update
                   </Button>
-                }
-                content={'Update a Catalogue'}
-              />
-
-              <Tooltips
-                trigger={
-                  <Button
-                    disabled
-                    size="sm"
-                    variant="outline"
-                    onClick={handleExportCatalogue}
-                  >
-                    <Upload size={14} />
-                  </Button>
-                }
-                content={'This feature Coming Soon...'}
-              />
-              <Tooltips
-                trigger={
-                  <Button disabled size="sm" variant="outline">
-                    <Eye size={14} />
-                  </Button>
-                }
-                content={'This feature Coming Soon...'}
-              />
-
-              <Tooltips
-                trigger={
-                  <Button disabled size="sm" variant="outline">
-                    <Share2 size={14} />
-                  </Button>
-                }
-                content={'This feature Coming Soon...'}
-              />
-            </div>
-          </div>
-          {/* Header2 action */}
-          <div className="flex w-full justify-between gap-2 py-2">
-            <SearchInput
-              className="w-[28rem]"
-              toSearchTerm={searchTerm}
-              setToSearchTerm={setSearchTerm}
-            />
-            <Tooltips
-              trigger={
-                <Button disabled size="sm" variant="outline">
-                  <ListFilter size={14} />
-                </Button>
-              }
-              content={'This feature Coming Soon...'}
-            />
-          </div>
-
-          {isLoading && <Loading />}
-          {!isLoading && catalogues?.length > 0 && (
-            <DataTable
-              id={'catalogue'}
-              columns={CatlogueColumns}
-              data={searchCatalogueItems ?? []}
-            />
-          )}
-          {!isLoading && catalogues?.length === 0 && (
-            <div className="flex h-full flex-col items-center justify-center gap-2 text-[#939090]">
-              <Image
-                src={'/empty.png'}
-                width={100}
-                height={100}
-                alt="emptyIcon"
-              />
-              <p className="font-bold">No catalogue available</p>
-              <p className="max-w-96 text-center">
-                {
-                  "You haven't make any catalogues. Start by clicking on the Update button"
-                }
-              </p>
-
-              <Button
-                size="sm"
-                onClick={() => router.push('/catalogue/update_catalogue')}
-              >
-                Update
-              </Button>
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </Wrapper>
       )}
-    </Wrapper>
+    </>
   );
 };
 
