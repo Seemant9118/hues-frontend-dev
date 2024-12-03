@@ -24,7 +24,7 @@ import { CreateEnterpriseUser } from '@/services/Enterprises_Users_Service/Enter
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   CreateOrderService,
-  createInvoiceForUninvited,
+  createInvoice,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
@@ -47,7 +47,6 @@ const CreateOrder = ({
   type,
   isOrder,
   setIsCreatingSales,
-  setIsCreatingInvoice,
 }) => {
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
@@ -148,7 +147,7 @@ const CreateOrder = ({
     servicesData?.map((service) => ({
       ...service,
       productType: 'SERVICE',
-      productName: service.serviceName,
+      productName: service.name,
     })) || [];
 
   // selected data on the basis of itemType
@@ -178,7 +177,7 @@ const CreateOrder = ({
     vendorGoodsData?.map((good) => ({
       ...good,
       productType: 'GOODS',
-      productName: good.productName,
+      productName: good.name,
     })) || [];
 
   // vendor catalogue services fetching
@@ -198,7 +197,7 @@ const CreateOrder = ({
     vendorServicesData?.map((service) => ({
       ...service,
       productType: 'SERVICE',
-      productName: service.serviceName,
+      productName: service.name,
     })) || [];
 
   const vendorItemData =
@@ -231,7 +230,7 @@ const CreateOrder = ({
 
   // mutation - create invoice
   const invoiceMutation = useMutation({
-    mutationFn: createInvoiceForUninvited,
+    mutationFn: createInvoice,
     onSuccess: () => {
       toast.success('Invoice Created Successfully');
       onCancel();
@@ -355,14 +354,13 @@ const CreateOrder = ({
   }
 
   return (
-    <Wrapper className="flex h-full flex-col py-2">
+    <Wrapper className="relative flex h-full flex-col py-2">
       <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
           redirectPopupOnFail={redirectPopupOnFail}
           setIsCreatingSales={setIsCreatingSales}
-          setIsCreatingInvoice={setIsCreatingInvoice}
         />
       )}
 
@@ -389,6 +387,10 @@ const CreateOrder = ({
                       buyerEnterperiseId: id,
                     }));
                   } else if (name !== 'Invoice') {
+                    setOrder((prev) => ({
+                      ...prev,
+                      buyerEnterperiseId: id,
+                    }));
                     setRedirectPopUpOnFail(true);
                   }
                 } else {
@@ -437,9 +439,7 @@ const CreateOrder = ({
                       <SelectItem
                         key={customer.id}
                         value={JSON.stringify({
-                          id:
-                            customer?.client?.id ??
-                            (name === 'Invoice' ? customer?.id : undefined),
+                          id: customer?.client?.id ?? customer?.id,
                           isAcceptedCustomer:
                             customer?.invitation === null ||
                             customer?.invitation === undefined
@@ -712,13 +712,13 @@ const CreateOrder = ({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-bold">Gross Amount : </span>
-            <span className="rounded-md border bg-slate-100 p-2">
+            <span className="rounded-sm border bg-slate-100 p-2">
               {grossAmt.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>
-            <span className="rounded-md border bg-slate-100 p-2">
+            <span className="rounded-sm border bg-slate-100 p-2">
               {totalAmtWithGst.toFixed(2)}
             </span>
           </div>

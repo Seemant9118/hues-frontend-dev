@@ -136,7 +136,7 @@ const ViewDebitNote = () => {
   }
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full py-2">
       <div className="sticky top-0 z-10 flex gap-2 bg-white pt-2">
         {/* breadcrumbs */}
         <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />

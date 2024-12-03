@@ -43,8 +43,8 @@ export const getPurchaseInvoices = (id) => {
   return APIinstance.get(`${orderApi.getPurchaseInvoice.endpoint}${id}`);
 };
 
-export const createInvoiceForUninvited = (data) => {
-  return APIinstance.post(orderApi.createInvoiceForUninvited.endpoint, data);
+export const createInvoice = (data) => {
+  return APIinstance.post(orderApi.createInvoice.endpoint, data);
 };
 
 export const generateInvoice = (id) => {

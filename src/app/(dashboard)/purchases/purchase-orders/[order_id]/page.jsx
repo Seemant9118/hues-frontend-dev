@@ -174,12 +174,12 @@ const ViewOrder = () => {
   );
 
   return (
-    <Wrapper className="relative">
+    <Wrapper className="h-full py-2">
       {isLoading && !orderDetails && <Loading />}
       {!isLoading && orderDetails && (
         <>
           {/* headers */}
-          <section className="sticky top-0 z-10 flex items-center justify-between bg-white">
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex flex-col gap-2 pt-2">
               {/* breadcrumbs */}
               <OrderBreadCrumbs
