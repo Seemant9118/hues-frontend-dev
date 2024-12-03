@@ -11,4 +11,20 @@ export const catalogueApis = {
     endpoint: `/catalogue/deleteitem/`,
     endpointKey: 'delete_catalogue',
   },
+  getProductCatalogue: {
+    endpoint: `/catalogue/getgoods/`,
+    endpointKey: 'get_product_catalogue',
+  },
+  getServiceCatalogue: {
+    endpoint: `/catalogue/getservices/`,
+    endpointKey: 'get_service_catalogue',
+  },
+  getVendorProductCatalogue: {
+    endpoint: `/catalogue/vendor/getgoods/`,
+    endpointKey: 'get_vendor_product_catalogue',
+  },
+  getVendorServiceCatalogue: {
+    endpoint: `/catalogue/vendor/getservices/`,
+    endpointKey: 'get_vendor_service_catalogue',
+  },
 };

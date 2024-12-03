@@ -1,7 +1,6 @@
+import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
-import { goodsApi } from '@/api/inventories/goods/goods';
-import { servicesApi } from '@/api/inventories/services/services';
 import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
@@ -14,17 +13,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LocalStorageService } from '@/lib/utils';
+import {
+  getProductCatalogue,
+  getServiceCatalogue,
+  getVendorProductCatalogue,
+  getVendorServiceCatalogue,
+} from '@/services/Catalogue_Services/CatalogueServices';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { CreateEnterpriseUser } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import {
-  GetAllProductGoods,
-  GetProductGoodsVendor,
-} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import {
-  GetAllProductServices,
-  GetServicesVendor,
-} from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import {
   CreateOrderService,
   createInvoiceForUninvited,
@@ -126,10 +123,10 @@ const CreateOrder = ({
     );
   });
 
-  // client goods fetching
+  // client catalogue goods fetching
   const { data: goodsData } = useQuery({
-    queryKey: [goodsApi.getAllProductGoods.endpointKey],
-    queryFn: () => GetAllProductGoods(enterpriseId),
+    queryKey: [catalogueApis.getProductCatalogue.endpointKey, enterpriseId],
+    queryFn: () => getProductCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'GOODS',
   });
@@ -137,13 +134,13 @@ const CreateOrder = ({
     goodsData?.map((good) => ({
       ...good,
       productType: 'GOODS',
-      productName: good.productName,
+      productName: good.name,
     })) || [];
 
-  // client services fetching
+  // client catalogue services fetching
   const { data: servicesData } = useQuery({
-    queryKey: [servicesApi.getAllProductServices.endpointKey],
-    queryFn: () => GetAllProductServices(enterpriseId),
+    queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
+    queryFn: () => getServiceCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'SERVICE',
   });
@@ -164,13 +161,13 @@ const CreateOrder = ({
     return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
   });
 
-  // vendor goods fetching
+  // vendor catalogue goods fetching
   const { data: vendorGoodsData } = useQuery({
     queryKey: [
-      goodsApi.vendorProductGoods.endpointKey,
+      catalogueApis.getVendorProductCatalogue.endpointKey,
       order.sellerEnterpriseId,
     ],
-    queryFn: () => GetProductGoodsVendor(order.sellerEnterpriseId),
+    queryFn: () => getVendorProductCatalogue(order.sellerEnterpriseId),
     select: (res) => res.data.data,
     enabled:
       isPurchasePage &&
@@ -184,13 +181,13 @@ const CreateOrder = ({
       productName: good.productName,
     })) || [];
 
-  // vendor services fetching
+  // vendor catalogue services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
-      servicesApi.vendorServices.endpointKey,
+      catalogueApis.getVendorServiceCatalogue.endpointKey,
       order.sellerEnterpriseId,
     ],
-    queryFn: () => GetServicesVendor(order.sellerEnterpriseId),
+    queryFn: () => getVendorServiceCatalogue(order.sellerEnterpriseId),
     select: (res) => res.data.data,
     enabled:
       isPurchasePage &&
