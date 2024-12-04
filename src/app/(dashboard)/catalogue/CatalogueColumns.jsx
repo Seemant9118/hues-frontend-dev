@@ -118,7 +118,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
         id: 'actions',
         enableHiding: false,
         cell: ({ row }) => {
-          const { productId, name } = row.original;
+          const { productId, name, type } = row.original;
 
           return (
             <DropdownMenu>
@@ -132,6 +132,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
                 <ConfirmAction
                   name={name}
                   id={productId}
+                  type={type}
                   invalidateKey={catalogueApis.getCatalogues.endpointKey}
                   mutationKey={catalogueApis.deleteCatalogue.endpointKey}
                   mutationFunc={deleteCatalogue}

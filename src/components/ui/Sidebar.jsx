@@ -50,6 +50,11 @@ const Sidebar = () => {
       ],
     },
     {
+      name: 'Catalogue',
+      icon: <BookOpenText size={16} />,
+      path: '/catalogue',
+    },
+    {
       name: 'Sales',
       icon: <ClipboardList size={16} />,
       path: '/sales/sales-orders',
@@ -108,11 +113,7 @@ const Sidebar = () => {
       icon: <Users size={16} />,
       path: '/members',
     },
-    {
-      name: 'Catalogue',
-      icon: <BookOpenText size={16} />,
-      path: '/catalogue',
-    },
+
     // {
     //   name: "Insights",
     //   icon: <PieChart size={16} />,

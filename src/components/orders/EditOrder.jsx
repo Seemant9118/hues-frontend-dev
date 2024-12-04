@@ -314,9 +314,9 @@ const EditOrder = ({
     mutationFn: (data) => updateOrder(orderId, data),
     onSuccess: () => {
       toast.success('Order Updated Successfully');
-      setIsOrderCreationSuccess((prev) => !prev);
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       onCancel();
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      setIsOrderCreationSuccess((prev) => !prev);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -338,15 +338,15 @@ const EditOrder = ({
     <Wrapper className="flex h-full flex-col py-2">
       <SubHeader name={name}></SubHeader>
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        <div className="flex w-1/2 items-center gap-2">
-          <Label>{cta === 'offer' ? 'Client' : 'Vendor'}:</Label>
-          <div className="w-full rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
+        <div className="flex w-1/2 flex-col gap-2">
+          <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
+          <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {clientName || vendorName}
           </div>
         </div>
-        <div className="flex w-1/2 items-center gap-2">
-          <Label>Type:</Label>
-          <div className="w-full rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
+        <div className="flex w-1/2 flex-col gap-2">
+          <Label>Type</Label>
+          <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {capitalize(orderDetails?.invoiceType)}
           </div>
         </div>
@@ -354,8 +354,8 @@ const EditOrder = ({
       <div className="flex flex-col gap-2 rounded-sm border border-neutral-200 p-4">
         <span className="font-semibold">Add Item</span>
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Label className="flex-shrink-0">Item:</Label>
+          <div className="flex w-full max-w-xs flex-col gap-2">
+            <Label>Item</Label>
             <div className="flex flex-col gap-1">
               <Select
                 onValueChange={(value) => {
@@ -374,7 +374,7 @@ const EditOrder = ({
                   }));
                 }}
               >
-                <SelectTrigger className="max-w-xs gap-5">
+                <SelectTrigger>
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
@@ -417,8 +417,8 @@ const EditOrder = ({
               </Select>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Label>Quantity:</Label>
+          <div className="flex flex-col gap-2">
+            <Label>Quantity</Label>
             <div className="flex flex-col gap-1">
               <Input
                 type="number"
@@ -437,17 +437,16 @@ const EditOrder = ({
                     totalGstAmount: gstAmt,
                   }));
                 }}
-                className="max-w-20"
+                className="max-w-30"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Label>Price:</Label>
+          <div className="flex flex-col gap-2">
+            <Label>Price</Label>
             <div className="flex flex-col gap-1">
               <Input
                 value={selectedItem.unitPrice}
-                className="max-w-20"
                 onChange={(e) => {
                   const totalAmt = parseFloat(
                     (selectedItem.quantity * e.target.value).toFixed(2),
@@ -462,34 +461,36 @@ const EditOrder = ({
                     totalGstAmount: gstAmt,
                   }));
                 }}
+                className="max-w-30"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Label>GST (%) :</Label>
+          <div className="flex flex-col gap-2">
+            <Label>GST (%)</Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
                 value={selectedItem.gstPerUnit}
-                className="max-w-20"
+                className="max-w-14"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Label>Amount:</Label>
+          <div className="flex flex-col gap-2">
+            <Label>Amount</Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
                 value={selectedItem.totalAmount}
-                className="max-w-20"
+                className="max-w-30"
               />
             </div>
           </div>
         </div>
         <div className="flex items-center justify-end gap-4">
           <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               setSelectedItem((prev) => ({
@@ -508,6 +509,7 @@ const EditOrder = ({
             Cancel
           </Button>
           <Button
+            size="sm"
             disabled={Object.values(selectedItem).some(
               (value) => value === '' || value === null || value === undefined,
             )} // if any item of selectedItem is empty then button must be disabled
@@ -646,10 +648,16 @@ const EditOrder = ({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onCancel} variant={'outline'}>
+          <Button size="sm" onClick={onCancel} variant={'outline'}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Edit</Button>
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={updateOrderMutation.isPending}
+          >
+            {updateOrderMutation.isPending ? <Loading /> : 'Edit'}
+          </Button>
         </div>
       </div>
     </Wrapper>

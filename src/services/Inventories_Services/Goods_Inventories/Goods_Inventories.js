@@ -17,7 +17,7 @@ export const UpdateProductGoods = (data, id) => {
   return APIinstance.put(`${goodsApi.updateProductGoods.endpoint}${id}`, data);
 };
 
-export const DeleteProductGoods = (id) => {
+export const DeleteProductGoods = ({ id }) => {
   return APIinstance.delete(`${goodsApi.deleteProductGoods.endpoint}${id}`);
 };
 

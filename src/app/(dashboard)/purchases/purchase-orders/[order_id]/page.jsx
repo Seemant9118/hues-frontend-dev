@@ -2,22 +2,30 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
+import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   bulkNegotiateAcceptOrReject,
+  DeleteOrder,
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, Share2 } from 'lucide-react';
+import { Clock, MoreVertical, Pencil, Share2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -47,10 +55,11 @@ const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
+  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const searchParams = useSearchParams();
   const showInvoice = searchParams.get('showInvoice');
-
+  const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
 
@@ -176,7 +185,18 @@ const ViewOrder = () => {
   return (
     <Wrapper className="h-full py-2">
       {isLoading && !orderDetails && <Loading />}
-      {!isLoading && orderDetails && (
+      {/* editOrder Component */}
+      {isEditingOrder && (
+        <EditOrder
+          type="sales"
+          name="Edit"
+          cta="offer"
+          isOrder="order"
+          orderId={params.order_id}
+          onCancel={() => setIsEditingOrder(false)}
+        />
+      )}
+      {!isEditingOrder && !isLoading && orderDetails && (
         <>
           {/* headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
@@ -192,7 +212,6 @@ const ViewOrder = () => {
             <div className="flex gap-2">
               {/* ctas - share invoice create */}
               {/* share CTA */}
-
               {!isNegotiation && (
                 <Button
                   variant="blue_outline"
@@ -201,6 +220,41 @@ const ViewOrder = () => {
                 >
                   <Share2 size={14} />
                 </Button>
+              )}
+              {/* more ctas */}
+              {(orderDetails.negotiationStatus === 'NEW' ||
+                orderDetails.negotiationStatus === 'WITHDRAWN') && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                    >
+                      <span className="sr-only">Open menu</span>
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="max-w-fit">
+                    {orderDetails.negotiationStatus === 'NEW' &&
+                      userId.toString() ===
+                        orderDetails.createdBy.toString() && (
+                        <span
+                          onClick={() => setIsEditingOrder(true)}
+                          className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                        >
+                          <Pencil size={14} /> Edit
+                        </span>
+                      )}
+
+                    <ConfirmAction
+                      name={'order'}
+                      id={params.order_id}
+                      invalidateKey={orderApi.getSales.endpointKey}
+                      mutationFunc={DeleteOrder}
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </section>

@@ -79,10 +79,6 @@ const GenerateInvoiceModal = ({
       setOTPVerified(true);
       toast.success('Invoice Generated Successfully');
       router.push('/sales/sales-orders');
-      queryClient.invalidateQueries([
-        invoiceApi.getInvoices.endpointKey,
-        orderId,
-      ]);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -166,9 +162,15 @@ const GenerateInvoiceModal = ({
               size="sm"
               type="submit"
               className="w-full"
-              disabled={invoiceMutation.isPending}
+              disabled={
+                invoiceMutation.isPending || invoiceMutationNew.isPending
+              }
             >
-              {invoiceMutation.isPending ? <Loading /> : 'Verify To Generate'}
+              {invoiceMutation.isPending || invoiceMutationNew.isPending ? (
+                <Loading />
+              ) : (
+                'Verify To Generate'
+              )}
             </Button>
           </form>
         )}

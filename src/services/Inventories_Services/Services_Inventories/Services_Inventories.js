@@ -20,7 +20,7 @@ export const UpdateProductServices = (data, id) => {
   );
 };
 
-export const DeleteProductServices = (id) => {
+export const DeleteProductServices = ({ id }) => {
   return APIinstance.delete(
     `${servicesApi.deleteProductServices.endpoint}${id}`,
   );

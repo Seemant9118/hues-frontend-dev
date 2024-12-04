@@ -27,7 +27,7 @@ export function UpdateEnterpriseUser(data, enterpriseId) {
 }
 
 // 5. delete specific enterprises user through id
-export function DeleteEnterpriseUser(enterpriseId) {
+export function DeleteEnterpriseUser({ enterpriseId }) {
   return APIinstance.delete(
     `${enterpriseUser.deleteEnterpriseUser.endpoint}${enterpriseId}`,
   );
