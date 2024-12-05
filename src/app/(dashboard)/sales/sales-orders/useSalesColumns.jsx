@@ -1,6 +1,5 @@
 'use client';
 
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
@@ -13,9 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LocalStorageService } from '@/lib/utils';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
-import { useQuery } from '@tanstack/react-query';
 import { Dot, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
@@ -25,29 +22,10 @@ export const useSalesColumns = (
   setSelectedOrders,
 ) => {
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-
-  const { data: clients } = useQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-  });
-
-  // Function to get customer name from clients list
-  const getCustomerName = (buyerEnterpriseId) => {
-    const client = clients?.find((clientData) => {
-      const clientId = clientData?.client?.id ?? clientData?.id;
-      return clientId === buyerEnterpriseId;
-    });
-
-    return client?.client === null
-      ? client?.invitation?.userDetails?.name
-      : client?.client?.name;
-  };
 
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
-    const customerName = getCustomerName(row.original.buyerEnterpriseId);
+    const customerName = row.original.clientName;
     const orderWithCustomer = { ...row.original, customerName };
 
     if (isSelected) {
@@ -63,7 +41,7 @@ export const useSalesColumns = (
   const handleSelectAll = (isAllSelected, rows) => {
     if (isAllSelected) {
       const allOrders = rows.map((row) => {
-        const customerName = getCustomerName(row.original.buyerEnterpriseId);
+        const customerName = row.original.clientName;
         return { ...row.original, customerName };
       });
       setSelectedOrders(allOrders);
@@ -135,14 +113,16 @@ export const useSalesColumns = (
       },
     },
     {
-      accessorKey: 'buyerEnterpriseId',
+      accessorKey: 'clientType',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="CUSTOMERS TYPE" />
+      ),
+    },
+    {
+      accessorKey: 'clientName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
       ),
-      cell: ({ row }) => {
-        const { buyerEnterpriseId } = row.original;
-        return <div>{getCustomerName(buyerEnterpriseId)}</div>;
-      },
     },
     {
       accessorKey: 'status',
@@ -156,7 +136,7 @@ export const useSalesColumns = (
             : row.original?.metaData?.sellerData?.orderStatus;
         const paymentStatus = row.original?.metaData?.payment?.status;
         return (
-          <div className="flex gap-2">
+          <div className="flex w-44 flex-wrap gap-1">
             <ConditionalRenderingStatus status={sellerStatus} />
             <ConditionalRenderingStatus status={paymentStatus} />
           </div>
