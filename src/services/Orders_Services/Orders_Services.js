@@ -17,7 +17,7 @@ export const OrderDetails = (id) => {
   return APIinstance.get(`${orderApi.getOrderDetails.endpoint}${id}`);
 };
 
-export const DeleteOrder = (id) => {
+export const DeleteOrder = ({ id }) => {
   return APIinstance.delete(`${orderApi.deleteOrder.endpoint}${id}`);
 };
 

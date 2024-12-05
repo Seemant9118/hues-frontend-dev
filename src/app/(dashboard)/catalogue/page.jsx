@@ -29,11 +29,12 @@ const Catalogue = () => {
   const [selectedCatalogue, setSelectedCatalogue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // we use catalogue api to fetch data, rn we are using only goods foe testing component
+  // catalogue api fetching
   const { data: catalogues, isLoading } = useQuery({
     queryKey: [catalogueApis.getCatalogues.endpointKey, enterpriseId],
     queryFn: () => getCatalogues(enterpriseId),
     select: (res) => res.data.data,
+    enabled: !!enterpriseId,
   });
   // get product via search
   const searchCatalogueItems = catalogues?.filter((catalogue) => {

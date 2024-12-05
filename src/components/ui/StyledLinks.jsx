@@ -4,9 +4,15 @@ import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const StyledLinks = ({ link }) => {
   const pathname = usePathname();
+  const [isSubTabShow, setIsSubTabShow] = useState(null);
+
+  useEffect(() => {
+    setIsSubTabShow(true);
+  }, [pathname]);
 
   // Check if current pathname matches the main tab or starts with the sub-tab path
   const isActive =
@@ -22,40 +28,49 @@ const StyledLinks = ({ link }) => {
   return (
     <>
       {/* Main Tab */}
-      <Link
-        href={link.path}
-        className={cn(
-          'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
-          isMainTabActive && !isSubTabActive
-            ? 'bg-[#288AF91A] text-[#288AF9]'
-            : 'bg-transparent text-grey',
-        )}
-      >
-        <span
-          className={
-            isSubTabActive
-              ? 'flex gap-2 font-bold text-[#363940]'
-              : 'flex gap-2'
-          }
-        >
-          {link.icon}
-          {link.name}
-        </span>
-        <span>
-          {link?.subTab?.length > 0 ? (
-            isActive ? (
-              <ChevronUp size={14} />
-            ) : (
-              <ChevronDown size={14} />
-            )
-          ) : (
-            ''
+      <div className="flex w-full items-center justify-between rounded-sm text-xs">
+        <Link
+          href={link.path}
+          className={cn(
+            'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
+            isMainTabActive && !isSubTabActive
+              ? 'bg-[#288AF91A] text-[#288AF9]'
+              : 'bg-transparent text-grey',
           )}
-        </span>
-      </Link>
+        >
+          <span
+            className={
+              isSubTabActive
+                ? 'flex gap-2 font-bold text-[#363940]'
+                : 'flex gap-2'
+            }
+          >
+            {link.icon}
+            {link.name}
+          </span>
+        </Link>
+        {link?.subTab?.length > 0 && (
+          <span
+            className={cn(
+              'cursor-pointer',
+              isSubTabActive ? 'text-[#363940]' : 'text-grey',
+            )}
+          >
+            {link?.subTab?.length > 0 ? (
+              isSubTabShow && isActive ? (
+                <ChevronUp size={14} onClick={() => setIsSubTabShow(false)} />
+              ) : (
+                <ChevronDown size={14} onClick={() => setIsSubTabShow(true)} />
+              )
+            ) : (
+              ''
+            )}
+          </span>
+        )}
+      </div>
 
       {/* Sub Tabs */}
-      {isActive && link.subTab?.length > 0 && (
+      {isSubTabShow && isActive && link.subTab?.length > 0 && (
         <ul className="flex w-full flex-col gap-2 pl-10">
           {link.subTab.map((subtab) => (
             <Link

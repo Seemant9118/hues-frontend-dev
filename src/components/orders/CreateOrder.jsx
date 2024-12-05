@@ -38,6 +38,7 @@ import SearchInput from '../ui/SearchInput';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
+import Loading from '../ui/Loading';
 
 const CreateOrder = ({
   setSalesListing,
@@ -249,7 +250,7 @@ const CreateOrder = ({
       if (order?.buyerEnterperiseId == null) {
         errorObj.buyerEnterperiseId = '*Please select a client';
       }
-      if (order?.orderItem?.length === 0) {
+      if (order?.orderItems?.length === 0) {
         errorObj.orderItem = '*Please add atleast one item to create order';
       }
       if (selectedItem.quantity === null) {
@@ -365,8 +366,11 @@ const CreateOrder = ({
       )}
 
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        <div className="flex w-1/2 items-center gap-2">
-          <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
+        <div className="flex w-1/2 flex-col gap-2">
+          <Label className="flex gap-1">
+            {cta === 'offer' ? 'Client' : 'Vendor'}
+            <span className="text-red-600">*</span>
+          </Label>
           <div className="flex w-full flex-col gap-1">
             <Select
               defaultValue=""
@@ -485,8 +489,11 @@ const CreateOrder = ({
                 )}
           </div>
         </div>
-        <div className="flex w-1/2 items-center gap-2">
-          <Label>Item Type</Label>
+        <div className="flex w-1/2 flex-col gap-2">
+          <Label className="flex gap-1">
+            Item Type
+            <span className="text-red-600">*</span>
+          </Label>
           <Select
             onValueChange={(value) => {
               setOrder((prev) => ({ ...prev, invoiceType: value }));
@@ -504,8 +511,11 @@ const CreateOrder = ({
       </div>
       <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Label className="flex-shrink-0">Item</Label>
+          <div className="flex w-full max-w-xs flex-col gap-2">
+            <Label className="flex gap-1">
+              Item
+              <span className="text-red-600">*</span>
+            </Label>
             <div className="flex flex-col gap-1">
               <Select
                 disabled={
@@ -530,7 +540,7 @@ const CreateOrder = ({
                   }));
                 }}
               >
-                <SelectTrigger className="max-w-xs gap-5">
+                <SelectTrigger>
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
@@ -571,11 +581,14 @@ const CreateOrder = ({
                     ))}
                 </SelectContent>
               </Select>
-              {/* {errorMsg.name && <ErrorBox msg={errorMsg.name} />} */}
+              {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Label>Quantity:</Label>
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              Quantity
+              <span className="text-red-600">*</span>
+            </Label>
             <div className="flex flex-col gap-1">
               <Input
                 type="number"
@@ -598,14 +611,17 @@ const CreateOrder = ({
                     totalGstAmount: gstAmt,
                   }));
                 }}
-                className="max-w-20"
+                className="max-w-30"
               />
               {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Label>Price:</Label>
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              Price
+              <span className="text-red-600">*</span>
+            </Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled={
@@ -613,7 +629,7 @@ const CreateOrder = ({
                   order.sellerEnterpriseId == null
                 }
                 value={selectedItem.unitPrice}
-                className="max-w-20"
+                className="max-w-30"
                 onChange={(e) => {
                   const totalAmt = parseFloat(
                     (selectedItem.quantity * e.target.value).toFixed(2),
@@ -633,25 +649,31 @@ const CreateOrder = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Label>GST (%) :</Label>
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              GST (%)
+              <span className="text-red-600">*</span>
+            </Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
                 value={selectedItem.gstPerUnit}
-                className="max-w-20"
+                className="max-w-14"
               />
               {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Label>{isOrder === 'invoice' ? 'Invoice Value' : 'Amount'}</Label>
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              {isOrder === 'invoice' ? 'Invoice Value' : 'Amount'}
+              <span className="text-red-600">*</span>
+            </Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
                 value={selectedItem.totalAmount}
-                className="max-w-20"
+                className="max-w-30"
               />
               {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
             </div>
@@ -733,8 +755,13 @@ const CreateOrder = ({
             onClick={
               handleSubmit // invoke handle submit fn
             }
+            disabled={orderMutation.isPending || invoiceMutation.isPending}
           >
-            Create
+            {orderMutation.isPending || invoiceMutation.isPending ? (
+              <Loading />
+            ) : (
+              'Create'
+            )}
           </Button>
         </div>
       </div>

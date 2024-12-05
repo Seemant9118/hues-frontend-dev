@@ -1,7 +1,7 @@
 'use client';
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
@@ -57,9 +57,6 @@ export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
         const id = row.original.productId;
         return (
           <div className="flex items-center gap-2">
-            <Button variant="grey" size="icon">
-              <Edit2 size={14} />
-            </Button>
             <Button
               className="text-red-500"
               variant="ghost"

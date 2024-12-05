@@ -15,7 +15,7 @@ export function updateClient(id, data) {
   );
 }
 
-export function deleteClient(id) {
+export function deleteClient({ id }) {
   return APIinstance.delete(
     `${clientEnterprise.deleteClientEnterprise.endpoint}${id}`,
   );

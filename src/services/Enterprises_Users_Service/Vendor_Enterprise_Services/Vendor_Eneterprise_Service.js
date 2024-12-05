@@ -15,7 +15,7 @@ export function updateVendor(id, data) {
   );
 }
 
-export function deleteVendor(id) {
+export function deleteVendor({ id }) {
   return APIinstance.delete(
     `${vendorEnterprise.deleteVendorEnterprise.endpoint}${id}`,
   );

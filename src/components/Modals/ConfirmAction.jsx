@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 const ConfirmAction = ({
   name,
   id,
+  type,
   invalidateKey,
   mutationKey,
   mutationFunc,
@@ -28,8 +29,8 @@ const ConfirmAction = ({
     mutationKey: [mutationKey],
     mutationFn: mutationFunc,
     onSuccess: () => {
-      setOpen(false);
       toast.success('Deleted successfully');
+      setOpen(false);
       queryClient.invalidateQueries([invalidateKey]);
     },
     onError: (error) => {
@@ -80,7 +81,7 @@ const ConfirmAction = ({
           </DialogClose>
           <Button
             onClick={() => {
-              deleteMutation.mutate(id);
+              deleteMutation.mutate({ id, type });
             }}
           >
             Delete

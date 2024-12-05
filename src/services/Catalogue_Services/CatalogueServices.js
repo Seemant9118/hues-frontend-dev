@@ -12,8 +12,10 @@ export const getCatalogues = (id) => {
   return APIinstance.get(`${catalogueApis.getCatalogues.endpoint}${id}`);
 };
 
-export const deleteCatalogue = (id) => {
-  return APIinstance.delete(`${catalogueApis.deleteCatalogue.endpoint}${id}`);
+export const deleteCatalogue = ({ id, type }) => {
+  return APIinstance.delete(
+    `${catalogueApis.deleteCatalogue.endpoint}?itemId=${id}&type=${type}`,
+  );
 };
 
 export const getProductCatalogue = (id) => {
