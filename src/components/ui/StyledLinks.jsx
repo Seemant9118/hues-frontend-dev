@@ -35,7 +35,7 @@ const StyledLinks = ({ link }) => {
             'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
             isMainTabActive && !isSubTabActive
               ? 'bg-[#288AF91A] text-[#288AF9]'
-              : 'bg-transparent text-grey',
+              : 'bg-transparent text-grey hover:text-black',
           )}
         >
           <span

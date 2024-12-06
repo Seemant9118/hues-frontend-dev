@@ -12,12 +12,12 @@ import {
   ReceiptText,
   ScrollText,
   Store,
-  User,
   UserRound,
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
@@ -127,11 +127,6 @@ const Sidebar = () => {
       icon: <Bell size={16} />,
       path: '/notification',
     },
-    {
-      name: 'Profile',
-      icon: <User size={16} />,
-      path: '/profile',
-    },
   ];
 
   return (
@@ -159,6 +154,7 @@ const Sidebar = () => {
         {actionLinks.map((link) => (
           <StyledLinks key={link.name} link={link} />
         ))}
+        <ProfileInfoPopUp />
       </div>
     </div>
   );
