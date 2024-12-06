@@ -28,17 +28,22 @@ import {
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { customerApis } from '@/api/enterprises_user/customers/customersApi';
+import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
+import { getStylesForCreatableSelectComponent } from '@/appUtils/helperFunctions';
 import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
+import Loading from '../ui/Loading';
 import SearchInput from '../ui/SearchInput';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
-import Loading from '../ui/Loading';
 
 const CreateOrder = ({
   setSalesListing,
@@ -72,8 +77,9 @@ const CreateOrder = ({
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
+          clientType: 'B2B',
           sellerEnterpriseId: enterpriseId,
-          buyerEnterperiseId: null,
+          buyerId: null,
           gstAmount: null,
           amount: null,
           orderType: 'SALES',
@@ -81,8 +87,9 @@ const CreateOrder = ({
           orderItems: [],
         }
       : {
+          clientType: 'B2B',
           sellerEnterpriseId: null,
-          buyerEnterperiseId: enterpriseId,
+          buyerId: enterpriseId,
           gstAmount: null,
           amount: null,
           orderType: 'PURCHASE',
@@ -90,6 +97,49 @@ const CreateOrder = ({
           orderItems: [],
         },
   );
+
+  const { data: customers } = useQuery({
+    queryKey: [customerApis.getCustomers.endpointKey, enterpriseId],
+    queryFn: () => getCustomers(enterpriseId),
+    select: (res) => res.data.data,
+    enabled: order.clientType === 'B2C',
+  });
+
+  const [options, setOptions] = useState([]);
+
+  // Transform customers data into options format
+  useEffect(() => {
+    if (customers) {
+      const transformedOptions = customers.map((customer) => ({
+        value: customer.mobileNumber,
+        label: `${customer.countryCode} ${customer.mobileNumber}`, // Displaying country code with mobile number
+      }));
+      setOptions(transformedOptions);
+    }
+  }, [customers]);
+
+  // Handle selection of an existing option
+  const handleChange = (selectedOption) => {
+    setOrder((prevOrder) => ({
+      ...prevOrder,
+      buyerId: selectedOption ? selectedOption.value : null,
+    }));
+  };
+
+  // Handle creation of a new option
+  const handleCreate = (inputValue) => {
+    const newOption = { value: inputValue, label: inputValue };
+
+    // Add the new option to the list of options
+    setOptions((prevOptions) => [...prevOptions, newOption]);
+
+    // Update the order state
+    setOrder((prevOrder) => ({
+      ...prevOrder,
+      buyerId: newOption.value,
+    }));
+  };
+
   const createSalesColumns = useCreateSalesColumns(
     isOrder,
     setOrder,
@@ -109,8 +159,8 @@ const CreateOrder = ({
         return getVendors(enterpriseId);
       }
     },
-
     select: (res) => res.data.data,
+    enabled: order.clientType === 'B2B',
   });
 
   // searching client/vendor from list given "customerData"
@@ -247,8 +297,11 @@ const CreateOrder = ({
     const errorObj = {};
 
     if (cta === 'offer') {
-      if (order?.buyerEnterperiseId == null) {
-        errorObj.buyerEnterperiseId = '*Please select a client';
+      if (order.clientType === 'B2B' && order?.buyerId == null) {
+        errorObj.buyerId = '*Please select a client';
+      }
+      if (order.clientType === 'B2C' && order?.buyerId == null) {
+        errorObj.buyerId = '*Please provide a phone number of customer';
       }
       if (order?.orderItems?.length === 0) {
         errorObj.orderItem = '*Please add atleast one item to create order';
@@ -326,6 +379,7 @@ const CreateOrder = ({
       if (isOrder === 'invoice') {
         invoiceMutation.mutate({
           ...order,
+          buyerId: Number(order.buyerId),
           amount: parseFloat(totalAmount.toFixed(2)),
           gstAmount: parseFloat(totalGstAmt.toFixed(2)),
         });
@@ -333,6 +387,7 @@ const CreateOrder = ({
       } else {
         orderMutation.mutate({
           ...order,
+          buyerId: Number(order.buyerId),
           amount: parseFloat(totalAmount.toFixed(2)),
           gstAmount: parseFloat(totalGstAmt.toFixed(2)),
         });
@@ -366,97 +421,185 @@ const CreateOrder = ({
       )}
 
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        <div className="flex w-1/2 flex-col gap-2">
-          <Label className="flex gap-1">
-            {cta === 'offer' ? 'Client' : 'Vendor'}
-            <span className="text-red-600">*</span>
-          </Label>
-          <div className="flex w-full flex-col gap-1">
-            <Select
-              defaultValue=""
-              onValueChange={(value) => {
-                const selectedItem = JSON.parse(value); // Parse the JSON string
-                const { id, isAcceptedCustomer } = selectedItem; // Destructure the parsed object
+        {/* client type only showed in sales not purchase */}
+        {cta === 'offer' && (
+          <div className="flex w-1/2 flex-col gap-2">
+            <Label className="flex gap-1">
+              {'Client Type'}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex w-full flex-col gap-1">
+              <Select
+                defaultValue="B2B"
+                onValueChange={(value) => {
+                  setOrder((prev) => ({ ...prev, clientType: value }));
+                }}
+              >
+                <SelectTrigger className="max-w-xs gap-5">
+                  <SelectValue placeholder="Select Client Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="B2B">B2B</SelectItem>
+                  <SelectItem value="B2C">B2C</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
 
-                if (cta === 'offer') {
-                  if (
-                    (id !== undefined &&
-                      isAcceptedCustomer === 'ACCEPTED' &&
-                      name === 'Offer') ||
-                    name === 'Invoice'
-                  ) {
-                    setRedirectPopUpOnFail(false);
-                    setOrder((prev) => ({
-                      ...prev,
-                      buyerEnterperiseId: id,
-                    }));
-                  } else if (name !== 'Invoice') {
-                    setOrder((prev) => ({
-                      ...prev,
-                      buyerEnterperiseId: id,
-                    }));
-                    setRedirectPopUpOnFail(true);
-                  }
-                } else {
+        {/* customer flow only show in sales */}
+        {cta === 'offer' && order.clientType === 'B2C' && (
+          <div className="flex w-1/2 flex-col gap-2">
+            <Label className="flex gap-1">
+              {'Customer'}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex w-full flex-col gap-1">
+              <CreatableSelect
+                value={
+                  options?.find((option) => option.value === order.buyerId) ||
+                  null
+                }
+                onChange={handleChange}
+                onCreateOption={handleCreate}
+                styles={getStylesForCreatableSelectComponent()}
+                className="text-sm"
+                isClearable
+                placeholder="Customer Number"
+                options={options}
+              />
+
+              {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+            </div>
+          </div>
+        )}
+
+        {cta === 'offer' ? (
+          order.clientType === 'B2B' && (
+            <div className="flex w-1/2 flex-col gap-2">
+              <Label className="flex gap-1">
+                {'Client'}
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex w-full flex-col gap-1">
+                <Select
+                  defaultValue=""
+                  onValueChange={(value) => {
+                    const selectedItem = JSON.parse(value); // Parse the JSON string
+                    const { id, isAcceptedCustomer } = selectedItem; // Destructure the parsed object
+
+                    if (
+                      (id !== undefined &&
+                        isAcceptedCustomer === 'ACCEPTED' &&
+                        name === 'Offer') ||
+                      name === 'Invoice'
+                    ) {
+                      setRedirectPopUpOnFail(false);
+                      setOrder((prev) => ({
+                        ...prev,
+                        buyerId: id,
+                      }));
+                    } else if (name !== 'Invoice') {
+                      setOrder((prev) => ({
+                        ...prev,
+                        buyerId: id,
+                      }));
+                      setRedirectPopUpOnFail(true);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="max-w-xs">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* search bar for searching clients/vendor */}
+                    {customerData?.length > 0 && (
+                      <SearchInput
+                        toSearchTerm={customerToSearch}
+                        setToSearchTerm={setCustomerToSearch}
+                      />
+                    )}
+                    {/* if expected client is not in the list add a new client */}
+                    {type === 'sales' && searchCustomerData?.length === 0 && (
+                      <div className="flex flex-col items-center gap-1 py-2 text-xs">
+                        <span>Client Not Found</span>
+                        <AddModal
+                          type={'Add Client'}
+                          cta="client"
+                          btnName="Add Client"
+                          mutationFunc={CreateEnterpriseUser}
+                        />
+                      </div>
+                    )}
+                    <>
+                      {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
+                      {searchCustomerData?.map((customer) => (
+                        <SelectItem
+                          key={customer.id}
+                          value={JSON.stringify({
+                            id: customer?.client?.id ?? customer?.id,
+                            isAcceptedCustomer:
+                              customer?.invitation === null ||
+                              customer?.invitation === undefined
+                                ? 'ACCEPTED'
+                                : customer?.invitation?.status,
+                          })}
+                        >
+                          {customer?.client?.name ||
+                            customer.invitation?.userDetails?.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  </SelectContent>
+                </Select>
+                {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="flex w-1/2 flex-col gap-2">
+            <Label className="flex gap-1">
+              {'Vendor'}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex w-full flex-col gap-1">
+              <Select
+                defaultValue=""
+                onValueChange={(value) => {
+                  const selectedItem = JSON.parse(value); // Parse the JSON string
+                  const { id } = selectedItem; // Destructure the parsed object
+
                   setOrder((prev) => ({
                     ...prev,
                     sellerEnterpriseId: id,
                   }));
-                }
-              }}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* if expected client is not in the list add a new client */}
-                {type === 'sales' && (
-                  <AddModal
-                    type={'Add Client'}
-                    cta="client"
-                    btnName="Add"
-                    mutationFunc={CreateEnterpriseUser}
-                  />
-                )}
-                {/* if expected vendor is not in the list add a new vendor */}
-                {type === 'purchase' && (
-                  <AddModal
-                    type={'Add Vendor'}
-                    cta="vendor"
-                    btnName="Add"
-                    mutationFunc={CreateEnterpriseUser}
-                  />
-                )}
+                }}
+              >
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* search bar for searching clients/vendor */}
+                  {customerData?.length > 0 && (
+                    <SearchInput
+                      toSearchTerm={customerToSearch}
+                      setToSearchTerm={setCustomerToSearch}
+                    />
+                  )}
 
-                {/* search bar for searching clients/vendor */}
-                {customerData?.length > 0 && (
-                  <SearchInput
-                    toSearchTerm={customerToSearch}
-                    setToSearchTerm={setCustomerToSearch}
-                  />
-                )}
+                  {/* if expected vendor is not in the list add a new vendor */}
+                  {type === 'purchase' && searchCustomerData?.length === 0 && (
+                    <div className="flex flex-col items-center gap-1 py-2 text-xs">
+                      <span>Vendor Not Found</span>
+                      <AddModal
+                        type={'Add Vendor'}
+                        cta="vendor"
+                        btnName="Add"
+                        mutationFunc={CreateEnterpriseUser}
+                      />
+                    </div>
+                  )}
 
-                {cta === 'offer' ? (
-                  <>
-                    {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                    {searchCustomerData?.map((customer) => (
-                      <SelectItem
-                        key={customer.id}
-                        value={JSON.stringify({
-                          id: customer?.client?.id ?? customer?.id,
-                          isAcceptedCustomer:
-                            customer?.invitation === null ||
-                            customer?.invitation === undefined
-                              ? 'ACCEPTED'
-                              : customer?.invitation?.status,
-                        })}
-                      >
-                        {customer?.client?.name ||
-                          customer.invitation?.userDetails?.name}
-                      </SelectItem>
-                    ))}
-                  </>
-                ) : (
                   <>
                     {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
                     {searchCustomerData
@@ -477,18 +620,15 @@ const CreateOrder = ({
                         </SelectItem>
                       ))}
                   </>
-                )}
-              </SelectContent>
-            </Select>
-            {cta === 'offer'
-              ? errorMsg.buyerEnterperiseId && (
-                  <ErrorBox msg={errorMsg.buyerEnterperiseId} />
-                )
-              : errorMsg.sellerEnterpriseId && (
-                  <ErrorBox msg={errorMsg.sellerEnterpriseId} />
-                )}
+                </SelectContent>
+              </Select>
+              {errorMsg.sellerEnterpriseId && (
+                <ErrorBox msg={errorMsg.sellerEnterpriseId} />
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
         <div className="flex w-1/2 flex-col gap-2">
           <Label className="flex gap-1">
             Item Type
@@ -519,7 +659,7 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Select
                 disabled={
-                  (cta === 'offer' && order.buyerEnterperiseId == null) ||
+                  (cta === 'offer' && order.buyerId == null) ||
                   (cta === 'bid' && order.sellerEnterpriseId == null) ||
                   order.invoiceType === ''
                 }
@@ -593,7 +733,7 @@ const CreateOrder = ({
               <Input
                 type="number"
                 disabled={
-                  (cta === 'offer' && order.buyerEnterperiseId == null) ||
+                  (cta === 'offer' && order.buyerId == null) ||
                   order.sellerEnterpriseId == null
                 }
                 value={selectedItem.quantity}
@@ -625,7 +765,7 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Input
                 disabled={
-                  (cta === 'offer' && order.buyerEnterperiseId == null) ||
+                  (cta === 'offer' && order.buyerId == null) ||
                   order.sellerEnterpriseId == null
                 }
                 value={selectedItem.unitPrice}

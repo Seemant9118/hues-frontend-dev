@@ -98,6 +98,12 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
       },
     },
     {
+      accessorKey: 'clientType',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="CUSTOMERS TYPE" />
+      ),
+    },
+    {
       accessorKey: 'customerName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CUSTOMERS" />
