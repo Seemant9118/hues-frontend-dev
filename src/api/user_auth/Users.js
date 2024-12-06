@@ -100,4 +100,14 @@ export const userAuth = {
     endpoint: `/iam/user/createusersession`,
     endpointKey: 'create_user_session',
   },
+  // 20. swicthAccount
+  switchAccount: {
+    endpoint: `/iam/user/switchaccount`,
+    endpointKey: 'switch_account',
+  },
+  // 21. getUserAccounts
+  getUserAccounts: {
+    endpoint: `/iam/user/getuseraccounts`,
+    endpointKey: 'get_user_accounts',
+  },
 };
