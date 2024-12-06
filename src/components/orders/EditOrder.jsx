@@ -1,7 +1,5 @@
 'use client';
 
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
 import { orderApi } from '@/api/order_api/order_api';
@@ -23,8 +21,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { LocalStorageService } from '@/lib/utils';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   GetAllProductGoods,
   GetProductGoodsVendor,
@@ -193,38 +189,6 @@ const EditOrder = ({
     }));
   };
 
-  //   getclients : to getName of the client
-  const { data: clients } = useQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: order?.orderType === 'SALES',
-  });
-  const client = clients?.find((clientData) => {
-    const clientId = clientData?.client?.id ?? clientData?.id;
-    return clientId === order?.buyerEnterpriseId;
-  });
-  const clientName =
-    client?.client === null
-      ? client?.invitation?.userDetails?.name
-      : client?.client?.name;
-
-  //   getvendors : to getName of the vendor
-  const { data: vendors } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: order?.orderType === 'PURCHASE',
-  });
-  const vendor = vendors?.find((vendorData) => {
-    const vendorId = vendorData?.vendor?.id ?? vendorData?.id;
-    return vendorId === order?.sellerEnterpriseId;
-  });
-  const vendorName =
-    vendor?.vendor === null
-      ? vendor?.invitation?.userDetails?.name
-      : vendor?.vendor?.name;
-
   // client goods fetching
   const { data: goodsData } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
@@ -341,7 +305,9 @@ const EditOrder = ({
         <div className="flex w-1/2 flex-col gap-2">
           <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
           <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
-            {clientName || vendorName}
+            {cta === 'offer'
+              ? orderDetails?.clientName
+              : orderDetails?.vendorName}
           </div>
         </div>
         <div className="flex w-1/2 flex-col gap-2">

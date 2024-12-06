@@ -87,6 +87,12 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
         ),
       },
       {
+        accessorKey: 'type',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="TYPE" />
+        ),
+      },
+      {
         accessorKey: 'productId', // Change to SKU of the catalogue
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="SKU" />
@@ -105,7 +111,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
       {
         accessorKey: 'hsnCode',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={'HSN'} />
+          <DataTableColumnHeader column={column} title={'HSN/SAC'} />
         ),
       },
       {

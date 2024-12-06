@@ -1,8 +1,6 @@
 'use client';
 
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
-import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -18,10 +16,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   bulkNegotiateAcceptOrReject,
-  DeleteOrder,
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -146,25 +142,6 @@ const ViewOrder = () => {
     });
   };
 
-  // fetching vendor to get vendorName
-  const { data: vendors } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
-  });
-  const vendor = vendors?.find(
-    (vendorData) => vendorData?.vendor?.id === orderDetails?.sellerEnterpriseId,
-  );
-  const vendorName =
-    vendor?.vendor?.name !== null
-      ? vendor?.vendor?.name
-      : vendor?.invitation?.userDetails?.name;
-
-  const vendorNumber =
-    vendor?.vendor === null
-      ? vendor?.invitation?.invitationIdentifier
-      : vendor?.vendor?.mobileNumber;
-
   const OrderColumns = usePurchaseOrderColumns();
 
   // multiStatus components
@@ -190,7 +167,7 @@ const ViewOrder = () => {
         <EditOrder
           type="sales"
           name="Edit"
-          cta="offer"
+          cta="bid"
           isOrder="order"
           orderId={params.order_id}
           onCancel={() => setIsEditingOrder(false)}
@@ -246,13 +223,6 @@ const ViewOrder = () => {
                           <Pencil size={14} /> Edit
                         </span>
                       )}
-
-                    <ConfirmAction
-                      name={'order'}
-                      id={params.order_id}
-                      invalidateKey={orderApi.getSales.endpointKey}
-                      mutationFunc={DeleteOrder}
-                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -301,8 +271,8 @@ const ViewOrder = () => {
                     orderDetails={orderDetails}
                     orderId={orderDetails?.referenceNumber}
                     multiStatus={multiStatus}
-                    Name={vendorName}
-                    mobileNumber={vendorNumber}
+                    Name={`${orderDetails?.vendorName} (${orderDetails?.clientType})`}
+                    mobileNumber={orderDetails?.vendorMobileNumber}
                     amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
                   />

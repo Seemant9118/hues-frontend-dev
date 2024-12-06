@@ -1,8 +1,6 @@
 'use client';
 
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
-import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -18,10 +16,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   bulkNegotiateAcceptOrReject,
-  DeleteOrder,
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -176,26 +172,6 @@ const ViewOrder = () => {
     });
   };
 
-  // to get client name and number
-  const { data: clients } = useQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-  });
-  const client = clients?.find((clientData) => {
-    const clientId = clientData?.client?.id ?? clientData?.id;
-    return clientId === orderDetails?.buyerEnterpriseId;
-  });
-  const clientName =
-    client?.client === null
-      ? client?.invitation?.userDetails?.name
-      : client?.client?.name;
-
-  const clientNumber =
-    client?.client === null
-      ? client?.invitation?.invitationIdentifier
-      : client?.client?.mobileNumber;
-
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
   // multiStatus components
@@ -310,13 +286,6 @@ const ViewOrder = () => {
                           <Pencil size={14} /> Edit
                         </span>
                       )}
-
-                    <ConfirmAction
-                      name={'order'}
-                      id={params.order_id}
-                      invalidateKey={orderApi.getSales.endpointKey}
-                      mutationFunc={DeleteOrder}
-                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -367,8 +336,8 @@ const ViewOrder = () => {
                     orderDetails={orderDetails}
                     orderId={orderDetails?.referenceNumber}
                     multiStatus={multiStatus}
-                    Name={clientName}
-                    mobileNumber={clientNumber}
+                    Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
+                    mobileNumber={orderDetails?.mobileNumber}
                     amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
                   />
