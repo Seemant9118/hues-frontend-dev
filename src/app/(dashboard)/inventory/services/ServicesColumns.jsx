@@ -80,7 +80,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
               <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
 
               <ConfirmAction
-                name={name}
+                infoText={`You are removing ${name} from inventory`}
                 id={id}
                 mutationKey={servicesApi.getAllProductServices.endpointKey}
                 mutationFunc={DeleteProductServices}

@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 const ConfirmAction = ({
-  name,
+  infoText,
   id,
   type,
   invalidateKey,
@@ -38,18 +38,6 @@ const ConfirmAction = ({
     },
   });
 
-  // const deleteHandler = async (idToDelete) => {
-  //   try {
-  //     await mutationFunc(idToDelete);
-  //     toast.success('Deleted successfully');
-  //     setOpen(false);
-  //     queryClient.invalidateQueries([mutationKey]);
-  //   } catch (error) {
-  //     toast.error(error.response.data.message || 'Something went wrong');
-  //   }
-
-  // };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -64,13 +52,16 @@ const ConfirmAction = ({
       </DialogTrigger>
       <DialogContent className="flex flex-col items-center justify-center gap-5">
         <DialogTitle>
-          Are you sure you want to delete{' '}
-          <span className="text-blue-500">{name}</span>
+          <div className="flex w-full flex-col items-center gap-2">
+            <span>{infoText}</span>
+            <span>Do you want to Continue?</span>
+          </div>
         </DialogTitle>
 
         <div className="mt-auto flex items-center justify-end gap-4">
           <DialogClose asChild>
             <Button
+              size="sm"
               onClick={() => {
                 setOpen(false);
               }}
@@ -80,6 +71,7 @@ const ConfirmAction = ({
             </Button>
           </DialogClose>
           <Button
+            size="sm"
             onClick={() => {
               deleteMutation.mutate({ id, type });
             }}

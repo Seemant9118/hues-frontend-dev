@@ -45,6 +45,12 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       ),
     },
     {
+      accessorKey: 'quantity',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="QUANTITY" />
+      ),
+    },
+    {
       accessorKey: 'rate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="RATE" />
@@ -85,7 +91,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
               <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
 
               <ConfirmAction
-                name={name}
+                infoText={`You are removing ${name} from inventory`}
                 id={id}
                 mutationKey={goodsApi.getAllProductGoods.endpointKey}
                 mutationFunc={DeleteProductGoods}

@@ -98,7 +98,7 @@ const EditOrder = ({
   // Default order state
   const defaultOrder = {
     sellerEnterpriseId: enterpriseId,
-    buyerEnterpriseId: orderDetails?.buyerEnterpriseId || '',
+    buyerId: orderDetails?.buyerId || '',
     gstAmount: orderDetails?.gstAmount || 0,
     amount: orderDetails?.amount || 0,
     orderType: orderDetails?.orderType || '',
@@ -118,7 +118,7 @@ const EditOrder = ({
         orderDetails.orderType === 'SALES'
           ? {
               ...defaultOrder,
-              buyerEnterpriseId: orderDetails.buyerEnterpriseId,
+              buyerId: orderDetails.bueryId,
             }
           : {
               ...defaultOrder,

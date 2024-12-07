@@ -262,33 +262,29 @@ const ViewOrder = () => {
               )}
 
               {/* more ctas */}
-              {(orderDetails.negotiationStatus === 'NEW' ||
-                orderDetails.negotiationStatus === 'WITHDRAWN') && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                    >
-                      <span className="sr-only">Open menu</span>
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="max-w-fit">
-                    {orderDetails.negotiationStatus === 'NEW' &&
-                      userId.toString() ===
-                        orderDetails.createdBy.toString() && (
-                        <span
-                          onClick={() => setIsEditingOrder(true)}
-                          className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
-                        >
-                          <Pencil size={14} /> Edit
-                        </span>
-                      )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              {orderDetails.negotiationStatus === 'NEW' &&
+                userId.toString() === orderDetails.createdBy.toString() && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                      >
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-w-fit">
+                      <span
+                        onClick={() => setIsEditingOrder(true)}
+                        className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                      >
+                        <Pencil size={14} /> Edit
+                      </span>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
             </div>
           </section>
 
