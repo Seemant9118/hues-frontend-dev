@@ -1,12 +1,9 @@
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { LocalStorageService } from '@/lib/utils';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   invoiceGenerateOTP,
   previewInvoice,
 } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -41,7 +38,6 @@ const PreviewInvoice = dynamic(
 );
 
 const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
 
   const [invoicedData, setInvoicedData] = useState({
@@ -231,27 +227,6 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
   const handleGenerateOTP = () => generateOTPMutation.mutate();
 
-  // to get client name and number
-  const { data: clients } = useQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-  });
-  const client = clients?.find((clientData) => {
-    const clientId = clientData?.client?.id ?? clientData?.id;
-    return clientId === orderDetails?.buyerEnterpriseId;
-  });
-
-  const clientName =
-    client?.client === null
-      ? client?.invitation?.userDetails?.name
-      : client?.client?.name;
-
-  const clientNumber =
-    client?.client === null
-      ? client?.invitation?.invitationIdentifier
-      : client?.client?.mobileNumber;
-
   // multiStatus components
   const multiStatus = (
     <div className="flex gap-2">
@@ -272,8 +247,8 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         orderDetails={orderDetails}
         orderId={orderDetails?.referenceNumber}
         multiStatus={multiStatus}
-        Name={clientName}
-        mobileNumber={clientNumber}
+        Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
+        mobileNumber={orderDetails?.mobileNumber}
         amtPaid={orderDetails?.amountPaid}
         totalAmount={orderDetails.amount + orderDetails.gstAmount}
       />

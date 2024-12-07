@@ -20,6 +20,8 @@ import { toast } from 'sonner';
 
 function Profile() {
   const userId = LocalStorageService.get('user_profile');
+  // const isKycVerified = LocalStorageService.get('isKycVerified');
+
   const router = useRouter();
   const [tab, setTab] = useState('userOverview');
 
@@ -82,6 +84,20 @@ function Profile() {
           </TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
+
+        {/* {isKycVerified && (
+          <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+            <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+              <Info size={14} />
+              {` Your Kyc is still pending, click on 'Start Kyc' Button to
+                proceed`}
+            </span>
+            <Button size="sm" className="h-8 bg-[#288AF9]" onClick={() => {}}>
+              Start Kyc
+            </Button>
+          </div>
+        )} */}
+
         {/* user details */}
         <TabsContent value="userOverview">
           {/* if userOnboarding is not completed */}

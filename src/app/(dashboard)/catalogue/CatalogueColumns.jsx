@@ -136,7 +136,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-fit">
                 <ConfirmAction
-                  name={name}
+                  infoText={`You are removing ${name} from catalogue`}
                   id={productId}
                   type={type}
                   invalidateKey={catalogueApis.getCatalogues.endpointKey}

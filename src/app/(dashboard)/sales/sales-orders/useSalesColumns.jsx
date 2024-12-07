@@ -164,8 +164,7 @@ export const useSalesColumns = (
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const { id, createdBy } = row.original;
-        const name = 'order';
+        const { id, createdBy, referenceNumber } = row.original;
         const status = row.original.negotiationStatus;
 
         if (status === 'NEGOTIATION' || status === 'ACCEPTED') return null;
@@ -193,7 +192,7 @@ export const useSalesColumns = (
                   </span>
                 )}
               <ConfirmAction
-                name={name}
+                infoText={`You are removing this order ${referenceNumber}`}
                 id={id}
                 mutationKey={orderApi.getSales.endpointKey}
                 mutationFunc={DeleteOrder}

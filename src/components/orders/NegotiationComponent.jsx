@@ -1,5 +1,3 @@
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import {
   Table,
@@ -10,13 +8,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { LocalStorageService } from '@/lib/utils';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   createBulkNegotiaion,
   GetNegotiationDetails,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Clock, History } from 'lucide-react';
 import moment from 'moment';
 import { usePathname } from 'next/navigation';
@@ -34,7 +30,6 @@ const NegotiationComponent = ({
   isNegotiation,
   setIsNegotiation,
 }) => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
   const pathName = usePathname();
   const isBid = pathName.includes('purchase-orders');
@@ -78,7 +73,7 @@ const NegotiationComponent = ({
 
   // Create bulkNegotiation
   const createBulkNegotiationMutation = useMutation({
-    mutationKey: orderApi.createBulkNegotiation.endpointKey,
+    mutationKey: [orderApi.createBulkNegotiation.endpointKey],
     mutationFn: createBulkNegotiaion,
     onSuccess: () => {
       toast.success('Negotiation submitted successfully');
@@ -147,48 +142,6 @@ const NegotiationComponent = ({
     createBulkNegotiationMutation.mutate(extractedData);
   };
 
-  // to get client name and number
-  const { data: clients } = useQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: pageIsSales,
-  });
-  const client = clients?.find((clientData) => {
-    const clientId = clientData?.client?.id ?? clientData?.id;
-    return clientId === orderDetails?.buyerEnterpriseId;
-  });
-
-  const clientName =
-    client?.client === null
-      ? client?.invitation?.userDetails?.name
-      : client?.client?.name;
-
-  const clientNumber =
-    client?.client === null
-      ? client?.invitation?.invitationIdentifier
-      : client?.client?.mobileNumber;
-
-  // fetching vendor to get vendorName
-  const { data: vendors } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: isBid,
-  });
-  const vendor = vendors?.find(
-    (vendorData) => vendorData?.vendor?.id === orderDetails?.sellerEnterpriseId,
-  );
-  const vendorName =
-    vendor?.vendor?.name !== null
-      ? vendor?.vendor?.name
-      : vendor?.invitation?.userDetails?.name;
-
-  const vendorNumber =
-    vendor?.vendor === null
-      ? vendor?.invitation?.invitationIdentifier
-      : vendor?.vendor?.mobileNumber;
-
   // multiStatus components
   const multiStatus = (
     <div className="flex gap-2">
@@ -213,8 +166,10 @@ const NegotiationComponent = ({
         orderDetails={orderDetails}
         orderId={orderDetails?.referenceNumber}
         multiStatus={multiStatus}
-        Name={isBid ? vendorName : clientName}
-        mobileNumber={isBid ? vendorNumber : clientNumber}
+        Name={isBid ? orderDetails?.vendorName : orderDetails?.clientName}
+        mobileNumber={
+          isBid ? orderDetails?.vendorMobileNumber : orderDetails?.mobileNumber
+        }
         amtPaid={orderDetails?.amountPaid}
         totalAmount={orderDetails.amount + orderDetails.gstAmount}
       />
