@@ -27,4 +27,8 @@ export const catalogueApis = {
     endpoint: `/catalogue/vendor/getservices/`,
     endpointKey: 'get_vendor_service_catalogue',
   },
+  bulkDeleteCatalogueItems: {
+    endpoint: `/catalogue/removebulkitems`,
+    endpointKey: 'delete_bulk_catalogue_items',
+  },
 };

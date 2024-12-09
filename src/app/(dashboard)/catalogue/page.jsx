@@ -10,9 +10,12 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
-import { getCatalogues } from '@/services/Catalogue_Services/CatalogueServices';
-import { useQuery } from '@tanstack/react-query';
-import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
+import {
+  bulkDeleteCatalogueItems,
+  getCatalogues,
+} from '@/services/Catalogue_Services/CatalogueServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye, ListFilter, Share2, Trash2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -21,12 +24,13 @@ import { useCatalogueColumns } from './CatalogueColumns';
 
 const Catalogue = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-
   const [selectedCatalogue, setSelectedCatalogue] = useState([]);
+  const [bulkDeleteIsSuccess, setBulkDeletebulkIsSuccess] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   // catalogue api fetching
@@ -52,7 +56,28 @@ const Catalogue = () => {
     toast.success('Selected Catalogue exported');
   };
 
-  const CatlogueColumns = useCatalogueColumns(setSelectedCatalogue);
+  // deleteBulkCatalougue Items
+  const deleteBulkCatalogueItemsMutation = useMutation({
+    mutationKey: [catalogueApis.bulkDeleteCatalogueItems.endpointKey],
+    mutationFn: bulkDeleteCatalogueItems,
+    onSuccess: () => {
+      toast.success('Selected Catalogues delete Successfully');
+      setSelectedCatalogue([]);
+      setBulkDeletebulkIsSuccess(true);
+      queryClient.invalidateQueries([
+        catalogueApis.getCatalogues.endpointKey,
+        enterpriseId,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const CatlogueColumns = useCatalogueColumns(
+    bulkDeleteIsSuccess,
+    setSelectedCatalogue,
+  );
 
   return (
     <>
@@ -116,6 +141,25 @@ const Catalogue = () => {
                       </Button>
                     }
                     content={'This feature Coming Soon...'}
+                  />
+
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled={selectedCatalogue?.length === 0}
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600"
+                        onClick={() =>
+                          deleteBulkCatalogueItemsMutation.mutate({
+                            data: { catalogueItems: selectedCatalogue },
+                          })
+                        }
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    }
+                    content={'Delete Selected Catalogue'}
                   />
                 </div>
               </div>

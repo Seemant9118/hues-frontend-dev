@@ -19,7 +19,7 @@ import { CalendarDays } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import DatePickers from '../ui/DatePickers';
 import InputWithLabel from '../ui/InputWithLabel';
 import ErrorBox from '../ui/ErrorBox';
@@ -27,6 +27,8 @@ import EmptyStageComponent from '../ui/EmptyStageComponent';
 
 const AddItem = ({ name, onCancel, cta }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const redirectURL = LocalStorageService.get('redirectFromCatalogue');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const userId = LocalStorageService.get('user_profile');
   const pathname = usePathname();
@@ -166,35 +168,6 @@ const AddItem = ({ name, onCancel, cta }) => {
     return message;
   };
 
-  const mutationGoods = useMutation({
-    mutationFn: CreateProductGoods,
-    onSuccess: (res) => {
-      const message = communicationInventory(res, 'en-IN');
-      toast.success(message.successMessage || 'Added Successfully');
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getAllProductGoods.endpointKey],
-      });
-      onCancel();
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong!');
-    },
-  });
-
-  const mutationServices = useMutation({
-    mutationFn: CreateProductServices,
-    onSuccess: () => {
-      toast.success('Services Added Successfully');
-      queryClient.invalidateQueries({
-        queryKey: [servicesApi.getAllProductServices.endpointKey],
-      });
-      onCancel();
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
   const onChange = (e) => {
     const { id, value } = e.target;
 
@@ -217,6 +190,49 @@ const AddItem = ({ name, onCancel, cta }) => {
     setItem((values) => ({ ...values, [id]: value }));
   };
 
+  // goods mutation
+  const mutationGoods = useMutation({
+    mutationFn: CreateProductGoods,
+    onSuccess: (res) => {
+      const message = communicationInventory(res, 'en-IN');
+      toast.success(message.successMessage || 'Added Successfully');
+      queryClient.invalidateQueries({
+        queryKey: [goodsApi.getAllProductGoods.endpointKey],
+      });
+      if (redirectURL) {
+        LocalStorageService.remove('redirectFromCatalogue'); // Clear the redirect URL
+        router.push(`/${redirectURL}`);
+      } else {
+        onCancel();
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong!');
+    },
+  });
+
+  // services mutations
+  const mutationServices = useMutation({
+    mutationFn: CreateProductServices,
+    onSuccess: () => {
+      toast.success('Services Added Successfully');
+      queryClient.invalidateQueries({
+        queryKey: [servicesApi.getAllProductServices.endpointKey],
+      });
+      if (redirectURL) {
+        LocalStorageService.remove('redirectFromCatalogue'); // Clear the redirect URL
+        router.push(`/${redirectURL}`);
+      } else {
+        onCancel();
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // combined mutation
+
   const handleSubmitGoods = (e) => {
     e.preventDefault();
 
@@ -227,7 +243,12 @@ const AddItem = ({ name, onCancel, cta }) => {
     // If no validation errors, mutate goods
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
-      mutationGoods.mutate(goodsData);
+      // combined added in goods as well as catalogue
+      if (redirectURL) {
+        mutationGoods.mutate({ ...goodsData, context: 'CATALOGUE' });
+      } else {
+        mutationGoods.mutate(goodsData);
+      }
       return;
     }
     setErrorMsg(isError);
@@ -254,7 +275,12 @@ const AddItem = ({ name, onCancel, cta }) => {
     // If no validation errors, mutate service
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
-      mutationServices.mutate(servicesData);
+      // combined added in service as well as catalogue
+      if (redirectURL) {
+        mutationServices.mutate({ ...servicesData, context: 'CATALOGUE' });
+      } else {
+        mutationServices.mutate(servicesData);
+      }
       return;
     }
     setErrorMsg(isError);
@@ -564,7 +590,13 @@ const AddItem = ({ name, onCancel, cta }) => {
         <Button
           size="sm"
           onClick={() => {
-            onCancel();
+            if (redirectURL) {
+              LocalStorageService.remove('redirectFromCatalogue'); // Clear the redirect URL
+              router.push(`/${redirectURL}/update_catalogue`);
+            } else {
+              LocalStorageService.remove('redirectFromCatalogue'); // Clear the redirect URL
+              onCancel();
+            }
           }}
           variant={'outline'}
         >
