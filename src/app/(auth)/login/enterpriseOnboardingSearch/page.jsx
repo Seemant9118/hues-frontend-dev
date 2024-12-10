@@ -71,11 +71,9 @@ const EnterpriseOnboardSearchPage = () => {
   });
 
   const handleProceedWithExistingEnterprise = async (
-    enterpriseName,
     enterpriseID,
     isEnterpriseOnboardingComplete,
   ) => {
-    LocalStorageService.set('enterpriseName', enterpriseName);
     LocalStorageService.set('enterpriseReqId', enterpriseID);
 
     const requestExistData = await queryClient.fetchQuery({
@@ -154,7 +152,6 @@ const EnterpriseOnboardSearchPage = () => {
                     className="h-8 w-16 bg-[#288AF9]"
                     onClick={() =>
                       handleProceedWithExistingEnterprise(
-                        searchedData?.[0]?.name,
                         searchedData?.[0]?.id,
                         searchedData?.[0]?.isOnboardingCompleted,
                       )

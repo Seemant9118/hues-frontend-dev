@@ -31,6 +31,7 @@ const EnterpriseDetailsSecond = ({
   const queryClient = useQueryClient();
   const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const isKycVerified = LocalStorageService.get('isKycVerified');
+  const isDirector = LocalStorageService.get('isDirector');
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(
     enterpriseOnboardData?.doi
@@ -81,6 +82,8 @@ const EnterpriseDetailsSecond = ({
         } else {
           router.push('/login/kyc');
         }
+      } else if (isDirector) {
+        router.push('/login/din');
       } else {
         router.push('/login/isDirector'); // moved for director consent
       }

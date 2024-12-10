@@ -1,12 +1,14 @@
 'use client';
 
+import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseById } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { createRequestAccess } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,11 +17,24 @@ import { toast } from 'sonner';
 
 const RequestAccessPage = () => {
   const router = useRouter();
-  const enterpriseName = LocalStorageService.get('enterpriseName');
+  const enterprisId = LocalStorageService.get('enterprise_Id');
   const enterpriseReqId = LocalStorageService.get('enterpriseReqId');
 
+  const { data: enterpriseData } = useQuery({
+    queryKey: [
+      enterpriseUser.getEnterprise.endpointKey,
+      enterpriseReqId ?? enterprisId,
+    ],
+    queryFn: () => getEnterpriseById(enterprisId),
+    select: (data) => data?.data?.data,
+    enabled: !!enterpriseReqId ?? !!enterprisId,
+  });
+
   const createRequestAccessMutation = useMutation({
-    mutationKey: [userAuth.createRequestAccess.endpointKey, enterpriseReqId],
+    mutationKey: [
+      userAuth.createRequestAccess.endpointKey,
+      enterpriseReqId ?? enterprisId,
+    ],
     mutationFn: createRequestAccess,
     onSuccess: () => {
       toast.success(`Request sent Successfully`);
@@ -32,7 +47,7 @@ const RequestAccessPage = () => {
 
   const handleRequestApiSuccess = () => {
     createRequestAccessMutation.mutate({
-      enterpriseId: enterpriseReqId,
+      enterpriseId: enterpriseReqId ?? enterprisId,
     });
   };
 
@@ -42,7 +57,7 @@ const RequestAccessPage = () => {
         <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
           <div className="flex flex-col gap-4">
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              You are not added as an associate at {enterpriseName}
+              You are not added as an associate at {enterpriseData?.name}
             </h1>
             <p className="w-full text-center text-sm text-[#A5ABBD]">
               Request the enterprise to add you as an associate
@@ -68,7 +83,7 @@ const RequestAccessPage = () => {
               variant="ghost"
               size="sm"
               className="w-full p-2"
-              onClick={() => router.push('/login/enterpriseOnboardingSearch')}
+              onClick={() => router.back()}
             >
               <ArrowLeft size={14} />
               Back

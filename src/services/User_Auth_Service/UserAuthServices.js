@@ -91,8 +91,8 @@ export function verifyKYCstatusandUpdate() {
 }
 
 // 19. create user session
-export function createUserSession() {
-  return APIinstance.post(userAuth.createUserSession.endpoint);
+export function createUserSession({ data }) {
+  return APIinstance.post(userAuth.createUserSession.endpoint, data);
 }
 
 // 20. switch accounts

@@ -1,7 +1,11 @@
 'use client';
 
+import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { Button } from '@/components/ui/button';
 import { UserProvider } from '@/context/UserContext';
+import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseById } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,6 +13,18 @@ import React from 'react';
 
 const RequestedApprovalPage = () => {
   const router = useRouter();
+  const enterprisId = LocalStorageService.get('enterprise_Id');
+  const enterpriseReqId = LocalStorageService.get('enterpriseReqId');
+
+  const { data: enterpriseData } = useQuery({
+    queryKey: [
+      enterpriseUser.getEnterprise.endpointKey,
+      enterpriseReqId ?? enterprisId,
+    ],
+    queryFn: () => getEnterpriseById(enterprisId),
+    select: (data) => data?.data?.data,
+    enabled: !!enterpriseReqId ?? !!enterprisId,
+  });
   return (
     <UserProvider>
       <div className="flex h-full items-center justify-center">
@@ -18,7 +34,7 @@ const RequestedApprovalPage = () => {
               Request sent, Wait for approval
             </h1>
             <p className="w-full text-center text-sm text-[#A5ABBD]">
-              Request sent to added as an associate at enterprise
+              Request sent to added as an associate at {enterpriseData?.name}
             </p>
           </div>
 

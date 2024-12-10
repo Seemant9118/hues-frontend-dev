@@ -82,12 +82,10 @@ const SelectEnterprisePage = () => {
 
   // mutation call
   const handleProceedWithExistingEnterprise = async (
-    enterpriseName,
     enterpriseID,
     isEnterpriseOnboardingComplete,
   ) => {
-    // save enterpriseName to show in request access page
-    LocalStorageService.set('enterpriseName', enterpriseName);
+    // save enterpriseReqId to show in request access page
     LocalStorageService.set('enterpriseReqId', enterpriseID);
 
     // check by calling api : requestExistData
@@ -215,7 +213,6 @@ const SelectEnterprisePage = () => {
                   className="h-8 w-16 bg-[#288AF9]"
                   onClick={() =>
                     handleProceedWithExistingEnterprise(
-                      searchedData?.[0]?.name,
                       searchedData?.[0]?.id,
                       searchedData?.[0]?.isOnboardingCompleted,
                     )

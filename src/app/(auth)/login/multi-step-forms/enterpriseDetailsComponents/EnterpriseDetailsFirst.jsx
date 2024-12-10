@@ -23,6 +23,7 @@ const EnterpriseDetailsFirst = ({
   const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState({});
+
   const { data: enterpriseData } = useQuery({
     queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseID],
     queryFn: () => getEnterpriseById(enterpriseID),

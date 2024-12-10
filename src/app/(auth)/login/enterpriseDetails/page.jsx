@@ -7,19 +7,20 @@ import EnterpriseDetailsFirst from '../multi-step-forms/enterpriseDetailsCompone
 import EnterpriseDetailsSecond from '../multi-step-forms/enterpriseDetailsComponents/EnterpriseDetailsSecond';
 
 const EnterpriseDetails = () => {
-  const invitationData = LocalStorageService.get('invitationData');
+  const logIninvitationData = LocalStorageService.get('invitationData');
   const panNumber = LocalStorageService.get('enterprisePanNumber');
   const [enterpriseDetailsCurrStep, setEnterpriseDetailsCurrStep] = useState(1);
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
-    name: invitationData?.data?.invitation?.toEnterprise?.name || '',
+    name: logIninvitationData?.data?.invitation?.toEnterprise?.name || '',
     type: '',
-    email: invitationData?.data?.invitation?.toEnterprise?.email || '',
+    email: logIninvitationData?.data?.invitation?.toEnterprise?.email || '',
     panNumber:
-      invitationData?.data?.invitation?.toEnterprise?.panNumber ||
+      logIninvitationData?.data?.invitation?.toEnterprise?.panNumber ||
       panNumber ||
       '',
-    address: invitationData?.data?.invitation?.toEnterprise?.address || '',
-    gstNumber: invitationData?.data?.invitation?.toEnterprise?.gstNumber || '',
+    address: logIninvitationData?.data?.invitation?.toEnterprise?.address || '',
+    gstNumber:
+      logIninvitationData?.data?.invitation?.toEnterprise?.gstNumber || '',
     udyam: '',
     doi: '',
     isDeclerationConsent: null,

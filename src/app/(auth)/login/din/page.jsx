@@ -93,7 +93,7 @@ const DINVerifyPage = () => {
               variant="ghost"
               size="sm"
               className="w-full p-2"
-              onClick={() => router.push('/login/isDirector')} // director consent
+              onClick={() => router.back()} // director consent
             >
               <ArrowLeft size={14} />
               Back
