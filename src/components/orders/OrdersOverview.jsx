@@ -1,5 +1,6 @@
 import { acknowledgeApi } from '@/api/acknowledgements/acknowledgeApi';
 import { orderApi } from '@/api/order_api/order_api';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import {
   undoAcknowledgeStatus,
   updateAcknowledgeStatus,
@@ -33,15 +34,6 @@ const OrdersOverview = ({
   const pathName = usePathname();
   const isSalesDetailPage = pathName.includes('/sales-orders');
   const isPurchaseDetailPage = pathName.includes('/purchase-orders');
-
-  // Format the amount as a dollar amount
-  const formatAmountIntoRupee = (amount) => {
-    const formatted = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-    return formatted;
-  };
 
   const paymentProgressPercent = (amtPaid / totalAmount) * 100;
 
@@ -145,7 +137,7 @@ const OrdersOverview = ({
                     className="w-1/2 bg-[#F3F3F3]"
                     value={paymentProgressPercent}
                   />
-                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
+                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
                 </section>
               )}
             </div>
@@ -242,7 +234,7 @@ const OrdersOverview = ({
                 </div>
                 <div className="flex flex-col gap-5">
                   <p className="text-xs font-bold">Payment Status</p>
-                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
+                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
                 </div>
               </section>
             )}
@@ -281,7 +273,7 @@ const OrdersOverview = ({
                     className="w-1/2 bg-[#F3F3F3]"
                     value={paymentProgressPercent}
                   />
-                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formatAmountIntoRupee(amtPaid)} of ${formatAmountIntoRupee(totalAmount)}`}</p>
+                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
                 </section>
               </div>
               {(orderDetails?.negotiationStatus === 'ACCEPTED' ||

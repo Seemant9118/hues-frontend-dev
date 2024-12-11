@@ -1,6 +1,7 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -152,12 +153,7 @@ export const useSalesColumns = (
         const { amount, gstAmount } = row.original;
         const totalAmount = parseFloat(amount + gstAmount);
 
-        const formattedAmt = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'INR',
-        }).format(totalAmount);
-
-        return <div>{formattedAmt}</div>;
+        return formattedAmount(totalAmount);
       },
     },
     {

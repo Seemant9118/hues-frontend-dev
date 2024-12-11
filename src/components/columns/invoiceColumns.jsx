@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -56,12 +57,7 @@ export const invoiceColumns = [
     ),
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('totalAmt'));
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'INR',
-      }).format(amount);
-      return <div className="font-medium">{formatted}</div>;
+      return formattedAmount(amount);
     },
   },
   {

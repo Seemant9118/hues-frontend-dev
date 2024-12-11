@@ -3,6 +3,7 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import DebitNoteComment from '@/components/invoices/DebitNoteComment';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
@@ -86,14 +87,6 @@ const ViewDebitNote = () => {
       toast.error(errorMessage);
       throw new Error(errorMessage); // Throw error to notify Quill of failure
     }
-  };
-
-  const formattedAmount = (amount) => {
-    const formattedAmount = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-    return formattedAmount;
   };
 
   const createCommentMutation = useMutation({

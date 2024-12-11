@@ -1,4 +1,5 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
@@ -23,17 +24,6 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
     queryFn: () => getInvoices(orderId),
     select: (invoiceList) => invoiceList?.data?.data,
   });
-
-  // fn for formatted currency
-  const formattedCurrency = React.useMemo(
-    () => (amount) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'INR',
-      }).format(amount);
-    },
-    [],
-  );
 
   // fn for capitalization
   function capitalize(str) {
@@ -73,7 +63,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                           Total Amount :{' '}
                         </span>
                         <span className="font-bold text-[#363940]">
-                          {formattedCurrency(invoice?.totalAmount)}
+                          {formattedAmount(invoice?.totalAmount)}
                         </span>
                         <span> (inc. GST)</span>
                       </h1>

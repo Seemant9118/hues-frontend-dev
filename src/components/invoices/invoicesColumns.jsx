@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import moment from 'moment';
 
@@ -41,11 +42,7 @@ export const invoiceColumns = [
     ),
     cell: ({ row }) => {
       const { grossAmount } = row.original;
-      const formattedAmount = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'INR',
-      }).format(grossAmount);
-      return formattedAmount;
+      return formattedAmount(grossAmount);
     },
   },
 ];

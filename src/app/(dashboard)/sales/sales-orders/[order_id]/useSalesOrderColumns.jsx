@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 
 export const useSalesOrderColumns = (status) => {
@@ -63,12 +64,7 @@ export const useSalesOrderColumns = (status) => {
         const amount = parseFloat(row.getValue('totalAmount'));
         const negotiateAmt = parseFloat(row.original?.negotiation?.price);
 
-        // Format the amount as a dollar amount
-        const formatted = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'INR',
-        }).format(isNegotiation ? negotiateAmt : amount);
-        return <div>{formatted}</div>;
+        return formattedAmount(isNegotiation ? negotiateAmt : amount);
       },
     },
   ];

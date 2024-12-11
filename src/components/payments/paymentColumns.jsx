@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import moment from 'moment';
 import { useState } from 'react';
@@ -28,12 +29,8 @@ export const usePaymentColumns = () => {
       ),
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('amountpaid'));
-        // Format the amount as a dollar amount
-        const formatted = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'INR',
-        }).format(amount);
-        return <div className="font-medium">{formatted}</div>;
+
+        return <div className="font-medium">{formattedAmount(amount)}</div>;
       },
     },
     {

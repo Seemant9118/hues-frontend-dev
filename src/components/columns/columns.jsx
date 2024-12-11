@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import ShareModal from '@/components/Modals/ShareModal';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
@@ -80,6 +81,11 @@ export const Columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Amount" />
     ),
+
+    cell: ({ row }) => {
+      const { amount } = row.original;
+      return formattedAmount(amount);
+    },
   },
   {
     id: 'actions',
