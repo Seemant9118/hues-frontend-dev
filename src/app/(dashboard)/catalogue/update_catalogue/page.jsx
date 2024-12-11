@@ -76,7 +76,7 @@ const UpdateCatalogue = () => {
         (good) =>
           !catalogues.some(
             (catalogueItem) =>
-              catalogueItem.productId === good.id &&
+              catalogueItem.itemId === good.id &&
               catalogueItem.type === inventoryType,
           ),
       ); // Exclude goods already in the catalogue.
@@ -86,7 +86,7 @@ const UpdateCatalogue = () => {
         (service) =>
           !catalogues.some(
             (catalogueItem) =>
-              catalogueItem.productId === service.id &&
+              catalogueItem.itemId === service.id &&
               catalogueItem.type === inventoryType,
           ),
       ); // Exclude services already in the catalogue.
@@ -217,6 +217,8 @@ const UpdateCatalogue = () => {
                 item.type === 'goods'
                   ? router.push('/inventory/goods?action=add')
                   : router.push('/inventory/services/?action=add');
+
+                LocalStorageService.set('redirectFromCatalogue', 'catalogue');
               }}
             >
               <Plus size={14} />

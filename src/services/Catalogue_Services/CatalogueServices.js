@@ -37,3 +37,10 @@ export const getVendorServiceCatalogue = (id) => {
     `${catalogueApis.getVendorServiceCatalogue.endpoint}${id}`,
   );
 };
+
+export const bulkDeleteCatalogueItems = ({ data }) => {
+  return APIinstance.post(
+    catalogueApis.bulkDeleteCatalogueItems.endpoint,
+    data,
+  );
+};

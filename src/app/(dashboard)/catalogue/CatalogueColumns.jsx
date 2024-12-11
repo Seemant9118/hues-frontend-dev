@@ -12,9 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { deleteCatalogue } from '@/services/Catalogue_Services/CatalogueServices';
 import { MoreVertical } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
-export const useCatalogueColumns = (setSelectedCatalogue) => {
+export const useCatalogueColumns = (
+  bulkDeleteIsSuccess,
+  setSelectedCatalogue,
+) => {
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     setSelectedCatalogue((prev) => {
@@ -23,7 +26,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
         return [...prev, row.original];
       } else {
         // Remove the row from the selected catalogue
-        return prev.filter((item) => item.productId !== row.original.productId);
+        return prev.filter((item) => item.itemId !== row.original.itemId);
       }
     });
   };
@@ -40,6 +43,13 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
       }
     });
   };
+
+  // Effect to clear selected rows after a successful bulk delete
+  useEffect(() => {
+    if (bulkDeleteIsSuccess) {
+      setSelectedCatalogue([]); // Clear selectedCatalogue state
+    }
+  }, [bulkDeleteIsSuccess]);
 
   // Column definitions
   const columns = useMemo(
@@ -93,7 +103,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
         ),
       },
       {
-        accessorKey: 'productId', // Change to SKU of the catalogue
+        accessorKey: 'itemId', // Change to SKU of the catalogue
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="SKU" />
         ),
@@ -124,7 +134,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
         id: 'actions',
         enableHiding: false,
         cell: ({ row }) => {
-          const { productId, name, type } = row.original;
+          const { itemId, name, type } = row.original;
 
           return (
             <DropdownMenu>
@@ -137,7 +147,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
               <DropdownMenuContent align="end" className="max-w-fit">
                 <ConfirmAction
                   infoText={`You are removing ${name} from catalogue`}
-                  id={productId}
+                  id={itemId}
                   type={type}
                   invalidateKey={catalogueApis.getCatalogues.endpointKey}
                   mutationKey={catalogueApis.deleteCatalogue.endpointKey}
