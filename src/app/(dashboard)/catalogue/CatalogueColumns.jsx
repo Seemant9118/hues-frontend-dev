@@ -49,7 +49,7 @@ export const useCatalogueColumns = (
     if (bulkDeleteIsSuccess) {
       setSelectedCatalogue([]); // Clear selectedCatalogue state
     }
-  }, [bulkDeleteIsSuccess, setSelectedCatalogue]);
+  }, [bulkDeleteIsSuccess]);
 
   // Column definitions
   const columns = useMemo(
@@ -134,7 +134,7 @@ export const useCatalogueColumns = (
         id: 'actions',
         enableHiding: false,
         cell: ({ row }) => {
-          const { productId, name, type } = row.original;
+          const { itemId, name, type } = row.original;
 
           return (
             <DropdownMenu>
@@ -147,7 +147,7 @@ export const useCatalogueColumns = (
               <DropdownMenuContent align="end" className="max-w-fit">
                 <ConfirmAction
                   infoText={`You are removing ${name} from catalogue`}
-                  id={productId}
+                  id={itemId}
                   type={type}
                   invalidateKey={catalogueApis.getCatalogues.endpointKey}
                   mutationKey={catalogueApis.deleteCatalogue.endpointKey}
