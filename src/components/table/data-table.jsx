@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import {
   flexRender,
   getCoreRowModel,
@@ -62,7 +63,10 @@ export function DataTable({ columns, data, id, onRowClick }) {
             table.getRowModel().rows.map((row) => {
               return (
                 <TableRow
-                  className="border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700"
+                  className={cn(
+                    onRowClick ? 'hover:cursor-pointer' : '',
+                    'border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700',
+                  )}
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={
