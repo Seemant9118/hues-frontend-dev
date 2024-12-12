@@ -157,16 +157,21 @@ const ProfileInfoPopUp = () => {
                     });
                 }}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex w-full items-center gap-2">
                   <div
-                    className={`${bgColorClass} flex h-8 w-8 items-center justify-center rounded-full text-sm text-white`}
+                    className={`${bgColorClass} flex h-10 w-12 items-center justify-center rounded-full text-sm text-white`}
                   >
                     {getInitialsNames(account?.enterprise?.enterpriseName)}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex w-full justify-between gap-2">
                     <span className="text-sm font-bold">
                       {account?.enterprise?.enterpriseName}
                     </span>
+                    {!account?.enterprise?.isOnboardingCompleted && (
+                      <span className="rounded-sm border-2 border-gray-400 p-1 text-center text-[10px] text-gray-600">
+                        ACCESS REQUESTED
+                      </span>
+                    )}
                   </div>
                 </div>
 

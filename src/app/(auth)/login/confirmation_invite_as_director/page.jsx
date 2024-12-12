@@ -1,12 +1,14 @@
 'use client';
 
+import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseById } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { createUserSession } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -14,8 +16,16 @@ import { toast } from 'sonner';
 
 const ConfirmationInviteAsDirectorPage = () => {
   const router = useRouter();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [inviteData, setInviteData] = useState(null);
+
+  const { data: enterpriseData } = useQuery({
+    queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseId],
+    queryFn: () => getEnterpriseById(enterpriseId),
+    select: (data) => data?.data?.data,
+    enabled: !!enterpriseId,
+  });
 
   // Fetch data from localStorage on the client side
   useEffect(() => {
@@ -77,11 +87,11 @@ const ConfirmationInviteAsDirectorPage = () => {
           <div className="flex flex-col gap-4">
             <h1 className="w-full text-center text-xl font-bold text-[#121212]">
               {'associteName'} has asked you to verify details for{' '}
-              {'enterpriseName'}.
+              {enterpriseData?.name ?? 'enterpriseName'}.
             </h1>
 
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              Continue with {'enterpriseName'}?
+              Continue with {enterpriseData?.name ?? 'enterpriseName'}?
             </h1>
           </div>
 

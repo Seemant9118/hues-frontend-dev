@@ -28,11 +28,14 @@ const EnterpriseDetailsSecond = ({
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseIdByDirectorInvite = LocalStorageService.get(
+    'enterpriseIdByDirectorInvite',
+  );
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const isDirector = LocalStorageService.get('isDirector');
-  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(
     enterpriseOnboardData?.doi
       ? moment(enterpriseOnboardData.doi, 'DD/MM/YYYY').toDate()
@@ -66,14 +69,15 @@ const EnterpriseDetailsSecond = ({
       // set new access token
       const newAccessToken = refreshTokenValue?.data?.data?.access_token;
       LocalStorageService.set('token', newAccessToken);
-
       LocalStorageService.set('enterprise_Id', data.data.data.id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
         data.data.data.isOnboardingCompleted,
       );
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
+
       toast.success(data.data.message);
+
       if (enterpriseOnboardData.type === 'proprietorship') {
         if (isKycVerified) {
           const redirectUrl = LocalStorageService.get('redirectUrl');
@@ -110,16 +114,22 @@ const EnterpriseDetailsSecond = ({
         'isEnterpriseOnboardingComplete',
         data.data.data.isOnboardingCompleted,
       );
-      toast.success(data?.data?.message);
       LocalStorageService.set('enterpriseType', enterpriseOnboardData.type);
+
+      toast.success(data?.data?.message);
+
       if (enterpriseOnboardData.type === 'proprietorship') {
         if (isKycVerified) {
-          router.push('/');
+          const redirectUrl = LocalStorageService.get('redirectUrl');
+          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+          router.push(redirectUrl || '/');
         } else {
           router.push('/login/kyc');
         }
-      } else {
+      } else if (isDirector) {
         router.push('/login/din');
+      } else {
+        router.push('/login/isDirector'); // moved for director consent
       }
     },
     onError: (error) => {
@@ -201,9 +211,9 @@ const EnterpriseDetailsSecond = ({
 
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
-      if (enterpriseID) {
+      if (enterpriseIdByDirectorInvite || enterpriseId) {
         enterpriseOnboardUpdateMutation.mutate({
-          id: enterpriseID,
+          id: enterpriseIdByDirectorInvite || enterpriseId,
           data: enterpriseOnboardData,
         });
       } else {
@@ -221,7 +231,9 @@ const EnterpriseDetailsSecond = ({
     >
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Onboard your Enterprise
+          {enterpriseId || enterpriseIdByDirectorInvite
+            ? 'Verify your Enterprise Details'
+            : 'Onboard your Enterprise'}
         </h1>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
           Enter all the details to unlock Hues completely{' '}

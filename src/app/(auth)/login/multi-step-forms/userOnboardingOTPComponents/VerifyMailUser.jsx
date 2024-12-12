@@ -51,6 +51,13 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
       const isUserHaveValidDirectorInvites =
         directorInviteListData?.data?.data?.length > 0;
 
+      const isCurrEnterpriseInvitationExist =
+        directorInviteListData?.data?.data?.some(
+          (directorInvite) =>
+            directorInvite.fromEnterprise.id.toString() ===
+            enterpriseId.toString(),
+        );
+
       toast.success('Your Profile Completed & Verified');
 
       // user & enterprise partial/not onboarded in platform
@@ -83,6 +90,26 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
         // if user have director invites and enterprise not present in platform
         else if (isUserHaveValidDirectorInvites && !enterpriseId) {
           router.push('/login/select_enterprise');
+        }
+        // if user have director invites and curr enterprise present in platform && !isEnterpriseOnboardingComplete
+        else if (
+          isUserHaveValidDirectorInvites &&
+          enterpriseId &&
+          isCurrEnterpriseInvitationExist &&
+          !isEnterpriseOnboardingComplete
+        ) {
+          router.push('/login/din');
+        }
+        // if user have director invites and curr enterprise present in platform && isEnterpriseOnboardingCompleted
+        else if (
+          isUserHaveValidDirectorInvites &&
+          enterpriseId &&
+          isCurrEnterpriseInvitationExist &&
+          isEnterpriseOnboardingComplete
+        ) {
+          const redirectUrl = LocalStorageService.get('redirectUrl');
+          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+          router.push(redirectUrl || '/');
         }
         // if user have not director invites && enterprise already present in platform && user is an associate && user does not have associate request
         else if (

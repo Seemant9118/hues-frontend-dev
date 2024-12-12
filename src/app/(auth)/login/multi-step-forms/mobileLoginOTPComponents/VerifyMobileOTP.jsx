@@ -79,6 +79,13 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       const isUserHaveValidDirectorInvites =
         directorInviteListData?.data?.data?.length > 0;
 
+      const isCurrEnterpriseInvitationExist =
+        directorInviteListData?.data?.data?.some(
+          (directorInvite) =>
+            directorInvite.fromEnterprise.id.toString() ===
+            data?.data?.data?.user?.enterpriseId.toString(),
+        );
+
       toast.success('OTP verified successfully');
 
       // isuserOnboardingComplete
@@ -99,10 +106,8 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
               'DIRECTOR' &&
             isUserHaveValidDirectorInvites
           ) {
-            // [TODO] : confirmation page for director invites
-            // yes : store enterpriseDirectorId & moving forward to enterpriseDetails
-            // no: director select enterprise page
-            router.push('/login/select_enterprise');
+            router.push('/login/confirmation_invite_as_director');
+            // router.push('/login/select_enterprise');
           }
           // isInviteAsAssociate
           else {
@@ -117,6 +122,26 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
           !data?.data?.data?.user?.enterpriseId
         ) {
           router.push('/login/select_enterprise');
+        }
+        // if user have director invites and curr enterprise present in platform && !isEnterpriseOnboardingComplete
+        else if (
+          isUserHaveValidDirectorInvites &&
+          data?.data?.data?.user?.enterpriseId &&
+          isCurrEnterpriseInvitationExist &&
+          !data?.data?.data?.user?.isEnterpriseOnboardingComplete
+        ) {
+          router.push('/login/din');
+        }
+        // if user have director invites and curr enterprise present in platform && isEnterpriseOnboardingCompleted
+        else if (
+          isUserHaveValidDirectorInvites &&
+          data?.data?.data?.user?.enterpriseId &&
+          isCurrEnterpriseInvitationExist &&
+          data?.data?.data?.user?.isEnterpriseOnboardingComplete
+        ) {
+          const redirectUrl = LocalStorageService.get('redirectUrl');
+          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+          router.push(redirectUrl || '/');
         }
         // if user have not director invites && enterprise already present in platform && user is an associate && user does not have associate request
         else if (
