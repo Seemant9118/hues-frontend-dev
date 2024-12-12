@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import {
   flexRender,
   getCoreRowModel,
@@ -18,7 +19,7 @@ import {
 
 import * as React from 'react';
 
-export function DataTable({ columns, data, id }) {
+export function DataTable({ columns, data, id, onRowClick }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
@@ -62,9 +63,15 @@ export function DataTable({ columns, data, id }) {
             table.getRowModel().rows.map((row) => {
               return (
                 <TableRow
-                  className="border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700"
+                  className={cn(
+                    onRowClick ? 'hover:cursor-pointer' : '',
+                    'border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700',
+                  )}
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  onClick={
+                    onRowClick ? () => onRowClick(row.original) : () => {}
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="max-w-xl shrink-0">
