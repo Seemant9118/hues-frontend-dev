@@ -78,6 +78,7 @@ const PurchaseOrders = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const [tab, setTab] = useState('all');
   const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
@@ -346,14 +347,14 @@ const PurchaseOrders = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name="Purchases" />
           <RestrictedComponent />
         </>
       )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <>
           {!isCreatingPurchase && !isEditingOrder && (
             <Wrapper>

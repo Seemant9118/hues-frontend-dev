@@ -42,6 +42,10 @@ const MobileLogin = ({ setMobileLoginStep }) => {
         ...values,
         mobileNumber: inviteData.mobile_number,
       }));
+      LocalStorageService.set(
+        'InvitationFromEnterpriseId',
+        inviteData?.invitationData?.fromEnterprise,
+      );
     }
   }, [isSuccess, inviteData]);
 
@@ -105,6 +109,7 @@ const MobileLogin = ({ setMobileLoginStep }) => {
           invitationPasscode: inviteData.invitation_passcode,
           invitationReferenceId: inviteData.invitation_reference_id,
           mobileNumber: formDataWithMob.mobileNumber,
+          invitationType: inviteData?.invitationData?.invitationType,
         }); // invitation flow
       }
     }

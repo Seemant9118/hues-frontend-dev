@@ -20,6 +20,7 @@ const Notification = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const [filteredNotification, setFilteredNotification] = useState({}); // filtered data for filteration notification
   const [notifications, setNotifications] = useState([]); // response data set to this state
 
@@ -53,13 +54,13 @@ const Notification = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name={'Notifications'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <Wrapper>
           <SubHeader
             name="Notifications"

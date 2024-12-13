@@ -318,11 +318,16 @@ const UpdateCatalogue = () => {
 
                 <Button
                   size="sm"
-                  onClick={() =>
+                  onClick={() => {
                     item.type === 'goods'
                       ? router.push('/inventory/goods?action=add')
-                      : router.push('/inventory/services/?action=add')
-                  }
+                      : router.push('/inventory/services/?action=add');
+
+                    LocalStorageService.set(
+                      'redirectFromCatalogue',
+                      'catalogue',
+                    );
+                  }}
                 >
                   Add a new item
                 </Button>
@@ -347,11 +352,16 @@ const UpdateCatalogue = () => {
 
                 <Button
                   size="sm"
-                  onClick={() =>
+                  onClick={() => {
                     item.type === 'goods'
                       ? router.push('/inventory/goods?action=add')
-                      : router.push('/inventory/services/?action=add')
-                  }
+                      : router.push('/inventory/services/?action=add');
+
+                    LocalStorageService.set(
+                      'redirectFromCatalogue',
+                      'catalogue',
+                    );
+                  }}
                 >
                   Add a new item
                 </Button>

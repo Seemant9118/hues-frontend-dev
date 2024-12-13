@@ -52,6 +52,7 @@ function Goods() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const templateId = 1;
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -144,13 +145,13 @@ function Goods() {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name={'Goods'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>

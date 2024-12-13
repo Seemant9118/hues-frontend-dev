@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const ConfirmationInviteAsClientPage = () => {
+const ConfirmationInviteAsAssocitePage = () => {
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const fromEnterpriseId = LocalStorageService.get(
+    'InvitationFromEnterpriseId',
+  );
 
   const [inviteData, setInviteData] = useState(null);
 
@@ -46,20 +48,14 @@ const ConfirmationInviteAsClientPage = () => {
         data?.data?.data?.user?.isKycVerified,
       );
 
-      if (
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
-        data?.data?.data?.user?.isKycVerified
-      ) {
+      // if kyc is verified of user
+      if (data?.data?.data?.user?.isKycVerified) {
+        // redirect to home page
         const redirectUrl = LocalStorageService.get('redirectUrl');
         LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
         router.push(redirectUrl || '/');
-      } else if (
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
-        !data?.data?.data?.user?.isKycVerified
-      ) {
-        router.push('/login/kyc');
       } else {
-        router.push('/login/enterpriseDetails');
+        router.push('/login/kyc');
       }
     },
     onError: (error) => {
@@ -92,13 +88,12 @@ const ConfirmationInviteAsClientPage = () => {
             <h1 className="w-full text-center text-xl font-bold text-[#121212]">
               {inviteData?.data?.invitation?.fromEnterprise?.name ??
                 'fromEnterpriseName'}{' '}
-              has invited{' '}
-              {inviteData?.data?.invitation?.toEnterprise?.name ?? 'You'}.
+              has invited you in there team
             </h1>
 
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
               Continue with{' '}
-              {inviteData?.data?.invitation?.toEnterprise?.name ?? 'You'}?
+              {inviteData?.data?.invitation?.fromEnterprise?.name ?? 'You'}?
             </h1>
           </div>
 
@@ -110,7 +105,10 @@ const ConfirmationInviteAsClientPage = () => {
               disabled={createUserSessionMutation.isPending}
               onClick={() =>
                 createUserSessionMutation.mutate({
-                  data: { context: '', enterpriseId },
+                  data: {
+                    context: 'ASSOCIATE',
+                    enterpriseId: fromEnterpriseId,
+                  },
                 })
               }
             >
@@ -143,4 +141,4 @@ const ConfirmationInviteAsClientPage = () => {
   );
 };
 
-export default ConfirmationInviteAsClientPage;
+export default ConfirmationInviteAsAssocitePage;

@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const ConfirmationInviteAsClientPage = () => {
+const ConfirmationInviteAsDirectorPage = () => {
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const fromEnterpriseId = LocalStorageService.get(
+    'InvitationFromEnterpriseId',
+  );
 
   const [inviteData, setInviteData] = useState(null);
 
@@ -46,21 +48,8 @@ const ConfirmationInviteAsClientPage = () => {
         data?.data?.data?.user?.isKycVerified,
       );
 
-      if (
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
-        data?.data?.data?.user?.isKycVerified
-      ) {
-        const redirectUrl = LocalStorageService.get('redirectUrl');
-        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-        router.push(redirectUrl || '/');
-      } else if (
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
-        !data?.data?.data?.user?.isKycVerified
-      ) {
-        router.push('/login/kyc');
-      } else {
-        router.push('/login/enterpriseDetails');
-      }
+      // with prefilled details
+      router.push('/login/enterpriseDetails');
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -90,15 +79,18 @@ const ConfirmationInviteAsClientPage = () => {
         <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
           <div className="flex flex-col gap-4">
             <h1 className="w-full text-center text-xl font-bold text-[#121212]">
+              {inviteData?.data?.inviteeUserData?.name} has asked you to verify
+              details for{' '}
               {inviteData?.data?.invitation?.fromEnterprise?.name ??
-                'fromEnterpriseName'}{' '}
-              has invited{' '}
-              {inviteData?.data?.invitation?.toEnterprise?.name ?? 'You'}.
+                'enterpriseName'}
+              .
             </h1>
 
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
               Continue with{' '}
-              {inviteData?.data?.invitation?.toEnterprise?.name ?? 'You'}?
+              {inviteData?.data?.invitation?.fromEnterprise?.name ??
+                'enterpriseName'}
+              ?
             </h1>
           </div>
 
@@ -110,7 +102,7 @@ const ConfirmationInviteAsClientPage = () => {
               disabled={createUserSessionMutation.isPending}
               onClick={() =>
                 createUserSessionMutation.mutate({
-                  data: { context: '', enterpriseId },
+                  data: { context: 'DIRECTOR', enterpriseId: fromEnterpriseId },
                 })
               }
             >
@@ -143,4 +135,4 @@ const ConfirmationInviteAsClientPage = () => {
   );
 };
 
-export default ConfirmationInviteAsClientPage;
+export default ConfirmationInviteAsDirectorPage;

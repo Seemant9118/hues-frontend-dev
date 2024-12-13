@@ -1,6 +1,5 @@
 'use client';
 
-import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import Tooltips from '@/components/auth/Tooltips';
 import ErrorBox from '@/components/ui/ErrorBox';
 import RadioSelect from '@/components/ui/RadioSelect';
@@ -8,45 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LocalStorageService } from '@/lib/utils';
-import { getEnterpriseById } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 const EnterpriseDetailsFirst = ({
   setEnterpriseDetailsCurrStep,
   enterpriseOnboardData,
   setEnterpriseOnboardData,
 }) => {
-  const enterpriseID = LocalStorageService.get('enterpriseIdByDirectorInvite');
   const router = useRouter();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseIdByDirectorInvite = LocalStorageService.get(
+    'enterpriseIdByDirectorInvite',
+  );
   const [errorMsg, setErrorMsg] = useState({});
-  const { data: enterpriseData } = useQuery({
-    queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseID],
-    queryFn: () => getEnterpriseById(enterpriseID),
-    select: (data) => data?.data?.data,
-    enabled: !!enterpriseID,
-  });
-
-  useEffect(() => {
-    if (enterpriseData) {
-      setEnterpriseOnboardData({
-        name: enterpriseData.name || '',
-        type: enterpriseData.type.toLowerCase() || '',
-        email: enterpriseData.email || '',
-        panNumber: enterpriseData.panNumber || '',
-        address: enterpriseData.address || '',
-        gstNumber: enterpriseData.gstNumber || '',
-        udyam: enterpriseData.udyam || '',
-        doi: enterpriseData.doi || '',
-        isDeclerationConsent: enterpriseData.isDeclerationConsent || null,
-        LLPIN: enterpriseData.LLPIN || '',
-        CIN: enterpriseData.CIN || '',
-      });
-    }
-  }, [enterpriseData]);
 
   const handleEnterpriseType = (enterpriseType) => {
     setEnterpriseOnboardData((values) => ({
@@ -87,7 +63,9 @@ const EnterpriseDetailsFirst = ({
     >
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Onboard your Enterprise
+          {enterpriseId || enterpriseIdByDirectorInvite
+            ? 'Verify your Enterprise Details'
+            : 'Onboard your Enterprise'}
         </h1>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
           Enter all the details to unlock Hues completely{' '}
