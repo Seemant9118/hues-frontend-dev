@@ -13,6 +13,7 @@ import { User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
@@ -103,23 +104,18 @@ const ProfileInfoPopUp = () => {
       <PopoverContent className="absolute bottom-2 left-28 flex max-h-[350px] w-[350px] flex-col gap-5">
         {/* user information */}
         <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <div
               className={`${bgColorClass} flex h-10 w-10 items-center justify-center rounded-full p-2 text-sm text-white`}
             >
               {userAccounts?.length > 0 &&
                 getInitialsNames(userAccounts[0]?.user?.userName)}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold">
-                {userAccounts?.length > 0
-                  ? userAccounts[0]?.user?.userName
-                  : '-'}
-              </span>
-              <span className="text-sm">
-                {userAccounts?.length > 0 ? userAccounts[0]?.user?.email : '-'}
-              </span>
-            </div>
+
+            <span className="text-sm font-bold">
+              {(userAccounts?.length > 0 && userAccounts[0]?.user?.userName) ||
+                'Profile Not Completed'}
+            </span>
           </div>
 
           <div
@@ -157,25 +153,32 @@ const ProfileInfoPopUp = () => {
                     });
                 }}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex w-full items-center gap-2">
                   <div
-                    className={`${bgColorClass} flex h-8 w-8 items-center justify-center rounded-full text-sm text-white`}
+                    className={`${bgColorClass} flex h-10 w-12 items-center justify-center rounded-full text-sm text-white`}
                   >
                     {getInitialsNames(account?.enterprise?.enterpriseName)}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex w-full justify-between gap-2">
                     <span className="text-sm font-bold">
-                      {account?.enterprise?.enterpriseName}
+                      {account?.enterprise?.enterpriseName ??
+                        'Enterprise Not Completed'}
                     </span>
+                    {account?.enterprise?.enterpriseId &&
+                      !account?.enterprise?.isOnboardingCompleted && (
+                        <Tooltips
+                          trigger={
+                            <span className="rounded-sm border-2 border-gray-400 p-1 text-center text-[10px] text-gray-600">
+                              ACCESS DENIED
+                            </span>
+                          }
+                          content={
+                            'Your enterprise onboarding is not yet complete. Please visit your profile to finish the process'
+                          }
+                        />
+                      )}
                   </div>
                 </div>
-
-                {/* on the basis of api call */}
-                {!account?.enterprise?.enterpriseId && (
-                  <div className="rounded-xs border p-0.5 text-xs text-grey">
-                    Access Requested
-                  </div>
-                )}
               </div>
             ))}
           </div>
