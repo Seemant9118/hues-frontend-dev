@@ -68,6 +68,7 @@ const PurchaseInvoices = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
@@ -260,13 +261,13 @@ const PurchaseInvoices = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name="Invoices" />
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <>
           <Wrapper>
             <SubHeader

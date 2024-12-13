@@ -156,13 +156,13 @@ function Profile() {
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
-                {` You have not completed your enterprise verification yet, please complete your DIN verification to unlock additional features.`}
+                {` You have not completed your enterprise verification yet, please complete your enterprise verification to unlock additional features.`}
               </span>
               <Button
                 size="sm"
                 className="h-8 bg-[#288AF9]"
                 onClick={() => {
-                  router.push('/login/din');
+                  router.push('/login/isDirector');
                 }}
               >
                 Complete

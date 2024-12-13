@@ -51,6 +51,7 @@ function Services() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const templateId = 1;
 
   const queryClient = useQueryClient();
@@ -146,13 +147,13 @@ function Services() {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name={'Services'} />
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>

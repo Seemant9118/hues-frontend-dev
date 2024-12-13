@@ -32,6 +32,7 @@ const VendorsPage = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
@@ -107,13 +108,13 @@ const VendorsPage = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name={'Vendors'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <div>
           <Wrapper>
             {!isUploading && (

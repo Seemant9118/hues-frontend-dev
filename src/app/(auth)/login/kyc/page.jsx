@@ -140,7 +140,11 @@ const CompleteKycPage = () => {
     mutationKey: [userAuth.createKYC.endpointKey],
     mutationFn: createKYCRequest,
     onSuccess: (data) => {
-      loadScript(data.data.data);
+      if (data.data.data.env === 'development') {
+        handleKycStatus(); // for development bypass kyc
+      } else {
+        loadScript(data.data.data);
+      }
       setIsKycProcessStarted(true);
     },
     onError: (error) => {

@@ -9,6 +9,12 @@ import React from 'react';
 const DirectorConsentPage = () => {
   const enterpriseType = LocalStorageService.get('enterpriseType') || '';
   const isKycVerified = LocalStorageService.get('isKycVerified') || false;
+  const isAssociateRequestCreated = LocalStorageService.get(
+    'isAssociateRequestCreated',
+  );
+  const isAssociateRequestAccepted = LocalStorageService.get(
+    'isAssociateRequestAccepted',
+  );
 
   const yesDirectorLink = () => {
     const isProprietorship = enterpriseType === 'proprietorship';
@@ -18,6 +24,30 @@ const DirectorConsentPage = () => {
       return '/login/kyc';
     } else {
       return '/login/din';
+    }
+  };
+
+  const noDirectorLink = () => {
+    if (
+      isAssociateRequestCreated &&
+      isAssociateRequestAccepted &&
+      isKycVerified
+    ) {
+      return '/';
+    } else if (
+      isAssociateRequestCreated &&
+      isAssociateRequestAccepted &&
+      !isKycVerified
+    ) {
+      return '/login/kyc';
+    } else if (
+      isAssociateRequestCreated &&
+      !isAssociateRequestAccepted &&
+      !isKycVerified
+    ) {
+      return '/login/requested_approval';
+    } else {
+      return '/login/request_access';
     }
   };
 
@@ -42,7 +72,7 @@ const DirectorConsentPage = () => {
               linkName="Yes! I am the director"
             />
             <CustomLinks
-              href={'/login/inviteDirector'}
+              href={noDirectorLink()}
               linkName="No, I am an associate"
             />
           </div>

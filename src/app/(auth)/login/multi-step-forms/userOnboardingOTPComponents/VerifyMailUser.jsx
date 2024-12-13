@@ -118,7 +118,7 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
           !isDirector &&
           !isAssociateRequestCreated
         ) {
-          router.push('/login/request_access');
+          router.push('/login/isDirector');
         }
         // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request but not approved yet
         else if (
@@ -130,18 +130,31 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
         ) {
           router.push('/login/requested_approval');
         }
-        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved
+        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved and kyc verified
         else if (
           !isUserHaveValidDirectorInvites &&
           enterpriseId &&
           !isDirector &&
           isAssociateRequestCreated &&
-          isAssociateRequestAccepted
+          isAssociateRequestAccepted &&
+          isKycVerified
         ) {
           const redirectUrl = LocalStorageService.get('redirectUrl');
           LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
           router.push(redirectUrl || '/');
         }
+        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved but kyc is pending
+        else if (
+          !isUserHaveValidDirectorInvites &&
+          enterpriseId &&
+          !isDirector &&
+          isAssociateRequestCreated &&
+          isAssociateRequestAccepted &&
+          !isKycVerified
+        ) {
+          router.push('/login/kyc');
+        }
+
         // if user have not director invites && enterprise is not present in platform
         else if (!isUserHaveValidDirectorInvites && !enterpriseId) {
           router.push('/login/enterpriseOnboardingSearch');
@@ -173,40 +186,6 @@ const VerifyMailUser = ({ setUserOnboardingStep }) => {
         LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
         router.push(redirectUrl || '/');
       }
-
-      // old flow [ignore for now]
-      // // 1. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && isKycVerified
-      // if (
-      //   !invitationData?.data?.id &&
-      //   !isUserHaveValidDirectorInvites &&
-      //   isEnterpriseOnboardingComplete &&
-      //   isKycVerified
-      // ) {
-      //   const redirectUrl = LocalStorageService.get('redirectUrl');
-      //   LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-      //   router.push(redirectUrl || '/');
-      // }
-      // // 2. invitation absent && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && !isKycVerified
-      // else if (
-      //   !invitationData?.data?.id &&
-      //   !isUserHaveValidDirectorInvites &&
-      //   isEnterpriseOnboardingComplete &&
-      //   !isKycVerified
-      // ) {
-      //   router.push('/login/kyc');
-      // }
-      // // 3. invitation is present && isUserHaveValidDirectorInvites
-      // else if (invitationData?.data?.id && isUserHaveValidDirectorInvites) {
-      //   router.push('/login/select_enterprise');
-      // }
-      // // 4. invitation present && !isUserHaveValidDirectorInvites
-      // else if (invitationData?.data?.id && !isUserHaveValidDirectorInvites) {
-      //   router.push('/login/confirmation_invite_as_client');
-      // }
-      // // 5. invitation absent  && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
-      // else {
-      //   router.push('/login/enterpriseOnboardingSearch');
-      // }
     },
   });
 

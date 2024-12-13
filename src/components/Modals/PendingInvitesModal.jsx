@@ -95,8 +95,7 @@ const PendingInvitesModal = ({
                     <span className="text-sm font-bold">
                       {inviteItem?.name ?? '-'}
                     </span>
-                    <span className="flex items-center gap-2 text-sm text-[#A5ABBD]">
-                      <p> {inviteItem?.email ?? '-'} |</p>
+                    <span className="flex items-center gap-2 text-xs text-[#A5ABBD]">
                       <p>+91 {inviteItem?.mobileNumber ?? '-'} |</p>
                       <p>{inviteItem?.panNumber ?? '-'} </p>
                     </span>

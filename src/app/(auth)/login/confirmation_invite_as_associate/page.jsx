@@ -14,6 +14,9 @@ import { toast } from 'sonner';
 
 const ConfirmationInviteAsAssocitePage = () => {
   const router = useRouter();
+  const fromEnterpriseId = LocalStorageService.get(
+    'InvitationFromEnterpriseId',
+  );
 
   const [inviteData, setInviteData] = useState(null);
 
@@ -45,10 +48,15 @@ const ConfirmationInviteAsAssocitePage = () => {
         data?.data?.data?.user?.isKycVerified,
       );
 
-      // redirect to home page
-      const redirectUrl = LocalStorageService.get('redirectUrl');
-      LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-      router.push(redirectUrl || '/');
+      // if kyc is verified of user
+      if (data?.data?.data?.user?.isKycVerified) {
+        // redirect to home page
+        const redirectUrl = LocalStorageService.get('redirectUrl');
+        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
+        router.push(redirectUrl || '/');
+      } else {
+        router.push('/login/kyc');
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -97,7 +105,10 @@ const ConfirmationInviteAsAssocitePage = () => {
               disabled={createUserSessionMutation.isPending}
               onClick={() =>
                 createUserSessionMutation.mutate({
-                  data: { context: 'ASSOCIATE' },
+                  data: {
+                    context: 'ASSOCIATE',
+                    enterpriseId: fromEnterpriseId,
+                  },
                 })
               }
             >

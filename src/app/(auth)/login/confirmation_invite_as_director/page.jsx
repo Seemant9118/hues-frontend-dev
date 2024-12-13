@@ -1,14 +1,12 @@
 'use client';
 
-import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
-import { getEnterpriseById } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { createUserSession } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -16,16 +14,11 @@ import { toast } from 'sonner';
 
 const ConfirmationInviteAsDirectorPage = () => {
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const fromEnterpriseId = LocalStorageService.get(
+    'InvitationFromEnterpriseId',
+  );
 
   const [inviteData, setInviteData] = useState(null);
-
-  const { data: enterpriseData } = useQuery({
-    queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseId],
-    queryFn: () => getEnterpriseById(enterpriseId),
-    select: (data) => data?.data?.data,
-    enabled: !!enterpriseId,
-  });
 
   // Fetch data from localStorage on the client side
   useEffect(() => {
@@ -86,12 +79,18 @@ const ConfirmationInviteAsDirectorPage = () => {
         <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
           <div className="flex flex-col gap-4">
             <h1 className="w-full text-center text-xl font-bold text-[#121212]">
-              {'associteName'} has asked you to verify details for{' '}
-              {enterpriseData?.name ?? 'enterpriseName'}.
+              {inviteData?.data?.inviteeUserData?.name} has asked you to verify
+              details for{' '}
+              {inviteData?.data?.invitation?.fromEnterprise?.name ??
+                'enterpriseName'}
+              .
             </h1>
 
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              Continue with {enterpriseData?.name ?? 'enterpriseName'}?
+              Continue with{' '}
+              {inviteData?.data?.invitation?.fromEnterprise?.name ??
+                'enterpriseName'}
+              ?
             </h1>
           </div>
 
@@ -103,7 +102,7 @@ const ConfirmationInviteAsDirectorPage = () => {
               disabled={createUserSessionMutation.isPending}
               onClick={() =>
                 createUserSessionMutation.mutate({
-                  data: { context: 'DIRECTOR' },
+                  data: { context: 'DIRECTOR', enterpriseId: fromEnterpriseId },
                 })
               }
             >

@@ -32,6 +32,7 @@ const SalesDebitNotes = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [debitNotesTabs, setDebitNotesTab] = useState({
@@ -209,13 +210,13 @@ const SalesDebitNotes = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name="Debit Notes" />
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <>
           <Wrapper className="h-full">
             <SubHeader

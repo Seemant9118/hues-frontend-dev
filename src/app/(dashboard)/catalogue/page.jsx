@@ -26,6 +26,7 @@ const Catalogue = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
@@ -81,14 +82,14 @@ const Catalogue = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name={'Catalogue'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <Wrapper className="h-full">
           {!enterpriseId && <RestrictedComponent />}
           {enterpriseId && (

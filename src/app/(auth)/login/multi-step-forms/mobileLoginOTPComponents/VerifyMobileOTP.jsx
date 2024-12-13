@@ -150,7 +150,7 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
           !data?.data?.data?.user?.isDirector &&
           !data?.data?.data?.user?.isAssociateRequestCreated
         ) {
-          router.push('/login/request_access');
+          router.push('/login/isDirector');
         }
         // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request but not approved yet
         else if (
@@ -162,17 +162,29 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         ) {
           router.push('/login/requested_approval');
         }
-        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved
+        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved and kyc verified
         else if (
           !isUserHaveValidDirectorInvites &&
           data?.data?.data?.user?.enterpriseId &&
           !data?.data?.data?.user?.isDirector &&
           data?.data?.data?.user?.isAssociateRequestCreated &&
-          data?.data?.data?.user?.isAssociateRequestAccepted
+          data?.data?.data?.user?.isAssociateRequestAccepted &&
+          data?.data?.data?.user?.isKycVerified
         ) {
           const redirectUrl = LocalStorageService.get('redirectUrl');
           LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
           router.push(redirectUrl || '/');
+        }
+        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved but kyc is pending
+        else if (
+          !isUserHaveValidDirectorInvites &&
+          data?.data?.data?.user?.enterpriseId &&
+          !data?.data?.data?.user?.isDirector &&
+          data?.data?.data?.user?.isAssociateRequestCreated &&
+          data?.data?.data?.user?.isAssociateRequestAccepted &&
+          !data?.data?.data?.user?.isKycVerified
+        ) {
+          router.push('/login/kyc');
         }
         // if user have not director invites && enterprise is not present in platform
         else if (
@@ -204,67 +216,6 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       } else {
         router.push('/login/userOnboarding');
       }
-
-      // old flow [ignore for now]
-      // // 1. isUserOnboardingComplete && isInviteAsClientOrVendor
-      // if (
-      //   data?.data?.data?.user?.isOnboardingComplete &&
-      //   (invitationData?.data?.invitation?.invitationType === 'CLIENT' ||
-      //     invitationData?.data?.invitation?.invitationType === 'VENDOR')
-      // ) {
-      //   router.push('/login/confirmation_invite_as_client');
-      // }
-      // // 2. isUserOnboardingComplete && isInviteAsDirector && isUserHaveValidDirectorInvites
-      // else if (
-      //   data?.data?.data?.user?.isOnboardingComplete &&
-      //   invitationData?.data?.invitation?.invitationType === 'DIRECTOR' &&
-      //   isUserHaveValidDirectorInvites
-      // ) {
-      //   // confirmation for director invites
-      //   router.push('/login/select_enterprise');
-      // }
-      // // 2.5 isUserOnboardingComplete && isInviteAsAssociate
-      // else if (
-      //   data?.data?.data?.user?.isOnboardingComplete &&
-      //   invitationData?.data?.invitation?.invitationType === 'ASSOCIATE'
-      // ) {
-      //   // confirmation for associate invites
-      // }
-      // // 3. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && !isEnterpriseOnboardingComplete
-      // else if (
-      //   data?.data?.data?.user?.isOnboardingComplete &&
-      //   !invitationData?.data?.id &&
-      //   !isUserHaveValidDirectorInvites &&
-      //   !data?.data?.data?.user?.isEnterpriseOnboardingComplete
-      // ) {
-      //   router.push('/login/enterpriseOnboardingSearch');
-      // }
-      // // 4. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && isKycVerified
-      // else if (
-      //   data?.data?.data?.user?.isOnboardingComplete &&
-      //   !invitationData?.data?.id &&
-      //   !isUserHaveValidDirectorInvites &&
-      //   data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
-      //   data?.data?.data?.user?.isKycVerified
-      // ) {
-      //   const redirectUrl = LocalStorageService.get('redirectUrl');
-      //   LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-      //   router.push(redirectUrl || '/');
-      // }
-      // // 5. isUserOnboardingComplete && !isInviteAsClient && !isUserHaveValidDirectorInvites && isEnterpriseOnboardingComplete && !sKycVerified
-      // else if (
-      //   data?.data?.data?.user?.isOnboardingComplete &&
-      //   !invitationData?.data?.id &&
-      //   !isUserHaveValidDirectorInvites &&
-      //   data?.data?.data?.user?.isEnterpriseOnboardingComplete &&
-      //   !data?.data?.data?.user?.isKycVerified
-      // ) {
-      //   router.push('/login/kyc');
-      // }
-      // // 6. !isUserOnboardingComplete
-      // else {
-      //   router.push('/login/userOnboarding');
-      // }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'OTP Invalid or Expired');

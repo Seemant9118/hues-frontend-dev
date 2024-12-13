@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 
 const ConfirmationInviteAsClientPage = () => {
   const router = useRouter();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [inviteData, setInviteData] = useState(null);
 
@@ -109,7 +110,7 @@ const ConfirmationInviteAsClientPage = () => {
               disabled={createUserSessionMutation.isPending}
               onClick={() =>
                 createUserSessionMutation.mutate({
-                  data: { context: '' },
+                  data: { context: '', enterpriseId },
                 })
               }
             >

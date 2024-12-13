@@ -17,6 +17,7 @@ export default function Home() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
@@ -91,7 +92,7 @@ export default function Home() {
           </div>
         )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <EmptyStageComponent
           heading={dashBoardEmptyStagedata.heading}
           subHeading={dashBoardEmptyStagedata.subHeading}
@@ -99,7 +100,7 @@ export default function Home() {
         />
       )}
 
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <RestrictedComponent />
       )}
     </div>

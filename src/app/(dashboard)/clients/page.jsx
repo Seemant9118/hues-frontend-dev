@@ -32,6 +32,7 @@ const ClientPage = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const isKycVerified = LocalStorageService.get('isKycVerified');
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const queryClient = useQueryClient();
@@ -106,13 +107,13 @@ const ClientPage = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
           <SubHeader name={'Clients'}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && (
+      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <div>
           <Wrapper>
             {!isUploading && (
