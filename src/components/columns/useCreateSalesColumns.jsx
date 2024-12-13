@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -42,12 +43,7 @@ export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('totalAmount'));
 
-        // Format the amount as a dollar amount
-        const formatted = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'INR',
-        }).format(amount);
-        return <div className="font-medium">{formatted}</div>;
+        return formattedAmount(amount);
       },
     },
     {

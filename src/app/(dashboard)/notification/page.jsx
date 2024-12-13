@@ -9,11 +9,13 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import { getNotifications } from '@/services/Notification_Services/NotificationServices';
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { NotificationColumns } from './NotificationsColumns';
 
 const Notification = () => {
+  const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -38,6 +40,17 @@ const Notification = () => {
     }
   }, [enterpriseId, filteredNotification]);
 
+  const onRowClick = (row) => {
+    const isCurrNotificationIsRead = row?.isRead;
+
+    if (isCurrNotificationIsRead) {
+      router.push(row?.deepLink);
+    } else {
+      // updateTracker mutation api call
+      router.push(row?.deepLink);
+    }
+  };
+
   return (
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
@@ -59,6 +72,7 @@ const Notification = () => {
 
           <DataTable
             id="notification table"
+            onRowClick={onRowClick}
             columns={NotificationColumns}
             data={notifications}
           />

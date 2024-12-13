@@ -1,3 +1,4 @@
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import moment from 'moment';
 import { usePathname } from 'next/navigation';
@@ -24,15 +25,6 @@ const InvoiceOverview = ({
   const isSalesDetailPage = pathName.includes('/sales-invoices');
 
   const [isOpen, setIsOpen] = useState(false);
-
-  // Format the amount as a dollar amount
-  const formatAmountIntoRupee = (amount) => {
-    const formatted = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-    return formatted;
-  };
 
   // fn for capitalization
   function capitalize(str) {
@@ -91,9 +83,7 @@ const InvoiceOverview = ({
 
             <section className="flex flex-col gap-2">
               <p className="text-xs font-bold">Total Amount</p>
-              <p className="text-sm font-bold">
-                {formatAmountIntoRupee(amount)}
-              </p>
+              <p className="text-sm font-bold">{formattedAmount(amount)}</p>
             </section>
           </div>
         </section>
@@ -134,9 +124,7 @@ const InvoiceOverview = ({
                 </div>
                 <div className="flex flex-col gap-5">
                   <p className="text-xs font-bold">Total Amount</p>
-                  <p className="text-sm font-bold">
-                    {formatAmountIntoRupee(amount)}
-                  </p>
+                  <p className="text-sm font-bold">{formattedAmount(amount)}</p>
                 </div>
               </section>
             )}
@@ -184,9 +172,7 @@ const InvoiceOverview = ({
 
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-bold">Total Amount</p>
-                  <p className="text-sm font-bold">
-                    {formatAmountIntoRupee(amount)}
-                  </p>
+                  <p className="text-sm font-bold">{formattedAmount(amount)}</p>
                 </section>
               </div>
             </section>

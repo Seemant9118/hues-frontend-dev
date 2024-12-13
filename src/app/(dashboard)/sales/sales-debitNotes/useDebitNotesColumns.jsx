@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dot } from 'lucide-react';
@@ -114,11 +115,7 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       ),
       cell: ({ row }) => {
         const { amount } = row.original;
-        const formattedAmount = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'INR',
-        }).format(amount);
-        return formattedAmount;
+        return formattedAmount(amount);
       },
     },
     {

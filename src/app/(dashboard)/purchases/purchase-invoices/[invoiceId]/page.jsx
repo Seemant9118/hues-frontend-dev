@@ -4,6 +4,7 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
 import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
@@ -24,7 +25,7 @@ import { Download, MoveUpRight, Share2 } from 'lucide-react';
 import moment from 'moment';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import emptyImg from '../../../../../../public/Empty.png';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
@@ -114,17 +115,6 @@ const ViewInvoice = () => {
 
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
-
-  // fn for formatted currency
-  const formattedCurrency = useMemo(
-    () => (amount) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'INR',
-      }).format(amount);
-    },
-    [],
-  );
 
   // fn for capitalization
   function capitalize(str) {
@@ -276,7 +266,7 @@ const ViewInvoice = () => {
                                   Total Amount :{' '}
                                 </span>
                                 <span className="font-bold text-[#363940]">
-                                  {formattedCurrency(debitNote?.amount)}
+                                  {formattedAmount(debitNote?.amount)}
                                 </span>
                                 <span> (inc. GST)</span>
                               </h1>

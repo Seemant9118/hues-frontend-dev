@@ -1,5 +1,6 @@
 import { orderApi } from '@/api/order_api/order_api';
 import { paymentApi } from '@/api/payments/payment_api';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { LocalStorageService } from '@/lib/utils';
 import {
   createPayment,
@@ -427,11 +428,11 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                 <Input
                   disabled
                   className="max-w-md"
-                  value={(
+                  value={formattedAmount(
                     orderDetails.amount +
-                    orderDetails.gstAmount -
-                    orderDetails.amountPaid
-                  ).toFixed(2)}
+                      orderDetails.gstAmount -
+                      orderDetails.amountPaid,
+                  )}
                 />
               </div>
             </div>
@@ -507,7 +508,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                     <TableCell colSpan={2}>{invoice.totalquantity}</TableCell>
 
                     <TableCell colSpan={2}>
-                      {invoice.invoicereceivabledueamount.toFixed(2)}
+                      {formattedAmount(invoice.invoicereceivabledueamount)}
                     </TableCell>
 
                     <TableCell colSpan={2}>

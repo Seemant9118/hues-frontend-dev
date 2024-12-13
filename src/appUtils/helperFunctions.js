@@ -48,3 +48,12 @@ export const getStylesForCreatableSelectComponent = () => {
     }),
   };
 };
+
+// formatAmount in Indian Rupee currency
+export const formattedAmount = (amount) => {
+  const formattedAmount = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+  return formattedAmount;
+};
