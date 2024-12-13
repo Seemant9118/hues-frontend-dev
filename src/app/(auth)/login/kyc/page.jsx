@@ -38,6 +38,14 @@ const CompleteKycPage = () => {
   });
   if (isrefetchVerifyKYCstatusAndUpdateSuccess) {
     if (verifyKycData?.data?.data?.isKycVerified) {
+      LocalStorageService.set(
+        'isEnterpriseOnboardingComplete',
+        verifyKycData?.data?.data?.isKycVerified,
+      );
+      LocalStorageService.set(
+        'isKycVerified',
+        verifyKycData?.data?.data?.isKycVerified,
+      );
       toast.success('KYC Verified successfully!');
       router.push('/');
     } else {
@@ -71,6 +79,10 @@ const CompleteKycPage = () => {
     refetchKycStatus()
       .then(({ data }) => {
         if (data.isKycVerified) {
+          LocalStorageService.set(
+            'isEnterpriseOnboardingComplete',
+            data.isKycVerified,
+          );
           LocalStorageService.set('isKycVerified', data.isKycVerified);
           toast.success('KYC completed successfully!');
           router.push('/'); // Redirect to home page on success
