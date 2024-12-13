@@ -21,13 +21,6 @@ import { toast } from 'sonner';
 
 function Profile() {
   const userId = LocalStorageService.get('user_profile');
-  const isKycVerified = LocalStorageService.get('isKycVerified');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const enterpriseType = LocalStorageService.get('enterpriseType');
-  const isOnboardingComplete = LocalStorageService.get('isOnboardingComplete');
-  const isEnterpriseOnboardingComplete = LocalStorageService.get(
-    'isEnterpriseOnboardingComplete',
-  );
 
   const router = useRouter();
   const [tab, setTab] = useState('userOverview');
@@ -95,7 +88,7 @@ function Profile() {
         {/* ---checks : for if user skips */}
 
         {/* if user is not onboard */}
-        {!isOnboardingComplete && (
+        {!profileDetails?.userDetails?.user?.isOnboardingCompleted && (
           <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
             <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
               <Info size={14} />
@@ -113,29 +106,31 @@ function Profile() {
           </div>
         )}
         {/* if user onboarded but enterprise is not created */}
-        {isOnboardingComplete && !enterpriseId && (
-          <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
-            <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-              <Info size={14} />
-              {` You have not created enterprise yet, please create your enterprise to unlock additional features.`}
-            </span>
-            <Button
-              size="sm"
-              className="h-8 bg-[#288AF9]"
-              onClick={() => {
-                router.push('/login/enterpriseOnboardingSearch');
-              }}
-            >
-              Complete
-            </Button>
-          </div>
-        )}
+        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
+          !profileDetails?.userDetails?.enterpriseId && (
+            <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+              <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+                <Info size={14} />
+                {` You have not created enterprise yet, please create your enterprise to unlock additional features.`}
+              </span>
+              <Button
+                size="sm"
+                className="h-8 bg-[#288AF9]"
+                onClick={() => {
+                  router.push('/login/enterpriseOnboardingSearch');
+                }}
+              >
+                Complete
+              </Button>
+            </div>
+          )}
 
         {/* if user onboarded and enterprise created and enterpriseType is properietorship but enterpriseOnboarding or kyc verification not completed yet */}
-        {isOnboardingComplete &&
-          enterpriseId &&
-          enterpriseType === 'properietorship' &&
-          (!isEnterpriseOnboardingComplete || !isKycVerified) && (
+        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
+          profileDetails?.userDetails?.enterpriseId &&
+          profileDetails?.enterpriseDetails?.type === 'proprietorship' &&
+          (!profileDetails?.enterpriseDetails?.isOnboardingCompleted ||
+            !profileDetails?.userDetails?.user?.isKycVerified) && (
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
@@ -154,10 +149,10 @@ function Profile() {
           )}
 
         {/* if user onboarded and enterprise created and enterpriseType is pvtltd/llp/publicltd etc but enterpriseOnboarding not completed yet */}
-        {isOnboardingComplete &&
-          enterpriseId &&
-          enterpriseType !== 'properietorship' &&
-          !isEnterpriseOnboardingComplete && (
+        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
+          profileDetails?.userDetails?.enterpriseId &&
+          profileDetails?.enterpriseDetails?.type !== 'proprietorship' &&
+          !profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
@@ -176,11 +171,11 @@ function Profile() {
           )}
 
         {/* if user onboarded and enterprise created and enterpriseType is pvtltd/llp/publicltd etc and enterpriseOnboarding completed but kyc not verified yet */}
-        {isOnboardingComplete &&
-          enterpriseId &&
-          enterpriseType !== 'properietorship' &&
-          isEnterpriseOnboardingComplete &&
-          !isKycVerified && (
+        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
+          profileDetails?.userDetails?.enterpriseId &&
+          profileDetails?.enterpriseDetails?.type !== 'proprietorship' &&
+          profileDetails?.enterpriseDetails?.isOnboardingCompleted &&
+          !profileDetails?.userDetails?.user?.isKycVerified && (
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
