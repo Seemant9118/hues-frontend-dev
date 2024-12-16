@@ -16,13 +16,14 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 function Profile() {
   const userId = LocalStorageService.get('user_profile');
 
   const router = useRouter();
+  const [bgColor, setBgColor] = useState('');
   const [tab, setTab] = useState('userOverview');
 
   // Handle tab change
@@ -61,7 +62,10 @@ function Profile() {
   //   router.push('/login/enterpriseOnboardingSearch');
   // };
 
-  const bgColorClass = getRandomBgColor();
+  useEffect(() => {
+    const bgColorClass = getRandomBgColor();
+    setBgColor(bgColorClass);
+  }, []);
 
   return (
     <Wrapper className="h-full gap-8">
@@ -231,7 +235,7 @@ function Profile() {
               <div className="flex justify-between gap-2 rounded-sm border p-4">
                 <div className="flex w-full items-center justify-start gap-4">
                   <div
-                    className={`${bgColorClass} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
+                    className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
                   >
                     {getInitialsNames(profileDetails?.userDetails?.user?.name)}
                   </div>
@@ -343,7 +347,7 @@ function Profile() {
               <div className="flex justify-between gap-2 rounded-sm border p-4">
                 <div className="flex w-full items-center justify-start gap-4">
                   <div
-                    className={`${bgColorClass} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
+                    className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
                   >
                     {getInitialsNames(profileDetails?.enterpriseDetails?.name)}
                   </div>
