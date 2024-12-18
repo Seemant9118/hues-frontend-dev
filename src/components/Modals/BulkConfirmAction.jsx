@@ -44,7 +44,12 @@ const BulkConfirmAction = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button size="sm" variant="outline" className="text-red-600">
+        <Button
+          disabled={selectedItems?.length === 0}
+          size="sm"
+          variant="outline"
+          className="text-red-600"
+        >
           <Trash2 size={14} />
         </Button>
       </DialogTrigger>
