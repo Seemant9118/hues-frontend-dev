@@ -57,3 +57,8 @@ export const formattedAmount = (amount) => {
   }).format(amount);
   return formattedAmount;
 };
+
+// fn for capitalization
+export const capitalize = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};

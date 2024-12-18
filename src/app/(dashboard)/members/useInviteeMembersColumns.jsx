@@ -2,67 +2,11 @@
 
 import GenerateLink from '@/components/enterprise/GenerateLink';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
-import { Checkbox } from '@/components/ui/checkbox';
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
 import moment from 'moment';
 
-export const useInviteeMembersColumns = (setSelectedOrders) => {
-  // Function to handle row selection
-  const handleRowSelection = (isSelected, row) => {
-    if (isSelected) {
-      setSelectedOrders((prev) => [...prev, row.original]);
-    } else {
-      setSelectedOrders((prev) =>
-        prev.filter((order) => order.id !== row.original.id),
-      );
-    }
-  };
-
-  // Function to handle "Select All" functionality
-  const handleSelectAll = (isAllSelected, rows) => {
-    if (isAllSelected) {
-      const allOrders = rows.map((row) => row.original);
-      setSelectedOrders(allOrders);
-    } else {
-      setSelectedOrders([]); // Clear all selections
-    }
-  };
-
+export const useInviteeMembersColumns = () => {
   return [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
-          }
-          onCheckedChange={(value) => {
-            table.toggleAllPageRowsSelected(!!value);
-            handleSelectAll(!!value, table.getRowModel().rows);
-          }}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <div
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent row click from being triggered
-          }}
-        >
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => {
-              row.toggleSelected(!!value);
-              handleRowSelection(!!value, row);
-            }}
-            aria-label="Select row"
-          />
-        </div>
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
     {
       accessorKey: 'name',
       header: ({ column }) => (

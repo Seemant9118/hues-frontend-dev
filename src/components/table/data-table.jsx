@@ -19,7 +19,14 @@ import {
 
 import * as React from 'react';
 
-export function DataTable({ columns, data, id, onRowClick }) {
+export function DataTable({
+  columns,
+  rowSelection,
+  setRowSelection,
+  data,
+  id,
+  onRowClick,
+}) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
@@ -29,7 +36,10 @@ export function DataTable({ columns, data, id, onRowClick }) {
     state: {
       sorting,
       columnFilters,
+      rowSelection: rowSelection ?? {}, // Default to empty object if not provided
     },
+    enableRowSelection: Boolean(rowSelection && setRowSelection), // Enable row selection only if handlers are provided
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
@@ -68,7 +78,7 @@ export function DataTable({ columns, data, id, onRowClick }) {
                     'border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700',
                   )}
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  data-state={row?.getIsSelected() && 'selected'}
                   onClick={
                     onRowClick ? () => onRowClick(row.original) : () => {}
                   }
