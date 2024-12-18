@@ -1,6 +1,7 @@
 'use client';
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
+import { capitalize } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
@@ -12,12 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { deleteCatalogue } from '@/services/Catalogue_Services/CatalogueServices';
 import { MoreVertical } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
-export const useCatalogueColumns = (
-  bulkDeleteIsSuccess,
-  setSelectedCatalogue,
-) => {
+export const useCatalogueColumns = (setSelectedCatalogue) => {
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     setSelectedCatalogue((prev) => {
@@ -43,13 +41,6 @@ export const useCatalogueColumns = (
       }
     });
   };
-
-  // Effect to clear selected rows after a successful bulk delete
-  useEffect(() => {
-    if (bulkDeleteIsSuccess) {
-      setSelectedCatalogue([]); // Clear selectedCatalogue state
-    }
-  }, [bulkDeleteIsSuccess]);
 
   // Column definitions
   const columns = useMemo(
@@ -101,6 +92,9 @@ export const useCatalogueColumns = (
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="TYPE" />
         ),
+        cell: ({ row }) => {
+          return <div>{capitalize(row.original.type)}</div>;
+        },
       },
       {
         accessorKey: 'itemId', // Change to SKU of the catalogue

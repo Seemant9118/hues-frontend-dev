@@ -1,6 +1,7 @@
 'use client';
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
+import Tooltips from '@/components/auth/Tooltips';
 import MemberInviteModal from '@/components/membersInvite/MemberInviteModal';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { getAllAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { useQuery } from '@tanstack/react-query';
 import { Upload, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import { toast } from 'sonner';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 
@@ -22,7 +23,6 @@ const MembersPage = () => {
     'isEnterpriseOnboardingComplete',
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
-  const [selectedMembers, setSelectedMembers] = useState([]);
 
   const { data: membersList, isLoading } = useQuery({
     queryKey: [
@@ -39,7 +39,7 @@ const MembersPage = () => {
     select: (membersList) => membersList.data.data,
   });
 
-  const inviteeMembersColumns = useInviteeMembersColumns(setSelectedMembers);
+  const inviteeMembersColumns = useInviteeMembersColumns();
 
   return (
     <>
@@ -56,15 +56,20 @@ const MembersPage = () => {
             <div className="flex items-center justify-center gap-4">
               <MemberInviteModal />
 
-              <Button
-                disabled={selectedMembers?.length === 0}
-                onClick={() => {}}
-                variant="outline"
-                className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                size="sm"
-              >
-                <Upload size={16} />
-              </Button>
+              <Tooltips
+                trigger={
+                  <Button
+                    disabled
+                    onClick={() => {}}
+                    variant="outline"
+                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                    size="sm"
+                  >
+                    <Upload size={16} />
+                  </Button>
+                }
+                content={'This feature coming soon...'}
+              />
             </div>
           </SubHeader>
 

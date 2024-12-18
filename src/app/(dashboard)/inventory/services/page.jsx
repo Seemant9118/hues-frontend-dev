@@ -173,7 +173,6 @@ function Services() {
                         className="cursor-not-allowed"
                       >
                         <Share2 size={14} />
-                        Share
                       </Button>
                     }
                     content={'This feature Coming Soon...'}
