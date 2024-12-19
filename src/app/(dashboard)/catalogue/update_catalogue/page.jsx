@@ -39,6 +39,7 @@ const UpdateCatalogue = () => {
 
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [selectedGoodsItems, setSelectedGoodsItems] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
   const [selectedServicesItems, setSelectedServicesItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [item, setItem] = useState({
@@ -258,6 +259,8 @@ const UpdateCatalogue = () => {
                 filteredOutServices?.length > 0)) && (
               <DataTable
                 id={'catalogue'}
+                rowSelection={rowSelection}
+                setRowSelection={setRowSelection}
                 columns={
                   item.type === 'goods'
                     ? GoodsCatalogueColumns

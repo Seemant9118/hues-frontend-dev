@@ -2,6 +2,7 @@
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import Tooltips from '@/components/auth/Tooltips';
+import BulkConfirmAction from '@/components/Modals/BulkConfirmAction';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -14,8 +15,8 @@ import {
   bulkDeleteCatalogueItems,
   getCatalogues,
 } from '@/services/Catalogue_Services/CatalogueServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, ListFilter, Share2, Trash2, Upload } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -24,14 +25,13 @@ import { useCatalogueColumns } from './CatalogueColumns';
 
 const Catalogue = () => {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const [selectedCatalogue, setSelectedCatalogue] = useState([]);
-  const [bulkDeleteIsSuccess, setBulkDeletebulkIsSuccess] = useState(false);
+  const [rowSelection, setRowSelection] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
 
   // catalogue api fetching
@@ -43,7 +43,7 @@ const Catalogue = () => {
   });
   // get product via search
   const searchCatalogueItems = catalogues?.filter((catalogue) => {
-    const productName = catalogue.productName ?? '';
+    const productName = catalogue.name ?? '';
     return productName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -57,28 +57,7 @@ const Catalogue = () => {
     toast.success('Selected Catalogue exported');
   };
 
-  // deleteBulkCatalougue Items
-  const deleteBulkCatalogueItemsMutation = useMutation({
-    mutationKey: [catalogueApis.bulkDeleteCatalogueItems.endpointKey],
-    mutationFn: bulkDeleteCatalogueItems,
-    onSuccess: () => {
-      toast.success('Selected Catalogues delete Successfully');
-      setSelectedCatalogue([]);
-      setBulkDeletebulkIsSuccess(true);
-      queryClient.invalidateQueries([
-        catalogueApis.getCatalogues.endpointKey,
-        enterpriseId,
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
-  const CatlogueColumns = useCatalogueColumns(
-    bulkDeleteIsSuccess,
-    setSelectedCatalogue,
-  );
+  const CatlogueColumns = useCatalogueColumns(setSelectedCatalogue);
 
   return (
     <>
@@ -146,21 +125,19 @@ const Catalogue = () => {
 
                   <Tooltips
                     trigger={
-                      <Button
-                        disabled={selectedCatalogue?.length === 0}
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600"
-                        onClick={() =>
-                          deleteBulkCatalogueItemsMutation.mutate({
-                            data: { catalogueItems: selectedCatalogue },
-                          })
+                      <BulkConfirmAction
+                        infoText={'You are deleting selected items below'}
+                        selectedItems={selectedCatalogue}
+                        setSelectedItems={setSelectedCatalogue}
+                        setRowSelection={setRowSelection}
+                        invalidateKey={catalogueApis.getCatalogues.endpointKey}
+                        mutationKey={
+                          catalogueApis.bulkDeleteCatalogueItems.endpointKey
                         }
-                      >
-                        <Trash2 size={14} />
-                      </Button>
+                        mutationFunc={bulkDeleteCatalogueItems}
+                      />
                     }
-                    content={'Delete Selected Catalogue'}
+                    content={'Delete a Selected Catalogue'}
                   />
                 </div>
               </div>
@@ -185,6 +162,8 @@ const Catalogue = () => {
               {!isLoading && catalogues?.length > 0 && (
                 <DataTable
                   id={'catalogue'}
+                  rowSelection={rowSelection}
+                  setRowSelection={setRowSelection}
                   columns={CatlogueColumns}
                   data={searchCatalogueItems ?? []}
                 />
