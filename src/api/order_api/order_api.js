@@ -102,4 +102,10 @@ export const orderApi = {
     endpoint: `/order/getunconfirmedpurchases/`,
     endpointKey: 'get_Unconfirmed_Purchases',
   },
+
+  // 19. share order
+  shareOrder: {
+    endpoint: `/order/generalink/`,
+    endpointKey: 'share_order',
+  },
 };

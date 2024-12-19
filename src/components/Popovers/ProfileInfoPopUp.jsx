@@ -11,7 +11,7 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
@@ -21,6 +21,7 @@ const ProfileInfoPopUp = () => {
   const pathName = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [bgColor, setBgColor] = useState('');
 
   const { data: userAccounts } = useQuery({
     queryKey: [userAuth.getUserAccounts.endpointKey],
@@ -82,7 +83,10 @@ const ProfileInfoPopUp = () => {
     logoutMutation.mutate();
   };
 
-  const bgColorClass = getRandomBgColor();
+  useEffect(() => {
+    const bgColorClass = getRandomBgColor();
+    setBgColor(bgColorClass);
+  }, []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -106,7 +110,7 @@ const ProfileInfoPopUp = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
-              className={`${bgColorClass} flex h-10 w-10 items-center justify-center rounded-full p-2 text-sm text-white`}
+              className={`${bgColor} flex h-10 w-10 items-center justify-center rounded-full p-2 text-sm text-white`}
             >
               {userAccounts?.length > 0 &&
                 getInitialsNames(userAccounts[0]?.user?.userName)}
@@ -155,7 +159,7 @@ const ProfileInfoPopUp = () => {
               >
                 <div className="flex w-full items-center gap-2">
                   <div
-                    className={`${bgColorClass} flex h-10 w-12 items-center justify-center rounded-full text-sm text-white`}
+                    className={`${bgColor} flex h-10 w-12 items-center justify-center rounded-full text-sm text-white`}
                   >
                     {getInitialsNames(account?.enterprise?.enterpriseName)}
                   </div>
