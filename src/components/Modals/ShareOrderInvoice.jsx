@@ -1,8 +1,7 @@
-import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
-import { cn } from '@/lib/utils';
-import { useMutation } from '@tanstack/react-query';
-import { Check, Share2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Copy, Share2 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import {
@@ -12,39 +11,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 
-const ShareOrderInvoice = ({
-  heading = 'Share',
-  email,
-  setEmail,
-  mutationFn,
-  mutationKey,
-  successMsg,
-}) => {
+const ShareOrderInvoice = ({ heading = 'Share', queryFn, queryKey }) => {
+  const params = useParams();
   const [open, setOpen] = useState(false);
-  const [isShared, setIsShared] = useState(false);
-
-  const [bgColor, setBgColor] = useState('');
-
-  useEffect(() => {
-    const bgColorClass = getRandomBgColor();
-    setBgColor(bgColorClass);
-  }, []);
 
   // api call
-  const shareOrderMutation = useMutation({
-    mutationKey: [mutationKey],
-    mutationFn,
-    onSuccess: () => {
-      toast.success(successMsg || 'Shared Successfully');
-      setIsShared(true);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
-    },
+  const { data: publicLink, isLoading } = useQuery({
+    queryKey: [queryKey],
+    queryFn: () => queryFn(params.order_id),
+    select: (data) => data?.data?.data?.publicUrl,
+    enabled: open,
   });
 
   return (
@@ -57,52 +35,26 @@ const ShareOrderInvoice = ({
       <DialogContent className="flex flex-col justify-center gap-6">
         <DialogTitle>{heading}</DialogTitle>
 
-        <div className="mt-5 flex flex-col gap-2">
-          <div className="flex gap-2">
-            <div className="flex w-full flex-col gap-2">
-              <Label htmlFor="email">Share by Email</Label>
-              <Input
-                name="email"
-                type="text"
-                id="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button
-                className={cn(
-                  isShared ? 'font-bold text-green-600' : '',
-                  'rounded-sm',
-                )}
-                disabled={
-                  shareOrderMutation.isLoading ||
-                  isShared ||
-                  email?.length === 0
-                }
-                onClick={() => {
-                  shareOrderMutation.mutate(email);
-                }}
-                variant={isShared ? 'outline' : ''}
-              >
-                {shareOrderMutation.isLoading && <Loading />}
-                {!shareOrderMutation.isLoading &&
-                  (isShared ? <Check size={16} /> : 'Send')}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <p className="text-sm font-bold">Share this url to anyone</p>
 
-        <div className="flex items-center gap-2">
-          <div
-            className={`${bgColor} flex h-10 w-10 items-center justify-center rounded-full p-2 text-sm text-white`}
-          >
-            {getInitialsNames('Seemant Kamlapuri')}
+        {isLoading && <Loading />}
+
+        {!isLoading && (
+          <div className="flex w-full cursor-text items-center gap-2 rounded-md border p-2 shadow-md">
+            <span className="w-5/6 truncate text-sm font-semibold">
+              {publicLink}
+            </span>
+            <Copy
+              size={16}
+              className="flex w-1/6 cursor-pointer font-bold text-sky-500 hover:text-green-600"
+              onClick={(e) => {
+                e.preventDefault();
+                navigator.clipboard.writeText(publicLink ?? 'copied url');
+                toast.success('Copied to clipboard');
+              }}
+            />
           </div>
-          <span className="text-sm font-bold">{'Seemant Kamlapuri'}</span>
-        </div>
+        )}
 
         <DialogFooter>
           <Button size="sm" variant="outline" onClick={() => setOpen(false)}>

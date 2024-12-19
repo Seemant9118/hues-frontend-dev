@@ -1,6 +1,7 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
+import ShareOrderInvoice from '@/components/Modals/ShareOrderInvoice';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -19,9 +20,10 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
+  shareOrder,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, MoreVertical, Pencil, Share2 } from 'lucide-react';
+import { Clock, MoreVertical, Pencil } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -188,15 +190,14 @@ const ViewOrder = () => {
 
             <div className="flex gap-2">
               {/* ctas - share invoice create */}
+
               {/* share CTA */}
               {!isNegotiation && (
-                <Button
-                  variant="blue_outline"
-                  size="sm"
-                  className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                >
-                  <Share2 size={14} />
-                </Button>
+                <ShareOrderInvoice
+                  heading={'Share Order Details'}
+                  queryKey={orderApi.shareOrder.endpointKey}
+                  queryFn={shareOrder}
+                />
               )}
 
               {/* more ctas */}

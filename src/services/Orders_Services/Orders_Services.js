@@ -82,3 +82,7 @@ export const getUnconfirmedPurchases = ({ id, data }) => {
     data,
   );
 };
+
+export const shareOrder = (id) => {
+  return APIinstance.post(`${orderApi.shareOrder.endpoint}${id}`);
+};

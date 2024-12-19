@@ -20,6 +20,7 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
+  shareOrder,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, MoreVertical, Pencil } from 'lucide-react';
@@ -74,9 +75,6 @@ const ViewOrder = () => {
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
   const [tab, setTab] = useState('overview');
-
-  // for share order state
-  const [emailToShareOrder, setEmailToShareOrder] = useState('');
 
   const onTabChange = (value) => {
     setTab(value);
@@ -255,16 +253,16 @@ const ViewOrder = () => {
                 )}
 
               {/* share CTA */}
-              {!isGenerateInvoice && !isRecordingPayment && !isNegotiation && (
-                <ShareOrderInvoice
-                  heading={'Share Order Details'}
-                  email={emailToShareOrder}
-                  setEmail={setEmailToShareOrder}
-                  // mutationFn={}
-                  // mutationKey={}
-                  successMsg={'Order Shared Successfully'}
-                />
-              )}
+              {!isGenerateInvoice &&
+                !isRecordingPayment &&
+                !isNegotiation &&
+                orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
+                  <ShareOrderInvoice
+                    heading={'Share Order Details'}
+                    queryKey={orderApi.shareOrder.endpointKey}
+                    queryFn={shareOrder}
+                  />
+                )}
 
               {/* more ctas */}
               {orderDetails.negotiationStatus === 'NEW' &&
