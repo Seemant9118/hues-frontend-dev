@@ -35,7 +35,7 @@ const StyledLinks = ({ link }) => {
             'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
             isMainTabActive && !isSubTabActive
               ? 'bg-[#288AF91A] text-[#288AF9]'
-              : 'bg-transparent text-grey hover:text-black',
+              : 'bg-transparent text-gray-500 hover:text-black',
           )}
         >
           <span
@@ -49,6 +49,7 @@ const StyledLinks = ({ link }) => {
             {link.name}
           </span>
         </Link>
+
         {link?.subTab?.length > 0 && (
           <span
             className={cn(
@@ -56,7 +57,7 @@ const StyledLinks = ({ link }) => {
               isSubTabActive ? 'text-[#363940]' : 'text-grey',
             )}
           >
-            {link?.subTab?.length > 0 ? (
+            {isActive && link?.subTab?.length > 0 ? (
               isSubTabShow && isActive ? (
                 <ChevronUp size={14} onClick={() => setIsSubTabShow(false)} />
               ) : (
@@ -80,7 +81,7 @@ const StyledLinks = ({ link }) => {
                 'flex gap-2 rounded-sm border-none p-3 text-xs',
                 pathname.startsWith(subtab.path)
                   ? 'bg-[#288AF91A] text-[#288AF9]'
-                  : 'bg-transparent text-grey',
+                  : 'bg-transparent text-gray-500 hover:text-black',
               )}
             >
               {subtab.icon}
