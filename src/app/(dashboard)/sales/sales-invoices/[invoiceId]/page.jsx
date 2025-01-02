@@ -6,6 +6,7 @@ import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
+import Tooltips from '@/components/auth/Tooltips';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -133,24 +134,34 @@ const ViewInvoice = () => {
           />
         </div>
         <div className="flex gap-2">
+          {/* share CTA */}
+          <Tooltips
+            trigger={
+              <Button
+                disabled
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center"
+              >
+                <Share2 size={14} />
+              </Button>
+            }
+            content={'Share feature coming soon...'}
+          />
           {/* View CTA modal */}
           <InvoicePDFViewModal Url={pvtUrl} />
 
-          {/* share CTA */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center justify-center"
-          >
-            <Share2 size={14} />
-          </Button>
-
           {/* download CTA */}
-          <Button size="sm" asChild variant="outline" className="w-full">
-            <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-              <Download size={14} />
-            </a>
-          </Button>
+          <Tooltips
+            trigger={
+              <Button size="sm" asChild variant="outline" className="w-full">
+                <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
+                  <Download size={14} />
+                </a>
+              </Button>
+            }
+            content={'Download the invoice PDF'}
+          />
         </div>
       </section>
       <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>

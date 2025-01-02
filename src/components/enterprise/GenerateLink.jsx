@@ -42,7 +42,7 @@ const GenerateLink = ({ invitationStatus, invitationId, mutationFunc }) => {
         </span>
       );
     default:
-      return null;
+      return '-';
   }
 };
 

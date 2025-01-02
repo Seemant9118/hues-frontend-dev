@@ -7,6 +7,7 @@ import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
 import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
+import Tooltips from '@/components/auth/Tooltips';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -142,25 +143,41 @@ const ViewInvoice = () => {
                 invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
               />
 
+              {/* share CTA */}
+              <Tooltips
+                trigger={
+                  <Button
+                    disabled
+                    variant="blue_outline"
+                    size="sm"
+                    className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                  >
+                    <Share2 size={14} />
+                  </Button>
+                }
+                content={'Share feature Coming soon...'}
+              />
+
               {/* View CTA modal */}
               <InvoicePDFViewModal Url={pvtUrl} />
 
-              {/* share CTA */}
-              <Button
-                variant="blue_outline"
-                size="sm"
-                className="flex items-center justify-center border border-[#DCDCDC] text-black"
-              >
-                <Share2 size={14} />
-              </Button>
-
               {/* download CTA */}
 
-              <Button size="sm" asChild variant="outline" className="w-full">
-                <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-                  <Download size={14} />
-                </a>
-              </Button>
+              <Tooltips
+                trigger={
+                  <Button
+                    size="sm"
+                    asChild
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
+                      <Download size={14} />
+                    </a>
+                  </Button>
+                }
+                content={'Download invoice PDF'}
+              />
             </div>
           </section>
           <Tabs

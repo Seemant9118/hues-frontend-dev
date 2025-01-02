@@ -3,6 +3,7 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
+import Tooltips from '@/components/auth/Tooltips';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
@@ -211,20 +212,28 @@ const UpdateCatalogue = () => {
           <div className="flex w-full items-center justify-between py-5">
             <OrderBreadCrumbs possiblePagesBreadcrumbs={catalogueBreadCrumbs} />
 
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                item.type === 'goods'
-                  ? router.push('/inventory/goods?action=add')
-                  : router.push('/inventory/services/?action=add');
+            <Tooltips
+              trigger={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    item.type === 'goods'
+                      ? router.push('/inventory/goods?action=add')
+                      : router.push('/inventory/services/?action=add');
 
-                LocalStorageService.set('redirectFromCatalogue', 'catalogue');
-              }}
-            >
-              <Plus size={14} />
-              Add a new item
-            </Button>
+                    LocalStorageService.set(
+                      'redirectFromCatalogue',
+                      'catalogue',
+                    );
+                  }}
+                >
+                  <Plus size={14} />
+                  Add a new item
+                </Button>
+              }
+              content={'Add items to the catalogue'}
+            />
           </div>
           {/* body : [TODO] : add subHeader and table with selected items and also edited item of price for each column */}
           {/* Header2 action */}
@@ -242,9 +251,15 @@ const UpdateCatalogue = () => {
                 setItem((prev) => ({ ...prev, type: value }))
               }
             >
-              <SelectTrigger className="max-w-xs gap-5">
-                <SelectValue placeholder="Select Item Type" />
-              </SelectTrigger>
+              <Tooltips
+                trigger={
+                  <SelectTrigger className="max-w-xs gap-5">
+                    <SelectValue placeholder="Select Item Type" />
+                  </SelectTrigger>
+                }
+                content={'Select item type to add in the catalogue'}
+              />
+
               <SelectContent>
                 <SelectItem value="goods">Goods</SelectItem>
                 <SelectItem value="services">Services</SelectItem>
@@ -319,21 +334,26 @@ const UpdateCatalogue = () => {
                   }
                 </p>
 
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    item.type === 'goods'
-                      ? router.push('/inventory/goods?action=add')
-                      : router.push('/inventory/services/?action=add');
+                <Tooltips
+                  trigger={
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        item.type === 'goods'
+                          ? router.push('/inventory/goods?action=add')
+                          : router.push('/inventory/services/?action=add');
 
-                    LocalStorageService.set(
-                      'redirectFromCatalogue',
-                      'catalogue',
-                    );
-                  }}
-                >
-                  Add a new item
-                </Button>
+                        LocalStorageService.set(
+                          'redirectFromCatalogue',
+                          'catalogue',
+                        );
+                      }}
+                    >
+                      Add a new item
+                    </Button>
+                  }
+                  content={'Add items to the catalogue'}
+                />
               </div>
             )}
 
@@ -353,21 +373,26 @@ const UpdateCatalogue = () => {
                   {`You haven't added any item in the inventory. Start by clicking on the add item button`}
                 </p>
 
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    item.type === 'goods'
-                      ? router.push('/inventory/goods?action=add')
-                      : router.push('/inventory/services/?action=add');
+                <Tooltips
+                  trigger={
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        item.type === 'goods'
+                          ? router.push('/inventory/goods?action=add')
+                          : router.push('/inventory/services/?action=add');
 
-                    LocalStorageService.set(
-                      'redirectFromCatalogue',
-                      'catalogue',
-                    );
-                  }}
-                >
-                  Add a new item
-                </Button>
+                        LocalStorageService.set(
+                          'redirectFromCatalogue',
+                          'catalogue',
+                        );
+                      }}
+                    >
+                      Add a new item
+                    </Button>
+                  }
+                  content={'Add items to the catalogue'}
+                />
               </div>
             )}
         </div>

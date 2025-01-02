@@ -68,7 +68,7 @@ const MembersPage = () => {
                     <Upload size={16} />
                   </Button>
                 }
-                content={'This feature coming soon...'}
+                content={'Export feature coming soon...'}
               />
             </div>
           </SubHeader>

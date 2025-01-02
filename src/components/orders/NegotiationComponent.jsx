@@ -18,6 +18,7 @@ import moment from 'moment';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
@@ -290,13 +291,18 @@ const NegotiationComponent = ({
                   />
                 </TableCell>
                 <TableCell colSpan={1}>
-                  <History
-                    className={
-                      historyVisible[index]
-                        ? 'cursor-pointer text-blue-900'
-                        : 'cursor-pointer text-gray-500 hover:text-blue-900'
+                  <Tooltips
+                    trigger={
+                      <History
+                        className={
+                          historyVisible[index]
+                            ? 'cursor-pointer text-blue-900'
+                            : 'cursor-pointer text-gray-500 hover:text-blue-900'
+                        }
+                        onClick={() => toggleHistory(index, item)}
+                      />
                     }
-                    onClick={() => toggleHistory(index, item)}
+                    content={'View negotiation history'}
                   />
                 </TableCell>
               </TableRow>

@@ -12,6 +12,7 @@ import { Eye } from 'lucide-react';
 import React, { useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
+import Tooltips from '../auth/Tooltips';
 
 const InvoicePDFViewModal = ({ Url }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,13 +25,19 @@ const InvoicePDFViewModal = ({ Url }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center justify-center"
-        >
-          <Eye size={14} />
-        </Button>
+        <Tooltips
+          trigger={
+            <Button
+              onClick={() => setIsOpen(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center justify-center"
+            >
+              <Eye size={14} />
+            </Button>
+          }
+          content={'View Invoice'}
+        />
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] p-1">
         <DialogTitle className="p-2">Invoice</DialogTitle>

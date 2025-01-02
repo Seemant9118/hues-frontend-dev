@@ -4,6 +4,7 @@
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { formattedAmount } from '@/appUtils/helperFunctions';
+import Tooltips from '@/components/auth/Tooltips';
 import DebitNoteComment from '@/components/invoices/DebitNoteComment';
 import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -198,12 +199,18 @@ const ViewDebitNote = () => {
 
             {/* 3 */}
             <div className="absolute right-10 top-5 flex gap-4 text-[#A5ABBD]">
-              <label htmlFor="fileUpload">
-                <Paperclip
-                  size={20}
-                  className="cursor-pointer hover:text-black"
-                />
-              </label>
+              <Tooltips
+                trigger={
+                  <label htmlFor="fileUpload">
+                    <Paperclip
+                      size={20}
+                      className="cursor-pointer hover:text-black"
+                    />
+                  </label>
+                }
+                content={'Attach File'}
+              />
+
               <input
                 type="file"
                 id="fileUpload"
@@ -215,10 +222,15 @@ const ViewDebitNote = () => {
                 }}
               />
 
-              <ArrowUp
-                size={20}
-                onClick={handleSubmitComment}
-                className={'cursor-pointer hover:text-black'}
+              <Tooltips
+                trigger={
+                  <ArrowUp
+                    size={20}
+                    onClick={handleSubmitComment}
+                    className={'cursor-pointer hover:text-black'}
+                  />
+                }
+                content={'Send'}
               />
             </div>
           </div>
