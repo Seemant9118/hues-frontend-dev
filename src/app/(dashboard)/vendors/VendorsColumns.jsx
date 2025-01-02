@@ -11,16 +11,16 @@ export const VendorsColumns = [
       <DataTableColumnHeader column={column} title="NAME" />
     ),
   },
-  {
-    accessorKey: 'address',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ADDRESS" />
-    ),
-    cell: ({ row }) => {
-      const { address } = row.original;
-      return <p className="truncate">{address}</p>;
-    },
-  },
+  // {
+  //   accessorKey: 'address',
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="ADDRESS" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const { address } = row.original;
+  //     return <p className="truncate">{address}</p>;
+  //   },
+  // },
   {
     accessorKey: 'mobileNumber',
     header: ({ column }) => (

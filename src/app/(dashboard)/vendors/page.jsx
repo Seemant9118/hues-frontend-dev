@@ -2,6 +2,7 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import AddModal from '@/components/Modals/AddModal';
+import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -120,29 +121,45 @@ const VendorsPage = () => {
             {!isUploading && (
               <SubHeader name={'Vendors'}>
                 <div className="flex items-center justify-center gap-4">
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsUploading(true)}
-                  >
-                    <Upload size={14} />
-                    Upload
-                  </Button>
-                  <Button
-                    variant={'export'}
-                    size="sm"
-                    onClick={() =>
-                      exportTableToExcel('vendor table', 'vendors_list')
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsUploading(true)}
+                      >
+                        <Upload size={14} />
+                        Upload
+                      </Button>
                     }
-                  >
-                    <Upload size={14} />
-                    Export
-                  </Button>
-                  <AddModal
-                    type={'Add'}
-                    cta="vendor"
-                    btnName="Add"
-                    mutationFunc={createVendor}
+                    content={'Upload vendors data in bulk'}
+                  />
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant={'export'}
+                        size="sm"
+                        onClick={() =>
+                          exportTableToExcel('vendor table', 'vendors_list')
+                        }
+                      >
+                        <Upload size={14} />
+                        Export
+                      </Button>
+                    }
+                    content={'Export vendors data'}
+                  />
+
+                  <Tooltips
+                    trigger={
+                      <AddModal
+                        type={'Add'}
+                        cta="vendor"
+                        btnName="Add"
+                        mutationFunc={createVendor}
+                      />
+                    }
+                    content={'Add a new vendor'}
                   />
                 </div>
               </SubHeader>

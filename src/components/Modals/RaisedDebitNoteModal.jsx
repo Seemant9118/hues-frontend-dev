@@ -4,6 +4,7 @@ import { raisedDebitNote } from '@/services/Debit_Note_Services/DebitNoteService
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -13,8 +14,8 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
 import Loading from '../ui/Loading';
+import { Textarea } from '../ui/textarea';
 
 const RaisedDebitNoteModal = ({ orderId, invoiceId }) => {
   const queryClient = useQueryClient();
@@ -62,10 +63,20 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="blue_outline" className="text-xs">
-          Raised debit note
-        </Button>
+      <DialogTrigger>
+        <Tooltips
+          trigger={
+            <Button
+              onClick={() => setIsOpen(true)}
+              size="sm"
+              variant="blue_outline"
+              className="text-xs"
+            >
+              Raise Debit Note
+            </Button>
+          }
+          content={'Raise a debit note'}
+        />
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center gap-5">
         <DialogHeader className="text-lg font-bold">

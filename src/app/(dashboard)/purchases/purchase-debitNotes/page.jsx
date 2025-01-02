@@ -3,6 +3,7 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import Tooltips from '@/components/auth/Tooltips';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -201,10 +202,6 @@ const PurchaseDebitNotes = () => {
   });
   // handle export order click
   const handleExportDebitNotes = () => {
-    if (selectedDebit.length === 0) {
-      toast.error('Please select atleast One Debit Note to export');
-      return;
-    }
     exportInvoiceMutation.mutate(selectedDebit);
   };
 
@@ -227,14 +224,24 @@ const PurchaseDebitNotes = () => {
               className="sticky top-0 z-10 flex items-center justify-between bg-white"
             >
               <div className="flex items-center justify-center gap-3">
-                <Button
-                  onClick={handleExportDebitNotes}
-                  variant="outline"
-                  className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                  size="sm"
-                >
-                  <Upload size={14} />
-                </Button>
+                <Tooltips
+                  trigger={
+                    <Button
+                      disabled={selectedDebit?.length === 0}
+                      onClick={handleExportDebitNotes}
+                      variant="outline"
+                      className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                      size="sm"
+                    >
+                      <Upload size={14} />
+                    </Button>
+                  }
+                  content={
+                    selectedDebit?.length > 0
+                      ? 'Export Selected Debit Notes'
+                      : 'Select a Debit Note to export'
+                  }
+                />
               </div>
             </SubHeader>
 
@@ -244,7 +251,7 @@ const PurchaseDebitNotes = () => {
                 onValueChange={onTabChange}
                 defaultValue={'all'}
               >
-                <section className="sticky top-14 z-10 bg-white">
+                <section className="sticky top-14 bg-white">
                   <TabsList className="border">
                     <TabsTrigger value="all">All</TabsTrigger>
                     <TabsTrigger value="accepted">Accepted</TabsTrigger>

@@ -2,6 +2,7 @@
 
 import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import Tooltips from '@/components/auth/Tooltips';
 import FilterModal from '@/components/orders/FilterModal';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -332,10 +333,6 @@ const PurchaseOrders = () => {
   });
   // handle export order click
   const handleExportOrder = () => {
-    if (selectedOrders.length === 0) {
-      toast.error('Please select atleast One Order to export');
-      return;
-    }
     exportOrderMutation.mutate(selectedOrders);
   };
 
@@ -360,23 +357,38 @@ const PurchaseOrders = () => {
             <Wrapper>
               <SubHeader name={'Purchases'} className="z-10 bg-white">
                 <div className="flex items-center justify-center gap-3">
-                  <Button
-                    onClick={handleExportOrder}
-                    variant="outline"
-                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                    size="sm"
-                  >
-                    <Upload size={14} />
-                  </Button>
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled={selectedOrders?.length === 0}
+                        onClick={handleExportOrder}
+                        variant="outline"
+                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                        size="sm"
+                      >
+                        <Upload size={14} />
+                      </Button>
+                    }
+                    content={
+                      selectedOrders?.length > 0
+                        ? 'Export Selected Order'
+                        : 'Select a Order to export'
+                    }
+                  />
 
-                  <Button
-                    onClick={() => setIsCreatingPurchase(true)}
-                    className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                    size="sm"
-                  >
-                    <PlusCircle size={14} />
-                    Bid
-                  </Button>
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => setIsCreatingPurchase(true)}
+                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                        size="sm"
+                      >
+                        <PlusCircle size={14} />
+                        Bid
+                      </Button>
+                    }
+                    content={'Create a new purchase order'}
+                  />
                 </div>
               </SubHeader>
 
@@ -386,7 +398,7 @@ const PurchaseOrders = () => {
                   onValueChange={onTabChange}
                   defaultValue={'all'}
                 >
-                  <section className="sticky top-14 z-10 flex justify-between bg-white">
+                  <section className="sticky top-14 flex justify-between bg-white">
                     <TabsList className="border">
                       <TabsTrigger value="all">All</TabsTrigger>
                       <TabsTrigger value="offerReceived">

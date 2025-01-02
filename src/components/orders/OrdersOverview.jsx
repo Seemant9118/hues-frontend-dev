@@ -17,6 +17,7 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { Progress } from '../ui/progress';
+import Tooltips from '../auth/Tooltips';
 
 const OrdersOverview = ({
   isCollapsableOverview,
@@ -145,9 +146,14 @@ const OrdersOverview = ({
               orderDetails?.negotiationStatus === 'INVOICED') && (
               <div className="flex w-1/2 flex-col items-end gap-4">
                 <section className="flex flex-col gap-4">
-                  <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
-                    View Negotiation <MoveUpRight size={12} />
-                  </p>
+                  <Tooltips
+                    trigger={
+                      <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
+                        View Negotiation <MoveUpRight size={12} />
+                      </p>
+                    }
+                    content={'View Negotiation history'}
+                  />
                 </section>
               </div>
             )}

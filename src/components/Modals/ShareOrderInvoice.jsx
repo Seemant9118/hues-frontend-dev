@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import Loading from '../ui/Loading';
+import Tooltips from '../auth/Tooltips';
 
 const ShareOrderInvoice = ({ heading = 'Share', queryFn, queryKey }) => {
   const params = useParams();
@@ -27,10 +28,15 @@ const ShareOrderInvoice = ({ heading = 'Share', queryFn, queryKey }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Share2 size={14} />
-        </Button>
+      <DialogTrigger>
+        <Tooltips
+          trigger={
+            <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+              <Share2 size={14} />
+            </Button>
+          }
+          content={'Share order'}
+        />
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center gap-6">
         <DialogTitle>{heading}</DialogTitle>

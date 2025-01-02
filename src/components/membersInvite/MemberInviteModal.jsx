@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import Tooltips from '../auth/Tooltips';
 
 const MemberInviteModal = () => {
   const queryClient = useQueryClient();
@@ -79,14 +80,20 @@ const MemberInviteModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-          size="sm"
-        >
-          <UserPlus size={16} />
-          Invite members
-        </Button>
+      <DialogTrigger>
+        <Tooltips
+          trigger={
+            <Button
+              onClick={() => setOpen(true)}
+              className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+              size="sm"
+            >
+              <UserPlus size={16} />
+              Invite members
+            </Button>
+          }
+          content={'Invite associate members to your enterprise'}
+        />
       </DialogTrigger>
       <DialogContent className="flex flex-col gap-5">
         <DialogTitle>Invite Member</DialogTitle>

@@ -103,7 +103,7 @@ const Catalogue = () => {
                         <Upload size={14} />
                       </Button>
                     }
-                    content={'This feature Coming Soon...'}
+                    content={'Export feature Coming Soon...'}
                   />
                   <Tooltips
                     trigger={
@@ -111,7 +111,7 @@ const Catalogue = () => {
                         <Eye size={14} />
                       </Button>
                     }
-                    content={'This feature Coming Soon...'}
+                    content={'View feature Coming Soon...'}
                   />
 
                   <Tooltips
@@ -120,7 +120,7 @@ const Catalogue = () => {
                         <Share2 size={14} />
                       </Button>
                     }
-                    content={'This feature Coming Soon...'}
+                    content={'Share feature Coming Soon...'}
                   />
 
                   <Tooltips
@@ -137,7 +137,11 @@ const Catalogue = () => {
                         mutationFunc={bulkDeleteCatalogueItems}
                       />
                     }
-                    content={'Delete a Selected Catalogue'}
+                    content={
+                      selectedCatalogue?.length > 0
+                        ? 'Delete a Selected Catalogue'
+                        : 'Select a Catalogue to delete'
+                    }
                   />
                 </div>
               </div>
@@ -154,7 +158,7 @@ const Catalogue = () => {
                       <ListFilter size={14} />
                     </Button>
                   }
-                  content={'This feature Coming Soon...'}
+                  content={'Filter feature Coming Soon...'}
                 />
               </div>
 
@@ -183,12 +187,19 @@ const Catalogue = () => {
                     }
                   </p>
 
-                  <Button
-                    size="sm"
-                    onClick={() => router.push('/catalogue/update_catalogue')}
-                  >
-                    Update
-                  </Button>
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          router.push('/catalogue/update_catalogue')
+                        }
+                      >
+                        Update
+                      </Button>
+                    }
+                    content={'Update a Catalogue'}
+                  />
                 </div>
               )}
             </div>

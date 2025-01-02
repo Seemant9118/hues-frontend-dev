@@ -2,6 +2,7 @@
 
 import { orderApi } from '@/api/order_api/order_api';
 import ShareOrderInvoice from '@/components/Modals/ShareOrderInvoice';
+import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -204,15 +205,20 @@ const ViewOrder = () => {
               {orderDetails.negotiationStatus === 'NEW' &&
                 userId.toString() === orderDetails.createdBy.toString() && (
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="blue_outline"
-                        size="sm"
-                        className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                      >
-                        <span className="sr-only">Open menu</span>
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                    <DropdownMenuTrigger>
+                      <Tooltips
+                        trigger={
+                          <Button
+                            variant="blue_outline"
+                            size="sm"
+                            className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                          >
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        }
+                        content={'More options'}
+                      />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="max-w-fit">
                       <span
@@ -235,7 +241,7 @@ const ViewOrder = () => {
                 onValueChange={onTabChange}
                 defaultValue={'overview'}
               >
-                <section className="sticky top-10 z-10 bg-white">
+                <section className="sticky top-10 bg-white">
                   <TabsList className="border">
                     <TabsTrigger
                       className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}

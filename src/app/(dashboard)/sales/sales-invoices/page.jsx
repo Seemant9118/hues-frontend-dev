@@ -2,6 +2,7 @@
 
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import Tooltips from '@/components/auth/Tooltips';
 import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -258,10 +259,6 @@ const SalesInvoices = () => {
   });
   // handle export order click
   const handleExportInvoice = () => {
-    if (selectedInvoices.length === 0) {
-      toast.error('Please select atleast One Invoice to export');
-      return;
-    }
     exportInvoiceMutation.mutate(selectedInvoices);
   };
 
@@ -286,23 +283,38 @@ const SalesInvoices = () => {
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-3">
-                  <Button
-                    onClick={handleExportInvoice}
-                    variant="outline"
-                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                    size="sm"
-                  >
-                    <Upload size={14} />
-                  </Button>
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled={selectedInvoices?.length === 0}
+                        onClick={handleExportInvoice}
+                        variant="outline"
+                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                        size="sm"
+                      >
+                        <Upload size={14} />
+                      </Button>
+                    }
+                    content={
+                      selectedInvoices?.length > 0
+                        ? 'Export Selected Invoice'
+                        : 'Select a Invoice to export'
+                    }
+                  />
 
-                  <Button
-                    onClick={() => setIsCreatingInvoice(true)}
-                    className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                    size="sm"
-                  >
-                    <PlusCircle size={14} />
-                    Invoice
-                  </Button>
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => setIsCreatingInvoice(true)}
+                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                        size="sm"
+                      >
+                        <PlusCircle size={14} />
+                        Invoice
+                      </Button>
+                    }
+                    content={'Create a new sales invoice'}
+                  />
                 </div>
               </SubHeader>
 
@@ -312,7 +324,7 @@ const SalesInvoices = () => {
                   onValueChange={onTabChange}
                   defaultValue={'all'}
                 >
-                  <section className="sticky top-14 z-10 bg-white">
+                  <section className="sticky top-14 bg-white">
                     <TabsList className="border">
                       <TabsTrigger value="all">All</TabsTrigger>
                       <TabsTrigger value="pending">Pending</TabsTrigger>

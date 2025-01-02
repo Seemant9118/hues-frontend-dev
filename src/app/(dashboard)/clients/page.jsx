@@ -2,6 +2,7 @@
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import AddModal from '@/components/Modals/AddModal';
+import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -119,29 +120,46 @@ const ClientPage = () => {
             {!isUploading && (
               <SubHeader name={'Clients'}>
                 <div className="flex items-center justify-center gap-4">
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsUploading(true)}
-                  >
-                    <Upload size={14} />
-                    Upload
-                  </Button>
-                  <Button
-                    variant={'export'}
-                    size="sm"
-                    onClick={() =>
-                      exportTableToExcel('client table', 'clients_list')
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsUploading(true)}
+                      >
+                        <Upload size={14} />
+                        Upload
+                      </Button>
                     }
-                  >
-                    <Upload size={14} />
-                    Export
-                  </Button>
-                  <AddModal
-                    type={'Add'}
-                    cta="client"
-                    btnName="Add"
-                    mutationFunc={createClient}
+                    content={'Upload clients data in bulk'}
+                  />
+
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant={'export'}
+                        size="sm"
+                        onClick={() =>
+                          exportTableToExcel('client table', 'clients_list')
+                        }
+                      >
+                        <Upload size={14} />
+                        Export
+                      </Button>
+                    }
+                    content={'Export clients data'}
+                  />
+
+                  <Tooltips
+                    trigger={
+                      <AddModal
+                        type={'Add'}
+                        cta="client"
+                        btnName="Add"
+                        mutationFunc={createClient}
+                      />
+                    }
+                    content={'Add a new client'}
                   />
                 </div>
               </SubHeader>
