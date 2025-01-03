@@ -96,7 +96,6 @@ const SalesOrder = () => {
     all: [],
     bidReceived: [],
     pending: [],
-    unconfirmed: [],
   });
   const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
 
