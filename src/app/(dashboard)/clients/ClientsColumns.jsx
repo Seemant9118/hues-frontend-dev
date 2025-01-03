@@ -1,8 +1,20 @@
 'use client';
 
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import GenerateLink from '@/components/enterprise/GenerateLink';
+import ResendInvitation from '@/components/enterprise/ResendInvitaion';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
-import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  generateLink,
+  resendInvitation,
+} from '@/services/Invitation_Service/Invitation_Service';
+import { MoreVertical } from 'lucide-react';
 
 export const ClientsColumns = [
   {
@@ -66,38 +78,33 @@ export const ClientsColumns = [
       );
     },
   },
-  // {
-  //   id: 'actions',
-  //   enableHiding: false,
-  //   cell: ({ row }) => {
-  //     const { id } = row.original;
-  //     // const { name } = row.original;
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const { invitationId, invitationStatus } = row.original;
 
-  //     return (
-  //       <DropdownMenu>
-  //         <DropdownMenuTrigger asChild>
-  //           <Button variant="ghost" className="h-8 w-8 p-0">
-  //             <span className="sr-only">Open menu</span>
-  //             <MoreVertical className="h-4 w-4" />
-  //           </Button>
-  //         </DropdownMenuTrigger>
-  //         <DropdownMenuContent align="end" className="max-w-fit">
-  //           <AddModal
-  //             cta="client"
-  //             btnName="Edit"
-  //             mutationFunc={updateClient}
-  //             userData={row.original}
-  //             id={id}
-  //           />
-  //           {/* <ConfirmAction
-  //             name={name}
-  //             id={id}
-  //             mutationKey={clientEnterprise.getClients.endpointKey}
-  //             mutationFunc={deleteClient}
-  //           /> */}
-  //         </DropdownMenuContent>
-  //       </DropdownMenu>
-  //     );
-  //   },
-  // },
+      return (
+        invitationStatus === 'REJECTED' && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="max-w-fit">
+              {invitationStatus === 'REJECTED' && (
+                <ResendInvitation
+                  invalidateQuery={clientEnterprise.getClients.endpointKey}
+                  invitationId={invitationId}
+                  mutationFunc={resendInvitation}
+                />
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      );
+    },
+  },
 ];

@@ -39,4 +39,9 @@ export const invitation = {
     endpoint: `/enterprise/invitation/senddirectorinvite`,
     endpointKey: 'send_director_invitation',
   },
+  // 9. resend invitation
+  resendInvitation: {
+    endpoint: `/enterprise/invitation/resendinvite/`,
+    endpointKey: 'resend_invitation',
+  },
 };
