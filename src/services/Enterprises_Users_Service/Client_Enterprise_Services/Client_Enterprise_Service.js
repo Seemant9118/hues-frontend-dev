@@ -25,8 +25,10 @@ export function getClient(id) {
   return APIinstance.get(`${clientEnterprise.getClient.endpoint}${id}`);
 }
 
-export function getClients(id) {
-  return APIinstance.get(`${clientEnterprise.getClients.endpoint}${id}`);
+export function getClients(id, context) {
+  return APIinstance.get(
+    `${clientEnterprise.getClients.endpoint}${id}?context=${context}`,
+  );
 }
 
 export function bulkUploadClients(data) {
