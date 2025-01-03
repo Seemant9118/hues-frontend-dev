@@ -25,8 +25,10 @@ export function getVendor(id) {
   return APIinstance.get(`${vendorEnterprise.getVendor.endpoint}${id}`);
 }
 
-export function getVendors(id) {
-  return APIinstance.get(`${vendorEnterprise.getVendors.endpoint}${id}`);
+export function getVendors(id, context) {
+  return APIinstance.get(
+    `${vendorEnterprise.getVendors.endpoint}${id}?context=${context}`,
+  );
 }
 
 export function bulkUploadVendors(data) {

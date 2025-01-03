@@ -154,9 +154,9 @@ const CreateOrder = ({
     ],
     queryFn: () => {
       if (cta === 'offer') {
-        return getClients(enterpriseId);
+        return getClients(enterpriseId, 'ORDER');
       } else {
-        return getVendors(enterpriseId);
+        return getVendors(enterpriseId, 'ORDER');
       }
     },
     select: (res) => res.data.data,

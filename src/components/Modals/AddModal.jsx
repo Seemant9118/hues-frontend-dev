@@ -2,11 +2,11 @@
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { debounce } from '@/appUtils/helperFunctions';
 import InputWithLabel from '@/components/ui/InputWithLabel';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
@@ -16,7 +16,7 @@ import { SearchEnterprise } from '@/services/Enterprises_Users_Service/Enterpris
 import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit3, Layers2 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
@@ -30,29 +30,17 @@ import {
   SelectValue,
 } from '../ui/select';
 
-// debouncing function
-const debounce = (func, delay) => {
-  let timeoutId;
-  return (...args) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      func(...args);
-    }, delay);
-  };
-};
-
 const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const panNumber = LocalStorageService.get('panClientVendor');
+  const gstNumber = LocalStorageService.get('gstClientVendor');
 
   const [open, setOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [invitedIds, setInvitedIds] = useState([]);
-
-  const [enterpriseData, setEnterPriseData] = useState(
-    btnName !== 'Edit'
+  const [enterpriseData, setEnterPriseData] = useState(() => {
+    return btnName !== 'Edit'
       ? {
           enterpriseId,
           name: '',
@@ -66,23 +54,36 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         }
       : {
           enterpriseId,
-          name: userData.name,
-          address: userData.address,
+          name: userData?.name || '',
+          address: userData?.address || '',
           countryCode: '+91',
-          mobileNumber: userData.mobileNumber,
-          email: userData.email,
-          panNumber: userData.panNumber,
-          gstNumber: userData.gstNumber,
+          mobileNumber: userData?.mobileNumber || '',
+          email: userData?.email || '',
+          panNumber: userData?.panNumber || panNumber || '',
+          gstNumber: userData?.gstNumber || '',
           userType: cta,
-        },
-  );
+        };
+  });
   const [errorMsg, setErrorMsg] = useState({});
   const [searchInput, setSearchInput] = useState({
     idType: 'pan',
     idNumber: '',
   });
-
   const [searchData, setSearchData] = useState([]);
+
+  useEffect(() => {
+    setEnterPriseData((prev) => ({
+      ...prev,
+      panNumber: panNumber || '',
+      gstNumber: gstNumber || '',
+    }));
+  }, [panNumber, gstNumber]);
+
+  useEffect(() => {
+    LocalStorageService.remove('panClientVendor');
+    LocalStorageService.remove('gstClientVendor');
+    setSearchInput({ idType: searchInput.idType, idNumber: '' });
+  }, [open === false, searchInput.idType]);
 
   // query search mutation
   const searchMutation = useMutation({
@@ -143,6 +144,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       });
       setIsAdding(false);
       setSearchInput({});
+      LocalStorageService.remove('panClientVendor');
+      LocalStorageService.remove('gstClientVendor');
       queryClient.invalidateQueries({
         queryKey:
           cta === 'client'
@@ -234,7 +237,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
     // perform condition atleast 3 characters inputed in state then start mutation otherwise not
     setSearchInput((prev) => {
-      const searchState = { ...prev, [id]: value };
+      const searchState = { ...prev, [id]: value.toUpperCase() };
       debouncedMutation(searchState); // Call debounced mutation function with new state
       return searchState;
     });
@@ -318,7 +321,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         {/* search inputs */}
         {!isAdding && btnName !== 'Edit' && (
           <form>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-between gap-4">
               <div className="flex w-1/2 flex-col gap-0.5">
                 <div>
                   <Label className="flex-shrink-0">Identifier Type</Label>{' '}
@@ -337,13 +340,13 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   <SelectContent>
                     <SelectItem value="gst">GST</SelectItem>
                     <SelectItem value="pan">PAN</SelectItem>
-                    <SelectItem value="udyam">UDYAM</SelectItem>
+                    {/* <SelectItem value="udyam">UDYAM</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex w-1/2 flex-col gap-1">
+              <div>
                 <InputWithLabel
-                  className="rounded-md"
+                  className="max-w-sm rounded-md"
                   name={`Identifier No. (${searchInput?.idType?.toUpperCase()})`}
                   type="tel"
                   id="idNumber"
@@ -363,7 +366,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
 
         {/* client list related search  */}
         {!isAdding && btnName !== 'Edit' && (
-          <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto p-4">
+          <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto">
             {searchMutation.isPending && <Loading />}
 
             {searchInput?.idNumber?.length > 2 &&
@@ -398,16 +401,64 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               ))}
 
             {searchData?.length === 0 && searchInput?.idNumber?.length >= 3 && (
-              <span>
-                Enterprise not available,{' '}
-                <Button variant="link" onClick={() => setIsAdding(true)}>
-                  Add details
-                </Button>
-              </span>
+              <div className="flex flex-col gap-1 px-2">
+                <span className="text-sm font-semibold">
+                  Enterprise not available.
+                </span>
+
+                {(() => {
+                  switch (searchInput.idType) {
+                    case 'pan':
+                      return searchInput.idNumber?.length === 10 ? (
+                        <span
+                          onClick={() => {
+                            setIsAdding(true);
+                            LocalStorageService.set(
+                              'panClientVendor',
+                              searchInput.idNumber,
+                            );
+                          }}
+                          className="cursor-pointer text-sm font-semibold text-primary underline"
+                        >
+                          Continue to add new {cta}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-semibold text-red-600">
+                          Please complete the PAN to proceed
+                        </span>
+                      );
+
+                    case 'gst':
+                      return searchInput.idNumber?.length === 15 ? (
+                        <span
+                          onClick={() => {
+                            setIsAdding(true);
+                            LocalStorageService.set(
+                              'gstClientVendor',
+                              searchInput.idNumber,
+                            );
+                          }}
+                          className="cursor-pointer text-sm font-semibold text-primary underline"
+                        >
+                          Continue to add new {cta}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-semibold text-red-600">
+                          Please complete the GST number to proceed
+                        </span>
+                      );
+
+                    default:
+                      return null;
+                  }
+                })()}
+              </div>
             )}
 
             {searchInput?.idNumber?.length < 3 && (
-              <span className="text-sm">By typing Identifier to search</span>
+              <span className="rounded-sm border p-2 text-sm font-semibold">
+                Type an identifier to search
+              </span>
             )}
           </div>
         )}
@@ -513,13 +564,12 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   </div>
                   <Input
                     name="PAN"
-                    type="tel"
+                    type="text"
                     id="panNumber"
-                    // required={true}
                     onChange={(e) =>
                       setEnterPriseData((prev) => ({
                         ...prev,
-                        panNumber: e.target.value,
+                        panNumber: e.target.value.toUpperCase(),
                       }))
                     }
                     value={enterpriseData.panNumber}
@@ -549,37 +599,35 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </div>
             </div>
 
-            <div className="h-[1px] bg-neutral-300"></div>
-
             <div className="mt-3 flex items-center justify-end gap-4">
-              <DialogClose asChild>
-                <Button
-                  onClick={() => {
-                    setErrorMsg({});
-                    if (btnName !== 'Edit') {
-                      setEnterPriseData({
-                        enterpriseId: '',
-                        name: '',
-                        address: '',
-                        countryCode: '',
-                        mobileNumber: '',
-                        email: '',
-                        panNumber: '',
-                        gstNumber: '',
-                        userType: '',
-                      });
-                      setIsAdding(false);
-                      setSearchInput({});
-                    }
+              <Button
+                size="sm"
+                onClick={() => {
+                  setErrorMsg({});
+                  if (btnName !== 'Edit') {
+                    setEnterPriseData({
+                      enterpriseId,
+                      name: '',
+                      address: '',
+                      countryCode: '+91',
+                      mobileNumber: '',
+                      email: '',
+                      panNumber: '',
+                      gstNumber: '',
+                      userType: cta,
+                    });
+                    // setOpen(false);
+                    setIsAdding(false);
+                  } else {
                     setOpen(false);
-                  }}
-                  variant={'outline'}
-                >
-                  Cancel
-                </Button>
-              </DialogClose>
+                  }
+                }}
+                variant={'outline'}
+              >
+                Cancel
+              </Button>
 
-              <Button type="submit">
+              <Button type="submit" size="sm">
                 {btnName === 'Edit' ? 'Edit' : type}
               </Button>
             </div>
