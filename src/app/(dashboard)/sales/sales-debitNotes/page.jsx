@@ -4,7 +4,6 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
@@ -20,9 +19,10 @@ import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
+import { SalesTable } from '../salestable/SalesTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
 
 // macros
@@ -45,6 +45,7 @@ const SalesDebitNotes = () => {
   const [selectedDebit, setSelectedDebit] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
+  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -74,9 +75,10 @@ const SalesDebitNotes = () => {
   // [DEBIT_NOTES_FETCHING]
   // Fetch debitNotes data with infinite scroll
   const {
-    data: debitNotesData,
-    fetchNextPage: debitNotesFetchNextPage,
-    isFetching: isDebitNotesFetching,
+    data,
+    fetchNextPage,
+    isFetching,
+    hasNextPage,
     isLoading: isDebitNotesLoading,
   } = useInfiniteQuery({
     queryKey: [
@@ -100,9 +102,8 @@ const SalesDebitNotes = () => {
   });
 
   useEffect(() => {
-    if (debitNotesData?.pages.length > 0) {
-      const latestPage =
-        debitNotesData.pages[debitNotesData.pages.length - 1].data.data;
+    if (data?.pages.length > 0) {
+      const latestPage = data.pages[data.pages.length - 1].data.data;
       const newDebitNotesData = latestPage.data;
 
       // Set the pagination data
@@ -153,7 +154,33 @@ const SalesDebitNotes = () => {
         return updatedDebitNotes;
       });
     }
-  }, [debitNotesData, filterData]);
+  }, [data, filterData]);
+
+  // Infinite scroll observer
+  const lastSalesDebitsRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, paginationData],
+  );
+
+  // Pagination data
+  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = data?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -259,15 +286,16 @@ const SalesDebitNotes = () => {
                 <TabsContent value="all">
                   {isDebitNotesLoading && <Loading />}
                   {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                    <SalesTable
+                      id={'sale-debits'}
                       columns={debitNotesColumns}
-                      onRowClick={onRowClick}
                       data={debitNotesListing}
-                      isFetching={isDebitNotesFetching}
-                      fetchNextPage={debitNotesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
+                      onRowClick={onRowClick}
+                      lastSalesRef={lastSalesDebitsRef}
                     />
                   )}
 
@@ -282,15 +310,16 @@ const SalesDebitNotes = () => {
                 <TabsContent value="accepted">
                   {isDebitNotesLoading && <Loading />}
                   {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                    <SalesTable
+                      id={'sale-debits'}
                       columns={debitNotesColumns}
-                      onRowClick={onRowClick}
                       data={debitNotesListing}
-                      isFetching={isDebitNotesFetching}
-                      fetchNextPage={debitNotesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
+                      onRowClick={onRowClick}
+                      lastSalesRef={lastSalesDebitsRef}
                     />
                   )}
 
@@ -305,15 +334,16 @@ const SalesDebitNotes = () => {
                 <TabsContent value="rejected">
                   {isDebitNotesLoading && <Loading />}
                   {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                    <SalesTable
+                      id={'sale-debits'}
                       columns={debitNotesColumns}
-                      onRowClick={onRowClick}
                       data={debitNotesListing}
-                      isFetching={isDebitNotesFetching}
-                      fetchNextPage={debitNotesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
+                      onRowClick={onRowClick}
+                      lastSalesRef={lastSalesDebitsRef}
                     />
                   )}
 

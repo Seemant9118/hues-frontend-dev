@@ -3,7 +3,6 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -28,9 +27,10 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
+import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseInvoicesColumns } from './usePurchaseInvoicesColumns';
 
 // macros
@@ -72,8 +72,8 @@ const PurchaseInvoices = () => {
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const router = useRouter();
   const [tab, setTab] = useState('all');
-  const [invoiceListing, setInvoiceListing] = useState([]); // invoices
-  const [invoicesTabs, setInvoicesTab] = useState({
+  const [purchaseinvoiceListing, setPurchaseInvoiceListing] = useState([]); // invoices
+  const [purchaseinvoicesTabs, setPurchaseInvoicesTab] = useState({
     all: [],
     pending: [],
     debitNotes: [],
@@ -82,6 +82,7 @@ const PurchaseInvoices = () => {
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
+  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -90,7 +91,7 @@ const PurchaseInvoices = () => {
 
   useEffect(() => {
     // Clear existing salesListing and paginationData when the tab changes
-    setInvoiceListing([]); // Reset salesListing
+    setPurchaseInvoiceListing([]); // Reset salesListing
     setPaginationData(null); // Reset paginationData
 
     // Apply filters based on the selected tab
@@ -116,8 +117,8 @@ const PurchaseInvoices = () => {
     setFilterData(newFilterData);
 
     // Check if data for this tab already exists to prevent unnecessary API calls
-    if (invoicesTabs[tab]?.length > 0) {
-      setInvoiceListing(invoicesTabs[tab]); // Use cached data for this tab
+    if (purchaseinvoicesTabs[tab]?.length > 0) {
+      setPurchaseInvoiceListing(purchaseinvoicesTabs[tab]); // Use cached data for this tab
     }
   }, [tab]);
 
@@ -125,9 +126,10 @@ const PurchaseInvoices = () => {
   // Fetch invoices data with infinite scroll
   const {
     data: invoicesData,
-    fetchNextPage: invoiceFetchNextPage,
-    isFetching: isInvoicesFetching,
+    fetchNextPage,
+    isFetching,
     isLoading: isInvoiceLoading,
+    hasNextPage,
   } = useInfiniteQuery({
     queryKey: [
       invoiceApi.getAllPurchaseInvoices.endpointKey,
@@ -162,7 +164,7 @@ const PurchaseInvoices = () => {
       });
 
       // Check if the current tab already has data to avoid duplicates
-      setInvoicesTab((prevData) => {
+      setPurchaseInvoicesTab((prevData) => {
         if (prevData[tab]?.length === 0) {
           // Only store the fresh data if it's not already there
           return {
@@ -187,7 +189,7 @@ const PurchaseInvoices = () => {
       });
 
       // Update the current display data without appending duplicates
-      setInvoiceListing((prevInvoices) => {
+      setPurchaseInvoiceListing((prevInvoices) => {
         if (prevInvoices.length === 0) {
           return newInvoicesData; // Set fresh data for the first time
         }
@@ -204,6 +206,32 @@ const PurchaseInvoices = () => {
       });
     }
   }, [invoicesData, filterData]);
+
+  // Infinite scroll observer
+  const lastPurchaseInvoiceRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, paginationData],
+  );
+
+  // Pagination data
+  const totalPages = invoicesData?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = invoicesData?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -312,72 +340,78 @@ const PurchaseInvoices = () => {
 
                 <TabsContent value="all">
                   {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice'}
+                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                    <PurchaseTable
+                      id="purchase-orders"
                       columns={invoiceColumns}
-                      data={invoiceListing}
+                      data={purchaseinvoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
                       onRowClick={onRowClick}
-                      isFetching={isInvoicesFetching}
-                      fetchNextPage={invoiceFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
                     />
                   )}
-                  {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                    <EmptyStageComponent
-                      heading={SaleEmptyStageData.heading}
-                      desc={SaleEmptyStageData.desc}
-                      subHeading={SaleEmptyStageData.subHeading}
-                      subItems={SaleEmptyStageData.subItems}
-                    />
-                  )}
+                  {!isInvoiceLoading &&
+                    purchaseinvoiceListing?.length === 0 && (
+                      <EmptyStageComponent
+                        heading={SaleEmptyStageData.heading}
+                        desc={SaleEmptyStageData.desc}
+                        subHeading={SaleEmptyStageData.subHeading}
+                        subItems={SaleEmptyStageData.subItems}
+                      />
+                    )}
                 </TabsContent>
                 <TabsContent value="pending">
                   {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice'}
+                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                    <PurchaseTable
+                      id="purchase-pending-orders"
                       columns={invoiceColumns}
-                      data={invoiceListing}
+                      data={purchaseinvoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
                       onRowClick={onRowClick}
-                      isFetching={isInvoicesFetching}
-                      fetchNextPage={invoiceFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
                     />
                   )}
 
-                  {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                    <EmptyStageComponent
-                      heading={SaleEmptyStageData.heading}
-                      desc={SaleEmptyStageData.desc}
-                      subHeading={SaleEmptyStageData.subHeading}
-                      subItems={SaleEmptyStageData.subItems}
-                    />
-                  )}
+                  {!isInvoiceLoading &&
+                    purchaseinvoiceListing?.length === 0 && (
+                      <EmptyStageComponent
+                        heading={SaleEmptyStageData.heading}
+                        desc={SaleEmptyStageData.desc}
+                        subHeading={SaleEmptyStageData.subHeading}
+                        subItems={SaleEmptyStageData.subItems}
+                      />
+                    )}
                 </TabsContent>
                 <TabsContent value="debitNotes">
                   {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                    <PurchaseTable
+                      id="purchase-debit-notes"
                       columns={invoiceColumns}
+                      data={purchaseinvoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
                       onRowClick={onRowClick}
-                      data={invoiceListing}
-                      isFetching={isInvoicesFetching}
-                      fetchNextPage={invoiceFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
                     />
                   )}
 
-                  {!isInvoiceLoading && invoiceListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>No Debit Note Raised</p>
-                    </div>
-                  )}
+                  {!isInvoiceLoading &&
+                    purchaseinvoiceListing?.length === 0 && (
+                      <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                        <Image src={emptyImg} alt="emptyIcon" />
+                        <p>No Debit Note Raised</p>
+                      </div>
+                    )}
                 </TabsContent>
               </Tabs>
             </section>

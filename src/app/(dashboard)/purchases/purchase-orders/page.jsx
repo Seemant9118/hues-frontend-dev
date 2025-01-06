@@ -4,7 +4,6 @@ import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
 import FilterModal from '@/components/orders/FilterModal';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -30,8 +29,9 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseColumns } from './usePurchaseColumns';
 
 // dynamic imports
@@ -100,6 +100,8 @@ const PurchaseOrders = () => {
   });
   const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
 
+  const observer = useRef(); // Ref for infinite scrolling observer
+
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value);
@@ -129,22 +131,23 @@ const PurchaseOrders = () => {
   }, [tab]);
 
   // Fetch sales data with infinite scroll
-  const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
-    queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await GetPurchases({
-        id: enterpriseId,
-        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
-      });
-      return response;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    refetchOnWindowFocus: false,
-  });
+  const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
+      queryFn: async ({ pageParam = 1 }) => {
+        const response = await GetPurchases({
+          id: enterpriseId,
+          data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+        });
+        return response;
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) => {
+        const { currentPage, totalPages } = lastPage?.data?.data ?? {};
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      },
+      refetchOnWindowFocus: false,
+    });
 
   useEffect(() => {
     if (data?.pages.length > 0) {
@@ -201,12 +204,39 @@ const PurchaseOrders = () => {
     }
   }, [data, filterData]);
 
+  // Infinite scroll observer
+  const lastPurchaseRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, paginationData],
+  );
+
+  // Pagination data
+  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = data?.pages.length ?? 0;
+
   // fetch unconfirmed sales with infinite scroll
   const {
     data: unconfirmedPurchaseLists,
     fetchNextPage: unconfirmedPurchaseFetchNextPage,
     isFetching: unconfirmedPurchaseListsIsFetching,
     isLoading: unconfirmedPurchaseListsIsLoading,
+    hasNextPage: unconfirmedPuchaseHasNextPage,
   } = useInfiniteQuery({
     queryKey: [
       orderApi.getUnconfirmedPurchases.endpointKey,
@@ -286,6 +316,39 @@ const PurchaseOrders = () => {
       });
     }
   }, [unconfirmedPurchaseLists, filterData]);
+
+  // Infinite scroll observer
+  const lastUnconfirmedRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          unconfirmedPuchaseHasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          unconfirmedPurchaseFetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [
+      unconfirmedPurchaseListsIsFetching,
+      unconfirmedPurchaseFetchNextPage,
+      unconfirmedPuchaseHasNextPage,
+      paginationData,
+    ],
+  );
+
+  // Pagination data
+  const totalPagesUnconfirmed =
+    unconfirmedPurchaseLists?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPageUnconfirmed =
+    unconfirmedPurchaseLists?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -415,15 +478,16 @@ const PurchaseOrders = () => {
 
                     {!isLoading &&
                       (purchaseListing?.length > 0 ? (
-                        <InfiniteDataTable
-                          id={'purchase-orders'}
+                        <PurchaseTable
+                          id="purchase-orders"
                           columns={PurchaseColumns}
                           data={purchaseListing}
-                          onRowClick={onRowClick}
-                          isFetching={isFetching}
                           fetchNextPage={fetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={isFetching}
+                          totalPages={totalPages}
+                          currFetchedPage={currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastPurhaseRef={lastPurchaseRef}
                         />
                       ) : (
                         <EmptyStageComponent
@@ -439,15 +503,16 @@ const PurchaseOrders = () => {
 
                     {!isLoading &&
                       (purchaseListing?.length > 0 ? (
-                        <InfiniteDataTable
-                          id={'purchase-orders'}
+                        <PurchaseTable
+                          id="purchase-orders"
                           columns={PurchaseColumns}
                           data={purchaseListing}
-                          onRowClick={onRowClick}
-                          isFetching={isFetching}
                           fetchNextPage={fetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={isFetching}
+                          totalPages={totalPages}
+                          currFetchedPage={currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastPurhaseRef={lastPurchaseRef}
                         />
                       ) : (
                         <EmptyStageComponent
@@ -463,15 +528,16 @@ const PurchaseOrders = () => {
 
                     {!isLoading &&
                       (purchaseListing?.length > 0 ? (
-                        <InfiniteDataTable
-                          id={'purchase-orders'}
+                        <PurchaseTable
+                          id="purchase-orders"
                           columns={PurchaseColumns}
                           data={purchaseListing}
-                          onRowClick={onRowClick}
-                          isFetching={isFetching}
                           fetchNextPage={fetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={isFetching}
+                          totalPages={totalPages}
+                          currFetchedPage={currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastPurhaseRef={lastPurchaseRef}
                         />
                       ) : (
                         <EmptyStageComponent
@@ -488,15 +554,16 @@ const PurchaseOrders = () => {
 
                     {!unconfirmedPurchaseListsIsLoading &&
                       (unconfirmedPurchaseListing?.length > 0 ? (
-                        <InfiniteDataTable
-                          id={'purchase-orders'}
+                        <PurchaseTable
+                          id="purchase-uncofirmed-orders"
                           columns={PurchaseColumns}
                           data={unconfirmedPurchaseListing}
-                          onRowClick={onRowClick}
-                          isFetching={unconfirmedPurchaseListsIsFetching}
                           fetchNextPage={unconfirmedPurchaseFetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={unconfirmedPurchaseListsIsFetching}
+                          totalPages={totalPagesUnconfirmed}
+                          currFetchedPage={currFetchedPageUnconfirmed}
+                          onRowClick={onRowClick}
+                          lastUnconfirmedRef={lastUnconfirmedRef}
                         />
                       ) : (
                         <EmptyStageComponent
