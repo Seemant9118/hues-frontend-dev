@@ -1,5 +1,3 @@
-import { Clock3 } from 'lucide-react';
-
 const ConditionalRenderingStatus = ({ status }) => {
   let statusText;
   let statusColor;
@@ -88,11 +86,7 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBorder = '#288AF9';
       break;
     case 'NOT_PAID':
-      statusText = (
-        <>
-          Payment <Clock3 size={12} />
-        </>
-      );
+      statusText = 'Payment pending';
       statusColor = '#F8BA05';
       statusBG = '#F8BA051A';
       statusBorder = '#F8BA05';
