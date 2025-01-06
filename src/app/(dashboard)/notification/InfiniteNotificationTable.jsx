@@ -88,14 +88,11 @@ export function InfiniteNotificationTable({
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 33,
+    estimateSize: () => 40, // Adjusted height estimate
     getScrollElement: () => tableContainerRef.current,
-    measureElement:
-      typeof window !== 'undefined' &&
-      navigator.userAgent.indexOf('Firefox') === -1
-        ? (element) => element?.getBoundingClientRect().height
-        : undefined,
-    overscan: 5,
+    measureElement: (element) =>
+      element?.offsetHeight || element?.getBoundingClientRect().height,
+    overscan: 10,
   });
 
   return (

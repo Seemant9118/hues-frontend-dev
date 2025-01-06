@@ -89,12 +89,28 @@ const Notification = () => {
       placeholderData: keepPreviousData,
     });
 
-  // flatten the notifications
   useEffect(() => {
-    const flattenedNotifications = data?.pages
+    if (!data) return;
+
+    // Flatten the notifications from all pages
+    const flattenedNotifications = data.pages
       .map((item) => item?.data?.data?.notifications)
       .flat();
-    setNotifications(flattenedNotifications);
+
+    // Deduplicate notifications based on their unique ID
+    const uniqueNotifications = Array.from(
+      new Map(
+        flattenedNotifications.map((notification) => [
+          notification.id, // Assuming `id` is the unique identifier
+          notification,
+        ]),
+      ).values(),
+    );
+
+    // Update the state with deduplicated notifications
+    setNotifications(uniqueNotifications);
+
+    // Update total unread notifications count
     setTotalUnreadNotifications(data?.pages[0]?.data?.data?.unReadCount);
   }, [data]);
 
