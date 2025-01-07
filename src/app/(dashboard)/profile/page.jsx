@@ -4,6 +4,7 @@ import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ import { toast } from 'sonner';
 function Profile() {
   const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const router = useRouter();
   const [bgColor, setBgColor] = useState('');
@@ -42,11 +44,11 @@ function Profile() {
   const updateEnterpriseMutation = useMutation({
     mutationKey: [
       enterpriseUser.updateEnterpriseIdentificationDetails.endpointKey,
-      userId,
+      enterpriseId,
     ],
     mutationFn: () =>
       updateEnterpriseIdentificationDetails(
-        userId,
+        enterpriseId,
         updateEnterpriseDetails?.identifierType,
         updateEnterpriseDetails?.identifierNum,
       ),
@@ -62,12 +64,8 @@ function Profile() {
       }); // reset bool state
       queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
     },
-    onError: (error) => {
-      if (error.response.data.message === 'Internal Error') {
-        toast.error(`Invalid ${updateEnterpriseDetails?.identifierType}`);
-      } else {
-        toast.error(error.response.data.message || 'Something went wrong');
-      }
+    onError: () => {
+      toast.error(`Invalid ${updateEnterpriseDetails?.identifierType}`);
     },
   });
   // Handle tab change
@@ -591,13 +589,18 @@ function Profile() {
                       Cancel
                     </Button>
                     <Button
+                      disabled={updateEnterpriseMutation.isPending}
                       size="sm"
                       onClick={() => {
                         updateEnterpriseMutation.mutate();
                       }}
                     >
                       {' '}
-                      Update
+                      {updateEnterpriseMutation.isPending ? (
+                        <Loading />
+                      ) : (
+                        'Update'
+                      )}
                     </Button>
                   </div>
                 )}
