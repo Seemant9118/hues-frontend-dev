@@ -2,9 +2,10 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useQuery } from '@tanstack/react-query';
+import { MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import Image from 'next/image';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import emptyImg from '../../../public/Empty.png';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
@@ -13,6 +14,7 @@ import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
+  const router = useRouter();
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
   const params = useParams();
@@ -28,6 +30,15 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   // fn for capitalization
   function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
+  // redirect to invoice details page
+  function invoiceDetailsPage(invoiceId) {
+    if (isPurchasesPage) {
+      router.push(`/purchases/purchase-invoices/${invoiceId}`);
+    } else {
+      router.push(`/sales/sales-invoices/${invoiceId}`);
+    }
   }
 
   if (isInvoicesLoading) {
@@ -46,8 +57,11 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
               >
                 <section className="flex items-center justify-between">
                   <div className="flex flex-col gap-4">
-                    <h1 className="text-sm font-bold">
-                      {invoice?.referenceNumber}
+                    <h1
+                      onClick={() => invoiceDetailsPage(invoice?.id)}
+                      className="flex cursor-pointer items-center gap-1 text-sm font-bold hover:text-primary hover:underline"
+                    >
+                      {invoice?.referenceNumber} <MoveUpRight size={12} />
                     </h1>
                     <div className="flex gap-10">
                       <h1 className="text-sm">
