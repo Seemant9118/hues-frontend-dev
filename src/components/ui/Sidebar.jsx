@@ -33,7 +33,7 @@ const Sidebar = () => {
     //   path: '/template',
     // },
     {
-      name: 'Inventories',
+      name: 'Item Master',
       icon: <Package size={16} />,
       path: '/inventory/goods',
       subTab: [
