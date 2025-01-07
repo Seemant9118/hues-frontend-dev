@@ -17,7 +17,11 @@ import {
   GetSales,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -74,6 +78,7 @@ const SaleEmptyStageData = {
 };
 
 const SalesOrder = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -146,6 +151,24 @@ const SalesOrder = () => {
     });
 
   useEffect(() => {
+    // Clear salesListing and paginationData when filterData changes
+    setSalesListing([]);
+    setPaginationData(null);
+    setSalesDataByTab({
+      all: [],
+      bidReceived: [],
+      pending: [],
+    });
+
+    // Invalidate the query to fetch fresh data starting from page 1
+    queryClient.invalidateQueries([
+      orderApi.getSales.endpointKey,
+      enterpriseId,
+      filterData,
+    ]);
+  }, [filterData, queryClient]);
+
+  useEffect(() => {
     if (data?.pages.length > 0) {
       const latestPage = data.pages[data.pages.length - 1].data.data;
       const newSalesData = latestPage.data;
@@ -195,7 +218,7 @@ const SalesOrder = () => {
         return updatedSales;
       });
     }
-  }, [data, filterData]);
+  }, [data]);
 
   // Infinite scroll observer
   const lastSalesRef = useCallback(
@@ -345,7 +368,11 @@ const SalesOrder = () => {
                       </TabsTrigger>
                       <TabsTrigger value="pending">Payment Pending</TabsTrigger>
                     </TabsList>
-                    <FilterModal tab={tab} setFilterData={setFilterData} />
+                    <FilterModal
+                      isSalesFilter={true}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                    />
                   </section>
 
                   <TabsContent value="all">
@@ -432,6 +459,7 @@ const SalesOrder = () => {
               name="Offer"
               cta="offer"
               isOrder="order"
+              isCreatingSales={isCreatingSales}
               setIsCreatingSales={setIsCreatingSales}
               setIsCreatingInvoice={setIsCreatingInvoice}
               setSalesListing={setSalesListing}

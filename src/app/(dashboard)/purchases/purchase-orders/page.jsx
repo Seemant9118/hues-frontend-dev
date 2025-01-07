@@ -18,7 +18,11 @@ import {
   getUnconfirmedPurchases,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -74,6 +78,7 @@ const PurchaseEmptyStageData = {
 };
 
 const PurchaseOrders = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -150,6 +155,25 @@ const PurchaseOrders = () => {
     });
 
   useEffect(() => {
+    // Clear salesListing and paginationData when filterData changes
+    setPurchaseListing([]);
+    setPaginationData(null);
+    setPurchasesDataByTab({
+      all: [],
+      offerReceived: [],
+      pending: [],
+      unconfirmed: [],
+    });
+
+    // Invalidate the query to fetch fresh data starting from page 1
+    queryClient.invalidateQueries([
+      orderApi.getPurchases.endpointKey,
+      enterpriseId,
+      filterData,
+    ]);
+  }, [filterData, queryClient]);
+
+  useEffect(() => {
     if (data?.pages.length > 0) {
       const latestPage = data.pages[data.pages.length - 1].data.data;
       const newPurchaseData = latestPage.data;
@@ -202,7 +226,7 @@ const PurchaseOrders = () => {
         return updatedPurchases;
       });
     }
-  }, [data, filterData]);
+  }, [data]);
 
   // Infinite scroll observer
   const lastPurchaseRef = useCallback(
@@ -470,7 +494,11 @@ const PurchaseOrders = () => {
                       <TabsTrigger value="pending">Payment Pending</TabsTrigger>
                       <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
                     </TabsList>
-                    <FilterModal setFilterData={setFilterData} />
+                    <FilterModal
+                      isSalesFilter={false}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                    />
                   </section>
 
                   <TabsContent value="all">
@@ -584,6 +612,7 @@ const PurchaseOrders = () => {
               name={'Bid'}
               cta="bid"
               isOrder="order"
+              isCreatingPurchase={isCreatingPurchase}
               onCancel={() => setIsCreatingPurchase(false)}
               onSubmit={() => {
                 setIsCreatingPurchase(false);
