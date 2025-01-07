@@ -62,3 +62,13 @@ export function UpdateEnterprise({ id, data }) {
 export function getEnterpriseById(id) {
   return APIinstance.get(`${enterpriseUser.getEnterprise.endpoint}${id}`);
 }
+
+export function updateEnterpriseIdentificationDetails(
+  id,
+  identifierType,
+  identifierNum,
+) {
+  return APIinstance.post(
+    `${enterpriseUser.updateEnterpriseIdentificationDetails.endpoint}${id}?identifierType=${identifierType}&identifier=${identifierNum}`,
+  );
+}
