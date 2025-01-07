@@ -126,7 +126,9 @@ const Catalogue = () => {
                   <Tooltips
                     trigger={
                       <BulkConfirmAction
-                        infoText={'You are deleting selected items below'}
+                        infoText={
+                          'You are removing the selected items from the catalogue'
+                        }
                         selectedItems={selectedCatalogue}
                         setSelectedItems={setSelectedCatalogue}
                         setRowSelection={setRowSelection}
@@ -139,8 +141,8 @@ const Catalogue = () => {
                     }
                     content={
                       selectedCatalogue?.length > 0
-                        ? 'Delete a Selected Catalogue'
-                        : 'Select a Catalogue to delete'
+                        ? 'Remove a Selected Catalogue'
+                        : 'Select a Catalogue to remove'
                     }
                   />
                 </div>

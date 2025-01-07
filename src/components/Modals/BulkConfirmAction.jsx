@@ -30,7 +30,7 @@ const BulkConfirmAction = ({
     mutationKey: [mutationKey],
     mutationFn: mutationFunc,
     onSuccess: () => {
-      toast.success('Deleted successfully');
+      toast.success('Removed successfully');
       setOpen(false);
       setSelectedItems([]); // clear state of data
       setRowSelection({}); // clear state of react table
@@ -87,7 +87,7 @@ const BulkConfirmAction = ({
               });
             }}
           >
-            Delete
+            Remove
           </Button>
         </div>
       </DialogContent>
