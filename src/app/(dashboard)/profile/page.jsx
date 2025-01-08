@@ -460,7 +460,7 @@ function Profile() {
                     <div className="flex w-full items-center gap-1">
                       <Label className="text-xs">GST IN</Label>
 
-                      {!profileDetails?.enterpriseDetails?.gst &&
+                      {!profileDetails?.enterpriseDetails?.gstNumber &&
                       !isEditing.udyam ? (
                         isEditing.gst ? (
                           <X

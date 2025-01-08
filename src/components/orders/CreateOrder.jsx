@@ -32,7 +32,12 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { getStylesForCreatableSelectComponent } from '@/appUtils/helperFunctions';
+import { userAuth } from '@/api/user_auth/Users';
+import {
+  getStylesForCreatableSelectComponent,
+  isGstApplicable,
+} from '@/appUtils/helperFunctions';
+import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -57,6 +62,8 @@ const CreateOrder = ({
 }) => {
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
+
+  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -64,6 +71,25 @@ const CreateOrder = ({
   const [customerToSearch, setCustomerToSearch] = useState('');
   const [itemToSearch, setItemToSearch] = useState('');
 
+  // fetch profileDetails API
+  const { data: profileDetails } = useQuery({
+    queryKey: [userAuth.getProfileDetails.endpointKey],
+    queryFn: () => getProfileDetails(userId),
+    select: (data) => data.data.data,
+    enabled: !!isCreatingSales && isPurchasePage === false,
+  });
+
+  // for sales-order gst/non-gst check
+  const isGstApplicableForSalesOrders =
+    isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
+
+  // for purchase-orders gst/non-gst check
+  const [
+    isGstApplicableForPurchaseOrders,
+    setIsGstApplicableForPurchaseOrders,
+  ] = useState('');
+
+  const [selectedValue, setSelectedValue] = useState(''); // Manage selected value
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
     productType: '',
@@ -74,7 +100,6 @@ const CreateOrder = ({
     totalAmount: null,
     totalGstAmount: null,
   });
-
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
@@ -146,6 +171,7 @@ const CreateOrder = ({
     isOrder,
     setOrder,
     setSelectedItem,
+    isGstApplicableForSalesOrders,
   );
 
   // client/vendor fetching
@@ -350,8 +376,17 @@ const CreateOrder = ({
       return totalAmt + orderItem.totalAmount;
     }, 0);
 
-    const totalGstAmt = order.orderItems.reduce((totalGst, orderItem2) => {
-      return totalGst + orderItem2.totalGstAmount;
+    const totalGstAmt = order.orderItems.reduce((totalGst, orderItem) => {
+      return (
+        totalGst +
+        (isGstApplicable(
+          isPurchasePage
+            ? isGstApplicableForPurchaseOrders
+            : isGstApplicableForSalesOrders,
+        )
+          ? orderItem.totalGstAmount
+          : 0)
+      );
     }, 0);
 
     return { totalAmount, totalGstAmt };
@@ -420,6 +455,8 @@ const CreateOrder = ({
         <RedirectionToInvoiceModal
           redirectPopupOnFail={redirectPopupOnFail}
           setRedirectPopUpOnFail={setRedirectPopUpOnFail}
+          setSelectedValue={setSelectedValue}
+          setOrder={setOrder}
         />
       )}
 
@@ -486,7 +523,7 @@ const CreateOrder = ({
               </Label>
               <div className="flex w-full flex-col gap-1">
                 <Select
-                  defaultValue=""
+                  value={selectedValue} // Bind state to value
                   onValueChange={(value) => {
                     const selectedItem = JSON.parse(value); // Parse the JSON string
                     const { id, isAcceptedCustomer } = selectedItem; // Destructure the parsed object
@@ -509,6 +546,7 @@ const CreateOrder = ({
                       }));
                       setRedirectPopUpOnFail(true);
                     }
+                    setSelectedValue(value); // Update state with the selected value
                   }}
                 >
                   <SelectTrigger className="max-w-xs">
@@ -570,7 +608,8 @@ const CreateOrder = ({
                 defaultValue=""
                 onValueChange={(value) => {
                   const selectedItem = JSON.parse(value); // Parse the JSON string
-                  const { id } = selectedItem; // Destructure the parsed object
+                  const { id, gstNumber } = selectedItem; // Destructure the parsed object
+                  setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
 
                   setOrder((prev) => ({
                     ...prev,
@@ -606,6 +645,7 @@ const CreateOrder = ({
                           key={customer.id}
                           value={JSON.stringify({
                             id: customer?.vendor?.id,
+                            gstNumber: customer?.vendor?.gstNumber,
                             isAcceptedCustomer:
                               customer?.invitation === null ||
                               customer?.invitation === undefined
@@ -679,7 +719,13 @@ const CreateOrder = ({
                     productType: selectedItemData.productType,
                     productName: selectedItemData.productName,
                     unitPrice: selectedItemData.rate,
-                    gstPerUnit: selectedItemData.gstPercentage,
+                    gstPerUnit: isGstApplicable(
+                      isPurchasePage
+                        ? isGstApplicableForPurchaseOrders
+                        : isGstApplicableForSalesOrders,
+                    )
+                      ? selectedItemData.gstPercentage
+                      : 0,
                   }));
                 }}
               >
@@ -792,24 +838,30 @@ const CreateOrder = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label className="flex gap-1">
-              GST (%)
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex flex-col gap-1">
-              <Input
-                disabled
-                value={selectedItem.gstPerUnit}
-                className="max-w-14"
-              />
-              {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex">
+                GST <span className="text-xs"> (%)</span>
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.gstPerUnit}
+                  className="max-w-14"
+                />
+                {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              {isOrder === 'invoice' ? 'Invoice Value' : 'Amount'}
+              {isOrder === 'invoice' ? 'Invoice Value' : 'Value'}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -821,6 +873,52 @@ const CreateOrder = ({
               {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
             </div>
           </div>
+
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex gap-1">
+                Tax Amount
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.totalGstAmount}
+                  className="max-w-30"
+                />
+                {errorMsg.totalAmount && (
+                  <ErrorBox msg={errorMsg.totalGstAmount} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex gap-1">
+                Amount
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.totalAmount + selectedItem.totalGstAmount}
+                  className="max-w-30"
+                />
+                {errorMsg.totalAmount && (
+                  <ErrorBox msg={errorMsg.totalAmount} />
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-end gap-4">
           <Button
@@ -875,12 +973,18 @@ const CreateOrder = ({
 
       <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-bold">Gross Amount : </span>
-            <span className="rounded-sm border bg-slate-100 p-2">
-              {grossAmt.toFixed(2)}
-            </span>
-          </div>
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex items-center gap-2">
+              <span className="font-bold">Gross Amount : </span>
+              <span className="rounded-sm border bg-slate-100 p-2">
+                {grossAmt.toFixed(2)}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>
             <span className="rounded-sm border bg-slate-100 p-2">
