@@ -57,6 +57,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   // Set initial state for invoices
   const [invoices, setInvoices] = useState([]);
   const [paymentData, setPaymentData] = useState({
+    orderId,
     amount: '',
     paymentMode: '',
     transactionId: '',
@@ -67,7 +68,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   // Update the invoices state once invoicesForPayments data is fetched
   useEffect(() => {
     if (invoicesForPayments) {
-      const updatedInvoices = invoicesForPayments.map((invoice) => ({
+      const updatedInvoices = invoicesForPayments?.data?.map((invoice) => ({
         ...invoice,
         invoiceId: invoice.invoicereceivableinvoiceid,
         amount: 0, // Adding amountPaid to each invoice
@@ -110,7 +111,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const balanceAmount = parseFloat(
-      orderDetails.amount + orderDetails.gstAmount - orderDetails.amountPaid,
+      invoicesForPayments?.invoicedTotalDueAmount,
     );
 
     setPaymentData((prevData) => ({
@@ -429,9 +430,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                   disabled
                   className="max-w-md"
                   value={formattedAmount(
-                    orderDetails.amount +
-                      orderDetails.gstAmount -
-                      orderDetails.amountPaid,
+                    invoicesForPayments?.invoicedTotalDueAmount,
                   )}
                 />
               </div>
