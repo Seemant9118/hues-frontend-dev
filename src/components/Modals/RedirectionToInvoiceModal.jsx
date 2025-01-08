@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 
 const RedirectionToInvoiceModal = ({
   redirectPopupOnFail,
-  setIsCreatingSales,
+  setRedirectPopUpOnFail,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -16,7 +16,13 @@ const RedirectionToInvoiceModal = ({
   }, [redirectPopupOnFail]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={() => {
+        setIsOpen((prev) => !prev);
+        setRedirectPopUpOnFail(false);
+      }}
+    >
       <DialogContent className="flex flex-col gap-2">
         <div className="flex flex-col gap-10 p-2">
           <span className="flex flex-col gap-1">
@@ -37,7 +43,7 @@ const RedirectionToInvoiceModal = ({
               className="w-36"
               onClick={() => {
                 setIsOpen(false);
-                setIsCreatingSales(false);
+                setRedirectPopUpOnFail(false);
               }}
             >
               No

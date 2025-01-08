@@ -54,7 +54,6 @@ const CreateOrder = ({
   cta,
   type,
   isOrder,
-  setIsCreatingSales,
 }) => {
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
@@ -420,7 +419,7 @@ const CreateOrder = ({
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
           redirectPopupOnFail={redirectPopupOnFail}
-          setIsCreatingSales={setIsCreatingSales}
+          setRedirectPopUpOnFail={setRedirectPopUpOnFail}
         />
       )}
 
