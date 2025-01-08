@@ -75,3 +75,9 @@ export const debounce = (func, delay) => {
     }, delay);
   };
 };
+
+// isGstApplicable
+export const isGstApplicable = (isHaveGst) => {
+  if (isHaveGst) return true;
+  else return false;
+};

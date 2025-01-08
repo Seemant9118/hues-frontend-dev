@@ -1,22 +1,21 @@
 'use client';
 
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { formattedAmount, isGstApplicable } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 
-export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
+export const useCreateSalesColumns = (
+  isOrder,
+  setOrder,
+  setSelectedItem,
+  haveGstForSalesOrders,
+) => {
   return [
     {
       accessorKey: 'productName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ITEM" />
-      ),
-    },
-    {
-      accessorKey: 'unitPrice',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PRICE" />
       ),
     },
     {
@@ -26,18 +25,28 @@ export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
       ),
     },
     {
-      accessorKey: 'gstPerUnit',
+      accessorKey: 'unitPrice',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GST (%)" />
+        <DataTableColumnHeader column={column} title="PRICE" />
       ),
     },
+    ...(isGstApplicable(haveGstForSalesOrders)
+      ? [
+          {
+            accessorKey: 'gstPerUnit',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="GST (%)" />
+            ),
+          },
+        ]
+      : []),
 
     {
       accessorKey: 'totalAmount',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={isOrder === 'invoice' ? 'INVOICE VALUE' : 'AMOUNT'}
+          title={isOrder === 'invoice' ? 'INVOICE VALUE' : 'VALUE'}
         />
       ),
       cell: ({ row }) => {
@@ -46,6 +55,29 @@ export const useCreateSalesColumns = (isOrder, setOrder, setSelectedItem) => {
         return formattedAmount(amount);
       },
     },
+    ...(isGstApplicable(haveGstForSalesOrders)
+      ? [
+          {
+            accessorKey: 'totalGstAmount',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="TAX AMOUNT" />
+            ),
+          },
+          {
+            accessorKey: 'amount',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="AMOUNT" />
+            ),
+            cell: ({ row }) => {
+              const amount = parseFloat(row.getValue('totalAmount'));
+              const totalGstAmount = parseFloat(row.getValue('totalGstAmount'));
+              const finalAmount = amount + totalGstAmount;
+
+              return formattedAmount(finalAmount);
+            },
+          },
+        ]
+      : []),
     {
       id: 'actions',
       enableHiding: false,
