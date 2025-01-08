@@ -15,7 +15,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Edit3, Layers2 } from 'lucide-react';
+import { Layers2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ErrorBox from '../ui/ErrorBox';
@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '../ui/select';
 
-const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
+const AddModal = ({ type, cta, btnName, mutationFunc }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const panNumber = LocalStorageService.get('panClientVendor');
@@ -39,30 +39,16 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
   const [open, setOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [invitedIds, setInvitedIds] = useState([]);
-  const [enterpriseData, setEnterPriseData] = useState(() => {
-    return btnName !== 'Edit'
-      ? {
-          enterpriseId,
-          name: '',
-          address: '',
-          countryCode: '+91',
-          mobileNumber: '',
-          email: '',
-          panNumber: '',
-          gstNumber: '',
-          userType: cta,
-        }
-      : {
-          enterpriseId,
-          name: userData?.name || '',
-          address: userData?.address || '',
-          countryCode: '+91',
-          mobileNumber: userData?.mobileNumber || '',
-          email: userData?.email || '',
-          panNumber: userData?.panNumber || panNumber || '',
-          gstNumber: userData?.gstNumber || '',
-          userType: cta,
-        };
+  const [enterpriseData, setEnterPriseData] = useState({
+    enterpriseId,
+    name: '',
+    address: '',
+    countryCode: '+91',
+    mobileNumber: '',
+    email: '',
+    panNumber: '',
+    gstNumber: '',
+    userType: cta,
   });
   const [errorMsg, setErrorMsg] = useState({});
   const [searchInput, setSearchInput] = useState({
@@ -158,41 +144,6 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
     },
   });
 
-  // update enterprise mutation
-  const updateMutation = useMutation({
-    mutationFn: (data) => mutationFunc(id, data),
-    onSuccess: (data) => {
-      if (!data.data.status) {
-        this.onError();
-        return;
-      }
-
-      toast.success('Edited Successfully');
-      setOpen((prev) => !prev);
-      setEnterPriseData({
-        enterpriseId: '',
-        name: '',
-        address: '',
-        countryCode: '',
-        mobileNumber: '',
-        email: '',
-        panNumber: '',
-        gstNumber: '',
-        userType: '',
-      });
-
-      queryClient.invalidateQueries({
-        queryKey:
-          cta === 'client'
-            ? [clientEnterprise.getClients.endpointKey]
-            : [vendorEnterprise.getVendors.endpointKey],
-      });
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
   // validation
   const validation = (enterpriseDataItem) => {
     const errorObj = {};
@@ -203,9 +154,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       errorObj.name = '*Required Name';
     }
 
-    if (enterpriseDataItem.address === '') {
-      errorObj.address = '*Required Address';
-    }
+    // if (enterpriseDataItem.address === '') {
+    //   errorObj.address = '*Required Address';
+    // }
 
     if (enterpriseDataItem.mobileNumber === '') {
       errorObj.mobileNumber = '*Required Phone';
@@ -213,9 +164,13 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       errorObj.mobileNumber = '*Please enter a valid mobile number';
     }
 
-    if (enterpriseDataItem.email === '') {
-      errorObj.email = '*Required Email';
-    } else if (!emailPattern.test(enterpriseDataItem.email)) {
+    // if (enterpriseDataItem.email === '') {
+    //   errorObj.email = '*Required Email';
+    // }
+    if (
+      enterpriseDataItem?.email.length > 0 &&
+      !emailPattern.test(enterpriseDataItem.email)
+    ) {
       errorObj.email = '*Please provide valid email';
     }
 
@@ -252,18 +207,6 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       toEnterpriseId: id,
       invitationType: cta === 'client' ? 'CLIENT' : 'VENDOR',
     });
-  };
-
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    const isError = validation(enterpriseData);
-
-    if (Object.keys(isError).length === 0) {
-      updateMutation.mutate(enterpriseData);
-      setErrorMsg({});
-      return;
-    }
-    setErrorMsg(isError);
   };
 
   const handleSubmit = (e) => {
@@ -303,23 +246,16 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
       }}
     >
       <DialogTrigger asChild>
-        {btnName === 'Edit' ? (
-          <div className="flex w-full items-center justify-center gap-2 rounded-sm px-2 py-1.5 hover:cursor-pointer hover:bg-slate-100">
-            <Edit3 size={12} />
-            Edit{' '}
-          </div>
-        ) : (
-          <Button variant={'blue_outline'} size="sm" className="w-full">
-            <Layers2 size={14} />
-            {btnName}
-          </Button>
-        )}
+        <Button variant={'blue_outline'} size="sm" className="w-full">
+          <Layers2 size={14} />
+          {btnName}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
         {/* search inputs */}
-        {!isAdding && btnName !== 'Edit' && (
+        {!isAdding && (
           <form>
             <div className="flex items-center justify-between gap-4">
               <div className="flex w-1/2 flex-col gap-0.5">
@@ -365,7 +301,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         )}
 
         {/* client list related search  */}
-        {!isAdding && btnName !== 'Edit' && (
+        {!isAdding && (
           <div className="scrollBarStyles flex max-h-[200px] flex-col gap-4 overflow-auto">
             {searchMutation.isPending && <Loading />}
 
@@ -464,11 +400,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
         )}
 
         {/* if client does not in our client list then, create client */}
-        {isAdding && searchData?.length === 0 && btnName !== 'Edit' && (
-          <form
-            className="rounded-md p-2"
-            onSubmit={btnName === 'Edit' ? handleEditSubmit : handleSubmit}
-          >
+        {isAdding && searchData?.length === 0 && (
+          <form className="rounded-md p-2" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
@@ -517,7 +450,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
                   <Label>Email</Label>
-                  <span className="text-red-600">*</span>
+                  {/* <span className="text-red-600">*</span> */}
                 </div>
                 <Input
                   name="Email"
@@ -580,7 +513,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
                   <Label>Address</Label>
-                  <span className="text-red-600">*</span>
+                  {/* <span className="text-red-600">*</span> */}
                 </div>
                 <Input
                   name="Address"
@@ -595,7 +528,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                   }
                   value={enterpriseData.address}
                 />
-                {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
+                {/* {errorMsg.address && <ErrorBox msg={errorMsg.address} />} */}
               </div>
             </div>
 
@@ -604,23 +537,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
                 size="sm"
                 onClick={() => {
                   setErrorMsg({});
-                  if (btnName !== 'Edit') {
-                    setEnterPriseData({
-                      enterpriseId,
-                      name: '',
-                      address: '',
-                      countryCode: '+91',
-                      mobileNumber: '',
-                      email: '',
-                      panNumber: '',
-                      gstNumber: '',
-                      userType: cta,
-                    });
-                    // setOpen(false);
-                    setIsAdding(false);
-                  } else {
-                    setOpen(false);
-                  }
+                  setIsAdding(false);
                 }}
                 variant={'outline'}
               >
@@ -628,7 +545,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc, userData, id }) => {
               </Button>
 
               <Button type="submit" size="sm">
-                {btnName === 'Edit' ? 'Edit' : type}
+                {type}
               </Button>
             </div>
           </form>

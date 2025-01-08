@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { UserRoundPlus } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+import { Button } from '../ui/button';
 
 const ResendInvitation = ({ invalidateQuery, invitationId, mutationFunc }) => {
   const queryClient = useQueryClient();
@@ -20,12 +22,16 @@ const ResendInvitation = ({ invalidateQuery, invitationId, mutationFunc }) => {
   };
 
   return (
-    <span
+    <Button
+      variant="ghost"
+      size="sm"
+      className="w-full"
       onClick={handleClick}
-      className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+      // className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
     >
+      <UserRoundPlus size={14} />
       Resend
-    </span>
+    </Button>
   );
 };
 

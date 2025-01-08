@@ -10,7 +10,7 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
+import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
 import {
   bulkUploadVendors,
   createVendor,
@@ -21,7 +21,7 @@ import { BookUser, Eye, HeartHandshake, Settings, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { VendorsColumns } from './VendorsColumns';
+import { useVendorsColumns } from './useVendorsColumns';
 
 const UploadItems = dynamic(
   () => import('@/components/inventory/UploadItems'),
@@ -106,6 +106,8 @@ const VendorsPage = () => {
       toast.error(error.response.data.message || 'Something went wrong');
     }
   };
+
+  const VendorsColumns = useVendorsColumns();
 
   return (
     <>
