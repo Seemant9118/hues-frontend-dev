@@ -2,7 +2,6 @@
 
 import { goodsApi } from '@/api/inventories/goods/goods';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
-import ShareModal from '@/components/Modals/ShareModal';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { Edit3, Info, MoreVertical } from 'lucide-react';
+import moment from 'moment';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   return [
@@ -45,12 +45,6 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       ),
     },
     {
-      accessorKey: 'quantity',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="QUANTITY" />
-      ),
-    },
-    {
       accessorKey: 'rate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="RATE" />
@@ -61,6 +55,17 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GST (%)" />
       ),
+    },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ADDED ON" />
+      ),
+      cell: ({ row }) => {
+        const { createdAt } = row.original;
+        const date = moment(createdAt).format('DD-MM-YYYY');
+        return <div>{date}</div>;
+      },
     },
     {
       id: 'actions',
@@ -87,8 +92,6 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
                 <Edit3 size={12} />
                 Edit
               </DropdownMenuItem>
-
-              <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
 
               <ConfirmAction
                 infoText={`You are removing ${name} from inventory`}

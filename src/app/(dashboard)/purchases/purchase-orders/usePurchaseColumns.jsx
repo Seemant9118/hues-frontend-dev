@@ -1,6 +1,5 @@
 'use client';
 
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
@@ -14,9 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LocalStorageService } from '@/lib/utils';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
-import { useQuery } from '@tanstack/react-query';
 import { Dot, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
@@ -26,32 +23,14 @@ export const usePurchaseColumns = (
   setSelectedOrders,
 ) => {
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-
-  const { data: vendors } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
-  });
-
-  // Function to get customer name from clients list
-  const getCustomerName = (sellerEnterpriseId) => {
-    const vendor = vendors?.find(
-      (vendorData) => vendorData?.vendor?.id === sellerEnterpriseId,
-    );
-
-    return vendor?.vendor?.name !== null
-      ? vendor?.vendor?.name
-      : vendor?.invitation?.userDetails?.name;
-  };
 
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
-    const customerName = getCustomerName(row.original.sellerEnterpriseId);
-    const orderWithCustomer = { ...row.original, customerName };
+    const { vendorName } = row.original;
+    const orderWithVendor = { ...row.original, customerName: vendorName };
 
     if (isSelected) {
-      setSelectedOrders((prev) => [...prev, orderWithCustomer]);
+      setSelectedOrders((prev) => [...prev, orderWithVendor]);
     } else {
       setSelectedOrders((prev) =>
         prev.filter((order) => order.id !== row.original.id),
@@ -63,8 +42,8 @@ export const usePurchaseColumns = (
   const handleSelectAll = (isAllSelected, rows) => {
     if (isAllSelected) {
       const allOrders = rows.map((row) => {
-        const customerName = getCustomerName(row.original.sellerEnterpriseId);
-        return { ...row.original, customerName };
+        const { vendorName } = row.original;
+        return { ...row.original, customerName: vendorName };
       });
       setSelectedOrders(allOrders);
     } else {
@@ -135,14 +114,10 @@ export const usePurchaseColumns = (
       },
     },
     {
-      accessorKey: 'sellerEnterpriseId',
+      accessorKey: 'vendorName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="VENDORS" />
       ),
-      cell: ({ row }) => {
-        const { sellerEnterpriseId } = row.original;
-        return <div>{getCustomerName(sellerEnterpriseId)}</div>;
-      },
     },
     {
       accessorKey: 'status',

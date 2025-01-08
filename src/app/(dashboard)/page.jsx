@@ -30,6 +30,7 @@ export default function Home() {
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
     ...user.enterprise,
+    type: user.invitation.invitationType,
     id: user.invitation.id,
     status: user.status,
   }));

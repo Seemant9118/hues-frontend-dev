@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 const ConfirmAction = ({
+  catalogueDeletion,
   infoText,
   id,
   type,
@@ -29,7 +30,9 @@ const ConfirmAction = ({
     mutationKey: [mutationKey],
     mutationFn: mutationFunc,
     onSuccess: () => {
-      toast.success('Deleted successfully');
+      toast.success(
+        catalogueDeletion ? 'Removed Successfully' : 'Deleted successfully',
+      );
       setOpen(false);
       queryClient.invalidateQueries([invalidateKey]);
     },
@@ -47,7 +50,7 @@ const ConfirmAction = ({
           )}
         >
           <Trash2 size={12} />
-          Delete
+          {catalogueDeletion ? 'Remove' : 'Delete'}
         </button>
       </DialogTrigger>
       <DialogContent className="flex flex-col items-center justify-center gap-5">
@@ -76,7 +79,7 @@ const ConfirmAction = ({
               deleteMutation.mutate({ id, type });
             }}
           >
-            Delete
+            {catalogueDeletion ? 'Remove' : 'Delete'}
           </Button>
         </div>
       </DialogContent>

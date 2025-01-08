@@ -1,7 +1,11 @@
 'use client';
 
 import { invitation } from '@/api/invitation/Invitation';
-import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import {
+  capitalize,
+  getInitialsNames,
+  getRandomBgColor,
+} from '@/appUtils/helperFunctions';
 import {
   Dialog,
   DialogContent,
@@ -93,7 +97,7 @@ const PendingInvitesModal = ({
                   </span>
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-bold">
-                      {inviteItem?.name ?? '-'}
+                      {`"${inviteItem?.name}" wants to add you as their ${capitalize(inviteItem?.type)}`}
                     </span>
                     <span className="flex items-center gap-2 text-xs text-[#A5ABBD]">
                       <p>+91 {inviteItem?.mobileNumber ?? '-'} |</p>

@@ -21,7 +21,7 @@ import { BookCheck, BookUser, Key, Upload, UserPlus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ClientsColumns } from './ClientsColumns';
+import { useClientsColumns } from './useClientsColumns';
 // dynamic imports
 const UploadItems = dynamic(
   () => import('@/components/inventory/UploadItems'),
@@ -105,6 +105,8 @@ const ClientPage = () => {
       toast.error(error.response.data.message || 'Something went wrong');
     }
   };
+
+  const ClientsColumns = useClientsColumns();
 
   return (
     <>

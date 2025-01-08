@@ -97,10 +97,14 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
         },
       },
       {
-        accessorKey: 'itemId', // Change to SKU of the catalogue
+        accessorKey: 'sku', // Change to SKU of the catalogue
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="SKU" />
         ),
+        cell: ({ row }) => {
+          const { sku } = row.original;
+          return <>{sku || '-'}</>;
+        },
       },
       {
         accessorKey: 'manufacturerName',
@@ -140,6 +144,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-fit">
                 <ConfirmAction
+                  catalogueDeletion={true}
                   infoText={`You are removing ${name} from catalogue`}
                   id={itemId}
                   type={type}

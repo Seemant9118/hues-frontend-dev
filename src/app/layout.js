@@ -1,5 +1,5 @@
 import QueryWrapper from '@/components/wrappers/QueryWrapper';
-import { StepsProvider } from '@/context/StepsContext';
+import { CountNotificationsProvider } from '@/context/CountNotificationsContext';
 import { Toaster } from 'sonner';
 import './globals.css';
 
@@ -17,9 +17,9 @@ export default function RootLayout({ children }) {
           <Toaster richColors position="top-right" duration="2500" />
         </div>
 
-        <StepsProvider>
+        <CountNotificationsProvider>
           <QueryWrapper>{children}</QueryWrapper>
-        </StepsProvider>
+        </CountNotificationsProvider>
       </body>
     </html>
   );

@@ -1,36 +1,79 @@
 'use client';
 
+import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
+import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import {
   getProfileDetails,
   LoggingOut,
 } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Info } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Info, Pencil, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 function Profile() {
+  const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const router = useRouter();
   const [bgColor, setBgColor] = useState('');
   const [tab, setTab] = useState('userOverview');
+  const [isEditing, setIsEditing] = useState({
+    gst: false,
+    udyam: false,
+  });
+  const [updateEnterpriseDetails, setUpdateEnterpriseDetails] = useState({
+    identifierType: '',
+    identifierNum: '',
+  });
 
+  // update enterprise mutation
+  const updateEnterpriseMutation = useMutation({
+    mutationKey: [
+      enterpriseUser.updateEnterpriseIdentificationDetails.endpointKey,
+      enterpriseId,
+    ],
+    mutationFn: () =>
+      updateEnterpriseIdentificationDetails(
+        enterpriseId,
+        updateEnterpriseDetails?.identifierType,
+        updateEnterpriseDetails?.identifierNum,
+      ),
+    onSuccess: () => {
+      toast.success('Enterprise Details Updated Successfully');
+      setUpdateEnterpriseDetails({
+        identifierType: '',
+        identifierNum: '',
+      }); // reset input field
+      setIsEditing({
+        gst: false,
+        udyam: false,
+      }); // reset bool state
+      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
+    },
+    onError: () => {
+      toast.error(`Invalid ${updateEnterpriseDetails?.identifierType}`);
+    },
+  });
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value);
   };
 
+  // logout mutation fn
   const logoutMutation = useMutation({
     mutationKey: [userAuth.logout.endpointKey],
     mutationFn: LoggingOut,
@@ -48,19 +91,12 @@ function Profile() {
     logoutMutation.mutate();
   };
 
+  // fetch profileDetails API
   const { data: profileDetails } = useQuery({
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
   });
-
-  // const handleUserOnboarding = () => {
-  //   router.push('/login/userOnboarding');
-  // };
-
-  // const handleEnterpriseOnboarding = () => {
-  //   router.push('/login/enterpriseOnboardingSearch');
-  // };
 
   useEffect(() => {
     const bgColorClass = getRandomBgColor();
@@ -378,53 +414,196 @@ function Profile() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">PAN Card Number</Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.enterpriseDetails?.panNumber ?? '-'}
-                  </span>
+              <div className="flex flex-col gap-4 rounded-sm border p-4">
+                <h1>Enterprise Information</h1>
+
+                <div className="grid grid-cols-3 grid-rows-2 gap-8 p-2">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Full Name</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.name ?? '-'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Type</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.type ?? '-'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Mobile Number</Label>
+                    <span className="text-lg font-bold">
+                      +91{' '}
+                      {profileDetails?.enterpriseDetails?.mobileNumber ?? '-'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">Email Address</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.email ?? '-'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Full Name</Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.enterpriseDetails?.name ?? '-'}
-                  </span>
+              </div>
+
+              <div className="flex flex-col gap-4 rounded-sm border p-4">
+                <h1>Business Identification</h1>
+
+                <div className="grid grid-cols-3 grid-rows-1 gap-8 p-2">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">PAN Card Number</Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.panNumber ?? '-'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex w-full items-center gap-1">
+                      <Label className="text-xs">GST IN</Label>
+
+                      {!profileDetails?.enterpriseDetails?.gst &&
+                      !isEditing.udyam ? (
+                        isEditing.gst ? (
+                          <X
+                            className="cursor-pointer"
+                            size={14}
+                            onClick={() => {
+                              setIsEditing((prev) => ({
+                                ...prev,
+                                gst: false,
+                              }));
+                              setUpdateEnterpriseDetails({
+                                identifierType: '',
+                                identifierNum: '',
+                              }); // input data cleared
+                            }}
+                          />
+                        ) : (
+                          <Pencil
+                            size={12}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setIsEditing((prev) => ({
+                                ...prev,
+                                gst: true,
+                              }))
+                            }
+                          />
+                        )
+                      ) : null}
+                    </div>
+
+                    <span className="text-lg font-bold">
+                      {isEditing.gst && (
+                        <Input
+                          type="text"
+                          placeholder="Update GST IN"
+                          value={updateEnterpriseDetails?.identifierNum || ''}
+                          onChange={(e) => {
+                            setUpdateEnterpriseDetails((prev) => ({
+                              ...prev,
+                              identifierType: 'gst',
+                              identifierNum: e.target.value,
+                            }));
+                          }}
+                        />
+                      )}
+                      {!isEditing.gst &&
+                      profileDetails?.enterpriseDetails?.gstNumber === ''
+                        ? '-'
+                        : profileDetails?.enterpriseDetails?.gstNumber}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex w-full items-center gap-1">
+                      <Label className="text-xs">UDYAM</Label>
+                      {!profileDetails?.enterpriseDetails?.udyam &&
+                      !isEditing.gst ? (
+                        isEditing.udyam ? (
+                          <X
+                            className="cursor-pointer"
+                            size={14}
+                            onClick={() => {
+                              setIsEditing((prev) => ({
+                                ...prev,
+                                udyam: false,
+                              }));
+                              setUpdateEnterpriseDetails({
+                                identifierType: '',
+                                identifierNum: '',
+                              }); // input data cleared
+                            }}
+                          />
+                        ) : (
+                          <Pencil
+                            size={12}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setIsEditing((prev) => ({
+                                ...prev,
+                                udyam: true,
+                              }))
+                            }
+                          />
+                        )
+                      ) : null}
+                    </div>
+                    <span className="text-lg font-bold">
+                      {isEditing.udyam && (
+                        <Input
+                          type="text"
+                          placeholder="Update UDYAM"
+                          value={updateEnterpriseDetails?.identifierNum || ''}
+                          onChange={(e) => {
+                            setUpdateEnterpriseDetails((prev) => ({
+                              ...prev,
+                              identifierType: 'udyam',
+                              identifierNum: e.target.value,
+                            }));
+                          }}
+                        />
+                      )}
+                      {!isEditing.udyam &&
+                      profileDetails?.enterpriseDetails?.udyam === ''
+                        ? '-'
+                        : profileDetails?.enterpriseDetails?.udyam}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Type</Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.enterpriseDetails?.type ?? '-'}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Mobile Number</Label>
-                  <span className="text-lg font-bold">
-                    +91 {profileDetails?.enterpriseDetails?.mobileNumber ?? '-'}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Email Address</Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.enterpriseDetails?.email ?? '-'}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">GST IN</Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.enterpriseDetails?.gstNumber === ''
-                      ? '-'
-                      : profileDetails?.enterpriseDetails?.gstNumber}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">UDYAM</Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.enterpriseDetails?.udyam === ''
-                      ? '-'
-                      : profileDetails?.enterpriseDetails?.udyam}
-                  </span>
-                </div>
+                {(isEditing.gst || isEditing.udyam) && (
+                  <div className="flex w-full justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing({
+                          gst: false,
+                          udyam: false,
+                        });
+                        setUpdateEnterpriseDetails({
+                          identifierType: '',
+                          identifierNum: '',
+                        }); // input data cleared
+                      }}
+                    >
+                      {' '}
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={updateEnterpriseMutation.isPending}
+                      size="sm"
+                      onClick={() => {
+                        updateEnterpriseMutation.mutate();
+                      }}
+                    >
+                      {' '}
+                      {updateEnterpriseMutation.isPending ? (
+                        <Loading />
+                      ) : (
+                        'Update'
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -1,8 +1,10 @@
 'use client';
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { LocalStorageService } from '@/lib/utils';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, ListFilter } from 'lucide-react';
 import moment from 'moment';
@@ -21,7 +23,7 @@ import MultiSelects from '../ui/MultiSelects';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { RangeSlider } from '../ui/RangeSlider';
 
-const FilterModal = ({ tab, setFilterData }) => {
+const FilterModal = ({ isSalesFilter, tab, setFilterData }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isOpen, setIsOpen] = useState(false);
@@ -126,11 +128,12 @@ const FilterModal = ({ tab, setFilterData }) => {
     queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: () => getClients(enterpriseId),
     select: (res) => res.data.data,
+    enabled: isOpen && isSalesFilter,
   });
   // flatten array to get exact data
-  let formattedData = [];
+  let formattedClientData = [];
   if (clientData) {
-    formattedData = clientData.flatMap((user) => {
+    formattedClientData = clientData.flatMap((user) => {
       let userDetails;
       if (user.client && user?.client?.name !== null) {
         userDetails = { ...user.client };
@@ -146,7 +149,7 @@ const FilterModal = ({ tab, setFilterData }) => {
     });
   }
   // options data : clients
-  const updatedData = formattedData.map((item) => {
+  const updatedClientData = formattedClientData.map((item) => {
     return {
       value: item.id,
       label: item.name,
@@ -155,10 +158,56 @@ const FilterModal = ({ tab, setFilterData }) => {
   // value : client
   const valueClient = filters.clientIds.map((client) => ({
     value: client.id,
-    label: updatedData.find((opt) => opt.value === client)?.label,
+    label: updatedClientData.find((opt) => opt.value === client)?.label,
   }));
   // handlerChangeFn : clients
   const handleChangeForClient = (value) => {
+    // Update filters with new status values
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      clientIds: value ? value.map((item) => item.value) : [], // Map selected options to their values
+    }));
+  };
+
+  // get vendors
+  const { data: vendorData } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryFn: () => getVendors(enterpriseId),
+    select: (res) => res.data.data,
+    enabled: isOpen && !isSalesFilter,
+  });
+  // flatten array to get exact data
+  let formattedVendorData = [];
+  if (vendorData) {
+    formattedVendorData = vendorData.flatMap((user) => {
+      let userDetails;
+      if (user.vendor && user?.vendor?.name !== null) {
+        userDetails = { ...user.vendor };
+      } else {
+        userDetails = { ...user };
+      }
+
+      return {
+        ...userDetails,
+        id: user.id,
+        name: user?.vendor?.name || user?.invitation?.userDetails?.name,
+      };
+    });
+  }
+  // options data : vendor
+  const updatedVendorData = formattedVendorData.map((item) => {
+    return {
+      value: item.id,
+      label: item.name,
+    };
+  });
+  // value : vendors
+  const valueVendor = filters.clientIds.map((vendor) => ({
+    value: vendor.id,
+    label: updatedVendorData.find((opt) => opt.value === vendor)?.label,
+  }));
+  // handlerChangeFn : vendors
+  const handleChangeForVendor = (value) => {
     // Update filters with new status values
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -347,10 +396,12 @@ const FilterModal = ({ tab, setFilterData }) => {
             />
           </div>
 
-          {/* select client : multi select */}
+          {/* select client/vendor : multi select */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
-              <Label className="text-[#A5ABBD]">Select Client</Label>
+              <Label className="text-[#A5ABBD]">
+                {isSalesFilter ? 'Select Client' : 'Select Vendor'}
+              </Label>
               <span
                 onClick={() =>
                   setFilters((prev) => ({ ...prev, clientIds: [] }))
@@ -361,10 +412,14 @@ const FilterModal = ({ tab, setFilterData }) => {
               </span>
             </span>
             <MultiSelects
-              placeholder="Select client..."
-              option={updatedData}
-              value={valueClient}
-              handleChange={handleChangeForClient}
+              placeholder={
+                isSalesFilter ? 'Select Client...' : 'Select Vendor...'
+              }
+              option={isSalesFilter ? updatedClientData : updatedVendorData}
+              value={isSalesFilter ? valueClient : valueVendor}
+              handleChange={
+                isSalesFilter ? handleChangeForClient : handleChangeForVendor
+              }
             />
           </div>
 
@@ -405,6 +460,7 @@ const FilterModal = ({ tab, setFilterData }) => {
           {/* cta's */}
           <div className="flex justify-end gap-2">
             <Button
+              disabled={isFilteredApplied === false}
               onClick={onClose}
               variant="outline"
               className="w-24 hover:bg-neutral-600/10"

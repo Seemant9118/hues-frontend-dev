@@ -4,7 +4,6 @@ import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
 import FilterModal from '@/components/orders/FilterModal';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -18,7 +17,11 @@ import {
   GetSales,
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -29,8 +32,9 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
 // dynamic imports
@@ -74,6 +78,7 @@ const SaleEmptyStageData = {
 };
 
 const SalesOrder = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -91,13 +96,14 @@ const SalesOrder = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
-
   const [salesDataByTab, setSalesDataByTab] = useState({
     all: [],
     bidReceived: [],
     pending: [],
   });
-  const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
+  const [filterData, setFilterData] = useState({});
+
+  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -106,8 +112,8 @@ const SalesOrder = () => {
 
   useEffect(() => {
     // Clear existing salesListing and paginationData when the tab changes
-    setSalesListing([]); // Reset salesListing
-    setPaginationData(null); // Reset paginationData
+    setSalesListing([]);
+    setPaginationData(null);
 
     // Apply filters based on the selected tab
     let newFilterData = {};
@@ -126,22 +132,42 @@ const SalesOrder = () => {
   }, [tab]);
 
   // Fetch sales data with infinite scroll
-  const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
-    queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await GetSales({
-        id: enterpriseId,
-        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
-      });
-      return response;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    refetchOnWindowFocus: false,
-  });
+  const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
+      queryFn: async ({ pageParam = 1 }) => {
+        const response = await GetSales({
+          id: enterpriseId,
+          data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+        });
+        return response;
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) => {
+        const { currentPage, totalPages } = lastPage?.data?.data ?? {};
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      },
+      refetchOnWindowFocus: false,
+    });
+
+  useEffect(() => {
+    // Clear salesListing and paginationData when filterData changes
+    setSalesListing([]);
+    setPaginationData(null);
+    setSalesDataByTab({
+      all: [],
+      bidReceived: [],
+      pending: [],
+    });
+
+    // Invalidate the query to fetch fresh data starting from page 1
+    queryClient.invalidateQueries([
+      orderApi.getSales.endpointKey,
+      enterpriseId,
+      filterData,
+    ]);
+  }, [filterData, queryClient]);
+
   useEffect(() => {
     if (data?.pages.length > 0) {
       const latestPage = data.pages[data.pages.length - 1].data.data;
@@ -156,14 +182,12 @@ const SalesOrder = () => {
       // Check if the current tab already has data to avoid duplicates
       setSalesDataByTab((prevData) => {
         if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
           return {
             ...prevData,
             [tab]: newSalesData, // Replace with fresh data for the current tab
           };
         }
 
-        // Append unique data by filtering out duplicates
         const updatedTabData = [
           ...prevData[tab],
           ...newSalesData.filter(
@@ -174,17 +198,16 @@ const SalesOrder = () => {
 
         return {
           ...prevData,
-          [tab]: updatedTabData, // Append only unique data
+          [tab]: updatedTabData,
         };
       });
 
       // Update the current display data without appending duplicates
       setSalesListing((prevSales) => {
         if (prevSales.length === 0) {
-          return newSalesData; // Set fresh data for the first time
+          return newSalesData;
         }
 
-        // Append unique data to the sales listing
         const updatedSales = [
           ...prevSales,
           ...newSalesData.filter(
@@ -195,7 +218,33 @@ const SalesOrder = () => {
         return updatedSales;
       });
     }
-  }, [data, filterData]);
+  }, [data]);
+
+  // Infinite scroll observer
+  const lastSalesRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, paginationData],
+  );
+
+  // Pagination data
+  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = data?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -319,22 +368,27 @@ const SalesOrder = () => {
                       </TabsTrigger>
                       <TabsTrigger value="pending">Payment Pending</TabsTrigger>
                     </TabsList>
-                    <FilterModal tab={tab} setFilterData={setFilterData} />
+                    <FilterModal
+                      isSalesFilter={true}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                    />
                   </section>
 
                   <TabsContent value="all">
                     {isLoading && <Loading />}
                     {!isLoading &&
                       (salesListing?.length > 0 ? (
-                        <InfiniteDataTable
+                        <SalesTable
                           id="sale-orders"
                           columns={SalesColumns}
-                          onRowClick={onRowClick}
                           data={salesListing}
-                          isFetching={isFetching}
                           fetchNextPage={fetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={isFetching}
+                          totalPages={totalPages}
+                          currFetchedPage={currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastSalesRef={lastSalesRef}
                         />
                       ) : (
                         <EmptyStageComponent
@@ -349,15 +403,16 @@ const SalesOrder = () => {
                     {isLoading && <Loading />}
                     {!isLoading &&
                       (salesListing?.length > 0 ? (
-                        <InfiniteDataTable
-                          id={'sale-orders'}
+                        <SalesTable
+                          id="sale-orders"
                           columns={SalesColumns}
-                          onRowClick={onRowClick}
                           data={salesListing}
-                          isFetching={isFetching}
                           fetchNextPage={fetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={isFetching}
+                          totalPages={totalPages}
+                          currFetchedPage={currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastSalesRef={lastSalesRef}
                         />
                       ) : (
                         <EmptyStageComponent
@@ -372,15 +427,16 @@ const SalesOrder = () => {
                     {isLoading && <Loading />}
                     {!isLoading &&
                       (salesListing?.length > 0 ? (
-                        <InfiniteDataTable
-                          id={'sale-orders'}
+                        <SalesTable
+                          id="sale-orders"
                           columns={SalesColumns}
-                          onRowClick={onRowClick}
                           data={salesListing}
-                          isFetching={isFetching}
                           fetchNextPage={fetchNextPage}
-                          filterData={filterData}
-                          paginationData={paginationData}
+                          isFetching={isFetching}
+                          totalPages={totalPages}
+                          currFetchedPage={currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastSalesRef={lastSalesRef}
                         />
                       ) : (
                         <EmptyStageComponent
@@ -403,6 +459,7 @@ const SalesOrder = () => {
               name="Offer"
               cta="offer"
               isOrder="order"
+              isCreatingSales={isCreatingSales}
               setIsCreatingSales={setIsCreatingSales}
               setIsCreatingInvoice={setIsCreatingInvoice}
               setSalesListing={setSalesListing}

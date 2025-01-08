@@ -1,5 +1,6 @@
 'use client';
 
+import { useNotificationsCount } from '@/context/CountNotificationsContext';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
@@ -7,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const StyledLinks = ({ link }) => {
+  const { totalUnreadNotifications } = useNotificationsCount();
   const pathname = usePathname();
   const [isSubTabShow, setIsSubTabShow] = useState(null);
 
@@ -41,12 +43,20 @@ const StyledLinks = ({ link }) => {
           <span
             className={
               isSubTabActive
-                ? 'flex gap-2 font-bold text-[#363940]'
-                : 'flex gap-2'
+                ? 'flex items-center gap-2 font-bold text-[#363940]'
+                : 'flex w-full items-center justify-between gap-2'
             }
           >
-            {link.icon}
-            {link.name}
+            <div className="flex items-center gap-2">
+              {link.icon}
+              {link.name}
+            </div>
+
+            {link.name === 'Notifications' && totalUnreadNotifications > 0 && (
+              <span className="rounded-full bg-[#FF4D4F] px-2 py-1 text-xs text-white">
+                {totalUnreadNotifications}
+              </span>
+            )}
           </span>
         </Link>
 

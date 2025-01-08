@@ -1,5 +1,6 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
@@ -20,6 +21,7 @@ import {
   getVendorServiceCatalogue,
 } from '@/services/Catalogue_Services/CatalogueServices';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 import { CreateEnterpriseUser } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
@@ -29,12 +31,10 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { customerApis } from '@/api/enterprises_user/customers/customersApi';
-import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { getStylesForCreatableSelectComponent } from '@/appUtils/helperFunctions';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
-import { getStylesForCreatableSelectComponent } from '@/appUtils/helperFunctions';
 import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
@@ -46,13 +46,14 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
+  isCreatingSales,
+  isCreatingPurchase,
   setSalesListing,
   onCancel,
   name,
   cta,
   type,
   isOrder,
-  setIsCreatingSales,
 }) => {
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
@@ -98,6 +99,7 @@ const CreateOrder = ({
         },
   );
 
+  // customer api fetching
   const { data: customers } = useQuery({
     queryKey: [customerApis.getCustomers.endpointKey, enterpriseId],
     queryFn: () => getCustomers(enterpriseId),
@@ -160,7 +162,8 @@ const CreateOrder = ({
       }
     },
     select: (res) => res.data.data,
-    enabled: order.clientType === 'B2B',
+    enabled:
+      (isCreatingSales && order.clientType === 'B2B') || isCreatingPurchase,
   });
 
   // searching client/vendor from list given "customerData"
@@ -416,7 +419,7 @@ const CreateOrder = ({
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
           redirectPopupOnFail={redirectPopupOnFail}
-          setIsCreatingSales={setIsCreatingSales}
+          setRedirectPopUpOnFail={setRedirectPopUpOnFail}
         />
       )}
 

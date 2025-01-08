@@ -2,7 +2,6 @@
 
 import { servicesApi } from '@/api/inventories/services/services';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
-import ShareModal from '@/components/Modals/ShareModal';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import { Edit3, MoreVertical } from 'lucide-react';
+import moment from 'moment';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   return [
@@ -51,6 +51,17 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
       ),
     },
     {
+      accessorKey: 'createdAt',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ADDED ON" />
+      ),
+      cell: ({ row }) => {
+        const { createdAt } = row.original;
+        const date = moment(createdAt).format('DD-MM-YYYY');
+        return <div>{date}</div>;
+      },
+    },
+    {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
@@ -76,8 +87,6 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
                 <Edit3 size={12} />
                 Edit
               </DropdownMenuItem>
-
-              <ShareModal currLink="https://www.hues.com?/sfkaskjvbsdl45!" />
 
               <ConfirmAction
                 infoText={`You are removing ${name} from inventory`}

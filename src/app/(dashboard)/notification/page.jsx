@@ -2,55 +2,145 @@
 
 import { notificationApi } from '@/api/notifications/notificationApi';
 import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPopUp';
-import { DataTable } from '@/components/table/data-table';
+import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useNotificationsCount } from '@/context/CountNotificationsContext';
 import { LocalStorageService } from '@/lib/utils';
-import { getNotifications } from '@/services/Notification_Services/NotificationServices';
-import { useMutation } from '@tanstack/react-query';
+import {
+  getNotifications,
+  updateNotification,
+} from '@/services/Notification_Services/NotificationServices';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+} from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { InfiniteNotificationTable } from './InfiniteNotificationTable';
 import { NotificationColumns } from './NotificationsColumns';
 
+// macros
+const PAGE_LIMIT = 10;
+
 const Notification = () => {
+  const { setTotalUnreadNotifications } = useNotificationsCount();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
-  const [filteredNotification, setFilteredNotification] = useState({}); // filtered data for filteration notification
-  const [notifications, setNotifications] = useState([]); // response data set to this state
+  const [filteredNotification, setFilteredNotification] = useState({});
+  const [notifications, setNotifications] = useState([]);
 
-  const getNotificationsMutations = useMutation({
-    mutationKey: notificationApi.getNotifications.endpointKey,
-    mutationFn: (data) => getNotifications(enterpriseId, data),
-    onSuccess: (data) => {
-      setNotifications(data.data.data);
-    },
+  // updateReadStatusNotifications mutation
+  const updateReadStatusNotificationsMutation = useMutation({
+    mutationKey: [notificationApi.updateNotifications.endpointKey],
+    mutationFn: updateNotification,
     onError: (error) => {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 
-  useEffect(() => {
-    if (enterpriseId) {
-      getNotificationsMutations.mutate(filteredNotification);
-    }
-  }, [enterpriseId, filteredNotification]);
-
+  // onrowclick handler
   const onRowClick = (row) => {
     const isCurrNotificationIsRead = row?.isRead;
 
     if (isCurrNotificationIsRead) {
       router.push(row?.deepLink);
     } else {
-      // updateTracker mutation api call
+      // updateTracker mutation API call can be added here
+      updateReadStatusNotificationsMutation.mutate(row?.id);
       router.push(row?.deepLink);
     }
   };
+
+  // useInfiniteQuery hook for fetching notifications
+  const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: [
+        notificationApi.getNotifications.endpointKey,
+        enterpriseId,
+        filteredNotification,
+      ],
+      queryFn: async ({ pageParam = 1 }) => {
+        const fetchedData = await getNotifications({
+          id: enterpriseId,
+          data: {
+            page: pageParam,
+            limit: PAGE_LIMIT,
+            ...filteredNotification,
+          },
+        });
+        return fetchedData;
+      },
+      initialPageParam: 1,
+      getNextPageParam: (_lastGroup, groups) => {
+        const nextPage = groups.length + 1;
+        return nextPage <= _lastGroup.data.data.totalPages
+          ? nextPage
+          : undefined;
+      },
+      refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
+    });
+
+  useEffect(() => {
+    if (!data) return;
+
+    // Flatten the notifications from all pages
+    const flattenedNotifications = data.pages
+      .map((item) => item?.data?.data?.notifications)
+      .flat();
+
+    // Deduplicate notifications based on their unique ID
+    const uniqueNotifications = Array.from(
+      new Map(
+        flattenedNotifications.map((notification) => [
+          notification.id, // Assuming `id` is the unique identifier
+          notification,
+        ]),
+      ).values(),
+    );
+
+    // Update the state with deduplicated notifications
+    setNotifications(uniqueNotifications);
+
+    // Update total unread notifications count
+    setTotalUnreadNotifications(data?.pages[0]?.data?.data?.unReadCount);
+  }, [data]);
+
+  // Pagination data
+  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = data?.pages.length ?? 0;
+
+  // Infinite scroll logic
+  const observer = useRef();
+
+  const lastNotificationRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          currFetchedPage < totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, currFetchedPage, totalPages],
+  );
 
   return (
     <>
@@ -71,12 +161,21 @@ const Notification = () => {
             />
           </SubHeader>
 
-          <DataTable
-            id="notification table"
-            onRowClick={onRowClick}
-            columns={NotificationColumns}
-            data={notifications}
-          />
+          {isLoading && notifications?.length === 0 && <Loading />}
+
+          {!isLoading && notifications?.length > 0 && (
+            <InfiniteNotificationTable
+              id="notification-table"
+              columns={NotificationColumns}
+              data={notifications}
+              fetchNextPage={fetchNextPage}
+              isFetching={isFetching}
+              totalPages={totalPages}
+              currFetchedPage={currFetchedPage}
+              onRowClick={onRowClick}
+              lastNotificationRef={lastNotificationRef}
+            />
+          )}
         </Wrapper>
       )}
     </>

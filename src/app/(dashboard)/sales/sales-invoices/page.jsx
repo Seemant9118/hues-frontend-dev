@@ -3,7 +3,6 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -30,9 +29,10 @@ import {
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
+import { SalesTable } from '../salestable/SalesTable';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 
 // dynamic imports
@@ -91,6 +91,7 @@ const SalesInvoices = () => {
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
+  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -133,9 +134,10 @@ const SalesInvoices = () => {
   // [INVOICES_FETCHING]
   // Fetch invoices data with infinite scroll
   const {
-    data: invoicesData,
-    fetchNextPage: invoiceFetchNextPage,
-    isFetching: isInvoicesFetching,
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
     isLoading: isInvoiceLoading,
   } = useInfiniteQuery({
     queryKey: [
@@ -159,9 +161,8 @@ const SalesInvoices = () => {
   });
 
   useEffect(() => {
-    if (invoicesData?.pages.length > 0) {
-      const latestPage =
-        invoicesData.pages[invoicesData.pages.length - 1].data.data;
+    if (data?.pages.length > 0) {
+      const latestPage = data.pages[data.pages.length - 1].data.data;
       const newInvoicesData = latestPage.data;
 
       // Set the pagination data
@@ -212,7 +213,33 @@ const SalesInvoices = () => {
         return updatedInvoices;
       });
     }
-  }, [invoicesData, filterData]);
+  }, [data, filterData]);
+
+  // Infinite scroll observer
+  const lastSalesInvoiceRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, paginationData],
+  );
+
+  // Pagination data
+  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = data?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -337,15 +364,16 @@ const SalesInvoices = () => {
                   <TabsContent value="all">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                      <InfiniteDataTable
-                        id={'sale-invoice'}
+                      <SalesTable
+                        id="sale-invoices"
                         columns={invoiceColumns}
                         data={invoiceListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={totalPages}
+                        currFetchedPage={currFetchedPage}
                         onRowClick={onRowClick}
-                        isFetching={isInvoicesFetching}
-                        fetchNextPage={invoiceFetchNextPage}
-                        filterData={filterData}
-                        paginationData={paginationData}
+                        lastSalesRef={lastSalesInvoiceRef}
                       />
                     )}
                     {!isInvoiceLoading && invoiceListing?.length === 0 && (
@@ -360,15 +388,16 @@ const SalesInvoices = () => {
                   <TabsContent value="pending">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                      <InfiniteDataTable
-                        id={'sale-invoice'}
+                      <SalesTable
+                        id="sale-invoices"
                         columns={invoiceColumns}
                         data={invoiceListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={totalPages}
+                        currFetchedPage={currFetchedPage}
                         onRowClick={onRowClick}
-                        isFetching={isInvoicesFetching}
-                        fetchNextPage={invoiceFetchNextPage}
-                        filterData={filterData}
-                        paginationData={paginationData}
+                        lastSalesRef={lastSalesInvoiceRef}
                       />
                     )}
                     {!isInvoiceLoading && invoiceListing?.length === 0 && (
@@ -383,15 +412,16 @@ const SalesInvoices = () => {
                   <TabsContent value="debitNotes">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
-                      <InfiniteDataTable
-                        id={'sale-invoice-debits'}
+                      <SalesTable
+                        id="sale-invoices-debits"
                         columns={invoiceColumns}
-                        onRowClick={onRowClick}
                         data={invoiceListing}
-                        isFetching={isInvoicesFetching}
-                        fetchNextPage={invoiceFetchNextPage}
-                        filterData={filterData}
-                        paginationData={paginationData}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={totalPages}
+                        currFetchedPage={currFetchedPage}
+                        onRowClick={onRowClick}
+                        lastSalesRef={lastSalesInvoiceRef}
                       />
                     )}
 

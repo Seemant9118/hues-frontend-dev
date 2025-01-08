@@ -4,7 +4,6 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
-import { InfiniteDataTable } from '@/components/table/infinite-data-table';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
@@ -20,9 +19,10 @@ import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../public/Empty.png';
+import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
 
 // macros
@@ -46,6 +46,8 @@ const PurchaseDebitNotes = () => {
   const [selectedDebit, setSelectedDebit] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
+
+  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -77,8 +79,9 @@ const PurchaseDebitNotes = () => {
   // Fetch debitNotes data with infinite scroll
   const {
     data: debitNotesData,
-    fetchNextPage: debitNotesFetchNextPage,
-    isFetching: isDebitNotesFetching,
+    fetchNextPage,
+    isFetching,
+    hasNextPage,
     isLoading: isDebitNotesLoading,
   } = useInfiniteQuery({
     queryKey: [
@@ -156,6 +159,32 @@ const PurchaseDebitNotes = () => {
       });
     }
   }, [debitNotesData, filterData]);
+
+  // Infinite scroll observer
+  const lastPurchaseDebitNotesRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          paginationData?.currentPage < paginationData?.totalPages
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage, paginationData],
+  );
+
+  // Pagination data
+  const totalPages = debitNotesData?.pages[0]?.data?.data?.totalPages ?? 0;
+  const currFetchedPage = debitNotesData?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -262,15 +291,16 @@ const PurchaseDebitNotes = () => {
                 <TabsContent value="all">
                   {isDebitNotesLoading && <Loading />}
                   {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                    <PurchaseTable
+                      id="purchase-debit-notes"
                       columns={debitNotesColumns}
-                      onRowClick={onRowClick}
                       data={debitNotesListing}
-                      isFetching={isDebitNotesFetching}
-                      fetchNextPage={debitNotesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
+                      onRowClick={onRowClick}
+                      lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
                     />
                   )}
 
@@ -285,15 +315,16 @@ const PurchaseDebitNotes = () => {
                 <TabsContent value="accepted">
                   {isDebitNotesLoading && <Loading />}
                   {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                    <PurchaseTable
+                      id="purchase-debit-note-accepted"
                       columns={debitNotesColumns}
-                      onRowClick={onRowClick}
                       data={debitNotesListing}
-                      isFetching={isDebitNotesFetching}
-                      fetchNextPage={debitNotesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
+                      onRowClick={onRowClick}
+                      lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
                     />
                   )}
 
@@ -308,15 +339,16 @@ const PurchaseDebitNotes = () => {
                 <TabsContent value="rejected">
                   {isDebitNotesLoading && <Loading />}
                   {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <InfiniteDataTable
-                      id={'sale-invoice-debits'}
+                    <PurchaseTable
+                      id="purchase-debit-note-rejected"
                       columns={debitNotesColumns}
-                      onRowClick={onRowClick}
                       data={debitNotesListing}
-                      isFetching={isDebitNotesFetching}
-                      fetchNextPage={debitNotesFetchNextPage}
-                      filterData={filterData}
-                      paginationData={paginationData}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={totalPages}
+                      currFetchedPage={currFetchedPage}
+                      onRowClick={onRowClick}
+                      lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
                     />
                   )}
 
