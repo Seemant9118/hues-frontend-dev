@@ -24,7 +24,7 @@ const ResendInvitation = ({ invalidateQuery, invitationId, mutationFunc }) => {
       onClick={handleClick}
       className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
     >
-      Resend Invitation
+      Resend
     </span>
   );
 };
