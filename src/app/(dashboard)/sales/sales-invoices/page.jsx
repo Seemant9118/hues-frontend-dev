@@ -164,7 +164,7 @@ const SalesInvoices = () => {
     const uniqueSalesInvoicesData = Array.from(
       new Map(
         flattenedSalesInvoicesData.map((sale) => [
-          sale.id, // Assuming `id` is the unique identifier for each sale invoice
+          sale.invoiceId, // Assuming `id` is the unique identifier for each sale invoice
           sale,
         ]),
       ).values(),

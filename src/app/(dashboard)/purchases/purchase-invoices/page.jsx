@@ -154,9 +154,9 @@ const PurchaseInvoices = () => {
     // Deduplicate purchase data based on unique `id`
     const uniquePurchaseInvoicesData = Array.from(
       new Map(
-        flattenedPurchaseInvoicesData.map((sale) => [
-          sale.id, // Assuming `id` is the unique identifier for each purchase invoice
-          sale,
+        flattenedPurchaseInvoicesData.map((purchase) => [
+          purchase.invoiceId, // Assuming `id` is the unique identifier for each purchase invoice
+          purchase,
         ]),
       ).values(),
     );
