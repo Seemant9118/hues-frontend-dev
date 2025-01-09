@@ -98,7 +98,7 @@ const CompleteKycPage = () => {
 
   // Digio initialization options
   const options = {
-    environment: 'sandbox',
+    environment: process.env.NEXT_PUBLIC_DIGIO_ENV,
     callback(response) {
       if (Object.prototype.hasOwnProperty.call(response, 'error_code')) {
         setIsKycProcessStarted(false);
