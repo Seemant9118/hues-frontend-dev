@@ -15,7 +15,11 @@ import { getAllPurchaseDebitNotes } from '@/services/Debit_Note_Services/DebitNo
 import { exportInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+} from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -36,18 +40,12 @@ const PurchaseDebitNotes = () => {
   const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const router = useRouter();
+  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
-  const [debitNotesTabs, setDebitNotesTab] = useState({
-    all: [],
-    accepted: [],
-    rejected: [],
-  });
   const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
   const [selectedDebit, setSelectedDebit] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
-
-  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -55,10 +53,6 @@ const PurchaseDebitNotes = () => {
   };
 
   useEffect(() => {
-    // Clear existing salesListing and paginationData when the tab changes
-    setDebitNotesListing([]); // Reset debitNotesListing
-    setPaginationData(null); // Reset paginationData
-
     // Apply filters based on the selected tab
     let newFilterData = {};
     if (tab === 'accepted') {
@@ -68,11 +62,6 @@ const PurchaseDebitNotes = () => {
     }
 
     setFilterData(newFilterData);
-
-    // Check if data for this tab already exists to prevent unnecessary API calls
-    if (debitNotesTabs[tab]?.length > 0) {
-      setDebitNotesListing(debitNotesTabs[tab]); // Use cached data for this tab
-    }
   }, [tab]);
 
   // [DEBIT_NOTES_FETCHING]
@@ -87,78 +76,55 @@ const PurchaseDebitNotes = () => {
     queryKey: [
       DebitNoteApi.getAllPurchaseDebitNotes.endpointKey,
       enterpriseId,
+      tab,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getAllPurchaseDebitNotes({
         id: enterpriseId,
-        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+        data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
       });
       return response;
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
+  // data flattening - formatting
   useEffect(() => {
-    if (debitNotesData?.pages.length > 0) {
-      const latestPage =
-        debitNotesData.pages[debitNotesData.pages.length - 1].data.data;
-      const newDebitNotesData = latestPage.data;
+    if (!debitNotesData) return;
 
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
+    // Flatten purchase debitnotes data from all pages
+    const flattenedPurchaseDebitNotesData = debitNotesData.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales invoices data is nested in `data.data.data`
+      .flat();
 
-      // Check if the current tab already has data to avoid duplicates
-      setDebitNotesTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
-          return {
-            ...prevData,
-            [tab]: newDebitNotesData, // Replace with fresh data for the current tab
-          };
-        }
+    // Deduplicate purchase data based on unique `id`
+    const uniquePurchaseDebitNotesData = Array.from(
+      new Map(
+        flattenedPurchaseDebitNotesData.map((sale) => [
+          sale.id, // Assuming `id` is the unique identifier for each purchase debit note
+          sale,
+        ]),
+      ).values(),
+    );
 
-        // Append unique data by filtering out duplicates
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newDebitNotesData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
+    // Update state with deduplicated purchase debitNotes data
+    setDebitNotesListing(uniquePurchaseDebitNotesData);
 
-        return {
-          ...prevData,
-          [tab]: updatedTabData, // Append only unique data
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setDebitNotesListing((prevdebits) => {
-        if (prevdebits.length === 0) {
-          return newDebitNotesData; // Set fresh data for the first time
-        }
-
-        // Append unique data to the invoices listing
-        const updatedDebitNotes = [
-          ...prevdebits,
-          ...newDebitNotesData.filter(
-            (item) => !prevdebits.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedDebitNotes;
-      });
-    }
-  }, [debitNotesData, filterData]);
+    // Calculate pagination data using the last page's information
+    const lastPage =
+      debitNotesData.pages[debitNotesData.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
+    });
+  }, [debitNotesData]);
 
   // Infinite scroll observer
   const lastPurchaseDebitNotesRef = useCallback(
@@ -168,23 +134,15 @@ const PurchaseDebitNotes = () => {
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          paginationData?.currentPage < paginationData?.totalPages
-        ) {
+        if (entries[0].isIntersecting && hasNextPage) {
           fetchNextPage();
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [isFetching, fetchNextPage, hasNextPage, paginationData],
+    [isFetching, fetchNextPage, hasNextPage],
   );
-
-  // Pagination data
-  const totalPages = debitNotesData?.pages[0]?.data?.data?.totalPages ?? 0;
-  const currFetchedPage = debitNotesData?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -297,8 +255,8 @@ const PurchaseDebitNotes = () => {
                       data={debitNotesListing}
                       fetchNextPage={fetchNextPage}
                       isFetching={isFetching}
-                      totalPages={totalPages}
-                      currFetchedPage={currFetchedPage}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
                       onRowClick={onRowClick}
                       lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
                     />
@@ -321,8 +279,8 @@ const PurchaseDebitNotes = () => {
                       data={debitNotesListing}
                       fetchNextPage={fetchNextPage}
                       isFetching={isFetching}
-                      totalPages={totalPages}
-                      currFetchedPage={currFetchedPage}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
                       onRowClick={onRowClick}
                       lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
                     />
@@ -345,8 +303,8 @@ const PurchaseDebitNotes = () => {
                       data={debitNotesListing}
                       fetchNextPage={fetchNextPage}
                       isFetching={isFetching}
-                      totalPages={totalPages}
-                      currFetchedPage={currFetchedPage}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
                       onRowClick={onRowClick}
                       lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
                     />
