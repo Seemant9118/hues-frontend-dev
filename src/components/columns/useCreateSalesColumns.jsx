@@ -9,7 +9,9 @@ export const useCreateSalesColumns = (
   isOrder,
   setOrder,
   setSelectedItem,
-  haveGstForSalesOrders,
+  isPurchasePage,
+  isGstApplicableForSalesOrders,
+  isGstApplicableForPurchaseOrders,
 ) => {
   return [
     {
@@ -34,7 +36,11 @@ export const useCreateSalesColumns = (
         <DataTableColumnHeader column={column} title="PRICE" />
       ),
     },
-    ...(isGstApplicable(haveGstForSalesOrders)
+    ...(isGstApplicable(
+      isPurchasePage
+        ? isGstApplicableForPurchaseOrders
+        : isGstApplicableForSalesOrders,
+    )
       ? [
           {
             accessorKey: 'gstPerUnit',
@@ -63,7 +69,11 @@ export const useCreateSalesColumns = (
         return formattedAmount(amount);
       },
     },
-    ...(isGstApplicable(haveGstForSalesOrders)
+    ...(isGstApplicable(
+      isPurchasePage
+        ? isGstApplicableForPurchaseOrders
+        : isGstApplicableForSalesOrders,
+    )
       ? [
           {
             accessorKey: 'totalGstAmount',

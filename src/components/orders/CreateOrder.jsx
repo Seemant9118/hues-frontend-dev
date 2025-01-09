@@ -1,3 +1,4 @@
+/* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
@@ -171,7 +172,9 @@ const CreateOrder = ({
     isOrder,
     setOrder,
     setSelectedItem,
+    isPurchasePage,
     isGstApplicableForSalesOrders,
+    isGstApplicableForPurchaseOrders,
   );
 
   // client/vendor fetching
@@ -407,6 +410,7 @@ const CreateOrder = ({
     return totalAmountWithGST;
   };
   const totalAmtWithGst = handleCalculateTotalAmounts();
+  const { totalGstAmt } = handleSetTotalAmt();
 
   // handling submit fn
   const handleSubmit = () => {
@@ -978,12 +982,20 @@ const CreateOrder = ({
               ? isGstApplicableForPurchaseOrders
               : isGstApplicableForSalesOrders,
           ) && (
-            <div className="flex items-center gap-2">
-              <span className="font-bold">Gross Amount : </span>
-              <span className="rounded-sm border bg-slate-100 p-2">
-                {grossAmt.toFixed(2)}
-              </span>
-            </div>
+            <>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">Gross Amount : </span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {grossAmt.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">Tax Amount : </span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {totalGstAmt.toFixed(2)}
+                </span>
+              </div>
+            </>
           )}
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>

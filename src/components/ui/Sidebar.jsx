@@ -13,7 +13,6 @@ import {
   ScrollText,
   Store,
   UserRound,
-  Users,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -108,11 +107,11 @@ const Sidebar = () => {
       icon: <Store size={16} />,
       path: '/vendors',
     },
-    {
-      name: 'Members',
-      icon: <Users size={16} />,
-      path: '/members',
-    },
+    // {
+    //   name: 'Members',
+    //   icon: <Users size={16} />,
+    //   path: '/members',
+    // },
 
     // {
     //   name: "Insights",
