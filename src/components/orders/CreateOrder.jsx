@@ -51,6 +51,7 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
+  isCreatingInvoice,
   isCreatingSales,
   isCreatingPurchase,
   setSalesListing,
@@ -76,7 +77,8 @@ const CreateOrder = ({
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
-    enabled: !!isCreatingSales && isPurchasePage === false,
+    enabled:
+      (!!isCreatingInvoice || !!isCreatingSales) && isPurchasePage === false,
   });
 
   // for sales-order gst/non-gst check

@@ -402,6 +402,7 @@ const SalesInvoices = () => {
               name="Invoice"
               cta="offer"
               isOrder="invoice"
+              isCreatingInvoice={isCreatingInvoice}
               setInvoiceListing={setInvoiceListing}
               onCancel={() => setIsCreatingInvoice(false)}
             />
