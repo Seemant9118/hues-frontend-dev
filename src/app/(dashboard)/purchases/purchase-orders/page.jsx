@@ -19,9 +19,9 @@ import {
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
-  useQueryClient,
 } from '@tanstack/react-query';
 import {
   DatabaseZap,
@@ -78,34 +78,27 @@ const PurchaseEmptyStageData = {
 };
 
 const PurchaseOrders = () => {
-  const queryClient = useQueryClient();
-  const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
 
+  const router = useRouter();
+  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [paginationData, setPaginationData] = useState(); // Ensure default structure
+  const [paginationData, setPaginationData] = useState({}); // Ensure default structure
+  const [unconfimedPaginationData, setUnconfimedPaginationData] = useState({});
   const [purchaseListing, setPurchaseListing] = useState([]);
   const [unconfirmedPurchaseListing, setUnconfirmedPurhchaseListing] = useState(
     [],
   );
-  const [purchasesDataByTab, setPurchasesDataByTab] = useState({
-    all: [],
-    offerReceived: [],
-    pending: [],
-    unconfirmed: [],
-  });
   const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
-
-  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -113,10 +106,6 @@ const PurchaseOrders = () => {
   };
 
   useEffect(() => {
-    // Clear existing salesListing and paginationData when the tab changes
-    setPurchaseListing([]); // Reset salesListing
-    setPaginationData(null); // Reset paginationData
-
     // Apply filters based on the selected tab
     let newFilterData = {};
     if (tab === 'offerReceived') {
@@ -128,104 +117,63 @@ const PurchaseOrders = () => {
     }
 
     setFilterData(newFilterData);
-
-    // Check if data for this tab already exists to prevent unnecessary API calls
-    if (purchasesDataByTab[tab]?.length > 0) {
-      setPurchaseListing(purchasesDataByTab[tab]); // Use cached data for this tab
-    }
   }, [tab]);
 
   // Fetch sales data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
+      queryKey: [
+        orderApi.getPurchases.endpointKey,
+        enterpriseId,
+        tab,
+        filterData,
+      ],
       queryFn: async ({ pageParam = 1 }) => {
         const response = await GetPurchases({
           id: enterpriseId,
-          data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+          data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
         });
         return response;
       },
       initialPageParam: 1,
-      getNextPageParam: (lastPage) => {
-        const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-        return currentPage < totalPages ? currentPage + 1 : undefined;
+      getNextPageParam: (_lastGroup, groups) => {
+        const nextPage = groups.length + 1;
+        return nextPage <= _lastGroup.data.data.totalPages
+          ? nextPage
+          : undefined;
       },
       refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
     });
 
+  // data flattening - formatting
   useEffect(() => {
-    // Clear salesListing and paginationData when filterData changes
-    setPurchaseListing([]);
-    setPaginationData(null);
-    setPurchasesDataByTab({
-      all: [],
-      offerReceived: [],
-      pending: [],
-      unconfirmed: [],
+    if (!data) return;
+
+    // Flatten purchases data from all pages
+    const flattenedPurchaseData = data.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales data is nested in `data.data.data`
+      .flat();
+
+    // Deduplicate purchases data based on unique `id`
+    const uniquePurchaseData = Array.from(
+      new Map(
+        flattenedPurchaseData.map((sale) => [
+          sale.id, // Assuming `id` is the unique identifier for each sale
+          sale,
+        ]),
+      ).values(),
+    );
+
+    // Update state with deduplicated purchases data
+    setPurchaseListing(uniquePurchaseData);
+
+    // Calculate pagination data using the last page's information
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
     });
-
-    // Invalidate the query to fetch fresh data starting from page 1
-    queryClient.invalidateQueries([
-      orderApi.getPurchases.endpointKey,
-      enterpriseId,
-      filterData,
-    ]);
-  }, [filterData, queryClient]);
-
-  useEffect(() => {
-    if (data?.pages.length > 0) {
-      const latestPage = data.pages[data.pages.length - 1].data.data;
-      const newPurchaseData = latestPage.data;
-
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
-
-      // Check if the current tab already has data to avoid duplicates
-      setPurchasesDataByTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
-          return {
-            ...prevData,
-            [tab]: newPurchaseData, // Replace with fresh data for the current tab
-          };
-        }
-
-        // Append unique data by filtering out duplicates
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newPurchaseData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return {
-          ...prevData,
-          [tab]: updatedTabData, // Append only unique data
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setPurchaseListing((prevSales) => {
-        if (prevSales.length === 0) {
-          return newPurchaseData; // Set fresh data for the first time
-        }
-
-        // Append unique data to the sales listing
-        const updatedPurchases = [
-          ...prevSales,
-          ...newPurchaseData.filter(
-            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedPurchases;
-      });
-    }
   }, [data]);
 
   // Infinite scroll observer
@@ -236,23 +184,15 @@ const PurchaseOrders = () => {
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          paginationData?.currentPage < paginationData?.totalPages
-        ) {
+        if (entries[0].isIntersecting && hasNextPage) {
           fetchNextPage();
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [isFetching, fetchNextPage, hasNextPage, paginationData],
+    [isFetching, fetchNextPage, hasNextPage],
   );
-
-  // Pagination data
-  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
-  const currFetchedPage = data?.pages.length ?? 0;
 
   // fetch unconfirmed sales with infinite scroll
   const {
@@ -270,76 +210,50 @@ const PurchaseOrders = () => {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getUnconfirmedPurchases({
         id: enterpriseId,
-        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+        data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
       });
       return response;
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
     enabled: tab === 'unconfirmed',
+    placeholderData: keepPreviousData,
   });
 
+  // data flattening - formatting
   useEffect(() => {
-    if (unconfirmedPurchaseLists?.pages.length > 0) {
-      const latestPage =
-        unconfirmedPurchaseLists.pages[
-          unconfirmedPurchaseLists.pages.length - 1
-        ].data.data;
-      const newUnconfirmedPurchaseData = latestPage.data;
+    if (!unconfirmedPurchaseLists) return;
 
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
+    // Flatten purchases data from all pages
+    const flattenedUnconfirmedPurchaseData = unconfirmedPurchaseLists.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales data is nested in `data.data.data`
+      .flat();
 
-      // Check if the current tab already has data to avoid duplicates
-      setPurchasesDataByTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
-          return {
-            ...prevData,
-            [tab]: newUnconfirmedPurchaseData, // Replace with fresh data for the current tab
-          };
-        }
+    // Deduplicate purchases data based on unique `id`
+    const uniqueUnconfirmedPurchaseData = Array.from(
+      new Map(
+        flattenedUnconfirmedPurchaseData.map((sale) => [
+          sale.id, // Assuming `id` is the unique identifier for each sale
+          sale,
+        ]),
+      ).values(),
+    );
 
-        // Append unique data by filtering out duplicates
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newUnconfirmedPurchaseData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
+    // Update state with deduplicated purchases data
+    setUnconfirmedPurhchaseListing(uniqueUnconfirmedPurchaseData);
 
-        return {
-          ...prevData,
-          [tab]: updatedTabData, // Append only unique data
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setUnconfirmedPurhchaseListing((prevSales) => {
-        if (prevSales.length === 0) {
-          return newUnconfirmedPurchaseData; // Set fresh data for the first time
-        }
-
-        // Append unique data to the sales listing
-        const updatedSales = [
-          ...prevSales,
-          ...newUnconfirmedPurchaseData.filter(
-            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedSales;
-      });
-    }
-  }, [unconfirmedPurchaseLists, filterData]);
+    // Calculate pagination data using the last page's information
+    const lastPage =
+      unconfirmedPurchaseLists?.pages[data.pages.length - 1]?.data?.data;
+    setUnconfimedPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
+    });
+  }, [unconfirmedPurchaseLists]);
 
   // Infinite scroll observer
   const lastUnconfirmedRef = useCallback(
@@ -349,11 +263,7 @@ const PurchaseOrders = () => {
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (
-          entries[0].isIntersecting &&
-          unconfirmedPuchaseHasNextPage &&
-          paginationData?.currentPage < paginationData?.totalPages
-        ) {
+        if (entries[0].isIntersecting && unconfirmedPuchaseHasNextPage) {
           unconfirmedPurchaseFetchNextPage();
         }
       });
@@ -364,15 +274,8 @@ const PurchaseOrders = () => {
       unconfirmedPurchaseListsIsFetching,
       unconfirmedPurchaseFetchNextPage,
       unconfirmedPuchaseHasNextPage,
-      paginationData,
     ],
   );
-
-  // Pagination data
-  const totalPagesUnconfirmed =
-    unconfirmedPurchaseLists?.pages[0]?.data?.data?.totalPages ?? 0;
-  const currFetchedPageUnconfirmed =
-    unconfirmedPurchaseLists?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -512,8 +415,8 @@ const PurchaseOrders = () => {
                           data={purchaseListing}
                           fetchNextPage={fetchNextPage}
                           isFetching={isFetching}
-                          totalPages={totalPages}
-                          currFetchedPage={currFetchedPage}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
                           onRowClick={onRowClick}
                           lastPurhaseRef={lastPurchaseRef}
                         />
@@ -537,8 +440,8 @@ const PurchaseOrders = () => {
                           data={purchaseListing}
                           fetchNextPage={fetchNextPage}
                           isFetching={isFetching}
-                          totalPages={totalPages}
-                          currFetchedPage={currFetchedPage}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
                           onRowClick={onRowClick}
                           lastPurhaseRef={lastPurchaseRef}
                         />
@@ -562,8 +465,8 @@ const PurchaseOrders = () => {
                           data={purchaseListing}
                           fetchNextPage={fetchNextPage}
                           isFetching={isFetching}
-                          totalPages={totalPages}
-                          currFetchedPage={currFetchedPage}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
                           onRowClick={onRowClick}
                           lastPurhaseRef={lastPurchaseRef}
                         />
@@ -588,8 +491,12 @@ const PurchaseOrders = () => {
                           data={unconfirmedPurchaseListing}
                           fetchNextPage={unconfirmedPurchaseFetchNextPage}
                           isFetching={unconfirmedPurchaseListsIsFetching}
-                          totalPages={totalPagesUnconfirmed}
-                          currFetchedPage={currFetchedPageUnconfirmed}
+                          totalPages={
+                            unconfimedPaginationData?.totalPagesUnconfirmed
+                          }
+                          currFetchedPage={
+                            unconfimedPaginationData?.currFetchedPageUnconfirmed
+                          }
                           onRowClick={onRowClick}
                           lastUnconfirmedRef={lastUnconfirmedRef}
                         />
