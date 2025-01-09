@@ -314,7 +314,9 @@ const CreateOrder = ({
   const invoiceMutation = useMutation({
     mutationFn: createInvoice,
     onSuccess: () => {
-      toast.success('Invoice Created Successfully');
+      toast.success(
+        'Invoice created! Please refresh to view the latest Invoice',
+      );
       onCancel();
       // setInvoiceListing((prev) => [res.data.data, ...prev]);
     },
