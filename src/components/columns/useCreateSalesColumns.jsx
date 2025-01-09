@@ -21,7 +21,11 @@ export const useCreateSalesColumns = (
     {
       accessorKey: 'quantity',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="QUANTITY" />
+        <DataTableColumnHeader
+          column={column}
+          title="QUANTITY"
+          className="min-w-[50px]"
+        />
       ),
     },
     {
@@ -35,7 +39,11 @@ export const useCreateSalesColumns = (
           {
             accessorKey: 'gstPerUnit',
             header: ({ column }) => (
-              <DataTableColumnHeader column={column} title="GST (%)" />
+              <DataTableColumnHeader
+                column={column}
+                title="GST (%)"
+                className="min-w-[50px]"
+              />
             ),
           },
         ]
@@ -84,7 +92,7 @@ export const useCreateSalesColumns = (
       cell: ({ row }) => {
         const id = row.original.productId;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-[50px] items-center gap-2">
             <Button
               className="text-red-500"
               variant="ghost"
