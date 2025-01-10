@@ -918,7 +918,10 @@ const CreateOrder = ({
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
-                  value={selectedItem.totalAmount + selectedItem.totalGstAmount}
+                  value={(
+                    (Number(selectedItem.totalAmount) || 0) +
+                    (Number(selectedItem.totalGstAmount) || 0)
+                  ).toFixed(2)}
                   className="max-w-30"
                 />
                 {errorMsg.totalAmount && (

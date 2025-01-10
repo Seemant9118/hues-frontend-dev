@@ -448,7 +448,7 @@ const EditOrder = ({
             <div className="flex flex-col gap-1">
               <Input
                 disabled
-                value={selectedItem.totalAmount}
+                value={(Number(selectedItem.totalAmount) || 0).toFixed(2)}
                 className="max-w-30"
               />
             </div>
@@ -561,7 +561,7 @@ const EditOrder = ({
                         />
                       </TableCell>
                       <TableCell>{item.gstPerUnit}</TableCell>
-                      <TableCell>{`₹ ${item.totalAmount}`}</TableCell>
+                      <TableCell>{`₹ ${item.totalAmount.toFixed(2)}`}</TableCell>
                       <TableCell>{`₹ ${item.totalGstAmount}`}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
