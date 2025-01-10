@@ -3,6 +3,8 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
 import { orderApi } from '@/api/order_api/order_api';
+import { userAuth } from '@/api/user_auth/Users';
+import { isGstApplicable } from '@/appUtils/helperFunctions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -33,8 +35,10 @@ import {
   OrderDetails,
   updateOrder,
 } from '@/services/Orders_Services/Orders_Services';
+import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Loading from '../ui/Loading';
@@ -48,11 +52,33 @@ const EditOrder = ({
   name,
   cta,
   orderId,
+  isEditingOrder,
   setIsOrderCreationSuccess,
 }) => {
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
   const queryClient = useQueryClient();
+  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [itemToSearch, setItemToSearch] = useState('');
+
+  // fetch profileDetails API
+  const { data: profileDetails } = useQuery({
+    queryKey: [userAuth.getProfileDetails.endpointKey],
+    queryFn: () => getProfileDetails(userId),
+    select: (data) => data.data.data,
+    enabled: !!isEditingOrder && isPurchasePage === false,
+  });
+
+  // for sales-order gst/non-gst check
+  const isGstApplicableForSalesOrders =
+    isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
+
+  // for purchase-orders gst/non-gst check
+  const [
+    isGstApplicableForPurchaseOrders,
+    setIsGstApplicableForPurchaseOrders,
+  ] = useState('');
 
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
@@ -67,11 +93,19 @@ const EditOrder = ({
   });
 
   // Fetch order details✅
-  const { isLoading, data: orderDetails } = useQuery({
+  const {
+    isLoading,
+    data: orderDetails,
+    isSuccess: isOrderDetailsSuccess,
+  } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey, orderId],
     queryFn: () => OrderDetails(orderId),
     select: (data) => data.data.data,
   });
+
+  useEffect(() => {
+    setIsGstApplicableForPurchaseOrders(!!orderDetails?.vendorGstNumber);
+  }, [isOrderDetailsSuccess]);
 
   //   formatted data we needed in table rendering
   const transformOrderItems = (orderItems) => {
@@ -135,7 +169,16 @@ const EditOrder = ({
     }, 0);
 
     const totalGstAmt = order?.orderItems?.reduce((totalGst, orderItem2) => {
-      return totalGst + orderItem2.totalGstAmount;
+      return (
+        totalGst +
+        (isGstApplicable(
+          isPurchasePage
+            ? isGstApplicableForPurchaseOrders
+            : isGstApplicableForSalesOrders,
+        )
+          ? orderItem2.totalGstAmount
+          : 0)
+      );
     }, 0);
 
     return { totalAmount, totalGstAmt };
@@ -153,6 +196,8 @@ const EditOrder = ({
     const totalAmountWithGST = totalAmount + totalGstAmt;
     return totalAmountWithGST;
   };
+
+  const { totalGstAmt } = handleSetTotalAmt();
 
   useEffect(() => {
     handleSetTotalAmt();
@@ -336,7 +381,13 @@ const EditOrder = ({
                     productType: selectedItemData.productType,
                     productName: selectedItemData.productName,
                     unitPrice: selectedItemData.rate,
-                    gstPerUnit: selectedItemData.gstPercentage,
+                    gstPerUnit: isGstApplicable(
+                      isPurchasePage
+                        ? isGstApplicableForPurchaseOrders
+                        : isGstApplicableForSalesOrders,
+                    )
+                      ? selectedItemData.gstPercentage
+                      : 0,
                   }));
                 }}
               >
@@ -432,27 +483,72 @@ const EditOrder = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label>GST (%)</Label>
-            <div className="flex flex-col gap-1">
-              <Input
-                disabled
-                value={selectedItem.gstPerUnit}
-                className="max-w-14"
-              />
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex">
+                GST <span className="text-xs"> (%)</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.gstPerUnit}
+                  className="max-w-14"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex flex-col gap-2">
-            <Label>Amount</Label>
+            <Label className="flex gap-1">Value</Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
-                value={(Number(selectedItem.totalAmount) || 0).toFixed(2)}
+                value={selectedItem.totalAmount}
                 className="max-w-30"
               />
             </div>
           </div>
+
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex gap-1">
+                Tax Amount
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.totalGstAmount}
+                  className="max-w-30"
+                />
+              </div>
+            </div>
+          )}
+
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label>Amount</Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={(Number(selectedItem.totalAmount) || 0).toFixed(2)}
+                  className="max-w-30"
+                />
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-end gap-4">
           <Button
@@ -518,20 +614,39 @@ const EditOrder = ({
                       ITEM
                     </TableHead>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      PRICE
-                    </TableHead>
-                    <TableHead className="shrink-0 text-xs font-bold text-black">
                       QUANTITY
                     </TableHead>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      GST (%)
+                      PRICE
                     </TableHead>
+
+                    {isGstApplicable(
+                      isPurchasePage
+                        ? isGstApplicableForPurchaseOrders
+                        : isGstApplicableForSalesOrders,
+                    ) && (
+                      <TableHead className="shrink-0 text-xs font-bold text-black">
+                        GST (%)
+                      </TableHead>
+                    )}
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      AMOUNT
+                      VALUE
                     </TableHead>
-                    <TableHead className="shrink-0 text-xs font-bold text-black">
-                      GST AMOUNT
-                    </TableHead>
+                    {isGstApplicable(
+                      isPurchasePage
+                        ? isGstApplicableForPurchaseOrders
+                        : isGstApplicableForSalesOrders,
+                    ) && (
+                      <>
+                        <TableHead className="shrink-0 text-xs font-bold text-black">
+                          TAX AMOUNT
+                        </TableHead>
+                        <TableHead className="shrink-0 text-xs font-bold text-black">
+                          AMOUNT
+                        </TableHead>
+                      </>
+                    )}
+
                     <TableHead className="shrink-0 text-xs font-bold text-black"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -539,6 +654,16 @@ const EditOrder = ({
                   {order?.orderItems?.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>{item.productName}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleInputChange(item, 'quantity', e.target.value)
+                          }
+                          className="w-24 border-2 font-semibold"
+                        />
+                      </TableCell>
                       <TableCell>
                         <Input
                           type="number"
@@ -550,19 +675,26 @@ const EditOrder = ({
                           placeholder="price"
                         />
                       </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleInputChange(item, 'quantity', e.target.value)
-                          }
-                          className="w-24 border-2 font-semibold"
-                        />
-                      </TableCell>
-                      <TableCell>{item.gstPerUnit}</TableCell>
+
+                      {isGstApplicable(
+                        isPurchasePage
+                          ? isGstApplicableForPurchaseOrders
+                          : isGstApplicableForSalesOrders,
+                      ) && <TableCell>{item.gstPerUnit}</TableCell>}
+
                       <TableCell>{`₹ ${item.totalAmount.toFixed(2)}`}</TableCell>
-                      <TableCell>{`₹ ${item.totalGstAmount}`}</TableCell>
+
+                      {isGstApplicable(
+                        isPurchasePage
+                          ? isGstApplicableForPurchaseOrders
+                          : isGstApplicableForSalesOrders,
+                      ) && (
+                        <>
+                          <TableCell>{`₹ ${item.totalAmount.toFixed(2)}`}</TableCell>
+                          <TableCell>{`₹ ${item.totalGstAmount}`}</TableCell>
+                        </>
+                      )}
+
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
@@ -599,12 +731,26 @@ const EditOrder = ({
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-bold">Gross Amount : </span>
-            <span className="rounded-md border bg-slate-100 p-2">
-              {handleCalculateGrossAmt()?.toFixed(2)}
-            </span>
-          </div>
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">Gross Amount : </span>
+                <span className="rounded-md border bg-slate-100 p-2">
+                  {handleCalculateGrossAmt()?.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">Tax Amount : </span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {totalGstAmt.toFixed(2)}
+                </span>
+              </div>
+            </>
+          )}
           <div className="flex items-center gap-2">
             <span className="font-bold">Total Amount : </span>
             <span className="rounded-md border bg-slate-100 p-2">

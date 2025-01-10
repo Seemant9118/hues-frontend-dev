@@ -410,6 +410,7 @@ const SalesOrder = () => {
               name="Invoice"
               cta="offer"
               isOrder="invoice"
+              isCreatingInvoice={isCreatingInvoice}
               onCancel={() => setIsCreatingInvoice(false)}
             />
           )}
@@ -422,6 +423,7 @@ const SalesOrder = () => {
               cta="offer"
               isOrder="order"
               orderId={orderId}
+              isEditingOrder={isEditingOrder}
               onCancel={() => setIsEditingOrder(false)}
             />
           )}
