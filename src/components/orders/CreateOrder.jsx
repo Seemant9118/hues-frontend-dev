@@ -52,6 +52,7 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
+  isCreatingInvoice,
   isCreatingSales,
   isCreatingPurchase,
   setSalesListing,
@@ -77,7 +78,8 @@ const CreateOrder = ({
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
-    enabled: !!isCreatingSales && isPurchasePage === false,
+    enabled:
+      (!!isCreatingInvoice || !!isCreatingSales) && isPurchasePage === false,
   });
 
   // for sales-order gst/non-gst check
@@ -315,7 +317,9 @@ const CreateOrder = ({
   const invoiceMutation = useMutation({
     mutationFn: createInvoice,
     onSuccess: () => {
-      toast.success('Invoice Created Successfully');
+      toast.success(
+        'Invoice created! Please refresh to view the latest Invoice',
+      );
       onCancel();
       // setInvoiceListing((prev) => [res.data.data, ...prev]);
     },
@@ -914,7 +918,10 @@ const CreateOrder = ({
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
-                  value={selectedItem.totalAmount + selectedItem.totalGstAmount}
+                  value={(
+                    (Number(selectedItem.totalAmount) || 0) +
+                    (Number(selectedItem.totalGstAmount) || 0)
+                  ).toFixed(2)}
                   className="max-w-30"
                 />
                 {errorMsg.totalAmount && (

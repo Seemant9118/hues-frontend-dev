@@ -401,7 +401,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                       name="totalAmount"
                       disabled
                       className="w-32 disabled:cursor-not-allowed"
-                      value={`₹ ${product.totalAmount}`}
+                      value={`₹ ${(Number(product.totalAmount) || 0).toFixed(2)}`}
                     />
                   </TableCell>
                 </TableRow>

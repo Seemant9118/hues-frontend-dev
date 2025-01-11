@@ -18,9 +18,9 @@ import {
 } from '@/services/Orders_Services/Orders_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
-  useQueryClient,
 } from '@tanstack/react-query';
 import {
   DatabaseZap,
@@ -78,146 +78,90 @@ const SaleEmptyStageData = {
 };
 
 const SalesOrder = () => {
-  const queryClient = useQueryClient();
-  const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
 
+  const router = useRouter();
+  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
-  // const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
-
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
-  const [salesDataByTab, setSalesDataByTab] = useState({
-    all: [],
-    bidReceived: [],
-    pending: [],
-  });
   const [filterData, setFilterData] = useState({});
-
-  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Handle tab change
   const onTabChange = (value) => {
-    setTab(value);
+    setTab(value); // Update the tab state
   };
 
+  // Update filterData dynamically based on the selected tab
   useEffect(() => {
-    // Clear existing salesListing and paginationData when the tab changes
-    setSalesListing([]);
-    setPaginationData(null);
-
-    // Apply filters based on the selected tab
     let newFilterData = {};
     if (tab === 'bidReceived') {
       newFilterData = { bidReceived: true };
     } else if (tab === 'pending') {
       newFilterData = { paymentStatus: 'NOT_PAID' };
     }
-
     setFilterData(newFilterData);
-
-    // Check if data for this tab already exists to prevent unnecessary API calls
-    if (salesDataByTab[tab]?.length > 0) {
-      setSalesListing(salesDataByTab[tab]); // Use cached data for this tab
-    }
   }, [tab]);
 
   // Fetch sales data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
+      queryKey: [orderApi.getSales.endpointKey, enterpriseId, tab, filterData],
       queryFn: async ({ pageParam = 1 }) => {
         const response = await GetSales({
           id: enterpriseId,
-          data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+          data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
         });
         return response;
       },
       initialPageParam: 1,
-      getNextPageParam: (lastPage) => {
-        const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-        return currentPage < totalPages ? currentPage + 1 : undefined;
+      getNextPageParam: (_lastGroup, groups) => {
+        const nextPage = groups.length + 1;
+        return nextPage <= _lastGroup.data.data.totalPages
+          ? nextPage
+          : undefined;
       },
       refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
     });
 
+  // data flattened - formatting
   useEffect(() => {
-    // Clear salesListing and paginationData when filterData changes
-    setSalesListing([]);
-    setPaginationData(null);
-    setSalesDataByTab({
-      all: [],
-      bidReceived: [],
-      pending: [],
+    if (!data) return;
+
+    // Flatten sales data from all pages
+    const flattenedSalesData = data.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales data is nested in `data.data.data`
+      .flat();
+
+    // Deduplicate sales data based on unique `id`
+    const uniqueSalesData = Array.from(
+      new Map(
+        flattenedSalesData.map((sale) => [
+          sale.id, // Assuming `id` is the unique identifier for each sale
+          sale,
+        ]),
+      ).values(),
+    );
+
+    // Update state with deduplicated sales data
+    setSalesListing(uniqueSalesData);
+
+    // Calculate pagination data using the last page's information
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
     });
-
-    // Invalidate the query to fetch fresh data starting from page 1
-    queryClient.invalidateQueries([
-      orderApi.getSales.endpointKey,
-      enterpriseId,
-      filterData,
-    ]);
-  }, [filterData, queryClient]);
-
-  useEffect(() => {
-    if (data?.pages.length > 0) {
-      const latestPage = data.pages[data.pages.length - 1].data.data;
-      const newSalesData = latestPage.data;
-
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
-
-      // Check if the current tab already has data to avoid duplicates
-      setSalesDataByTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          return {
-            ...prevData,
-            [tab]: newSalesData, // Replace with fresh data for the current tab
-          };
-        }
-
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newSalesData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return {
-          ...prevData,
-          [tab]: updatedTabData,
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setSalesListing((prevSales) => {
-        if (prevSales.length === 0) {
-          return newSalesData;
-        }
-
-        const updatedSales = [
-          ...prevSales,
-          ...newSalesData.filter(
-            (item) => !prevSales.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedSales;
-      });
-    }
   }, [data]);
 
   // Infinite scroll observer
@@ -228,23 +172,15 @@ const SalesOrder = () => {
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          paginationData?.currentPage < paginationData?.totalPages
-        ) {
+        if (entries[0].isIntersecting && hasNextPage) {
           fetchNextPage();
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [isFetching, fetchNextPage, hasNextPage, paginationData],
+    [isFetching, fetchNextPage, hasNextPage],
   );
-
-  // Pagination data
-  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
-  const currFetchedPage = data?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -385,8 +321,8 @@ const SalesOrder = () => {
                           data={salesListing}
                           fetchNextPage={fetchNextPage}
                           isFetching={isFetching}
-                          totalPages={totalPages}
-                          currFetchedPage={currFetchedPage}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
                           onRowClick={onRowClick}
                           lastSalesRef={lastSalesRef}
                         />
@@ -409,8 +345,8 @@ const SalesOrder = () => {
                           data={salesListing}
                           fetchNextPage={fetchNextPage}
                           isFetching={isFetching}
-                          totalPages={totalPages}
-                          currFetchedPage={currFetchedPage}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
                           onRowClick={onRowClick}
                           lastSalesRef={lastSalesRef}
                         />
@@ -433,8 +369,8 @@ const SalesOrder = () => {
                           data={salesListing}
                           fetchNextPage={fetchNextPage}
                           isFetching={isFetching}
-                          totalPages={totalPages}
-                          currFetchedPage={currFetchedPage}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
                           onRowClick={onRowClick}
                           lastSalesRef={lastSalesRef}
                         />
@@ -474,6 +410,7 @@ const SalesOrder = () => {
               name="Invoice"
               cta="offer"
               isOrder="invoice"
+              isCreatingInvoice={isCreatingInvoice}
               onCancel={() => setIsCreatingInvoice(false)}
             />
           )}
@@ -486,6 +423,7 @@ const SalesOrder = () => {
               cta="offer"
               isOrder="order"
               orderId={orderId}
+              isEditingOrder={isEditingOrder}
               onCancel={() => setIsEditingOrder(false)}
             />
           )}

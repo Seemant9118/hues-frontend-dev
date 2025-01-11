@@ -17,7 +17,11 @@ import {
 } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+} from '@tanstack/react-query';
 import {
   DatabaseZap,
   FileCheck,
@@ -79,19 +83,13 @@ const SalesInvoices = () => {
   const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const router = useRouter();
+  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
-  const [invoicesTabs, setInvoicesTab] = useState({
-    all: [],
-    pending: [],
-    debitNotes: [],
-    creditNotes: [],
-  });
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
-  const observer = useRef(); // Ref for infinite scrolling observer
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -99,10 +97,6 @@ const SalesInvoices = () => {
   };
 
   useEffect(() => {
-    // Clear existing salesListing and paginationData when the tab changes
-    setInvoiceListing([]); // Reset salesListing
-    setPaginationData(null); // Reset paginationData
-
     // Apply filters based on the selected tab
     let newFilterData = {};
     if (tab === 'pending') {
@@ -124,11 +118,6 @@ const SalesInvoices = () => {
     }
 
     setFilterData(newFilterData);
-
-    // Check if data for this tab already exists to prevent unnecessary API calls
-    if (invoicesTabs[tab]?.length > 0) {
-      setInvoiceListing(invoicesTabs[tab]); // Use cached data for this tab
-    }
   }, [tab]);
 
   // [INVOICES_FETCHING]
@@ -143,77 +132,54 @@ const SalesInvoices = () => {
     queryKey: [
       invoiceApi.getAllSalesInvoices.endpointKey,
       enterpriseId,
+      tab,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getAllSalesInvoices({
         id: enterpriseId,
-        data: { ...filterData, page: pageParam, limit: PAGE_LIMIT },
+        data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
       });
       return response;
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage?.data?.data ?? {};
-      return currentPage < totalPages ? currentPage + 1 : undefined;
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
+  // data flattening - formatting
   useEffect(() => {
-    if (data?.pages.length > 0) {
-      const latestPage = data.pages[data.pages.length - 1].data.data;
-      const newInvoicesData = latestPage.data;
+    if (!data) return;
 
-      // Set the pagination data
-      setPaginationData({
-        currentPage: latestPage.currentPage,
-        totalPages: latestPage.totalPages,
-      });
+    // Flatten sales invoices data from all pages
+    const flattenedSalesInvoicesData = data.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales invoices data is nested in `data.data.data`
+      .flat();
 
-      // Check if the current tab already has data to avoid duplicates
-      setInvoicesTab((prevData) => {
-        if (prevData[tab]?.length === 0) {
-          // Only store the fresh data if it's not already there
-          return {
-            ...prevData,
-            [tab]: newInvoicesData, // Replace with fresh data for the current tab
-          };
-        }
+    // Deduplicate sales data based on unique `id`
+    const uniqueSalesInvoicesData = Array.from(
+      new Map(
+        flattenedSalesInvoicesData.map((sale) => [
+          sale.invoiceId, // Assuming `id` is the unique identifier for each sale invoice
+          sale,
+        ]),
+      ).values(),
+    );
 
-        // Append unique data by filtering out duplicates
-        const updatedTabData = [
-          ...prevData[tab],
-          ...newInvoicesData.filter(
-            (item) =>
-              !prevData[tab].some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
+    // Update state with deduplicated sales invoices data
+    setInvoiceListing(uniqueSalesInvoicesData);
 
-        return {
-          ...prevData,
-          [tab]: updatedTabData, // Append only unique data
-        };
-      });
-
-      // Update the current display data without appending duplicates
-      setInvoiceListing((prevInvoices) => {
-        if (prevInvoices.length === 0) {
-          return newInvoicesData; // Set fresh data for the first time
-        }
-
-        // Append unique data to the invoices listing
-        const updatedInvoices = [
-          ...prevInvoices,
-          ...newInvoicesData.filter(
-            (item) => !prevInvoices.some((prevItem) => prevItem.id === item.id),
-          ),
-        ];
-
-        return updatedInvoices;
-      });
-    }
-  }, [data, filterData]);
+    // Calculate pagination data using the last page's information
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
+    });
+  }, [data]);
 
   // Infinite scroll observer
   const lastSalesInvoiceRef = useCallback(
@@ -223,23 +189,15 @@ const SalesInvoices = () => {
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          paginationData?.currentPage < paginationData?.totalPages
-        ) {
+        if (entries[0].isIntersecting && hasNextPage) {
           fetchNextPage();
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [isFetching, fetchNextPage, hasNextPage, paginationData],
+    [isFetching, fetchNextPage, hasNextPage],
   );
-
-  // Pagination data
-  const totalPages = data?.pages[0]?.data?.data?.totalPages ?? 0;
-  const currFetchedPage = data?.pages.length ?? 0;
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -370,8 +328,8 @@ const SalesInvoices = () => {
                         data={invoiceListing}
                         fetchNextPage={fetchNextPage}
                         isFetching={isFetching}
-                        totalPages={totalPages}
-                        currFetchedPage={currFetchedPage}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
                         onRowClick={onRowClick}
                         lastSalesRef={lastSalesInvoiceRef}
                       />
@@ -394,8 +352,8 @@ const SalesInvoices = () => {
                         data={invoiceListing}
                         fetchNextPage={fetchNextPage}
                         isFetching={isFetching}
-                        totalPages={totalPages}
-                        currFetchedPage={currFetchedPage}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
                         onRowClick={onRowClick}
                         lastSalesRef={lastSalesInvoiceRef}
                       />
@@ -418,8 +376,8 @@ const SalesInvoices = () => {
                         data={invoiceListing}
                         fetchNextPage={fetchNextPage}
                         isFetching={isFetching}
-                        totalPages={totalPages}
-                        currFetchedPage={currFetchedPage}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
                         onRowClick={onRowClick}
                         lastSalesRef={lastSalesInvoiceRef}
                       />
@@ -444,6 +402,7 @@ const SalesInvoices = () => {
               name="Invoice"
               cta="offer"
               isOrder="invoice"
+              isCreatingInvoice={isCreatingInvoice}
               setInvoiceListing={setInvoiceListing}
               onCancel={() => setIsCreatingInvoice(false)}
             />

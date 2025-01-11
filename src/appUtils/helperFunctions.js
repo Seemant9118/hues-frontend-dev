@@ -3,7 +3,8 @@ export const getInitialsNames = (name) => {
   if (!name) return 'PR'; // Default initials
   const words = name.split(' ');
   const initials =
-    words[0].charAt(0).toUpperCase() + (words[1].charAt(0).toUpperCase() || '');
+    (words[0] ? words[0].charAt(0).toUpperCase() : '') +
+    (words[1] ? words[1].charAt(0).toUpperCase() : '');
   return initials || 'PR'; // Fallback if no valid initials
 };
 

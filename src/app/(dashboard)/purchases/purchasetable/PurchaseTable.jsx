@@ -90,7 +90,7 @@ export function PurchaseTable({
     getScrollElement: () => tableContainerRef.current,
     measureElement: (element) =>
       element?.offsetHeight || element?.getBoundingClientRect().height,
-    overscan: 20,
+    overscan: 21,
   });
 
   return (
@@ -155,10 +155,10 @@ export function PurchaseTable({
           </TableBody>
         </Table>
       </div>
-      {isFetching && <div className="p-2 text-center">Fetching More...</div>}
+      {isFetching && <div className="p-1 text-center">Fetching More...</div>}
 
       {/* Render Pagination only if there's data */}
-      {data?.length > 0 && <DataTablePagination table={table} />}
+      {!isFetching && data?.length > 0 && <DataTablePagination table={table} />}
     </div>
   );
 }

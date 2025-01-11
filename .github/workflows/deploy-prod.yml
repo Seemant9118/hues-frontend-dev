@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -27,6 +27,12 @@ jobs:
           username: ${{ secrets.USERNAME_PROD }} # Your server's username
           key: ${{ secrets.SSH_PRIVATE_KEY_PROD }} # Your server's SSH private key
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            export PATH="$NVM_DIR/versions/node/v20.15.0/bin:$PATH"
+            echo "Using npm from: $(which npm)"
+            echo "Using pm2 from: $(which pm2)"
             cd ${{vars.PROJECT_PATH}} # Specify the path to your app directory on the server
             git pull
             npm install
