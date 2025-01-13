@@ -114,28 +114,19 @@ const FilterModal = ({
   };
 
   // options data: status
-  const optionsForSales = [
+  const option = [
+    { value: 'BID_SENT', label: 'Bid sent' },
     { value: 'BID_RECEIVED', label: 'Bid received' },
     { value: 'OFFER_SENT', label: 'Offer sent' },
-    { value: 'ACCEPTED', label: 'Accepted' },
-    { value: 'REJECTED', label: 'Rejected' },
-    { value: 'WITHDRAWN', label: 'Withdrawn' },
-  ];
-
-  const optionsForPurchase = [
-    { value: 'BID_SENT', label: 'Bid sent' },
     { value: 'OFFER_RECEIVED', label: 'Offer received' },
     { value: 'ACCEPTED', label: 'Accepted' },
     { value: 'REJECTED', label: 'Rejected' },
     { value: 'WITHDRAWN', label: 'Withdrawn' },
   ];
-
   // value : status
   const valueStatus = filters.status.map((status) => ({
     value: status,
-    label: isSalesFilter
-      ? optionsForSales.find((opt) => opt.value === status)?.label
-      : optionsForPurchase.find((opt) => opt.value === status)?.label,
+    label: option.find((opt) => opt.value === status)?.label,
   }));
   // hanlderChangeFn : status
   const handleChangeForStatus = (value) => {
@@ -413,7 +404,7 @@ const FilterModal = ({
             </span>
             <MultiSelects
               placeholder="Select status..."
-              option={isSalesFilter ? optionsForSales : optionsForPurchase}
+              option={option}
               value={valueStatus}
               handleChange={handleChangeForStatus}
             />
