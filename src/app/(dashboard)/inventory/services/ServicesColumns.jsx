@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { Edit3, MoreVertical } from 'lucide-react';
+import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
@@ -84,7 +84,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
                   setServicesToEdit(row.original);
                 }}
               >
-                <Edit3 size={12} />
+                <Pencil size={12} />
                 Edit
               </DropdownMenuItem>
 
