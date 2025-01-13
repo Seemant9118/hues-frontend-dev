@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import { Edit3, Info, MoreVertical } from 'lucide-react';
+import { Info, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
@@ -89,7 +89,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
                   setGoodsToEdit(row.original);
                 }}
               >
-                <Edit3 size={12} />
+                <Pencil size={12} />
                 Edit
               </DropdownMenuItem>
 

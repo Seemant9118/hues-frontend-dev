@@ -123,7 +123,7 @@ export const useClientsColumns = () => {
                       }}
                     >
                       <Pencil size={14} />
-                      _Edit
+                      Edit
                     </Button>
                     {isEditing && (
                       <EditModal
