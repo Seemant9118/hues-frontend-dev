@@ -1,6 +1,7 @@
 'use client';
 
 import { notificationApi } from '@/api/notifications/notificationApi';
+import AlertBox from '@/components/Modals/AlertBox';
 import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPopUp';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -16,6 +17,7 @@ import {
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQueryClient,
 } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -28,14 +30,18 @@ const PAGE_LIMIT = 10;
 
 const Notification = () => {
   const { setTotalUnreadNotifications } = useNotificationsCount();
+
+  const queryClient = useQueryClient();
   const router = useRouter();
+  const [filteredNotification, setFilteredNotification] = useState({});
+  const [notifications, setNotifications] = useState([]);
+  const [alertData, setAlertData] = useState({ isShow: false, infoText: '' });
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
-  const [filteredNotification, setFilteredNotification] = useState({});
-  const [notifications, setNotifications] = useState([]);
 
   // updateReadStatusNotifications mutation
   const updateReadStatusNotificationsMutation = useMutation({
@@ -49,11 +55,28 @@ const Notification = () => {
   // onrowclick handler
   const onRowClick = (row) => {
     const isCurrNotificationIsRead = row?.isRead;
+    const isInvitationRejected = row?.templateName === 'INVITATION_REJECTED';
 
-    if (isCurrNotificationIsRead) {
+    if (isInvitationRejected && isCurrNotificationIsRead) {
+      // Show the alert popup
+      setAlertData({
+        isShow: true,
+        infoText: 'Invitation no longer exists',
+      });
+    } else if (isInvitationRejected && !isCurrNotificationIsRead) {
+      // Update the read status using mutation
+      updateReadStatusNotificationsMutation.mutate(row?.id);
+
+      // Show the alert popup
+      setAlertData({
+        isShow: true,
+        infoText: 'Invitation no longer exists',
+      });
+    } else if (!isInvitationRejected && isCurrNotificationIsRead) {
+      // Navigate to the deep link
       router.push(row?.deepLink);
     } else {
-      // updateTracker mutation API call can be added here
+      // Update the read status and navigate
       updateReadStatusNotificationsMutation.mutate(row?.id);
       router.push(row?.deepLink);
     }
@@ -160,6 +183,19 @@ const Notification = () => {
               setFilteredNotification={setFilteredNotification}
             />
           </SubHeader>
+
+          {/* alertbox for rejected invite */}
+          <AlertBox
+            isAlertShow={alertData.isShow}
+            infoText={alertData.infoText}
+            onClose={() => {
+              setAlertData({ isShow: false, infoText: '' });
+              // after closing modal refetch notifications
+              queryClient.invalidateQueries([
+                notificationApi.getNotifications.endpointKey,
+              ]);
+            }}
+          />
 
           {isLoading && notifications?.length === 0 && <Loading />}
 
