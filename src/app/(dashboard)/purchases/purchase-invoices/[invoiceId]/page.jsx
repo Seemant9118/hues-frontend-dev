@@ -201,7 +201,8 @@ const ViewInvoice = () => {
                     invoiceId={
                       invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
                     }
-                    orderId={
+                    orderId={invoiceDetails?.invoiceDetails?.orderId}
+                    orderRefId={
                       invoiceDetails?.invoiceDetails?.orderReferenceNumber
                     }
                     paymentStatus={paymentStatus}

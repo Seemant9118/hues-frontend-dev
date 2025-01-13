@@ -181,7 +181,10 @@ const ViewInvoice = () => {
                 invoiceId={
                   invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
                 }
-                orderId={invoiceDetails?.invoiceDetails?.orderReferenceNumber}
+                orderId={invoiceDetails?.invoiceDetails?.orderId}
+                orderRefId={
+                  invoiceDetails?.invoiceDetails?.orderReferenceNumber
+                }
                 paymentStatus={paymentStatus}
                 debitNoteStatus={debitNoteStatus}
                 Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}

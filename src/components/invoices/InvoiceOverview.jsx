@@ -1,7 +1,7 @@
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import {
@@ -14,6 +14,7 @@ const InvoiceOverview = ({
   isCollapsableOverview,
   invoiceId,
   orderId,
+  orderRefId,
   Name,
   paymentStatus,
   debitNoteStatus,
@@ -21,6 +22,7 @@ const InvoiceOverview = ({
   date,
   amount,
 }) => {
+  const router = useRouter();
   const pathName = usePathname();
   const isSalesDetailPage = pathName.includes('/sales-invoices');
 
@@ -58,7 +60,18 @@ const InvoiceOverview = ({
           <div className="flex w-full flex-col justify-between">
             <section className="flex flex-col gap-2">
               <p className="text-xs font-bold">Order ID</p>
-              <p className="text-sm font-bold">{orderId}</p>
+              <p
+                className="flex cursor-pointer items-center gap-1 text-sm font-bold hover:text-primary"
+                onClick={() => {
+                  if (isSalesDetailPage) {
+                    router.push(`/sales/sales-orders/${orderId}`);
+                  } else {
+                    router.push(`/purchases/purchase-orders/${orderId}`);
+                  }
+                }}
+              >
+                {orderRefId} <MoveUpRight size={12} />
+              </p>
             </section>
 
             <section className="flex flex-col gap-2">
