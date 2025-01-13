@@ -98,7 +98,7 @@ const PurchaseOrders = () => {
   const [unconfirmedPurchaseListing, setUnconfirmedPurhchaseListing] = useState(
     [],
   );
-  const [filterData, setFilterData] = useState({}); // Initialize with default filterPayload
+  const [filterData, setFilterData] = useState(null); // Initialize with default filterPayload
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -107,7 +107,7 @@ const PurchaseOrders = () => {
 
   useEffect(() => {
     // Apply filters based on the selected tab
-    let newFilterData = {};
+    let newFilterData = null;
     if (tab === 'offerReceived') {
       newFilterData = { offerReceived: true };
     } else if (tab === 'pending') {
@@ -116,7 +116,9 @@ const PurchaseOrders = () => {
       newFilterData = {};
     }
 
-    setFilterData(newFilterData);
+    if (newFilterData) {
+      setFilterData(newFilterData);
+    }
   }, [tab]);
 
   // Fetch sales data with infinite scroll
@@ -131,7 +133,7 @@ const PurchaseOrders = () => {
       queryFn: async ({ pageParam = 1 }) => {
         const response = await GetPurchases({
           id: enterpriseId,
-          data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
+          data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
         });
         return response;
       },
@@ -210,7 +212,7 @@ const PurchaseOrders = () => {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getUnconfirmedPurchases({
         id: enterpriseId,
-        data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
+        data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
       });
       return response;
     },
@@ -401,6 +403,7 @@ const PurchaseOrders = () => {
                       isSalesFilter={false}
                       tab={tab}
                       setFilterData={setFilterData}
+                      setPaginationData={setPaginationData}
                     />
                   </section>
 
@@ -520,6 +523,7 @@ const PurchaseOrders = () => {
               cta="bid"
               isOrder="order"
               isCreatingPurchase={isCreatingPurchase}
+              setPurchaseListing={setPurchaseListing}
               onCancel={() => setIsCreatingPurchase(false)}
               onSubmit={() => {
                 setIsCreatingPurchase(false);

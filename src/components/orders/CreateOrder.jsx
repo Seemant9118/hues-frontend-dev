@@ -56,6 +56,7 @@ const CreateOrder = ({
   isCreatingSales,
   isCreatingPurchase,
   setSalesListing,
+  setPurchaseListing,
   onCancel,
   name,
   cta,
@@ -306,7 +307,11 @@ const CreateOrder = ({
           : 'Purchase Order Created Successfully',
       );
       onCancel();
-      setSalesListing((prev) => [res.data.data, ...prev]);
+      if (isPurchasePage) {
+        setPurchaseListing((prev) => [res.data.data, ...prev]);
+      } else {
+        setSalesListing((prev) => [res.data.data, ...prev]);
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
