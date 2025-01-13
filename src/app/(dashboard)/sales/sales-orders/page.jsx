@@ -94,7 +94,7 @@ const SalesOrder = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
-  const [filterData, setFilterData] = useState({});
+  const [filterData, setFilterData] = useState(null);
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -103,13 +103,15 @@ const SalesOrder = () => {
 
   // Update filterData dynamically based on the selected tab
   useEffect(() => {
-    let newFilterData = {};
+    let newFilterData = null;
     if (tab === 'bidReceived') {
       newFilterData = { bidReceived: true };
     } else if (tab === 'pending') {
       newFilterData = { paymentStatus: 'NOT_PAID' };
     }
-    setFilterData(newFilterData);
+    if (newFilterData) {
+      setFilterData(newFilterData);
+    }
   }, [tab]);
 
   // Fetch sales data with infinite scroll
@@ -119,7 +121,7 @@ const SalesOrder = () => {
       queryFn: async ({ pageParam = 1 }) => {
         const response = await GetSales({
           id: enterpriseId,
-          data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
+          data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
         });
         return response;
       },
@@ -308,6 +310,7 @@ const SalesOrder = () => {
                       isSalesFilter={true}
                       tab={tab}
                       setFilterData={setFilterData}
+                      setPaginationData={setPaginationData}
                     />
                   </section>
 
@@ -397,7 +400,6 @@ const SalesOrder = () => {
               isOrder="order"
               isCreatingSales={isCreatingSales}
               setIsCreatingSales={setIsCreatingSales}
-              setIsCreatingInvoice={setIsCreatingInvoice}
               setSalesListing={setSalesListing}
               onCancel={() => setIsCreatingSales(false)}
             />

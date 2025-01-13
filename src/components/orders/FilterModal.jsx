@@ -23,7 +23,12 @@ import MultiSelects from '../ui/MultiSelects';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { RangeSlider } from '../ui/RangeSlider';
 
-const FilterModal = ({ isSalesFilter, tab, setFilterData }) => {
+const FilterModal = ({
+  isSalesFilter,
+  tab,
+  setFilterData,
+  setPaginationData,
+}) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isOpen, setIsOpen] = useState(false);
@@ -54,6 +59,7 @@ const FilterModal = ({ isSalesFilter, tab, setFilterData }) => {
 
   //   hanlde close modal fn
   const onClose = () => {
+    // filters clear
     setFilters({
       dateRange: {
         fromDate: '',
@@ -67,10 +73,18 @@ const FilterModal = ({ isSalesFilter, tab, setFilterData }) => {
       clientIds: [],
       invoiceStatus: '',
     });
-    setFilterData({
-      page: 1,
-      limit: 10,
-    });
+    setPaginationData((prev) => ({
+      totalPages: prev.totalPages,
+      currFetchedPage: 1,
+    }));
+
+    // clear filterData
+    setFilterData(null);
+
+    // setFilterData({
+    //   page: 1,
+    //   limit: 10,
+    // });
     setIsFilteredApplied(false);
     setIsOpen(false);
   };
@@ -92,7 +106,7 @@ const FilterModal = ({ isSalesFilter, tab, setFilterData }) => {
       },
     };
     setFilterData((prevFilterData) => ({
-      ...prevFilterData,
+      ...(prevFilterData || {}),
       ...formattedFilters, // Merge formatted filters into the existing filterData
     }));
     setIsFilteredApplied(true);
