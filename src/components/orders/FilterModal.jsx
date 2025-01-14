@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, ListFilter } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { Button } from '../ui/button';
 import DatePickers from '../ui/DatePickers';
 import {
@@ -19,7 +20,6 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import MultiSelects from '../ui/MultiSelects';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { RangeSlider } from '../ui/RangeSlider';
 
@@ -165,7 +165,7 @@ const FilterModal = ({
 
       return {
         ...userDetails,
-        id: user.id,
+        id: user?.client?.id || user?.id,
         name: user?.client?.name || user?.invitation?.userDetails?.name,
       };
     });
@@ -177,11 +177,13 @@ const FilterModal = ({
       label: item.name,
     };
   });
+
   // value : client
-  const valueClient = filters.clientIds.map((client) => ({
-    value: client.id,
-    label: updatedClientData.find((opt) => opt.value === client)?.label,
+  const valueClient = filters?.clientIds?.map((client) => ({
+    value: client,
+    label: updatedClientData.find((opt) => opt?.value === client)?.label,
   }));
+
   // handlerChangeFn : clients
   const handleChangeForClient = (value) => {
     // Update filters with new status values
@@ -211,7 +213,7 @@ const FilterModal = ({
 
       return {
         ...userDetails,
-        id: user.id,
+        id: user?.vendor?.id || user?.id,
         name: user?.vendor?.name || user?.invitation?.userDetails?.name,
       };
     });
@@ -224,9 +226,9 @@ const FilterModal = ({
     };
   });
   // value : vendors
-  const valueVendor = filters.clientIds.map((vendor) => ({
-    value: vendor.id,
-    label: updatedVendorData.find((opt) => opt.value === vendor)?.label,
+  const valueVendor = filters?.clientIds?.map((vendor) => ({
+    value: vendor,
+    label: updatedVendorData?.find((opt) => opt.value === vendor)?.label,
   }));
   // handlerChangeFn : vendors
   const handleChangeForVendor = (value) => {
@@ -410,11 +412,15 @@ const FilterModal = ({
                 Clear
               </span>
             </span>
-            <MultiSelects
+            <Select
+              isMulti
+              name="status"
               placeholder="Select status..."
-              option={isSalesFilter ? optionsForSales : optionsForPurchase}
+              options={isSalesFilter ? optionsForSales : optionsForPurchase}
+              className="text-sm"
+              classNamePrefix="select"
               value={valueStatus}
-              handleChange={handleChangeForStatus}
+              onChange={handleChangeForStatus}
             />
           </div>
 
@@ -433,13 +439,17 @@ const FilterModal = ({
                 Clear
               </span>
             </span>
-            <MultiSelects
+            <Select
+              isMulti
+              name="status"
               placeholder={
                 isSalesFilter ? 'Select Client...' : 'Select Vendor...'
               }
-              option={isSalesFilter ? updatedClientData : updatedVendorData}
+              options={isSalesFilter ? updatedClientData : updatedVendorData}
+              className="text-sm"
+              classNamePrefix="select"
               value={isSalesFilter ? valueClient : valueVendor}
-              handleChange={
+              onChange={
                 isSalesFilter ? handleChangeForClient : handleChangeForVendor
               }
             />
