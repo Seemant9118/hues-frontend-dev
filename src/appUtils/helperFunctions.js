@@ -21,7 +21,7 @@ export const getRandomBgColor = () => {
 };
 
 // style for react-select component
-export const getStylesForCreatableSelectComponent = () => {
+export const getStylesForSelectComponent = () => {
   return {
     control: (base, state) => ({
       ...base,
@@ -43,9 +43,28 @@ export const getStylesForCreatableSelectComponent = () => {
     menuList: (base) => ({
       ...base,
       padding: '2px',
-      fontSize: '12px',
-      maxHeight: '200px',
+      fontSize: '14px',
+      maxHeight: '150px',
       overflowY: 'auto',
+
+      // Custom scrollbar styles
+      '&::-webkit-scrollbar': {
+        width: '0.5rem', // Scrollbar width
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'white', // Track background
+      },
+      '&::-webkit-scrollbar-thumb': {
+        borderRadius: '0.5rem', // Rounded scrollbar thumb
+        background: '#dadce0', // Thumb color
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        background: '#c6c7c9', // Thumb color on hover
+      },
+
+      // Cross-browser support for Firefox
+      scrollbarWidth: 'thin',
+      scrollbarColor: '#dadce0 white', // Thumb and track colors for Firefox
     }),
   };
 };

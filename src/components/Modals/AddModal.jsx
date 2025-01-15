@@ -30,13 +30,13 @@ import {
   SelectValue,
 } from '../ui/select';
 
-const AddModal = ({ type, cta, btnName, mutationFunc }) => {
+const AddModal = ({ type, cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const panNumber = LocalStorageService.get('panClientVendor');
   const gstNumber = LocalStorageService.get('gstClientVendor');
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(isOpen ?? false);
   const [isAdding, setIsAdding] = useState(false);
   const [invitedIds, setInvitedIds] = useState([]);
   const [enterpriseData, setEnterPriseData] = useState({
@@ -226,6 +226,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
       open={open}
       onOpenChange={() => {
         setOpen((prev) => !prev);
+        setIsOpen && setIsOpen((prev) => !prev);
         setSearchInput({
           idType: 'pan',
           idNumber: '',
@@ -245,12 +246,14 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
         setIsAdding(false);
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant={'blue_outline'} size="sm" className="w-full">
-          <Layers2 size={14} />
-          {btnName}
-        </Button>
-      </DialogTrigger>
+      {isOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button variant={'blue_outline'} size="sm" className="w-full">
+            <Layers2 size={14} />
+            {btnName}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogTitle>{cta.toUpperCase()}</DialogTitle>
 
