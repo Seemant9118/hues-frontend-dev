@@ -10,6 +10,7 @@ import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import {
   Collapsible,
@@ -17,7 +18,6 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { Progress } from '../ui/progress';
-import Tooltips from '../auth/Tooltips';
 
 const OrdersOverview = ({
   isCollapsableOverview,
@@ -130,8 +130,8 @@ const OrdersOverview = ({
                 <div>{multiStatus}</div>
               </section>
 
-              {(orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
-                orderDetails?.negotiationStatus === 'INVOICED') && (
+              {orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
+              orderDetails?.negotiationStatus === 'INVOICED' ? (
                 <section className="flex flex-col gap-5">
                   <p className="text-xs font-bold">Payment Status</p>
                   <Progress
@@ -139,6 +139,13 @@ const OrdersOverview = ({
                     value={paymentProgressPercent}
                   />
                   <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
+                </section>
+              ) : (
+                <section className="flex flex-col gap-3">
+                  <p className="text-xs font-bold">Total Amount</p>
+                  <p className="text-sm font-bold">
+                    {`${formattedAmount(totalAmount)}`}
+                  </p>
                 </section>
               )}
             </div>
