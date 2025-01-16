@@ -80,7 +80,9 @@ export const formattedAmount = (amount) => {
 
 // fn for capitalization
 export const capitalize = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  if (str) {
+    str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
 };
 
 // debouncing fn

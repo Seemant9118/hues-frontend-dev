@@ -1,4 +1,4 @@
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import { ChevronDown, ChevronUp, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { usePathname, useRouter } from 'next/navigation';
@@ -9,9 +9,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '../ui/collapsible';
+import { Progress } from '../ui/progress';
 
 const InvoiceOverview = ({
   isCollapsableOverview,
+  invoiceDetails,
   invoiceId,
   orderId,
   orderRefId,
@@ -21,17 +23,16 @@ const InvoiceOverview = ({
   type,
   date,
   amount,
+  amountPaid = 0,
 }) => {
   const router = useRouter();
   const pathName = usePathname();
   const isSalesDetailPage = pathName.includes('/sales-invoices');
 
+  const paymentProgressPercent = (amountPaid / amount) * 100;
+
   const [isOpen, setIsOpen] = useState(false);
 
-  // fn for capitalization
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
   return (
     <>
       {!isCollapsableOverview && (
@@ -94,10 +95,25 @@ const InvoiceOverview = ({
               </p>
             </section>
 
-            <section className="flex flex-col gap-2">
-              <p className="text-xs font-bold">Total Amount</p>
-              <p className="text-sm font-bold">{formattedAmount(amount)}</p>
-            </section>
+            {invoiceDetails?.invoiceMetaData?.payment?.status ===
+              'PARTIAL_PAID' ||
+            invoiceDetails?.invoiceMetaData?.payment?.status === 'PAID' ? (
+              <section className="flex flex-col gap-5">
+                <p className="text-xs font-bold">Payment Status</p>
+                <Progress
+                  className="w-1/2 bg-[#F3F3F3]"
+                  value={paymentProgressPercent}
+                />
+                <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
+              </section>
+            ) : (
+              <section className="flex flex-col gap-3">
+                <p className="text-xs font-bold">Total Amount</p>
+                <p className="text-sm font-bold">
+                  {`${formattedAmount(amount)}`}
+                </p>
+              </section>
+            )}
           </div>
         </section>
       )}
@@ -133,19 +149,30 @@ const InvoiceOverview = ({
                 </div>
                 <div className="flex flex-col gap-4">
                   <p className="text-xs font-bold">Order ID</p>
-                  <p className="text-sm font-bold">{orderId}</p>
+                  <p className="text-sm font-bold">{orderRefId}</p>
                 </div>
-                <div className="flex flex-col gap-5">
-                  <p className="text-xs font-bold">Total Amount</p>
-                  <p className="text-sm font-bold">{formattedAmount(amount)}</p>
-                </div>
+                {invoiceDetails?.invoiceMetaData?.payment?.status ===
+                  'PARTIAL_PAID' ||
+                invoiceDetails?.invoiceMetaData?.payment?.status === 'PAID' ? (
+                  <section className="flex flex-col gap-5">
+                    <p className="text-xs font-bold">Payment Status</p>
+                    <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
+                  </section>
+                ) : (
+                  <section className="flex flex-col gap-3">
+                    <p className="text-xs font-bold">Total Amount</p>
+                    <p className="text-sm font-bold">
+                      {`${formattedAmount(amount)}`}
+                    </p>
+                  </section>
+                )}
               </section>
             )}
             {isOpen && <h1 className="text-sm font-bold">Overview</h1>}
           </div>
 
           <CollapsibleContent className="animate-fadeInUp space-y-2">
-            <section className="flex h-40 rounded-md p-5">
+            <section className="flex h-52 rounded-md p-5">
               {/* first column */}
               <div className="flex w-full flex-col justify-between">
                 <section className="flex flex-col gap-2">
@@ -159,23 +186,33 @@ const InvoiceOverview = ({
                   </p>
                   <p className="text-sm font-bold">{Name}</p>
                 </section>
+
+                <section className="flex w-1/4 flex-col gap-2">
+                  <p className="text-xs font-bold">Payment Status</p>
+                  <div>{paymentStatus}</div>
+                </section>
               </div>
 
               {/* second column */}
               <div className="flex w-full flex-col justify-between">
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-bold">Order ID</p>
-                  <p className="text-sm font-bold">{orderId}</p>
+                  <p className="text-sm font-bold">{orderRefId}</p>
                 </section>
 
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-bold">Types</p>
                   <p className="text-sm font-bold">{capitalize(type)}</p>
                 </section>
+
+                <section className="flex w-1/4 flex-col gap-2">
+                  <p className="text-xs font-bold">Debit Notes</p>
+                  <div>{debitNoteStatus}</div>
+                </section>
               </div>
 
               {/* third column */}
-              <div className="flex w-full flex-col justify-between">
+              <div className="flex w-full flex-col gap-3">
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-bold">Date</p>
                   <p className="text-sm font-bold">
@@ -183,10 +220,25 @@ const InvoiceOverview = ({
                   </p>
                 </section>
 
-                <section className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">Total Amount</p>
-                  <p className="text-sm font-bold">{formattedAmount(amount)}</p>
-                </section>
+                {invoiceDetails?.invoiceMetaData?.payment?.status ===
+                  'PARTIAL_PAID' ||
+                invoiceDetails?.invoiceMetaData?.payment?.status === 'PAID' ? (
+                  <section className="flex flex-col gap-5">
+                    <p className="text-xs font-bold">Payment Status</p>
+                    <Progress
+                      className="w-1/2 bg-[#F3F3F3]"
+                      value={paymentProgressPercent}
+                    />
+                    <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
+                  </section>
+                ) : (
+                  <section className="flex flex-col gap-3">
+                    <p className="text-xs font-bold">Total Amount</p>
+                    <p className="text-sm font-bold">
+                      {`${formattedAmount(amount)}`}
+                    </p>
+                  </section>
+                )}
               </div>
             </section>
           </CollapsibleContent>
