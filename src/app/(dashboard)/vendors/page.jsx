@@ -1,12 +1,14 @@
 'use client';
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
+import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -15,11 +17,12 @@ import {
   bulkUploadVendors,
   createVendor,
   getVendors,
+  searchedVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookUser, Eye, HeartHandshake, Settings, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useVendorsColumns } from './useVendorsColumns';
 
@@ -28,6 +31,39 @@ const UploadItems = dynamic(
   { loading: () => <Loading /> },
 );
 
+// MACROS
+// Debounce delay in milliseconds
+const DEBOUNCE_DELAY = 500;
+
+// Emtpy state data
+const VendorsEmptyStageData = {
+  heading: `~"Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
+  catalogs for efficient transactions."`,
+  subHeading: 'Features',
+  subItems: [
+    {
+      id: 1,
+      icon: <BookUser size={14} />,
+      subItemtitle: `Register vendors with essential details easily.`,
+    },
+    {
+      id: 2,
+      icon: <Settings size={14} />,
+      subItemtitle: `Automatically access vendor catalogs within your purchasing workflow.`,
+    },
+    {
+      id: 3,
+      icon: <Eye size={14} />,
+      subItemtitle: `Leverage vendor visibility for informed bids and streamlined purchases`,
+    },
+    {
+      id: 4,
+      icon: <HeartHandshake size={14} />,
+      subItemtitle: `Foster robust vendor relationships with tailored product engagement.`,
+    },
+  ],
+};
+
 const VendorsPage = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -35,63 +71,93 @@ const VendorsPage = () => {
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
 
+  const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
-  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
+  const [vendors, setVendors] = useState([]);
 
-  const VendorsEmptyStageData = {
-    heading: `~"Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
-    catalogs for efficient transactions."`,
-    subHeading: 'Features',
-    subItems: [
-      {
-        id: 1,
-        icon: <BookUser size={14} />,
-        subItemtitle: `Register vendors with essential details easily.`,
-      },
-      {
-        id: 2,
-        icon: <Settings size={14} />,
-        subItemtitle: `Automatically access vendor catalogs within your purchasing workflow.`,
-      },
-      {
-        id: 3,
-        icon: <Eye size={14} />,
-        subItemtitle: `Leverage vendor visibility for informed bids and streamlined purchases`,
-      },
-      {
-        id: 4,
-        icon: <HeartHandshake size={14} />,
-        subItemtitle: `Foster robust vendor relationships with tailored product engagement.`,
-      },
-    ],
-  };
-
-  const { isLoading, data: vendorsList } = useQuery({
+  // api fetching for clients
+  const {
+    isLoading,
+    data: vendorsData,
+    isSuccess,
+  } = useQuery({
     queryKey: [vendorEnterprise.getVendors.endpointKey],
     queryFn: () => getVendors(enterpriseId),
     select: (res) => res.data.data,
+    enabled: searchTerm?.length === 0,
   });
 
-  let formattedData = [];
-  if (vendorsList) {
-    formattedData = vendorsList.flatMap((user) => {
-      let userDetails;
-      if (user.vendor && user?.vendor?.name !== null) {
-        userDetails = { ...user.vendor };
-      } else {
-        userDetails = { ...user?.invitation?.userDetails };
-      }
-
-      return {
-        ...userDetails,
-        id: user.id,
-        invitationId: user.invitation?.id,
-        invitationStatus: user.invitation?.status,
-      };
+  // Fetch searched catalogues
+  const { data: searchedVendorsData, isLoading: isSearchedVendorsLoading } =
+    useQuery({
+      queryKey: [vendorEnterprise.searchedVendors.endpointKey, searchTerm],
+      queryFn: () => searchedVendors(searchTerm),
+      select: (res) => res.data.data,
+      enabled: !!debouncedSearchTerm, // Use debounced value here
     });
-  }
 
+  // Debounce logic with useCallback
+  const updateDebouncedSearchTerm = useCallback(
+    debounce((value) => {
+      setDebouncedSearchTerm(value);
+    }, DEBOUNCE_DELAY),
+    [],
+  );
+  useEffect(() => {
+    updateDebouncedSearchTerm(searchTerm);
+  }, [searchTerm, updateDebouncedSearchTerm]);
+
+  // Consolidated state update logic
+  useEffect(() => {
+    if (debouncedSearchTerm && searchedVendorsData) {
+      let formattedData = [];
+      // formatting data
+      if (searchedVendorsData) {
+        formattedData = searchedVendorsData.flatMap((user) => {
+          let userDetails;
+          if (user.vendor && user?.vendor?.name !== null) {
+            userDetails = { ...user.vendor };
+          } else {
+            userDetails = { ...user?.invitation?.userDetails };
+          }
+
+          return {
+            ...userDetails,
+            id: user.id,
+            invitationId: user.invitation?.id,
+            invitationStatus: user.invitation?.status,
+          };
+        });
+        setVendors(formattedData); // set vendors from search api
+      }
+    } else if (!debouncedSearchTerm && isSuccess) {
+      let formattedData = [];
+      // formatting data
+      if (vendorsData) {
+        formattedData = vendorsData.flatMap((user) => {
+          let userDetails;
+          if (user.vendor && user?.vendor?.name !== null) {
+            userDetails = { ...user.vendor };
+          } else {
+            userDetails = { ...user?.invitation?.userDetails };
+          }
+
+          return {
+            ...userDetails,
+            id: user.id,
+            invitationId: user.invitation?.id,
+            invitationStatus: user.invitation?.status,
+          };
+        });
+        setVendors(formattedData); // set vendors from get api
+      }
+    }
+  }, [debouncedSearchTerm, searchedVendorsData, vendorsData, isSuccess]);
+
+  // handle upload file fn
   const uploadFile = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -107,6 +173,7 @@ const VendorsPage = () => {
     }
   };
 
+  // columns
   const VendorsColumns = useVendorsColumns();
 
   return (
@@ -123,6 +190,10 @@ const VendorsPage = () => {
             {!isUploading && (
               <SubHeader name={'Vendors'}>
                 <div className="flex items-center justify-center gap-4">
+                  <SearchInput
+                    toSearchTerm={searchTerm}
+                    setToSearchTerm={setSearchTerm}
+                  />
                   <Tooltips
                     trigger={
                       <Button
@@ -167,15 +238,15 @@ const VendorsPage = () => {
               </SubHeader>
             )}
 
-            {isLoading && <Loading />}
+            {(isLoading || isSearchedVendorsLoading) && <Loading />}
 
-            {!isLoading &&
-              !isUploading &&
-              (formattedData && formattedData.length !== 0 ? (
+            {!isUploading &&
+              (!isLoading || !isSearchedVendorsLoading) &&
+              (vendors?.length > 0 ? (
                 <DataTable
                   id={'vendor table'}
                   columns={VendorsColumns}
-                  data={formattedData}
+                  data={vendors}
                 />
               ) : (
                 <EmptyStageComponent

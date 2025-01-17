@@ -1,4 +1,9 @@
 export const vendorEnterprise = {
+  // 0. searched vendors
+  searchedVendors: {
+    endpoint: `/enterprise/vendor/searchvendor`,
+    endpointKey: 'searched_vendors',
+  },
   // 1. create vendor_enterprise
   createVendorEnterprise: {
     endpoint: `/enterprise/vendor/create`,

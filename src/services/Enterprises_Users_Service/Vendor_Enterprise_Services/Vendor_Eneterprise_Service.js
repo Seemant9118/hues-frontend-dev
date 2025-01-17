@@ -1,6 +1,12 @@
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { APIinstance } from '@/services';
 
+export function searchedVendors(str) {
+  return APIinstance.post(
+    `${vendorEnterprise.searchedVendors.endpoint}?searchString=${str}`,
+  );
+}
+
 export function createVendor(data) {
   return APIinstance.post(
     vendorEnterprise.createVendorEnterprise.endpoint,

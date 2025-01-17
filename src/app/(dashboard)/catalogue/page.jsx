@@ -14,38 +14,76 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   bulkDeleteCatalogueItems,
   getCatalogues,
+  searhedCatalogues,
 } from '@/services/Catalogue_Services/CatalogueServices';
 import { useQuery } from '@tanstack/react-query';
+
+import { debounce } from '@/appUtils/helperFunctions';
 import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useCatalogueColumns } from './CatalogueColumns';
 
+// MACROS
+// Debounce delay in milliseconds
+const DEBOUNCE_DELAY = 500;
+
 const Catalogue = () => {
-  const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+
+  const router = useRouter();
   const [selectedCatalogue, setSelectedCatalogue] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
+  const [catalogues, setCatalogues] = useState([]);
 
   // catalogue api fetching
-  const { data: catalogues, isLoading } = useQuery({
+  const {
+    data: cataloguesData,
+    isLoading,
+    isSuccess,
+  } = useQuery({
     queryKey: [catalogueApis.getCatalogues.endpointKey, enterpriseId],
     queryFn: () => getCatalogues(enterpriseId),
     select: (res) => res.data.data,
-    enabled: !!enterpriseId,
+    enabled: !!enterpriseId && searchTerm?.length === 0,
   });
-  // get product via search
-  const searchCatalogueItems = catalogues?.filter((catalogue) => {
-    const productName = catalogue.name ?? '';
-    return productName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+
+  // Fetch searched catalogues
+  const { data: searchedCataloguesData, isLoading: isSearchCataloguesLoading } =
+    useQuery({
+      queryKey: [catalogueApis.searchedCatalogues.endpointKey, searchTerm],
+      queryFn: () => searhedCatalogues(searchTerm),
+      select: (res) => res.data.data,
+      enabled: !!debouncedSearchTerm, // Use debounced value here
+    });
+
+  // Debounce logic with useCallback
+  const updateDebouncedSearchTerm = useCallback(
+    debounce((value) => {
+      setDebouncedSearchTerm(value);
+    }, DEBOUNCE_DELAY),
+    [],
+  );
+  useEffect(() => {
+    updateDebouncedSearchTerm(searchTerm);
+  }, [searchTerm, updateDebouncedSearchTerm]);
+
+  // Consolidated state update logic
+  useEffect(() => {
+    if (debouncedSearchTerm && searchedCataloguesData) {
+      setCatalogues(searchedCataloguesData); // set productGoods from search api
+    } else if (!debouncedSearchTerm && isSuccess) {
+      setCatalogues(cataloguesData); // set productGoods from get api
+    }
+  }, [debouncedSearchTerm, searchedCataloguesData, cataloguesData, isSuccess]);
 
   // handle export catalogue click
   const handleExportCatalogue = () => {
@@ -57,6 +95,7 @@ const Catalogue = () => {
     toast.success('Selected Catalogue exported');
   };
 
+  // columns
   const CatlogueColumns = useCatalogueColumns(setSelectedCatalogue);
 
   return (
@@ -164,16 +203,17 @@ const Catalogue = () => {
                 />
               </div>
 
-              {isLoading && <Loading />}
-              {!isLoading && catalogues?.length > 0 && (
-                <DataTable
-                  id={'catalogue'}
-                  rowSelection={rowSelection}
-                  setRowSelection={setRowSelection}
-                  columns={CatlogueColumns}
-                  data={searchCatalogueItems ?? []}
-                />
-              )}
+              {(isLoading || isSearchCataloguesLoading) && <Loading />}
+              {(!isLoading || !isSearchCataloguesLoading) &&
+                catalogues?.length > 0 && (
+                  <DataTable
+                    id={'catalogue'}
+                    rowSelection={rowSelection}
+                    setRowSelection={setRowSelection}
+                    columns={CatlogueColumns}
+                    data={catalogues ?? []}
+                  />
+                )}
               {!isLoading && catalogues?.length === 0 && (
                 <div className="flex h-full flex-col items-center justify-center gap-2 text-[#939090]">
                   <Image

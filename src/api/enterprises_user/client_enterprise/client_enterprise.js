@@ -1,4 +1,9 @@
 export const clientEnterprise = {
+  // 0.  searched clients
+  searchClients: {
+    endpoint: `/enterprise/client/searchclient`,
+    endpointKey: 'searched_clients',
+  },
   // 1. create client_enterprise
   createClientEnterprise: {
     endpoint: `/enterprise/client/create`,

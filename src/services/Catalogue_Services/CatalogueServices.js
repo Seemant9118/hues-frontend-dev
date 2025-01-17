@@ -1,6 +1,12 @@
 import { APIinstance } from '@/services';
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 
+export const searhedCatalogues = (str) => {
+  return APIinstance.post(
+    `${catalogueApis.searchedCatalogues.endpoint}?searchString=${str}`,
+  );
+};
+
 export const createUpdateCatalogue = ({ id, data }) => {
   return APIinstance.post(
     `${catalogueApis.createAndUpdateCatalogue.endpoint}${id}`,

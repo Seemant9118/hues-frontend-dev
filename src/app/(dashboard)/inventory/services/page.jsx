@@ -1,6 +1,7 @@
 'use client';
 
 import { servicesApi } from '@/api/inventories/services/services';
+import { debounce } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -13,6 +14,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductServices,
+  GetSearchedServices,
   UpdateProductServices,
   UploadProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
@@ -28,7 +30,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useServicesColumns } from './ServicesColumns';
 
@@ -44,9 +46,39 @@ const UploadItems = dynamic(
   { loading: () => <Loading /> },
 );
 
+// MACROS
+// Debounce delay in milliseconds
+const DEBOUNCE_DELAY = 500;
+// Empty state data
+const InventoryEmptyStageData = {
+  heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
+  perfect cataloging."`,
+  subHeading: 'Features',
+  subItems: [
+    {
+      id: 1,
+      icon: <FileCheck size={14} />,
+      subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.`,
+    },
+    {
+      id: 2,
+      icon: <FileText size={14} />,
+      subItemtitle: `Effortlessly add items for fresh, accurate inventory.`,
+    },
+    {
+      id: 3,
+      icon: <KeySquare size={14} />,
+      subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.`,
+    },
+    {
+      id: 4,
+      icon: <DatabaseZap size={14} />,
+      subItemtitle: `Share digitally signed inventory easily in PDF format.`,
+    },
+  ],
+};
+
 function Services() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -54,41 +86,17 @@ function Services() {
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const templateId = 1;
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
-
-  const InventoryEmptyStageData = {
-    heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
-    perfect cataloging."`,
-    subHeading: 'Features',
-    subItems: [
-      {
-        id: 1,
-        icon: <FileCheck size={14} />,
-        subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.`,
-      },
-      {
-        id: 2,
-        icon: <FileText size={14} />,
-        subItemtitle: `Effortlessly add items for fresh, accurate inventory.`,
-      },
-      {
-        id: 3,
-        icon: <KeySquare size={14} />,
-        subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.`,
-      },
-      {
-        id: 4,
-        icon: <DatabaseZap size={14} />,
-        subItemtitle: `Share digitally signed inventory easily in PDF format.`,
-      },
-    ],
-  };
+  const [services, setServices] = useState([]);
 
   useEffect(() => {
     // Read the state from the query parameters
@@ -113,18 +121,48 @@ function Services() {
     router.push(newPath);
   }, [router, isAdding, isEditing, isUploading]);
 
-  const { data: productService, isLoading } = useQuery({
+  // get services api
+  const {
+    data: servicesData,
+    isLoading,
+    isSuccess,
+  } = useQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
     select: (res) => res.data.data,
+    enabled: searchTerm?.length === 0,
   });
 
-  // get product via search
-  const searchProductServices = productService?.filter((service) => {
-    const serviceName = service.serviceName ?? '';
-    return serviceName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  // Fetch searched product goods
+  const { data: searchedServicesData, isLoading: isSearchServicesLoading } =
+    useQuery({
+      queryKey: [servicesApi.getSearchedServices.endpointKey, searchTerm],
+      queryFn: () => GetSearchedServices(searchTerm),
+      select: (res) => res.data.data,
+      enabled: !!debouncedSearchTerm, // Use debounced value here
+    });
 
+  // Debounce logic with useCallback
+  const updateDebouncedSearchTerm = useCallback(
+    debounce((value) => {
+      setDebouncedSearchTerm(value);
+    }, DEBOUNCE_DELAY),
+    [],
+  );
+  useEffect(() => {
+    updateDebouncedSearchTerm(searchTerm);
+  }, [searchTerm, updateDebouncedSearchTerm]);
+
+  // Consolidated state update logic
+  useEffect(() => {
+    if (debouncedSearchTerm && searchedServicesData) {
+      setServices(searchedServicesData); // set Services from search api
+    } else if (!debouncedSearchTerm && isSuccess) {
+      setServices(servicesData); // set productGoods from get api
+    }
+  }, [debouncedSearchTerm, searchedServicesData, servicesData, isSuccess]);
+
+  // handleUploadfile
   const uploadFile = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -143,6 +181,7 @@ function Services() {
     }
   };
 
+  // columns
   const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
 
   return (
@@ -206,23 +245,17 @@ function Services() {
                 </div>
               </SubHeader>
 
-              {isLoading && <Loading />}
+              {(isLoading || isSearchServicesLoading) && <Loading />}
 
-              {!isLoading &&
-                // isSuccess &&
-                (productService && productService.length !== 0 ? (
+              {(!isLoading || !isSearchServicesLoading) &&
+                (services?.length > 0 ? (
                   <DataTable
                     id={'services table'}
                     columns={ServicesColumns}
-                    data={searchProductServices}
+                    data={services}
                   />
                 ) : (
-                  <EmptyStageComponent
-                    heading={InventoryEmptyStageData.heading}
-                    desc={InventoryEmptyStageData.desc}
-                    subHeading={InventoryEmptyStageData.subHeading}
-                    subItems={InventoryEmptyStageData.subItems}
-                  />
+                  <EmptyStageComponent {...InventoryEmptyStageData} />
                 ))}
             </Wrapper>
           )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
+import { debounce } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -13,6 +14,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
+  GetSearchedProductGoods,
   UpdateProductGoods,
   UploadProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
@@ -28,11 +30,11 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useGoodsColumns } from './GoodsColumns';
 
-// dynamic imports
+// Dynamic imports
 const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
   loading: () => <Loading />,
 });
@@ -44,10 +46,40 @@ const UploadItems = dynamic(
   { loading: () => <Loading /> },
 );
 
+// MACROS
+// Debounce delay in milliseconds
+const DEBOUNCE_DELAY = 500;
+// Empty State Data
+const InventoryEmptyStageData = {
+  heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
+    perfect cataloging."`,
+  subHeading: 'Features',
+  subItems: [
+    {
+      id: 1,
+      icon: <FileCheck size={14} />,
+      subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.`,
+    },
+    {
+      id: 2,
+      icon: <FileText size={14} />,
+      subItemtitle: `Effortlessly add items for fresh, accurate inventory.`,
+    },
+    {
+      id: 3,
+      icon: <KeySquare size={14} />,
+      subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.`,
+    },
+    {
+      id: 4,
+      icon: <DatabaseZap size={14} />,
+      subItemtitle: `Share digitally signed inventory easily in PDF format.`,
+    },
+  ],
+};
+
 function Goods() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
+  // Local Storage and States
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -55,43 +87,20 @@ function Goods() {
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const templateId = 1;
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(''); // local search term
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
+  const [productGoods, setProductGoods] = useState([]);
 
-  const InventoryEmptyStageData = {
-    heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
-    perfect cataloging."`,
-    subHeading: 'Features',
-    subItems: [
-      {
-        id: 1,
-        icon: <FileCheck size={14} />,
-        subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.`,
-      },
-      {
-        id: 2,
-        icon: <FileText size={14} />,
-        subItemtitle: `Effortlessly add items for fresh, accurate inventory.`,
-      },
-      {
-        id: 3,
-        icon: <KeySquare size={14} />,
-        subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.`,
-      },
-      {
-        id: 4,
-        icon: <DatabaseZap size={14} />,
-        subItemtitle: `Share digitally signed inventory easily in PDF format.`,
-      },
-    ],
-  };
-
+  // Synchronize state with query parameters
   useEffect(() => {
-    // Read the state from the query parameters
     const state = searchParams.get('action');
     setIsAdding(state === 'add');
     setIsEditing(state === 'edit');
@@ -100,31 +109,55 @@ function Goods() {
 
   useEffect(() => {
     let newPath = `/inventory/goods`;
-    if (isAdding) {
-      newPath += `?action=add`;
-    } else if (isEditing) {
-      newPath += `?action=edit`;
-    } else if (isUploading) {
-      newPath += `?action=upload`;
-    } else {
-      newPath += '';
-    }
+    if (isAdding) newPath += `?action=add`;
+    else if (isEditing) newPath += `?action=edit`;
+    else if (isUploading) newPath += `?action=upload`;
 
     router.push(newPath);
   }, [router, isAdding, isEditing, isUploading]);
 
-  const { data: productGoods, isLoading } = useQuery({
+  // Fetch all product goods
+  const {
+    data: allProductGoods,
+    isLoading,
+    isSuccess,
+  } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () => GetAllProductGoods(enterpriseId),
     select: (res) => res.data.data,
+    enabled: searchTerm?.length === 0,
   });
 
-  // get product via search
-  const searchProductGoods = productGoods?.filter((product) => {
-    const productName = product.productName ?? '';
-    return productName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  // Fetch searched product goods
+  const { data: searchedProductGoods, isLoading: isSearchProductGoodsLoading } =
+    useQuery({
+      queryKey: [goodsApi.getSearchedProductGoods.endpointKey, searchTerm],
+      queryFn: () => GetSearchedProductGoods(searchTerm),
+      select: (res) => res.data.data,
+      enabled: !!debouncedSearchTerm, // Use debounced value here
+    });
 
+  // Debounce logic with useCallback
+  const updateDebouncedSearchTerm = useCallback(
+    debounce((value) => {
+      setDebouncedSearchTerm(value);
+    }, DEBOUNCE_DELAY),
+    [],
+  );
+  useEffect(() => {
+    updateDebouncedSearchTerm(searchTerm);
+  }, [searchTerm, updateDebouncedSearchTerm]);
+
+  // Consolidated state update logic
+  useEffect(() => {
+    if (debouncedSearchTerm && searchedProductGoods) {
+      setProductGoods(searchedProductGoods); // set productGoods from search api
+    } else if (!debouncedSearchTerm && isSuccess) {
+      setProductGoods(allProductGoods); // set productGoods from get api
+    }
+  }, [debouncedSearchTerm, searchedProductGoods, allProductGoods, isSuccess]);
+
+  // handleUploadfile
   const uploadFile = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -141,13 +174,14 @@ function Goods() {
     }
   };
 
+  // columns
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Goods'}></SubHeader>
+          <SubHeader name="Goods" />
           <RestrictedComponent />
         </>
       )}
@@ -155,29 +189,26 @@ function Goods() {
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>
-              <SubHeader name={'Goods'}>
-                <div className="flex items-center justify-center gap-4">
+              <SubHeader name="Goods">
+                <div className="flex items-center gap-4">
                   <SearchInput
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
-                  {/* coming soon */}
                   <Tooltips
                     trigger={
                       <Button
-                        onClick={() => {}}
-                        variant={'export'}
+                        variant="export"
                         size="sm"
                         className="cursor-not-allowed"
                       >
                         <Share2 size={14} />
                       </Button>
                     }
-                    content={'This feature Coming Soon...'}
+                    content="This feature Coming Soon..."
                   />
-
                   <Button
-                    variant={'export'}
+                    variant="export"
                     size="sm"
                     onClick={() =>
                       exportTableToExcel('goods table', 'goods_list')
@@ -188,7 +219,7 @@ function Goods() {
                   </Button>
                   <Button
                     onClick={() => setIsUploading(true)}
-                    variant={'blue_outline'}
+                    variant="blue_outline"
                     size="sm"
                   >
                     <Upload size={14} />
@@ -196,7 +227,7 @@ function Goods() {
                   </Button>
                   <Button
                     onClick={() => setIsAdding(true)}
-                    variant={'blue_outline'}
+                    variant="blue_outline"
                     size="sm"
                   >
                     <CircleFadingPlus size={14} />
@@ -205,23 +236,16 @@ function Goods() {
                 </div>
               </SubHeader>
 
-              {isLoading && <Loading />}
-
-              {!isLoading &&
-                // isSuccess &&
-                (productGoods && productGoods.length !== 0 ? (
+              {(isLoading || isSearchProductGoodsLoading) && <Loading />}
+              {(!isLoading || !isSearchProductGoodsLoading) &&
+                (productGoods?.length > 0 ? (
                   <DataTable
-                    id={'goods table'}
+                    id="goods table"
                     columns={GoodsColumns}
-                    data={searchProductGoods}
+                    data={productGoods}
                   />
                 ) : (
-                  <EmptyStageComponent
-                    heading={InventoryEmptyStageData.heading}
-                    desc={InventoryEmptyStageData.desc}
-                    subHeading={InventoryEmptyStageData.subHeading}
-                    subItems={InventoryEmptyStageData.subItems}
-                  />
+                  <EmptyStageComponent {...InventoryEmptyStageData} />
                 ))}
             </Wrapper>
           )}
@@ -229,12 +253,11 @@ function Goods() {
           {isAdding && (
             <AddItem
               setIsAdding={setIsAdding}
-              name={'Item'}
-              cta={'Item'}
+              name="Item"
+              cta="Item"
               onCancel={() => setIsAdding(false)}
             />
           )}
-
           {isEditing && (
             <EditItem
               setIsEditing={setIsEditing}
@@ -244,7 +267,6 @@ function Goods() {
               queryKey={[goodsApi.getAllProductGoods.endpointKey]}
             />
           )}
-
           {isUploading && (
             <UploadItems
               type="goods"
