@@ -24,22 +24,26 @@ const GenerateLink = ({ invitationStatus, invitationId, mutationFunc }) => {
   switch (invitationStatus) {
     case 'PENDING':
       return (
-        <Button size="sm" onClick={handleClick}>
+        <Button
+          size="20px"
+          className="w-20 rounded-[6px] p-1.5"
+          onClick={handleClick}
+        >
           Link
         </Button>
       );
     case 'REJECTED':
       return (
-        <span className="rounded-sm border border-red-600 bg-red-100 p-2 text-red-600">
+        <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
           Rejected
-        </span>
+        </div>
       );
 
     case 'ACCEPTED':
       return (
-        <span className="rounded-sm border border-green-600 bg-green-100 p-2 text-green-600">
-          Accepted
-        </span>
+        <div className="flex w-20 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+          Active
+        </div>
       );
     default:
       return '-';
