@@ -137,7 +137,10 @@ function Services() {
   const { data: searchedServicesData, isLoading: isSearchServicesLoading } =
     useQuery({
       queryKey: [servicesApi.getSearchedServices.endpointKey, searchTerm],
-      queryFn: () => GetSearchedServices(searchTerm),
+      queryFn: () =>
+        GetSearchedServices({
+          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+        }),
       select: (res) => res.data.data,
       enabled: !!debouncedSearchTerm, // Use debounced value here
     });

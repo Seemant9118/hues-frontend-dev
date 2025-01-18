@@ -60,7 +60,10 @@ const Catalogue = () => {
   const { data: searchedCataloguesData, isLoading: isSearchCataloguesLoading } =
     useQuery({
       queryKey: [catalogueApis.searchedCatalogues.endpointKey, searchTerm],
-      queryFn: () => searhedCatalogues(searchTerm),
+      queryFn: () =>
+        searhedCatalogues({
+          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+        }),
       select: (res) => res.data.data,
       enabled: !!debouncedSearchTerm, // Use debounced value here
     });

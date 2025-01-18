@@ -132,7 +132,10 @@ function Goods() {
   const { data: searchedProductGoods, isLoading: isSearchProductGoodsLoading } =
     useQuery({
       queryKey: [goodsApi.getSearchedProductGoods.endpointKey, searchTerm],
-      queryFn: () => GetSearchedProductGoods(searchTerm),
+      queryFn: () =>
+        GetSearchedProductGoods({
+          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+        }),
       select: (res) => res.data.data,
       enabled: !!debouncedSearchTerm, // Use debounced value here
     });

@@ -94,7 +94,10 @@ const VendorsPage = () => {
   const { data: searchedVendorsData, isLoading: isSearchedVendorsLoading } =
     useQuery({
       queryKey: [vendorEnterprise.searchedVendors.endpointKey, searchTerm],
-      queryFn: () => searchedVendors(searchTerm),
+      queryFn: () =>
+        searchedVendors({
+          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+        }),
       select: (res) => res.data.data,
       enabled: !!debouncedSearchTerm, // Use debounced value here
     });

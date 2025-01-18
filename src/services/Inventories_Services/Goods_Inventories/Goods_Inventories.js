@@ -1,10 +1,8 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { APIinstance } from '@/services';
 
-export const GetSearchedProductGoods = (str) => {
-  return APIinstance.post(
-    `${goodsApi.getSearchedProductGoods.endpoint}?searchString=${str}`,
-  );
+export const GetSearchedProductGoods = (data) => {
+  return APIinstance.post(goodsApi.getSearchedProductGoods.endpoint, data);
 };
 
 export const GetAllProductGoods = (id) => {

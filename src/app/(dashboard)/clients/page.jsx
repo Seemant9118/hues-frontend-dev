@@ -93,7 +93,10 @@ const ClientPage = () => {
   const { data: searchedClientsData, isLoading: isSearchedClientsLoading } =
     useQuery({
       queryKey: [clientEnterprise.searchClients.endpointKey, searchTerm],
-      queryFn: () => searchedClients(searchTerm),
+      queryFn: () =>
+        searchedClients({
+          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+        }),
       select: (res) => res.data.data,
       enabled: !!debouncedSearchTerm, // Use debounced value here
     });
