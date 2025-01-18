@@ -1,4 +1,9 @@
 export const servicesApi = {
+  // 0. get searched services
+  getSearchedServices: {
+    endpoint: `/master-material/services/search`,
+    endpointKey: 'get_searched_services',
+  },
   // 1. get all Services
   getAllProductServices: {
     endpoint: `/master-material/services/getservices/`,

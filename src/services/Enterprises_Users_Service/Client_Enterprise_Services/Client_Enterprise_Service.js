@@ -1,6 +1,10 @@
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { APIinstance } from '@/services';
 
+export function searchedClients(data) {
+  return APIinstance.post(clientEnterprise.searchClients.endpoint, data);
+}
+
 export function createClient(data) {
   return APIinstance.post(
     clientEnterprise.createClientEnterprise.endpoint,

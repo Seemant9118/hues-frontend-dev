@@ -1,4 +1,9 @@
 export const goodsApi = {
+  // 0. get all searched ProductGoods
+  getSearchedProductGoods: {
+    endpoint: `/master-material/productgoods/search`,
+    endpointKey: 'get_searched_productgoods',
+  },
   // 1. get all ProductGoods
   getAllProductGoods: {
     endpoint: `/master-material/productgoods/getgoods/`,

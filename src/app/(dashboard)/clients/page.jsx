@@ -1,12 +1,14 @@
 'use client';
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
+import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -15,11 +17,12 @@ import {
   bulkUploadClients,
   createClient,
   getClients,
+  searchedClients,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookCheck, BookUser, Key, Upload, UserPlus } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useClientsColumns } from './useClientsColumns';
 // dynamic imports
@@ -28,69 +31,135 @@ const UploadItems = dynamic(
   { loading: () => <Loading /> },
 );
 
+// MACROS
+// Debounce delay in milliseconds
+const DEBOUNCE_DELAY = 500;
+// Emtpy state data
+const ClientsEmptyStageData = {
+  heading: `~"Streamline sales with our Clients feature, integrating customer data for direct inventory offers
+  and full catalog visibility."`,
+  subHeading: 'Features',
+  subItems: [
+    {
+      id: 1,
+      icon: <UserPlus size={14} />,
+      subItemtitle: `Easily add client details to your database.`,
+    },
+    {
+      id: 2,
+      icon: <Key size={14} />,
+      subItemtitle: `Offer inventory directly to clients with full product access.`,
+    },
+    {
+      id: 3,
+      icon: <BookCheck size={14} />,
+      subItemtitle: `Keep clients updated, fostering transparency and trust.`,
+    },
+    {
+      id: 4,
+      icon: <BookUser size={14} />,
+      subItemtitle: `Listed clients get automatic catalog access, simplifying sales.`,
+    },
+  ],
+};
+
 const ClientPage = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const isKycVerified = LocalStorageService.get('isKycVerified');
+
+  const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
-  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
+  const [clients, setClients] = useState([]);
 
-  const ClientsEmptyStageData = {
-    heading: `~"Streamline sales with our Clients feature, integrating customer data for direct inventory offers
-    and full catalog visibility."`,
-    subHeading: 'Features',
-    subItems: [
-      {
-        id: 1,
-        icon: <UserPlus size={14} />,
-        subItemtitle: `Easily add client details to your database.`,
-      },
-      {
-        id: 2,
-        icon: <Key size={14} />,
-        subItemtitle: `Offer inventory directly to clients with full product access.`,
-      },
-      {
-        id: 3,
-        icon: <BookCheck size={14} />,
-        subItemtitle: `Keep clients updated, fostering transparency and trust.`,
-      },
-      {
-        id: 4,
-        icon: <BookUser size={14} />,
-        subItemtitle: `Listed clients get automatic catalog access, simplifying sales.`,
-      },
-    ],
-  };
-
-  const { isLoading, data } = useQuery({
+  // api fetching for clients
+  const {
+    isLoading,
+    data: clientsData,
+    isSuccess,
+  } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: () => getClients(enterpriseId),
     select: (res) => res.data.data,
+    enabled: searchTerm?.length === 0,
   });
 
-  let formattedData = [];
-  if (data) {
-    formattedData = data.flatMap((user) => {
-      let userDetails;
-      if (user.client && user?.client?.name !== null) {
-        userDetails = { ...user.client };
-      } else {
-        userDetails = { ...user?.invitation?.userDetails };
-      }
-
-      return {
-        ...userDetails,
-        id: user.id,
-        invitationId: user.invitation?.id,
-        invitationStatus: user.invitation?.status,
-      };
+  // Fetch searched catalogues
+  const { data: searchedClientsData, isLoading: isSearchedClientsLoading } =
+    useQuery({
+      queryKey: [clientEnterprise.searchClients.endpointKey, searchTerm],
+      queryFn: () =>
+        searchedClients({
+          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+        }),
+      select: (res) => res.data.data,
+      enabled: !!debouncedSearchTerm, // Use debounced value here
     });
-  }
 
+  // Debounce logic with useCallback
+  const updateDebouncedSearchTerm = useCallback(
+    debounce((value) => {
+      setDebouncedSearchTerm(value);
+    }, DEBOUNCE_DELAY),
+    [],
+  );
+  useEffect(() => {
+    updateDebouncedSearchTerm(searchTerm);
+  }, [searchTerm, updateDebouncedSearchTerm]);
+
+  // Consolidated state update logic
+  useEffect(() => {
+    if (debouncedSearchTerm && searchedClientsData) {
+      let formattedData = [];
+      // formatting data
+      if (searchedClientsData) {
+        formattedData = searchedClientsData.flatMap((user) => {
+          let userDetails;
+          if (user.client && user?.client?.name !== null) {
+            userDetails = { ...user.client };
+          } else {
+            userDetails = { ...user?.invitation?.userDetails };
+          }
+
+          return {
+            ...userDetails,
+            id: user.id,
+            invitationId: user.invitation?.id,
+            invitationStatus: user.invitation?.status,
+          };
+        });
+        setClients(formattedData); // set clients from search api
+      }
+    } else if (!debouncedSearchTerm && isSuccess) {
+      let formattedData = [];
+      // formatting data
+      if (clientsData) {
+        formattedData = clientsData.flatMap((user) => {
+          let userDetails;
+          if (user.client && user?.client?.name !== null) {
+            userDetails = { ...user.client };
+          } else {
+            userDetails = { ...user?.invitation?.userDetails };
+          }
+
+          return {
+            ...userDetails,
+            id: user.id,
+            invitationId: user.invitation?.id,
+            invitationStatus: user.invitation?.status,
+          };
+        });
+        setClients(formattedData); // set clients from get api
+      }
+    }
+  }, [debouncedSearchTerm, searchedClientsData, clientsData, isSuccess]);
+
+  // handleFile fn
   const uploadFile = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -106,6 +175,7 @@ const ClientPage = () => {
     }
   };
 
+  // columns
   const ClientsColumns = useClientsColumns();
 
   return (
@@ -122,6 +192,10 @@ const ClientPage = () => {
             {!isUploading && (
               <SubHeader name={'Clients'}>
                 <div className="flex items-center justify-center gap-4">
+                  <SearchInput
+                    toSearchTerm={searchTerm}
+                    setToSearchTerm={setSearchTerm}
+                  />
                   <Tooltips
                     trigger={
                       <Button
@@ -167,15 +241,15 @@ const ClientPage = () => {
               </SubHeader>
             )}
 
-            {isLoading && <Loading />}
+            {(isLoading || isSearchedClientsLoading) && <Loading />}
 
-            {!isLoading &&
-              !isUploading &&
-              (formattedData && formattedData.length !== 0 ? (
+            {!isUploading &&
+              (!isLoading || !isSearchedClientsLoading) &&
+              (clients?.length > 0 ? (
                 <DataTable
                   id={'client table'}
                   columns={ClientsColumns}
-                  data={formattedData}
+                  data={clients ?? []}
                 />
               ) : (
                 <EmptyStageComponent
