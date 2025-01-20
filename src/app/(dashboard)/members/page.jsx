@@ -9,6 +9,7 @@ import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { useQuery } from '@tanstack/react-query';
@@ -18,6 +19,7 @@ import { toast } from 'sonner';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 
 const MembersPage = () => {
+  useMetaData('Hues! - Members', 'HUES MEMBERS'); // dynamic title
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',

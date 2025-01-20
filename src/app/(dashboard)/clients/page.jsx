@@ -12,6 +12,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   bulkUploadClients,
@@ -64,6 +65,7 @@ const ClientsEmptyStageData = {
 };
 
 const ClientPage = () => {
+  useMetaData('Hues! - Clients', 'HUES CLIENTS'); // dynamic title
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',

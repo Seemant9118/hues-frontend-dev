@@ -11,6 +11,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
@@ -79,6 +80,7 @@ const InventoryEmptyStageData = {
 };
 
 function Goods() {
+  useMetaData('Hues! - Goods', 'HUES GOODS'); // dynamic title
   // Local Storage and States
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(

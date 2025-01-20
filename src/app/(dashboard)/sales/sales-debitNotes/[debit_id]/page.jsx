@@ -11,6 +11,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import {
   createComments,
   getComments,
@@ -25,6 +26,7 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 const ViewDebitNote = () => {
+  useMetaData('Hues! - Debit Notes Details', 'HUES DEBITNOTES'); // dynamic title
   const queryClient = useQueryClient();
   const params = useParams();
   const debitNoteId = params.debit_id;

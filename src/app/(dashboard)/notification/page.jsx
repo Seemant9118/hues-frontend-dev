@@ -8,6 +8,7 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { useNotificationsCount } from '@/context/CountNotificationsContext';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import {
   getNotifications,
@@ -29,7 +30,12 @@ import { NotificationColumns } from './NotificationsColumns';
 const PAGE_LIMIT = 10;
 
 const Notification = () => {
-  const { setTotalUnreadNotifications } = useNotificationsCount();
+  const { totalUnreadNotifications, setTotalUnreadNotifications } =
+    useNotificationsCount();
+  useMetaData(
+    `Hues! - Notifications (${totalUnreadNotifications})`,
+    'HUES NOTIFICATIONS',
+  ); // dynamic title
 
   const queryClient = useQueryClient();
   const router = useRouter();

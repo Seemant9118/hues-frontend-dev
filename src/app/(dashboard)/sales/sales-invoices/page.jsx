@@ -10,6 +10,7 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import {
   exportInvoice,
@@ -76,6 +77,7 @@ const SaleEmptyStageData = {
 };
 
 const SalesInvoices = () => {
+  useMetaData('Hues! - Sales Invoices', 'HUES INVOICES'); // dynamic title
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
