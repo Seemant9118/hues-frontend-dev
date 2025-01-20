@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import {
   createUpdateCatalogue,
@@ -35,6 +36,7 @@ import { useGoodsColumnsForCatalogue } from './GoodsColumns';
 import { useServicesColumnsForCatalogue } from './ServicesColumns';
 
 const UpdateCatalogue = () => {
+  useMetaData('Hues! - Update Catalogue', 'HUES CATALOGUE'); // dynamic title
   const router = useRouter();
   const queryClient = useQueryClient();
 

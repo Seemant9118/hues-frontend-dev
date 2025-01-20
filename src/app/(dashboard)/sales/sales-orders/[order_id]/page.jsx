@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import {
   bulkNegotiateAcceptOrReject,
@@ -64,6 +65,7 @@ const MakePaymentNew = dynamic(
 );
 
 const ViewOrder = () => {
+  useMetaData('Hues! - Sales Order Details', 'HUES SALES'); // dynamic title
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();

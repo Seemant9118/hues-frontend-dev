@@ -17,6 +17,7 @@ import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
@@ -31,6 +32,7 @@ import emptyImg from '../../../../../../public/Empty.png';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
 const ViewInvoice = () => {
+  useMetaData('Hues! - Purchase Invoice Details', 'HUES INVOICES'); // dynamic title
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');

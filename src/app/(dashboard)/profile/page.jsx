@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import {
@@ -97,6 +98,11 @@ function Profile() {
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
   });
+
+  useMetaData(
+    `Hues! - ${profileDetails?.userDetails?.user?.name ?? 'Profile'}`,
+    'HUES PROFILE',
+  ); // dynamic title
 
   useEffect(() => {
     const bgColorClass = getRandomBgColor();

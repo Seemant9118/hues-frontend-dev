@@ -10,6 +10,7 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllPurchaseDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { exportInvoice } from '@/services/Invoice_Services/Invoice_Services';
@@ -33,6 +34,7 @@ import { useDebitNotesColumns } from './useDebitNotesColumns';
 const PAGE_LIMIT = 10;
 
 const PurchaseDebitNotes = () => {
+  useMetaData('Hues! - Purchase Debit Notes', 'HUES DEBITNOTES'); // dynamic title
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',

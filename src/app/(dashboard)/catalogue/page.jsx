@@ -19,6 +19,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 
 import { debounce } from '@/appUtils/helperFunctions';
+import useMetaData from '@/custom-hooks/useMetaData';
 import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -31,6 +32,8 @@ import { useCatalogueColumns } from './CatalogueColumns';
 const DEBOUNCE_DELAY = 500;
 
 const Catalogue = () => {
+  useMetaData('Hues! - Catalogues', 'HUES CATALOGUE'); // dynamic title
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
