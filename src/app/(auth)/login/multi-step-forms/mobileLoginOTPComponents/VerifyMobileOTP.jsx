@@ -276,7 +276,11 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
               00:{startFrom}s
             </p>
           ) : (
-            <Button size="sm" variant="outline" disabled>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setStartFrom(30)}
+            >
               Resend
             </Button>
           )}

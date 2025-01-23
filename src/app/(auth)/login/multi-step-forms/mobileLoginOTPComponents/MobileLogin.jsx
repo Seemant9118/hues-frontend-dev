@@ -1,5 +1,8 @@
 import { invitation } from '@/api/invitation/Invitation';
+import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
@@ -15,9 +18,11 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const MobileLogin = ({ setMobileLoginStep }) => {
+  const [isTandCModalOpen, setIsTandCModalOpen] = useState(false);
   const [formDataWithMob, setFormDataWithMob] = useState({
     mobileNumber: '',
     countryCode: '+91',
+    isTermsAndConditionApplied: false,
   });
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -48,6 +53,37 @@ const MobileLogin = ({ setMobileLoginStep }) => {
       );
     }
   }, [isSuccess, inviteData]);
+
+  const onCheckedChangeTermsCondition = (checked) => {
+    // Update form data
+    setFormDataWithMob((prev) => ({
+      ...prev,
+      isTermsAndConditionApplied: checked,
+    }));
+
+    // Handle error message based on the checkbox state
+    setErrorMsg((prev) => ({
+      ...prev,
+      isTermsAndConditionApplied: checked
+        ? ''
+        : '*Please accept the terms and conditions',
+    }));
+  };
+
+  const validation = (formData) => {
+    const error = {};
+    if (formData.mobileNumber.length === 0) {
+      error.mobileNumber = '*Phone Number is required to proceed';
+    } else if (formData.mobileNumber.length !== 10) {
+      error.mobileNumber = '*Please enter a 10 - digit phone number';
+    }
+
+    if (!formData.isTermsAndConditionApplied) {
+      error.isTermsAndConditionApplied =
+        '*Please accept the terms and conditions';
+    }
+    return error;
+  };
 
   // login with invitation
   const loginInvitation = useMutation({
@@ -84,23 +120,28 @@ const MobileLogin = ({ setMobileLoginStep }) => {
   });
 
   const handleChangeMobLogin = (e) => {
-    const { name } = e.target;
-    const { value } = e.target;
-    // handle validation
-    if (value.length !== 10) {
-      setErrorMsg('*Please enter a 10 - digit mobile number');
-    } else {
-      setErrorMsg('');
-    }
-    setFormDataWithMob((values) => ({ ...values, [name]: value }));
+    const { name, value } = e.target;
+
+    // Handle validation for 10-digit mobile number
+    setErrorMsg((prev) => ({
+      ...prev,
+      mobileNumber:
+        value.length === 10 ? '' : '*Please enter a 10-digit mobile number',
+    }));
+
+    // Update form data
+    setFormDataWithMob((values) => ({
+      ...values,
+      [name]: value,
+    }));
   };
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
-    if (formDataWithMob.mobileNumber.length === 0) {
-      setErrorMsg('Mobile Number is required to proceed');
-    }
-    if (!errorMsg) {
+    const isAnyError = validation(formDataWithMob);
+
+    if (Object.keys(isAnyError).length === 0) {
+      setErrorMsg('');
       if (!invitationToken) {
         mutation.mutate(formDataWithMob); // normal flow
       } else {
@@ -112,6 +153,8 @@ const MobileLogin = ({ setMobileLoginStep }) => {
           invitationType: inviteData?.invitationData?.invitationType,
         }); // invitation flow
       }
+    } else {
+      setErrorMsg(isAnyError);
     }
   };
 
@@ -147,21 +190,50 @@ const MobileLogin = ({ setMobileLoginStep }) => {
             <Input
               type="text"
               name="mobileNumber"
-              placeholder="Phone number"
+              placeholder="Enter a Aadhar linked phone number"
               className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobileNumber}
             />
           </div>
-          {errorMsg && (
-            <span className="w-full px-1 text-sm font-semibold text-red-600">
-              {errorMsg}
-            </span>
+          {errorMsg.mobileNumber && <ErrorBox msg={errorMsg.mobileNumber} />}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={formDataWithMob.isTermsAndConditionApplied}
+              onCheckedChange={() => setIsTandCModalOpen(true)}
+            />
+            <div className="text-[#121212]">
+              By selecting this box, I agree to all the{' '}
+              <span
+                className="cursor-pointer text-primary hover:underline"
+                onClick={() => setIsTandCModalOpen(true)}
+              >
+                Terms and Conditions
+              </span>
+              <TermsAnsConditionModal
+                isOpen={isTandCModalOpen}
+                onClose={() => setIsTandCModalOpen(false)} // Close modal without changing state
+                onDecline={() => {
+                  onCheckedChangeTermsCondition(false); // Update checkbox state
+                  setIsTandCModalOpen(false); // Close modal
+                }}
+                onAgree={() => {
+                  onCheckedChangeTermsCondition(true); // Update checkbox state
+                  setIsTandCModalOpen(false); // Close modal
+                }}
+              />
+            </div>
+          </div>
+          {errorMsg?.isTermsAndConditionApplied && (
+            <ErrorBox msg={errorMsg?.isTermsAndConditionApplied} />
           )}
         </div>
 
         <Button
-          disabled={errorMsg || mutation.isPending}
+          disabled={mutation.isPending}
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"
