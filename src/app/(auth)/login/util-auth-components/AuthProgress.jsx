@@ -1,64 +1,71 @@
 import { useAuthProgress } from '@/context/AuthProgressContext';
 import { LocalStorageService } from '@/lib/utils';
-import { ChevronRight, CreditCard, PackageCheck, User } from 'lucide-react';
+import {
+  BadgeCheck,
+  ChevronRight,
+  CreditCard,
+  PackageCheck,
+  User,
+} from 'lucide-react';
 import React, { useEffect } from 'react';
 
-const AuthProgress = () => {
+const AuthProgress = ({ isCurrAuthStep }) => {
   const { authProgress, updateAuthProgress } = useAuthProgress();
 
   const isPanVerifiedFromStorage = LocalStorageService.get('isPanVerified');
   const isAadharVerifiedFromStorage =
-    LocalStorageService.get('isAadharVerified');
+    LocalStorageService.get('isAadhaarVerified');
 
   useEffect(() => {
     updateAuthProgress('isPanVerified', isPanVerifiedFromStorage ?? false);
     updateAuthProgress(
-      'isAadharVerified',
+      'isAadhaarVerified',
       isAadharVerifiedFromStorage ?? false,
     );
-    updateAuthProgress(
-      'isConfirmation',
-      isPanVerifiedFromStorage && isAadharVerifiedFromStorage,
-    );
-  }, [isPanVerifiedFromStorage, isPanVerifiedFromStorage]);
+    updateAuthProgress('isConfirmation', false);
+  }, [isPanVerifiedFromStorage, isAadharVerifiedFromStorage]);
 
   const AuthProgressData = [
     {
       id: 1,
       icon: <CreditCard size={14} />,
       title: 'PAN Verification',
-      time: '3 min',
+      isCurr: isCurrAuthStep === 'isPanVerificationStep',
       isDone: authProgress.isPanVerified,
     },
     {
       id: 2,
       icon: <User size={14} />,
       title: 'Aadhar Verification',
-      time: '2 min',
-      isDone: authProgress.isAadharVerified,
+      isCurr: isCurrAuthStep === 'isAadharVerificationStep',
+      isDone: authProgress.isAadhaarVerified,
     },
     {
       id: 3,
       icon: <PackageCheck size={14} />,
       title: 'Confirmation',
-      time: '1 min',
+      isCurr: isCurrAuthStep === 'isConfirmationStep',
       isDone: authProgress.isConfirmation,
     },
   ];
+
   return (
     <div className="flex w-full items-center justify-center">
       {AuthProgressData?.map((data) => (
         <div key={data.id} className="flex items-center gap-1 text-xs">
           {data.id !== 1 && <ChevronRight size={14} />}
           <div
-            className={
+            className={`flex items-center gap-1 font-bold ${
               data.isDone
-                ? 'flex items-center gap-1 font-bold text-primary'
-                : 'flex items-center gap-1 font-bold text-gray-400'
-            }
+                ? 'text-green-600'
+                : data.isCurr
+                  ? 'text-primary'
+                  : 'text-gray-400'
+            }`}
           >
             {data.icon}
             {data.title}
+            {data.isDone && <BadgeCheck className="text-green-600" size={16} />}
           </div>
         </div>
       ))}

@@ -69,16 +69,19 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         data?.data?.data?.user?.isAssociateRequestAccepted,
       );
 
-      LocalStorageService.set('isPanVerified', data?.data?.data?.isPanVerified);
+      LocalStorageService.set(
+        'isPanVerified',
+        data?.data?.data?.user?.isPanVerified,
+      );
 
       LocalStorageService.set(
-        'isAadharVerified',
-        data?.data?.data?.isAadharVerified,
+        'isAadhaarVerified',
+        data?.data?.data?.user?.isAadhaarVerified,
       );
 
       LocalStorageService.set(
         'isEmailVerified',
-        data?.data?.data?.isEmailVerified,
+        data?.data?.data?.user?.isEmailVerified,
       );
 
       // check by calling api : directorInviteList
@@ -227,15 +230,15 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       } else {
         // isPanverified and aaadhar verified then move to confirmation
         if (
-          data?.data?.data?.isPanVerified &&
-          data?.data?.data?.isAadharVerified
+          data?.data?.data?.user?.isPanVerified &&
+          data?.data?.data?.user?.isAadhaarVerified
         ) {
           router.push('/login/confirmation');
         }
         // isPanverified and !aadhar not verified then move to aadhar
         if (
-          data?.data?.data?.isPanVerified &&
-          !data?.data?.data?.isAadharVerified
+          data?.data?.data?.user?.isPanVerified &&
+          !data?.data?.data?.user?.isAadhaarVerified
         ) {
           router.push('/login/aadhar-verification');
         } else {

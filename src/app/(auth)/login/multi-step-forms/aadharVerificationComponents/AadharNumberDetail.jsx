@@ -85,7 +85,7 @@ const AadharNumberDetail = ({
       className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
     >
       <div className="flex flex-col gap-3">
-        <AuthProgress />
+        <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
           Verify your Aadhar
         </h1>

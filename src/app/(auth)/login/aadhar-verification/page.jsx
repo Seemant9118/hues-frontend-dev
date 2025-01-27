@@ -10,7 +10,7 @@ const AadharVerificationPage = () => {
   const [aadharNumber, setAadharNumber] = useState('');
   const [verifyOTPdata, setVerifyOTPdata] = useState({
     tranId: '',
-    aadhar: '',
+    aadhaar: '',
     otp: '',
   });
 
@@ -18,7 +18,7 @@ const AadharVerificationPage = () => {
   useEffect(() => {
     setVerifyOTPdata((prev) => ({
       ...prev,
-      aadhar: aadharNumber,
+      aadhaar: aadharNumber,
     }));
   }, [aadharNumber]);
 

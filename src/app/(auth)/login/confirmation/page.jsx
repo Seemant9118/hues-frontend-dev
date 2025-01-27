@@ -27,7 +27,7 @@ const ConfirmationPage = () => {
         className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
       >
         <div className="flex flex-col items-center gap-6">
-          <AuthProgress />
+          <AuthProgress isCurrAuthStep={'isConfirmationStep'} />
           <BadgeCheck size={48} className="text-primary" />
           <h1 className="max-w-sm text-center text-2xl font-bold text-[#121212]">
             You have been successfully verified and onboarded
