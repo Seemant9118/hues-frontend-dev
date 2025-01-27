@@ -247,7 +247,7 @@ const VendorsPage = () => {
 
             {!isUploading &&
               (!isLoading || !isSearchedVendorsLoading) &&
-              (vendors?.length > 0 ? (
+              (vendorsData?.length > 0 ? (
                 <DataTable
                   id={'vendor table'}
                   columns={VendorsColumns}

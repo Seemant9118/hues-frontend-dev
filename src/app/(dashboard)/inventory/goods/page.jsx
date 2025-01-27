@@ -243,7 +243,7 @@ function Goods() {
 
               {(isLoading || isSearchProductGoodsLoading) && <Loading />}
               {(!isLoading || !isSearchProductGoodsLoading) &&
-                (productGoods?.length > 0 ? (
+                (allProductGoods?.length > 0 ? (
                   <DataTable
                     id="goods table"
                     columns={GoodsColumns}

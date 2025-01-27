@@ -247,7 +247,7 @@ const ClientPage = () => {
 
             {!isUploading &&
               (!isLoading || !isSearchedClientsLoading) &&
-              (clients?.length > 0 ? (
+              (clientsData?.length > 0 ? (
                 <DataTable
                   id={'client table'}
                   columns={ClientsColumns}

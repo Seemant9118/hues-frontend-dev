@@ -211,7 +211,7 @@ const Catalogue = () => {
 
               {(isLoading || isSearchCataloguesLoading) && <Loading />}
               {(!isLoading || !isSearchCataloguesLoading) &&
-                catalogues?.length > 0 && (
+                cataloguesData?.length > 0 && (
                   <DataTable
                     id={'catalogue'}
                     rowSelection={rowSelection}
@@ -220,7 +220,7 @@ const Catalogue = () => {
                     data={catalogues ?? []}
                   />
                 )}
-              {!isLoading && catalogues?.length === 0 && (
+              {!isLoading && cataloguesData?.length === 0 && (
                 <div className="flex h-full flex-col items-center justify-center gap-2 text-[#939090]">
                   <Image
                     src={'/empty.png'}

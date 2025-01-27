@@ -253,7 +253,7 @@ function Services() {
               {(isLoading || isSearchServicesLoading) && <Loading />}
 
               {(!isLoading || !isSearchServicesLoading) &&
-                (services?.length > 0 ? (
+                (servicesData?.length > 0 ? (
                   <DataTable
                     id={'services table'}
                     columns={ServicesColumns}
