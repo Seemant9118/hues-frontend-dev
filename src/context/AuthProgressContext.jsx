@@ -1,7 +1,50 @@
-import React from 'react';
+'use client';
 
-const AuthProgressContext = () => {
-  return <div>AuthProgressContext</div>;
+import React, { createContext, useContext, useState } from 'react';
+
+// Create the context
+const AuthProgressContext = createContext();
+
+// Create a provider component
+export const AuthProgressProvider = ({ children }) => {
+  const [authProgress, setAuthProgress] = useState({
+    isPanVerified: false,
+    isAadharVerified: false,
+    isConfirmation: false,
+  });
+
+  const updateAuthProgress = (step, value) => {
+    setAuthProgress((prevState) => ({
+      ...prevState,
+      [step]: value,
+    }));
+  };
+
+  return (
+    <AuthProgressContext.Provider value={{ authProgress, updateAuthProgress }}>
+      {children}
+    </AuthProgressContext.Provider>
+  );
 };
 
-export default AuthProgressContext;
+// Custom hook to use the AuthProgressContext
+export const useAuthProgress = () => {
+  const context = useContext(AuthProgressContext);
+  if (!context) {
+    throw new Error(
+      'useAuthProgress must be used within an AuthProgressProvider',
+    );
+  }
+  return context;
+};
+
+// Example usage:
+// Wrap your app or component tree with AuthProgressProvider in index.js or App.js
+// import { AuthProgressProvider } from './path-to-this-file';
+//
+// ReactDOM.render(
+//   <AuthProgressProvider>
+//     <App />
+//   </AuthProgressProvider>,
+//   document.getElementById('root')
+// );

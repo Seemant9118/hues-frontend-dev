@@ -1,15 +1,25 @@
+import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
+import { useAuthProgress } from '@/context/AuthProgressContext';
+import { LocalStorageService } from '@/lib/utils';
+import { verifyAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import AuthProgress from '../../util-auth-components/AuthProgress';
 
-const AadharVerifyOTP = () => {
+const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
   const router = useRouter();
-  const [otp, setOtp] = useState();
+
+  const { updateAuthProgress } = useAuthProgress();
+
   const [startFrom, setStartFrom] = useState(30);
 
   useEffect(() => {
@@ -21,20 +31,50 @@ const AadharVerifyOTP = () => {
   });
 
   const handleChangeOtp = (value) => {
-    setOtp(value);
+    setVerifyOTPdata((prev) => ({
+      ...prev,
+      otp: value,
+    }));
   };
+
+  const verifyAadharOTPMutation = useMutation({
+    mutationKey: [userAuth.verifyAadharOTP.endpointKey],
+    mutationfn: (data) => verifyAadharOTP(data),
+    onSuccess: (data) => {
+      toast.success('OTP verified successfully');
+
+      LocalStorageService.set(
+        'isAadharVerified',
+        data?.data?.data?.user?.isAadharVerified,
+      );
+      LocalStorageService.set(
+        'isEmailVerified',
+        data?.data?.data?.user?.isEmailVerified,
+      );
+
+      // marked aadhar verified in context
+      updateAuthProgress('isAadharVerified', true);
+
+      // redirection
+      router.push('/login/confirmation');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
-    // api call
-    router.push('/login/enterpriseOnboardingSearch');
+    verifyAadharOTPMutation.mutate(verifyOTPdata);
   };
+
   return (
     <form
       onSubmit={handleVerifiyOTP}
       className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10"
     >
       <div className="flex flex-col gap-4">
+        <AuthProgress />
         <h2 className="w-full text-center text-2xl font-bold">
           Verify your Aadhar
         </h2>
@@ -48,7 +88,7 @@ const AadharVerifyOTP = () => {
         name="otp"
         onChange={handleChangeOtp}
         maxLength={6}
-        value={otp}
+        value={verifyAadharOTP.otp}
         containerClassName="group flex items-center has-[:disabled]:opacity-30"
         render={({ slots }) => (
           <div className="flex gap-4">
@@ -78,8 +118,13 @@ const AadharVerifyOTP = () => {
           )}
         </span>
       </p>
-      <Button size="sm" type="Submit" className="w-full bg-[#288AF9] p-2">
-        Verify
+      <Button
+        size="sm"
+        type="submit"
+        className="w-full bg-[#288AF9] p-2"
+        disabled={verifyAadharOTPMutation.isPending}
+      >
+        {verifyAadharOTPMutation.isPending ? <Loading /> : 'Verify'}
       </Button>
 
       <Link

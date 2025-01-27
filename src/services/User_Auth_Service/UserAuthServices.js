@@ -104,3 +104,18 @@ export function switchAccount(data) {
 export function getUserAccounts() {
   return APIinstance.get(userAuth.getUserAccounts.endpoint);
 }
+
+// 22. getPanDetails
+export function getPanDetails(data) {
+  return APIinstance.post(userAuth.getPanDetails.endpoint, data);
+}
+
+// 23. sent Aadhar OTP
+export function sentAadharOTP(data) {
+  return APIinstance.post(userAuth.sendAadharVerificationOTP.endpoint, data);
+}
+
+// 24. verify Aadhar OTP
+export function verifyAadharOTP(data) {
+  return APIinstance.post(userAuth.verifyAadharOTP.endpoint, data);
+}

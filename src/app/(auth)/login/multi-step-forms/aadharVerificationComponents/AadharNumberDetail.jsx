@@ -1,19 +1,27 @@
+import { userAuth } from '@/api/user_auth/Users';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Loading from '@/components/ui/Loading';
+import { sentAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
+import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
   setAadharVerificationSteps,
+  setVerifyOTPdata,
 }) => {
   const [errorMsg, setErrorMsg] = useState({});
 
+  // validation fn
   const validation = (aadharNumber) => {
     let error = {};
     const aadharPattern = /^\d{12}$/;
@@ -28,6 +36,26 @@ const AadharNumberDetail = ({
 
     return error;
   };
+
+  const sendAadharOTPMutation = useMutation({
+    mutationKey: [userAuth.sendAadharVerificationOTP.endpointKey],
+    mutationFn: sentAadharOTP,
+    onSuccess: (data) => {
+      if (data) {
+        toast.success('OTP sent successfully');
+        setVerifyOTPdata((prev) => ({
+          ...prev,
+          tranId: data?.data?.data?.data?.tran_id,
+        }));
+        setAadharVerificationSteps(2); // move to next step - verify oTP
+      } else {
+        toast.info('Please try after some time, server is not responding');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
 
   const handleChange = (e) => {
     const { value } = e.target;
@@ -46,8 +74,7 @@ const AadharNumberDetail = ({
     const iserror = validation(aadharNumber);
 
     if (Object.keys(iserror).length === 0) {
-      // api call then move to step 2
-      setAadharVerificationSteps(2);
+      sendAadharOTPMutation.mutate({ aadhaar: aadharNumber });
     }
     setErrorMsg(iserror);
   };
@@ -57,9 +84,10 @@ const AadharNumberDetail = ({
       onSubmit={handleProceed}
       className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
     >
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
+        <AuthProgress />
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Complete your profile
+          Verify your Aadhar
         </h1>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
           Enter all the details to unlock Hues completely
@@ -96,9 +124,11 @@ const AadharNumberDetail = ({
           type="submit"
           className="w-full"
           size="sm"
-          disabled={aadharNumber?.length !== 12}
+          disabled={
+            aadharNumber?.length !== 12 || sendAadharOTPMutation.isPending
+          }
         >
-          Proceed
+          {sendAadharOTPMutation.isPending ? <Loading /> : 'Proceed'}
         </Button>
 
         <Link

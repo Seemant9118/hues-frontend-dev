@@ -110,4 +110,19 @@ export const userAuth = {
     endpoint: `/iam/user/getuseraccounts`,
     endpointKey: 'get_user_accounts',
   },
+  // 22. getPanDetails
+  getPanDetails: {
+    endpoint: `/iam/user/pandetails`,
+    endpointKey: 'get_pan_details',
+  },
+  // 23. sent aadhar verification otp
+  sendAadharVerificationOTP: {
+    endpoint: `/iam/kyc/send-aadhaar-otp`,
+    endpointKey: 'aadhar_verification_otp',
+  },
+  // 24 verify aadhar otp
+  verifyAadharOTP: {
+    endpoint: `/iam/kyc/verify-aadhaar-otp`,
+    endpointKey: 'verify_aadhar_otp',
+  },
 };

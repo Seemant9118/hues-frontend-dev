@@ -1,7 +1,5 @@
 import { invitation } from '@/api/invitation/Invitation';
-import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/Loading';
@@ -18,11 +16,9 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const MobileLogin = ({ setMobileLoginStep }) => {
-  const [isTandCModalOpen, setIsTandCModalOpen] = useState(false);
   const [formDataWithMob, setFormDataWithMob] = useState({
     mobileNumber: '',
     countryCode: '+91',
-    isTermsAndConditionApplied: false,
   });
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -54,33 +50,12 @@ const MobileLogin = ({ setMobileLoginStep }) => {
     }
   }, [isSuccess, inviteData]);
 
-  const onCheckedChangeTermsCondition = (checked) => {
-    // Update form data
-    setFormDataWithMob((prev) => ({
-      ...prev,
-      isTermsAndConditionApplied: checked,
-    }));
-
-    // Handle error message based on the checkbox state
-    setErrorMsg((prev) => ({
-      ...prev,
-      isTermsAndConditionApplied: checked
-        ? ''
-        : '*Please accept the terms and conditions',
-    }));
-  };
-
   const validation = (formData) => {
     const error = {};
     if (formData.mobileNumber.length === 0) {
       error.mobileNumber = '*Phone Number is required to proceed';
     } else if (formData.mobileNumber.length !== 10) {
       error.mobileNumber = '*Please enter a 10 - digit phone number';
-    }
-
-    if (!formData.isTermsAndConditionApplied) {
-      error.isTermsAndConditionApplied =
-        '*Please accept the terms and conditions';
     }
     return error;
   };
@@ -197,39 +172,6 @@ const MobileLogin = ({ setMobileLoginStep }) => {
             />
           </div>
           {errorMsg.mobileNumber && <ErrorBox msg={errorMsg.mobileNumber} />}
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={formDataWithMob.isTermsAndConditionApplied}
-              onCheckedChange={() => setIsTandCModalOpen(true)}
-            />
-            <div className="text-[#121212]">
-              By selecting this box, I agree to all the{' '}
-              <span
-                className="cursor-pointer text-primary hover:underline"
-                onClick={() => setIsTandCModalOpen(true)}
-              >
-                Terms and Conditions
-              </span>
-              <TermsAnsConditionModal
-                isOpen={isTandCModalOpen}
-                onClose={() => setIsTandCModalOpen(false)} // Close modal without changing state
-                onDecline={() => {
-                  onCheckedChangeTermsCondition(false); // Update checkbox state
-                  setIsTandCModalOpen(false); // Close modal
-                }}
-                onAgree={() => {
-                  onCheckedChangeTermsCondition(true); // Update checkbox state
-                  setIsTandCModalOpen(false); // Close modal
-                }}
-              />
-            </div>
-          </div>
-          {errorMsg?.isTermsAndConditionApplied && (
-            <ErrorBox msg={errorMsg?.isTermsAndConditionApplied} />
-          )}
         </div>
 
         <Button
