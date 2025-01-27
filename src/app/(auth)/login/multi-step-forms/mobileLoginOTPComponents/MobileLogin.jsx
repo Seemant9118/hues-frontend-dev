@@ -1,5 +1,6 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { Button } from '@/components/ui/button';
+import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
@@ -49,6 +50,16 @@ const MobileLogin = ({ setMobileLoginStep }) => {
     }
   }, [isSuccess, inviteData]);
 
+  const validation = (formData) => {
+    const error = {};
+    if (formData.mobileNumber.length === 0) {
+      error.mobileNumber = '*Phone Number is required to proceed';
+    } else if (formData.mobileNumber.length !== 10) {
+      error.mobileNumber = '*Please enter a 10 - digit phone number';
+    }
+    return error;
+  };
+
   // login with invitation
   const loginInvitation = useMutation({
     mutationFn: loginWithInvitation,
@@ -84,23 +95,28 @@ const MobileLogin = ({ setMobileLoginStep }) => {
   });
 
   const handleChangeMobLogin = (e) => {
-    const { name } = e.target;
-    const { value } = e.target;
-    // handle validation
-    if (value.length !== 10) {
-      setErrorMsg('*Please enter a 10 - digit mobile number');
-    } else {
-      setErrorMsg('');
-    }
-    setFormDataWithMob((values) => ({ ...values, [name]: value }));
+    const { name, value } = e.target;
+
+    // Handle validation for 10-digit mobile number
+    setErrorMsg((prev) => ({
+      ...prev,
+      mobileNumber:
+        value.length === 10 ? '' : '*Please enter a 10-digit mobile number',
+    }));
+
+    // Update form data
+    setFormDataWithMob((values) => ({
+      ...values,
+      [name]: value,
+    }));
   };
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
-    if (formDataWithMob.mobileNumber.length === 0) {
-      setErrorMsg('Mobile Number is required to proceed');
-    }
-    if (!errorMsg) {
+    const isAnyError = validation(formDataWithMob);
+
+    if (Object.keys(isAnyError).length === 0) {
+      setErrorMsg('');
       if (!invitationToken) {
         mutation.mutate(formDataWithMob); // normal flow
       } else {
@@ -112,6 +128,8 @@ const MobileLogin = ({ setMobileLoginStep }) => {
           invitationType: inviteData?.invitationData?.invitationType,
         }); // invitation flow
       }
+    } else {
+      setErrorMsg(isAnyError);
     }
   };
 
@@ -147,21 +165,17 @@ const MobileLogin = ({ setMobileLoginStep }) => {
             <Input
               type="text"
               name="mobileNumber"
-              placeholder="Phone number"
+              placeholder="Enter a Aadhar linked phone number"
               className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobileNumber}
             />
           </div>
-          {errorMsg && (
-            <span className="w-full px-1 text-sm font-semibold text-red-600">
-              {errorMsg}
-            </span>
-          )}
+          {errorMsg.mobileNumber && <ErrorBox msg={errorMsg.mobileNumber} />}
         </div>
 
         <Button
-          disabled={errorMsg || mutation.isPending}
+          disabled={mutation.isPending}
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"

@@ -23,8 +23,10 @@ export default function Login() {
             />
           </Link>
         </div>
-        {/* Initial Page in auth */}
-        <MobileLoginPage />
+        <div className="flex h-screen flex-col items-center pt-10">
+          {/* Initial Page in auth */}
+          <MobileLoginPage />
+        </div>
       </Suspense>
     </>
   );

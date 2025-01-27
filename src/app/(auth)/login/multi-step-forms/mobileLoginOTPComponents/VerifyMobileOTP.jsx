@@ -9,7 +9,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { ArrowLeft, Clock5 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -68,6 +67,21 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       LocalStorageService.set(
         'isAssociateRequestAccepted',
         data?.data?.data?.user?.isAssociateRequestAccepted,
+      );
+
+      LocalStorageService.set(
+        'isPanVerified',
+        data?.data?.data?.user?.isPanVerified,
+      );
+
+      LocalStorageService.set(
+        'isAadhaarVerified',
+        data?.data?.data?.user?.isAadhaarVerified,
+      );
+
+      LocalStorageService.set(
+        'isEmailVerified',
+        data?.data?.data?.user?.isEmailVerified,
       );
 
       // check by calling api : directorInviteList
@@ -214,7 +228,22 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
           router.push(redirectUrl || '/');
         }
       } else {
-        router.push('/login/userOnboarding');
+        // isPanverified and aaadhar verified then move to confirmation
+        if (
+          data?.data?.data?.user?.isPanVerified &&
+          data?.data?.data?.user?.isAadhaarVerified
+        ) {
+          router.push('/login/confirmation');
+        }
+        // isPanverified and !aadhar not verified then move to aadhar
+        if (
+          data?.data?.data?.user?.isPanVerified &&
+          !data?.data?.data?.user?.isAadhaarVerified
+        ) {
+          router.push('/login/aadhar-verification');
+        } else {
+          router.push('/login/pan-verification');
+        }
       }
     },
     onError: (error) => {
@@ -276,7 +305,11 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
               00:{startFrom}s
             </p>
           ) : (
-            <Button size="sm" variant="outline" disabled>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setStartFrom(30)}
+            >
               Resend
             </Button>
           )}

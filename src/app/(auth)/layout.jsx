@@ -1,8 +1,9 @@
+import { AuthProgressProvider } from '@/context/AuthProgressContext';
 import Image from 'next/image';
 
 export default function LoginLayout({ children }) {
   return (
-    <>
+    <AuthProgressProvider>
       <div className="fixed inset-0 flex">
         <div className="w-1/2 bg-white">{children}</div>
         <div className="relative w-1/2 bg-custom-linear pl-24 pt-20">
@@ -15,6 +16,6 @@ export default function LoginLayout({ children }) {
           />
         </div>
       </div>
-    </>
+    </AuthProgressProvider>
   );
 }
