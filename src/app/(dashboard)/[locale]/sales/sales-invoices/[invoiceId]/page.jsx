@@ -28,7 +28,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import emptyImg from '../../../../../../public/Empty.png';
+import emptyImg from '../../../../../../../public/Empty.png';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
 
 const ViewInvoice = () => {

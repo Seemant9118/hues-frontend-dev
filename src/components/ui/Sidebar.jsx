@@ -22,9 +22,9 @@ import StyledLinks from './StyledLinks';
 const Sidebar = () => {
   const links = [
     {
-      name: 'Dashboard',
+      name: 'sidebar.dashboard',
       icon: <Gauge size={16} />,
-      path: '/',
+      path: `/`,
     },
     // {
     //   name: 'Templates',
@@ -32,78 +32,78 @@ const Sidebar = () => {
     //   path: '/template',
     // },
     {
-      name: 'Item Master',
+      name: 'sidebar.itemMaster',
       icon: <Package size={16} />,
       path: '/inventory/goods',
       subTab: [
         {
-          name: 'Goods',
+          name: 'sidebar.subTabs.goods',
           icon: <Boxes size={16} />,
           path: '/inventory/goods',
         },
         {
-          name: 'Services',
+          name: 'sidebar.subTabs.services',
           icon: <HandPlatter size={16} />,
           path: '/inventory/services',
         },
       ],
     },
     {
-      name: 'Catalogue',
+      name: 'sidebar.catalogue',
       icon: <BookOpenText size={16} />,
       path: '/catalogue',
     },
     {
-      name: 'Sales',
+      name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
       path: '/sales/sales-orders',
       subTab: [
         {
-          name: 'Orders',
+          name: 'sidebar.orders',
           icon: <Boxes size={16} />,
           path: '/sales/sales-orders',
         },
         {
-          name: 'Invoices',
+          name: 'sidebar.invoices',
           icon: <ReceiptText size={16} />,
           path: '/sales/sales-invoices',
         },
         {
-          name: 'Debit Notes',
+          name: 'sidebar.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/sales/sales-debitNotes',
         },
       ],
     },
     {
-      name: 'Purchases',
+      name: 'sidebar.purchases',
       icon: <ScrollText size={16} />,
       path: '/purchases/purchase-orders',
       subTab: [
         {
-          name: 'Orders',
+          name: 'sidebar.orders',
           icon: <Boxes size={16} />,
           path: '/purchases/purchase-orders',
         },
         {
-          name: 'Invoices',
+          name: 'sidebar.invoices',
           icon: <ReceiptText size={16} />,
           path: '/purchases/purchase-invoices',
         },
         {
-          name: 'Debit Notes',
+          name: 'sidebar.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/purchases/purchase-debitNotes',
         },
       ],
     },
     {
-      name: 'Clients',
+      name: 'sidebar.clients',
       icon: <UserRound size={16} />,
       path: '/clients',
     },
     {
-      name: 'Vendors',
+      name: 'sidebar.vendors',
       icon: <Store size={16} />,
       path: '/vendors',
     },
@@ -122,7 +122,7 @@ const Sidebar = () => {
 
   const actionLinks = [
     {
-      name: 'Notifications',
+      name: 'sidebar.notifications',
       icon: <Bell size={16} />,
       path: '/notification',
     },
@@ -153,7 +153,14 @@ const Sidebar = () => {
         {actionLinks.map((link) => (
           <StyledLinks key={link.name} link={link} />
         ))}
-        <ProfileInfoPopUp />
+        <ProfileInfoPopUp
+          ctaName={'sidebar.profile'}
+          viewProfileCta={'sidebar.profilePopUpInfo.viewProfileCta'}
+          enterprises={'sidebar.profilePopUpInfo.enterprises'}
+          addAnotherCta={'sidebar.profilePopUpInfo.addAnotherCta'}
+          logoutCta={'sidebar.profilePopUpInfo.logoutCta'}
+          accessDeniedCta={'sidebar.profilePopUpInfo.accessDeniedCta'}
+        />
       </div>
     </div>
   );

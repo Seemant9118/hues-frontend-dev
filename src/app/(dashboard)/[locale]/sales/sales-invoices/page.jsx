@@ -14,7 +14,7 @@ import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import {
   exportInvoice,
-  getAllPurchaseInvoices,
+  getAllSalesInvoices,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
@@ -28,15 +28,22 @@ import {
   FileCheck,
   FileText,
   KeySquare,
+  PlusCircle,
   Upload,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import emptyImg from '../../../../../public/Empty.png';
-import { PurchaseTable } from '../purchasetable/PurchaseTable';
-import { usePurchaseInvoicesColumns } from './usePurchaseInvoicesColumns';
+import emptyImg from '../../../../../../public/Empty.png';
+import { SalesTable } from '../salestable/SalesTable';
+import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
+
+// dynamic imports
+const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
+  loading: () => <Loading />,
+});
 
 // macros
 const PAGE_LIMIT = 10;
@@ -50,26 +57,27 @@ const SaleEmptyStageData = {
       icon: <FileCheck size={14} />,
       subItemtitle: `Initiate sales and deals by receiving bids or making offers.`,
     },
+    // { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
     {
-      id: 2,
+      id: 3,
       icon: <FileText size={14} />,
       subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.`,
     },
     {
-      id: 3,
+      id: 4,
       icon: <KeySquare size={14} />,
       subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.`,
     },
     {
-      id: 4,
+      id: 5,
       icon: <DatabaseZap size={14} />,
       subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. `,
     },
   ],
 };
 
-const PurchaseInvoices = () => {
-  useMetaData('Hues! - Purchase Invoices', 'HUES INVOICES'); // dynamic title
+const SalesInvoices = () => {
+  useMetaData('Hues! - Sales Invoices', 'HUES INVOICES'); // dynamic title
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -79,7 +87,8 @@ const PurchaseInvoices = () => {
   const router = useRouter();
   const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
-  const [purchaseinvoiceListing, setPurchaseInvoiceListing] = useState([]); // invoices
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [invoiceListing, setInvoiceListing] = useState([]); // invoices
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
@@ -116,20 +125,20 @@ const PurchaseInvoices = () => {
   // [INVOICES_FETCHING]
   // Fetch invoices data with infinite scroll
   const {
-    data: invoicesData,
+    data,
     fetchNextPage,
+    hasNextPage,
     isFetching,
     isLoading: isInvoiceLoading,
-    hasNextPage,
   } = useInfiniteQuery({
     queryKey: [
-      invoiceApi.getAllPurchaseInvoices.endpointKey,
+      invoiceApi.getAllSalesInvoices.endpointKey,
       enterpriseId,
       tab,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await getAllPurchaseInvoices({
+      const response = await getAllSalesInvoices({
         id: enterpriseId,
         data: { page: pageParam, limit: PAGE_LIMIT, ...filterData },
       });
@@ -146,37 +155,36 @@ const PurchaseInvoices = () => {
 
   // data flattening - formatting
   useEffect(() => {
-    if (!invoicesData) return;
+    if (!data) return;
 
-    // Flatten purchase invoices data from all pages
-    const flattenedPurchaseInvoicesData = invoicesData.pages
+    // Flatten sales invoices data from all pages
+    const flattenedSalesInvoicesData = data.pages
       .map((page) => page?.data?.data?.data) // Assuming sales invoices data is nested in `data.data.data`
       .flat();
 
-    // Deduplicate purchase data based on unique `id`
-    const uniquePurchaseInvoicesData = Array.from(
+    // Deduplicate sales data based on unique `id`
+    const uniqueSalesInvoicesData = Array.from(
       new Map(
-        flattenedPurchaseInvoicesData.map((purchase) => [
-          purchase.invoiceId, // Assuming `id` is the unique identifier for each purchase invoice
-          purchase,
+        flattenedSalesInvoicesData.map((sale) => [
+          sale.invoiceId, // Assuming `id` is the unique identifier for each sale invoice
+          sale,
         ]),
       ).values(),
     );
 
-    // Update state with deduplicated purchases invoices data
-    setPurchaseInvoiceListing(uniquePurchaseInvoicesData);
+    // Update state with deduplicated sales invoices data
+    setInvoiceListing(uniqueSalesInvoicesData);
 
     // Calculate pagination data using the last page's information
-    const lastPage =
-      invoicesData.pages[invoicesData.pages.length - 1]?.data?.data;
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
     setPaginationData({
       totalPages: lastPage?.totalPages,
       currFetchedPage: lastPage?.currentPage,
     });
-  }, [invoicesData]);
+  }, [data]);
 
   // Infinite scroll observer
-  const lastPurchaseInvoiceRef = useCallback(
+  const lastSalesInvoiceRef = useCallback(
     (node) => {
       if (isFetching) return;
 
@@ -202,13 +210,13 @@ const PurchaseInvoices = () => {
     },
   });
   const onRowClick = (row) => {
-    const isPurchaseOrderRead = row?.readTracker?.buyerIsRead;
+    const isSaleInvoiceRead = row?.readTracker?.sellerIsRead;
 
-    if (isPurchaseOrderRead) {
-      router.push(`/purchases/purchase-invoices/${row.invoiceId}`);
+    if (isSaleInvoiceRead) {
+      router.push(`/sales/sales-invoices/${row.invoiceId}`);
     } else {
       updateReadTrackerMutation.mutate(row.invoiceId);
-      router.push(`/purchases/purchase-invoices/${row.invoiceId}`);
+      router.push(`/sales/sales-invoices/${row.invoiceId}`);
     }
   };
 
@@ -242,7 +250,7 @@ const PurchaseInvoices = () => {
   };
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
-  const invoiceColumns = usePurchaseInvoicesColumns(setSelectedInvoices);
+  const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
 
   return (
     <>
@@ -252,69 +260,83 @@ const PurchaseInvoices = () => {
           <RestrictedComponent />
         </>
       )}
+
       {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <>
-          <Wrapper>
-            <SubHeader
-              name={'Invoices'}
-              className="sticky top-0 z-10 flex items-center justify-between bg-white"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <Tooltips
-                  trigger={
-                    <Button
-                      disabled={selectedInvoices?.length === 0}
-                      onClick={handleExportInvoice}
-                      variant="outline"
-                      className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                      size="sm"
-                    >
-                      <Upload size={16} />
-                    </Button>
-                  }
-                  content={
-                    selectedInvoices?.length > 0
-                      ? 'Export Selected Invoice'
-                      : 'Select a Invoice to export'
-                  }
-                />
-              </div>
-            </SubHeader>
-
-            <section>
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'all'}
+          {!isCreatingInvoice && (
+            <Wrapper className="h-full">
+              <SubHeader
+                name={'Invoices'}
+                className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
-                <section className="sticky top-14 bg-white">
-                  <TabsList className="border">
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="pending">Pending</TabsTrigger>
-                    <TabsTrigger value="debitNotes">
-                      {' '}
-                      Debit/Credit Notes
-                    </TabsTrigger>
-                  </TabsList>
-                </section>
+                <div className="flex items-center justify-center gap-3">
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled={selectedInvoices?.length === 0}
+                        onClick={handleExportInvoice}
+                        variant="outline"
+                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                        size="sm"
+                      >
+                        <Upload size={14} />
+                      </Button>
+                    }
+                    content={
+                      selectedInvoices?.length > 0
+                        ? 'Export Selected Invoice'
+                        : 'Select a Invoice to export'
+                    }
+                  />
 
-                <TabsContent value="all">
-                  {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-orders"
-                      columns={invoiceColumns}
-                      data={purchaseinvoiceListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
-                    />
-                  )}
-                  {!isInvoiceLoading &&
-                    purchaseinvoiceListing?.length === 0 && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => setIsCreatingInvoice(true)}
+                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                        size="sm"
+                      >
+                        <PlusCircle size={14} />
+                        Invoice
+                      </Button>
+                    }
+                    content={'Create a new sales invoice'}
+                  />
+                </div>
+              </SubHeader>
+
+              <section>
+                <Tabs
+                  value={tab}
+                  onValueChange={onTabChange}
+                  defaultValue={'all'}
+                >
+                  <section className="sticky top-14 bg-white">
+                    <TabsList className="border">
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="pending">Pending</TabsTrigger>
+                      <TabsTrigger value="debitNotes">
+                        Debit/Credit Notes
+                      </TabsTrigger>
+                    </TabsList>
+                  </section>
+
+                  <TabsContent value="all">
+                    {isInvoiceLoading && <Loading />}
+                    {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                      <SalesTable
+                        id="sale-invoices"
+                        columns={invoiceColumns}
+                        data={invoiceListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                        lastSalesRef={lastSalesInvoiceRef}
+                      />
+                    )}
+                    {!isInvoiceLoading && invoiceListing?.length === 0 && (
                       <EmptyStageComponent
                         heading={SaleEmptyStageData.heading}
                         desc={SaleEmptyStageData.desc}
@@ -322,25 +344,23 @@ const PurchaseInvoices = () => {
                         subItems={SaleEmptyStageData.subItems}
                       />
                     )}
-                </TabsContent>
-                <TabsContent value="pending">
-                  {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-pending-orders"
-                      columns={invoiceColumns}
-                      data={purchaseinvoiceListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
-                    />
-                  )}
-
-                  {!isInvoiceLoading &&
-                    purchaseinvoiceListing?.length === 0 && (
+                  </TabsContent>
+                  <TabsContent value="pending">
+                    {isInvoiceLoading && <Loading />}
+                    {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                      <SalesTable
+                        id="sale-invoices"
+                        columns={invoiceColumns}
+                        data={invoiceListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                        lastSalesRef={lastSalesInvoiceRef}
+                      />
+                    )}
+                    {!isInvoiceLoading && invoiceListing?.length === 0 && (
                       <EmptyStageComponent
                         heading={SaleEmptyStageData.heading}
                         desc={SaleEmptyStageData.desc}
@@ -348,38 +368,51 @@ const PurchaseInvoices = () => {
                         subItems={SaleEmptyStageData.subItems}
                       />
                     )}
-                </TabsContent>
-                <TabsContent value="debitNotes">
-                  {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-debit-notes"
-                      columns={invoiceColumns}
-                      data={purchaseinvoiceListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
-                    />
-                  )}
+                  </TabsContent>
+                  <TabsContent value="debitNotes">
+                    {isInvoiceLoading && <Loading />}
+                    {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                      <SalesTable
+                        id="sale-invoices-debits"
+                        columns={invoiceColumns}
+                        data={invoiceListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                        lastSalesRef={lastSalesInvoiceRef}
+                      />
+                    )}
 
-                  {!isInvoiceLoading &&
-                    purchaseinvoiceListing?.length === 0 && (
+                    {!isInvoiceLoading && invoiceListing?.length === 0 && (
                       <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                         <Image src={emptyImg} alt="emptyIcon" />
                         <p>No Debit Note Raised</p>
                       </div>
                     )}
-                </TabsContent>
-              </Tabs>
-            </section>
-          </Wrapper>
+                  </TabsContent>
+                </Tabs>
+              </section>
+            </Wrapper>
+          )}
+
+          {/* create invoice component */}
+          {isCreatingInvoice && (
+            <CreateOrder
+              type="invoice"
+              name="Invoice"
+              cta="offer"
+              isOrder="invoice"
+              isCreatingInvoice={isCreatingInvoice}
+              setInvoiceListing={setInvoiceListing}
+              onCancel={() => setIsCreatingInvoice(false)}
+            />
+          )}
         </>
       )}
     </>
   );
 };
 
-export default PurchaseInvoices;
+export default SalesInvoices;

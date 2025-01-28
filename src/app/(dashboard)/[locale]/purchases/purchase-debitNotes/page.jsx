@@ -26,7 +26,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import emptyImg from '../../../../../public/Empty.png';
+import emptyImg from '../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
 

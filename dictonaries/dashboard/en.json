@@ -1,0 +1,31 @@
+{
+    "dashboard": {
+        "title": "Dashboard",
+        "invites": {
+            "prompt": "You have {count} invites pending.",
+            "actionPrompt": "Please take action",
+            "viewInvitesText": "View invites",
+            "invitesTitle": "Pending Invites",
+            "invitesDetails": "wants to add you as their {type}",
+            "handleAcceptCta": "Accept",
+            "handleRejectCta": "Reject"
+        },
+        "emptyStateComponent": {
+            "heading": "Seamlessly monitor financial health and compliance with an integrated, real-time dashboard",
+            "subItems": {
+                "subItem1": {
+                    "value": "Safely integrate data with secure login and automatic API access."
+                },
+                "subItem2": {
+                    "value": "Access real-time financial status for strategic decision-making"
+                },
+                "subItem3": {
+                    "value": "Ensure regulatory compliance with automatic notification monitoring."
+                },
+                "subItem4": {
+                    "value": "Inform strategies with comprehensive dashboard data for competitive edge"
+                }
+            }
+        }
+    }
+}

@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html>
       <body>
         <div className="absolute">
           <Toaster richColors position="top-right" duration="2500" />

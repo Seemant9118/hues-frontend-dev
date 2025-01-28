@@ -3,11 +3,14 @@
 import { useNotificationsCount } from '@/context/CountNotificationsContext';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const StyledLinks = ({ link }) => {
+  const translations = useTranslations();
+
   const { totalUnreadNotifications } = useNotificationsCount();
   const pathname = usePathname();
   const [isSubTabShow, setIsSubTabShow] = useState(null);
@@ -49,7 +52,7 @@ const StyledLinks = ({ link }) => {
           >
             <div className="flex items-center gap-2">
               {link.icon}
-              {link.name}
+              {translations(link.name)}
             </div>
 
             {link.name === 'Notifications' && totalUnreadNotifications > 0 && (

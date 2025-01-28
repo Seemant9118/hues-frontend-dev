@@ -18,14 +18,22 @@ import {
   rejectInvitation,
 } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 
 const PendingInvitesModal = ({
+  ctaName,
+  invitesTitle,
+  invitesDetails,
+  acceptCtaName,
+  rejectCtaName,
   data,
   isInviteModalOpen,
   setIsInviteModalOpen,
 }) => {
+  const translations = useTranslations();
+
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -77,11 +85,11 @@ const PendingInvitesModal = ({
     <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="h-8 bg-[#288AF9]" onClick={() => {}}>
-          View invites
+          {translations(ctaName)}
         </Button>
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center gap-5">
-        <DialogTitle>Pending Invites</DialogTitle>
+        <DialogTitle>{translations(invitesTitle)}</DialogTitle>
         <div className="scrollBarStyles flex max-h-[400px] flex-col gap-3 overflow-y-auto px-1">
           {data &&
             data?.map((inviteItem) => (
@@ -97,7 +105,7 @@ const PendingInvitesModal = ({
                   </span>
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-bold">
-                      {`"${inviteItem?.name}" wants to add you as their ${capitalize(inviteItem?.type)}`}
+                      {`"${inviteItem?.name}" ${translations(invitesDetails, { type: capitalize(inviteItem?.type) })}`}
                     </span>
                     <span className="flex items-center gap-2 text-xs text-[#A5ABBD]">
                       <p>+91 {inviteItem?.mobileNumber ?? '-'} |</p>
@@ -112,10 +120,10 @@ const PendingInvitesModal = ({
                     variant="outline"
                     onClick={() => handleReject(inviteItem.id)}
                   >
-                    Reject
+                    {translations(rejectCtaName)}
                   </Button>
                   <Button size="sm" onClick={() => handleAccept(inviteItem.id)}>
-                    Accept
+                    {translations(acceptCtaName)}
                   </Button>
                 </div>
               </div>

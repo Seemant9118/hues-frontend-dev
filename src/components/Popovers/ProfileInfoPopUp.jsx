@@ -10,6 +10,7 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,7 +18,15 @@ import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
-const ProfileInfoPopUp = () => {
+const ProfileInfoPopUp = ({
+  ctaName,
+  viewProfileCta,
+  enterprises,
+  addAnotherCta,
+  logoutCta,
+  accessDeniedCta,
+}) => {
+  const translations = useTranslations();
   const pathName = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -102,7 +111,7 @@ const ProfileInfoPopUp = () => {
           size="sm"
         >
           <User size={14} />
-          Profile
+          {translations(ctaName)}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="absolute bottom-2 left-28 flex max-h-[350px] w-[350px] flex-col gap-5">
@@ -129,13 +138,13 @@ const ProfileInfoPopUp = () => {
             }}
             className="cursor-pointer rounded-sm border border-primary p-1 text-xs font-semibold text-primary hover:bg-blue-500/10"
           >
-            View Profile
+            {translations(viewProfileCta)}
           </div>
         </div>
 
         {/* enterprise switch */}
         <div className="flex flex-col gap-1 p-1">
-          <h1 className="text-sm">Enterprises</h1>
+          <h1 className="text-sm">{translations(enterprises)}</h1>
 
           <div className="scrollBarStyles flex max-h-40 flex-col gap-5 overflow-y-auto">
             {/* availableenterprise lists */}
@@ -173,7 +182,7 @@ const ProfileInfoPopUp = () => {
                         <Tooltips
                           trigger={
                             <span className="rounded-sm border-2 border-gray-400 p-1 text-center text-[10px] text-gray-600">
-                              ACCESS DENIED
+                              {translations(accessDeniedCta)}
                             </span>
                           }
                           content={
@@ -198,14 +207,14 @@ const ProfileInfoPopUp = () => {
             }}
             className="cursor-pointer rounded-sm p-2 text-sm font-semibold hover:bg-blue-500/10"
           >
-            Add another enterprise
+            {translations(addAnotherCta)}
           </div>
 
           <div
             onClick={logout}
             className="cursor-pointer rounded-sm p-2 text-sm font-semibold text-destructive hover:bg-blue-500/10"
           >
-            Logout
+            {translations(logoutCta)}
           </div>
         </div>
       </PopoverContent>
