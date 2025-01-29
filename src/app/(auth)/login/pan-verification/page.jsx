@@ -14,7 +14,6 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
-import Link from 'next/link';
 
 import { userAuth } from '@/api/user_auth/Users';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
@@ -133,8 +132,11 @@ const PanVerificationPage = () => {
     enabled:
       userData?.panNumber?.length === 10 &&
       userData?.isTermsAndConditionApplied,
-    select: (data) => data.data.data,
+    select: (data) => data?.data?.data,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
   });
 
   useEffect(() => {
@@ -359,17 +361,10 @@ const PanVerificationPage = () => {
               type="submit"
               className="w-full"
               size="sm"
-              disabled={userUpdatemutation.isPending}
+              disabled={userUpdatemutation.isPending || errorPanDetails}
             >
               {userUpdatemutation.isPending ? <Loading /> : 'Proceed'}
             </Button>
-
-            <Link
-              href="/"
-              className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-            >
-              Skip for Now
-            </Link>
           </div>
         </form>
       </div>
