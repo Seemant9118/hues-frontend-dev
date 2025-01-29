@@ -125,6 +125,7 @@ const PanVerificationPage = () => {
   const {
     data: panDetails,
     isLoading: isPanDetailsLoading,
+    isFetching: isPanDetailsFetching,
     error: errorPanDetails,
   } = useQuery({
     queryKey: [userAuth.getPanDetails.endpointKey],
@@ -197,6 +198,9 @@ const PanVerificationPage = () => {
     onError: (error) => {
       toast.error(error.response.data.message || 'Oops, Something went wrong!');
     },
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
   });
 
   // handleProceed fn
@@ -252,7 +256,7 @@ const PanVerificationPage = () => {
                   onChange={handleChange}
                 />
                 {/* if api is in pendingState then visible */}
-                {userData?.panNumber?.length === 10 && isPanDetailsLoading && (
+                {(isPanDetailsLoading || isPanDetailsFetching) && (
                   <div className="absolute right-1 top-0 flex h-full items-center justify-between bg-transparent p-1">
                     <span className="text-xs font-semibold text-gray-500">
                       Fetching details...
@@ -300,7 +304,7 @@ const PanVerificationPage = () => {
             </div>
 
             {/* if PAN details fetched then name and dob comes up */}
-            {panDetails && (
+            {userData?.panNumber?.length === 10 && panDetails && (
               <>
                 <div className="grid w-full items-center gap-1.5">
                   <Label
@@ -361,9 +365,20 @@ const PanVerificationPage = () => {
               type="submit"
               className="w-full"
               size="sm"
-              disabled={userUpdatemutation.isPending || errorPanDetails}
+              disabled={
+                userUpdatemutation.isPending ||
+                errorPanDetails ||
+                isPanDetailsLoading ||
+                isPanDetailsFetching
+              }
             >
-              {userUpdatemutation.isPending ? <Loading /> : 'Proceed'}
+              {userUpdatemutation.isPending ||
+              isPanDetailsLoading ||
+              isPanDetailsFetching ? (
+                <Loading />
+              ) : (
+                'Proceed'
+              )}
             </Button>
           </div>
         </form>
