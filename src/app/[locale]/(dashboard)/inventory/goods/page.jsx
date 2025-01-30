@@ -1,6 +1,6 @@
 'use client';
 
-import { servicesApi } from '@/api/inventories/services/services';
+import { goodsApi } from '@/api/inventories/goods/goods';
 import { debounce } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
@@ -12,13 +12,14 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
-  GetAllProductServices,
-  GetSearchedServices,
-  UpdateProductServices,
-  UploadProductServices,
-} from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
+  GetAllProductGoods,
+  GetSearchedProductGoods,
+  UpdateProductGoods,
+  UploadProductGoods,
+} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CircleFadingPlus,
@@ -30,12 +31,12 @@ import {
   Upload,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useServicesColumns } from './ServicesColumns';
+import { useGoodsColumns } from './GoodsColumns';
 
-// dynamic imports
+// Dynamic imports
 const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
   loading: () => <Loading />,
 });
@@ -50,10 +51,10 @@ const UploadItems = dynamic(
 // MACROS
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
-// Empty state data
+// Empty State Data
 const InventoryEmptyStageData = {
   heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
-  perfect cataloging."`,
+    perfect cataloging."`,
   subHeading: 'Features',
   subItems: [
     {
@@ -79,8 +80,9 @@ const InventoryEmptyStageData = {
   ],
 };
 
-function Services() {
-  useMetaData('Hues! - Services', 'HUES SERVICES'); // dynamic title
+function Goods() {
+  useMetaData('Hues! - Goods', 'HUES GOODS'); // dynamic title
+  // Local Storage and States
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -88,20 +90,20 @@ function Services() {
   const isKycVerified = LocalStorageService.get('isKycVerified');
   const templateId = 1;
 
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); // local search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [servicesToEdit, setServicesToEdit] = useState(null);
+  const [goodsToEdit, setGoodsToEdit] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
-  const [services, setServices] = useState([]);
+  const [productGoods, setProductGoods] = useState([]);
 
+  // Synchronize state with query parameters
   useEffect(() => {
-    // Read the state from the query parameters
     const state = searchParams.get('action');
     setIsAdding(state === 'add');
     setIsEditing(state === 'edit');
@@ -109,38 +111,32 @@ function Services() {
   }, [searchParams]);
 
   useEffect(() => {
-    let newPath = `/inventory/services`;
-    if (isAdding) {
-      newPath += `?action=add`;
-    } else if (isEditing) {
-      newPath += `?action=edit`;
-    } else if (isUploading) {
-      newPath += `?action=upload`;
-    } else {
-      newPath += '';
-    }
+    let newPath = `/inventory/goods`;
+    if (isAdding) newPath += `?action=add`;
+    else if (isEditing) newPath += `?action=edit`;
+    else if (isUploading) newPath += `?action=upload`;
 
     router.push(newPath);
   }, [router, isAdding, isEditing, isUploading]);
 
-  // get services api
+  // Fetch all product goods
   const {
-    data: servicesData,
+    data: allProductGoods,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: [servicesApi.getAllProductServices.endpointKey],
-    queryFn: () => GetAllProductServices(enterpriseId),
+    queryKey: [goodsApi.getAllProductGoods.endpointKey],
+    queryFn: () => GetAllProductGoods(enterpriseId),
     select: (res) => res.data.data,
     enabled: searchTerm?.length === 0,
   });
 
   // Fetch searched product goods
-  const { data: searchedServicesData, isLoading: isSearchServicesLoading } =
+  const { data: searchedProductGoods, isLoading: isSearchProductGoodsLoading } =
     useQuery({
-      queryKey: [servicesApi.getSearchedServices.endpointKey, searchTerm],
+      queryKey: [goodsApi.getSearchedProductGoods.endpointKey, searchTerm],
       queryFn: () =>
-        GetSearchedServices({
+        GetSearchedProductGoods({
           searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
         }),
       select: (res) => res.data.data,
@@ -160,12 +156,12 @@ function Services() {
 
   // Consolidated state update logic
   useEffect(() => {
-    if (debouncedSearchTerm && searchedServicesData) {
-      setServices(searchedServicesData); // set Services from search api
+    if (debouncedSearchTerm && searchedProductGoods) {
+      setProductGoods(searchedProductGoods); // set productGoods from search api
     } else if (!debouncedSearchTerm && isSuccess) {
-      setServices(servicesData); // set productGoods from get api
+      setProductGoods(allProductGoods); // set productGoods from get api
     }
-  }, [debouncedSearchTerm, searchedServicesData, servicesData, isSuccess]);
+  }, [debouncedSearchTerm, searchedProductGoods, allProductGoods, isSuccess]);
 
   // handleUploadfile
   const uploadFile = async (file) => {
@@ -175,25 +171,23 @@ function Services() {
     formData.append('templateId', templateId);
 
     try {
-      await UploadProductServices(formData);
+      await UploadProductGoods(formData);
       toast.success('Upload Successfully');
       setFiles((prev) => [...prev, file]);
-      queryClient.invalidateQueries([
-        servicesApi.getAllProductServices.endpointKey,
-      ]);
+      queryClient.invalidateQueries([goodsApi.getAllProductGoods.endpointKey]);
     } catch (error) {
       toast.error(error.response.data.message || 'Something went wrong');
     }
   };
 
   // columns
-  const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
+  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Services'} />
+          <SubHeader name="Goods" />
           <RestrictedComponent />
         </>
       )}
@@ -201,31 +195,29 @@ function Services() {
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>
-              <SubHeader name={'Services'}>
-                <div className="flex items-center justify-center gap-4">
+              <SubHeader name="Goods">
+                <div className="flex items-center gap-4">
                   <SearchInput
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
-                  {/* coming soon */}
                   <Tooltips
                     trigger={
                       <Button
-                        onClick={() => {}}
-                        variant={'export'}
+                        variant="export"
                         size="sm"
                         className="cursor-not-allowed"
                       >
                         <Share2 size={14} />
                       </Button>
                     }
-                    content={'This feature Coming Soon...'}
+                    content="This feature Coming Soon..."
                   />
                   <Button
-                    variant={'export'}
+                    variant="export"
                     size="sm"
                     onClick={() =>
-                      exportTableToExcel('services table', 'services_list')
+                      exportTableToExcel('goods table', 'goods_list')
                     }
                   >
                     <Upload size={14} />
@@ -233,7 +225,7 @@ function Services() {
                   </Button>
                   <Button
                     onClick={() => setIsUploading(true)}
-                    variant={'blue_outline'}
+                    variant="blue_outline"
                     size="sm"
                   >
                     <Upload size={14} />
@@ -241,7 +233,7 @@ function Services() {
                   </Button>
                   <Button
                     onClick={() => setIsAdding(true)}
-                    variant={'blue_outline'}
+                    variant="blue_outline"
                     size="sm"
                   >
                     <CircleFadingPlus size={14} />
@@ -250,40 +242,40 @@ function Services() {
                 </div>
               </SubHeader>
 
-              {(isLoading || isSearchServicesLoading) && <Loading />}
-
-              {(!isLoading || !isSearchServicesLoading) &&
-                (servicesData?.length > 0 ? (
+              {(isLoading || isSearchProductGoodsLoading) && <Loading />}
+              {(!isLoading || !isSearchProductGoodsLoading) &&
+                (allProductGoods?.length > 0 ? (
                   <DataTable
-                    id={'services table'}
-                    columns={ServicesColumns}
-                    data={services}
+                    id="goods table"
+                    columns={GoodsColumns}
+                    data={productGoods}
                   />
                 ) : (
                   <EmptyStageComponent {...InventoryEmptyStageData} />
                 ))}
             </Wrapper>
           )}
+
           {isAdding && (
             <AddItem
               setIsAdding={setIsAdding}
-              name={'Item'}
-              cta={'Item'}
+              name="Item"
+              cta="Item"
               onCancel={() => setIsAdding(false)}
             />
           )}
           {isEditing && (
             <EditItem
               setIsEditing={setIsEditing}
-              servicesToEdit={servicesToEdit}
-              setServicesToEdit={setServicesToEdit}
-              mutationFunc={UpdateProductServices}
-              queryKey={[servicesApi.getAllProductServices.endpointKey]}
+              goodsToEdit={goodsToEdit}
+              setGoodsToEdit={setGoodsToEdit}
+              mutationFunc={UpdateProductGoods}
+              queryKey={[goodsApi.getAllProductGoods.endpointKey]}
             />
           )}
           {isUploading && (
             <UploadItems
-              type="services"
+              type="goods"
               uploadFile={uploadFile}
               files={files}
               setisUploading={setIsUploading}
@@ -296,4 +288,4 @@ function Services() {
   );
 }
 
-export default Services;
+export default Goods;

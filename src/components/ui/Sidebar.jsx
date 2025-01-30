@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import {
@@ -15,7 +17,8 @@ import {
   UserRound,
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+
+import { Link } from '@/i18n/routing';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
@@ -59,17 +62,17 @@ const Sidebar = () => {
       path: '/sales/sales-orders',
       subTab: [
         {
-          name: 'sidebar.orders',
+          name: 'sidebar.subTabs.orders',
           icon: <Boxes size={16} />,
           path: '/sales/sales-orders',
         },
         {
-          name: 'sidebar.invoices',
+          name: 'sidebar.subTabs.invoices',
           icon: <ReceiptText size={16} />,
           path: '/sales/sales-invoices',
         },
         {
-          name: 'sidebar.debitNotes',
+          name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/sales/sales-debitNotes',
         },
@@ -81,17 +84,17 @@ const Sidebar = () => {
       path: '/purchases/purchase-orders',
       subTab: [
         {
-          name: 'sidebar.orders',
+          name: 'sidebar.subTabs.orders',
           icon: <Boxes size={16} />,
           path: '/purchases/purchase-orders',
         },
         {
-          name: 'sidebar.invoices',
+          name: 'sidebar.subTabs.invoices',
           icon: <ReceiptText size={16} />,
           path: '/purchases/purchase-invoices',
         },
         {
-          name: 'sidebar.debitNotes',
+          name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/purchases/purchase-debitNotes',
         },
