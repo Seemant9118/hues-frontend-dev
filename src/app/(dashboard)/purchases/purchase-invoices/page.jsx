@@ -92,7 +92,7 @@ const PurchaseInvoices = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = {};
-    if (tab === 'pending') {
+    if (tab === 'outstanding') {
       newFilterData = {
         filterData: {
           payment: {
@@ -290,7 +290,7 @@ const PurchaseInvoices = () => {
                 <section className="sticky top-14 bg-white">
                   <TabsList className="border">
                     <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="pending">Pending</TabsTrigger>
+                    <TabsTrigger value="outstanding">Outstanding</TabsTrigger>
                     <TabsTrigger value="debitNotes">
                       {' '}
                       Debit/Credit Notes
@@ -323,11 +323,11 @@ const PurchaseInvoices = () => {
                       />
                     )}
                 </TabsContent>
-                <TabsContent value="pending">
+                <TabsContent value="outstanding">
                   {isInvoiceLoading && <Loading />}
                   {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
                     <PurchaseTable
-                      id="purchase-pending-orders"
+                      id="purchase-outstanding-orders"
                       columns={invoiceColumns}
                       data={purchaseinvoiceListing}
                       fetchNextPage={fetchNextPage}

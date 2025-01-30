@@ -101,7 +101,7 @@ const SalesInvoices = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = {};
-    if (tab === 'pending') {
+    if (tab === 'outstanding') {
       newFilterData = {
         filterData: {
           payment: {
@@ -314,7 +314,7 @@ const SalesInvoices = () => {
                   <section className="sticky top-14 bg-white">
                     <TabsList className="border">
                       <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="pending">Pending</TabsTrigger>
+                      <TabsTrigger value="outstanding">Outstanding</TabsTrigger>
                       <TabsTrigger value="debitNotes">
                         Debit/Credit Notes
                       </TabsTrigger>
@@ -345,7 +345,7 @@ const SalesInvoices = () => {
                       />
                     )}
                   </TabsContent>
-                  <TabsContent value="pending">
+                  <TabsContent value="outstanding">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
                       <SalesTable

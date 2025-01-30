@@ -211,7 +211,7 @@ const ViewInvoice = () => {
         <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
           <TabsList className="border">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="payment">Payments</TabsTrigger>
+            <TabsTrigger value="payment">Payment Receipts</TabsTrigger>
             <TabsTrigger value="debitNotes">Debit Notes</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">

@@ -189,7 +189,7 @@ const ViewInvoice = () => {
           >
             <TabsList className="border">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="payment">Payments</TabsTrigger>
+              <TabsTrigger value="payment">Payment Advices</TabsTrigger>
               <TabsTrigger value="debitNotes">Debit Notes</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
