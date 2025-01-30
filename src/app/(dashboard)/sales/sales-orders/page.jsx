@@ -106,10 +106,16 @@ const SalesOrder = () => {
   // Update filterData dynamically based on the selected tab
   useEffect(() => {
     let newFilterData = null;
-    if (tab === 'bidReceived') {
-      newFilterData = { bidReceived: true };
-    } else if (tab === 'pending') {
-      newFilterData = { paymentStatus: 'NOT_PAID' };
+    if (tab === 'underReview') {
+      newFilterData = {
+        status: ['OFFER_SENT', 'BID_RECEIVED'],
+      };
+    } else if (tab === 'confirmedOrders') {
+      newFilterData = {
+        status: ['ACCEPTED'],
+      };
+    } else if (tab === 'receivables') {
+      newFilterData = { invoiceStatus: true };
     }
     if (newFilterData) {
       setFilterData(newFilterData);
@@ -303,10 +309,13 @@ const SalesOrder = () => {
                   <section className="sticky top-14 flex justify-between bg-white">
                     <TabsList className="border">
                       <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="bidReceived">
-                        Bid Recieved
+                      <TabsTrigger value="underReview">
+                        Under Review
                       </TabsTrigger>
-                      <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                      <TabsTrigger value="confirmedOrders">
+                        Confirmed Orders
+                      </TabsTrigger>
+                      <TabsTrigger value="receivables">Receivables</TabsTrigger>
                     </TabsList>
                     <FilterModal
                       isSalesFilter={true}
@@ -340,7 +349,7 @@ const SalesOrder = () => {
                         />
                       ))}
                   </TabsContent>
-                  <TabsContent value="bidReceived">
+                  <TabsContent value="underReview">
                     {isLoading && <Loading />}
                     {!isLoading &&
                       (salesListing?.length > 0 ? (
@@ -364,7 +373,31 @@ const SalesOrder = () => {
                         />
                       ))}
                   </TabsContent>
-                  <TabsContent value="pending">
+                  <TabsContent value="confirmedOrders">
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <SalesTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          data={salesListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastSalesRef={lastSalesRef}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={SaleEmptyStageData.heading}
+                          desc={SaleEmptyStageData.desc}
+                          subHeading={SaleEmptyStageData.subHeading}
+                          subItems={SaleEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="receivables">
                     {isLoading && <Loading />}
                     {!isLoading &&
                       (salesListing?.length > 0 ? (

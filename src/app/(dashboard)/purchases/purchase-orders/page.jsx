@@ -110,9 +110,11 @@ const PurchaseOrders = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = null;
-    if (tab === 'offerReceived') {
+    if (tab === 'underReview') {
       newFilterData = { offerReceived: true };
-    } else if (tab === 'pending') {
+    } else if (tab === 'confirmed') {
+      newFilterData = { status: ['ACCEPTED'] };
+    } else if (tab === 'payables') {
       newFilterData = { paymentStatus: 'NOT_PAID' };
     } else if (isOrderCreationSuccess) {
       newFilterData = {};
@@ -395,10 +397,13 @@ const PurchaseOrders = () => {
                   <section className="sticky top-14 flex justify-between bg-white">
                     <TabsList className="border">
                       <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="offerReceived">
-                        Offer Recieved
+                      <TabsTrigger value="underReview">
+                        Under Review
                       </TabsTrigger>
-                      <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                      <TabsTrigger value="confirmed">
+                        Confirmed Orders
+                      </TabsTrigger>
+                      <TabsTrigger value="payables">Payables</TabsTrigger>
                       <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
                     </TabsList>
                     <FilterModal
@@ -434,7 +439,7 @@ const PurchaseOrders = () => {
                         />
                       ))}
                   </TabsContent>
-                  <TabsContent value="offerReceived">
+                  <TabsContent value="underReview">
                     {isLoading && <Loading />}
 
                     {!isLoading &&
@@ -459,7 +464,32 @@ const PurchaseOrders = () => {
                         />
                       ))}
                   </TabsContent>
-                  <TabsContent value="pending">
+                  <TabsContent value="confirmed">
+                    {isLoading && <Loading />}
+
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-orders"
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastPurhaseRef={lastPurchaseRef}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={PurchaseEmptyStageData.heading}
+                          desc={PurchaseEmptyStageData.desc}
+                          subHeading={PurchaseEmptyStageData.subHeading}
+                          subItems={PurchaseEmptyStageData.subItems}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="payables">
                     {isLoading && <Loading />}
 
                     {!isLoading &&

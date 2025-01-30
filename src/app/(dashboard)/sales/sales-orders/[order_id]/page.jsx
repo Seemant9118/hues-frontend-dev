@@ -366,13 +366,13 @@ const ViewOrder = () => {
                       className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
                       value="invoices"
                     >
-                      Invoice
+                      Invoices
                     </TabsTrigger>
                     <TabsTrigger
-                      className={`w-24 ${tab === 'payment' ? 'shadow-customShadow' : ''}`}
+                      className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
                       value="payment"
                     >
-                      Payment
+                      Payment Receipts
                     </TabsTrigger>
                     <TabsTrigger
                       className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
