@@ -98,7 +98,7 @@ const StyledLinks = ({ link }) => {
               )}
             >
               {subtab.icon}
-              {subtab.name}
+              {translations(subtab.name)}
             </Link>
           ))}
         </ul>
