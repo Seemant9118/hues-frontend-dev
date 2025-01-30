@@ -113,6 +113,7 @@ const SalesOrder = () => {
     } else if (tab === 'confirmedOrders') {
       newFilterData = {
         status: ['ACCEPTED'],
+        invoiceStatus: false,
       };
     } else if (tab === 'receivables') {
       newFilterData = { invoiceStatus: true };

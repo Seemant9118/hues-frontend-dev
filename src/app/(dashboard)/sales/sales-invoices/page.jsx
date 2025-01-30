@@ -105,7 +105,7 @@ const SalesInvoices = () => {
       newFilterData = {
         filterData: {
           payment: {
-            status: 'NOT_PAID',
+            status: ['NOT_PAID', 'PARTIAL_PAID'],
           },
         },
       };
