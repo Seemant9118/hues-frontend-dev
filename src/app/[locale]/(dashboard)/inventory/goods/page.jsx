@@ -30,6 +30,7 @@ import {
   Share2,
   Upload,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -82,6 +83,8 @@ const InventoryEmptyStageData = {
 
 function Goods() {
   useMetaData('Hues! - Goods', 'HUES GOODS'); // dynamic title
+
+  const translations = useTranslations('goods');
   // Local Storage and States
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -187,7 +190,7 @@ function Goods() {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name="Goods" />
+          <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
@@ -195,7 +198,7 @@ function Goods() {
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>
-              <SubHeader name="Goods">
+              <SubHeader name={translations('title')}>
                 <div className="flex items-center gap-4">
                   <SearchInput
                     toSearchTerm={searchTerm}

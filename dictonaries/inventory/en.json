@@ -1,0 +1,14 @@
+{
+    "goods": {
+        "title": "Goods",
+        "ctas": {
+            "searchPlaceholder": "Search...",
+            "export": "Export",
+            "upload": "Upload",
+            "add": "Add"
+        }
+    },
+    "services": {
+        "title": "Services"
+    }
+}
