@@ -8,7 +8,11 @@
             "invitesTitle": "लंबित आमंत्रण",
             "invitesDetails": " आपको उनके {type} के रूप में जोड़ना चाहते हैं।",
             "handleAcceptCta": "स्वीकार करें",
-            "handleRejectCta": "अस्वीकार करें"
+            "handleRejectCta": "अस्वीकार करें",
+            "messages": {
+                "reject": "आमंत्रण अस्वीकृत",
+                "accept": "आमंत्रण स्वीकार किया गया"
+            }
         },
         "emptyStateComponent": {
             "heading": "एकीकृत, रीयल-टाइम डैशबोर्ड के साथ वित्तीय स्वास्थ्य और अनुपालन को आसानी से मॉनिटर करें",

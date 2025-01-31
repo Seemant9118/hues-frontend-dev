@@ -13,9 +13,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { deleteCatalogue } from '@/services/Catalogue_Services/CatalogueServices';
 import { MoreVertical } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 export const useCatalogueColumns = (setSelectedCatalogue) => {
+  const translations = useTranslations('catalogue');
+
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     setSelectedCatalogue((prev) => {
@@ -84,13 +87,19 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
       {
         accessorKey: 'name',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="ITEM" />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('table.header.item')}
+          />
         ),
       },
       {
         accessorKey: 'type',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="TYPE" />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('table.header.type')}
+          />
         ),
         cell: ({ row }) => {
           return <div>{capitalize(row.original.type)}</div>;
@@ -99,7 +108,10 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
       {
         accessorKey: 'sku', // Change to SKU of the catalogue
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="SKU" />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('table.header.sku')}
+          />
         ),
         cell: ({ row }) => {
           const { sku } = row.original;
@@ -109,7 +121,10 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
       {
         accessorKey: 'manufacturerName',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={'MANUFACTURER'} />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('table.header.manufacturer')}
+          />
         ),
         cell: ({ row }) => {
           const { manufacturerName } = row.original;
@@ -119,13 +134,19 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
       {
         accessorKey: 'hsnCode',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={'HSN/SAC'} />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('table.header.hsnSac')}
+          />
         ),
       },
       {
         accessorKey: 'rate',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="PRICE" />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('table.header.price')}
+          />
         ),
       },
       {
@@ -144,6 +165,7 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-fit">
                 <ConfirmAction
+                  deleteCta={translations('table.columnActions.remove')}
                   catalogueDeletion={true}
                   infoText={`You are removing ${name} from catalogue`}
                   id={itemId}

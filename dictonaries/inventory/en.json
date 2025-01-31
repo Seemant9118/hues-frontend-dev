@@ -1,12 +1,68 @@
 {
     "goods": {
         "title": "Goods",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Quickly upload and fine-tune detailed product information in bulk."
+                },
+                "subItem2": {
+                    "value": "Effortlessly add items for fresh, accurate inventory."
+                },
+                "subItem3": {
+                    "value": "Authenticate inventory with digital signatures for integrity and compliance."
+                },
+                "subItem4": {
+                    "value": "Share digitally signed inventory easily in PDF format."
+                }
+            }
+        },
         "ctas": {
             "searchPlaceholder": "Search...",
             "export": "Export",
             "upload": "Upload",
             "add": "Add",
             "comingSoon": "This feature Coming Soon..."
+        },
+        "messages": {
+            "uploadSuccessMsg": "Upload Successfully"
+        },
+        "components": {
+            "upload": {
+                "title": "Upload",
+                "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
+                "noteInfo": "Note - Trade enabled for eSigned inventories only.",
+                "selectCta": "Select",
+                "sampleCta": "Sample",
+                "backCta": "View"
+            },
+            "add": {
+                "title": "Item",
+                "label": {
+                    "type": "Type",
+                    "productName": "Product Name",
+                    "manufactureName": "Manufacturer's Name",
+                    "description": "Description",
+                    "hsnCode": "HSN Code",
+                    "rate": "Rate",
+                    "gst": "GST (%)",
+                    "quantity": "Quantity",
+                    "batch": "Batch",
+                    "expiry": "Expiry",
+                    "application": "Application",
+                    "manufacturerGST": "Manufacturer's GST IN",
+                    "weight": "Weight (grams)",
+                    "length": "Length (cm)",
+                    "breadth": "Breadth (cm)",
+                    "height": "Height (cm)"
+                },
+                "ctas": {
+                    "cancel": "Cancel",
+                    "add": "Add",
+                    "edit": "Edit"
+                }
+            }
         },
         "table": {
             "header": {
@@ -25,12 +81,60 @@
     },
     "services": {
         "title": "Services",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Quickly upload and fine-tune detailed product information in bulk."
+                },
+                "subItem2": {
+                    "value": "Effortlessly add items for fresh, accurate inventory."
+                },
+                "subItem3": {
+                    "value": "Authenticate inventory with digital signatures for integrity and compliance."
+                },
+                "subItem4": {
+                    "value": "Share digitally signed inventory easily in PDF format."
+                }
+            }
+        },
         "ctas": {
             "searchPlaceholder": "Search...",
             "export": "Export",
             "upload": "Upload",
             "add": "Add",
             "comingSoon": "This feature Coming Soon..."
+        },
+        "messages": {
+            "uploadSuccessMsg": "Upload Successfully"
+        },
+        "components": {
+            "upload": {
+                "title": "Upload",
+                "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
+                "noteInfo": "Note - Trade enabled for eSigned inventories only.",
+                "selectCta": "Select",
+                "sampleCta": "Sample",
+                "backCta": "View"
+            },
+            "add": {
+                "title": "Item",
+                "label": {
+                    "type": "Type",
+                    "serviceName": "Service Name",
+                    "description": "Description",
+                    "sac": "SAC",
+                    "rate": "Rate",
+                    "gst": "GST (%)",
+                    "expiry": "Expiry",
+                    "application": "Application"
+                },
+                "ctas": {
+                    "cancel": "Cancel",
+                    "add": "Add",
+                    "edit": "Edit"
+                }
+            }
         },
         "table": {
             "header": {

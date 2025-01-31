@@ -21,15 +21,7 @@ import {
   UploadProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  CircleFadingPlus,
-  DatabaseZap,
-  FileCheck,
-  FileText,
-  KeySquare,
-  Share2,
-  Upload,
-} from 'lucide-react';
+import { CircleFadingPlus, Share2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -52,39 +44,20 @@ const UploadItems = dynamic(
 // MACROS
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
-// Empty State Data
-const InventoryEmptyStageData = {
-  heading: `~"Revolutionize stock management with secure, editable, and shareable product listings for
-    perfect cataloging."`,
-  subHeading: 'Features',
-  subItems: [
-    {
-      id: 1,
-      icon: <FileCheck size={14} />,
-      subItemtitle: `Quickly upload and fine-tune detailed product information in bulk.`,
-    },
-    {
-      id: 2,
-      icon: <FileText size={14} />,
-      subItemtitle: `Effortlessly add items for fresh, accurate inventory.`,
-    },
-    {
-      id: 3,
-      icon: <KeySquare size={14} />,
-      subItemtitle: `Authenticate inventory with digital signatures for integrity and compliance.`,
-    },
-    {
-      id: 4,
-      icon: <DatabaseZap size={14} />,
-      subItemtitle: `Share digitally signed inventory easily in PDF format.`,
-    },
-  ],
-};
 
 function Goods() {
   useMetaData('Hues! - Goods', 'HUES GOODS'); // dynamic title
 
   const translations = useTranslations('goods');
+
+  // next-intl supports only object keys, not arrays. Use object keys for subItems.
+  const keys = [
+    'goods.emptyStateComponent.subItems.subItem1',
+    'goods.emptyStateComponent.subItems.subItem2',
+    'goods.emptyStateComponent.subItems.subItem3',
+    'goods.emptyStateComponent.subItems.subItem4',
+  ];
+
   // Local Storage and States
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -175,7 +148,7 @@ function Goods() {
 
     try {
       await UploadProductGoods(formData);
-      toast.success('Upload Successfully');
+      toast.success(translations('messages.uploadSuccessMsg'));
       setFiles((prev) => [...prev, file]);
       queryClient.invalidateQueries([goodsApi.getAllProductGoods.endpointKey]);
     } catch (error) {
@@ -221,7 +194,7 @@ function Goods() {
                     variant="export"
                     size="sm"
                     onClick={() =>
-                      exportTableToExcel('goods table', 'goods_list')
+                      exportTableToExcel('goods table', translations('title'))
                     }
                   >
                     <Upload size={14} />
@@ -255,7 +228,10 @@ function Goods() {
                     data={productGoods}
                   />
                 ) : (
-                  <EmptyStageComponent {...InventoryEmptyStageData} />
+                  <EmptyStageComponent
+                    heading={translations('emptyStateComponent.heading')}
+                    subItems={keys}
+                  />
                 ))}
             </Wrapper>
           )}

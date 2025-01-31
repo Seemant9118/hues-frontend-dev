@@ -73,6 +73,8 @@ export default function Home() {
               invitesDetails={'dashboard.invites.invitesDetails'}
               acceptCtaName={'dashboard.invites.handleAcceptCta'}
               rejectCtaName={'dashboard.invites.handleRejectCta'}
+              acceptedMsg={'dashboard.invites.messages.accept'}
+              rejectedMsg={'dashboard.invites.messages.reject'}
               data={filteredData}
               isInviteModalOpen={isInviteModalOpen}
               setIsInviteModalOpen={setIsInviteModalOpen}

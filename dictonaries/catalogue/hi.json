@@ -1,0 +1,28 @@
+{
+    "catalogue": {
+        "title": "कैटलॉग",
+        "emptyStateComponent": {
+            "heading": "कोई कैटलॉग उपलब्ध नहीं है",
+            "description": "आपने कोई कैटलॉग नहीं बनाया है। शुरू करने के लिए अपडेट बटन पर क्लिक करें"
+        },
+        "ctas": {
+            "comingSoon": "यह सुविधा जल्द ही आ रही है...",
+            "update": "अपडेट करें",
+            "remove": "चयनित कैटलॉग हटाएं",
+            "searchPlaceHolder": "खोजें..."
+        },
+        "table": {
+            "header": {
+                "item": "आइटम",
+                "type": "प्रकार",
+                "sku": "एसकेयू",
+                "manufacturer": "निर्माता",
+                "hsnSac": "एचएसएन/एसएसी",
+                "price": "मूल्य"
+            },
+            "columnActions": {
+                "remove": "हटाएं"
+            }
+        }
+    }
+}

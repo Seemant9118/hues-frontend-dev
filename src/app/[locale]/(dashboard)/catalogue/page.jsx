@@ -21,8 +21,10 @@ import { useQuery } from '@tanstack/react-query';
 import { debounce } from '@/appUtils/helperFunctions';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+
+import { useRouter } from '@/i18n/routing';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useCatalogueColumns } from './CatalogueColumns';
@@ -33,6 +35,8 @@ const DEBOUNCE_DELAY = 500;
 
 const Catalogue = () => {
   useMetaData('Hues! - Catalogues', 'HUES CATALOGUE'); // dynamic title
+
+  const translations = useTranslations('catalogue');
 
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isKycVerified = LocalStorageService.get('isKycVerified');
@@ -108,7 +112,7 @@ const Catalogue = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Catalogue'}></SubHeader>
+          <SubHeader name={translations('title')}></SubHeader>
           <RestrictedComponent />
         </>
       )}
@@ -120,7 +124,7 @@ const Catalogue = () => {
             <div className="flex h-full flex-col">
               {/* Header */}
               <div className="flex w-full justify-between gap-2 py-2">
-                <SubHeader name="Catalogue" />
+                <SubHeader name={translations('title')} />
                 <div className="flex gap-2">
                   <Tooltips
                     trigger={
@@ -131,7 +135,7 @@ const Catalogue = () => {
                           router.push('/catalogue/update_catalogue')
                         }
                       >
-                        Update
+                        {translations('ctas.update')}
                       </Button>
                     }
                     content={'Update a Catalogue'}
@@ -148,7 +152,7 @@ const Catalogue = () => {
                         <Upload size={14} />
                       </Button>
                     }
-                    content={'Export feature Coming Soon...'}
+                    content={translations('ctas.comingSoon')}
                   />
                   <Tooltips
                     trigger={
@@ -156,7 +160,7 @@ const Catalogue = () => {
                         <Eye size={14} />
                       </Button>
                     }
-                    content={'View feature Coming Soon...'}
+                    content={translations('ctas.comingSoon')}
                   />
 
                   <Tooltips
@@ -165,7 +169,7 @@ const Catalogue = () => {
                         <Share2 size={14} />
                       </Button>
                     }
-                    content={'Share feature Coming Soon...'}
+                    content={translations('ctas.comingSoon')}
                   />
 
                   <Tooltips
@@ -184,17 +188,14 @@ const Catalogue = () => {
                         mutationFunc={bulkDeleteCatalogueItems}
                       />
                     }
-                    content={
-                      selectedCatalogue?.length > 0
-                        ? 'Remove a Selected Catalogue'
-                        : 'Select a Catalogue to remove'
-                    }
+                    content={translations('ctas.remove')}
                   />
                 </div>
               </div>
               {/* Header2 action */}
               <div className="flex w-full justify-between gap-2 py-2">
                 <SearchInput
+                  searchPlaceholder={translations('ctas.searchPlaceHolder')}
                   className="w-[28rem]"
                   toSearchTerm={searchTerm}
                   setToSearchTerm={setSearchTerm}
@@ -228,11 +229,11 @@ const Catalogue = () => {
                     height={100}
                     alt="emptyIcon"
                   />
-                  <p className="font-bold">No catalogue available</p>
+                  <p className="font-bold">
+                    {translations('emptyStateComponent.heading')}
+                  </p>
                   <p className="max-w-96 text-center">
-                    {
-                      "You haven't make any catalogues. Start by clicking on the Update button"
-                    }
+                    {translations('emptyStateComponent.description')}
                   </p>
 
                   <Tooltips
@@ -243,7 +244,7 @@ const Catalogue = () => {
                           router.push('/catalogue/update_catalogue')
                         }
                       >
-                        Update
+                        {translations('ctas.update')}
                       </Button>
                     }
                     content={'Update a Catalogue'}

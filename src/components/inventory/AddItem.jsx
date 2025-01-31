@@ -17,15 +17,19 @@ import { CreateProductServices } from '@/services/Inventories_Services/Services_
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
+
+import { usePathname, useRouter } from '@/i18n/routing';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { usePathname, useRouter } from 'next/navigation';
 import DatePickers from '../ui/DatePickers';
-import InputWithLabel from '../ui/InputWithLabel';
-import ErrorBox from '../ui/ErrorBox';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
+import ErrorBox from '../ui/ErrorBox';
+import InputWithLabel from '../ui/InputWithLabel';
 
-const AddItem = ({ name, onCancel, cta }) => {
+const AddItem = ({ onCancel, cta }) => {
+  const translations = useTranslations();
+
   const queryClient = useQueryClient();
   const router = useRouter();
   const redirectURL = LocalStorageService.get('redirectFromCatalogue');
@@ -306,13 +310,17 @@ const AddItem = ({ name, onCancel, cta }) => {
         'scrollBarStyles relative flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
-      <h2 className="text-2xl font-bold text-zinc-900">{name}</h2>
+      <h2 className="text-2xl font-bold text-zinc-900">
+        {translations('goods.components.add.title')}
+      </h2>
 
       <div className="grid grid-cols-2 gap-2.5">
         {cta === 'Item' && (
           <div className="flex flex-col gap-4">
             <div>
-              <Label className="flex-shrink-0">Type</Label>{' '}
+              <Label className="flex-shrink-0">
+                {translations('goods.components.add.label.type')}
+              </Label>{' '}
               <span className="text-red-600">*</span>
             </div>
 
@@ -342,7 +350,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col">
               <InputWithLabel
-                name="Product Name"
+                name={translations('goods.components.add.label.productName')}
                 id="productName"
                 required={true}
                 onChange={onChange}
@@ -352,7 +360,9 @@ const AddItem = ({ name, onCancel, cta }) => {
             </div>
             <div className="flex flex-col">
               <InputWithLabel
-                name="Manufacturer's Name"
+                name={translations(
+                  'goods.components.add.label.manufactureName',
+                )}
                 id="manufacturerName"
                 required={true}
                 onChange={onChange}
@@ -365,7 +375,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           </div>
           <div className="flex flex-col">
             <InputWithLabel
-              name="Description"
+              name={translations('goods.components.add.label.description')}
               id="description"
               required={true}
               onChange={onChange}
@@ -376,7 +386,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col">
               <InputWithLabel
-                name="HSN Code"
+                name={translations('goods.components.add.label.hsnCode')}
                 id="hsnCode"
                 required={true}
                 onChange={onChange}
@@ -386,7 +396,7 @@ const AddItem = ({ name, onCancel, cta }) => {
             </div>
             <div className="flex flex-col">
               <InputWithLabel
-                name="Rate"
+                name={translations('goods.components.add.label.rate')}
                 id="rate"
                 required={true}
                 onChange={onChange}
@@ -396,7 +406,7 @@ const AddItem = ({ name, onCancel, cta }) => {
             </div>
             <div className="flex flex-col">
               <InputWithLabel
-                name="GST (%)"
+                name={translations('goods.components.add.label.gst')}
                 id="gstPercentage"
                 required={true}
                 onChange={onChange}
@@ -408,7 +418,7 @@ const AddItem = ({ name, onCancel, cta }) => {
             </div>
             <div className="flex flex-col">
               <InputWithLabel
-                name="Quantity"
+                name={translations('goods.components.add.label.quantity')}
                 id="quantity"
                 required={true}
                 onChange={onChange}
@@ -421,7 +431,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           {/* optional data fields */}
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Batch"
+              name={translations('goods.components.add.label.batch')}
               id="batch"
               onChange={onChange}
               value={item.batch}
@@ -431,7 +441,7 @@ const AddItem = ({ name, onCancel, cta }) => {
                 htmlFor="expiry"
                 className="flex items-center gap-1 font-medium text-[#414656]"
               >
-                Expiry
+                {translations('goods.components.add.label.expiry')}
               </Label>
               <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <DatePickers
@@ -447,13 +457,13 @@ const AddItem = ({ name, onCancel, cta }) => {
 
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Application"
+              name={translations('goods.components.add.label.application')}
               id="applications"
               onChange={onChange}
               value={item.applications}
             />
             <InputWithLabel
-              name="Manufacturer's GST IN"
+              name={translations('goods.components.add.label.manufacturerGST')}
               id="manufacturerGstId"
               onChange={onChange}
               value={item.manufacturerGstId}
@@ -462,25 +472,25 @@ const AddItem = ({ name, onCancel, cta }) => {
 
           <div className="grid grid-cols-4 gap-2.5">
             <InputWithLabel
-              name="Weight (grams)"
+              name={translations('goods.components.add.label.weight')}
               id="weight"
               onChange={onChange}
               value={item.weight}
             />
             <InputWithLabel
-              name="Length (cm)"
+              name={translations('goods.components.add.label.length')}
               id="length"
               onChange={onChange}
               value={item.length}
             />
             <InputWithLabel
-              name="Breadth (cm)"
+              name={translations('goods.components.add.label.breadth')}
               id="breadth"
               onChange={onChange}
               value={item.breadth}
             />
             <InputWithLabel
-              name="Height (cm)"
+              name={translations('goods.components.add.label.height')}
               id="height"
               onChange={onChange}
               value={item.height}
@@ -493,7 +503,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col">
               <InputWithLabel
-                name="Service Name"
+                name={translations('services.components.add.label.serviceName')}
                 id="serviceName"
                 required={true}
                 onChange={onChange}
@@ -504,7 +514,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           </div>
           <div className="flex flex-col">
             <InputWithLabel
-              name="Description"
+              name={translations('services.components.add.label.description')}
               id="description"
               required={true}
               onChange={onChange}
@@ -515,7 +525,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col">
               <InputWithLabel
-                name="SAC"
+                name={translations('services.components.add.label.sac')}
                 id="SAC"
                 required={true}
                 onChange={onChange}
@@ -525,7 +535,7 @@ const AddItem = ({ name, onCancel, cta }) => {
             </div>
             <div className="flex flex-col">
               <InputWithLabel
-                name="Rate"
+                name={translations('services.components.add.label.rate')}
                 id="rate"
                 required={true}
                 onChange={onChange}
@@ -537,7 +547,7 @@ const AddItem = ({ name, onCancel, cta }) => {
           <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col">
               <InputWithLabel
-                name="GST (%)"
+                name={translations('services.components.add.label.gst')}
                 id="gstPercentage"
                 required={true}
                 onChange={onChange}
@@ -552,7 +562,7 @@ const AddItem = ({ name, onCancel, cta }) => {
                 htmlFor="expiry"
                 className="flex items-center gap-1 font-medium text-[#414656]"
               >
-                Expiry
+                {translations('services.components.add.label.expiry')}
               </Label>
 
               <div className="relative flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -577,7 +587,7 @@ const AddItem = ({ name, onCancel, cta }) => {
             {errorMsg?.amount && <ErrorBox msg={errorMsg.amount} />}
           </div> */}
           <InputWithLabel
-            name="Application"
+            name={translations('services.components.add.label.application')}
             id="applications"
             // required={item.type == "goods" || item.type === "services"}
             onChange={onChange}
@@ -600,10 +610,10 @@ const AddItem = ({ name, onCancel, cta }) => {
           }}
           variant={'outline'}
         >
-          Cancel
+          {translations('services.components.add.ctas.cancel')}
         </Button>
         <Button size="sm" type="submit" disabled={cta === 'Template'}>
-          Add
+          {translations('services.components.add.ctas.add')}
         </Button>
       </div>
     </form>

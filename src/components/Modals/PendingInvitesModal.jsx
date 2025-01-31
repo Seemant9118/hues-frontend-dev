@@ -28,6 +28,8 @@ const PendingInvitesModal = ({
   invitesDetails,
   acceptCtaName,
   rejectCtaName,
+  acceptedMsg,
+  rejectedMsg,
   data,
   isInviteModalOpen,
   setIsInviteModalOpen,
@@ -40,7 +42,7 @@ const PendingInvitesModal = ({
   const acceptInvitationMutation = useMutation({
     mutationFn: (data) => acceptInvitation(data),
     onSuccess: () => {
-      toast.success('Invitation Accepted');
+      toast.success(translations(acceptedMsg));
       setIsInviteModalOpen(false);
       queryClient.invalidateQueries([
         invitation.getReceivedInvitation.endpointKey,
@@ -54,7 +56,7 @@ const PendingInvitesModal = ({
   const rejectInvitationMutation = useMutation({
     mutationFn: (data) => rejectInvitation(data),
     onSuccess: () => {
-      toast.success('Invitation Rejected');
+      toast.success(translations(rejectedMsg));
       setIsInviteModalOpen(false);
       queryClient.invalidateQueries([
         invitation.getReceivedInvitation.endpointKey,

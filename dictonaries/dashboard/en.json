@@ -8,7 +8,11 @@
             "invitesTitle": "Pending Invites",
             "invitesDetails": "wants to add you as their {type}",
             "handleAcceptCta": "Accept",
-            "handleRejectCta": "Reject"
+            "handleRejectCta": "Reject",
+            "messages": {
+                "reject": "Invitaion Rejected",
+                "accept": "Invitation Accepted"
+            }
         },
         "emptyStateComponent": {
             "heading": "Seamlessly monitor financial health and compliance with an integrated, real-time dashboard",

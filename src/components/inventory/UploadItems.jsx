@@ -8,13 +8,16 @@ import { GetGoodsSampleFile } from '@/services/Inventories_Services/Goods_Invent
 import { GetServiceSampleFile } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import { useQuery } from '@tanstack/react-query';
 import { Check, Download, MoveLeft, Upload, UploadCloud } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { Button } from '../ui/button';
-import Wrapper from '../wrappers/Wrapper';
 import SubHeader from '../ui/Sub-header';
+import Wrapper from '../wrappers/Wrapper';
 
 const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
+  const translations = useTranslations('goods');
+
   const handleFileRemove = () => {
     setisUploading(false);
     setFiles([]);
@@ -88,7 +91,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
           onClick={() => setisUploading(false)}
         />
 
-        <SubHeader name="Upload" />
+        <SubHeader name={translations('components.upload.title')} />
       </div>
 
       <div className="flex grow flex-col items-center justify-center gap-4">
@@ -102,21 +105,16 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
               <UploadCloud className="text-sky-500" size={40} />
               <div className="flex flex-col gap-1">
                 <p className="text-xs font-medium text-darkText">
-                  Drag & Drop or Select a File (Max 10MB,
-                  <span className="font-bold text-sky-500">
-                    {' '}
-                    .csv/.xlsx Formats
-                  </span>
-                  )
+                  {translations('components.upload.uploadInfo')}
                 </p>
                 <p className="text-xs font-normal text-sky-500">
-                  Note - Trade enabled for eSigned inventories only.
+                  {translations('components.upload.noteInfo')}
                 </p>
               </div>
             </div>
             <Button variant="blue_outline">
               <Upload />
-              Select
+              {translations('components.upload.selectCta')}
             </Button>
           </div>
         </FileUploader>
@@ -124,7 +122,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
         <Button asChild variant="outline" className="w-full max-w-[700px]">
           <a download={sampleFileName} href={sampleFileUrl}>
             <Download />
-            Sample
+            {translations('components.upload.sampleCta')}
           </a>
         </Button>
 
@@ -141,7 +139,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
                   <Check size={10} />
                 </div>
                 <p className="text-xs font-medium leading-5 text-green-500">
-                  Upload Successfully!
+                  {translations('messages.uploadSuccessMsg')}
                 </p>
               </div>
             </div>

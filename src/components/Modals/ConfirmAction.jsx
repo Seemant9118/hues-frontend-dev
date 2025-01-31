@@ -51,7 +51,7 @@ const ConfirmAction = ({
           )}
         >
           <Trash2 size={12} />
-          {catalogueDeletion ? 'Remove' : deleteCta}
+          {deleteCta}
         </button>
       </DialogTrigger>
       <DialogContent className="flex flex-col items-center justify-center gap-5">
@@ -80,7 +80,7 @@ const ConfirmAction = ({
               deleteMutation.mutate({ id, type });
             }}
           >
-            {catalogueDeletion ? 'Remove' : deleteCta}
+            {deleteCta}
           </Button>
         </div>
       </DialogContent>

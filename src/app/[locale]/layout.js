@@ -27,11 +27,16 @@ export default async function RootLayout({ children, params: { locale } }) {
       `../../../dictonaries/inventory/${locale}.json`
     );
 
+    const catalogueMessages = await import(
+      `../../../dictonaries/catalogue/${locale}.json`
+    );
+
     // Merge the dashboard and sidebar messages into one object
     messages = {
       ...dashboardMessages,
       ...sidebarMessages,
       ...inventoryMessages,
+      ...catalogueMessages,
     };
   } catch (error) {
     NotFound(); // Handle the error by showing a 404 page

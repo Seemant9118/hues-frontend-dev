@@ -1,0 +1,28 @@
+{
+    "catalogue": {
+        "title": "Catalogue",
+        "emptyStateComponent": {
+            "heading": "No catalogue available",
+            "description": "You haven't make any catalogues. Start by clicking on the Update button"
+        },
+        "ctas": {
+            "comingSoon": "This feature Coming Soon...",
+            "update": "Update",
+            "remove": "Remove a Selected Catalogue",
+            "searchPlaceHolder": "Search..."
+        },
+        "table": {
+            "header": {
+                "item": "ITEM",
+                "type": "TYPE",
+                "sku": "SKU",
+                "manufacturer": "MANUFACTURER",
+                "hsnSac": "HSN/SAC",
+                "price": "PRICE"
+            },
+            "columnActions": {
+                "remove": "Remove"
+            }
+        }
+    }
+}
