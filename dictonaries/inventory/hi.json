@@ -1,8 +1,50 @@
 {
     "goods": {
-        "title": "सामान"
+        "title": "सामान",
+        "ctas": {
+            "searchPlaceholder": "खोजें...",
+            "export": "निर्यात करें",
+            "upload": "अपलोड करें",
+            "add": "जोड़ें",
+            "comingSoon": "यह सुविधा जल्द ही आ रही है..."
+        },
+        "table": {
+            "header": {
+                "product": "उत्पाद",
+                "manufacturer": "निर्माता",
+                "hsnCode": "एचएसएन कोड",
+                "rate": "दर",
+                "gst": "जीएसटी (%)",
+                "addedOn": "जोड़ा गया"
+            },
+            "columnActions": {
+                "edit": "संपादित करें",
+                "delete": "हटाएं"
+            }
+        }
     },
     "services": {
-        "title": "सेवाएँ"
+        "title": "सेवाएँ",
+        "ctas": {
+            "searchPlaceholder": "खोजें...",
+            "export": "निर्यात करें",
+            "upload": "अपलोड करें",
+            "add": "जोड़ें",
+            "comingSoon": "यह सुविधा जल्द ही आ रही है..."
+        },
+        "table": {
+            "header": {
+                "serviceName": "सेवा का नाम",
+                "sac": "एसएसी",
+                "description": "विवरण",
+                "rate": "दर",
+                "gst": "जीएसटी (%)",
+                "addedOn": "जोड़ा गया"
+            },
+            "columnActions": {
+                "edit": "संपादित करें",
+                "delete": "हटाएं"
+            }
+        }
     }
 }

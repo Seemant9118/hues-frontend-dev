@@ -14,13 +14,19 @@ import {
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { Info, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
+  const translations = useTranslations('goods');
+
   return [
     {
       accessorKey: 'productName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PRODUCT" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.product')}
+        />
       ),
       cell: ({ row }) => {
         const { description, productName } = row.original;
@@ -35,31 +41,46 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
     {
       accessorKey: 'manufacturerName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="MANUFACTURER" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.manufacturer')}
+        />
       ),
     },
     {
       accessorKey: 'hsnCode',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="HSN CODE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.hsnCode')}
+        />
       ),
     },
     {
       accessorKey: 'rate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="RATE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.rate')}
+        />
       ),
     },
     {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GST (%)" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.gst')}
+        />
       ),
     },
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ADDED ON" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.addedOn')}
+        />
       ),
       cell: ({ row }) => {
         const { createdAt } = row.original;
@@ -90,10 +111,11 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
                 }}
               >
                 <Pencil size={12} />
-                Edit
+                {translations('table.columnActions.edit')}
               </DropdownMenuItem>
 
               <ConfirmAction
+                deleteCta={translations('table.columnActions.delete')}
                 infoText={`You are removing ${name} from inventory`}
                 id={id}
                 mutationKey={goodsApi.getAllProductGoods.endpointKey}

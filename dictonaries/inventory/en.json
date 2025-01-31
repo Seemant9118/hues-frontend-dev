@@ -5,10 +5,46 @@
             "searchPlaceholder": "Search...",
             "export": "Export",
             "upload": "Upload",
-            "add": "Add"
+            "add": "Add",
+            "comingSoon": "This feature Coming Soon..."
+        },
+        "table": {
+            "header": {
+                "product": "PRODUCT",
+                "manufacturer": "MANUFACTURER",
+                "hsnCode": "HSN CODE",
+                "rate": "RATE",
+                "gst": "GST (%)",
+                "addedOn": "ADDED ON"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": "Delete"
+            }
         }
     },
     "services": {
-        "title": "Services"
+        "title": "Services",
+        "ctas": {
+            "searchPlaceholder": "Search...",
+            "export": "Export",
+            "upload": "Upload",
+            "add": "Add",
+            "comingSoon": "This feature Coming Soon..."
+        },
+        "table": {
+            "header": {
+                "serviceName": "SERVICE NAME",
+                "sac": "SAC",
+                "description": "DESCRIPTION",
+                "rate": "RATE",
+                "gst": "GST (%)",
+                "addedOn": "ADDED ON"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": "Delete"
+            }
+        }
     }
 }

@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 const ConfirmAction = ({
+  deleteCta,
   catalogueDeletion,
   infoText,
   id,
@@ -50,7 +51,7 @@ const ConfirmAction = ({
           )}
         >
           <Trash2 size={12} />
-          {catalogueDeletion ? 'Remove' : 'Delete'}
+          {catalogueDeletion ? 'Remove' : deleteCta}
         </button>
       </DialogTrigger>
       <DialogContent className="flex flex-col items-center justify-center gap-5">
@@ -79,7 +80,7 @@ const ConfirmAction = ({
               deleteMutation.mutate({ id, type });
             }}
           >
-            {catalogueDeletion ? 'Remove' : 'Delete'}
+            {catalogueDeletion ? 'Remove' : deleteCta}
           </Button>
         </div>
       </DialogContent>

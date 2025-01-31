@@ -30,6 +30,7 @@ import {
   Share2,
   Upload,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -82,6 +83,9 @@ const InventoryEmptyStageData = {
 
 function Services() {
   useMetaData('Hues! - Services', 'HUES SERVICES'); // dynamic title
+
+  const translations = useTranslations('services');
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -194,7 +198,7 @@ function Services() {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Services'} />
+          <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
@@ -202,9 +206,10 @@ function Services() {
         <div>
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper>
-              <SubHeader name={'Services'}>
+              <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
                   <SearchInput
+                    searchPlaceholder={translations('ctas.searchPlaceholder')}
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
@@ -220,7 +225,7 @@ function Services() {
                         <Share2 size={14} />
                       </Button>
                     }
-                    content={'This feature Coming Soon...'}
+                    content={translations('ctas.comingSoon')}
                   />
                   <Button
                     variant={'export'}
@@ -230,7 +235,7 @@ function Services() {
                     }
                   >
                     <Upload size={14} />
-                    Export
+                    {translations('ctas.export')}
                   </Button>
                   <Button
                     onClick={() => setIsUploading(true)}
@@ -238,7 +243,7 @@ function Services() {
                     size="sm"
                   >
                     <Upload size={14} />
-                    Upload
+                    {translations('ctas.upload')}
                   </Button>
                   <Button
                     onClick={() => setIsAdding(true)}
@@ -246,7 +251,7 @@ function Services() {
                     size="sm"
                   >
                     <CircleFadingPlus size={14} />
-                    Add
+                    {translations('ctas.add')}
                   </Button>
                 </div>
               </SubHeader>

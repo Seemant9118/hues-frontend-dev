@@ -201,6 +201,7 @@ function Goods() {
               <SubHeader name={translations('title')}>
                 <div className="flex items-center gap-4">
                   <SearchInput
+                    searchPlaceholder={translations('ctas.searchPlaceholder')}
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
@@ -214,7 +215,7 @@ function Goods() {
                         <Share2 size={14} />
                       </Button>
                     }
-                    content="This feature Coming Soon..."
+                    content={translations('ctas.comingSoon')}
                   />
                   <Button
                     variant="export"
@@ -224,7 +225,7 @@ function Goods() {
                     }
                   >
                     <Upload size={14} />
-                    Export
+                    {translations('ctas.export')}
                   </Button>
                   <Button
                     onClick={() => setIsUploading(true)}
@@ -232,7 +233,7 @@ function Goods() {
                     size="sm"
                   >
                     <Upload size={14} />
-                    Upload
+                    {translations('ctas.upload')}
                   </Button>
                   <Button
                     onClick={() => setIsAdding(true)}
@@ -240,7 +241,7 @@ function Goods() {
                     size="sm"
                   >
                     <CircleFadingPlus size={14} />
-                    Add
+                    {translations('ctas.add')}
                   </Button>
                 </div>
               </SubHeader>

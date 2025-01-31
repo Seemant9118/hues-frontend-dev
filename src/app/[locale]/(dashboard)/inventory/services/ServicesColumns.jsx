@@ -13,25 +13,37 @@ import {
 import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
+  const translations = useTranslations('services');
+
   return [
     {
       accessorKey: 'serviceName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SERVICE NAME" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.serviceName')}
+        />
       ),
     },
     {
       accessorKey: 'sac',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SAC" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.sac')}
+        />
       ),
     },
     {
       accessorKey: 'description',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DESCRIPTION" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.description')}
+        />
       ),
       cell: ({ row }) => {
         const { description } = row.original;
@@ -41,19 +53,28 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
     {
       accessorKey: 'rate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="RATE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.rate')}
+        />
       ),
     },
     {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GST (%)" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.gst')}
+        />
       ),
     },
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ADDED ON" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.addedOn')}
+        />
       ),
       cell: ({ row }) => {
         const { createdAt } = row.original;
@@ -85,10 +106,11 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
                 }}
               >
                 <Pencil size={12} />
-                Edit
+                {translations('table.columnActions.edit')}
               </DropdownMenuItem>
 
               <ConfirmAction
+                deleteCta={translations('table.columnActions.delete')}
                 infoText={`You are removing ${name} from inventory`}
                 id={id}
                 mutationKey={servicesApi.getAllProductServices.endpointKey}
