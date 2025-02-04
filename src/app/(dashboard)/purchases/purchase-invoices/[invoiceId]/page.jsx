@@ -143,6 +143,7 @@ const ViewInvoice = () => {
               <RaisedDebitNoteModal
                 orderId={invoiceDetails?.invoiceDetails?.orderId}
                 invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
+                totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
               />
 
               {/* share CTA */}
