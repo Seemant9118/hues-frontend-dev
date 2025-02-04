@@ -109,7 +109,7 @@ const SalesInvoices = () => {
           },
         },
       };
-    } else if (tab === 'debitNotes') {
+    } else if (tab === 'disputed') {
       newFilterData = {
         filterData: {
           debitNote: {
@@ -315,9 +315,7 @@ const SalesInvoices = () => {
                     <TabsList className="border">
                       <TabsTrigger value="all">All</TabsTrigger>
                       <TabsTrigger value="outstanding">Outstanding</TabsTrigger>
-                      <TabsTrigger value="debitNotes">
-                        Debit/Credit Notes
-                      </TabsTrigger>
+                      <TabsTrigger value="disputed">Disputed</TabsTrigger>
                     </TabsList>
                   </section>
 
@@ -369,11 +367,11 @@ const SalesInvoices = () => {
                       />
                     )}
                   </TabsContent>
-                  <TabsContent value="debitNotes">
+                  <TabsContent value="disputed">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
                       <SalesTable
-                        id="sale-invoices-debits"
+                        id="sale-invoices-disputed"
                         columns={invoiceColumns}
                         data={invoiceListing}
                         fetchNextPage={fetchNextPage}
