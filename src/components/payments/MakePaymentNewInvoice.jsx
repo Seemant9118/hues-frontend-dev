@@ -55,7 +55,11 @@ const MakePaymentNewInvoice = ({
       paymentApi.getInvoicesForPayments.endpointKey,
       invoiceDetails?.orderId,
     ],
-    queryFn: () => getInvoicesForPayments(invoiceDetails?.orderId),
+    queryFn: () =>
+      getInvoicesForPayments(
+        invoiceDetails?.orderId,
+        invoiceDetails?.invoiceId,
+      ),
     select: (invoicesForPayments) => invoicesForPayments.data.data,
     enabled: !!invoiceDetails?.orderId,
   });
@@ -110,21 +114,33 @@ const MakePaymentNewInvoice = ({
       invoicesForPayments?.invoicedTotalDueAmount,
     );
 
-    setPaymentData((prevData) => ({
-      ...prevData,
-      [name]: name === 'amount' ? Number(value) : value,
-    }));
+    if (name === 'amount') {
+      // Allow only numbers & decimals, treating "0" as valid text input
+      if (/^\d*\.?\d*$/.test(value)) {
+        setPaymentData((prevData) => ({
+          ...prevData,
+          [name]: value, // Store as string to preserve input format
+        }));
+      }
+    } else {
+      setPaymentData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
 
     if (name === 'amount') {
-      if (value > balanceAmount) {
-        setErrorMsg((prevMsg) => ({
-          ...prevMsg,
-          amountPaid: 'Amount exceeds balance amount',
-        }));
-      } else if (value === '') {
+      const numericValue = parseFloat(value); // Convert to number for validation
+
+      if (value === '') {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
           amountPaid: 'Amount should not be empty',
+        }));
+      } else if (!Number.isNaN(numericValue) && numericValue > balanceAmount) {
+        setErrorMsg((prevMsg) => ({
+          ...prevMsg,
+          amountPaid: 'Amount exceeds balance amount',
         }));
       } else {
         setErrorMsg((prevMsg) => ({
@@ -156,44 +172,35 @@ const MakePaymentNewInvoice = ({
 
   // hanlde submit fn
   const handleSubmit = () => {
-    // Map over invoices and update amountPaid field without mutating the original array
+    // Convert amount to a number (if valid) and update invoices
     const filteredInvoices = invoices?.map((invoice) => ({
       ...invoice,
-      amount: Number(paymentData?.amount),
+      amount: Number(paymentData?.amount) || 0, // Ensure a valid number
     }));
 
     // Update paymentData with filtered invoices
     const updatedPaymentData = {
       ...paymentData,
+      amount: Number(paymentData?.amount) || 0, // Ensure numeric value
       invoices: filteredInvoices,
     };
 
-    // validation
-    if (updatedPaymentData.paymentMode === '') {
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        paymentMode: 'Required! Please select payment mode',
-      }));
-    } else {
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        paymentMode: '',
-      }));
+    const errorsMsg = {};
+
+    // Validation for payment mode
+    if (!updatedPaymentData.paymentMode) {
+      errorsMsg.paymentMode = 'Required! Please select payment mode';
     }
 
-    if (updatedPaymentData.amount === '') {
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        amountPaid: 'Required!, Amount should not be empty',
-      }));
-    } else {
-      setErrorMsg((prevMsg) => ({
-        ...prevMsg,
-        amountPaid: '',
-      }));
+    // Validation for amount
+    if (!updatedPaymentData.amount) {
+      errorsMsg.amountPaid = 'Required! Amount should not be empty';
     }
 
-    if (Object.values(errorMsg).some((msg) => msg === '')) {
+    setErrorMsg(errorsMsg);
+
+    // If there are no errors, proceed with submission
+    if (Object.keys(errorsMsg).length === 0) {
       createPaymentMutationFn.mutate(updatedPaymentData);
     }
   };
