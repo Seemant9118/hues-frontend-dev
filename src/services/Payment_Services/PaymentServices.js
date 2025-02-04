@@ -12,8 +12,16 @@ export const getPaymentsList = (id) => {
 };
 
 // 3.get invoices for payments
-export const getInvoicesForPayments = (id) => {
-  return APIinstance.get(`${paymentApi.getInvoicesForPayments.endpoint}${id}`);
+export const getInvoicesForPayments = (id, invoiceId) => {
+  if (invoiceId) {
+    return APIinstance.get(
+      `${paymentApi.getInvoicesForPayments.endpoint}${id}?invoiceId=${invoiceId}`,
+    );
+  } else {
+    return APIinstance.get(
+      `${paymentApi.getInvoicesForPayments.endpoint}${id}`,
+    );
+  }
 };
 
 // 4. get payments for invoiceId

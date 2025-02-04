@@ -114,21 +114,33 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
       invoicesForPayments?.invoicedTotalDueAmount,
     );
 
-    setPaymentData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (name === 'amount') {
+      // Allow only numbers & decimals, treating "0" as valid text input
+      if (/^\d*\.?\d*$/.test(value)) {
+        setPaymentData((prevData) => ({
+          ...prevData,
+          [name]: value, // Keep as string to preserve leading zeros
+        }));
+      }
+    } else {
+      setPaymentData((prevData) => ({
+        ...prevData,
+        [name]: value, // Keep as string to preserve leading zeros
+      }));
+    }
 
     if (name === 'amount') {
-      if (value > balanceAmount) {
-        setErrorMsg((prevMsg) => ({
-          ...prevMsg,
-          amountPaid: 'Amount exceeds balance amount',
-        }));
-      } else if (value === '') {
+      const numericValue = parseFloat(value); // Convert to number for validation
+
+      if (value === '') {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
           amountPaid: 'Amount should not be empty',
+        }));
+      } else if (!Number.isNaN(numericValue) && numericValue > balanceAmount) {
+        setErrorMsg((prevMsg) => ({
+          ...prevMsg,
+          amountPaid: 'Amount exceeds balance amount',
         }));
       } else {
         setErrorMsg((prevMsg) => ({
