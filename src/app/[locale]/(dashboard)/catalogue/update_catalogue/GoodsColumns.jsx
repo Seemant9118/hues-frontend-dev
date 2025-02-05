@@ -4,11 +4,15 @@ import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export const useGoodsColumnsForCatalogue = (
   selectedGoodsItems,
   setSelectedGoodsItems,
 ) => {
+  const translations = useTranslations(
+    'catalogue.components.update.table.goods.header',
+  );
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     const catalogueWithGoods = {
@@ -86,7 +90,10 @@ export const useGoodsColumnsForCatalogue = (
     {
       accessorKey: 'productName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PRODUCT" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('product')}
+        />
       ),
       cell: ({ row }) => {
         const { description, productName } = row.original;
@@ -101,25 +108,31 @@ export const useGoodsColumnsForCatalogue = (
     {
       accessorKey: 'manufacturerName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="MANUFACTURER" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('manufacturer')}
+        />
       ),
     },
     {
       accessorKey: 'hsnCode',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="HSN CODE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('hsnCode')}
+        />
       ),
     },
     {
       accessorKey: 'rate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="RATE" />
+        <DataTableColumnHeader column={column} title={translations('rate')} />
       ),
     },
     {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GST (%)" />
+        <DataTableColumnHeader column={column} title={translations('gst')} />
       ),
     },
   ];

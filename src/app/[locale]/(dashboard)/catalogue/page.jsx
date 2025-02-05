@@ -17,13 +17,11 @@ import {
   searhedCatalogues,
 } from '@/services/Catalogue_Services/CatalogueServices';
 import { useQuery } from '@tanstack/react-query';
-
 import { debounce } from '@/appUtils/helperFunctions';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-
 import { useRouter } from '@/i18n/routing';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -98,11 +96,11 @@ const Catalogue = () => {
   // handle export catalogue click
   const handleExportCatalogue = () => {
     if (selectedCatalogue.length === 0) {
-      toast.error('Please select atleast One Catalogue to export');
+      toast.error(translations('toast.messages.export.error'));
       return;
     }
     // api call to export catalogues
-    toast.success('Selected Catalogue exported');
+    toast.success(translations('toast.messages.export.success'));
   };
 
   // columns
@@ -138,7 +136,7 @@ const Catalogue = () => {
                         {translations('ctas.update')}
                       </Button>
                     }
-                    content={'Update a Catalogue'}
+                    content={translations('ctas.tooltips.update')}
                   />
 
                   <Tooltips
@@ -152,7 +150,7 @@ const Catalogue = () => {
                         <Upload size={14} />
                       </Button>
                     }
-                    content={translations('ctas.comingSoon')}
+                    content={translations('ctas.tooltips.comingSoon')}
                   />
                   <Tooltips
                     trigger={
@@ -160,7 +158,7 @@ const Catalogue = () => {
                         <Eye size={14} />
                       </Button>
                     }
-                    content={translations('ctas.comingSoon')}
+                    content={translations('ctas.tooltips.comingSoon')}
                   />
 
                   <Tooltips
@@ -169,7 +167,7 @@ const Catalogue = () => {
                         <Share2 size={14} />
                       </Button>
                     }
-                    content={translations('ctas.comingSoon')}
+                    content={translations('ctas.tooltips.comingSoon')}
                   />
 
                   <Tooltips
@@ -188,7 +186,7 @@ const Catalogue = () => {
                         mutationFunc={bulkDeleteCatalogueItems}
                       />
                     }
-                    content={translations('ctas.remove')}
+                    content={translations('ctas.tooltips.remove')}
                   />
                 </div>
               </div>
@@ -206,7 +204,7 @@ const Catalogue = () => {
                       <ListFilter size={14} />
                     </Button>
                   }
-                  content={'Filter feature Coming Soon...'}
+                  content={translations('ctas.tooltips.comingSoon')}
                 />
               </div>
 
@@ -247,7 +245,7 @@ const Catalogue = () => {
                         {translations('ctas.update')}
                       </Button>
                     }
-                    content={'Update a Catalogue'}
+                    content={translations('ctas.tooltips.update')}
                   />
                 </div>
               )}

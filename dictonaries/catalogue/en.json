@@ -8,8 +8,73 @@
         "ctas": {
             "comingSoon": "This feature Coming Soon...",
             "update": "Update",
-            "remove": "Remove a Selected Catalogue",
-            "searchPlaceHolder": "Search..."
+            "searchPlaceHolder": "Search...",
+            "tooltips": {
+                "comingSoon": "This feature Coming Soon...",
+                "update": "Update a Catalogue",
+                "remove": "Remove a Selected Catalogue"
+            }
+        },
+        "toast": {
+            "messages": {
+                "export": {
+                    "error": "Please select atleast One Catalogue to export",
+                    "success": "Selected Catalogue exported"
+                },
+                "update": {
+                    "success": "Catalogue Updated Successfully",
+                    "error": "Please select at least one item to add to the catalogue."
+                }
+            }
+        },
+        "components": {
+            "update": {
+                "title": "Update Catalogue",
+                "ctas": {
+                    "add_new_item": "Add a new item",
+                    "searchPlaceHolder": "Search...",
+                    "itemType": {
+                        "goods": "Goods",
+                        "services": "Service"
+                    },
+                    "close": "Close",
+                    "add": "Add to Catalogue",
+                    "tooltips": {
+                        "add_new_item": "Add items to the catalogue",
+                        "selectItemType": "Select item type to add in the catalogue"
+                    }
+                },
+                "emptyStateComponent": {
+                    "emptyItemMaster": {
+                        "title": "No items available in Item Master",
+                        "desc": "You haven't added any item in the inventory. Start by clicking on the add item button"
+                    },
+                    "emptyItemMasterToAdd": {
+                        "title": "All items are in the catalogue. Create a new one?",
+                        "desc": "All existing items are already listed in the catalogue, Start by clicking on the add item button"
+                    }
+                },
+                "table": {
+                    "goods": {
+                        "header": {
+                            "product": "PRODUCT",
+                            "manufacturer": "MANUFACTURER",
+                            "hsnCode": "HSN CODE",
+                            "rate": "RATE",
+                            "gst": "GST (%)"
+                        }
+                    },
+                    "services": {
+                        "header": {
+                            "serviceName": "SERVICE NAME",
+                            "sac": "SAC",
+                            "description": "DESCRIPTION",
+                            "rate": "RATE",
+                            "gst": "GST (%)"
+                        }
+                    }
+                }
+            }
         },
         "table": {
             "header": {

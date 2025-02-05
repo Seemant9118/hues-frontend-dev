@@ -1,24 +1,89 @@
 {
     "catalogue": {
-        "title": "कैटलॉग",
+        "title": "सूची",
         "emptyStateComponent": {
-            "heading": "कोई कैटलॉग उपलब्ध नहीं है",
-            "description": "आपने कोई कैटलॉग नहीं बनाया है। शुरू करने के लिए अपडेट बटन पर क्लिक करें"
+            "heading": "कोई सूची उपलब्ध नहीं है",
+            "description": "आपने कोई सूची नहीं बनाई है। अद्यतन बटन पर क्लिक करके शुरुआत करें"
         },
         "ctas": {
             "comingSoon": "यह सुविधा जल्द ही आ रही है...",
-            "update": "अपडेट करें",
-            "remove": "चयनित कैटलॉग हटाएं",
-            "searchPlaceHolder": "खोजें..."
+            "update": "अद्यतन करें",
+            "searchPlaceHolder": "खोजें...",
+            "tooltips": {
+                "comingSoon": "यह सुविधा जल्द ही आ रही है...",
+                "update": "सूची को अद्यतन करें",
+                "remove": "चयनित सूची को हटाएं"
+            }
+        },
+        "toast": {
+            "messages": {
+                "export": {
+                    "error": "कृपया निर्यात करने के लिए कम से कम एक सूची चुनें",
+                    "success": "चयनित सूची निर्यात की गई"
+                },
+                "update": {
+                    "success": "सूची सफलतापूर्वक अद्यतन की गई",
+                    "error": "कृपया सूची में जोड़ने के लिए कम से कम एक आइटम चुनें।"
+                }
+            }
+        },
+        "components": {
+            "update": {
+                "title": "सूची अद्यतन करें",
+                "ctas": {
+                    "add_new_item": "नया आइटम जोड़ें",
+                    "searchPlaceHolder": "खोजें...",
+                    "itemType": {
+                        "goods": "सामान",
+                        "services": "सेवा"
+                    },
+                    "close": "बंद करें",
+                    "add": "सूची में जोड़ें",
+                    "tooltips": {
+                        "add_new_item": "सूची में आइटम जोड़ें",
+                        "selectItemType": "सूची में जोड़ने के लिए आइटम प्रकार चुनें"
+                    }
+                },
+                "emptyStateComponent": {
+                    "emptyItemMaster": {
+                        "title": "आइटम मास्टर में कोई आइटम उपलब्ध नहीं है",
+                        "desc": "आपने कोई आइटम इन्वेंट्री में नहीं जोड़ा है। आइटम जोड़ने के लिए बटन पर क्लिक करके शुरुआत करें"
+                    },
+                    "emptyItemMasterToAdd": {
+                        "title": "सभी आइटम सूची में हैं। नया जोड़ना चाहेंगे?",
+                        "desc": "सभी मौजूदा आइटम पहले ही सूची में हैं, नया जोड़ने के लिए आइटम जोड़ें बटन पर क्लिक करें"
+                    }
+                },
+                "table": {
+                    "goods": {
+                        "header": {
+                            "product": "सामान",
+                            "manufacturer": "निर्माता",
+                            "hsnCode": "HSN कोड",
+                            "rate": "दर",
+                            "gst": "GST (%)"
+                        }
+                    },
+                    "services": {
+                        "header": {
+                            "serviceName": "सेवा का नाम",
+                            "sac": "SAC",
+                            "description": "विवरण",
+                            "rate": "दर",
+                            "gst": "GST (%)"
+                        }
+                    }
+                }
+            }
         },
         "table": {
             "header": {
                 "item": "आइटम",
                 "type": "प्रकार",
-                "sku": "एसकेयू",
+                "sku": "SKU",
                 "manufacturer": "निर्माता",
-                "hsnSac": "एचएसएन/एसएसी",
-                "price": "मूल्य"
+                "hsnSac": "HSN/SAC",
+                "price": "कीमत"
             },
             "columnActions": {
                 "remove": "हटाएं"

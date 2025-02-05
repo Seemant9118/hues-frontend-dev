@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
   createUpdateCatalogue,
@@ -28,8 +29,8 @@ import { GetAllProductGoods } from '@/services/Inventories_Services/Goods_Invent
 import { GetAllProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useGoodsColumnsForCatalogue } from './GoodsColumns';
@@ -37,10 +38,13 @@ import { useServicesColumnsForCatalogue } from './ServicesColumns';
 
 const UpdateCatalogue = () => {
   useMetaData('Hues! - Update Catalogue', 'HUES CATALOGUE'); // dynamic title
-  const router = useRouter();
-  const queryClient = useQueryClient();
+
+  const translations = useTranslations('catalogue');
 
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [selectedGoodsItems, setSelectedGoodsItems] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
   const [selectedServicesItems, setSelectedServicesItems] = useState([]);
@@ -155,14 +159,14 @@ const UpdateCatalogue = () => {
   const catalogueBreadCrumbs = [
     {
       id: 1,
-      name: 'Catalogue',
-      path: '/catalogue',
+      name: translations('title'),
+      path: `/catalogue`,
       show: true, // Always show
     },
     {
       id: 2,
-      name: 'Update Catalogue',
-      path: '/catalogue/update_catalogue',
+      name: translations('components.update.title'),
+      path: `/catalogue/update_catalogue`,
       show: true, // Always show
     },
   ];
@@ -174,7 +178,7 @@ const UpdateCatalogue = () => {
     ],
     mutationFn: createUpdateCatalogue,
     onSuccess: () => {
-      toast.success('Catalogue Updated Successfully');
+      toast.success(translations('toast.messages.update.success'));
       router.push('/catalogue/');
       queryClient.invalidateQueries([
         catalogueApis.getCatalogues.endpointKey,
@@ -201,7 +205,7 @@ const UpdateCatalogue = () => {
         data: { items: selectedItemToCreateCatalogue },
       });
     } else {
-      toast.error('Please select at least one item to add to the catalogue.');
+      toast.error(translations('toast.messages.update.error'));
     }
   };
 
@@ -231,16 +235,21 @@ const UpdateCatalogue = () => {
                   }}
                 >
                   <Plus size={14} />
-                  Add a new item
+                  {translations('components.update.ctas.add_new_item')}
                 </Button>
               }
-              content={'Add items to the catalogue'}
+              content={translations(
+                'components.update.ctas.tooltips.add_new_item',
+              )}
             />
           </div>
           {/* body : [TODO] : add subHeader and table with selected items and also edited item of price for each column */}
           {/* Header2 action */}
           <div className="flex w-full gap-24 py-2">
             <SearchInput
+              searchPlaceholder={translations(
+                'components.update.ctas.searchPlaceHolder',
+              )}
               className="w-[28rem]"
               toSearchTerm={searchTerm}
               setToSearchTerm={setSearchTerm}
@@ -259,12 +268,18 @@ const UpdateCatalogue = () => {
                     <SelectValue placeholder="Select Item Type" />
                   </SelectTrigger>
                 }
-                content={'Select item type to add in the catalogue'}
+                content={translations(
+                  'components.update.ctas.tooltips.selectItemType',
+                )}
               />
 
               <SelectContent>
-                <SelectItem value="goods">Goods</SelectItem>
-                <SelectItem value="services">Services</SelectItem>
+                <SelectItem value="goods">
+                  {translations('components.update.ctas.itemType.goods')}
+                </SelectItem>
+                <SelectItem value="services">
+                  {translations('components.update.ctas.itemType.services')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -300,13 +315,13 @@ const UpdateCatalogue = () => {
                     router.push('/catalogue');
                   }}
                 >
-                  Close
+                  {translations('components.update.ctas.close')}
                 </Button>
                 <Button size="sm" onClick={handleCreateCatalogue}>
                   {createCatalogueMutation.isPending ? (
                     <Loading />
                   ) : (
-                    'Add to Catalogue'
+                    translations('components.update.ctas.add')
                   )}
                 </Button>
               </div>
@@ -328,12 +343,14 @@ const UpdateCatalogue = () => {
                   alt="emptyIcon"
                 />
                 <p className="font-bold">
-                  All items are in the catalogue. Create a new one?
+                  {translations(
+                    'components.update.emptyStateComponent.emptyItemMasterToAdd.title',
+                  )}
                 </p>
                 <p className="max-w-96 text-center">
-                  {
-                    'All existing items are already listed in the catalogue, Start by clicking on the add item button'
-                  }
+                  {translations(
+                    'components.update.emptyStateComponent.emptyItemMasterToAdd.desc',
+                  )}
                 </p>
 
                 <Tooltips
@@ -351,10 +368,12 @@ const UpdateCatalogue = () => {
                         );
                       }}
                     >
-                      Add a new item
+                      {translations('components.update.ctas.add_new_item')}
                     </Button>
                   }
-                  content={'Add items to the catalogue'}
+                  content={translations(
+                    'components.update.ctas.tooltips.add_new_item',
+                  )}
                 />
               </div>
             )}
@@ -370,9 +389,15 @@ const UpdateCatalogue = () => {
                   height={100}
                   alt="emptyIcon"
                 />
-                <p className="font-bold">No items available in Inventory</p>
+                <p className="font-bold">
+                  {translations(
+                    'components.update.emptyStateComponent.emptyItemMaster.title',
+                  )}
+                </p>
                 <p className="max-w-96 text-center">
-                  {`You haven't added any item in the inventory. Start by clicking on the add item button`}
+                  {translations(
+                    'components.update.emptyStateComponent.emptyItemMaster.desc',
+                  )}
                 </p>
 
                 <Tooltips
@@ -390,10 +415,12 @@ const UpdateCatalogue = () => {
                         );
                       }}
                     >
-                      Add a new item
+                      {translations('components.update.ctas.add_new_item')}
                     </Button>
                   }
-                  content={'Add items to the catalogue'}
+                  content={translations(
+                    'components.update.ctas.tooltips.add_new_item',
+                  )}
                 />
               </div>
             )}

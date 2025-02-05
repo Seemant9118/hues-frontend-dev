@@ -2,11 +2,15 @@
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslations } from 'next-intl';
 
 export const useServicesColumnsForCatalogue = (
   selectedServicesItems,
   setSelectedServicesItems,
 ) => {
+  const translations = useTranslations(
+    'catalogue.components.update.table.services.header',
+  );
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     const catalogueWithServices = {
@@ -83,19 +87,25 @@ export const useServicesColumnsForCatalogue = (
     {
       accessorKey: 'serviceName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SERVICE NAME" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('serviceName')}
+        />
       ),
     },
     {
       accessorKey: 'sac',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SAC" />
+        <DataTableColumnHeader column={column} title={translations('sac')} />
       ),
     },
     {
       accessorKey: 'description',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DESCRIPTION" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('description')}
+        />
       ),
       cell: ({ row }) => {
         const { description } = row.original;
@@ -105,13 +115,13 @@ export const useServicesColumnsForCatalogue = (
     {
       accessorKey: 'rate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="RATE" />
+        <DataTableColumnHeader column={column} title={translations('rate')} />
       ),
     },
     {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GST (%)" />
+        <DataTableColumnHeader column={column} title={translations('gst')} />
       ),
     },
   ];
