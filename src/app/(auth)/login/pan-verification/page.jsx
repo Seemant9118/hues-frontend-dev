@@ -13,7 +13,7 @@ import {
   userUpdate,
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Info } from 'lucide-react';
+import { Info, InfoIcon } from 'lucide-react';
 
 import { userAuth } from '@/api/user_auth/Users';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
@@ -26,6 +26,7 @@ import AuthProgress from '../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
   const userID = LocalStorageService.get('user_profile');
+  const attemptsRemaining = LocalStorageService.get('attemptsRemaining');
 
   const { updateAuthProgress } = useAuthProgress();
 
@@ -254,6 +255,7 @@ const PanVerificationPage = () => {
                   name="panNumber"
                   value={userData.panNumber}
                   onChange={handleChange}
+                  disabled={attemptsRemaining === 0}
                 />
                 {/* if api is in pendingState then visible */}
                 {(isPanDetailsLoading || isPanDetailsFetching) && (
@@ -268,11 +270,31 @@ const PanVerificationPage = () => {
               {!isPanDetailsLoading && errorMsg?.panNumber && (
                 <ErrorBox msg={errorMsg?.panNumber} />
               )}
+
+              {!errorMsg?.panNumber && (
+                <div className="text-xs font-semibold">
+                  {Math.max(
+                    attemptsRemaining ?? 0,
+                    panDetails?.remainingAttempts ?? 0,
+                  ) > 0 ? (
+                    <div className="flex items-center gap-1 text-primary">
+                      <InfoIcon size={14} />
+                      {`You have ${panDetails?.remainingAttempts ?? attemptsRemaining ?? 0} attempts left to verify your PAN`}
+                    </div>
+                  ) : (
+                    <div className="text-red-600">
+                      You have exhausted your daily limit to verify your PAN,
+                      please try again later.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm">
                 <Checkbox
+                  disabled={attemptsRemaining === 0}
                   checked={userData.isTermsAndConditionApplied}
                   onCheckedChange={() => setIsTandCModalOpen(true)}
                 />
@@ -369,7 +391,8 @@ const PanVerificationPage = () => {
                 userUpdatemutation.isPending ||
                 errorPanDetails ||
                 isPanDetailsLoading ||
-                isPanDetailsFetching
+                isPanDetailsFetching ||
+                attemptsRemaining === 0
               }
             >
               {userUpdatemutation.isPending ||
