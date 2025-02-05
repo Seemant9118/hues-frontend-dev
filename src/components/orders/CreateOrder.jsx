@@ -534,8 +534,8 @@ const CreateOrder = ({
       )}
 
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        {/* client type only showed in sales not purchase */}
-        {cta === 'offer' && (
+        {/* client type only showed in sales invoices not in sales/purchase offer */}
+        {cta === 'offer' && isOrder === 'invoice' && (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
               {'Client Type'}
@@ -562,32 +562,34 @@ const CreateOrder = ({
           </div>
         )}
 
-        {/* customer flow only show in sales */}
-        {cta === 'offer' && order.clientType === 'B2C' && (
-          <div className="flex w-1/2 flex-col gap-2">
-            <Label className="flex gap-1">
-              {'Customer'}
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex w-full flex-col gap-1">
-              <CreatableSelect
-                value={
-                  options?.find((option) => option.value === order.buyerId) ||
-                  null
-                }
-                onChange={handleChange}
-                onCreateOption={handleCreate}
-                styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
-                isClearable
-                placeholder="Customer Number"
-                options={options}
-              />
+        {/* customer flow only show in sales invoices not in offer/bid creation */}
+        {cta === 'offer' &&
+          isOrder === 'invoice' &&
+          order.clientType === 'B2C' && (
+            <div className="flex w-1/2 flex-col gap-2">
+              <Label className="flex gap-1">
+                {'Customer'}
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex w-full flex-col gap-1">
+                <CreatableSelect
+                  value={
+                    options?.find((option) => option.value === order.buyerId) ||
+                    null
+                  }
+                  onChange={handleChange}
+                  onCreateOption={handleCreate}
+                  styles={getStylesForSelectComponent()}
+                  className="max-w-xs text-sm"
+                  isClearable
+                  placeholder="Customer Number"
+                  options={options}
+                />
 
-              {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+                {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {cta === 'offer' ? (
           order.clientType === 'B2B' && (
