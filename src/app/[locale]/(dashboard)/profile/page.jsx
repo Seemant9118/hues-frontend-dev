@@ -4,6 +4,7 @@ import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
@@ -128,6 +129,7 @@ function Profile() {
           <TabsTrigger value="enterpriseOverview">
             Enterprise Overview
           </TabsTrigger>
+          <TabsTrigger value="languages">Languages</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
 
@@ -613,6 +615,9 @@ function Profile() {
               </div>
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="languages">
+          <LanguagesSwitcher />
         </TabsContent>
 
         <TabsContent value="permissions">Coming Soon...</TabsContent>
