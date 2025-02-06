@@ -21,7 +21,8 @@ import {
   searchedClients,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookCheck, BookUser, Key, Upload, UserPlus } from 'lucide-react';
+import { Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,37 +36,19 @@ const UploadItems = dynamic(
 // MACROS
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
-// Emtpy state data
-const ClientsEmptyStageData = {
-  heading: `~"Streamline sales with our Clients feature, integrating customer data for direct inventory offers
-  and full catalog visibility."`,
-  subHeading: 'Features',
-  subItems: [
-    {
-      id: 1,
-      icon: <UserPlus size={14} />,
-      subItemtitle: `Easily add client details to your database.`,
-    },
-    {
-      id: 2,
-      icon: <Key size={14} />,
-      subItemtitle: `Offer inventory directly to clients with full product access.`,
-    },
-    {
-      id: 3,
-      icon: <BookCheck size={14} />,
-      subItemtitle: `Keep clients updated, fostering transparency and trust.`,
-    },
-    {
-      id: 4,
-      icon: <BookUser size={14} />,
-      subItemtitle: `Listed clients get automatic catalog access, simplifying sales.`,
-    },
-  ],
-};
 
 const ClientPage = () => {
   useMetaData('Hues! - Clients', 'HUES CLIENTS'); // dynamic title
+
+  const translations = useTranslations('client');
+  // next-intl supports only object keys, not arrays. Use object keys for subItems.
+  const keys = [
+    'client.emptyStateComponent.subItems.subItem1',
+    'client.emptyStateComponent.subItems.subItem2',
+    'client.emptyStateComponent.subItems.subItem3',
+    'client.emptyStateComponent.subItems.subItem4',
+  ];
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -184,7 +167,7 @@ const ClientPage = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Clients'}></SubHeader>
+          <SubHeader name={translations('title')}></SubHeader>
           <RestrictedComponent />
         </>
       )}
@@ -192,9 +175,10 @@ const ClientPage = () => {
         <div>
           <Wrapper>
             {!isUploading && (
-              <SubHeader name={'Clients'}>
+              <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
                   <SearchInput
+                    searchPlaceholder={translations('ctas.searchPlaceHolder')}
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
@@ -206,10 +190,10 @@ const ClientPage = () => {
                         onClick={() => setIsUploading(true)}
                       >
                         <Upload size={14} />
-                        Upload
+                        {translations('ctas.upload')}
                       </Button>
                     }
-                    content={'Upload clients data in bulk'}
+                    content={translations('ctas.tooltips.upload')}
                   />
 
                   <Tooltips
@@ -222,10 +206,10 @@ const ClientPage = () => {
                         }
                       >
                         <Upload size={14} />
-                        Export
+                        {translations('ctas.export')}
                       </Button>
                     }
-                    content={'Export clients data'}
+                    content={translations('ctas.tooltips.export')}
                   />
 
                   <Tooltips
@@ -233,11 +217,11 @@ const ClientPage = () => {
                       <AddModal
                         type={'Add'}
                         cta="client"
-                        btnName="Add"
+                        btnName={translations('ctas.add')}
                         mutationFunc={createClient}
                       />
                     }
-                    content={'Add a new client'}
+                    content={translations('ctas.tooltips.add')}
                   />
                 </div>
               </SubHeader>
@@ -255,10 +239,8 @@ const ClientPage = () => {
                 />
               ) : (
                 <EmptyStageComponent
-                  heading={ClientsEmptyStageData.heading}
-                  desc={ClientsEmptyStageData.desc}
-                  subHeading={ClientsEmptyStageData.subHeading}
-                  subItems={ClientsEmptyStageData.subItems}
+                  heading={translations('emptyStateComponent.heading')}
+                  subItems={keys}
                 />
               ))}
           </Wrapper>

@@ -1,0 +1,15 @@
+{
+    "components": {
+        "generate_link": {
+            "ctas_staus": {
+                "pending": "लिंक",
+                "accepted": "सक्रिय",
+                "rejected": "अस्वीकृत"
+            },
+            "toasts": {
+                "success": "लिंक जनरेट हुआ और क्लिपबोर्ड में कॉपी किया गया",
+                "error": "कुछ गलत हो गया"
+            }
+        }
+    }
+}

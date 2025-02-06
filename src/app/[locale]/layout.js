@@ -1,8 +1,8 @@
 import QueryWrapper from '@/components/wrappers/QueryWrapper';
 import { CountNotificationsProvider } from '@/context/CountNotificationsContext';
+import { NextIntlClientProvider } from 'next-intl';
 import { Toaster } from 'sonner';
 import './globals.css';
-import { NextIntlClientProvider } from 'next-intl';
 import NotFound from './not-found';
 
 // Font files can be colocated inside of `app`
@@ -31,12 +31,22 @@ export default async function RootLayout({ children, params: { locale } }) {
       `../../../dictonaries/catalogue/${locale}.json`
     );
 
+    const clientMessages = await import(
+      `../../../dictonaries/client/${locale}.json`
+    );
+
+    const componentsMessages = await import(
+      `../../../dictonaries/components/${locale}.json`
+    );
+
     // Merge the dashboard and sidebar messages into one object
     messages = {
       ...dashboardMessages,
       ...sidebarMessages,
       ...inventoryMessages,
       ...catalogueMessages,
+      ...clientMessages,
+      ...componentsMessages,
     };
   } catch (error) {
     NotFound(); // Handle the error by showing a 404 page

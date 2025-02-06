@@ -1,0 +1,15 @@
+{
+    "components": {
+        "generate_link": {
+            "ctas_staus": {
+                "pending": "LINK",
+                "accepted": "ACTIVE",
+                "rejected": "REJECTED"
+            },
+            "toasts": {
+                "success": "Link Generated & Copied to clipboard",
+                "error": "Something went wrong"
+            }
+        }
+    }
+}

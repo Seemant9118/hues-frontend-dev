@@ -4,7 +4,12 @@ import React from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 
-const ResendInvitation = ({ invalidateQuery, invitationId, mutationFunc }) => {
+const ResendInvitation = ({
+  btnName,
+  invalidateQuery,
+  invitationId,
+  mutationFunc,
+}) => {
   const queryClient = useQueryClient();
   const resendInvitaionMutaion = useMutation({
     mutationFn: mutationFunc,
@@ -30,7 +35,7 @@ const ResendInvitation = ({ invalidateQuery, invitationId, mutationFunc }) => {
       // className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
     >
       <UserRoundPlus size={14} />
-      Resend
+      {btnName}
     </Button>
   );
 };
