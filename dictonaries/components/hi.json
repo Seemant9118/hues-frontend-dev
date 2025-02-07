@@ -151,6 +151,13 @@
                     "save": "लागू करें"
                 }
             }
+        },
+        "profilePopUpInfo": {
+            "viewProfileCta": "प्रोफ़ाइल देखें",
+            "enterprises": "उद्यम",
+            "addAnotherCta": "एक और उद्यम जोड़ें",
+            "logoutCta": "लॉगआउट",
+            "accessDeniedCta": "पहुँच अस्वीकृत"
         }
     }
 }

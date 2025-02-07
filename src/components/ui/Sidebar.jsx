@@ -158,11 +158,11 @@ const Sidebar = () => {
         ))}
         <ProfileInfoPopUp
           ctaName={'sidebar.profile'}
-          viewProfileCta={'sidebar.profilePopUpInfo.viewProfileCta'}
-          enterprises={'sidebar.profilePopUpInfo.enterprises'}
-          addAnotherCta={'sidebar.profilePopUpInfo.addAnotherCta'}
-          logoutCta={'sidebar.profilePopUpInfo.logoutCta'}
-          accessDeniedCta={'sidebar.profilePopUpInfo.accessDeniedCta'}
+          viewProfileCta={'components.profilePopUpInfo.viewProfileCta'}
+          enterprises={'components.profilePopUpInfo.enterprises'}
+          addAnotherCta={'components.profilePopUpInfo.addAnotherCta'}
+          logoutCta={'components.profilePopUpInfo.logoutCta'}
+          accessDeniedCta={'components.profilePopUpInfo.accessDeniedCta'}
         />
       </div>
     </div>

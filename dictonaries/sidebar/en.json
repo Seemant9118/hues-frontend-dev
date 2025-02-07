@@ -15,13 +15,6 @@
             "orders": "Orders",
             "invoices": "Invoices",
             "debitNotes": "Debit Notes"
-        },
-        "profilePopUpInfo": {
-            "viewProfileCta": "View Profile",
-            "enterprises": "Enteprises",
-            "addAnotherCta": "Add another enterprise",
-            "logoutCta": "Logout",
-            "accessDeniedCta": "Access Denied"
         }
     }
 }

@@ -15,13 +15,6 @@
             "orders": "आदेश",
             "invoices": "चालान",
             "debitNotes": "डेबिट नोट्स"
-        },
-        "profilePopUpInfo": {
-            "viewProfileCta": "प्रोफ़ाइल देखें",
-            "enterprises": "उद्यम",
-            "addAnotherCta": "दूसरा उद्यम जोड़ें",
-            "logoutCta": "लॉगआउट",
-            "accessDeniedCta": "पहुंच अस्वीकृत"
         }
     }
 }

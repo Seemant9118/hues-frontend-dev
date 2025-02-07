@@ -21,11 +21,13 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Info, Pencil, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 function Profile() {
+  const translations = useTranslations('profile');
   const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -55,7 +57,7 @@ function Profile() {
         updateEnterpriseDetails?.identifierNum,
       ),
     onSuccess: () => {
-      toast.success('Enterprise Details Updated Successfully');
+      toast.success(translations('toasts.update.successMsg'));
       setUpdateEnterpriseDetails({
         identifierType: '',
         identifierNum: '',
@@ -67,7 +69,11 @@ function Profile() {
       queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
     },
     onError: () => {
-      toast.error(`Invalid ${updateEnterpriseDetails?.identifierType}`);
+      toast.error(
+        translations('toasts.update.errorMsg', {
+          type: updateEnterpriseDetails?.identifierType,
+        }),
+      );
     },
   });
   // Handle tab change
@@ -82,10 +88,14 @@ function Profile() {
     onSuccess: (res) => {
       LocalStorageService.clear();
       router.push('/login');
-      toast.success(res.data.message || 'User Logged Out');
+      toast.success(
+        res.data.message || translations('toasts.logout.successMsg'),
+      );
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('toasts.logout.errorMsg'),
+      );
     },
   });
 
@@ -114,7 +124,7 @@ function Profile() {
     <Wrapper className="h-full gap-8">
       <SubHeader name="Profile">
         <Button size="sm" variant="blue_outline" onClick={logout}>
-          Logout
+          {translations('ctas.logout')}
         </Button>
       </SubHeader>
 
@@ -125,12 +135,18 @@ function Profile() {
         defaultValue={'userOverview'}
       >
         <TabsList className="w-fit border">
-          <TabsTrigger value="userOverview">Overview</TabsTrigger>
-          <TabsTrigger value="enterpriseOverview">
-            Enterprise Overview
+          <TabsTrigger value="userOverview">
+            {translations('tabs.label.tab1')}
           </TabsTrigger>
-          <TabsTrigger value="languages">Languages</TabsTrigger>
-          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+          <TabsTrigger value="enterpriseOverview">
+            {translations('tabs.label.tab2')}
+          </TabsTrigger>
+          <TabsTrigger value="languages">
+            {translations('tabs.label.tab3')}
+          </TabsTrigger>
+          <TabsTrigger value="permissions">
+            {translations('tabs.label.tab4')}
+          </TabsTrigger>
         </TabsList>
 
         {/* ---checks : for if user skips */}
@@ -149,7 +165,7 @@ function Profile() {
                 router.push('/login/userOnboarding');
               }}
             >
-              Complete
+              {translations('ctas.pendingActionsForCompletion.complete')}
             </Button>
           </div>
         )}
@@ -168,7 +184,7 @@ function Profile() {
                   router.push('/login/enterpriseOnboardingSearch');
                 }}
               >
-                Complete
+                {translations('ctas.pendingActionsForCompletion.complete')}
               </Button>
             </div>
           )}
@@ -191,7 +207,7 @@ function Profile() {
                   router.push('/login/kyc');
                 }}
               >
-                Start Kyc
+                {translations('ctas.pendingActionsForCompletion.startkyc')}
               </Button>
             </div>
           )}
@@ -213,7 +229,7 @@ function Profile() {
                   router.push('/login/isDirector');
                 }}
               >
-                Complete
+                {translations('ctas.pendingActionsForCompletion.complete')}
               </Button>
             </div>
           )}
@@ -236,7 +252,7 @@ function Profile() {
                   router.push('/login/kyc');
                 }}
               >
-                Complete
+                {translations('ctas.pendingActionsForCompletion.complete')}
               </Button>
             </div>
           )}
@@ -249,23 +265,33 @@ function Profile() {
               <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]"></div>
               <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">PAN Card Number</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.pan')}
+                  </Label>
                   <span className="text-lg font-bold">{'XXXXXX1234'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Full Name</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.name')}
+                  </Label>
                   <span className="text-lg font-bold">{'Your Full Name'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Type</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.type')}
+                  </Label>
                   <span className="text-lg font-bold">{'Individual'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Mobile Number</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.mobile')}
+                  </Label>
                   <span className="text-lg font-bold">+91 {'9876543210'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Email Address</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.email')}
+                  </Label>
                   <span className="text-lg font-bold">
                     {'youremail@gmail.com'}
                   </span>
@@ -284,9 +310,15 @@ function Profile() {
                     {getInitialsNames(profileDetails?.userDetails?.user?.name)}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold">Profile Picture</span>
+                    <span className="text-sm font-bold">
+                      {translations(
+                        'tabs.content.tab1.profilePicSection.title',
+                      )}
+                    </span>
                     <span className="text-xs text-grey">
-                      JPEG and PNG format
+                      {translations(
+                        'tabs.content.tab1.profilePicSection.format',
+                      )}
                     </span>
                   </div>
                 </div>
@@ -294,7 +326,9 @@ function Profile() {
                   <Tooltips
                     trigger={
                       <Button size="sm" variant="blue_outline" disabled>
-                        Upload
+                        {translations(
+                          'tabs.content.tab1.profilePicSection.ctas.upload',
+                        )}
                       </Button>
                     }
                     content={'This feature Coming Soon...'}
@@ -303,7 +337,9 @@ function Profile() {
                   <Tooltips
                     trigger={
                       <Button size="sm" variant="outline" disabled>
-                        Delete
+                        {translations(
+                          'tabs.content.tab1.profilePicSection.ctas.delete',
+                        )}
                       </Button>
                     }
                     content={'This feature Coming Soon...'}
@@ -312,29 +348,39 @@ function Profile() {
               </div>
               <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">PAN Card Number</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.pan')}
+                  </Label>
                   <span className="text-lg font-bold">
                     {profileDetails?.userDetails?.user?.panNumber}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Full Name</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.name')}
+                  </Label>
                   <span className="text-lg font-bold">
                     {profileDetails?.userDetails?.user?.name}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Type</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.type')}
+                  </Label>
                   <span className="text-lg font-bold">{'Individual'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Mobile Number</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.mobile')}
+                  </Label>
                   <span className="text-lg font-bold">
                     +91 {profileDetails?.userDetails?.user?.mobileNumber}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Email Address</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab1.label.email')}
+                  </Label>
                   <span className="text-lg font-bold">
                     {profileDetails?.userDetails?.email ?? '-'}
                   </span>
@@ -351,35 +397,49 @@ function Profile() {
               <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm bg-[#dedede88]"></div>
               <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">PAN Card Number</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.pan')}
+                  </Label>
                   <span className="text-lg font-bold">{'XXXXXX1234'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Full Name</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.name')}
+                  </Label>
                   <span className="text-lg font-bold">
                     {'Your Enterprise Name'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Type</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.type')}
+                  </Label>
                   <span className="text-lg font-bold">{'pvt. ltd.'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Mobile Number</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.mobile')}
+                  </Label>
                   <span className="text-lg font-bold">+91 {'9876543210'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Email Address</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.email')}
+                  </Label>
                   <span className="text-lg font-bold">
                     {'yourenterprise@gmail.com'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">GST IN</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.gst')}
+                  </Label>
                   <span className="text-lg font-bold">{'XXXXXXXXXXXX'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">UDYAM</Label>
+                  <Label className="text-xs">
+                    {translations('tabs.content.tab2.label.udyam')}
+                  </Label>
                   <span className="text-lg font-bold">{'XXXXXXXXXXXX'}</span>
                 </div>
               </div>
@@ -396,9 +456,15 @@ function Profile() {
                     {getInitialsNames(profileDetails?.enterpriseDetails?.name)}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold">Enterprise Logo</span>
+                    <span className="text-sm font-bold">
+                      {translations(
+                        'tabs.content.tab2.profilePicSection.title',
+                      )}
+                    </span>
                     <span className="text-xs text-grey">
-                      JPEG and PNG format
+                      {translations(
+                        'tabs.content.tab2.profilePicSection.format',
+                      )}
                     </span>
                   </div>
                 </div>
@@ -406,7 +472,9 @@ function Profile() {
                   <Tooltips
                     trigger={
                       <Button size="sm" variant="blue_outline" disabled>
-                        Upload
+                        {translations(
+                          'tabs.content.tab2.profilePicSection.ctas.upload',
+                        )}
                       </Button>
                     }
                     content={'This feature Coming Soon...'}
@@ -415,7 +483,9 @@ function Profile() {
                   <Tooltips
                     trigger={
                       <Button size="sm" variant="outline" disabled>
-                        Delete
+                        {translations(
+                          'tabs.content.tab2.profilePicSection.ctas.delete',
+                        )}
                       </Button>
                     }
                     content={'This feature Coming Soon...'}

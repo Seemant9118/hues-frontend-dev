@@ -1,0 +1,91 @@
+{
+    "profile": {
+        "title": "Profile",
+        "ctas": {
+            "logout": "Logout",
+            "pendingActionsForCompletion": {
+                "complete": "Complete",
+                "startkyc": "Start KYC"
+            }
+        },
+        "tabs": {
+            "label": {
+                "tab1": "Overview",
+                "tab2": "Enterprise Overview",
+                "tab3": "Languages",
+                "tab4": "Permissions"
+            },
+            "content": {
+                "tab1": {
+                    "label": {
+                        "pan": "PAN Card Number",
+                        "name": "Full Name",
+                        "type": "Type",
+                        "mobile": "Mobile Number",
+                        "email": "Email Address"
+                    },
+                    "dummyData": {
+                        "name": "Your Full Name",
+                        "type": "Individual"
+                    },
+                    "profilePicSection": {
+                        "title": "Profile Picture",
+                        "format": "JPEG and PNG format",
+                        "ctas": {
+                            "upload": "Upload",
+                            "delete": "Delete"
+                        }
+                    }
+                },
+                "tab2": {
+                    "label": {
+                        "pan": "PAN Card Number",
+                        "name": "Full Name",
+                        "type": "Type",
+                        "mobile": "Mobile Number",
+                        "email": "Email Address",
+                        "gst": "GST IN",
+                        "udyam": "UDYAM"
+                    },
+                    "input": {
+                        "gst": {
+                            "placeholder": "Update GST IN"
+                        },
+                        "udyam": {
+                            "placeholder": "Update UDYAM"
+                        }
+                    },
+                    "ctas": {
+                        "cancel": "Cancel",
+                        "update": "Update"
+                    },
+                    "dummyData": {
+                        "name": "Your Enterprise Name",
+                        "type": "pvt. ltd."
+                    },
+                    "profilePicSection": {
+                        "title": "Enterprise Logo",
+                        "format": "JPEG and PNG format",
+                        "ctas": {
+                            "upload": "Upload",
+                            "delete": "Delete"
+                        }
+                    },
+                    "heading1": "Enterprise Information",
+                    "heading2": "Business Identification"
+                },
+                "tab3": "Coming Soon"
+            }
+        },
+        "toasts": {
+            "update": {
+                "successMsg": "Enterprise Details Updated Successfully",
+                "errorMsg": "Invalid {type}"
+            },
+            "logout": {
+                "successMsg": "User Logged Out",
+                "errorMsg": "Something went wrong"
+            }
+        }
+    }
+}
