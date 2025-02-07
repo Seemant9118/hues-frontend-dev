@@ -23,8 +23,9 @@ import {
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { InfiniteNotificationTable } from './InfiniteNotificationTable';
-import { NotificationColumns } from './NotificationsColumns';
+import { useNotificationColumns } from './useNotificationsColumns';
 
 // macros
 const PAGE_LIMIT = 10;
@@ -36,6 +37,8 @@ const Notification = () => {
     `Hues! - Notifications (${totalUnreadNotifications})`,
     'HUES NOTIFICATIONS',
   ); // dynamic title
+
+  const translations = useTranslations('notification');
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -54,7 +57,9 @@ const Notification = () => {
     mutationKey: [notificationApi.updateNotifications.endpointKey],
     mutationFn: updateNotification,
     onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error?.response?.data?.message || translations('common.errorMsg'),
+      );
     },
   });
 
@@ -67,7 +72,7 @@ const Notification = () => {
       // Show the alert popup
       setAlertData({
         isShow: true,
-        infoText: 'Invitation no longer exists',
+        infoText: translations('common.invitation_notifications.not_exist'),
       });
     } else if (isInvitationRejected && !isCurrNotificationIsRead) {
       // Update the read status using mutation
@@ -76,7 +81,7 @@ const Notification = () => {
       // Show the alert popup
       setAlertData({
         isShow: true,
-        infoText: 'Invitation no longer exists',
+        infoText: translations('common.invitation_notifications.not_exist'),
       });
     } else if (!isInvitationRejected && isCurrNotificationIsRead) {
       // Navigate to the deep link
@@ -171,18 +176,21 @@ const Notification = () => {
     [isFetching, fetchNextPage, hasNextPage, currFetchedPage, totalPages],
   );
 
+  // columns
+  const NotificationColumns = useNotificationColumns();
+
   return (
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Notifications'}></SubHeader>
+          <SubHeader name={translations('title')}></SubHeader>
           <RestrictedComponent />
         </>
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
         <Wrapper>
           <SubHeader
-            name="Notifications"
+            name={translations('title')}
             className="z-10 flex justify-between bg-white"
           >
             <NotificationFilterPopUp

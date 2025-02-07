@@ -39,6 +39,10 @@ export default async function RootLayout({ children, params: { locale } }) {
       `../../../dictonaries/vendor/${locale}.json`
     );
 
+    const notificationsMessages = await import(
+      `../../../dictonaries/notification/${locale}.json`
+    );
+
     const componentsMessages = await import(
       `../../../dictonaries/components/${locale}.json`
     );
@@ -51,6 +55,7 @@ export default async function RootLayout({ children, params: { locale } }) {
       ...catalogueMessages,
       ...clientMessages,
       ...vendorMessages,
+      ...notificationsMessages,
       ...componentsMessages,
     };
   } catch (error) {

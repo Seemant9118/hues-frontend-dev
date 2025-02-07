@@ -1,0 +1,18 @@
+{
+    "notification": {
+        "title": "सूचनाएं",
+        "table": {
+            "header": {
+                "notifications": "सूचनाएं",
+                "recieved": "प्राप्त समय",
+                "type": "प्रकार"
+            }
+        },
+        "common": {
+            "errorMsg": "कुछ गलत हो गया",
+            "invitation_notifications": {
+                "not_exist": "निमंत्रण अब अस्तित्व में नहीं है"
+            }
+        }
+    }
+}

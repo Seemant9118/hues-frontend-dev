@@ -1,0 +1,18 @@
+{
+    "notification": {
+        "title": "Notifications",
+        "table": {
+            "header": {
+                "notifications": "NOTIFICATIONS",
+                "recieved": "RECIEVED AT",
+                "type": "TYPE"
+            }
+        },
+        "common": {
+            "errorMsg": "Something went wrong",
+            "invitation_notifications": {
+                "not_exist": "Invitation no longer exists"
+            }
+        }
+    }
+}

@@ -121,6 +121,36 @@
                     }
                 }
             }
+        },
+        "notificationsFilter": {
+            "cta": "फ़िल्टर",
+            "title": "फ़िल्टर",
+            "form": {
+                "label": {
+                    "chooseDate": "तारीख़ चुनें",
+                    "from": "से",
+                    "to": "तक",
+                    "chooseType": "प्रकार चुनें",
+                    "types_available": {
+                        "type1": {
+                            "value": "चालान"
+                        },
+                        "type2": {
+                            "value": "आदेश"
+                        },
+                        "type3": {
+                            "value": "निमंत्रण"
+                        },
+                        "type4": {
+                            "value": "आदेश वार्ता"
+                        }
+                    }
+                },
+                "ctas": {
+                    "clear": "साफ़ करें",
+                    "save": "लागू करें"
+                }
+            }
         }
     }
 }

@@ -121,6 +121,36 @@
                     }
                 }
             }
+        },
+        "notificationsFilter": {
+            "cta": "Filters",
+            "title": "Filters",
+            "form": {
+                "label": {
+                    "chooseDate": "Choose Date",
+                    "from": "From",
+                    "to": "To",
+                    "chooseType": "Choose Type",
+                    "types_available": {
+                        "type1": {
+                            "value": "Invoice"
+                        },
+                        "type2": {
+                            "value": "Order"
+                        },
+                        "type3": {
+                            "value": "Invitation"
+                        },
+                        "type4": {
+                            "value": "Order Negotiaion"
+                        }
+                    }
+                },
+                "ctas": {
+                    "clear": "Clear",
+                    "save": "Apply"
+                }
+            }
         }
     }
 }

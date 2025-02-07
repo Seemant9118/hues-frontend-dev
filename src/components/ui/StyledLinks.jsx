@@ -12,6 +12,7 @@ const StyledLinks = ({ link }) => {
   const translations = useTranslations();
 
   const { totalUnreadNotifications } = useNotificationsCount();
+
   const pathname = usePathname();
   const [isSubTabShow, setIsSubTabShow] = useState(null);
 
@@ -55,11 +56,12 @@ const StyledLinks = ({ link }) => {
               {translations(link.name)}
             </div>
 
-            {link.name === 'Notifications' && totalUnreadNotifications > 0 && (
-              <span className="rounded-full bg-[#FF4D4F] px-2 py-1 text-xs text-white">
-                {totalUnreadNotifications}
-              </span>
-            )}
+            {link.name === 'sidebar.notifications' &&
+              totalUnreadNotifications > 0 && (
+                <span className="rounded-full bg-[#FF4D4F] px-2 py-1 text-xs text-white">
+                  {totalUnreadNotifications}
+                </span>
+              )}
           </span>
         </Link>
 
