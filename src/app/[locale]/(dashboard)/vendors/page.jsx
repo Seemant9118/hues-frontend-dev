@@ -21,7 +21,8 @@ import {
   searchedVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookUser, Eye, HeartHandshake, Settings, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -36,37 +37,18 @@ const UploadItems = dynamic(
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
 
-// Emtpy state data
-const VendorsEmptyStageData = {
-  heading: `~"Simplify procurement with our Vendors feature, offering immediate access to detailed vendor
-  catalogs for efficient transactions."`,
-  subHeading: 'Features',
-  subItems: [
-    {
-      id: 1,
-      icon: <BookUser size={14} />,
-      subItemtitle: `Register vendors with essential details easily.`,
-    },
-    {
-      id: 2,
-      icon: <Settings size={14} />,
-      subItemtitle: `Automatically access vendor catalogs within your purchasing workflow.`,
-    },
-    {
-      id: 3,
-      icon: <Eye size={14} />,
-      subItemtitle: `Leverage vendor visibility for informed bids and streamlined purchases`,
-    },
-    {
-      id: 4,
-      icon: <HeartHandshake size={14} />,
-      subItemtitle: `Foster robust vendor relationships with tailored product engagement.`,
-    },
-  ],
-};
-
 const VendorsPage = () => {
   useMetaData('Hues! - Vendors', 'HUES VENDORS'); // dynamic title
+
+  const translations = useTranslations('vendor');
+
+  const keys = [
+    'vendor.emptyStateComponent.subItems.subItem1',
+    'vendor.emptyStateComponent.subItems.subItem2',
+    'vendor.emptyStateComponent.subItems.subItem3',
+    'vendor.emptyStateComponent.subItems.subItem4',
+  ];
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -185,7 +167,7 @@ const VendorsPage = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name={'Vendors'}></SubHeader>
+          <SubHeader name={translations('title')}></SubHeader>
           <RestrictedComponent />
         </>
       )}
@@ -193,9 +175,10 @@ const VendorsPage = () => {
         <div>
           <Wrapper>
             {!isUploading && (
-              <SubHeader name={'Vendors'}>
+              <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
                   <SearchInput
+                    searchPlaceholder={translations('ctas.searchPlaceHolder')}
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
@@ -207,10 +190,10 @@ const VendorsPage = () => {
                         onClick={() => setIsUploading(true)}
                       >
                         <Upload size={14} />
-                        Upload
+                        {translations('ctas.upload')}
                       </Button>
                     }
-                    content={'Upload vendors data in bulk'}
+                    content={translations('ctas.tooltips.upload')}
                   />
                   <Tooltips
                     trigger={
@@ -222,10 +205,10 @@ const VendorsPage = () => {
                         }
                       >
                         <Upload size={14} />
-                        Export
+                        {translations('ctas.export')}
                       </Button>
                     }
-                    content={'Export vendors data'}
+                    content={translations('ctas.tooltips.export')}
                   />
 
                   <Tooltips
@@ -233,11 +216,11 @@ const VendorsPage = () => {
                       <AddModal
                         type={'Add'}
                         cta="vendor"
-                        btnName="Add"
+                        btnName={translations('ctas.add')}
                         mutationFunc={createVendor}
                       />
                     }
-                    content={'Add a new vendor'}
+                    content={translations('ctas.tooltips.add')}
                   />
                 </div>
               </SubHeader>
@@ -255,10 +238,8 @@ const VendorsPage = () => {
                 />
               ) : (
                 <EmptyStageComponent
-                  heading={VendorsEmptyStageData.heading}
-                  desc={VendorsEmptyStageData.desc}
-                  subHeading={VendorsEmptyStageData.subHeading}
-                  subItems={VendorsEmptyStageData.subItems}
+                  heading={translations('emptyStateComponent.heading')}
+                  subItems={keys}
                 />
               ))}
           </Wrapper>

@@ -17,14 +17,20 @@ import {
   resendInvitation,
 } from '@/services/Invitation_Service/Invitation_Service';
 import { MoreVertical, Pencil } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 export const useVendorsColumns = () => {
+  const translations = useTranslations('vendor');
+
   return [
     {
       accessorKey: 'name',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="NAME" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.name')}
+        />
       ),
     },
     // {
@@ -40,7 +46,10 @@ export const useVendorsColumns = () => {
     {
       accessorKey: 'mobileNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PHONE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.phone')}
+        />
       ),
       cell: ({ row }) => {
         const { mobileNumber } = row.original;
@@ -50,7 +59,10 @@ export const useVendorsColumns = () => {
     {
       accessorKey: 'email',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="EMAIL" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.email')}
+        />
       ),
       cell: ({ row }) => {
         const { email } = row.original;
@@ -60,7 +72,10 @@ export const useVendorsColumns = () => {
     {
       accessorKey: 'panNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PAN" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.pan')}
+        />
       ),
     },
     // {
@@ -72,7 +87,10 @@ export const useVendorsColumns = () => {
     {
       accessorKey: 'invitation',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="INVITATION" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.invitation')}
+        />
       ),
       cell: ({ row }) => {
         const id = row.original.invitationId;
@@ -107,6 +125,7 @@ export const useVendorsColumns = () => {
               <DropdownMenuContent align="end" className="max-w-fit">
                 {invitationStatus === 'REJECTED' && (
                   <ResendInvitation
+                    btnName={translations('table.column.actions.resend')}
                     invalidateQuery={vendorEnterprise.getVendors.endpointKey}
                     invitationId={invitationId}
                     mutationFunc={resendInvitation}
@@ -123,7 +142,7 @@ export const useVendorsColumns = () => {
                       }}
                     >
                       <Pencil size={14} />
-                      Edit
+                      {translations('table.column.actions.edit')}
                     </Button>
                     {isEditing && (
                       <EditModal

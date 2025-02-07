@@ -10,6 +10,117 @@
                 "success": "Link Generated & Copied to clipboard",
                 "error": "Something went wrong"
             }
+        },
+        "upload": {
+            "title": "Upload",
+            "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
+            "noteInfo": "Note - Trade enabled for eSigned inventories only.",
+            "selectCta": "Select",
+            "sampleCta": "Sample",
+            "backCta": "View",
+            "messages": {
+                "uploadSuccessMsg": "Upload Successfully"
+            }
+        },
+        "addEditModal": {
+            "common": {
+                "form": {
+                    "label": {
+                        "identifiers": {
+                            "identifier_type": "Identifier Type",
+                            "identifier_number": "Identifier Number"
+                        },
+                        "addNewEntity": {
+                            "name": "Name",
+                            "gst": "GST IN",
+                            "email": "Email",
+                            "phone": "Phone",
+                            "pan": "PAN",
+                            "address": "Address"
+                        }
+                    },
+                    "input": {
+                        "select": {
+                            "pan": "PAN",
+                            "gst": "GST"
+                        }
+                    },
+                    "errorMsg": {
+                        "identifiers": {
+                            "pan": "Please complete the PAN to proceed",
+                            "gst": "Please complete the GST number to proceed"
+                        },
+                        "addNewEntity": {
+                            "name": "Required Name",
+                            "phone": {
+                                "required": "Required Phone",
+                                "valid": "Please enter a valid mobile number"
+                            },
+                            "email": "Please provide valid Email",
+                            "pan": {
+                                "required": "Required PAN",
+                                "valid": "Please provide valid PAN Number"
+                            }
+                        }
+                    },
+                    "infoMsg": {
+                        "toSearch": "Type an identifier to search",
+                        "enterprise_not_available": "Enterprise not available."
+                    },
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "Continue to add new entity",
+                            "invite": "Invite",
+                            "sent": "Invite sent"
+                        },
+                        "addNewEntity": {
+                            "cancel": "Cancel",
+                            "add": "Add",
+                            "edit": "Edit"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "invitation": "Invitation sent successfully",
+                            "entityAdded": "Entity Added Successfully",
+                            "edited": "Edit Successfully"
+                        },
+                        "error": {
+                            "common": "Something went wrong"
+                        }
+                    }
+                }
+            },
+            "client": {
+                "title": "CLIENT",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "Continue to add new client"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "Client Added Successfully"
+                        }
+                    }
+                }
+            },
+            "vendor": {
+                "title": "VENDOR",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "Continue to add new vendor"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "Vendor Added Successfully"
+                        }
+                    }
+                }
+            }
         }
     }
 }

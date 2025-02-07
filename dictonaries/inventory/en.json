@@ -29,14 +29,6 @@
             "uploadSuccessMsg": "Upload Successfully"
         },
         "components": {
-            "upload": {
-                "title": "Upload",
-                "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
-                "noteInfo": "Note - Trade enabled for eSigned inventories only.",
-                "selectCta": "Select",
-                "sampleCta": "Sample",
-                "backCta": "View"
-            },
             "add": {
                 "title": "Item",
                 "label": {
@@ -109,14 +101,6 @@
             "uploadSuccessMsg": "Upload Successfully"
         },
         "components": {
-            "upload": {
-                "title": "Upload",
-                "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
-                "noteInfo": "Note - Trade enabled for eSigned inventories only.",
-                "selectCta": "Select",
-                "sampleCta": "Sample",
-                "backCta": "View"
-            },
             "add": {
                 "title": "Item",
                 "label": {

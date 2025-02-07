@@ -7,8 +7,119 @@
                 "rejected": "अस्वीकृत"
             },
             "toasts": {
-                "success": "लिंक जनरेट हुआ और क्लिपबोर्ड में कॉपी किया गया",
+                "success": "लिंक उत्पन्न हुआ और क्लिपबोर्ड में कॉपी किया गया",
                 "error": "कुछ गलत हो गया"
+            }
+        },
+        "upload": {
+            "title": "अपलोड",
+            "uploadInfo": "फ़ाइल को खींचकर छोड़ें या चुनें (अधिकतम 10MB, .csv/.xlsx प्रारूप)",
+            "noteInfo": "नोट - केवल eSigned इन्वेंट्री के लिए व्यापार सक्षम है।",
+            "selectCta": "चयन करें",
+            "sampleCta": "नमूना",
+            "backCta": "देखें",
+            "messages": {
+                "uploadSuccessMsg": "सफलतापूर्वक अपलोड हुआ"
+            }
+        },
+        "addEditModal": {
+            "common": {
+                "form": {
+                    "label": {
+                        "identifiers": {
+                            "identifier_type": "पहचान प्रकार",
+                            "identifier_number": "पहचान संख्या"
+                        },
+                        "addNewEntity": {
+                            "name": "नाम",
+                            "gst": "जीएसटी नंबर",
+                            "email": "ईमेल",
+                            "phone": "फोन",
+                            "pan": "पैन",
+                            "address": "पता"
+                        }
+                    },
+                    "input": {
+                        "select": {
+                            "pan": "पैन",
+                            "gst": "जीएसटी"
+                        }
+                    },
+                    "errorMsg": {
+                        "identifiers": {
+                            "pan": "कृपया आगे बढ़ने के लिए पैन पूरा करें",
+                            "gst": "कृपया आगे बढ़ने के लिए जीएसटी नंबर पूरा करें"
+                        },
+                        "addNewEntity": {
+                            "name": "आवश्यक नाम",
+                            "phone": {
+                                "required": "आवश्यक फोन",
+                                "valid": "कृपया एक मान्य मोबाइल नंबर दर्ज करें"
+                            },
+                            "email": "कृपया मान्य ईमेल प्रदान करें",
+                            "pan": {
+                                "required": "आवश्यक पैन",
+                                "valid": "कृपया मान्य पैन नंबर प्रदान करें"
+                            }
+                        }
+                    },
+                    "infoMsg": {
+                        "toSearch": "खोजने के लिए एक पहचानकर्ता टाइप करें",
+                        "enterprise_not_available": "उपलब्ध नहीं है।"
+                    },
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "नए इकाई को जोड़ने के लिए जारी रखें",
+                            "invite": "आमंत्रित करें",
+                            "sent": "आमंत्रण भेजा गया"
+                        },
+                        "addNewEntity": {
+                            "cancel": "रद्द करें",
+                            "add": "जोड़ें",
+                            "edit": "संपादित करें"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "invitation": "आमंत्रण सफलतापूर्वक भेजा गया",
+                            "entityAdded": "इकाई सफलतापूर्वक जोड़ी गई",
+                            "edited": "सफलतापूर्वक संपादित किया गया"
+                        },
+                        "error": {
+                            "common": "कुछ गलत हो गया"
+                        }
+                    }
+                }
+            },
+            "client": {
+                "title": "ग्राहक",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "नए ग्राहक को जोड़ने के लिए जारी रखें"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "ग्राहक सफलतापूर्वक जोड़ा गया"
+                        }
+                    }
+                }
+            },
+            "vendor": {
+                "title": "विक्रेता",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "नए विक्रेता को जोड़ने के लिए जारी रखें"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "विक्रेता सफलतापूर्वक जोड़ा गया"
+                        }
+                    }
+                }
             }
         }
     }

@@ -16,7 +16,7 @@ import SubHeader from '../ui/Sub-header';
 import Wrapper from '../wrappers/Wrapper';
 
 const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
-  const translations = useTranslations('goods');
+  const translations = useTranslations('components.upload');
 
   const handleFileRemove = () => {
     setisUploading(false);
@@ -91,7 +91,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
           onClick={() => setisUploading(false)}
         />
 
-        <SubHeader name={translations('components.upload.title')} />
+        <SubHeader name={translations('title')} />
       </div>
 
       <div className="flex grow flex-col items-center justify-center gap-4">
@@ -105,16 +105,16 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
               <UploadCloud className="text-sky-500" size={40} />
               <div className="flex flex-col gap-1">
                 <p className="text-xs font-medium text-darkText">
-                  {translations('components.upload.uploadInfo')}
+                  {translations('uploadInfo')}
                 </p>
                 <p className="text-xs font-normal text-sky-500">
-                  {translations('components.upload.noteInfo')}
+                  {translations('noteInfo')}
                 </p>
               </div>
             </div>
             <Button variant="blue_outline">
               <Upload />
-              {translations('components.upload.selectCta')}
+              {translations('selectCta')}
             </Button>
           </div>
         </FileUploader>
@@ -122,7 +122,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
         <Button asChild variant="outline" className="w-full max-w-[700px]">
           <a download={sampleFileName} href={sampleFileUrl}>
             <Download />
-            {translations('components.upload.sampleCta')}
+            {translations('sampleCta')}
           </a>
         </Button>
 
@@ -144,7 +144,7 @@ const UploadItems = ({ type, uploadFile, files, setisUploading, setFiles }) => {
               </div>
             </div>
             <Button variant="ghost" onClick={handleFileRemove}>
-              Back to View
+              {translations('backCta')}
             </Button>
           </div>
         ))}

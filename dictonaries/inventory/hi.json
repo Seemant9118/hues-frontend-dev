@@ -29,14 +29,6 @@
             "uploadSuccessMsg": "सफलतापूर्वक अपलोड किया गया"
         },
         "components": {
-            "upload": {
-                "title": "अपलोड करें",
-                "uploadInfo": "फाइल को खींचें और ड्रॉप करें या एक फ़ाइल चुनें (अधिकतम 10MB, .csv/.xlsx प्रारूप)",
-                "noteInfo": "नोट - केवल eSigned सूची के लिए व्यापार सक्षम है।",
-                "selectCta": "चुनें",
-                "sampleCta": "नमूना",
-                "backCta": "देखें"
-            },
             "add": {
                 "title": "आइटम",
                 "label": {
@@ -109,14 +101,6 @@
             "uploadSuccessMsg": "सफलतापूर्वक अपलोड किया गया"
         },
         "components": {
-            "upload": {
-                "title": "अपलोड करें",
-                "uploadInfo": "फाइल को खींचें और ड्रॉप करें या एक फ़ाइल चुनें (अधिकतम 10MB, .csv/.xlsx प्रारूप)",
-                "noteInfo": "नोट - केवल eSigned सूची के लिए व्यापार सक्षम है।",
-                "selectCta": "चुनें",
-                "sampleCta": "नमूना",
-                "backCta": "देखें"
-            },
             "add": {
                 "title": "आइटम",
                 "label": {
