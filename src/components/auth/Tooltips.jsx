@@ -9,7 +9,7 @@ export default function Tooltips({ trigger, content }) {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger type="button">{trigger}</TooltipTrigger>
+        <TooltipTrigger asChild>{trigger}</TooltipTrigger>
         <TooltipContent>
           <p>{content}</p>
         </TooltipContent>

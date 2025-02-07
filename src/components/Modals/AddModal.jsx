@@ -265,7 +265,7 @@ const AddModal = ({ cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
     >
       {isOpen === undefined && (
         <DialogTrigger asChild>
-          <Button variant={'blue_outline'} size="sm" className="w-full">
+          <Button variant={'blue_outline'} size="sm">
             <Layers2 size={14} />
             {btnName}
           </Button>
