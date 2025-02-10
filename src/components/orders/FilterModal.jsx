@@ -8,6 +8,7 @@ import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterpri
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, ListFilter } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { Button } from '../ui/button';
@@ -29,6 +30,7 @@ const FilterModal = ({
   setFilterData,
   setPaginationData,
 }) => {
+  const translations = useTranslations('components.filter');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [isOpen, setIsOpen] = useState(false);
@@ -115,19 +117,49 @@ const FilterModal = ({
 
   // options data: status
   const optionsForSales = [
-    { value: 'BID_RECEIVED', label: 'Bid received' },
-    { value: 'OFFER_SENT', label: 'Offer sent' },
-    { value: 'ACCEPTED', label: 'Accepted' },
-    { value: 'REJECTED', label: 'Rejected' },
-    { value: 'WITHDRAWN', label: 'Withdrawn' },
+    {
+      value: 'BID_RECEIVED',
+      label: translations('form.input.select_status.options.option1'),
+    },
+    {
+      value: 'OFFER_SENT',
+      label: translations('form.input.select_status.options.option2'),
+    },
+    {
+      value: 'ACCEPTED',
+      label: translations('form.input.select_status.options.option3'),
+    },
+    {
+      value: 'REJECTED',
+      label: translations('form.input.select_status.options.option4'),
+    },
+    {
+      value: 'WITHDRAWN',
+      label: translations('form.input.select_status.options.option5'),
+    },
   ];
 
   const optionsForPurchase = [
-    { value: 'BID_SENT', label: 'Bid sent' },
-    { value: 'OFFER_RECEIVED', label: 'Offer received' },
-    { value: 'ACCEPTED', label: 'Accepted' },
-    { value: 'REJECTED', label: 'Rejected' },
-    { value: 'WITHDRAWN', label: 'Withdrawn' },
+    {
+      value: 'BID_SENT',
+      label: translations('form.input.select_status.options.option6'),
+    },
+    {
+      value: 'OFFER_RECEIVED',
+      label: translations('form.input.select_status.options.option7'),
+    },
+    {
+      value: 'ACCEPTED',
+      label: translations('form.input.select_status.options.option3'),
+    },
+    {
+      value: 'REJECTED',
+      label: translations('form.input.select_status.options.option4'),
+    },
+    {
+      value: 'WITHDRAWN',
+      label: translations('form.input.select_status.options.option5'),
+    },
   ];
   // value : status
   const valueStatus = filters.status.map((status) => ({
@@ -252,18 +284,20 @@ const FilterModal = ({
           size="sm"
         >
           <ListFilter size={14} />
-          <span>Filter</span>
+          <span>{translations('title')}</span>
         </Button>
       </DialogTrigger>
 
       <DialogContent className="flex flex-col justify-center gap-5">
-        <DialogTitle>Filter</DialogTitle>
+        <DialogTitle>{translations('title')}</DialogTitle>
 
         <form className="flex flex-col gap-4">
           {/* select date filter */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
-              <Label className="text-[#A5ABBD]">Select Date</Label>
+              <Label className="text-[#A5ABBD]">
+                {translations('form.label.select_date')}
+              </Label>
               <span
                 onClick={() => {
                   setFilters((prev) => ({
@@ -277,7 +311,7 @@ const FilterModal = ({
                 }}
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
-                Clear
+                {translations('form.label.clear')}
               </span>
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -323,7 +357,9 @@ const FilterModal = ({
           {/* select range amount */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
-              <Label className="text-[#A5ABBD]">Select Amount Range</Label>
+              <Label className="text-[#A5ABBD]">
+                {translations('form.label.select_amount_range')}
+              </Label>
               <span
                 onClick={() => {
                   setFilters((prev) => ({
@@ -337,7 +373,7 @@ const FilterModal = ({
                 }}
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
-                Clear
+                {translations('form.label.clear')}
               </span>
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -404,18 +440,20 @@ const FilterModal = ({
           {/* select status : multi select  */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
-              <Label className="text-[#A5ABBD]">Select Status</Label>
+              <Label className="text-[#A5ABBD]">
+                {translations('form.label.select_status')}
+              </Label>
               <span
                 onClick={() => setFilters((prev) => ({ ...prev, status: [] }))}
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
-                Clear
+                {translations('form.label.clear')}
               </span>
             </span>
             <Select
               isMulti
               name="status"
-              placeholder="Select status..."
+              placeholder={translations('form.label.select_status')}
               options={isSalesFilter ? optionsForSales : optionsForPurchase}
               className="text-sm"
               classNamePrefix="select"
@@ -428,7 +466,9 @@ const FilterModal = ({
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
               <Label className="text-[#A5ABBD]">
-                {isSalesFilter ? 'Select Client' : 'Select Vendor'}
+                {isSalesFilter
+                  ? translations('form.label.select_client')
+                  : 'Select Vendor'}
               </Label>
               <span
                 onClick={() =>
@@ -436,14 +476,16 @@ const FilterModal = ({
                 }
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
-                Clear
+                {translations('form.label.clear')}
               </span>
             </span>
             <Select
               isMulti
               name="status"
               placeholder={
-                isSalesFilter ? 'Select Client...' : 'Select Vendor...'
+                isSalesFilter
+                  ? translations('form.label.select_client')
+                  : 'Select Vendor...'
               }
               options={isSalesFilter ? updatedClientData : updatedVendorData}
               className="text-sm"
@@ -458,14 +500,16 @@ const FilterModal = ({
           {/* select invoice generated */}
           <div className="flex flex-col gap-2">
             <span className="flex justify-between">
-              <Label className="text-[#A5ABBD]">Invoice Generated</Label>
+              <Label className="text-[#A5ABBD]">
+                {translations('form.label.invoice_generated')}
+              </Label>
               <span
                 onClick={() =>
                   setFilters((prev) => ({ ...prev, invoiceStatus: '' }))
                 }
                 className="cursor-pointer text-xs font-bold text-primary hover:underline"
               >
-                Clear
+                {translations('form.label.clear')}
               </span>
             </span>
             <RadioGroup
@@ -498,14 +542,14 @@ const FilterModal = ({
               className="w-24 hover:bg-neutral-600/10"
               size="sm"
             >
-              Reset
+              {translations('form.ctas.reset')}
             </Button>
             <Button
               onClick={handleSubmit}
               className="w-24 bg-[#288AF9]"
               size="sm"
             >
-              Apply
+              {translations('form.ctas.apply')}
             </Button>
           </div>
         </form>

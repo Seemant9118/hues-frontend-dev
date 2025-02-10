@@ -23,14 +23,8 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import {
-  DatabaseZap,
-  FileCheck,
-  FileText,
-  KeySquare,
-  PlusCircle,
-  Upload,
-} from 'lucide-react';
+import { PlusCircle, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -47,37 +41,18 @@ const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
 
 // macros
 const PAGE_LIMIT = 10;
-const SaleEmptyStageData = {
-  heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
-  signatures."`,
-  subHeading: 'Features',
-  subItems: [
-    {
-      id: 1,
-      icon: <FileCheck size={14} />,
-      subItemtitle: `Initiate sales and deals by receiving bids or making offers.`,
-    },
-    // { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
-    {
-      id: 3,
-      icon: <FileText size={14} />,
-      subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.`,
-    },
-    {
-      id: 4,
-      icon: <KeySquare size={14} />,
-      subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.`,
-    },
-    {
-      id: 5,
-      icon: <DatabaseZap size={14} />,
-      subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. `,
-    },
-  ],
-};
 
 const SalesInvoices = () => {
   useMetaData('Hues! - Sales Invoices', 'HUES INVOICES'); // dynamic title
+
+  const translations = useTranslations('sales.sales-invoices');
+  const keys = [
+    'sales.sales-invoices.emtpyStateComponent.subItems.subItem1',
+    'sales.sales-invoices.emtpyStateComponent.subItems.subItem2',
+    'sales.sales-invoices.emtpyStateComponent.subItems.subItem3',
+    'sales.sales-invoices.emtpyStateComponent.subItems.subItem4',
+  ];
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -238,10 +213,12 @@ const SalesInvoices = () => {
     onSuccess: (response) => {
       const blobData = response.data;
       downloadBlobFile(blobData, 'sales_invoices.xlsx');
-      toast.success('Invoice exported and downloaded successfully');
+      toast.success(translations('ctas.export.successMsg'));
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('ctas.export.errorMsg'),
+      );
     },
   });
   // handle export order click
@@ -256,7 +233,7 @@ const SalesInvoices = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name="Invoices" />
+          <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
@@ -266,7 +243,7 @@ const SalesInvoices = () => {
           {!isCreatingInvoice && (
             <Wrapper className="h-full">
               <SubHeader
-                name={'Invoices'}
+                name={translations('title')}
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-3">
@@ -282,11 +259,7 @@ const SalesInvoices = () => {
                         <Upload size={14} />
                       </Button>
                     }
-                    content={
-                      selectedInvoices?.length > 0
-                        ? 'Export Selected Invoice'
-                        : 'Select a Invoice to export'
-                    }
+                    content={translations('ctas.export.placeholder')}
                   />
 
                   <Tooltips
@@ -297,10 +270,10 @@ const SalesInvoices = () => {
                         size="sm"
                       >
                         <PlusCircle size={14} />
-                        Invoice
+                        {translations('ctas.invoice.cta')}
                       </Button>
                     }
-                    content={'Create a new sales invoice'}
+                    content={translations('ctas.invoice.placeholder')}
                   />
                 </div>
               </SubHeader>
@@ -313,10 +286,14 @@ const SalesInvoices = () => {
                 >
                   <section className="sticky top-14 bg-white">
                     <TabsList className="border">
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="pending">Pending</TabsTrigger>
+                      <TabsTrigger value="all">
+                        {translations('tabs.label.tab1')}
+                      </TabsTrigger>
+                      <TabsTrigger value="pending">
+                        {translations('tabs.label.tab2')}
+                      </TabsTrigger>
                       <TabsTrigger value="debitNotes">
-                        Debit/Credit Notes
+                        {translations('tabs.label.tab3')}
                       </TabsTrigger>
                     </TabsList>
                   </section>
@@ -338,10 +315,8 @@ const SalesInvoices = () => {
                     )}
                     {!isInvoiceLoading && invoiceListing?.length === 0 && (
                       <EmptyStageComponent
-                        heading={SaleEmptyStageData.heading}
-                        desc={SaleEmptyStageData.desc}
-                        subHeading={SaleEmptyStageData.subHeading}
-                        subItems={SaleEmptyStageData.subItems}
+                        heading={translations('emtpyStateComponent.heading')}
+                        subItems={keys}
                       />
                     )}
                   </TabsContent>
@@ -362,10 +337,8 @@ const SalesInvoices = () => {
                     )}
                     {!isInvoiceLoading && invoiceListing?.length === 0 && (
                       <EmptyStageComponent
-                        heading={SaleEmptyStageData.heading}
-                        desc={SaleEmptyStageData.desc}
-                        subHeading={SaleEmptyStageData.subHeading}
-                        subItems={SaleEmptyStageData.subItems}
+                        heading={translations('emtpyStateComponent.heading')}
+                        subItems={keys}
                       />
                     )}
                   </TabsContent>
@@ -388,7 +361,7 @@ const SalesInvoices = () => {
                     {!isInvoiceLoading && invoiceListing?.length === 0 && (
                       <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                         <Image src={emptyImg} alt="emptyIcon" />
-                        <p>No Debit Note Raised</p>
+                        <p>{translations('emtpyStateComponent2.heading')}</p>
                       </div>
                     )}
                   </TabsContent>

@@ -158,6 +158,36 @@
             "addAnotherCta": "Add another enterprise",
             "logoutCta": "Logout",
             "accessDeniedCta": "Access Denied"
+        },
+        "filter": {
+            "title": "Filter",
+            "form": {
+                "label": {
+                    "select_date": "Select Date",
+                    "select_amount_range": "Select Amount Range",
+                    "select_status": "Select Status",
+                    "select_client": "Select Client",
+                    "invoice_generated": "Invoice Generated",
+                    "clear": "Clear"
+                },
+                "input": {
+                    "select_status": {
+                        "options": {
+                            "option1": "Bid Recieved",
+                            "option2": "Offer Sent",
+                            "option3": "Accepted",
+                            "option4": "Rejected",
+                            "option5": "Withdrawn",
+                            "option6": "Bid Sent",
+                            "option7": "Offer Recieved"
+                        }
+                    }
+                },
+                "ctas": {
+                    "apply": "Apply",
+                    "reset": "Reset"
+                }
+            }
         }
     }
 }

@@ -5,8 +5,13 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dot } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
 export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
+  const translations = useTranslations(
+    'purchases.purchase-invoices.table.header',
+  );
+
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     const orderWithCustomer = { ...row.original };
@@ -69,7 +74,10 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
     {
       accessorKey: 'invoiceReferenceNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="INVOICE ID" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('invoice_id')}
+        />
       ),
       cell: ({ row }) => {
         const { invoiceReferenceNumber } = row.original;
@@ -86,7 +94,7 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
     {
       accessorKey: 'invoiceDate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DATE" />
+        <DataTableColumnHeader column={column} title={translations('date')} />
       ),
       cell: ({ row }) => {
         const { invoiceDate } = row.original;
@@ -100,13 +108,19 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
     {
       accessorKey: 'vendorName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="VENDORS" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('vendors')}
+        />
       ),
     },
     {
       accessorKey: 'orderReferenceNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ORDER ID" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('order_id')}
+        />
       ),
       cell: ({ row }) => {
         const { orderReferenceNumber } = row.original;
@@ -121,7 +135,7 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="STATUS" />
+        <DataTableColumnHeader column={column} title={translations('status')} />
       ),
       cell: ({ row }) => {
         const paymentStatus = row.original?.invoiceMetaData?.payment?.status;
@@ -144,7 +158,10 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
     {
       accessorKey: 'totalAmount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="TOTAL AMOUNT" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('total_amount')}
+        />
       ),
       cell: ({ row }) => {
         const { totalAmount } = row.original;

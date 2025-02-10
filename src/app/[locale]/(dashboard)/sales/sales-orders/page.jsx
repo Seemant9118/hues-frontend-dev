@@ -23,14 +23,8 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import {
-  DatabaseZap,
-  FileCheck,
-  FileText,
-  KeySquare,
-  PlusCircle,
-  Upload,
-} from 'lucide-react';
+import { PlusCircle, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -49,37 +43,18 @@ const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
 
 // macros
 const PAGE_LIMIT = 10;
-const SaleEmptyStageData = {
-  heading: `~"Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital
-  signatures."`,
-  subHeading: 'Features',
-  subItems: [
-    {
-      id: 1,
-      icon: <FileCheck size={14} />,
-      subItemtitle: `Initiate sales and deals by receiving bids or making offers.`,
-    },
-    // { id: 2, subItemtitle: `Maximize impact by making or receiving offers on your catalogue.` },
-    {
-      id: 3,
-      icon: <FileText size={14} />,
-      subItemtitle: `Securely negotiate with digitally signed counter-offers and bids.`,
-    },
-    {
-      id: 4,
-      icon: <KeySquare size={14} />,
-      subItemtitle: `Finalize deals with mutual digital signatures for binding commitment.`,
-    },
-    {
-      id: 5,
-      icon: <DatabaseZap size={14} />,
-      subItemtitle: `Effortlessly create and share detailed invoices, completing sales professionally. `,
-    },
-  ],
-};
 
 const SalesOrder = () => {
   useMetaData('Hues! - Sales Orders', 'HUES SALES'); // dynamic title
+
+  const translations = useTranslations('sales.sales-orders');
+  const keys = [
+    'sales.sales-orders.emtpyStateComponent.subItems.subItem1',
+    'sales.sales-orders.emtpyStateComponent.subItems.subItem2',
+    'sales.sales-orders.emtpyStateComponent.subItems.subItem3',
+    'sales.sales-orders.emtpyStateComponent.subItems.subItem4',
+  ];
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -225,10 +200,12 @@ const SalesOrder = () => {
       // Assuming the API response is in Blob format
       const blobData = response.data; // This should be a Blob
       downloadBlobFile(blobData, 'sales_orders.xlsx');
-      toast.success('Order exported and download starts automatically');
+      toast.success(translations('ctas.export.successMsg'));
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error.response?.data?.message || translations('ctas.export.errorMsg'),
+      );
     },
   });
   // handle export order click
@@ -247,7 +224,7 @@ const SalesOrder = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name="Sales" />
+          <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
@@ -256,7 +233,7 @@ const SalesOrder = () => {
           {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
             <Wrapper className="h-full">
               <SubHeader
-                name={'Sales'}
+                name={translations('title')}
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-3">
@@ -272,11 +249,7 @@ const SalesOrder = () => {
                         <Upload size={14} />
                       </Button>
                     }
-                    content={
-                      selectedOrders?.length > 0
-                        ? 'Export Selected Order'
-                        : 'Select a Order to export'
-                    }
+                    content={translations('ctas.export.placeholder')}
                   />
 
                   <Tooltips
@@ -287,10 +260,10 @@ const SalesOrder = () => {
                         size="sm"
                       >
                         <PlusCircle size={14} />
-                        Offer
+                        {translations('ctas.offer.cta')}
                       </Button>
                     }
-                    content={'Create a new sales order'}
+                    content={translations('ctas.offer.placeholder')}
                   />
                 </div>
               </SubHeader>
@@ -302,11 +275,15 @@ const SalesOrder = () => {
                 >
                   <section className="sticky top-14 flex justify-between bg-white">
                     <TabsList className="border">
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="bidReceived">
-                        Bid Recieved
+                      <TabsTrigger value="all">
+                        {translations('tabs.label.tab1')}
                       </TabsTrigger>
-                      <TabsTrigger value="pending">Payment Pending</TabsTrigger>
+                      <TabsTrigger value="bidReceived">
+                        {translations('tabs.label.tab2')}
+                      </TabsTrigger>
+                      <TabsTrigger value="pending">
+                        {translations('tabs.label.tab3')}
+                      </TabsTrigger>
                     </TabsList>
                     <FilterModal
                       isSalesFilter={true}
@@ -333,10 +310,8 @@ const SalesOrder = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={SaleEmptyStageData.heading}
-                          desc={SaleEmptyStageData.desc}
-                          subHeading={SaleEmptyStageData.subHeading}
-                          subItems={SaleEmptyStageData.subItems}
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>
@@ -357,10 +332,8 @@ const SalesOrder = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={SaleEmptyStageData.heading}
-                          desc={SaleEmptyStageData.desc}
-                          subHeading={SaleEmptyStageData.subHeading}
-                          subItems={SaleEmptyStageData.subItems}
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>
@@ -381,10 +354,8 @@ const SalesOrder = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={SaleEmptyStageData.heading}
-                          desc={SaleEmptyStageData.desc}
-                          subHeading={SaleEmptyStageData.subHeading}
-                          subItems={SaleEmptyStageData.subItems}
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>

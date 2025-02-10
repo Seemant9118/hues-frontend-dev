@@ -1,0 +1,141 @@
+{
+    "purchases": {
+        "purchase-orders": {
+            "title": "Purchases",
+            "emptyStateComponent": {
+                "heading": "Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring transparency and ease.",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Engage vendors with bids or receive offers on a unified platform."
+                    },
+                    "subItem2": {
+                        "value": "Securely negotiate and finalize purchases with digital signatures."
+                    },
+                    "subItem3": {
+                        "value": "Generate and organize invoices automatically or manually for precise tracking."
+                    },
+                    "subItem4": {
+                        "value": "Streamline internal and external financial processes with easy payment advice."
+                    }
+                }
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Order",
+                    "successMsg": "Order exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "bid": {
+                    "cta": "Bid",
+                    "placeholder": "Create a new Purchase Order"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Offer Recieved",
+                    "tab3": "Payment Pending",
+                    "tab4": "Unconfirmed"
+                },
+                "content": {}
+            },
+            "table": {
+                "header": {
+                    "purchase_id": "PURCHASE ID",
+                    "date": "DATE",
+                    "vendors": "VENDORS",
+                    "status": "STATUS",
+                    "total_amount": "TOTAL AMOUNT"
+                },
+                "column_actions": {
+                    "edit": {
+                        "cta": "Edit",
+                        "successMsg": "Edited Successfully"
+                    },
+                    "delete": {
+                        "cta": "Delete",
+                        "cancel": "Cancel",
+                        "successMsg": "Deleted Successfully",
+                        "infoText": "You are removing this offer {orderId}"
+                    }
+                }
+            }
+        },
+        "purchase-invoices": {
+            "title": "Invoices",
+            "emptyStateComponent": {
+                "heading": "Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring transparency and ease.",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Engage vendors with bids or receive offers on a unified platform."
+                    },
+                    "subItem2": {
+                        "value": "Securely negotiate and finalize purchases with digital signatures."
+                    },
+                    "subItem3": {
+                        "value": "Generate and organize invoices automatically or manually for precise tracking."
+                    },
+                    "subItem4": {
+                        "value": "Streamline internal and external financial processes with easy payment advice."
+                    }
+                }
+            },
+            "emptyStateComponent2": {
+                "heading": "No Debit Notes Raised"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Invoice",
+                    "successMsg": "Invoice exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Pending",
+                    "tab3": "Debit/Credit Notes"
+                }
+            },
+            "table": {
+                "header": {
+                    "invoice_id": "INVOICE ID",
+                    "date": "DATE",
+                    "vendors": "VENDORS",
+                    "order_id": "ORDER ID",
+                    "status": "STATUS",
+                    "total_amount": "TOTAL AMOUNT"
+                }
+            }
+        },
+        "purchase-debit_notes": {
+            "title": "Debit Notes",
+            "emptyStateComponent": {
+                "heading": "No Debit Notes Raised"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Debit Notes",
+                    "successMsg": "Debit Note exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Accepted",
+                    "tab3": "Rejected"
+                }
+            },
+            "table": {
+                "header": {
+                    "invoice_id": "INVOICE ID",
+                    "date": "DATE",
+                    "vendors": "VENDORS",
+                    "total_amount": "TOTAL AMOUNT",
+                    "status": "STATUS"
+                }
+            }
+        }
+    }
+}

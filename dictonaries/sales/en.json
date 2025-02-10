@@ -1,0 +1,146 @@
+{
+    "sales": {
+        "sales-orders": {
+            "title": "Sales",
+            "emtpyStateComponent": {
+                "heading": "Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital signatures.",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Initiate sales and deals by receiving bids or making offers."
+                    },
+                    "subItem2": {
+                        "value": "Securely negotiate with digitally signed counter-offers and bids."
+                    },
+                    "subItem3": {
+                        "value": "Finalize deals with mutual digital signatures for binding commitment."
+                    },
+                    "subItem4": {
+                        "value": "Effortlessly create and share detailed invoices, completing sales professionally."
+                    }
+                }
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Order",
+                    "successMsg": "Order exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "offer": {
+                    "cta": "Offer",
+                    "placeholder": "Create a new Sales Order"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Bid Recieved",
+                    "tab3": "Payment Pending"
+                },
+                "content": {}
+            },
+            "table": {
+                "header": {
+                    "order_id": "ORDER ID",
+                    "date": "DATE",
+                    "customers_type": "CUSTOMERS TYPE",
+                    "customers": "CUSTOMERS",
+                    "status": "STATUS",
+                    "total_amount": "TOTAL AMOUNT"
+                },
+                "column_actions": {
+                    "edit": {
+                        "cta": "Edit",
+                        "successMsg": "Edited Successfully"
+                    },
+                    "delete": {
+                        "cta": "Delete",
+                        "cancel": "Cancel",
+                        "successMsg": "Deleted Successfully",
+                        "infoText": "You are removing this offer {orderId}"
+                    }
+                }
+            }
+        },
+        "sales-invoices": {
+            "title": "Invoices",
+            "emtpyStateComponent": {
+                "heading": "Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital signatures.",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Initiate sales and deals by receiving bids or making offers."
+                    },
+                    "subItem2": {
+                        "value": "Securely negotiate with digitally signed counter-offers and bids."
+                    },
+                    "subItem3": {
+                        "value": "Finalize deals with mutual digital signatures for binding commitment."
+                    },
+                    "subItem4": {
+                        "value": "Effortlessly create and share detailed invoices, completing sales professionally."
+                    }
+                }
+            },
+            "emtpyStateComponent2": {
+                "heading": "No Debit Notes Raised"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Invoice",
+                    "successMsg": "Invoice exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "invoice": {
+                    "cta": "Invoice",
+                    "placeholder": "Create a new Sales Invoice"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Pending",
+                    "tab3": "Debit/Credit Notes"
+                }
+            },
+            "table": {
+                "header": {
+                    "invoice_id": "INVOICE ID",
+                    "date": "DATE",
+                    "customers_type": "CUSTOMERS TYPE",
+                    "customers": "CUSTOMERS",
+                    "status": "STATUS",
+                    "order_id": "ORDER ID",
+                    "total_amount": "TOTAL AMOUNT"
+                }
+            }
+        },
+        "sales-debit_notes": {
+            "title": "Debit Notes",
+            "emtpyStateComponent": {
+                "heading": "No Debit Notes Raised"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Debit Notes",
+                    "successMsg": "Debit Note exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Accepted",
+                    "tab3": "Rejected"
+                }
+            },
+            "table": {
+                "header": {
+                    "invoice_id": "INVOICE ID",
+                    "date": "DATE",
+                    "customers": "CUSTOMERS",
+                    "total_amount": "TOTAL AMOUNT",
+                    "status": "STATUS"
+                }
+            }
+        }
+    }
+}

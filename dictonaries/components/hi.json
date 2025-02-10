@@ -158,6 +158,36 @@
             "addAnotherCta": "एक और उद्यम जोड़ें",
             "logoutCta": "लॉगआउट",
             "accessDeniedCta": "पहुँच अस्वीकृत"
+        },
+        "filter": {
+            "title": "फ़िल्टर",
+            "form": {
+                "label": {
+                    "select_date": "तारीख़ चुनें",
+                    "select_amount_range": "राशि सीमा चुनें",
+                    "select_status": "स्थिति चुनें",
+                    "select_client": "क्लाइंट चुनें",
+                    "invoice_generated": "चालान जनरेट किया गया",
+                    "clear": "साफ़ करें"
+                },
+                "input": {
+                    "select_status": {
+                        "options": {
+                            "option1": "बोली प्राप्त हुई",
+                            "option2": "प्रस्ताव भेजा गया",
+                            "option3": "स्वीकृत",
+                            "option4": "अस्वीकृत",
+                            "option5": "वापस लिया गया",
+                            "option6": "बोली भेजी गई",
+                            "option7": "प्रस्ताव प्राप्त हुआ"
+                        }
+                    }
+                },
+                "ctas": {
+                    "apply": "लागू करें",
+                    "reset": "रीसेट करें"
+                }
+            }
         }
     }
 }

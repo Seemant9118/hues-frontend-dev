@@ -16,12 +16,14 @@ import { LocalStorageService } from '@/lib/utils';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
 import { Dot, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
 export const usePurchaseColumns = (
   setIsEditingOrder,
   setOrderId,
   setSelectedOrders,
 ) => {
+  const translations = useTranslations('purchases.purchase-orders.table');
   const userId = LocalStorageService.get('user_profile');
 
   // Function to handle row selection
@@ -89,7 +91,10 @@ export const usePurchaseColumns = (
     {
       accessorKey: 'referenceNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PURCHASE ID" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.purchase_id')}
+        />
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
@@ -105,7 +110,10 @@ export const usePurchaseColumns = (
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DATE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.date')}
+        />
       ),
       cell: ({ row }) => {
         const { createdAt } = row.original;
@@ -116,13 +124,19 @@ export const usePurchaseColumns = (
     {
       accessorKey: 'vendorName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="VENDORS" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.vendors')}
+        />
       ),
     },
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="STATUS" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.status')}
+        />
       ),
       cell: ({ row }) => {
         const buyerStatus =
@@ -141,7 +155,10 @@ export const usePurchaseColumns = (
     {
       accessorKey: 'amount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="AMOUNT" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.total_amount')}
+        />
       ),
       cell: ({ row }) => {
         const { amount, gstAmount } = row.original;
@@ -178,14 +195,20 @@ export const usePurchaseColumns = (
                     }}
                     className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
                   >
-                    <Pencil size={14} /> Edit
+                    <Pencil size={14} />{' '}
+                    {translations('column_actions.edit.cta')}
                   </span>
                 )}
               <ConfirmAction
-                infoText={`You are removing this order ${referenceNumber}`}
+                deleteCta={translations('column_actions.delete.cta')}
+                cancelCta={translations('column_actions.delete.cancel')}
+                infoText={translations('column_actions.delete.infoText', {
+                  orderId: referenceNumber,
+                })}
                 id={id}
                 mutationKey={orderApi.getPurchases.endpointKey}
                 mutationFunc={DeleteOrder}
+                successMsg={translations('column_actions.delete.successMsg')}
               />
             </DropdownMenuContent>
           </DropdownMenu>

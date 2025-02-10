@@ -24,14 +24,8 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import {
-  DatabaseZap,
-  FileCheck,
-  KeySquare,
-  PlusCircle,
-  ShieldCheck,
-  Upload,
-} from 'lucide-react';
+import { PlusCircle, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -50,36 +44,19 @@ const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
 
 // macros
 const PAGE_LIMIT = 10;
-const PurchaseEmptyStageData = {
-  heading: `~"Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring
-  transparency and ease."`,
-  subHeading: 'Features',
-  subItems: [
-    {
-      id: 1,
-      icon: <KeySquare size={14} />,
-      subItemtitle: `Engage vendors with bids or receive offers on a unified platform.`,
-    },
-    {
-      id: 2,
-      icon: <DatabaseZap size={14} />,
-      subItemtitle: `Securely negotiate and finalize purchases with digital signatures.`,
-    },
-    {
-      id: 3,
-      icon: <ShieldCheck size={14} />,
-      subItemtitle: `Generate and organize invoices automatically or manually for precise tracking.`,
-    },
-    {
-      id: 4,
-      icon: <FileCheck size={14} />,
-      subItemtitle: `Streamline internal and external financial processes with easy payment advice.`,
-    },
-  ],
-};
 
 const PurchaseOrders = () => {
   useMetaData('Hues! - Purchase Orders', 'HUES PURCHASES'); // dynamic title
+
+  const translations = useTranslations('purchases.purchase-orders');
+
+  const keys = [
+    'purchases.purchase-orders.emptyStateComponent.subItems.subItem1',
+    'purchases.purchase-orders.emptyStateComponent.subItems.subItem2',
+    'purchases.purchase-orders.emptyStateComponent.subItems.subItem3',
+    'purchases.purchase-orders.emptyStateComponent.subItems.subItem4',
+  ];
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -319,10 +296,12 @@ const PurchaseOrders = () => {
       // Assuming the API response is in Blob format
       const blobData = response.data; // This should be a Blob
       downloadBlobFile(blobData, 'purchase_orders.xlsx');
-      toast.success('Order exported and download starts automatically');
+      toast.success(translations('ctas.export.successMsg'));
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error.response?.data?.message || translations('ctas.export.errorMsg'),
+      );
     },
   });
   // handle export order click
@@ -340,7 +319,7 @@ const PurchaseOrders = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name="Purchases" />
+          <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
@@ -349,7 +328,7 @@ const PurchaseOrders = () => {
         <>
           {!isCreatingPurchase && !isEditingOrder && (
             <Wrapper>
-              <SubHeader name={'Purchases'} className="z-10 bg-white">
+              <SubHeader name={translations('title')} className="z-10 bg-white">
                 <div className="flex items-center justify-center gap-3">
                   <Tooltips
                     trigger={
@@ -363,11 +342,7 @@ const PurchaseOrders = () => {
                         <Upload size={14} />
                       </Button>
                     }
-                    content={
-                      selectedOrders?.length > 0
-                        ? 'Export Selected Order'
-                        : 'Select a Order to export'
-                    }
+                    content={translations('ctas.export.placeholder')}
                   />
 
                   <Tooltips
@@ -378,10 +353,10 @@ const PurchaseOrders = () => {
                         size="sm"
                       >
                         <PlusCircle size={14} />
-                        Bid
+                        {translations('ctas.bid.cta')}
                       </Button>
                     }
-                    content={'Create a new purchase order'}
+                    content={translations('ctas.bid.placeholder')}
                   />
                 </div>
               </SubHeader>
@@ -394,12 +369,20 @@ const PurchaseOrders = () => {
                 >
                   <section className="sticky top-14 flex justify-between bg-white">
                     <TabsList className="border">
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="offerReceived">
-                        Offer Recieved
+                      <TabsTrigger value="all">
+                        {translations('tabs.label.tab1')}
                       </TabsTrigger>
-                      <TabsTrigger value="pending">Payment Pending</TabsTrigger>
-                      <TabsTrigger value="unconfirmed">Unconfirmed</TabsTrigger>
+                      <TabsTrigger value="offerReceived">
+                        {translations('tabs.label.tab2')}
+                      </TabsTrigger>
+                      <TabsTrigger value="pending">
+                        {' '}
+                        {translations('tabs.label.tab3')}
+                      </TabsTrigger>
+                      <TabsTrigger value="unconfirmed">
+                        {' '}
+                        {translations('tabs.label.tab4')}
+                      </TabsTrigger>
                     </TabsList>
                     <FilterModal
                       isSalesFilter={false}
@@ -427,10 +410,8 @@ const PurchaseOrders = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={PurchaseEmptyStageData.heading}
-                          desc={PurchaseEmptyStageData.desc}
-                          subHeading={PurchaseEmptyStageData.subHeading}
-                          subItems={PurchaseEmptyStageData.subItems}
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>
@@ -452,10 +433,8 @@ const PurchaseOrders = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={PurchaseEmptyStageData.heading}
-                          desc={PurchaseEmptyStageData.desc}
-                          subHeading={PurchaseEmptyStageData.subHeading}
-                          subItems={PurchaseEmptyStageData.subItems}
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>
@@ -477,10 +456,8 @@ const PurchaseOrders = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={PurchaseEmptyStageData.heading}
-                          desc={PurchaseEmptyStageData.desc}
-                          subHeading={PurchaseEmptyStageData.subHeading}
-                          subItems={PurchaseEmptyStageData.subItems}
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>
@@ -507,10 +484,8 @@ const PurchaseOrders = () => {
                         />
                       ) : (
                         <EmptyStageComponent
-                          heading={PurchaseEmptyStageData.heading}
-                          desc={PurchaseEmptyStageData.desc}
-                          subHeading={PurchaseEmptyStageData.subHeading}
-                          subItems={PurchaseEmptyStageData.subItems}
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
                         />
                       ))}
                   </TabsContent>

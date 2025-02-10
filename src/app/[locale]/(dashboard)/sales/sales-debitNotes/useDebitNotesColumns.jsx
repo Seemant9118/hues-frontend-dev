@@ -5,8 +5,10 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dot } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
 export const useDebitNotesColumns = (setSelectedDebit) => {
+  const translations = useTranslations('sales.sales-debit_notes.table.header');
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
     const debits = { ...row.original };
@@ -69,7 +71,10 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
     {
       accessorKey: 'referenceNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="INVOICE ID" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('invoice_id')}
+        />
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
@@ -86,7 +91,7 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
     {
       accessorKey: 'invoiceDate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DATE" />
+        <DataTableColumnHeader column={column} title={translations('date')} />
       ),
       cell: ({ row }) => {
         const { invoiceDate } = row.original;
@@ -100,7 +105,10 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
     {
       accessorKey: 'enterprise',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="CUSTOMERS" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('customers')}
+        />
       ),
       cell: ({ row }) => {
         const { toEnterprise } = row.original;
@@ -111,7 +119,10 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
     {
       accessorKey: 'amount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="TOTAL AMOUNT" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('total_amount')}
+        />
       ),
       cell: ({ row }) => {
         const { amount } = row.original;
@@ -121,7 +132,7 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="STATUS" />
+        <DataTableColumnHeader column={column} title={translations('status')} />
       ),
       cell: ({ row }) => {
         const { status } = row.original;

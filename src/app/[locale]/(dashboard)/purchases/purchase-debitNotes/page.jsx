@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import emptyImg from '../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
@@ -35,6 +36,9 @@ const PAGE_LIMIT = 10;
 
 const PurchaseDebitNotes = () => {
   useMetaData('Hues! - Purchase Debit Notes', 'HUES DEBITNOTES'); // dynamic title
+
+  const translations = useTranslations('purchases.purchase-debit_notes');
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -183,10 +187,12 @@ const PurchaseDebitNotes = () => {
     onSuccess: (response) => {
       const blobData = response.data;
       downloadBlobFile(blobData, 'sales_invoices.xlsx');
-      toast.success('Invoice exported and downloaded successfully');
+      toast.success(translations('ctas.export.successMsg'));
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('ctas.export.errorMsg'),
+      );
     },
   });
   // handle export order click
@@ -200,7 +206,7 @@ const PurchaseDebitNotes = () => {
     <>
       {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
         <>
-          <SubHeader name="Debit Notes" />
+          <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
@@ -209,7 +215,7 @@ const PurchaseDebitNotes = () => {
         <>
           <Wrapper>
             <SubHeader
-              name={'Debit Notes'}
+              name={translations('title')}
               className="sticky top-0 z-10 flex items-center justify-between bg-white"
             >
               <div className="flex items-center justify-center gap-3">
@@ -225,11 +231,7 @@ const PurchaseDebitNotes = () => {
                       <Upload size={14} />
                     </Button>
                   }
-                  content={
-                    selectedDebit?.length > 0
-                      ? 'Export Selected Debit Notes'
-                      : 'Select a Debit Note to export'
-                  }
+                  content={translations('ctas.export.placeholder')}
                 />
               </div>
             </SubHeader>
@@ -242,9 +244,15 @@ const PurchaseDebitNotes = () => {
               >
                 <section className="sticky top-14 bg-white">
                   <TabsList className="border">
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="accepted">Accepted</TabsTrigger>
-                    <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                    <TabsTrigger value="all">
+                      {translations('tabs.label.tab1')}
+                    </TabsTrigger>
+                    <TabsTrigger value="accepted">
+                      {translations('tabs.label.tab2')}
+                    </TabsTrigger>
+                    <TabsTrigger value="rejected">
+                      {translations('tabs.label.tab3')}
+                    </TabsTrigger>
                   </TabsList>
                 </section>
 
@@ -267,7 +275,7 @@ const PurchaseDebitNotes = () => {
                   {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
                     <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                       <Image src={emptyImg} alt="emptyIcon" />
-                      <p>No Debit Note Raised</p>
+                      <p>{translations('emptyStateComponent.heading')}</p>
                     </div>
                   )}
                 </TabsContent>
@@ -291,7 +299,7 @@ const PurchaseDebitNotes = () => {
                   {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
                     <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                       <Image src={emptyImg} alt="emptyIcon" />
-                      <p>No Debit Note Raised</p>
+                      <p>{translations('emptyStateComponent.heading')}</p>
                     </div>
                   )}
                 </TabsContent>
@@ -315,7 +323,7 @@ const PurchaseDebitNotes = () => {
                   {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
                     <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                       <Image src={emptyImg} alt="emptyIcon" />
-                      <p>No Debit Note Raised</p>
+                      <p>{translations('emptyStateComponent.heading')}</p>
                     </div>
                   )}
                 </TabsContent>
