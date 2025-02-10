@@ -173,9 +173,9 @@ const Catalogue = () => {
                   <Tooltips
                     trigger={
                       <BulkConfirmAction
-                        infoText={
-                          'You are removing the selected items from the catalogue'
-                        }
+                        infoText={translations('ctas.bulk_remove.infoText')}
+                        cancelCta={translations('ctas.bulk_remove.ctas.cancel')}
+                        removeCta={translations('ctas.bulk_remove.ctas.remove')}
                         selectedItems={selectedCatalogue}
                         setSelectedItems={setSelectedCatalogue}
                         setRowSelection={setRowSelection}
@@ -184,6 +184,7 @@ const Catalogue = () => {
                           catalogueApis.bulkDeleteCatalogueItems.endpointKey
                         }
                         mutationFunc={bulkDeleteCatalogueItems}
+                        successMsg={translations('ctas.bulk_remove.successMsg')}
                       />
                     }
                     content={translations('ctas.tooltips.remove')}

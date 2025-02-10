@@ -67,7 +67,12 @@
             },
             "columnActions": {
                 "edit": "Edit",
-                "delete": "Delete"
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You are removing {name} from inventory",
+                    "successMsg": "Deleted successfully"
+                }
             }
         }
     },
@@ -131,7 +136,12 @@
             },
             "columnActions": {
                 "edit": "Edit",
-                "delete": "Delete"
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You are removing {name} from inventory",
+                    "successMsg": "Deleted successfully"
+                }
             }
         }
     }

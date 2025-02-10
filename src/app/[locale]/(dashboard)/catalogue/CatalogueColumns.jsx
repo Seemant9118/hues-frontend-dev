@@ -165,14 +165,22 @@ export const useCatalogueColumns = (setSelectedCatalogue) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-fit">
                 <ConfirmAction
-                  deleteCta={translations('table.columnActions.remove')}
-                  catalogueDeletion={true}
-                  infoText={`You are removing ${name} from catalogue`}
+                  deleteCta={translations('table.columnActions.remove.cta')}
+                  infoText={translations(
+                    'table.columnActions.remove.infoText',
+                    {
+                      name,
+                    },
+                  )}
+                  cancelCta={translations('table.columnActions.remove.cancel')}
                   id={itemId}
                   type={type}
                   invalidateKey={catalogueApis.getCatalogues.endpointKey}
                   mutationKey={catalogueApis.deleteCatalogue.endpointKey}
                   mutationFunc={deleteCatalogue}
+                  successMsg={translations(
+                    'table.columnActions.remove.successMsg',
+                  )}
                 />
               </DropdownMenuContent>
             </DropdownMenu>

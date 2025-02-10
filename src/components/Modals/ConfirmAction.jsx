@@ -16,13 +16,14 @@ import { toast } from 'sonner';
 
 const ConfirmAction = ({
   deleteCta,
-  catalogueDeletion,
+  cancelCta,
   infoText,
   id,
   type,
   invalidateKey,
   mutationKey,
   mutationFunc,
+  successMsg,
 }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -31,9 +32,7 @@ const ConfirmAction = ({
     mutationKey: [mutationKey],
     mutationFn: mutationFunc,
     onSuccess: () => {
-      toast.success(
-        catalogueDeletion ? 'Removed Successfully' : 'Deleted successfully',
-      );
+      toast.success(successMsg);
       setOpen(false);
       queryClient.invalidateQueries([invalidateKey]);
     },
@@ -58,7 +57,6 @@ const ConfirmAction = ({
         <DialogTitle>
           <div className="flex w-full flex-col items-center gap-2">
             <span>{infoText}</span>
-            <span>Do you want to Continue?</span>
           </div>
         </DialogTitle>
 
@@ -71,7 +69,7 @@ const ConfirmAction = ({
               }}
               variant={'outline'}
             >
-              Cancel
+              {cancelCta}
             </Button>
           </DialogClose>
           <Button

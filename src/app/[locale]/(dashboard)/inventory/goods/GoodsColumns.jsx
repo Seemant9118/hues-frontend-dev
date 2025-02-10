@@ -115,11 +115,17 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
               </DropdownMenuItem>
 
               <ConfirmAction
-                deleteCta={translations('table.columnActions.delete')}
-                infoText={`You are removing ${name} from inventory`}
+                deleteCta={translations('table.columnActions.delete.cta')}
+                infoText={translations('table.columnActions.delete.infoText', {
+                  name,
+                })}
+                cancelCta={translations('table.columnActions.delete.cancel')}
                 id={id}
                 mutationKey={goodsApi.getAllProductGoods.endpointKey}
                 mutationFunc={DeleteProductGoods}
+                successMsg={translations(
+                  'table.columnActions.delete.successMsg',
+                )}
               />
             </DropdownMenuContent>
           </DropdownMenu>

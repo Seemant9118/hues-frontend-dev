@@ -7,7 +7,7 @@ import React from 'react';
 import Select from 'react-select';
 import { Label } from './label';
 
-const LanguagesSwitcher = () => {
+const LanguagesSwitcher = ({ translations }) => {
   const { setLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname(); // Get current route path
@@ -34,11 +34,12 @@ const LanguagesSwitcher = () => {
   return (
     <div className="flex h-full flex-col p-2">
       <div className="flex w-1/2 flex-col gap-2">
-        <Label className="flex gap-1">Select Language</Label>
+        <Label className="flex gap-1">
+          {translations('tabs.content.tab3.label.select')}
+        </Label>
         <div className="flex w-full flex-col gap-1">
           <Select
             name="language"
-            placeholder="Select Language"
             options={optionsOfLanguages}
             styles={getStylesForSelectComponent()}
             className="max-w-xs text-sm"

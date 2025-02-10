@@ -13,6 +13,14 @@
                 "comingSoon": "This feature Coming Soon...",
                 "update": "Update a Catalogue",
                 "remove": "Remove a Selected Catalogue"
+            },
+            "bulk_remove": {
+                "infoText": "You are removing the selected items from the catalogue",
+                "ctas": {
+                    "cancel": "Cancel",
+                    "remove": "Remove"
+                },
+                "successMsg": "Removed successfully"
             }
         },
         "toast": {
@@ -86,7 +94,12 @@
                 "price": "PRICE"
             },
             "columnActions": {
-                "remove": "Remove"
+                "remove": {
+                    "cta": "Remove",
+                    "cancel": "Cancel",
+                    "infoText": "You are removing {name} from catalogue",
+                    "successMsg": "Removed successfully"
+                }
             }
         }
     }

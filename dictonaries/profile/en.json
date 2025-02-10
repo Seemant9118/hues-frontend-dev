@@ -74,7 +74,14 @@
                     "heading1": "Enterprise Information",
                     "heading2": "Business Identification"
                 },
-                "tab3": "Coming Soon"
+                "tab3": {
+                    "label": {
+                        "select": "Select Preferred Language"
+                    }
+                },
+                "tab4": {
+                    "coming_soon": "Coming Soon..."
+                }
             }
         },
         "toasts": {

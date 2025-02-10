@@ -493,30 +493,38 @@ function Profile() {
                 </div>
               </div>
               <div className="flex flex-col gap-4 rounded-sm border p-4">
-                <h1>Enterprise Information</h1>
+                <h1>{translations('tabs.content.tab2.heading1')}</h1>
 
                 <div className="grid grid-cols-3 grid-rows-2 gap-8 p-2">
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">Full Name</Label>
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab2.label.name')}
+                    </Label>
                     <span className="text-lg font-bold">
                       {profileDetails?.enterpriseDetails?.name ?? '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">Type</Label>
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab2.label.type')}
+                    </Label>
                     <span className="text-lg font-bold">
                       {profileDetails?.enterpriseDetails?.type ?? '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">Mobile Number</Label>
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab2.label.mobile')}
+                    </Label>
                     <span className="text-lg font-bold">
                       +91{' '}
                       {profileDetails?.enterpriseDetails?.mobileNumber ?? '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">Email Address</Label>
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab2.label.email')}
+                    </Label>
                     <span className="text-lg font-bold">
                       {profileDetails?.enterpriseDetails?.email ?? '-'}
                     </span>
@@ -525,18 +533,22 @@ function Profile() {
               </div>
 
               <div className="flex flex-col gap-4 rounded-sm border p-4">
-                <h1>Business Identification</h1>
+                <h1>{translations('tabs.content.tab2.heading2')}</h1>
 
                 <div className="grid grid-cols-3 grid-rows-1 gap-8 p-2">
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">PAN Card Number</Label>
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab2.label.pan')}
+                    </Label>
                     <span className="text-lg font-bold">
                       {profileDetails?.enterpriseDetails?.panNumber ?? '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex w-full items-center gap-1">
-                      <Label className="text-xs">GST IN</Label>
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab2.label.gst')}
+                      </Label>
 
                       {!profileDetails?.enterpriseDetails?.gstNumber &&
                       !isEditing.udyam ? (
@@ -574,7 +586,9 @@ function Profile() {
                       {isEditing.gst && (
                         <Input
                           type="text"
-                          placeholder="Update GST IN"
+                          placeholder={translations(
+                            'tabs.content.tab2.input.gst.placeholder',
+                          )}
                           value={updateEnterpriseDetails?.identifierNum || ''}
                           onChange={(e) => {
                             setUpdateEnterpriseDetails((prev) => ({
@@ -593,7 +607,9 @@ function Profile() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex w-full items-center gap-1">
-                      <Label className="text-xs">UDYAM</Label>
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab2.label.udyam')}
+                      </Label>
                       {!profileDetails?.enterpriseDetails?.udyam &&
                       !isEditing.gst ? (
                         isEditing.udyam ? (
@@ -629,7 +645,9 @@ function Profile() {
                       {isEditing.udyam && (
                         <Input
                           type="text"
-                          placeholder="Update UDYAM"
+                          placeholder={translations(
+                            'tabs.content.tab2.input.udyam.placeholder',
+                          )}
                           value={updateEnterpriseDetails?.identifierNum || ''}
                           onChange={(e) => {
                             setUpdateEnterpriseDetails((prev) => ({
@@ -663,8 +681,7 @@ function Profile() {
                         }); // input data cleared
                       }}
                     >
-                      {' '}
-                      Cancel
+                      {translations('tabs.content.tab2.ctas.cancel')}
                     </Button>
                     <Button
                       disabled={updateEnterpriseMutation.isPending}
@@ -677,7 +694,7 @@ function Profile() {
                       {updateEnterpriseMutation.isPending ? (
                         <Loading />
                       ) : (
-                        'Update'
+                        translations('tabs.content.tab2.ctas.update')
                       )}
                     </Button>
                   </div>
@@ -687,10 +704,12 @@ function Profile() {
           )}
         </TabsContent>
         <TabsContent value="languages">
-          <LanguagesSwitcher />
+          <LanguagesSwitcher translations={translations} />
         </TabsContent>
 
-        <TabsContent value="permissions">Coming Soon...</TabsContent>
+        <TabsContent value="permissions">
+          {translations('tabs.content.tab4.coming_soon')}
+        </TabsContent>
       </Tabs>
     </Wrapper>
   );
