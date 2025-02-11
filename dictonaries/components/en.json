@@ -188,6 +188,104 @@
                     "reset": "Reset"
                 }
             }
+        },
+        "create_edit_order": {
+            "title": {
+                "offer": "Offer",
+                "bid": "Bid",
+                "edit": "Edit",
+                "sub_titles": {
+                    "add_item": "Add Items",
+                    "edit_item": "Edit Items"
+                }
+            },
+            "form": {
+                "label": {
+                    "type": "Client Type",
+                    "client": "Client",
+                    "customer": "Customer",
+                    "vendor": "Vendor",
+                    "item_type": "Item Type",
+                    "item": "Item",
+                    "quantity": "Quantity",
+                    "price": "Price",
+                    "invoice_value": "Invoice Value",
+                    "value": "Value",
+                    "gst": "GST",
+                    "tax_amount": "Tax Amount",
+                    "amount": "Amount"
+                },
+                "errorMsg": {
+                    "customer": "*Please add or select a Customer",
+                    "client": "*Please select a client",
+                    "vendor": "*Please select a vendor",
+                    "item_type": "*Please select Item Type",
+                    "item": "*Please add atleast one item to create order",
+                    "quantity": "*Required Quantity",
+                    "price": "*Required Price",
+                    "gst": "*Required (GST%)",
+                    "value": "*Required Value",
+                    "tax_amount": "*Required Tax Amount",
+                    "amount": "*Required Amount"
+                },
+                "successMsg": {
+                    "offer_created_successfully": "Sales Order Created Successfully",
+                    "bid_created_successfully": "Purchase Order Created Successfully",
+                    "invoice_created_successfully": "Invoice created! Please refresh to view the latest Invoice"
+                },
+                "input": {
+                    "clientType": {
+                        "b2b": "B2B",
+                        "b2c": "B2C"
+                    },
+                    "client": {
+                        "placeholder": "Select Client...",
+                        "add_new_client": "Add a new client"
+                    },
+                    "vendor": {
+                        "placeholder": "Select Vendor...",
+                        "add_new_vendor": "Add a new vendor"
+                    },
+                    "item_type": {
+                        "goods": "Goods",
+                        "services": "Services",
+                        "placeholder": "Select Item Type..."
+                    },
+                    "item": {
+                        "placeholder": "Select Items"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "ITEM",
+                        "quantity": "QUANTITY",
+                        "price": "PRICE",
+                        "gst": "GST (%)",
+                        "invoice_value": "Invoice Value",
+                        "value": "VALUE",
+                        "tax_amount": "TAX AMOUNT",
+                        "amount": "AMOUNT"
+                    }
+                },
+                "ctas": {
+                    "cancel": "Cancel",
+                    "add": "Add",
+                    "create": "Create",
+                    "edit": "Edit"
+                },
+                "footer": {
+                    "gross_amount": "Gross Amount",
+                    "tax_amount": "Tax Amount",
+                    "total_amount": "Total Amount"
+                }
+            }
+        },
+        "redirection_pop_up": {
+            "para": "This enterprise has not accepted your invitation and will not be able to respond your offer. Do you want to proceed?",
+            "ctas": {
+                "yes": "Yes",
+                "no": "No"
+            }
         }
     }
 }

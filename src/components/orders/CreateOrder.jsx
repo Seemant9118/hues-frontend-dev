@@ -35,6 +35,7 @@ import {
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
@@ -60,6 +61,8 @@ const CreateOrder = ({
   cta,
   isOrder,
 }) => {
+  const translations = useTranslations('components.create_edit_order');
+
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -126,11 +129,11 @@ const CreateOrder = ({
   const clientTypeOptions = [
     {
       value: 'B2B',
-      label: 'B2B',
+      label: translations('form.input.clientType.b2b'),
     },
     {
       value: 'B2C',
-      label: 'B2C',
+      label: translations('form.input.clientType.b2c'),
     },
   ];
 
@@ -200,7 +203,7 @@ const CreateOrder = ({
       value: 'add-new-client', // Special value for "Add New Client"
       label: (
         <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
-          <Plus size={14} /> Add a new client
+          <Plus size={14} /> {translations('form.input.client.add_new_client')}
         </span>
       ),
       isAccepted: 'ACCEPTED',
@@ -239,7 +242,7 @@ const CreateOrder = ({
       value: 'add-new-vendor', // Special value for "Add New Vendor"
       label: (
         <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
-          <Plus size={14} /> Add a new vendor
+          <Plus size={14} /> {translations('form.input.vendor.add_new_vendor')}
         </span>
       ),
       isAccepted: 'ACCEPTED',
@@ -251,11 +254,11 @@ const CreateOrder = ({
   const itemTypeOptions = [
     {
       value: 'GOODS',
-      label: 'Goods',
+      label: translations('form.input.item_type.goods'),
     },
     {
       value: 'SERVICE',
-      label: 'Service',
+      label: translations('form.input.item_type.services'),
     },
   ];
 
@@ -353,8 +356,8 @@ const CreateOrder = ({
     onSuccess: (res) => {
       toast.success(
         cta === 'offer'
-          ? 'Sales Order Created Successfully'
-          : 'Purchase Order Created Successfully',
+          ? translations('form.successMsg.offer_created_successfully')
+          : translations('form.successMsg.bid_created_successfully'),
       );
       onCancel();
       if (isPurchasePage) {
@@ -373,7 +376,7 @@ const CreateOrder = ({
     mutationFn: createInvoice,
     onSuccess: () => {
       toast.success(
-        'Invoice created! Please refresh to view the latest Invoice',
+        translations('form.successMsg.invoice_created_successfully'),
       );
       onCancel();
       // setInvoiceListing((prev) => [res.data.data, ...prev]);
@@ -389,44 +392,56 @@ const CreateOrder = ({
 
     if (cta === 'offer') {
       if (order.clientType === 'B2B' && order?.buyerId == null) {
-        errorObj.buyerId = '*Please select a client';
+        errorObj.buyerId = translations('form.errorMsg.client');
       }
       if (order.clientType === 'B2C' && order?.buyerId == null) {
-        errorObj.buyerId = '*Please provide a phone number of customer';
+        errorObj.buyerId = translations('form.errorMsg.customer');
+      }
+      if (order.invoiceType === '') {
+        errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
       if (order?.orderItems?.length === 0) {
-        errorObj.orderItem = '*Please add atleast one item to create order';
+        errorObj.orderItem = translations('form.errorMsg.item');
       }
       if (selectedItem.quantity === null) {
-        errorObj.quantity = '*Required Quantity';
+        errorObj.quantity = translations('form.errorMsg.quantity');
       }
       if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = '*Required Price';
+        errorObj.unitPrice = translations('form.errorMsg.price');
       }
       if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = '*Required GST (%)';
+        errorObj.gstPerUnit = translations('form.errorMsg.gst');
+      }
+      if (selectedItem.totalGstAmount === null) {
+        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
       }
       if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = '*Required Amount';
+        errorObj.totalAmount = translations('form.errorMsg.amount');
       }
     } else {
       if (order?.sellerEnterpriseId == null) {
-        errorObj.sellerEnterpriseId = '*Please select a vendor';
+        errorObj.sellerEnterpriseId = translations('form.errorMsg.vendor');
+      }
+      if (order.invoiceType === '') {
+        errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
       if (order?.orderItem?.length === 0) {
-        errorObj.orderItem = '*Please add atleast one item to create order';
+        errorObj.orderItem = translations('form.errorMsg.item');
       }
       if (selectedItem.quantity === null) {
-        errorObj.quantity = '*Required Quantity';
+        errorObj.quantity = translations('form.errorMsg.quantity');
       }
       if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = '*Required Price';
+        errorObj.unitPrice = translations('form.errorMsg.price');
       }
       if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = '*Required GST (%)';
+        errorObj.gstPerUnit = translations('form.errorMsg.gst');
+      }
+      if (selectedItem.totalGstAmount === null) {
+        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
       }
       if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = '*Required Amount';
+        errorObj.totalAmount = translations('form.errorMsg.amount');
       }
     }
 
@@ -522,7 +537,13 @@ const CreateOrder = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <SubHeader name={name}></SubHeader>
+      <SubHeader
+        name={
+          cta === 'offer'
+            ? translations('title.offer')
+            : translations('title.bid')
+        }
+      ></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
@@ -538,13 +559,12 @@ const CreateOrder = ({
         {cta === 'offer' && (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
-              {'Client Type'}
+              {translations('form.label.type')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex w-full flex-col gap-1">
               <Select
                 name="clientType"
-                placeholder="Select Client Type"
                 options={clientTypeOptions}
                 styles={getStylesForSelectComponent()}
                 className="max-w-xs text-sm"
@@ -566,7 +586,7 @@ const CreateOrder = ({
         {cta === 'offer' && order.clientType === 'B2C' && (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
-              {'Customer'}
+              {translations('form.label.customer')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex w-full flex-col gap-1">
@@ -580,7 +600,7 @@ const CreateOrder = ({
                 styles={getStylesForSelectComponent()}
                 className="max-w-xs text-sm"
                 isClearable
-                placeholder="Customer Number"
+                placeholder="+91 1234567890"
                 options={options}
               />
 
@@ -593,13 +613,13 @@ const CreateOrder = ({
           order.clientType === 'B2B' && (
             <div className="flex w-1/2 flex-col gap-2">
               <Label className="flex gap-1">
-                {'Client'}
+                {translations('form.label.client')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex w-full flex-col gap-1">
                 <Select
                   name="clients"
-                  placeholder="Select Client..."
+                  placeholder={translations('form.input.client.placeholder')}
                   options={clientOptions}
                   styles={getStylesForSelectComponent()}
                   className="max-w-xs text-sm"
@@ -661,13 +681,13 @@ const CreateOrder = ({
         ) : (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
-              {'Vendor'}
+              {translations('form.label.vendor')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex w-full flex-col gap-1">
               <Select
                 name="vendors"
-                placeholder="Select Vendors..."
+                placeholder={translations('form.input.vendor.placeholder')}
                 options={vendorOptions}
                 styles={getStylesForSelectComponent()}
                 className="max-w-xs text-sm"
@@ -718,12 +738,12 @@ const CreateOrder = ({
 
         <div className="flex w-1/2 flex-col gap-2">
           <Label className="flex gap-1">
-            Item Type
+            {translations('form.label.item_type')}
             <span className="text-red-600">*</span>
           </Label>
           <Select
             name="itemType"
-            placeholder="Select Item Type"
+            placeholder={translations('form.input.item_type.placeholder')}
             options={itemTypeOptions}
             styles={getStylesForSelectComponent()}
             className="max-w-xs text-sm"
@@ -736,19 +756,20 @@ const CreateOrder = ({
               })); // Update state with the selected value
             }}
           />
+          {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
         </div>
       </div>
       <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex w-full max-w-xs flex-col gap-2">
             <Label className="flex gap-1">
-              Item
+              {translations('form.label.item')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
               <Select
                 name="items"
-                placeholder="Select"
+                placeholder={translations('form.input.item.placeholder')}
                 options={
                   cta === 'offer'
                     ? itemClientListingOptions
@@ -794,7 +815,7 @@ const CreateOrder = ({
           </div>
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              Quantity
+              {translations('form.label.quantity')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -827,7 +848,7 @@ const CreateOrder = ({
 
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              Price
+              {translations('form.label.price')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -864,7 +885,8 @@ const CreateOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex">
-                GST <span className="text-xs"> (%)</span>
+                {translations('form.label.gst')}
+                <span className="text-xs"> (%)</span>
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -880,7 +902,9 @@ const CreateOrder = ({
 
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              {isOrder === 'invoice' ? 'Invoice Value' : 'Value'}
+              {isOrder === 'invoice'
+                ? translations('form.label.invoice_value')
+                : translations('form.label.value')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -900,7 +924,7 @@ const CreateOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex gap-1">
-                Tax Amount
+                {translations('form.label.tax_amount')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -909,7 +933,7 @@ const CreateOrder = ({
                   value={selectedItem.totalGstAmount}
                   className="max-w-30"
                 />
-                {errorMsg.totalAmount && (
+                {errorMsg.totalGstAmount && (
                   <ErrorBox msg={errorMsg.totalGstAmount} />
                 )}
               </div>
@@ -923,7 +947,7 @@ const CreateOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex gap-1">
-                Amount
+                {translations('form.label.amount')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -957,7 +981,7 @@ const CreateOrder = ({
               }));
             }}
           >
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
@@ -983,7 +1007,7 @@ const CreateOrder = ({
             }}
             variant="blue_outline"
           >
-            Add
+            {translations('form.ctas.add')}
           </Button>
         </div>
       </div>
@@ -1002,13 +1026,17 @@ const CreateOrder = ({
           ) && (
             <>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Gross Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.gross_amount')} :
+                </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {grossAmt.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Tax Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.tax_amount')} :{' '}
+                </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {totalGstAmt.toFixed(2)}
                 </span>
@@ -1016,7 +1044,9 @@ const CreateOrder = ({
             </>
           )}
           <div className="flex items-center gap-2">
-            <span className="font-bold">Total Amount : </span>
+            <span className="font-bold">
+              {translations('form.footer.total_amount')} :{' '}
+            </span>
             <span className="rounded-sm border bg-slate-100 p-2">
               {totalAmtWithGst.toFixed(2)}
             </span>
@@ -1025,7 +1055,7 @@ const CreateOrder = ({
 
         <div className="flex gap-2">
           <Button size="sm" onClick={onCancel} variant={'outline'}>
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
@@ -1037,7 +1067,7 @@ const CreateOrder = ({
             {orderMutation.isPending || invoiceMutation.isPending ? (
               <Loading />
             ) : (
-              'Create'
+              translations('form.ctas.create')
             )}
           </Button>
         </div>

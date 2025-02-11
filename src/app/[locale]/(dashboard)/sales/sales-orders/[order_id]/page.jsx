@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
   bulkNegotiateAcceptOrReject,
@@ -26,7 +27,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, Download, MoreVertical, Pencil } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useSalesOrderColumns } from './useSalesOrderColumns';

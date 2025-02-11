@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
   exportOrder,
@@ -26,7 +27,6 @@ import {
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { SalesTable } from '../salestable/SalesTable';
