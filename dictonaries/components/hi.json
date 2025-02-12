@@ -314,6 +314,31 @@
             "errorMsg": {
                 "common": "कुछ गलत हो गया"
             }
+        },
+        "past_invoices": {
+            "label": {
+                "date": "तारीख",
+                "total_amount": "कुल राशि",
+                "type": "प्रकार"
+            },
+            "emptyStateComponent": {
+                "title": "अभी तक कोई चालान नहीं",
+                "para": "आपने अभी तक कोई चालान नहीं बनाया है। अपने ऑर्डर्स का ट्रैक रखने के लिए पहला चालान बनाएं।",
+                "ctas": {
+                    "generate_invoice": "चालान बनाएं"
+                }
+            }
+        },
+        "invoice_modal": {
+            "title": "चालान",
+            "view": {
+                "placeholder": "चालान देखें"
+            },
+            "loading_document": "दस्तावेज़ लोड हो रहा है...",
+            "ctas": {
+                "cancel": "रद्द करें",
+                "download": "डाउनलोड"
+            }
         }
     }
 }

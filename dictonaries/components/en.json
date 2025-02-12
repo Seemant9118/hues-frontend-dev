@@ -314,6 +314,31 @@
             "errorMsg": {
                 "common": "Something went wrong"
             }
+        },
+        "past_invoices": {
+            "label": {
+                "date": "Date",
+                "total_amount": "Total Amount",
+                "type": "Type"
+            },
+            "emptyStateComponent": {
+                "title": "No invoices yet",
+                "para": "You haven't created any invoices yet. Start by generating your first invoice to keep track of your orders",
+                "ctas": {
+                    "generate_invoice": "Generate Invoice"
+                }
+            }
+        },
+        "invoice_modal": {
+            "title": "Invoice",
+            "view": {
+                "placeholder": "View Invoice"
+            },
+            "loading_document": "Loading Document...",
+            "ctas": {
+                "cancel": "Cancel",
+                "download": "Download"
+            }
         }
     }
 }

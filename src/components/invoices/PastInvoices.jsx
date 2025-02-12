@@ -1,11 +1,13 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { formattedAmount } from '@/appUtils/helperFunctions';
+import { useRouter } from '@/i18n/routing';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useQuery } from '@tanstack/react-query';
 import { MoveUpRight } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import emptyImg from '../../../public/Empty.png';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
@@ -14,6 +16,7 @@ import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
+  const translations = useTranslations('components.past_invoices');
   const router = useRouter();
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
@@ -66,7 +69,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                     <div className="flex gap-10">
                       <h1 className="text-sm">
                         <span className="font-bold text-[#ABB0C1]">
-                          Date :{' '}
+                          {translations('label.date')} :{' '}
                         </span>
                         <span className="text-[#363940]">
                           {moment(invoice?.createdAt).format('DD-MM-YYYY')}
@@ -74,7 +77,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                       </h1>
                       <h1 className="text-sm">
                         <span className="font-bold text-[#ABB0C1]">
-                          Total Amount :{' '}
+                          {translations('label.total_amount')} :{' '}
                         </span>
                         <span className="font-bold text-[#363940]">
                           {formattedAmount(invoice?.totalAmount)}
@@ -83,7 +86,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                       </h1>
                       <h1 className="text-sm font-bold">
                         <span className="font-bold text-[#ABB0C1]">
-                          Type :{' '}
+                          {translations('label.type')} :{' '}
                         </span>
                         <span className="font-bold text-[#363940]">
                           {capitalize(invoice?.invoiceType)}
@@ -100,11 +103,11 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
             <Image src={emptyImg} alt="emptyIcon" />
-            <p className="font-bold">No invoices yet</p>
+            <p className="font-bold">
+              {translations('emptyStateComponent.title')}
+            </p>
             <p className="max-w-96 text-center">
-              {
-                "You haven't created any invoices yet. Start by generating your first invoice to keep track of your orders"
-              }
+              {translations('emptyStateComponent.para')}
             </p>
 
             {!isPurchasesPage &&
@@ -117,7 +120,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                   className="bg-[#288AF9]"
                   onClick={() => setIsGenerateInvoice(true)}
                 >
-                  Generate Invoice
+                  {translations('emptyStateComponent.ctas.generate_invoice')}
                 </Button>
               )}
           </div>
