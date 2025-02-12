@@ -229,6 +229,7 @@
                     "amount": "*आवश्यक राशि"
                 },
                 "successMsg": {
+                    "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
                     "offer_created_successfully": "विक्रय आदेश सफलतापूर्वक बनाया गया",
                     "bid_created_successfully": "क्रय आदेश सफलतापूर्वक बनाया गया",
                     "invoice_created_successfully": "चालान बनाया गया! कृपया नवीनतम चालान देखने के लिए पृष्ठ को ताज़ा करें"

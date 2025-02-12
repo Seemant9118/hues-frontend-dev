@@ -229,6 +229,7 @@
                     "amount": "*Required Amount"
                 },
                 "successMsg": {
+                    "order_updated_successfully": "Order Updates Successfully",
                     "offer_created_successfully": "Sales Order Created Successfully",
                     "bid_created_successfully": "Purchase Order Created Successfully",
                     "invoice_created_successfully": "Invoice created! Please refresh to view the latest Invoice"

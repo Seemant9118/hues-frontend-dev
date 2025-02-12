@@ -31,6 +31,7 @@ import {
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
@@ -42,17 +43,16 @@ import Wrapper from '../wrappers/Wrapper';
 
 const EditOrder = ({
   onCancel,
-  name,
   cta,
   orderId,
   isEditingOrder,
   setIsOrderCreationSuccess,
 }) => {
-  const queryClient = useQueryClient();
+  const translations = useTranslations('components.create_edit_order');
 
+  const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
   const [selectedItem, setSelectedItem] = useState({
@@ -326,7 +326,7 @@ const EditOrder = ({
     mutationKey: [orderApi.updateOrder.endpointKey],
     mutationFn: (data) => updateOrder(orderId, data),
     onSuccess: () => {
-      toast.success('Order Updated Successfully');
+      toast.success(translations('form.successMsg.order_updated_successfully'));
       onCancel();
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       setIsOrderCreationSuccess((prev) => !prev);
@@ -349,10 +349,14 @@ const EditOrder = ({
 
   return (
     <Wrapper className="flex h-full flex-col py-2">
-      <SubHeader name={name}></SubHeader>
+      <SubHeader name={translations('title.edit')}></SubHeader>
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex w-1/2 flex-col gap-2">
-          <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
+          <Label>
+            {cta === 'offer'
+              ? translations('form.label.client')
+              : translations('form.label.vendor')}
+          </Label>
           <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {cta === 'offer'
               ? orderDetails?.clientName
@@ -360,21 +364,23 @@ const EditOrder = ({
           </div>
         </div>
         <div className="flex w-1/2 flex-col gap-2">
-          <Label>Type</Label>
+          <Label>{translations('form.label.item_type')}</Label>
           <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {capitalize(orderDetails?.invoiceType)}
           </div>
         </div>
       </div>
       <div className="flex flex-col gap-2 rounded-sm border border-neutral-200 p-4">
-        <span className="font-semibold">Add Item</span>
+        <span className="font-semibold">
+          {translations('title.sub_titles.add_item')}
+        </span>
         <div className="flex items-center justify-between gap-4">
           <div className="flex w-full max-w-xs flex-col gap-2">
-            <Label>Item</Label>
+            <Label>{translations('form.label.item')}</Label>
             <div className="flex flex-col gap-1">
               <Select
                 name="items"
-                placeholder="Select"
+                placeholder={translations('form.input.item.placeholder')}
                 options={
                   cta === 'offer'
                     ? itemClientListingOptions?.map((item) => ({
@@ -422,7 +428,7 @@ const EditOrder = ({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label>Quantity</Label>
+            <Label>{translations('form.label.quantity')}</Label>
             <div className="flex flex-col gap-1">
               <Input
                 type="number"
@@ -447,7 +453,7 @@ const EditOrder = ({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Price</Label>
+            <Label>{translations('form.label.price')}</Label>
             <div className="flex flex-col gap-1">
               <Input
                 value={selectedItem.unitPrice}
@@ -477,7 +483,8 @@ const EditOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex">
-                GST <span className="text-xs"> (%)</span>
+                {translations('form.label.gst')}
+                <span className="text-xs"> (%)</span>
               </Label>
               <div className="flex flex-col gap-1">
                 <Input
@@ -490,7 +497,9 @@ const EditOrder = ({
           )}
 
           <div className="flex flex-col gap-2">
-            <Label className="flex gap-1">Value</Label>
+            <Label className="flex gap-1">
+              {translations('form.label.value')}
+            </Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
@@ -507,7 +516,7 @@ const EditOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex gap-1">
-                Tax Amount
+                {translations('form.label.tax_amount')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -526,7 +535,7 @@ const EditOrder = ({
               : isGstApplicableForSalesOrders,
           ) && (
             <div className="flex flex-col gap-2">
-              <Label>Amount</Label>
+              <Label>{translations('form.label.amount')}</Label>
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
@@ -555,7 +564,7 @@ const EditOrder = ({
               }));
             }}
           >
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
@@ -580,14 +589,14 @@ const EditOrder = ({
             }}
             variant="blue_outline"
           >
-            Add
+            {translations('form.ctas.add')}
           </Button>
         </div>
       </div>
       {/* selected item / Edit item table */}
       <div className="scrollBarStyles min-h-42 relative flex flex-col gap-2 overflow-auto rounded-md border px-4">
         <span className="sticky top-0 z-20 w-full pt-4 font-bold">
-          Edit Items
+          {translations('title.sub_titles.edit_item')}
         </span>
         {isLoading ? (
           <Loading />
@@ -598,13 +607,13 @@ const EditOrder = ({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      ITEM
+                      {translations('form.table.header.item')}
                     </TableHead>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      QUANTITY
+                      {translations('form.table.header.quantity')}
                     </TableHead>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      PRICE
+                      {translations('form.table.header.price')}
                     </TableHead>
 
                     {isGstApplicable(
@@ -613,11 +622,11 @@ const EditOrder = ({
                         : isGstApplicableForSalesOrders,
                     ) && (
                       <TableHead className="shrink-0 text-xs font-bold text-black">
-                        GST (%)
+                        {translations('form.table.header.gst')}
                       </TableHead>
                     )}
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      VALUE
+                      {translations('form.table.header.value')}
                     </TableHead>
                     {isGstApplicable(
                       isPurchasePage
@@ -626,10 +635,10 @@ const EditOrder = ({
                     ) && (
                       <>
                         <TableHead className="shrink-0 text-xs font-bold text-black">
-                          TAX AMOUNT
+                          {translations('form.table.header.tax_amount')}
                         </TableHead>
                         <TableHead className="shrink-0 text-xs font-bold text-black">
-                          AMOUNT
+                          {translations('form.table.header.amount')}
                         </TableHead>
                       </>
                     )}
@@ -725,13 +734,17 @@ const EditOrder = ({
           ) && (
             <>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Gross Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.gross_amount')} :{' '}
+                </span>
                 <span className="rounded-md border bg-slate-100 p-2">
                   {handleCalculateGrossAmt()?.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Tax Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.tax_amount')} :{' '}
+                </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {totalGstAmt.toFixed(2)}
                 </span>
@@ -739,7 +752,9 @@ const EditOrder = ({
             </>
           )}
           <div className="flex items-center gap-2">
-            <span className="font-bold">Total Amount : </span>
+            <span className="font-bold">
+              {translations('form.footer.total_amount')} :{' '}
+            </span>
             <span className="rounded-md border bg-slate-100 p-2">
               {handleCalculateTotalAmounts()?.toFixed(2)}
             </span>
@@ -748,14 +763,18 @@ const EditOrder = ({
 
         <div className="flex gap-2">
           <Button size="sm" onClick={onCancel} variant={'outline'}>
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
             onClick={handleSubmit}
             disabled={updateOrderMutation.isPending}
           >
-            {updateOrderMutation.isPending ? <Loading /> : 'Edit'}
+            {updateOrderMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('form.ctas.edit')
+            )}
           </Button>
         </div>
       </div>
