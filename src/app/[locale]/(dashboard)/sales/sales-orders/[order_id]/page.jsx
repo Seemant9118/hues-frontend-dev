@@ -26,6 +26,7 @@ import {
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, Download, MoreVertical, Pencil } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -67,6 +68,9 @@ const MakePaymentNew = dynamic(
 
 const ViewOrder = () => {
   useMetaData('Hues! - Sales Order Details', 'HUES SALES'); // dynamic title
+
+  const translations = useTranslations('sales.sales-orders.order_details');
+
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
@@ -86,31 +90,31 @@ const ViewOrder = () => {
   const salesOrdersBreadCrumbs = [
     {
       id: 1,
-      name: 'Sales',
+      name: translations('title.sales'),
       path: '/sales/sales-orders',
       show: true, // Always show
     },
     {
       id: 2,
-      name: `Order Details`,
+      name: translations('title.order_details'),
       path: `/sales/sales-orders/${params.order_id}`,
       show: true, // Always show
     },
     {
       id: 3,
-      name: 'Negotiation',
+      name: translations('title.negotiation'),
       path: `/sales/sales-orders/${params.order_id}`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
     {
       id: 4,
-      name: 'Generate Invoice',
+      name: translations('title.generate_invoice'),
       path: `/sales/sales-orders/${params.order_id}`,
       show: isGenerateInvoice, // Show only if isGenerateInvoice is true
     },
     {
       id: 5,
-      name: 'Record Payment',
+      name: translations('title.record_payment'),
       path: `/sales/sales-orders/${params.order_id}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true
     },
@@ -163,11 +167,13 @@ const ViewOrder = () => {
     mutationKey: orderApi.bulkNegotiateAcceptOrReject.endpointKey,
     mutationFn: bulkNegotiateAcceptOrReject,
     onSuccess: () => {
-      toast.success('Order Accepted');
+      toast.success(translations('successMsg.order_accepted'));
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message);
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -190,7 +196,9 @@ const ViewOrder = () => {
       link.click();
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -252,7 +260,7 @@ const ViewOrder = () => {
                     onClick={() => setIsRecordingPayment(true)}
                     className="font-bold"
                   >
-                    Record Payment
+                    {translations('ctas.record_payment')}
                   </Button>
                 )}
               {/* generateInvoice CTA */}
@@ -269,7 +277,7 @@ const ViewOrder = () => {
                     onClick={() => setIsGenerateInvoice(true)}
                     className="font-bold"
                   >
-                    Generate Invoice
+                    {translations('ctas.generate_invoice')}
                   </Button>
                 )}
 
@@ -296,7 +304,7 @@ const ViewOrder = () => {
                         )}
                       </Button>
                     }
-                    content={'Download Order Details'}
+                    content={translations('ctas.download.placeholder')}
                   />
                 )}
 
@@ -331,7 +339,7 @@ const ViewOrder = () => {
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         }
-                        content={'More options'}
+                        content={translations('ctas.more.placeholder')}
                       />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="max-w-fit">
@@ -339,7 +347,7 @@ const ViewOrder = () => {
                         onClick={() => setIsEditingOrder(true)}
                         className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
                       >
-                        <Pencil size={14} /> Edit
+                        <Pencil size={14} /> {translations('ctas.more.edit')}
                       </span>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -361,25 +369,25 @@ const ViewOrder = () => {
                       className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
                       value="overview"
                     >
-                      Overview
+                      {translations('tabs.label.tab1')}
                     </TabsTrigger>
                     <TabsTrigger
                       className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
                       value="invoices"
                     >
-                      Invoice
+                      {translations('tabs.label.tab2')}
                     </TabsTrigger>
                     <TabsTrigger
                       className={`w-24 ${tab === 'payment' ? 'shadow-customShadow' : ''}`}
                       value="payment"
                     >
-                      Payment
+                      {translations('tabs.label.tab3')}
                     </TabsTrigger>
                     <TabsTrigger
                       className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
                       value="timeline"
                     >
-                      Timeline
+                      {translations('tabs.label.tab4')}
                     </TabsTrigger>
                   </TabsList>
                 </section>
@@ -417,7 +425,7 @@ const ViewOrder = () => {
                   />
                 </TabsContent>
                 <TabsContent value="timeline">
-                  Timeline here. Coming Soon...
+                  {translations('tabs.content.tab4.coming_soon')}
                 </TabsContent>
               </Tabs>
             </section>
@@ -466,7 +474,8 @@ const ViewOrder = () => {
                   <>
                     {orderDetails?.orderType === 'SALES' && (
                       <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                        <Clock size={12} /> Waiting for Response
+                        <Clock size={12} />
+                        {translations('ctas.footer_ctas.wait_response')}
                       </span>
                     )}
 
@@ -480,14 +489,14 @@ const ViewOrder = () => {
                               className="w-32"
                               onClick={() => setIsNegotiation(true)}
                             >
-                              Negotiate
+                              {translations('ctas.footer_ctas.negotiate')}
                             </Button>
                             <Button
                               size="sm"
                               className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                               onClick={handleAccept}
                             >
-                              Accept
+                              {translations('ctas.footer_ctas.accept')}
                             </Button>
                           </>
                         )}
@@ -513,14 +522,14 @@ const ViewOrder = () => {
                               className="w-32"
                               onClick={() => setIsNegotiation(true)}
                             >
-                              Negotiate
+                              {translations('ctas.footer_ctas.negotiate')}
                             </Button>
                             <Button
                               size="sm"
                               className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                               onClick={handleAccept}
                             >
-                              Accept
+                              {translations('ctas.footer_ctas.accept')}
                             </Button>
                           </>
                         )}
@@ -528,7 +537,8 @@ const ViewOrder = () => {
                     )}
                     {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
                       <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                        <Clock size={12} /> Waiting for Response
+                        <Clock size={12} />{' '}
+                        {translations('ctas.footer_ctas.wait_response')}
                       </span>
                     )}
                   </>

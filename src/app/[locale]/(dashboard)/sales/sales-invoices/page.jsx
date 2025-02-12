@@ -27,7 +27,8 @@ import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+
+import { useRouter } from '@/i18n/routing';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../public/Empty.png';

@@ -21,18 +21,22 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUp, Building2, Check, Paperclip } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 const ViewDebitNote = () => {
   useMetaData('Hues! - Debit Notes Details', 'HUES DEBITNOTES'); // dynamic title
+
+  const translations = useTranslations(
+    'sales.sales-debit_notes.debit_notes_details',
+  );
+
   const queryClient = useQueryClient();
   const params = useParams();
   const debitNoteId = params.debit_id;
-
   const [files, setFiles] = useState([]);
-
   const [comment, setComment] = useState({
     debitNoteId,
     comment: '',
@@ -42,14 +46,14 @@ const ViewDebitNote = () => {
   const debitNoteBreadCrumbs = [
     {
       id: 1,
-      name: 'Debit Notes',
+      name: translations('title.debit_notes'),
       path: `/sales/sales-debitNotes`,
       show: true, // Always show
     },
 
     {
       id: 2,
-      name: 'Debit Note Details',
+      name: translations('title.debit_note_details'),
       path: `/sales/sales-debitNotes/${debitNoteId}`,
       show: true, // Always show
     },
@@ -75,7 +79,7 @@ const ViewDebitNote = () => {
 
     try {
       const { data } = await uploadMediaInComments(formData);
-      toast.success('File Attached Successfully');
+      toast.success(translations('successMsg.file_attached_success'));
 
       setFiles((prev) => [...prev, file]);
       // Use a functional state update to ensure you're appending correctly
@@ -87,7 +91,7 @@ const ViewDebitNote = () => {
       return data.data[0];
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || 'Something went wrong';
+        error.response?.data?.message || translations('errorMsg.common');
       toast.error(errorMessage);
       throw new Error(errorMessage); // Throw error to notify Quill of failure
     }
@@ -97,7 +101,7 @@ const ViewDebitNote = () => {
     mutationKey: [DebitNoteApi.createComments.endpointKey],
     mutationFn: createComments,
     onSuccess: () => {
-      toast.success('Comment Successfully');
+      toast.success(translations('successMsg.comment_success'));
       queryClient.invalidateQueries([
         DebitNoteApi.getComments.endpointKey,
         debitNoteId,
@@ -110,13 +114,15 @@ const ViewDebitNote = () => {
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
   const handleSubmitComment = () => {
     if (!comment.comment.trim()) {
-      toast.error('Comment cannot be empty');
+      toast.error(translations('errorMsg.comment_error_emtpy'));
       return;
     }
 
@@ -153,14 +159,16 @@ const ViewDebitNote = () => {
                 </h1>
                 <div className="flex gap-10">
                   <h1 className="text-sm">
-                    <span className="font-bold text-[#ABB0C1]">Date : </span>
+                    <span className="font-bold text-[#ABB0C1]">
+                      {translations('label.date')}:{' '}
+                    </span>
                     <span className="text-[#363940]">
                       {moment(debitNote.createdAt).format('DD/MM/YYYY')}
                     </span>
                   </h1>
                   <h1 className="text-sm">
                     <span className="font-bold text-[#ABB0C1]">
-                      Total Amount :{' '}
+                      {translations('label.total_amount')} :{' '}
                     </span>
                     <span className="font-bold text-[#363940]">
                       {formattedAmount(debitNote.amount)}
@@ -172,7 +180,9 @@ const ViewDebitNote = () => {
             </section>
 
             <h1 className="text-sm">
-              <span className="font-bold text-[#ABB0C1]">Reason : </span>
+              <span className="font-bold text-[#ABB0C1]">
+                {translations('label.reason')} :{' '}
+              </span>
               <span className="text-[#363940]">{debitNote.remark}</span>
             </h1>
           </div>
@@ -180,7 +190,9 @@ const ViewDebitNote = () => {
 
         {/* comments  */}
         <div className="flex h-full flex-col gap-4 p-2">
-          <h1 className="text-sm font-bold">Comments</h1>
+          <h1 className="text-sm font-bold">
+            {translations('comments.title')}
+          </h1>
 
           <div className="relative">
             {/* 1 */}
@@ -196,7 +208,7 @@ const ViewDebitNote = () => {
                 setComment((prev) => ({ ...prev, comment: e.target.value }));
               }}
               className="w-full flex-1 px-24"
-              placeholder="Type your comment here...."
+              placeholder={translations('comments.input.placeholder')}
             />
 
             {/* 3 */}
@@ -210,7 +222,7 @@ const ViewDebitNote = () => {
                     />
                   </label>
                 }
-                content={'Attach File'}
+                content={translations('comments.ctas.attach_file.placeholder')}
               />
 
               <input
@@ -232,7 +244,7 @@ const ViewDebitNote = () => {
                     className={'cursor-pointer hover:text-black'}
                   />
                 }
-                content={'Send'}
+                content={translations('comments.ctas.send.placeholder')}
               />
             </div>
           </div>
@@ -240,7 +252,9 @@ const ViewDebitNote = () => {
           <div className="flex flex-col">
             {/* attached files */}
             {files?.length > 0 && (
-              <span className="text-xs font-bold">Attached files </span>
+              <span className="text-xs font-bold">
+                {translations('comments.attached_files_heading')}
+              </span>
             )}
             {files?.map((file) => (
               <div
@@ -257,7 +271,7 @@ const ViewDebitNote = () => {
                       <Check size={10} />
                     </div>
                     <p className="text-xs font-medium leading-5 text-green-500">
-                      File Attached Successfully!
+                      {translations('successMsg.file_attached_success')}
                     </p>
                   </div>
                 </div>
@@ -276,8 +290,8 @@ const ViewDebitNote = () => {
 
             {!isCommentLoading && comments.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
-                <h1>No Comments yet</h1>
-                <p>Say Something to start the conversation</p>
+                <h1>{translations('comments.emtpyStateComponent.title')}</h1>
+                <p>{translations('comments.emtpyStateComponent.para')}</p>
               </div>
             )}
           </section>

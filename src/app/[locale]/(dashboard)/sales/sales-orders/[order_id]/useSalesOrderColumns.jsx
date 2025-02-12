@@ -2,13 +2,17 @@
 
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { useTranslations } from 'next-intl';
 
 export const useSalesOrderColumns = (status) => {
+  const translations = useTranslations(
+    'sales.sales-orders.order_details.tabs.content.tab1.table.header',
+  );
   return [
     {
       accessorKey: 'item',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ITEMS" />
+        <DataTableColumnHeader column={column} title={translations('item')} />
       ),
       cell: ({ row }) => {
         const { productType } = row.original;
@@ -23,9 +27,15 @@ export const useSalesOrderColumns = (status) => {
       accessorKey: 'quantity',
       header: ({ column }) => {
         return status === 'ACCEPTED' || status === 'PARTIAL_INVOICED' ? (
-          <DataTableColumnHeader column={column} title="INVOICE / QUANTITY" />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('invoice_quantity')}
+          />
         ) : (
-          <DataTableColumnHeader column={column} title="QUANTITY" />
+          <DataTableColumnHeader
+            column={column}
+            title={translations('quantity')}
+          />
         );
       },
       cell: ({ row }) => {
@@ -45,7 +55,10 @@ export const useSalesOrderColumns = (status) => {
     {
       accessorKey: 'rate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ASKING RATE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('ask_rate')}
+        />
       ),
       cell: ({ row }) => {
         const isNegotiation = row.original?.negotiation;
@@ -57,7 +70,10 @@ export const useSalesOrderColumns = (status) => {
     {
       accessorKey: 'totalAmount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="TOTAL AMOUNT" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('total_amount')}
+        />
       ),
       cell: ({ row }) => {
         const isNegotiation = row.original?.negotiation;
