@@ -169,61 +169,61 @@
             },
             "invoice_details": {
                 "title": {
-                    "invoices": "चालान",
-                    "invoice_details": "चालान विवरण",
-                    "record_payment": "भुगतान रिकॉर्ड करें"
+                    "invoices": "Invoices",
+                    "invoice_details": "Invoice Details",
+                    "record_payment": "Record Payment"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "record_payment": "Record Payment",
                     "share": {
-                        "placeholder": "शीघ्र आ रहा है.."
+                        "placeholder": "Coming Soon.."
                     },
                     "download": {
-                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                        "placeholder": "Download Order Details"
                     }
                 },
                 "tabs": {
                     "label": {
-                        "tab1": "सारांश",
-                        "tab2": "भुगतान रसीदें",
-                        "tab3": "डेबिट नोट्स"
+                        "tab1": "Overview",
+                        "tab2": "Payment Receipts",
+                        "tab3": "Debit Notes"
                     },
                     "content": {
                         "tab1": {
                             "table": {
                                 "header": {
-                                    "item": "आइटम",
-                                    "quantity": "मात्रा",
-                                    "rate": "दर",
-                                    "total_amount": "कुल राशि"
+                                    "item": "Item",
+                                    "quantity": "Quantity",
+                                    "rate": "Rate",
+                                    "total_amount": "Total Amount"
                                 }
                             }
                         },
                         "tab2": {
                             "table": {
                                 "header": {
-                                    "payment_id": "भुगतान आईडी",
-                                    "amount": "राशि",
-                                    "date": "तारीख",
-                                    "invoice_no": "चालान संख्या"
+                                    "payment_id": "Payment ID",
+                                    "amount": "Amount",
+                                    "date": "Date",
+                                    "invoice_no": "Invoice No."
                                 }
                             },
                             "emtpyStateComponent": {
-                                "title": "अभी तक कोई भुगतान नहीं",
-                                "para": "आपने अभी तक कोई भुगतान नहीं किया है। अपने लेनदेन को ट्रैक करने के लिए पहला भुगतान उत्पन्न करें।"
+                                "title": "No payments yet",
+                                "para": "You haven't made any payments yet. Start by generating your first payment to keep track of your transactions."
                             }
                         },
                         "tab3": {
                             "label": {
-                                "view_debit_notes": "डेबिट नोट देखें",
-                                "date": "तारीख",
-                                "total_amount": "कुल राशि",
-                                "type": "प्रकार",
-                                "reason": "कारण"
+                                "view_debit_notes": "View Debit Note",
+                                "date": "Date",
+                                "total_amount": "Total Amount",
+                                "type": "Type",
+                                "reason": "Reason"
                             },
                             "emtpyStateComponent": {
-                                "title": "अभी तक कोई डेबिट नोट नहीं उठाया गया",
-                                "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
+                                "title": "No debit notes raised yet",
+                                "para": "You haven't any debit notes yet."
                             }
                         }
                     }

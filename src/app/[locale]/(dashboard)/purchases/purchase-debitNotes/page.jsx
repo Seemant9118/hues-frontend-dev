@@ -23,10 +23,10 @@ import {
 } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
 import emptyImg from '../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';

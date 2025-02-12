@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
@@ -25,14 +26,19 @@ import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import { Download, MoveUpRight, Share2 } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
 const ViewInvoice = () => {
   useMetaData('Hues! - Purchase Invoice Details', 'HUES INVOICES'); // dynamic title
+
+  const translations = useTranslations(
+    'purchases.purchase-invoices.invoice_details',
+  );
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
@@ -40,13 +46,13 @@ const ViewInvoice = () => {
   const invoiceOrdersBreadCrumbs = [
     {
       id: 1,
-      name: 'Invoices',
+      name: translations('title.invoices'),
       path: '/purchases/purchase-invoices/',
       show: true, // Always show
     },
     {
       id: 2,
-      name: `Invoice details`,
+      name: translations('title.invoice_details'),
       path: `/purchases/purchase-invoices/${params.invoiceId}`,
       show: true, // Always show
     },
@@ -157,7 +163,7 @@ const ViewInvoice = () => {
                     <Share2 size={14} />
                   </Button>
                 }
-                content={'Share feature Coming soon...'}
+                content={translations('ctas.share.placeholder')}
               />
 
               {/* View CTA modal */}
@@ -178,7 +184,7 @@ const ViewInvoice = () => {
                     </a>
                   </Button>
                 }
-                content={'Download invoice PDF'}
+                content={translations('ctas.download.placeholder')}
               />
             </div>
           </section>
@@ -188,9 +194,15 @@ const ViewInvoice = () => {
             defaultValue={'overview'}
           >
             <TabsList className="border">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="payment">Payments</TabsTrigger>
-              <TabsTrigger value="debitNotes">Debit Notes</TabsTrigger>
+              <TabsTrigger value="overview">
+                {translations('tabs.label.tab1')}
+              </TabsTrigger>
+              <TabsTrigger value="payment">
+                {translations('tabs.label.tab2')}
+              </TabsTrigger>
+              <TabsTrigger value="debitNotes">
+                {translations('tabs.label.tab3')}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
               {isLoading && <Loading />}
@@ -231,7 +243,11 @@ const ViewInvoice = () => {
               {!isPaymentsLoading && paymentsListing?.length === 0 && (
                 <div className="flex h-[29rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="font-bold">No payments yet</p>
+                  <p className="font-bold">
+                    {translations(
+                      'tabs.content.tab2.emtpyStateComponent.title',
+                    )}
+                  </p>
                 </div>
               )}
             </TabsContent>
@@ -266,14 +282,18 @@ const ViewInvoice = () => {
                                 }}
                                 className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline"
                               >
-                                View Debit Note <MoveUpRight size={12} />
+                                {translations(
+                                  'tabs.content.tab3.label.view_debit_notes',
+                                )}
+                                <MoveUpRight size={12} />
                               </p>
                             </div>
 
                             <div className="flex gap-10">
                               <h1 className="text-sm">
                                 <span className="font-bold text-[#ABB0C1]">
-                                  Date :{' '}
+                                  {translations('tabs.content.tab3.label.date')}{' '}
+                                  :{' '}
                                 </span>
                                 <span className="text-[#363940]">
                                   {moment(debitNote?.createdAt).format(
@@ -283,28 +303,24 @@ const ViewInvoice = () => {
                               </h1>
                               <h1 className="text-sm">
                                 <span className="font-bold text-[#ABB0C1]">
-                                  Total Amount :{' '}
+                                  {translations(
+                                    'tabs.content.tab3.label.total_amount',
+                                  )}
+                                  :{' '}
                                 </span>
                                 <span className="font-bold text-[#363940]">
                                   {formattedAmount(debitNote?.amount)}
                                 </span>
                                 <span> (inc. GST)</span>
                               </h1>
-                              <h1 className="text-sm font-bold">
-                                <span className="font-bold text-[#ABB0C1]">
-                                  Type :{' '}
-                                </span>
-                                <span className="font-bold text-[#363940]">
-                                  {capitalize(
-                                    invoiceDetails?.invoiceDetails?.invoiceType,
-                                  )}
-                                </span>
-                              </h1>
                             </div>
                             <div className="flex gap-2">
                               <h1 className="text-sm">
                                 <span className="font-bold text-[#ABB0C1]">
-                                  Reason :{' '}
+                                  {translations(
+                                    'tabs.content.tab3.label.reason',
+                                  )}
+                                  :{' '}
                                 </span>
                                 <span className="font-bold text-[#363940]">
                                   {debitNote?.remark}
@@ -320,9 +336,13 @@ const ViewInvoice = () => {
               {!isDebitNoteLoading && debitNotes?.length === 0 && (
                 <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="font-bold">No debit notes raised yet</p>
+                  <p className="font-bold">
+                    {translations(
+                      'tabs.content.tab3.emtpyStateComponent.title',
+                    )}
+                  </p>
                   <p className="max-w-96 text-center">
-                    {"You haven't any debit notes yet. "}
+                    {translations('tabs.content.tab3.emtpyStateComponent.para')}
                   </p>
                 </div>
               )}

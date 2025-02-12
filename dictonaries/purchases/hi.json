@@ -59,6 +59,61 @@
                         "infoText": "आप इस प्रस्ताव {orderId} को हटा रहे हैं"
                     }
                 }
+            },
+            "order_details": {
+                "title": {
+                    "purchases": "खरीदारी",
+                    "order_details": "ऑर्डर विवरण",
+                    "negotiation": "मोलभाव",
+                    "invoices": "चालान",
+                    "record_payment": "भुगतान रिकॉर्ड करें"
+                },
+                "ctas": {
+                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "generate_invoice": "चालान उत्पन्न करें",
+                    "download": {
+                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                    },
+                    "more": {
+                        "placeholder": "अधिक विकल्प",
+                        "edit": "संपादित करें"
+                    },
+                    "footer_ctas": {
+                        "wait_response": "प्रतिक्रिया की प्रतीक्षा",
+                        "negotiate": "मोलभाव करें",
+                        "accept": "स्वीकार करें"
+                    }
+                },
+                "tabs": {
+                    "label": {
+                        "tab1": "सारांश",
+                        "tab2": "चालान",
+                        "tab3": "भुगतान सलाह",
+                        "tab4": "समयरेखा"
+                    },
+                    "content": {
+                        "tab1": {
+                            "table": {
+                                "header": {
+                                    "item": "आइटम",
+                                    "invoice_quantity": "चालान/मात्रा",
+                                    "quantity": "मात्रा",
+                                    "ask_rate": "मांग दर",
+                                    "total_amount": "कुल राशि"
+                                }
+                            }
+                        },
+                        "tab4": {
+                            "coming_soon": "यहाँ समयरेखा होगी। शीघ्र आ रहा है..."
+                        }
+                    }
+                },
+                "successMsg": {
+                    "order_accepted": "ऑर्डर स्वीकार किया गया"
+                },
+                "errorMsg": {
+                    "common": "कुछ गलत हो गया"
+                }
             }
         },
         "purchase-invoices": {
@@ -106,6 +161,67 @@
                     "status": "स्थिति",
                     "total_amount": "कुल राशि"
                 }
+            },
+            "invoice_details": {
+                "title": {
+                    "invoices": "चालान",
+                    "invoice_details": "चालान विवरण"
+                },
+                "ctas": {
+                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "share": {
+                        "placeholder": "शीघ्र आ रहा है.."
+                    },
+                    "download": {
+                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                    }
+                },
+                "tabs": {
+                    "label": {
+                        "tab1": "सारांश",
+                        "tab2": "भुगतान सलाह",
+                        "tab3": "डेबिट नोट्स"
+                    },
+                    "content": {
+                        "tab1": {
+                            "table": {
+                                "header": {
+                                    "item": "आइटम",
+                                    "quantity": "मात्रा",
+                                    "rate": "दर",
+                                    "total_amount": "कुल राशि"
+                                }
+                            }
+                        },
+                        "tab2": {
+                            "table": {
+                                "header": {
+                                    "payment_id": "भुगतान आईडी",
+                                    "amount": "राशि",
+                                    "date": "तारीख",
+                                    "invoice_no": "चालान संख्या"
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "अभी तक कोई भुगतान नहीं",
+                                "para": "आपने अभी तक कोई भुगतान नहीं किया है। अपने लेनदेन को ट्रैक करने के लिए पहला भुगतान उत्पन्न करें।"
+                            }
+                        },
+                        "tab3": {
+                            "label": {
+                                "view_debit_notes": "डेबिट नोट देखें",
+                                "date": "तारीख",
+                                "total_amount": "कुल राशि",
+                                "type": "प्रकार",
+                                "reason": "कारण"
+                            },
+                            "emtpyStateComponent": {
+                                "title": "अभी तक कोई डेबिट नोट नहीं उठाया गया",
+                                "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
+                            }
+                        }
+                    }
+                }
             }
         },
         "purchase-debit_notes": {
@@ -134,6 +250,53 @@
                     "vendors": "विक्रेता",
                     "total_amount": "कुल राशि",
                     "status": "स्थिति"
+                }
+            },
+            "debit_notes_details": {
+                "title": {
+                    "debit_notes": "डेबिट नोट्स",
+                    "debit_note_details": "डेबिट नोट विवरण"
+                },
+                "label": {
+                    "date": "तारीख",
+                    "total_amount": "कुल राशि",
+                    "type": "प्रकार",
+                    "reason": "कारण"
+                },
+                "emtpyStateComponent": {
+                    "title": "अभी तक कोई डेबिट नोट नहीं उठाया गया",
+                    "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
+                },
+                "comments": {
+                    "title": "टिप्पणियाँ",
+                    "attached_files_heading": "संलग्न फ़ाइलें",
+                    "input": {
+                        "placeholder": "अपनी टिप्पणी यहाँ लिखें..."
+                    },
+                    "ctas": {
+                        "attach_file": {
+                            "placeholder": "फ़ाइल संलग्न करें"
+                        },
+                        "send": {
+                            "placeholder": "भेजें"
+                        }
+                    },
+                    "emtpyStateComponent": {
+                        "title": "अभी तक कोई टिप्पणी नहीं",
+                        "para": "बातचीत शुरू करने के लिए कुछ कहें"
+                    }
+                },
+                "successMsg": {
+                    "file_attached_success": "फ़ाइल सफलतापूर्वक संलग्न की गई",
+                    "comment_success": "टिप्पणी सफलतापूर्वक की गई"
+                },
+                "errorMsg": {
+                    "comment_error_emtpy": "टिप्पणी खाली नहीं हो सकती",
+                    "common": "कुछ गलत हो गया"
+                },
+                "ctas": {
+                    "accept": "स्वीकार करें",
+                    "reject": "अस्वीकार करें"
                 }
             }
         }

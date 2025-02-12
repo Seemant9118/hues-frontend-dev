@@ -59,6 +59,61 @@
                         "infoText": "You are removing this offer {orderId}"
                     }
                 }
+            },
+            "order_details": {
+                "title": {
+                    "purchases": "Purchases",
+                    "order_details": "Order Details",
+                    "negotiation": "Negotiation",
+                    "invoices": "Invoices",
+                    "record_payment": "Record Payment"
+                },
+                "ctas": {
+                    "record_payment": "Record Payment",
+                    "generate_invoice": "Generate Invoice",
+                    "download": {
+                        "placeholder": "Download Order Details"
+                    },
+                    "more": {
+                        "placeholder": "More options",
+                        "edit": "Edit"
+                    },
+                    "footer_ctas": {
+                        "wait_response": "Waiting for Response",
+                        "negotiate": "Negotiate",
+                        "accept": "Accept"
+                    }
+                },
+                "tabs": {
+                    "label": {
+                        "tab1": "Overview",
+                        "tab2": "Invoices",
+                        "tab3": "Payment Advices",
+                        "tab4": "Timeline"
+                    },
+                    "content": {
+                        "tab1": {
+                            "table": {
+                                "header": {
+                                    "item": "ITEM",
+                                    "invoice_quantity": "INVOICE/QUANTITY",
+                                    "quantity": "QUANTITY",
+                                    "ask_rate": "ASKING RATE",
+                                    "total_amount": "TOTAL AMOUNT"
+                                }
+                            }
+                        },
+                        "tab4": {
+                            "coming_soon": "Timeline here. Coming Soon..."
+                        }
+                    }
+                },
+                "successMsg": {
+                    "order_accepted": "Order Accepted"
+                },
+                "errorMsg": {
+                    "common": "Something went wrong"
+                }
             }
         },
         "purchase-invoices": {
@@ -106,6 +161,67 @@
                     "status": "STATUS",
                     "total_amount": "TOTAL AMOUNT"
                 }
+            },
+            "invoice_details": {
+                "title": {
+                    "invoices": "Invoices",
+                    "invoice_details": "Invoice Details"
+                },
+                "ctas": {
+                    "record_payment": "Record Payment",
+                    "share": {
+                        "placeholder": "Coming Soon.."
+                    },
+                    "download": {
+                        "placeholder": "Download Order Details"
+                    }
+                },
+                "tabs": {
+                    "label": {
+                        "tab1": "Overview",
+                        "tab2": "Payment Advices",
+                        "tab3": "Debit Notes"
+                    },
+                    "content": {
+                        "tab1": {
+                            "table": {
+                                "header": {
+                                    "item": "Item",
+                                    "quantity": "Quantity",
+                                    "rate": "Rate",
+                                    "total_amount": "Total Amount"
+                                }
+                            }
+                        },
+                        "tab2": {
+                            "table": {
+                                "header": {
+                                    "payment_id": "Payment ID",
+                                    "amount": "Amount",
+                                    "date": "Date",
+                                    "invoice_no": "Invoice No."
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "No payments yet",
+                                "para": "You haven't made any payments yet. Start by generating your first payment to keep track of your transactions."
+                            }
+                        },
+                        "tab3": {
+                            "label": {
+                                "view_debit_notes": "View Debit Note",
+                                "date": "Date",
+                                "total_amount": "Total Amount",
+                                "type": "Type",
+                                "reason": "Reason"
+                            },
+                            "emtpyStateComponent": {
+                                "title": "No debit notes raised yet",
+                                "para": "You haven't any debit notes yet."
+                            }
+                        }
+                    }
+                }
             }
         },
         "purchase-debit_notes": {
@@ -134,6 +250,53 @@
                     "vendors": "VENDORS",
                     "total_amount": "TOTAL AMOUNT",
                     "status": "STATUS"
+                }
+            },
+            "debit_notes_details": {
+                "title": {
+                    "debit_notes": "Debit Notes",
+                    "debit_note_details": "Debit Note Details"
+                },
+                "label": {
+                    "date": "Date",
+                    "total_amount": "Total Amount",
+                    "type": "Type",
+                    "reason": "Reason"
+                },
+                "emtpyStateComponent": {
+                    "title": "No debit notes raised yet",
+                    "para": "You haven't any debit notes yet."
+                },
+                "comments": {
+                    "title": "Comments",
+                    "attached_files_heading": "Attached Files",
+                    "input": {
+                        "placeholder": "Type your comment here..."
+                    },
+                    "ctas": {
+                        "attach_file": {
+                            "placeholder": "Attach file"
+                        },
+                        "send": {
+                            "placeholder": "Send"
+                        }
+                    },
+                    "emtpyStateComponent": {
+                        "title": "No Comments yet",
+                        "para": "Say Something to start the conversation"
+                    }
+                },
+                "successMsg": {
+                    "file_attached_success": "File Attached Successfully",
+                    "comment_success": "Comment Successfully"
+                },
+                "errorMsg": {
+                    "comment_error_emtpy": "Comment can not be empty",
+                    "common": "Something went wrong"
+                },
+                "ctas": {
+                    "accept": "Accept",
+                    "reject": "Reject"
                 }
             }
         }
