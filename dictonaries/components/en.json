@@ -287,6 +287,33 @@
                 "yes": "Yes",
                 "no": "No"
             }
+        },
+        "order_overview": {
+            "title": "Overview",
+            "label": {
+                "order_id": "Order ID",
+                "client_name": "Client Name",
+                "vendor_name": "Vendor Name",
+                "order_status": "Order Status",
+                "payment_status": "Payment Status",
+                "total_amount": "Total Amount",
+                "view_negotiation": "View Negotiation"
+            },
+            "acknowledge_message": {
+                "infoText": "This order is directly recorded by our client/vendor. Acknowledge to add it to your order list",
+                "ctas": {
+                    "undo": "Undo",
+                    "no": "No",
+                    "yes": "Yes"
+                }
+            },
+            "successMsg": {
+                "acknowledged_sucess": "Order Acknowledged Successfully",
+                "undo_acknowledged_success": "Undo Order Acknowledged Successfully"
+            },
+            "errorMsg": {
+                "common": "Something went wrong"
+            }
         }
     }
 }

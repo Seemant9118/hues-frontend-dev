@@ -287,6 +287,33 @@
                 "yes": "हाँ",
                 "no": "नहीं"
             }
+        },
+        "order_overview": {
+            "title": "सारांश",
+            "label": {
+                "order_id": "ऑर्डर आईडी",
+                "client_name": "ग्राहक का नाम",
+                "vendor_name": "विक्रेता का नाम",
+                "order_status": "ऑर्डर की स्थिति",
+                "payment_status": "भुगतान की स्थिति",
+                "total_amount": "कुल राशि",
+                "view_negotiation": "मोलभाव देखें"
+            },
+            "acknowledge_message": {
+                "infoText": "यह ऑर्डर सीधे हमारे ग्राहक/विक्रेता द्वारा रिकॉर्ड किया गया है। इसे अपनी ऑर्डर सूची में जोड़ने के लिए स्वीकार करें",
+                "ctas": {
+                    "undo": "पूर्ववत करें",
+                    "no": "नहीं",
+                    "yes": "हाँ"
+                }
+            },
+            "successMsg": {
+                "acknowledged_sucess": "ऑर्डर सफलतापूर्वक स्वीकार किया गया",
+                "undo_acknowledged_success": "ऑर्डर स्वीकार करना पूर्ववत सफलतापूर्वक"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया"
+            }
         }
     }
 }
