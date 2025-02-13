@@ -4,6 +4,7 @@ import {
   previewInvoice,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -38,6 +39,8 @@ const PreviewInvoice = dynamic(
 );
 
 const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
+  const translations = useTranslations('components.generate_invoice');
+
   const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
 
   const [invoicedData, setInvoicedData] = useState({
@@ -212,15 +215,19 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     mutationFn: previewInvoice,
     onSuccess: (data) => setPreviewInvoiceBase64(data?.data?.data),
     onError: (error) =>
-      toast.error(error.response.data.message || 'Something went wrong'),
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      ),
   });
 
   const generateOTPMutation = useMutation({
     mutationKey: [invoiceApi.generateOTPInvoice.endpointKey],
     mutationFn: invoiceGenerateOTP,
-    onSuccess: () => toast.success('OTP sent'),
+    onSuccess: () => toast.success(translations('successMsg.otp_sent')),
     onError: (error) =>
-      toast.error(error.response.data.message || 'Something went wrong'),
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      ),
   });
 
   const handlePreview = () => previewInvMutation.mutate(invoicedData);
@@ -264,16 +271,16 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                 />
               </TableHead>
               <TableHead className="shrink-0 text-xs font-bold text-black">
-                ITEM NAME
+                {translations('table.header.item_name')}
               </TableHead>
               <TableHead className="shrink-0 text-xs font-bold text-black">
-                QUANTITY
+                {translations('table.header.quantity')}
               </TableHead>
               <TableHead className="shrink-0 text-xs font-bold text-black">
-                UNIT PRICE
+                {translations('table.header.unit_price')}
               </TableHead>
               <TableHead className="shrink-0 text-xs font-bold text-black">
-                TOTAL AMOUNT
+                {translations('table.header.total_amount')}
               </TableHead>
             </TableRow>
           </TableHeader>

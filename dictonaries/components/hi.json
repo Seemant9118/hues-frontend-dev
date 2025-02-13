@@ -339,6 +339,148 @@
                 "cancel": "रद्द करें",
                 "download": "डाउनलोड"
             }
+        },
+        "generate_invoice": {
+            "title": "इनवॉइस बनाएं",
+            "table": {
+                "header": {
+                    "item_name": "आइटम का नाम",
+                    "quantity": "मात्रा",
+                    "unit_price": "इकाई मूल्य",
+                    "total_amount": "कुल राशि"
+                }
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया"
+            },
+            "successMsg": {
+                "otp_sent": "ओटीपी भेजा गया"
+            }
+        },
+        "generate_invoice_modal_otp": {
+            "title": "इनवॉइस",
+            "ctas": {
+                "generate": "बनाएं",
+                "resend": "पुनः भेजें",
+                "verify": "सत्यापित करें और बनाएं",
+                "view": "देखें"
+            },
+            "infoText": {
+                "info": "वन टाइम पासवर्ड भेजा गया है",
+                "resend_info": "ओटीपी पुनः भेजें"
+            },
+            "successMsg": {
+                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया"
+            }
+        },
+        "preview_invoice_modal": {
+            "title": "इनवॉइस पूर्वावलोकन",
+            "cta": "पूर्वावलोकन"
+        },
+        "negotiation_component": {
+            "table": {
+                "header": {
+                    "label": {
+                        "item": "आइटम",
+                        "quantity": "मात्रा",
+                        "rate": "दर",
+                        "total": "कुल"
+                    }
+                },
+                "child_table": {
+                    "header": {
+                        "label": {
+                            "ask": "प्रस्ताव",
+                            "counter": "प्रतिप्रस्ताव"
+                        }
+                    }
+                },
+                "column_actions": {
+                    "history": {
+                        "placeholder": "मोलभाव इतिहास देखें",
+                        "infoTitle": "इतिहास ",
+                        "infoPara": "इस आइटम के लिए कोई मोलभाव इतिहास नहीं है।"
+                    },
+                    "who": {
+                        "buyer": "खरीदार",
+                        "you": "आप",
+                        "seller": "विक्रेता"
+                    }
+                }
+            },
+            "ctas": {
+                "cancel": "रद्द करें",
+                "submit": "जमा करें"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया",
+                "empty": "कृपया कम से कम एक मोलभाव आइटम भरें।"
+            },
+            "successMsg": {
+                "negotiation_submitted": "मोलभाव सफलतापूर्वक जमा किया गया"
+            }
+        },
+        "record_payment_order": {
+            "form": {
+                "label": {
+                    "payment_mode": "भुगतान मोड",
+                    "options": {
+                        "neft": "एनईएफटी",
+                        "rtgs": "आरटीजीएस",
+                        "upi": "यूपीआई",
+                        "credit_debit": "क्रेडिट / डेबिट कार्ड",
+                        "cheque": "चेक",
+                        "cash": "नकद"
+                    },
+                    "tran_id": "लेनदेन आईडी",
+                    "amount_paid": "भरी गई राशि",
+                    "balance": "शेष राशि"
+                },
+                "table": {
+                    "title": "इनवॉइस",
+                    "para": "राशि स्वचालित रूप से विभाजित की जाती है, लेकिन आवश्यकता होने पर आप इसे मैन्युअल रूप से कस्टमाइज़ कर सकते हैं",
+                    "header": {
+                        "label": {
+                            "invoice_no": "इनवॉइस नंबर",
+                            "date": "तारीख",
+                            "quantity": "मात्रा",
+                            "balance_amt": "शेष राशि",
+                            "amount_paid": "भरी गई राशि"
+                        }
+                    }
+                },
+                "upload_proof": {
+                    "title": "प्रूफ अपलोड करें",
+                    "para": "फ़ाइल को खींचें और छोड़ें या फ़ाइल चुनें (अधिकतम 10MB, .png/.pdf फॉर्मेट्स)",
+                    "note": "नोट - केवल भुगतान प्रमाण अपलोड करें।",
+                    "ctas": {
+                        "select": "चुनें"
+                    }
+                },
+                "ctas": {
+                    "revert": "वापस लें",
+                    "auto-split": "स्वतः-विभाजन",
+                    "create": "बनाएं",
+                    "discard": "त्यागें"
+                }
+            },
+            "successMsg": {
+                "payment_recorded_sucessfully": "भुगतान सफलतापूर्वक रिकॉर्ड किया गया",
+                "upload_success": "सफलतापूर्वक अपलोड हुआ"
+            },
+            "errorMsg": {
+                "payment_mode": "*आवश्यक! कृपया भुगतान मोड चुनें",
+                "amount_paid_required": "*आवश्यक! राशि खाली नहीं होनी चाहिए",
+                "amount_paid_empty": "राशि खाली नहीं होनी चाहिए",
+                "amount_paid_exceed": "राशि शेष राशि से अधिक है",
+                "amount_paid_not_greater_than": "भरी गई राशि इससे अधिक नहीं होनी चाहिए",
+                "invoiceAmountPaid_exceed": "राशि कुल भुगतान राशि से अधिक है",
+                "invoiceAmountPaid_less": "राशि कुल भुगतान राशि से कम है",
+                "common": "कुछ गलत हो गया"
+            }
         }
     }
 }
