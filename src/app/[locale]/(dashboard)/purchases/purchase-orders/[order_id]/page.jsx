@@ -307,7 +307,7 @@ const ViewOrder = () => {
                       {translations('tabs.label.tab2')}
                     </TabsTrigger>
                     <TabsTrigger
-                      className={`w-24 ${tab === 'payment' ? 'shadow-customShadow' : ''}`}
+                      className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
                       value="payment"
                     >
                       {translations('tabs.label.tab3')}

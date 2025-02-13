@@ -13,8 +13,7 @@ import {
   userUpdate,
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Info } from 'lucide-react';
-import Link from 'next/link';
+import { Info, InfoIcon } from 'lucide-react';
 
 import { userAuth } from '@/api/user_auth/Users';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
@@ -27,6 +26,7 @@ import AuthProgress from '../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
   const userID = LocalStorageService.get('user_profile');
+  const attemptsRemaining = LocalStorageService.get('attemptsRemaining');
 
   const { updateAuthProgress } = useAuthProgress();
 
@@ -126,6 +126,7 @@ const PanVerificationPage = () => {
   const {
     data: panDetails,
     isLoading: isPanDetailsLoading,
+    isFetching: isPanDetailsFetching,
     error: errorPanDetails,
   } = useQuery({
     queryKey: [userAuth.getPanDetails.endpointKey],
@@ -133,8 +134,11 @@ const PanVerificationPage = () => {
     enabled:
       userData?.panNumber?.length === 10 &&
       userData?.isTermsAndConditionApplied,
-    select: (data) => data.data.data,
+    select: (data) => data?.data?.data,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
   });
 
   useEffect(() => {
@@ -195,6 +199,9 @@ const PanVerificationPage = () => {
     onError: (error) => {
       toast.error(error.response.data.message || 'Oops, Something went wrong!');
     },
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
   });
 
   // handleProceed fn
@@ -248,9 +255,10 @@ const PanVerificationPage = () => {
                   name="panNumber"
                   value={userData.panNumber}
                   onChange={handleChange}
+                  disabled={attemptsRemaining === 0}
                 />
                 {/* if api is in pendingState then visible */}
-                {userData?.panNumber?.length === 10 && isPanDetailsLoading && (
+                {(isPanDetailsLoading || isPanDetailsFetching) && (
                   <div className="absolute right-1 top-0 flex h-full items-center justify-between bg-transparent p-1">
                     <span className="text-xs font-semibold text-gray-500">
                       Fetching details...
@@ -262,11 +270,31 @@ const PanVerificationPage = () => {
               {!isPanDetailsLoading && errorMsg?.panNumber && (
                 <ErrorBox msg={errorMsg?.panNumber} />
               )}
+
+              {!errorMsg?.panNumber && (
+                <div className="text-xs font-semibold">
+                  {Math.max(
+                    attemptsRemaining ?? 0,
+                    panDetails?.remainingAttempts ?? 0,
+                  ) > 0 ? (
+                    <div className="flex items-center gap-1 text-primary">
+                      <InfoIcon size={14} />
+                      {`You have ${panDetails?.remainingAttempts ?? attemptsRemaining ?? 0} attempts left to verify your PAN`}
+                    </div>
+                  ) : (
+                    <div className="text-red-600">
+                      You have exhausted your daily limit to verify your PAN,
+                      please try again later.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm">
                 <Checkbox
+                  disabled={attemptsRemaining === 0}
                   checked={userData.isTermsAndConditionApplied}
                   onCheckedChange={() => setIsTandCModalOpen(true)}
                 />
@@ -298,7 +326,7 @@ const PanVerificationPage = () => {
             </div>
 
             {/* if PAN details fetched then name and dob comes up */}
-            {panDetails && (
+            {userData?.panNumber?.length === 10 && panDetails && (
               <>
                 <div className="grid w-full items-center gap-1.5">
                   <Label
@@ -359,17 +387,22 @@ const PanVerificationPage = () => {
               type="submit"
               className="w-full"
               size="sm"
-              disabled={userUpdatemutation.isPending}
+              disabled={
+                userUpdatemutation.isPending ||
+                errorPanDetails ||
+                isPanDetailsLoading ||
+                isPanDetailsFetching ||
+                attemptsRemaining === 0
+              }
             >
-              {userUpdatemutation.isPending ? <Loading /> : 'Proceed'}
+              {userUpdatemutation.isPending ||
+              isPanDetailsLoading ||
+              isPanDetailsFetching ? (
+                <Loading />
+              ) : (
+                'Proceed'
+              )}
             </Button>
-
-            <Link
-              href="/"
-              className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-            >
-              Skip for Now
-            </Link>
           </div>
         </form>
       </div>

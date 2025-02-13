@@ -555,8 +555,8 @@ const CreateOrder = ({
       )}
 
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        {/* client type only showed in sales not purchase */}
-        {cta === 'offer' && (
+        {/* client type only showed in sales invoices not in sales/purchase offer */}
+        {cta === 'offer' && isOrder === 'invoice' && (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
               {translations('form.label.type')}

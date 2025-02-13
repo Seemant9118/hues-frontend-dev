@@ -16,10 +16,12 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 import { Textarea } from '../ui/textarea';
+import ErrorBox from '../ui/ErrorBox';
 
-const RaisedDebitNoteModal = ({ orderId, invoiceId }) => {
+const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [dataToRaisedDebitNote, setDataToRaisedDebitNote] = useState({
     orderId,
     amount: null,
@@ -29,6 +31,20 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'amount') {
+      if (value > totalAmount) {
+        setErrorMsg(
+          'Amount should not be greater than total amount of invoice',
+        );
+      } else {
+        setErrorMsg('');
+        setDataToRaisedDebitNote((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
+    }
     setDataToRaisedDebitNote((prev) => ({
       ...prev,
       [name]: value,
@@ -96,6 +112,7 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId }) => {
               value={dataToRaisedDebitNote.amount}
               onChange={handleChange}
             />
+            {errorMsg && <ErrorBox msg={errorMsg} />}
           </div>
 
           <div className="flex w-full flex-col gap-2">
@@ -132,7 +149,7 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId }) => {
               size="sm"
               className="bg-[#288AF9]"
               onClick={handleRaisedDebitNote}
-              disabled={raisedDebitNoteMutation.isPending}
+              disabled={raisedDebitNoteMutation.isPending || errorMsg}
             >
               {raisedDebitNoteMutation.isPending ? <Loading /> : 'Raised'}
             </Button>

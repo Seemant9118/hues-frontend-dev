@@ -33,8 +33,9 @@
             "tabs": {
                 "label": {
                     "tab1": "All",
-                    "tab2": "Bid Recieved",
-                    "tab3": "Payment Pending"
+                    "tab2": "Under Review",
+                    "tab3": "Confirmed Orders",
+                    "tab4": "Receivables"
                 },
                 "content": {}
             },
@@ -152,8 +153,8 @@
             "tabs": {
                 "label": {
                     "tab1": "All",
-                    "tab2": "Pending",
-                    "tab3": "Debit/Credit Notes"
+                    "tab2": "Outstanding",
+                    "tab3": "Disputed"
                 }
             },
             "table": {

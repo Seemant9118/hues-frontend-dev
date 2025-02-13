@@ -70,15 +70,15 @@ const PurchaseInvoices = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = {};
-    if (tab === 'pending') {
+    if (tab === 'outstanding') {
       newFilterData = {
         filterData: {
           payment: {
-            status: 'NOT_PAID',
+            status: ['NOT_PAID', 'PARTIAL_PAID'],
           },
         },
       };
-    } else if (tab === 'debitNotes') {
+    } else if (tab === 'disputed') {
       newFilterData = {
         filterData: {
           debitNote: {
@@ -268,10 +268,10 @@ const PurchaseInvoices = () => {
                     <TabsTrigger value="all">
                       {translations('tabs.label.tab1')}
                     </TabsTrigger>
-                    <TabsTrigger value="pending">
+                    <TabsTrigger value="outstanding">
                       {translations('tabs.label.tab2')}
                     </TabsTrigger>
-                    <TabsTrigger value="debitNotes">
+                    <TabsTrigger value="disputed">
                       {translations('tabs.label.tab3')}
                     </TabsTrigger>
                   </TabsList>
@@ -300,11 +300,11 @@ const PurchaseInvoices = () => {
                       />
                     )}
                 </TabsContent>
-                <TabsContent value="pending">
+                <TabsContent value="outstanding">
                   {isInvoiceLoading && <Loading />}
                   {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
                     <PurchaseTable
-                      id="purchase-pending-orders"
+                      id="purchase-outstanding-orders"
                       columns={invoiceColumns}
                       data={purchaseinvoiceListing}
                       fetchNextPage={fetchNextPage}
@@ -324,11 +324,11 @@ const PurchaseInvoices = () => {
                       />
                     )}
                 </TabsContent>
-                <TabsContent value="debitNotes">
+                <TabsContent value="disputed">
                   {isInvoiceLoading && <Loading />}
                   {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
                     <PurchaseTable
-                      id="purchase-debit-notes"
+                      id="purchase-invoices-disputed"
                       columns={invoiceColumns}
                       data={purchaseinvoiceListing}
                       fetchNextPage={fetchNextPage}

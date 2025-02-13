@@ -84,6 +84,11 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         data?.data?.data?.user?.isEmailVerified,
       );
 
+      LocalStorageService.set(
+        'attemptsRemaining',
+        data?.data?.data?.user?.remainingAttempts,
+      );
+
       // check by calling api : directorInviteList
       const directorInviteListData = await queryClient.fetchQuery({
         queryKey: [directorApi.getDirectorInviteList.endpointKey],

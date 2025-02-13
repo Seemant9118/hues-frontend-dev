@@ -77,15 +77,15 @@ const SalesInvoices = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = {};
-    if (tab === 'pending') {
+    if (tab === 'outstanding') {
       newFilterData = {
         filterData: {
           payment: {
-            status: 'NOT_PAID',
+            status: ['NOT_PAID', 'PARTIAL_PAID'],
           },
         },
       };
-    } else if (tab === 'debitNotes') {
+    } else if (tab === 'disputed') {
       newFilterData = {
         filterData: {
           debitNote: {
@@ -290,10 +290,12 @@ const SalesInvoices = () => {
                       <TabsTrigger value="all">
                         {translations('tabs.label.tab1')}
                       </TabsTrigger>
-                      <TabsTrigger value="pending">
+                      <TabsTrigger value="outstanding">
+                        {' '}
                         {translations('tabs.label.tab2')}
                       </TabsTrigger>
-                      <TabsTrigger value="debitNotes">
+                      <TabsTrigger value="disputed">
+                        {' '}
                         {translations('tabs.label.tab3')}
                       </TabsTrigger>
                     </TabsList>
@@ -321,7 +323,7 @@ const SalesInvoices = () => {
                       />
                     )}
                   </TabsContent>
-                  <TabsContent value="pending">
+                  <TabsContent value="outstanding">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
                       <SalesTable
@@ -343,11 +345,11 @@ const SalesInvoices = () => {
                       />
                     )}
                   </TabsContent>
-                  <TabsContent value="debitNotes">
+                  <TabsContent value="disputed">
                     {isInvoiceLoading && <Loading />}
                     {!isInvoiceLoading && invoiceListing?.length > 0 && (
                       <SalesTable
-                        id="sale-invoices-debits"
+                        id="sale-invoices-disputed"
                         columns={invoiceColumns}
                         data={invoiceListing}
                         fetchNextPage={fetchNextPage}

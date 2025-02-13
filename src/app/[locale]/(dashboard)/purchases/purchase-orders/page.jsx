@@ -87,9 +87,12 @@ const PurchaseOrders = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = null;
-    if (tab === 'offerReceived') {
+
+    if (tab === 'underReview') {
       newFilterData = { offerReceived: true };
-    } else if (tab === 'pending') {
+    } else if (tab === 'confirmed') {
+      newFilterData = { status: ['ACCEPTED'], invoiceStatus: false };
+    } else if (tab === 'payables') {
       newFilterData = { paymentStatus: 'NOT_PAID' };
     } else if (isOrderCreationSuccess) {
       newFilterData = {};
@@ -372,16 +375,17 @@ const PurchaseOrders = () => {
                       <TabsTrigger value="all">
                         {translations('tabs.label.tab1')}
                       </TabsTrigger>
-                      <TabsTrigger value="offerReceived">
+                      <TabsTrigger value="underReview">
                         {translations('tabs.label.tab2')}
                       </TabsTrigger>
-                      <TabsTrigger value="pending">
-                        {' '}
+                      <TabsTrigger value="confirmed">
                         {translations('tabs.label.tab3')}
                       </TabsTrigger>
-                      <TabsTrigger value="unconfirmed">
-                        {' '}
+                      <TabsTrigger value="payables">
                         {translations('tabs.label.tab4')}
+                      </TabsTrigger>
+                      <TabsTrigger value="unconfirmed">
+                        {translations('tabs.label.tab5')}
                       </TabsTrigger>
                     </TabsList>
                     <FilterModal
@@ -415,7 +419,7 @@ const PurchaseOrders = () => {
                         />
                       ))}
                   </TabsContent>
-                  <TabsContent value="offerReceived">
+                  <TabsContent value="underReview">
                     {isLoading && <Loading />}
 
                     {!isLoading &&
@@ -438,7 +442,30 @@ const PurchaseOrders = () => {
                         />
                       ))}
                   </TabsContent>
-                  <TabsContent value="pending">
+                  <TabsContent value="confirmed">
+                    {isLoading && <Loading />}
+
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-orders"
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                          lastPurhaseRef={lastPurchaseRef}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent value="payables">
                     {isLoading && <Loading />}
 
                     {!isLoading &&
