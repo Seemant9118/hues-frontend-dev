@@ -1,0 +1,98 @@
+{
+    "profile": {
+        "title": "प्रोफ़ाइल",
+        "ctas": {
+            "logout": "लॉगआउट",
+            "pendingActionsForCompletion": {
+                "complete": "पूरा करें",
+                "startkyc": "केवाईसी शुरू करें"
+            }
+        },
+        "tabs": {
+            "label": {
+                "tab1": "सारांश",
+                "tab2": "उद्यम सारांश",
+                "tab3": "भाषाएँ",
+                "tab4": "अनुमतियाँ"
+            },
+            "content": {
+                "tab1": {
+                    "label": {
+                        "pan": "पैन कार्ड नंबर",
+                        "name": "पूरा नाम",
+                        "type": "प्रकार",
+                        "mobile": "मोबाइल नंबर",
+                        "email": "ईमेल पता"
+                    },
+                    "dummyData": {
+                        "name": "आपका पूरा नाम",
+                        "type": "व्यक्तिगत"
+                    },
+                    "profilePicSection": {
+                        "title": "प्रोफ़ाइल चित्र",
+                        "format": "JPEG और PNG प्रारूप",
+                        "ctas": {
+                            "upload": "अपलोड करें",
+                            "delete": "हटाएं"
+                        }
+                    }
+                },
+                "tab2": {
+                    "label": {
+                        "pan": "पैन कार्ड नंबर",
+                        "name": "पूरा नाम",
+                        "type": "प्रकार",
+                        "mobile": "मोबाइल नंबर",
+                        "email": "ईमेल पता",
+                        "gst": "जीएसटी आईएन",
+                        "udyam": "उद्योग आधार"
+                    },
+                    "input": {
+                        "gst": {
+                            "placeholder": "जीएसटी आईएन अपडेट करें"
+                        },
+                        "udyam": {
+                            "placeholder": "उद्योग आधार अपडेट करें"
+                        }
+                    },
+                    "ctas": {
+                        "cancel": "रद्द करें",
+                        "update": "अपडेट करें"
+                    },
+                    "dummyData": {
+                        "name": "आपके उद्यम का नाम",
+                        "type": "प्रा. लि."
+                    },
+                    "profilePicSection": {
+                        "title": "उद्यम लोगो",
+                        "format": "JPEG और PNG प्रारूप",
+                        "ctas": {
+                            "upload": "अपलोड करें",
+                            "delete": "हटाएं"
+                        }
+                    },
+                    "heading1": "उद्यम जानकारी",
+                    "heading2": "व्यवसाय पहचान"
+                },
+                "tab3": {
+                    "label": {
+                        "select": "पसंदीदा भाषा चुनें"
+                    }
+                },
+                "tab4": {
+                    "coming_soon": "जल्द आ रहा है..."
+                }
+            }
+        },
+        "toasts": {
+            "update": {
+                "successMsg": "उद्यम विवरण सफलतापूर्वक अपडेट किए गए",
+                "errorMsg": "अमान्य {type}"
+            },
+            "logout": {
+                "successMsg": "उपयोगकर्ता लॉग आउट हुआ",
+                "errorMsg": "कुछ गलत हो गया"
+            }
+        }
+    }
+}

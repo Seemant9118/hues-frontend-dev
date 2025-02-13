@@ -1,0 +1,486 @@
+{
+    "components": {
+        "generate_link": {
+            "ctas_staus": {
+                "pending": "Link",
+                "accepted": "Active",
+                "rejected": "Rejected"
+            },
+            "toasts": {
+                "success": "Link Generated & Copied to clipboard",
+                "error": "Something went wrong"
+            }
+        },
+        "upload": {
+            "title": "Upload",
+            "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
+            "noteInfo": "Note - Trade enabled for eSigned inventories only.",
+            "selectCta": "Select",
+            "sampleCta": "Sample",
+            "backCta": "View",
+            "messages": {
+                "uploadSuccessMsg": "Upload Successfully"
+            }
+        },
+        "addEditModal": {
+            "common": {
+                "form": {
+                    "label": {
+                        "identifiers": {
+                            "identifier_type": "Identifier Type",
+                            "identifier_number": "Identifier Number"
+                        },
+                        "addNewEntity": {
+                            "name": "Name",
+                            "gst": "GST IN",
+                            "email": "Email",
+                            "phone": "Phone",
+                            "pan": "PAN",
+                            "address": "Address"
+                        }
+                    },
+                    "input": {
+                        "select": {
+                            "pan": "PAN",
+                            "gst": "GST"
+                        }
+                    },
+                    "errorMsg": {
+                        "identifiers": {
+                            "pan": "Please complete the PAN to proceed",
+                            "gst": "Please complete the GST number to proceed"
+                        },
+                        "addNewEntity": {
+                            "name": "Required Name",
+                            "phone": {
+                                "required": "Required Phone",
+                                "valid": "Please enter a valid mobile number"
+                            },
+                            "email": "Please provide valid Email",
+                            "pan": {
+                                "required": "Required PAN",
+                                "valid": "Please provide valid PAN Number"
+                            }
+                        }
+                    },
+                    "infoMsg": {
+                        "toSearch": "Type an identifier to search",
+                        "enterprise_not_available": "Enterprise not available."
+                    },
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "Continue to add new entity",
+                            "invite": "Invite",
+                            "sent": "Invite sent"
+                        },
+                        "addNewEntity": {
+                            "cancel": "Cancel",
+                            "add": "Add",
+                            "edit": "Edit"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "invitation": "Invitation sent successfully",
+                            "entityAdded": "Entity Added Successfully",
+                            "edited": "Edit Successfully"
+                        },
+                        "error": {
+                            "common": "Something went wrong"
+                        }
+                    }
+                }
+            },
+            "client": {
+                "title": "CLIENT",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "Continue to add new client"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "Client Added Successfully"
+                        }
+                    }
+                }
+            },
+            "vendor": {
+                "title": "VENDOR",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "Continue to add new vendor"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "Vendor Added Successfully"
+                        }
+                    }
+                }
+            }
+        },
+        "notificationsFilter": {
+            "cta": "Filters",
+            "title": "Filters",
+            "form": {
+                "label": {
+                    "chooseDate": "Choose Date",
+                    "from": "From",
+                    "to": "To",
+                    "chooseType": "Choose Type",
+                    "types_available": {
+                        "type1": {
+                            "value": "Invoice"
+                        },
+                        "type2": {
+                            "value": "Order"
+                        },
+                        "type3": {
+                            "value": "Invitation"
+                        },
+                        "type4": {
+                            "value": "Order Negotiaion"
+                        }
+                    }
+                },
+                "ctas": {
+                    "clear": "Clear",
+                    "save": "Apply"
+                }
+            }
+        },
+        "profilePopUpInfo": {
+            "viewProfileCta": "View Profile",
+            "enterprises": "Enteprises",
+            "addAnotherCta": "Add another enterprise",
+            "logoutCta": "Logout",
+            "accessDeniedCta": "Access Denied"
+        },
+        "filter": {
+            "title": "Filter",
+            "form": {
+                "label": {
+                    "select_date": "Select Date",
+                    "select_amount_range": "Select Amount Range",
+                    "select_status": "Select Status",
+                    "select_client": "Select Client",
+                    "invoice_generated": "Invoice Generated",
+                    "clear": "Clear"
+                },
+                "input": {
+                    "select_status": {
+                        "options": {
+                            "option1": "Bid Recieved",
+                            "option2": "Offer Sent",
+                            "option3": "Accepted",
+                            "option4": "Rejected",
+                            "option5": "Withdrawn",
+                            "option6": "Bid Sent",
+                            "option7": "Offer Recieved"
+                        }
+                    }
+                },
+                "ctas": {
+                    "apply": "Apply",
+                    "reset": "Reset"
+                }
+            }
+        },
+        "create_edit_order": {
+            "title": {
+                "offer": "Offer",
+                "bid": "Bid",
+                "edit": "Edit",
+                "sub_titles": {
+                    "add_item": "Add Items",
+                    "edit_item": "Edit Items"
+                }
+            },
+            "form": {
+                "label": {
+                    "type": "Client Type",
+                    "client": "Client",
+                    "customer": "Customer",
+                    "vendor": "Vendor",
+                    "item_type": "Item Type",
+                    "item": "Item",
+                    "quantity": "Quantity",
+                    "price": "Price",
+                    "invoice_value": "Invoice Value",
+                    "value": "Value",
+                    "gst": "GST",
+                    "tax_amount": "Tax Amount",
+                    "amount": "Amount"
+                },
+                "errorMsg": {
+                    "customer": "*Please add or select a Customer",
+                    "client": "*Please select a client",
+                    "vendor": "*Please select a vendor",
+                    "item_type": "*Please select Item Type",
+                    "item": "*Please add atleast one item to create order",
+                    "quantity": "*Required Quantity",
+                    "price": "*Required Price",
+                    "gst": "*Required (GST%)",
+                    "value": "*Required Value",
+                    "tax_amount": "*Required Tax Amount",
+                    "amount": "*Required Amount"
+                },
+                "successMsg": {
+                    "order_updated_successfully": "Order Updates Successfully",
+                    "offer_created_successfully": "Sales Order Created Successfully",
+                    "bid_created_successfully": "Purchase Order Created Successfully",
+                    "invoice_created_successfully": "Invoice created! Please refresh to view the latest Invoice"
+                },
+                "input": {
+                    "clientType": {
+                        "b2b": "B2B",
+                        "b2c": "B2C"
+                    },
+                    "client": {
+                        "placeholder": "Select Client...",
+                        "add_new_client": "Add a new client"
+                    },
+                    "vendor": {
+                        "placeholder": "Select Vendor...",
+                        "add_new_vendor": "Add a new vendor"
+                    },
+                    "item_type": {
+                        "goods": "Goods",
+                        "services": "Services",
+                        "placeholder": "Select Item Type..."
+                    },
+                    "item": {
+                        "placeholder": "Select Items"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "ITEM",
+                        "quantity": "QUANTITY",
+                        "price": "PRICE",
+                        "gst": "GST (%)",
+                        "invoice_value": "Invoice Value",
+                        "value": "VALUE",
+                        "tax_amount": "TAX AMOUNT",
+                        "amount": "AMOUNT"
+                    }
+                },
+                "ctas": {
+                    "cancel": "Cancel",
+                    "add": "Add",
+                    "create": "Create",
+                    "edit": "Edit"
+                },
+                "footer": {
+                    "gross_amount": "Gross Amount",
+                    "tax_amount": "Tax Amount",
+                    "total_amount": "Total Amount"
+                }
+            }
+        },
+        "redirection_pop_up": {
+            "para": "This enterprise has not accepted your invitation and will not be able to respond your offer. Do you want to proceed?",
+            "ctas": {
+                "yes": "Yes",
+                "no": "No"
+            }
+        },
+        "order_overview": {
+            "title": "Overview",
+            "label": {
+                "order_id": "Order ID",
+                "client_name": "Client Name",
+                "vendor_name": "Vendor Name",
+                "order_status": "Order Status",
+                "payment_status": "Payment Status",
+                "total_amount": "Total Amount",
+                "view_negotiation": "View Negotiation"
+            },
+            "acknowledge_message": {
+                "infoText": "This order is directly recorded by our client/vendor. Acknowledge to add it to your order list",
+                "ctas": {
+                    "undo": "Undo",
+                    "no": "No",
+                    "yes": "Yes"
+                }
+            },
+            "successMsg": {
+                "acknowledged_sucess": "Order Acknowledged Successfully",
+                "undo_acknowledged_success": "Undo Order Acknowledged Successfully"
+            },
+            "errorMsg": {
+                "common": "Something went wrong"
+            }
+        },
+        "past_invoices": {
+            "label": {
+                "date": "Date",
+                "total_amount": "Total Amount",
+                "type": "Type"
+            },
+            "emptyStateComponent": {
+                "title": "No invoices yet",
+                "para": "You haven't created any invoices yet. Start by generating your first invoice to keep track of your orders",
+                "ctas": {
+                    "generate_invoice": "Generate Invoice"
+                }
+            }
+        },
+        "invoice_modal": {
+            "title": "Invoice",
+            "view": {
+                "placeholder": "View Invoice"
+            },
+            "loading_document": "Loading Document...",
+            "ctas": {
+                "cancel": "Cancel",
+                "download": "Download"
+            }
+        },
+        "generate_invoice": {
+            "title": "Generate Invoice",
+            "table": {
+                "header": {
+                    "item_name": "ITEM NAME",
+                    "quantity": "QUANTITY",
+                    "unit_price": "UNIT PRICE",
+                    "total_amount": "TOTAL AMOUNT"
+                }
+            },
+            "errorMsg": {
+                "common": "Something went wrong"
+            },
+            "successMsg": {
+                "otp_sent": "OTP Sent"
+            }
+        },
+        "generate_invoice_modal_otp": {
+            "title": "Invoice",
+            "ctas": {
+                "generate": "Generate",
+                "resend": "Resend",
+                "verify": "Verify To Generate",
+                "view": "View"
+            },
+            "infoText": {
+                "info": "A one time password has been sent to",
+                "resend_info": "Resend OTP in"
+            },
+            "successMsg": {
+                "invoice_generate_success": " Invoice Generated Successfully"
+            },
+            "errorMsg": {
+                "common": "Something went wrong"
+            }
+        },
+        "preview_invoice_modal": {
+            "title": "Preview Invoice",
+            "cta": "Preview"
+        },
+        "negotiation_component": {
+            "table": {
+                "header": {
+                    "label": {
+                        "item": "ITEM",
+                        "quantity": "QUANTITY",
+                        "rate": "RATE",
+                        "total": "TOTAL"
+                    }
+                },
+                "child_table": {
+                    "header": {
+                        "label": {
+                            "ask": "ASK",
+                            "counter": "COUNTER"
+                        }
+                    }
+                },
+                "column_actions": {
+                    "history": {
+                        "placeholder": "View Negotiation history",
+                        "infoTitle": "History for ",
+                        "infoPara": "There is no negotiation history for this item."
+                    },
+                    "who": {
+                        "buyer": "BUYER",
+                        "you": "YOU",
+                        "seller": "SELLER"
+                    }
+                }
+            },
+            "ctas": {
+                "cancel": "Cancel",
+                "submit": "Submit"
+            },
+            "errorMsg": {
+                "common": "Something went wrong",
+                "empty": "Please fill in at least one negotiation item."
+            },
+            "successMsg": {
+                "negotiation_submitted": "Negotiation submitted successfully"
+            }
+        },
+        "record_payment_order": {
+            "form": {
+                "label": {
+                    "payment_mode": "Payment Mode",
+                    "options": {
+                        "neft": "NEFT",
+                        "rtgs": "RTGS",
+                        "upi": "UPI",
+                        "credit_debit": "Credit / Debit Card",
+                        "cheque": "Cheque",
+                        "cash": "Cash"
+                    },
+                    "tran_id": "Transaction ID",
+                    "amount_paid": "Amount Paid",
+                    "balance": "Balance"
+                },
+                "table": {
+                    "title": "Invoices",
+                    "para": "Amount is auto-splitted, but you can customize it manually if needed",
+                    "header": {
+                        "label": {
+                            "invoice_no": "INVOICE NO",
+                            "date": "DATE",
+                            "quantity": "QUANTITY",
+                            "balance_amt": "BALANCE AMOUNT",
+                            "amount_paid": "AMOUNT PAID"
+                        }
+                    }
+                },
+                "upload_proof": {
+                    "title": "Upload Proof",
+                    "para": "Drag & Drop or Select a File (Max 10MB,.png /.pdf Formats)",
+                    "note": "Note - Upload Payment Proofs only.",
+                    "ctas": {
+                        "select": "Select"
+                    }
+                },
+                "ctas": {
+                    "revert": "Revert",
+                    "auto-split": "Auto-split",
+                    "create": "Create",
+                    "discard": "Discard"
+                }
+            },
+            "successMsg": {
+                "payment_recorded_sucessfully": "Payment Recorded Successfully",
+                "upload_success": "Upload Successfully"
+            },
+            "errorMsg": {
+                "payment_mode": "*Required! Please select payment mode",
+                "amount_paid_required": "*Required!, Amount should not be empty",
+                "amount_paid_empty": "Amount should not be empty",
+                "amount_paid_exceed": "Amount exceeds balance amount",
+                "amount_paid_not_greater_than": "Amount Paid should not be greater than",
+                "invoiceAmountPaid_exceed": "Amount exceeds the total payment amount",
+                "invoiceAmountPaid_less": "Amount is less than the total payment amount",
+                "common": "Something went wrong"
+            }
+        }
+    }
+}

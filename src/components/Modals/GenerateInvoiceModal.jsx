@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
   createInvoiceForAcceptedOrder,
@@ -15,7 +16,8 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { Clock5, FileCog } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,6 +34,7 @@ const GenerateInvoiceModal = ({
   setIsGenerateInvoice,
   handleClose,
 }) => {
+  const translations = useTranslations('components.generate_invoice_modal_otp');
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
@@ -60,14 +63,16 @@ const GenerateInvoiceModal = ({
     mutationFn: createInvoiceForAcceptedOrder,
     onSuccess: () => {
       setOTPVerified(true);
-      toast.success('Invoice Generated Successfully');
+      toast.success(translations('successMsg.invoice_generate_success'));
       queryClient.invalidateQueries([
         invoiceApi.getInvoices.endpointKey,
         orderId,
       ]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -77,11 +82,13 @@ const GenerateInvoiceModal = ({
     mutationFn: createInvoiceForNewOrder,
     onSuccess: () => {
       setOTPVerified(true);
-      toast.success('Invoice Generated Successfully');
+      toast.success(translations('successMsg.invoice_generate_success'));
       router.push('/sales/sales-orders');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -108,11 +115,11 @@ const GenerateInvoiceModal = ({
       <DialogTrigger asChild>
         <Button size="sm" onClick={generateOTP} disabled={disableCondition}>
           <FileCog size={16} />
-          Generate
+          {translations('ctas.generate')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] overflow-hidden">
-        <DialogTitle>Invoice</DialogTitle>
+        <DialogTitle>{translations('title')}</DialogTitle>
         {/* OTP */}
         {!isOTPVerified && (
           <form
@@ -120,10 +127,10 @@ const GenerateInvoiceModal = ({
             className="z-20 flex flex-col items-center justify-center gap-5 p-5"
           >
             <h2 className="w-full text-2xl font-bold">
-              Verify OTP To Generate
+              {translations('ctas.verify')}
             </h2>
             <p className="w-full text-sm">
-              A one time password has been sent to{' '}
+              {translations('infoText.info')}
               <span className="font-bold text-[#414656]">
                 +91 {userMobileNumber}
               </span>
@@ -144,7 +151,7 @@ const GenerateInvoiceModal = ({
               )}
             />
             <p className="flex w-full items-center gap-2 text-sm text-[#A5ABBD]">
-              Resend OTP in:{' '}
+              {translations('infoText.resend_info')}:{' '}
               <span className="flex items-center gap-1 font-semibold">
                 {startFrom > 0 ? (
                   <span className="flex items-center gap-1">
@@ -152,8 +159,12 @@ const GenerateInvoiceModal = ({
                     00:{startFrom.toString().padStart(2, '0')}
                   </span>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={generateOTP}>
-                    Resend
+                  <Button
+                    size="sm"
+                    variant="blue_outline"
+                    onClick={generateOTP}
+                  >
+                    {translations('ctas.resend')}
                   </Button>
                 )}
               </span>
@@ -169,7 +180,7 @@ const GenerateInvoiceModal = ({
               {invoiceMutation.isPending || invoiceMutationNew.isPending ? (
                 <Loading />
               ) : (
-                'Verify To Generate'
+                translations('ctas.verify')
               )}
             </Button>
           </form>
@@ -181,7 +192,7 @@ const GenerateInvoiceModal = ({
         {isOTPVerified && invoiceMutation.isSuccess && (
           <>
             <div className="flex items-center gap-2 text-xl font-bold">
-              Invoice Generated Successfully🎉
+              {translations('successMsg.invoice_generate_success')}
             </div>
             <div className="mt-auto flex items-center justify-end gap-4">
               <Button
@@ -195,7 +206,7 @@ const GenerateInvoiceModal = ({
                   router.back();
                 }}
               >
-                View
+                {translations('ctas.view')}
               </Button>
             </div>
           </>

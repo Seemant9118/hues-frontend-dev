@@ -1,0 +1,48 @@
+{
+    "client": {
+        "title": "Clients",
+        "emptyStateComponent": {
+            "heading": "Streamline sales with our Clients feature, integrating customer data for direct inventory offers and full catalog visibility",
+            "subItems": {
+                "subItem1": {
+                    "value": "Easily add client details to your database."
+                },
+                "subItem2": {
+                    "value": "Offer inventory directly to clients with full product access."
+                },
+                "subItem3": {
+                    "value": "Keep clients updated, fostering transparency and trust."
+                },
+                "subItem4": {
+                    "value": "Listed clients get automatic catalog access, simplifying sales."
+                }
+            }
+        },
+        "ctas": {
+            "searchPlaceHolder": "Search ...",
+            "upload": "Upload",
+            "export": "Export",
+            "add": "Add",
+            "tooltips": {
+                "upload": "Upload clients data in bulk",
+                "export": "Export clients data",
+                "add": "Add a new client"
+            }
+        },
+        "table": {
+            "header": {
+                "name": "NAME",
+                "phone": "PHONE",
+                "email": "EMAIL",
+                "pan": "PAN",
+                "invitation": "INVITAION"
+            },
+            "column": {
+                "actions": {
+                    "edit": "Edit",
+                    "resend": "Resend"
+                }
+            }
+        }
+    }
+}

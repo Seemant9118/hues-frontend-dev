@@ -3,10 +3,14 @@
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 export const usePaymentColumns = () => {
   const [showAll, setShowAll] = useState(false);
+  const translations = useTranslations(
+    'sales.sales-invoices.invoice_details.tabs.content.tab2.table.header',
+  );
 
   const handleToggleShow = () => {
     setShowAll(!showAll);
@@ -15,7 +19,10 @@ export const usePaymentColumns = () => {
     {
       accessorKey: 'paymentid',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PAYMENT ID" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('payment_id')}
+        />
       ),
       cell: ({ row }) => {
         const { paymentid } = row.original;
@@ -25,7 +32,7 @@ export const usePaymentColumns = () => {
     {
       accessorKey: 'amountpaid',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="AMOUNT" />
+        <DataTableColumnHeader column={column} title={translations('amount')} />
       ),
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('amountpaid'));
@@ -36,7 +43,7 @@ export const usePaymentColumns = () => {
     {
       accessorKey: 'paymentdata',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="DATE" />
+        <DataTableColumnHeader column={column} title={translations('date')} />
       ),
       cell: ({ row }) => {
         const { paymentdata } = row.original;
@@ -48,7 +55,10 @@ export const usePaymentColumns = () => {
     {
       accessorKey: 'invoicereferencenumbers',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="INVOICE NO" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('invoice_no')}
+        />
       ),
       cell: ({ row }) => {
         const { invoicereferencenumbers } = row.original;

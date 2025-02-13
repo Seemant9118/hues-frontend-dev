@@ -16,12 +16,15 @@ import { toast } from 'sonner';
 
 const BulkConfirmAction = ({
   infoText,
+  cancelCta,
+  removeCta,
   selectedItems,
   setSelectedItems,
   setRowSelection,
   invalidateKey,
   mutationKey,
   mutationFunc,
+  successMsg,
 }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -30,7 +33,7 @@ const BulkConfirmAction = ({
     mutationKey: [mutationKey],
     mutationFn: mutationFunc,
     onSuccess: () => {
-      toast.success('Removed successfully');
+      toast.success(successMsg);
       setOpen(false);
       setSelectedItems([]); // clear state of data
       setRowSelection({}); // clear state of react table
@@ -76,7 +79,7 @@ const BulkConfirmAction = ({
               }}
               variant={'outline'}
             >
-              Cancel
+              {cancelCta}
             </Button>
           </DialogClose>
           <Button
@@ -87,7 +90,7 @@ const BulkConfirmAction = ({
               });
             }}
           >
-            Remove
+            {removeCta}
           </Button>
         </div>
       </DialogContent>

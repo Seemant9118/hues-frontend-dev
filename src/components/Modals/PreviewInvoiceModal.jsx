@@ -7,6 +7,7 @@ import {
 // eslint-disable-next-line import/no-extraneous-dependencies
 import base64ToBlob from 'base64toblob';
 import { Eye } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
@@ -17,6 +18,7 @@ const PreviewInvoice = ({
   mutationFn,
   disableCondition,
 }) => {
+  const translations = useTranslations('components.preview_invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState(null);
 
@@ -46,11 +48,11 @@ const PreviewInvoice = ({
           disabled={disableCondition}
         >
           <Eye size={16} />
-          Preview
+          {translations('cta')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] overflow-hidden">
-        <DialogTitle>Preview Invoice</DialogTitle>
+        <DialogTitle>{translations('title')}</DialogTitle>
         {!url && <Loading />}
         {url && (
           <>

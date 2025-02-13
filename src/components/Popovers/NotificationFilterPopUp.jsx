@@ -7,19 +7,24 @@ import {
 } from '@/components/ui/popover';
 import { CalendarDays, SlidersHorizontal } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
+import Checkboxes from '../ui/Checkboxes';
 import DatePickers from '../ui/DatePickers';
 import { Label } from '../ui/label';
-import Checkboxes from '../ui/Checkboxes';
 
 function NotificationFilterPopUp({ setFilteredNotification }) {
+  const translations = useTranslations('components.notificationsFilter');
+
+  // English values for backend mapping
   const notificationTypes = [
-    'Invoice',
-    'Order',
-    'Invitation',
-    'Order_Negotiation',
+    { key: 'type1', value: 'Invoice' },
+    { key: 'type2', value: 'Order' },
+    { key: 'type3', value: 'Invitation' },
+    { key: 'type4', value: 'Order_Negotiation' },
   ];
+
   const [open, setOpen] = useState(false);
   const [selectedFromDate, setSelectedFromDate] = useState(null);
   const [selectedToDate, setSelectedToDate] = useState(null);
@@ -54,7 +59,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
 
       return {
         ...prev,
-        notificationType: typesSelected,
+        notificationType: typesSelected, // Store only English values
       };
     });
   };
@@ -62,31 +67,33 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="sm" variant={'export'}>
+        <Button size="sm" variant="export">
           <SlidersHorizontal size={16} />
-          Filters
+          {translations('cta')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="mr-9 flex w-[400px] flex-col gap-4 px-4 text-sm">
-        <div className="text-center font-bold text-gray-500">Filters</div>
+        <div className="text-center font-bold text-gray-500">
+          {translations('title')}
+        </div>
         <div className="max-h-[400px]">
           <div className="flex flex-col gap-2">
-            <span>Choose Date:</span>
+            <span>{translations('form.label.chooseDate')}:</span>
             <div className="grid w-full max-w-lg items-center gap-1.5">
               <Label
                 htmlFor="fromDate"
                 className="flex items-center gap-1 font-medium text-[#414656]"
               >
-                From:
+                {translations('form.label.from')}:
               </Label>
-              <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2">
                 <DatePickers
                   selected={selectedFromDate}
                   onChange={setSelectedFromDate}
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="left"
                 />
-                <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+                <CalendarDays className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
               </div>
             </div>
             <div className="grid w-full max-w-lg items-center gap-1.5">
@@ -94,44 +101,51 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
                 htmlFor="toDate"
                 className="flex items-center gap-1 font-medium text-[#414656]"
               >
-                To:
+                {translations('form.label.to')}:
               </Label>
-              <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2">
                 <DatePickers
                   selected={selectedToDate}
                   onChange={setSelectedToDate}
                   dateFormat="dd/MM/yyyy"
                   popperPlacement="left"
                 />
-                <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+                <CalendarDays className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3F5575]" />
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="mt-2">Choose Type:</span>
+            <span className="mt-2">
+              {translations('form.label.chooseType')}:
+            </span>
 
             <div className="flex flex-wrap gap-5 px-2 py-4">
-              {notificationTypes.map((type) => (
-                <Checkboxes
-                  key={type}
-                  name="notificationType"
-                  option={type}
-                  value={type.toUpperCase()}
-                  checkBoxName={type.toUpperCase()}
-                  checked={dataForFilter.notificationType.includes(
-                    type.toUpperCase(),
-                  )}
-                  handleChange={() => handleTypesFilter(type.toUpperCase())}
-                />
-              ))}
+              {notificationTypes.map(({ key, value }) => {
+                const translatedLabel = translations(
+                  `form.label.types_available.${key}.value`,
+                );
+                return (
+                  <Checkboxes
+                    key={key}
+                    name="notificationType"
+                    option={translatedLabel} // Show Hindi
+                    value={value.toUpperCase()} // Store English in state
+                    checkBoxName={translatedLabel}
+                    checked={dataForFilter.notificationType.includes(
+                      value.toUpperCase(),
+                    )}
+                    handleChange={() => handleTypesFilter(value.toUpperCase())}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
 
         <div className="flex gap-2">
           <Button
-            variant={'outline'}
+            variant="outline"
             onClick={() => {
               setSelectedFromDate(null);
               setSelectedToDate(null);
@@ -148,16 +162,16 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
               setOpen(false);
             }}
           >
-            Clear
+            {translations('form.ctas.clear')}
           </Button>
           <Button
-            variant={'blue_outline'}
+            variant="blue_outline"
             onClick={() => {
               setFilteredNotification(dataForFilter);
               setOpen(!open);
             }}
           >
-            Save
+            {translations('form.ctas.save')}
           </Button>
         </div>
       </PopoverContent>

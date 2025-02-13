@@ -1,0 +1,20 @@
+{
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "itemMaster": "Item Master",
+        "catalogue": "Catalogue",
+        "sales": "Sales",
+        "purchases": "Purchases",
+        "clients": "Clients",
+        "vendors": "Vendors",
+        "notifications": "Notifications",
+        "profile": "Profile",
+        "subTabs": {
+            "goods": "Goods",
+            "services": "Services",
+            "orders": "Orders",
+            "invoices": "Invoices",
+            "debitNotes": "Debit Notes"
+        }
+    }
+}
