@@ -10,6 +10,7 @@ import {
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Upload, UploadCloud } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
@@ -34,6 +35,7 @@ const MakePaymentNewInvoice = ({
   paymentStatus,
   debitNoteStatus,
 }) => {
+  const translations = useTranslations('components.record_payment_order');
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const router = useRouter();
@@ -79,7 +81,7 @@ const MakePaymentNewInvoice = ({
     mutationKey: [paymentApi.createPayment.endpointKey],
     mutationFn: createPayment,
     onSuccess: () => {
-      toast.success('Payment Recorded Successfully');
+      toast.success(translations('successMsg.payment_recorded_sucessfully'));
       setErrorMsg({});
       setInvoices([]);
       setPaymentData({
@@ -102,7 +104,7 @@ const MakePaymentNewInvoice = ({
     },
     onError: (error) => {
       const errorMessage =
-        error?.response?.data?.message || 'Something went wrong';
+        error?.response?.data?.message || translations('errorMsg.common');
       toast.error(errorMessage);
     },
   });
@@ -135,12 +137,12 @@ const MakePaymentNewInvoice = ({
       if (value === '') {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
-          amountPaid: 'Amount should not be empty',
+          amountPaid: translations('errorMsg.amount_paid_empty'),
         }));
       } else if (!Number.isNaN(numericValue) && numericValue > balanceAmount) {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
-          amountPaid: 'Amount exceeds balance amount',
+          amountPaid: translations('errorMsg.amount_paid_exceed'),
         }));
       } else {
         setErrorMsg((prevMsg) => ({
@@ -159,14 +161,16 @@ const MakePaymentNewInvoice = ({
 
     try {
       const resData = await uploadPaymentProofs(enterpriseId, formData);
-      toast.success('Upload Successfully');
+      toast.success(translations('successMsg.upload_success'));
       setFiles((prev) => [...prev, file]);
       setPaymentData({
         ...paymentData,
         attachmentLink: resData?.data?.data,
       });
     } catch (error) {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     }
   };
 
@@ -189,12 +193,12 @@ const MakePaymentNewInvoice = ({
 
     // Validation for payment mode
     if (!updatedPaymentData.paymentMode) {
-      errorsMsg.paymentMode = 'Required! Please select payment mode';
+      errorsMsg.paymentMode = translations('errorMsg.payment_mode');
     }
 
     // Validation for amount
     if (!updatedPaymentData.amount) {
-      errorsMsg.amountPaid = 'Required! Amount should not be empty';
+      errorsMsg.amountPaid = translations('errorMsg.amount_paid_required');
     }
 
     setErrorMsg(errorsMsg);
@@ -231,7 +235,7 @@ const MakePaymentNewInvoice = ({
               <div className="flex w-1/2 flex-col gap-2">
                 <div>
                   <Label className="flex-shrink-0 text-sm font-semibold">
-                    Payment Mode
+                    {translations('form.label.payment_mode')}
                   </Label>{' '}
                   <span className="text-red-600">*</span>
                 </div>
@@ -256,14 +260,24 @@ const MakePaymentNewInvoice = ({
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="neft">NEFT</SelectItem>
-                    <SelectItem value="rtgs">RTGS</SelectItem>
-                    <SelectItem value="upi">UPI</SelectItem>
-                    <SelectItem value="creditDebitCard">
-                      Credit / Debit Card
+                    <SelectItem value="neft">
+                      {translations('form.label.options.neft')}
                     </SelectItem>
-                    <SelectItem value="cheque">Cheque</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="rtgs">
+                      {translations('form.label.options.rtgs')}
+                    </SelectItem>
+                    <SelectItem value="upi">
+                      {translations('form.label.options.upi')}
+                    </SelectItem>
+                    <SelectItem value="creditDebitCard">
+                      {translations('form.label.options.credit_debit')}
+                    </SelectItem>
+                    <SelectItem value="cheque">
+                      {translations('form.label.options.cheque')}
+                    </SelectItem>
+                    <SelectItem value="cash">
+                      {translations('form.label.options.cash')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -273,7 +287,9 @@ const MakePaymentNewInvoice = ({
               </div>
               {/* transaction ID */}
               <div className="flex w-1/2 flex-col gap-2">
-                <Label className="text-sm font-semibold">Transaction ID</Label>
+                <Label className="text-sm font-semibold">
+                  {translations('form.label.tran_id')}
+                </Label>
                 <div className="flex flex-col gap-1">
                   <Input
                     name="transactionId"
@@ -289,7 +305,9 @@ const MakePaymentNewInvoice = ({
               {/* Amount */}
               <div className="flex w-1/2 flex-col gap-2">
                 <div>
-                  <Label className="text-sm font-semibold">Amount Paid</Label>{' '}
+                  <Label className="text-sm font-semibold">
+                    {translations('form.label.amount_paid')}
+                  </Label>{' '}
                   <span className="text-red-600">*</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -305,7 +323,9 @@ const MakePaymentNewInvoice = ({
 
               {/* Balance */}
               <div className="flex w-1/2 flex-col gap-2">
-                <Label className="text-sm font-semibold">Balance</Label>
+                <Label className="text-sm font-semibold">
+                  {translations('form.label.balance')}
+                </Label>
                 <div className="flex flex-col gap-1">
                   <Input
                     disabled
@@ -321,7 +341,9 @@ const MakePaymentNewInvoice = ({
 
           {/* uploads payments proofs */}
           <div className="flex flex-col gap-4">
-            <Label className="text-sm font-semibold">Upload Proof</Label>
+            <Label className="text-sm font-semibold">
+              {translations('form.upload_proof.title')}
+            </Label>
             {files.map((file) => (
               <div
                 key={file.name}
@@ -337,7 +359,7 @@ const MakePaymentNewInvoice = ({
                       <Check size={10} />
                     </div>
                     <p className="text-xs font-medium leading-5 text-green-500">
-                      Upload Successfully!
+                      {translations('successMsg.upload_success')}
                     </p>
                   </div>
                 </div>
@@ -353,21 +375,16 @@ const MakePaymentNewInvoice = ({
                   <UploadCloud className="text-[#288AF9]" size={40} />
                   <div className="flex flex-col gap-1">
                     <p className="text-xs font-medium text-darkText">
-                      Drag & Drop or Select a File (Max 10MB,
-                      <span className="font-bold text-[#288AF9]">
-                        {' '}
-                        .png /.pdf Formats
-                      </span>
-                      )
+                      {translations('form.upload_proof.para')}
                     </p>
                     <p className="text-xs font-normal text-[#288AF9]">
-                      Note - Upload Payment Proofs only.
+                      {translations('form.upload_proof.note')}
                     </p>
                   </div>
                 </div>
                 <Button variant="blue_outline">
                   <Upload />
-                  Select
+                  {translations('form.upload_proof.ctas.select')}
                 </Button>
               </div>
             </FileUploader>
@@ -395,7 +412,7 @@ const MakePaymentNewInvoice = ({
             router.back();
           }}
         >
-          Discard
+          {translations('form.ctas.discard')}
         </Button>
         <Button
           onClick={handleSubmit}
@@ -406,7 +423,11 @@ const MakePaymentNewInvoice = ({
           size="sm"
           className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
         >
-          {createPaymentMutationFn.isPending ? <Loading /> : 'Create'}
+          {createPaymentMutationFn.isPending ? (
+            <Loading />
+          ) : (
+            translations('form.ctas.create')
+          )}
         </Button>
       </div>
     </Wrapper>

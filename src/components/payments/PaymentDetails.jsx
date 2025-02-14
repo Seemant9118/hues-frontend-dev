@@ -1,6 +1,7 @@
 import { paymentApi } from '@/api/payments/payment_api';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import React from 'react';
@@ -11,6 +12,7 @@ import Loading from '../ui/Loading';
 import { usePaymentColumns } from './paymentColumns';
 
 const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+  const translations = useTranslations('components.payment_details');
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
 
@@ -32,11 +34,9 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   ) : (
     <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />
-      <p className="font-bold">No payments yet</p>
+      <p className="font-bold">{translations('emptyStateComponent.title')}</p>
       <p className="max-w-96 text-center">
-        {
-          "You haven't created any payments yet. Start by generating your first payment to keep track of your transactions"
-        }
+        {translations('emptyStateComponent.para')}
       </p>
 
       {!isPurchasesPage && orderDetails.negotiationStatus === 'INVOICED' && (
@@ -45,7 +45,7 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
           className="bg-[#288AF9]"
           onClick={() => setIsRecordingPayment(true)}
         >
-          Record Payment
+          {translations('ctas.record_payment')}
         </Button>
       )}
     </div>
