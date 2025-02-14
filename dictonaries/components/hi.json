@@ -315,6 +315,20 @@
                 "common": "कुछ गलत हो गया"
             }
         },
+        "invoice_overview": {
+            "title": "सारांश",
+            "label": {
+                "invoice_id": "चालान आईडी",
+                "order_id": "ऑर्डर आईडी",
+                "date": "तिथि",
+                "client_name": "ग्राहक का नाम",
+                "vendor_name": "विक्रेता का नाम",
+                "type": "प्रकार",
+                "payment_status": "भुगतान स्थिति",
+                "total_amount": "कुल राशि",
+                "debit_notes": "डेबिट नोट्स"
+            }
+        },
         "past_invoices": {
             "label": {
                 "date": "तारीख",
@@ -480,6 +494,15 @@
                 "invoiceAmountPaid_exceed": "राशि कुल भुगतान राशि से अधिक है",
                 "invoiceAmountPaid_less": "राशि कुल भुगतान राशि से कम है",
                 "common": "कुछ गलत हो गया"
+            }
+        },
+        "payment_details": {
+            "emptyStateComponent": {
+                "title": "अभी तक कोई भुगतान नहीं",
+                "para": "आपने अभी तक कोई भुगतान नहीं किया है। अपने लेनदेन को ट्रैक करने के लिए पहला भुगतान दर्ज करके शुरुआत करें।"
+            },
+            "ctas": {
+                "record_payment": "भुगतान दर्ज करें"
             }
         }
     }

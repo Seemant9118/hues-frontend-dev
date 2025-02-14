@@ -315,6 +315,20 @@
                 "common": "Something went wrong"
             }
         },
+        "invoice_overview": {
+            "title": "Overview",
+            "label": {
+                "invoice_id": "Invoice ID",
+                "order_id": "Order ID",
+                "date": "Date",
+                "client_name": "Client Name",
+                "vendor_name": "Vendor Name",
+                "type": "Type",
+                "payment_status": "Payment Status",
+                "total_amount": "Total Amount",
+                "debit_notes": "Debit Notes"
+            }
+        },
         "past_invoices": {
             "label": {
                 "date": "Date",
@@ -480,6 +494,15 @@
                 "invoiceAmountPaid_exceed": "Amount exceeds the total payment amount",
                 "invoiceAmountPaid_less": "Amount is less than the total payment amount",
                 "common": "Something went wrong"
+            }
+        },
+        "payment_details": {
+            "emptyStateComponent": {
+                "title": "No Payments yet",
+                "para": "You haven't created any payments yet. Start by generating your first payment to keep track of your transactions"
+            },
+            "ctas": {
+                "record_payment": "Record Payment"
             }
         }
     }
