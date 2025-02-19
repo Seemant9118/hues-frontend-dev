@@ -1,0 +1,123 @@
+import { invitation } from '@/api/invitation/Invitation';
+import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import { LocalStorageService } from '@/lib/utils';
+import {
+  acceptInvitation,
+  rejectInvitation,
+} from '@/services/Invitation_Service/Invitation_Service';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import React from 'react';
+import { toast } from 'sonner';
+import { Button } from '../ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog';
+
+const InvitationActionModal = ({
+  ctaName,
+  title,
+  invitationData,
+  isInviteActionModalOpen,
+  setIsInviteActionModalOpen,
+}) => {
+  const queryClient = useQueryClient();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+
+  const acceptInvitationMutation = useMutation({
+    mutationFn: (data) => acceptInvitation(data),
+    onSuccess: () => {
+      toast.success('Invitation Accepted Successfully');
+      setIsInviteActionModalOpen(false);
+      queryClient.invalidateQueries([
+        invitation.getReceivedInvitation.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const rejectInvitationMutation = useMutation({
+    mutationFn: (data) => rejectInvitation(data),
+    onSuccess: () => {
+      toast.success('Invitation Rejected Successfully');
+      setIsInviteActionModalOpen(false);
+      queryClient.invalidateQueries([
+        invitation.getReceivedInvitation.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handleAccept = (id) => {
+    acceptInvitationMutation.mutate({
+      enterpriseId,
+      invitationId: id,
+    });
+  };
+
+  const handleReject = (id) => {
+    rejectInvitationMutation.mutate({
+      enterpriseId,
+      invitationId: id,
+    });
+  };
+  const bgColorClass = getRandomBgColor();
+
+  return (
+    <Dialog
+      open={isInviteActionModalOpen}
+      onOpenChange={setIsInviteActionModalOpen}
+    >
+      <DialogTrigger asChild>
+        <span className="cursor-pointer px-2 text-primary hover:underline">
+          {ctaName}
+        </span>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogTitle>{title}</DialogTitle>
+        <div
+          key={invitationData?.id}
+          className="flex flex-col gap-4 rounded-sm border pb-3 pl-3 pr-3 pt-5"
+        >
+          <div className="flex items-start gap-4">
+            <span
+              className={`flex items-center justify-center rounded-full ${bgColorClass} p-2 text-sm text-white`}
+            >
+              {getInitialsNames(invitationData?.id)}
+            </span>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-bold">
+                {`"${invitationData?.name}" added you as their ${invitationData?.type}`}
+              </span>
+              <span className="flex items-center gap-2 text-xs text-[#A5ABBD]">
+                <p>+91 {invitationData?.mobileNumber ?? '-'} |</p>
+                <p>{invitationData?.panNumber ?? '-'} </p>
+              </span>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              size="sm"
+              className="border border-red-600 text-red-600 hover:border-none hover:bg-red-600 hover:text-white"
+              variant="outline"
+              onClick={() => handleReject(invitationData?.id)}
+            >
+              Reject
+            </Button>
+            <Button size="sm" onClick={() => handleAccept(invitationData?.id)}>
+              Accept
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default InvitationActionModal;

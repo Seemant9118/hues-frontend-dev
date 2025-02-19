@@ -6,7 +6,7 @@ import {
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Dot, Info, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
@@ -19,6 +19,7 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { Progress } from '../ui/progress';
+import InvitationActionModal from '../Modals/InvitationActionModal';
 
 const OrdersOverview = ({
   isCollapsableOverview,
@@ -33,6 +34,7 @@ const OrdersOverview = ({
   const translations = useTranslations('components.order_overview');
 
   const queryClient = useQueryClient();
+  const [isInviteActionModalOpen, setIsInviteActionModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const pathName = usePathname();
@@ -130,8 +132,17 @@ const OrdersOverview = ({
                 <p className="text-lg font-bold">
                   {Name ?? 'Name not available'}
                 </p>
-                <p className="text-xs font-bold text-[#A5ABBD]">
-                  +91 {mobileNumber}
+                <p className="flex items-center text-xs font-bold text-[#A5ABBD]">
+                  <span>+91 {mobileNumber}</span>
+                  <Dot size={24} />
+                  <span>Pending invite</span>
+                  <InvitationActionModal
+                    ctaName={'Take action'}
+                    title={'Pending Invites'}
+                    invitationData={orderDetails?.invitationData}
+                    isInviteActionModalOpen={isInviteActionModalOpen}
+                    setIsInviteActionModalOpen={setIsInviteActionModalOpen}
+                  />
                 </p>
               </section>
             </div>
