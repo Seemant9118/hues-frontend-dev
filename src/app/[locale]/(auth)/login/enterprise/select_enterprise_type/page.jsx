@@ -17,17 +17,7 @@ const SelectEnterprisePage = () => {
     'Public Ltd',
   ];
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
-    name: '',
     type: '',
-    email: '',
-    panNumber: '',
-    address: '',
-    gstNumber: '',
-    udyam: '',
-    doi: '',
-    isDeclerationConsent: null,
-    LLPIN: '',
-    CIN: '',
   });
 
   const handleEnterpriseType = (enterpriseType) => {
@@ -45,6 +35,9 @@ const SelectEnterprisePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    router.push(
+      `/login/enterprise/onboard_enterprise?type=${enterpriseOnboardData.type}`,
+    );
   };
 
   return (

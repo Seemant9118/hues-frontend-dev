@@ -12,12 +12,14 @@ import { SearchEnterprise } from '@/services/Enterprises_Users_Service/Enterpris
 import { requestExist } from '@/services/User_Auth_Service/UserAuthServices';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 const EnterpriseOnboardPage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const enterpriseType = searchParams.get('type');
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     panNumber: '',
   });
@@ -94,8 +96,23 @@ const EnterpriseOnboardPage = () => {
     }
   };
 
+  const handleEnterpriseNotfound = () => {
+    // if enterpriseType is properietorship then redirect to gst verification
+    if (enterpriseType === 'proprietorship') {
+      router.push('/login/enterprise/gst-verification');
+    }
+    // else redirect to cin verification
+    else {
+      router.push('/login/enterprise/cin-verification');
+    }
+    // LocalStorageService.set(
+    //   'enterprisePanNumber',
+    //   enterpriseOnboardData.panNumber,
+    // );
+  };
+
   const handleBack = () => {
-    router.push('/login/enterprise/select_enterprise');
+    router.push('/login/enterprise/select_enterprise_type');
   };
 
   return (
@@ -164,13 +181,7 @@ const EnterpriseOnboardPage = () => {
                   <Button
                     size="sm"
                     className="h-8 w-10 bg-[#288AF9]"
-                    onClick={() => {
-                      router.push('/login/enterpriseDetails');
-                      LocalStorageService.set(
-                        'enterprisePanNumber',
-                        enterpriseOnboardData.panNumber,
-                      );
-                    }}
+                    onClick={handleEnterpriseNotfound}
                   >
                     Add
                   </Button>
