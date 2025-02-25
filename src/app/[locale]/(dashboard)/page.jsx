@@ -28,7 +28,6 @@ export default function Home() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const isKycVerified = LocalStorageService.get('isKycVerified');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
@@ -82,14 +81,14 @@ export default function Home() {
           </div>
         )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <EmptyStageComponent
           heading={translations('emptyStateComponent.heading')}
           subItems={keys}
         />
       )}
 
-      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <RestrictedComponent />
       )}
     </div>

@@ -150,38 +150,18 @@ function Profile() {
         </TabsList>
 
         {/* ---checks : for if user skips */}
-
-        {/* if user is not onboard */}
-        {!profileDetails?.userDetails?.user?.isOnboardingCompleted && (
-          <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
-            <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-              <Info size={14} />
-              {` Your onboarding is not complete yet, please complete it to unlock additional features.`}
-            </span>
-            <Button
-              size="sm"
-              className="h-8 bg-[#288AF9]"
-              onClick={() => {
-                router.push('/login/userOnboarding');
-              }}
-            >
-              {translations('ctas.pendingActionsForCompletion.complete')}
-            </Button>
-          </div>
-        )}
-        {/* if user onboarded but enterprise is not created */}
-        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
-          !profileDetails?.userDetails?.enterpriseId && (
+        {!profileDetails?.userDetails?.user?.isOnboardingCompleted &&
+          !profileDetails?.userDetails?.user?.isPanVerified && (
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
-                {` You have not created enterprise yet, please create your enterprise to unlock additional features.`}
+                {` Your onboarding is not complete yet, please complete it to unlock additional features.`}
               </span>
               <Button
                 size="sm"
                 className="h-8 bg-[#288AF9]"
                 onClick={() => {
-                  router.push('/login/enterpriseOnboardingSearch');
+                  router.push('/login/pan-verification');
                 }}
               >
                 {translations('ctas.pendingActionsForCompletion.complete')}
@@ -189,33 +169,27 @@ function Profile() {
             </div>
           )}
 
-        {/* if user onboarded and enterprise created and enterpriseType is properietorship but enterpriseOnboarding or kyc verification not completed yet */}
-        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
-          profileDetails?.userDetails?.enterpriseId &&
-          profileDetails?.enterpriseDetails?.type === 'proprietorship' &&
-          (!profileDetails?.enterpriseDetails?.isOnboardingCompleted ||
-            !profileDetails?.userDetails?.user?.isKycVerified) && (
+        {!profileDetails?.userDetails?.user?.isOnboardingCompleted &&
+          profileDetails?.userDetails?.user?.isPanVerified &&
+          !profileDetails?.userDetails?.user?.isAadhaarVerified && (
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
-                {` Your KYC process is still pending. Please click the 'Start KYC' button to complete the verification and unlock additional features.`}
+                {` Your onboarding is not complete yet, please complete it to unlock additional features.`}
               </span>
               <Button
                 size="sm"
                 className="h-8 bg-[#288AF9]"
                 onClick={() => {
-                  router.push('/login/kyc');
+                  router.push('/login/aadhar-verification');
                 }}
               >
-                {translations('ctas.pendingActionsForCompletion.startkyc')}
+                {translations('ctas.pendingActionsForCompletion.complete')}
               </Button>
             </div>
           )}
 
-        {/* if user onboarded and enterprise created and enterpriseType is pvtltd/llp/publicltd etc but enterpriseOnboarding not completed yet */}
         {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
-          profileDetails?.userDetails?.enterpriseId &&
-          profileDetails?.enterpriseDetails?.type !== 'proprietorship' &&
           !profileDetails?.enterpriseDetails?.isOnboardingCompleted && (
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
@@ -226,30 +200,7 @@ function Profile() {
                 size="sm"
                 className="h-8 bg-[#288AF9]"
                 onClick={() => {
-                  router.push('/login/isDirector');
-                }}
-              >
-                {translations('ctas.pendingActionsForCompletion.complete')}
-              </Button>
-            </div>
-          )}
-
-        {/* if user onboarded and enterprise created and enterpriseType is pvtltd/llp/publicltd etc and enterpriseOnboarding completed but kyc not verified yet */}
-        {profileDetails?.userDetails?.user?.isOnboardingCompleted &&
-          profileDetails?.userDetails?.enterpriseId &&
-          profileDetails?.enterpriseDetails?.type !== 'proprietorship' &&
-          profileDetails?.enterpriseDetails?.isOnboardingCompleted &&
-          !profileDetails?.userDetails?.user?.isKycVerified && (
-            <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
-              <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-                <Info size={14} />
-                {` Your KYC process is still pending. Please click the 'Start KYC' button to complete the verification and unlock additional features.`}
-              </span>
-              <Button
-                size="sm"
-                className="h-8 bg-[#288AF9]"
-                onClick={() => {
-                  router.push('/login/kyc');
+                  router.push('/login/enterprise/pending-actions');
                 }}
               >
                 {translations('ctas.pendingActionsForCompletion.complete')}
