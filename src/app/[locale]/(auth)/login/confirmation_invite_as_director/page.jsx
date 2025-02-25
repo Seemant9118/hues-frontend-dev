@@ -43,13 +43,12 @@ const ConfirmationInviteAsDirectorPage = () => {
         'isEnterpriseOnboardingComplete',
         data?.data?.data?.user?.isEnterpriseOnboardingComplete,
       );
-      LocalStorageService.set(
-        'isKycVerified',
-        data?.data?.data?.user?.isKycVerified,
-      );
+      // LocalStorageService.set(
+      //   'isKycVerified',
+      //   data?.data?.data?.user?.isKycVerified,
+      // );
 
-      // with prefilled details
-      router.push('/login/enterpriseDetails');
+      router.push('/login/enterprise/select_enterprise_type');
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -115,7 +114,7 @@ const ConfirmationInviteAsDirectorPage = () => {
               type="Submit"
               className="w-full p-2"
               disabled={createUserSessionMutation.isPending}
-              onClick={() => router.push('/login/enterpriseOnboardingSearch')}
+              onClick={() => router.push('/login/select_enterprise')}
             >
               No
             </Button>

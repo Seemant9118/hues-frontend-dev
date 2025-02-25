@@ -6,40 +6,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
+import { cinVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const UdyamVerify = () => {
+const CINVerificationPage = () => {
   const router = useRouter();
+  const cin = LocalStorageService.get('companyData')?.cin_number;
+  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseData, setEnterpriseData] = useState({
-    udyamNumber: '',
+    cinOrLlpin: '',
     enterpriseId,
+    userId,
   });
 
-  const handleChange = (e) => {
-    const { value } = e.target;
+  // fetching cin from localStorage
+  useEffect(() => {
     setEnterpriseData((prev) => ({
       ...prev,
-      udyam: value,
+      cinOrLlpin: cin,
     }));
-  };
+  }, [cin]);
 
-  const verifyUdyamMutation = useMutation({
-    mutationKey: [userAuth.udyamVerify.endpointKey],
-    mutationFn: UdyamVerify,
+  const verifyCINMutation = useMutation({
+    mutationKey: [userAuth.cinVerify.mutationKey],
+    mutationFn: cinVerify,
     onSuccess: (data) => {
-      toast.success('UDYAM ID Verified Successfully');
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
-      router.push('/login/enterprise/enterprise-verification-details');
+      toast.success('CIN Verified Successfully');
+      LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
+      LocalStorageService.set('gst', data?.data?.data?.gst);
+
+      // if din matched
+      if (data?.data?.data?.isDirector) {
+        router.push('/login/enterprise/gst-verify');
+      } else {
+        router.push('/login/enterprise/invite-director');
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.messages || 'Something went wrong');
@@ -48,8 +55,7 @@ const UdyamVerify = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // api call
-    verifyUdyamMutation.mutate(enterpriseData);
+    verifyCINMutation.mutate(enterpriseData); // api call
   };
 
   const handleBack = () => {
@@ -61,10 +67,10 @@ const UdyamVerify = () => {
       <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            Verify your UDYAM ID
+            We found a CIN for this enterpise
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Please enter the details and proceed
+            Verify the CIN Number and continue
           </p>
         </div>
 
@@ -74,16 +80,16 @@ const UdyamVerify = () => {
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="cin" className="font-medium text-[#121212]">
-              UDYAM ID
+              CIN
             </Label>
             <div className="flex items-center hover:border-gray-600">
               <Input
                 type="text"
-                name="udyam"
-                placeholder="Enter UDYAM ID"
+                name="cin"
+                placeholder="Enter your CIN number"
                 className="uppercase focus:font-bold"
-                value={enterpriseData.udyam}
-                onChange={handleChange}
+                value={enterpriseData.cinOrLlpin}
+                disabled
               />
             </div>
           </div>
@@ -91,27 +97,18 @@ const UdyamVerify = () => {
           <Button
             size="sm"
             type="submit"
-            disabled={verifyUdyamMutation.isPending}
+            disabled={verifyCINMutation.isPending}
           >
-            {verifyUdyamMutation.isPending ? <Loading /> : 'Proceed'}
+            {verifyCINMutation.isPending ? <Loading /> : 'Verify'}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft size={14} />
             Back
           </Button>
         </form>
-
-        <div className="flex w-full flex-col gap-20">
-          <Link
-            href="/login/enterprise/enterprise-verification-details"
-            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-          >
-            Skip for Now
-          </Link>
-        </div>
       </div>
     </div>
   );
 };
 
-export default UdyamVerify;
+export default CINVerificationPage;

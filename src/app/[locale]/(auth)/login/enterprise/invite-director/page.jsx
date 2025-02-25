@@ -1,13 +1,25 @@
 'use client';
 
 import { UserProvider } from '@/context/UserContext';
-import { useState } from 'react';
+import { LocalStorageService } from '@/lib/utils';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import InviteDirectorIndexNew from '../../multi-step-forms/inviteDirectorComponents/InviteDirectorIndexNew';
 import ShareLinkToDirectorNew from '../../multi-step-forms/inviteDirectorComponents/ShareLinkToDirectorNew';
 
 const InviteDirectorPage = () => {
+  const invitationId = LocalStorageService.get('invitationId');
+  const searchParams = useSearchParams();
+  const step = Number(searchParams.get('step')); // Convert to number
   const [directorInviteStep, setDirectorInviteStep] = useState(1);
   const [invitationUrl, setInvitationUrl] = useState('');
+
+  useEffect(() => {
+    if (!Number.isNaN(step)) {
+      // Ensure step is a valid number
+      setDirectorInviteStep(step);
+    }
+  }, [step]);
 
   return (
     <UserProvider>
@@ -19,7 +31,11 @@ const InviteDirectorPage = () => {
           />
         )}
         {directorInviteStep === 2 && (
-          <ShareLinkToDirectorNew invitationUrl={invitationUrl} />
+          <ShareLinkToDirectorNew
+            invitationId={invitationId}
+            isManualGettingLink={!!step}
+            invitationUrl={invitationUrl}
+          />
         )}
       </div>
     </UserProvider>

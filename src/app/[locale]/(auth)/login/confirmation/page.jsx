@@ -13,7 +13,8 @@ const ConfirmationPage = () => {
   const handleOnboardEnterprise = (e) => {
     e.preventDefault();
 
-    router.push('/login/enterpriseOnboardingSearch');
+    // api call to make enterprise onboarding started
+    router.push('/login/enterprise/select_enterprise_type');
   };
 
   const handleSkip = () => {

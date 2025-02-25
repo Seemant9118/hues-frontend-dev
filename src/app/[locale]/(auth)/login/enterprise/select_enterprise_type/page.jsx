@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import RadioSelect from '@/components/ui/RadioSelect';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -28,15 +27,13 @@ const SelectEnterprisePage = () => {
   };
 
   const handleBack = () => {
-    // if user onboarding already completed , then back to mobile login
-    router.push('/login');
-    // if user onboarding not completeted, then check which user onboarding step is pending and then visit back
+    router.back();
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     router.push(
-      `/login/enterprise/onboard_enterprise?type=${enterpriseOnboardData.type}`,
+      `/login/enterprise/pan-verify?type=${enterpriseOnboardData.type}`,
     );
   };
 
@@ -79,12 +76,6 @@ const SelectEnterprisePage = () => {
             Back
           </Button>
         </div>
-        <Link
-          href="/"
-          className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-        >
-          Skip for Now
-        </Link>
       </form>
     </div>
   );

@@ -1,9 +1,11 @@
 'use client';
 
+import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Loading from '@/components/ui/Loading';
 import {
   Select,
   SelectContent,
@@ -11,15 +13,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { LocalStorageService } from '@/lib/utils';
+import { gstVerify } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 const GstVerificationPage = () => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const gstDatas = LocalStorageService.get('gst');
+
   const router = useRouter();
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
-    gst: '',
+    gstNumber: '',
+    enterpriseId,
   });
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
@@ -54,6 +64,24 @@ const GstVerificationPage = () => {
     setErrorMsg({}); // Clear any validation errors
   };
 
+  const gstVerifyMutation = useMutation({
+    mutationKey: [userAuth.gstVerify.endpointKey],
+    mutationFn: gstVerify,
+    onSuccess: (data) => {
+      toast.success('GST Verified Successfully');
+
+      LocalStorageService.set(
+        'enterprise_Id',
+        data?.data?.data?.user?.enterpriseId,
+      );
+
+      router.push('/login/enterprise/udyam-veriy');
+    },
+    onError: (error) => {
+      toast.error(error.data.response.data.message || 'Something went wrong');
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const isAnyErrorMsg = validateGstNumber(enterpriseOnboardData.gst);
@@ -61,12 +89,12 @@ const GstVerificationPage = () => {
       setErrorMsg(isAnyErrorMsg);
     } else {
       // API call
-      // console.log('Submitting:', enterpriseOnboardData);
+      gstVerifyMutation.mutate(enterpriseOnboardData);
     }
   };
 
   const handleBack = () => {
-    router.push('/login/enterprise/select_enterprise_type');
+    router.back();
   };
 
   return (
@@ -74,7 +102,9 @@ const GstVerificationPage = () => {
       <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            We found some GST Numbers against this PAN
+            {gstDatas?.length === 0 || gstDatas === null
+              ? 'No GST Number found against this PAN'
+              : 'We found some GST Numbers against this PAN'}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
             Choose your principle place of business from the list below or add
@@ -92,14 +122,19 @@ const GstVerificationPage = () => {
             </Label>
             <Select
               onValueChange={handleSelectGst}
-              value={isManualEntry ? '' : enterpriseOnboardData.gst} // Clear dropdown if manually entered
+              value={isManualEntry ? '' : enterpriseOnboardData.gstNumber} // Clear dropdown if manually entered
             >
-              <SelectTrigger>
+              <SelectTrigger
+                disabled={gstDatas?.length === 0 || gstDatas === null}
+              >
                 <SelectValue placeholder="Choose your preferred GST number" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="27ABCDE1234F1Z5">27ABCDE1234F1Z5</SelectItem>
-                <SelectItem value="09FGHIJ5678K2Z3">09FGHIJ5678K2Z3</SelectItem>
+                {gstDatas?.map((gst) => (
+                  <SelectItem key={gst} value={gst.gstin}>
+                    {gst.gstin}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -119,14 +154,18 @@ const GstVerificationPage = () => {
                 placeholder="Enter your GST number"
                 className="uppercase focus:font-bold"
                 onChange={handleChangeGst}
-                value={isManualEntry ? enterpriseOnboardData.gst : ''} // Clear input if selected from dropdown
+                value={isManualEntry ? enterpriseOnboardData.gstNumber : ''} // Clear input if selected from dropdown
               />
             </div>
             {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />}
           </div>
 
-          <Button size="sm" type="submit">
-            Proceed
+          <Button
+            size="sm"
+            type="submit"
+            disabled={gstVerifyMutation.isPending}
+          >
+            {gstVerifyMutation.isPending ? <Loading /> : 'Proceed'}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft size={14} />
@@ -136,7 +175,7 @@ const GstVerificationPage = () => {
 
         <div className="flex w-full flex-col gap-20">
           <Link
-            href="/"
+            href="/login/enterprise/udyam-verify"
             className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
           >
             Skip for Now

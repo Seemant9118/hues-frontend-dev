@@ -1,3 +1,4 @@
+/* eslint-disable no-lonely-if */
 import { directorApi } from '@/api/director/directorApi';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -14,16 +15,15 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
 const VerifyMobileOTP = ({ setMobileLoginStep }) => {
-  const router = useRouter();
-
   const queryClient = useQueryClient();
-
+  const router = useRouter();
   const [startFrom, setStartFrom] = useState(30);
   const [otp, setOtp] = useState();
+
   const userId = LocalStorageService.get('user_profile');
   const userMobileNumber = LocalStorageService.get('user_mobile_number');
   const operationType = LocalStorageService.get('operation_type');
-  const logIninvitationData = LocalStorageService.get('invitationData');
+  const islogInWithInviteLink = LocalStorageService.get('invitationData');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -35,219 +35,131 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
 
   const mutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
+    // eslint-disable-next-line consistent-return
     onSuccess: async (data) => {
       // set refresh token
       LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
       // set access token
       LocalStorageService.set('token', data?.data?.data?.access_token);
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
+      // user onboarding related states
       LocalStorageService.set(
         'isOnboardingComplete',
         data?.data?.data?.user?.isOnboardingComplete,
+      );
+      LocalStorageService.set(
+        'isPanVerified',
+        data?.data?.data?.user?.isPanVerified,
+      );
+      LocalStorageService.set(
+        'isAadhaarVerified',
+        data?.data?.data?.user?.isAadhaarVerified,
+      );
+      LocalStorageService.set(
+        'attemptsRemaining',
+        data?.data?.data?.user?.remainingAttempts,
+      );
+
+      // enterprise onboarding related states
+      LocalStorageService.set(
+        'isEnterprisestartedOnboarding',
+        data?.data?.data?.user?.isEnterprisestartedOnboarding,
+      );
+      LocalStorageService.set(
+        'enterprise_Id',
+        data?.data?.data?.user?.enterpriseId,
       );
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
         data?.data?.data?.user?.isEnterpriseOnboardingComplete,
       );
       LocalStorageService.set(
-        'isKycVerified',
-        data?.data?.data?.user?.isKycVerified,
-      );
-
-      LocalStorageService.set('isDirector', data?.data?.data?.user?.isDirector);
-
-      LocalStorageService.set(
         'isAssociateRequestCreated',
         data?.data?.data?.user?.isAssociateRequestCreated,
       );
-
       LocalStorageService.set(
         'isAssociateRequestAccepted',
         data?.data?.data?.user?.isAssociateRequestAccepted,
       );
 
-      LocalStorageService.set(
-        'isPanVerified',
-        data?.data?.data?.user?.isPanVerified,
-      );
+      // LocalStorageService.set(
+      //   'isKycVerified',
+      //   data?.data?.data?.user?.isKycVerified,
+      // );
 
-      LocalStorageService.set(
-        'isAadhaarVerified',
-        data?.data?.data?.user?.isAadhaarVerified,
-      );
-
-      LocalStorageService.set(
-        'isEmailVerified',
-        data?.data?.data?.user?.isEmailVerified,
-      );
-
-      LocalStorageService.set(
-        'attemptsRemaining',
-        data?.data?.data?.user?.remainingAttempts,
-      );
+      LocalStorageService.set('isDirector', data?.data?.data?.user?.isDirector);
 
       // check by calling api : directorInviteList
       const directorInviteListData = await queryClient.fetchQuery({
         queryKey: [directorApi.getDirectorInviteList.endpointKey],
         queryFn: directorInviteList,
       });
-
       const isUserHaveValidDirectorInvites =
         directorInviteListData?.data?.data?.length > 0;
 
-      const isCurrEnterpriseInvitationExist =
-        directorInviteListData?.data?.data?.some(
-          (directorInvite) =>
-            directorInvite.fromEnterprise.id.toString() ===
-            data?.data?.data?.user?.enterpriseId.toString(),
-        );
+      // const isCurrEnterpriseInvitationExist =
+      //   directorInviteListData?.data?.data?.some(
+      //     (directorInvite) =>
+      //       directorInvite.fromEnterprise.id.toString() ===
+      //       data?.data?.data?.user?.enterpriseId.toString(),
+      //   );
 
       toast.success('OTP verified successfully');
 
-      // isuserOnboardingComplete
+      // isUserOnboardingComplete
       if (data?.data?.data?.user?.isOnboardingComplete) {
-        // onboard with Invitaion Link?
-        if (logIninvitationData) {
-          // isInviteAsClientOrVendor
+        // is logInWithInviteLink
+        if (islogInWithInviteLink) {
           if (
-            logIninvitationData?.data?.invitation?.invitationType ===
+            islogInWithInviteLink?.data?.invitation?.invitationType ===
               'CLIENT' ||
-            logIninvitationData?.data?.invitation?.invitationType === 'VENDOR'
+            islogInWithInviteLink?.data?.invitation?.invitationType === 'VENDOR'
           ) {
-            router.push('/login/confirmation_invite_as_client');
-          }
-          // isInviteAsDirector
-          else if (
-            logIninvitationData?.data?.invitation?.invitationType ===
+            router.push('/login/enterprise/select_enterprise_type');
+          } else if (
+            islogInWithInviteLink?.data?.invitation?.invitationType ===
               'DIRECTOR' &&
             isUserHaveValidDirectorInvites
           ) {
             router.push('/login/confirmation_invite_as_director');
-            // router.push('/login/select_enterprise');
-          }
-          // isInviteAsAssociate
-          else {
+          } else {
             router.push('/login/confirmation_invite_as_associate');
           }
         }
-
-        // direct onboard without invitation link :
-        // if user have director invites and enterprise not present in platform
-        else if (
-          isUserHaveValidDirectorInvites &&
-          !data?.data?.data?.user?.enterpriseId
-        ) {
-          router.push('/login/select_enterprise');
+        // is not logInWithInviteLink
+        else {
+          if (
+            data?.data?.data?.user?.isEnterprisestartedOnboarding &&
+            data?.data?.data?.user?.isEnterpriseOnboardingComplete
+          ) {
+            return router.push('/');
+          } else if (
+            data?.data?.data?.user?.isEnterprisestartedOnboarding &&
+            !data?.data?.data?.user?.isEnterpriseOnboardingComplete
+          ) {
+            // enterprise onboarding started and but not completed perform pending actions
+            return router.push('/login/enterprise/pending-actions');
+          } else {
+            return router.push('/login/confirmation');
+          }
         }
-        // if user have director invites and curr enterprise present in platform && !isEnterpriseOnboardingComplete
-        else if (
-          isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          isCurrEnterpriseInvitationExist &&
-          !data?.data?.data?.user?.isEnterpriseOnboardingComplete
-        ) {
-          router.push('/login/din');
-        }
-        // if user have director invites and curr enterprise present in platform && isEnterpriseOnboardingCompleted
-        else if (
-          isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          isCurrEnterpriseInvitationExist &&
-          data?.data?.data?.user?.isEnterpriseOnboardingComplete
-        ) {
-          const redirectUrl = LocalStorageService.get('redirectUrl');
-          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-          router.push(redirectUrl || '/');
-        }
-        // if user have not director invites && enterprise already present in platform && user is an associate && user does not have associate request
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          !data?.data?.data?.user?.isDirector &&
-          !data?.data?.data?.user?.isAssociateRequestCreated
-        ) {
-          router.push('/login/isDirector');
-        }
-        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request but not approved yet
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          !data?.data?.data?.user?.isDirector &&
-          data?.data?.data?.user?.isAssociateRequestCreated &&
-          !data?.data?.data?.user?.isAssociateRequestAccepted
-        ) {
-          router.push('/login/requested_approval');
-        }
-        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved and kyc verified
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          !data?.data?.data?.user?.isDirector &&
-          data?.data?.data?.user?.isAssociateRequestCreated &&
-          data?.data?.data?.user?.isAssociateRequestAccepted &&
-          data?.data?.data?.user?.isKycVerified
-        ) {
-          const redirectUrl = LocalStorageService.get('redirectUrl');
-          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-          router.push(redirectUrl || '/');
-        }
-        // if user have not director invites && enterprise already present in platform && user is an associate && user have associate request and approved but kyc is pending
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          !data?.data?.data?.user?.isDirector &&
-          data?.data?.data?.user?.isAssociateRequestCreated &&
-          data?.data?.data?.user?.isAssociateRequestAccepted &&
-          !data?.data?.data?.user?.isKycVerified
-        ) {
-          router.push('/login/kyc');
-        }
-        // if user have not director invites && enterprise is not present in platform
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          !data?.data?.data?.user?.enterpriseId
-        ) {
-          router.push('/login/enterpriseOnboardingSearch');
-        }
-        // if user have not director invites && enterprise is present in platform && user is director && kyc is not verified yet
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          data?.data?.data?.user?.isDirector &&
-          !data?.data?.data?.user?.isKycVerified
-        ) {
-          router.push('/login/kyc');
-        }
-        // if user have not director invites && enterprise is present in platform && user is director && kyc is verified
-        else if (
-          !isUserHaveValidDirectorInvites &&
-          data?.data?.data?.user?.enterpriseId &&
-          data?.data?.data?.user?.isDirector &&
-          data?.data?.data?.user?.isKycVerified
-        ) {
-          const redirectUrl = LocalStorageService.get('redirectUrl');
-          LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-          router.push(redirectUrl || '/');
-        }
-      } else {
+      }
+      // User onboarding is incomplete
+      else {
         // isPanverified and aaadhar verified then move to confirmation
         if (
           data?.data?.data?.user?.isPanVerified &&
           data?.data?.data?.user?.isAadhaarVerified
         ) {
-          router.push('/login/confirmation');
+          return router.push('/login/confirmation');
         }
         // isPanverified and !aadhar not verified then move to aadhar
-        if (
+        else if (
           data?.data?.data?.user?.isPanVerified &&
           !data?.data?.data?.user?.isAadhaarVerified
         ) {
-          router.push('/login/aadhar-verification');
+          return router.push('/login/aadhar-verification');
         } else {
-          router.push('/login/pan-verification');
+          return router.push('/login/pan-verification');
         }
       }
     },
@@ -266,9 +178,9 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       otpCode: otp,
       userId,
       operationType,
-      data: logIninvitationData
-        ? logIninvitationData.data.invitation
-        : logIninvitationData,
+      data: islogInWithInviteLink
+        ? islogInWithInviteLink.data.invitation
+        : islogInWithInviteLink,
     });
   };
 

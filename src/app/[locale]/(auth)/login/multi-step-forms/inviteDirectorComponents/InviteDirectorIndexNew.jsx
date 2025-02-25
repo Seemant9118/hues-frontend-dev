@@ -7,7 +7,6 @@ import { sendDirectorInvitation } from '@/services/Invitation_Service/Invitation
 import { Label } from '@radix-ui/react-label';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -152,13 +151,6 @@ const InviteDirectorIndexNew = ({
           Back
         </Button>
       </div>
-
-      <Link
-        href="/"
-        className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-      >
-        Skip for Now
-      </Link>
     </div>
   );
 };
