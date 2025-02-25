@@ -218,7 +218,7 @@ const PanVerificationPage = () => {
 
   return (
     <UserProvider>
-      <div className="flex h-full flex-col items-center justify-center border">
+      <div className="flex h-full flex-col items-center justify-center">
         <form
           onSubmit={handleProceed}
           className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"

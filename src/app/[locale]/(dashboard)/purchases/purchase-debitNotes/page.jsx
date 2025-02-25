@@ -43,7 +43,6 @@ const PurchaseDebitNotes = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const router = useRouter();
   const observer = useRef(); // Ref for infinite scrolling observer
@@ -204,14 +203,14 @@ const PurchaseDebitNotes = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
           <RestrictedComponent />
         </>
       )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
           <Wrapper>
             <SubHeader

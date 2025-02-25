@@ -37,7 +37,6 @@ const Catalogue = () => {
   const translations = useTranslations('catalogue');
 
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const isKycVerified = LocalStorageService.get('isKycVerified');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
@@ -108,14 +107,14 @@ const Catalogue = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')}></SubHeader>
           <RestrictedComponent />
         </>
       )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-full">
           {!enterpriseId && <RestrictedComponent />}
           {enterpriseId && (

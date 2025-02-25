@@ -24,7 +24,6 @@ const MembersPage = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   const { data: membersList, isLoading } = useQuery({
     queryKey: [
@@ -45,14 +44,14 @@ const MembersPage = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name="Members" />
           <RestrictedComponent />
         </>
       )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-full py-2">
           <SubHeader name={'Members'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">

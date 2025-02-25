@@ -119,3 +119,39 @@ export function sentAadharOTP(data) {
 export function verifyAadharOTP(data) {
   return APIinstance.post(userAuth.verifyAadharOTP.endpoint, data);
 }
+// [NEW]
+// 25. getEnterpriseDetailsForPanVerify
+export function getEnterpriseDetailsForPanVerify(data) {
+  return APIinstance.post(
+    userAuth.getEnterpriseDetailsForPanVerify.endpoint,
+    data,
+  );
+}
+
+// 26. gstVerify
+export function gstVerify(data) {
+  return APIinstance.post(userAuth.gstVerify.endpoint, data);
+}
+
+// 27. cinVerify
+export function cinVerify(data) {
+  return APIinstance.post(userAuth.cinVerify.endpoint, data);
+}
+
+// 28. udyamVerify
+export function udyamVerify(data) {
+  return APIinstance.post(userAuth.udyamVerify.endpoint, data);
+}
+
+// 29. getEnterpriseDetailsFromEnterpriseId
+export function getEnterpriseDetailsFromEnterpriseId(id) {
+  return APIinstance.post(
+    userAuth.getEnterpriseDetailsFromEnterpriseId.endpoint,
+    id,
+  );
+}
+
+// 30. getOnboardingStatus
+export function getOnboardingStatus(data) {
+  return APIinstance.post(userAuth.getOnboardingStatus.endpoint, data);
+}

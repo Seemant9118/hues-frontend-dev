@@ -7,7 +7,6 @@ import { sendDirectorInvitation } from '@/services/Invitation_Service/Invitation
 import { Label } from '@radix-ui/react-label';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -81,10 +80,11 @@ const InviteDirectorIndexNew = ({
     <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Invite Director
+          Invite Company Director
         </h1>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-          We need the director’s approval to onboard the enterprise
+          We need an authorised signatory as per MCA records to verify the
+          details for this enterprise.
         </p>
       </div>
 
@@ -151,12 +151,6 @@ const InviteDirectorIndexNew = ({
           Back
         </Button>
       </div>
-      <Link
-        href="/"
-        className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-      >
-        Skip for Now
-      </Link>
     </div>
   );
 };

@@ -50,7 +50,6 @@ const Notification = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const isKycVerified = LocalStorageService.get('isKycVerified');
 
   // updateReadStatusNotifications mutation
   const updateReadStatusNotificationsMutation = useMutation({
@@ -181,13 +180,13 @@ const Notification = () => {
 
   return (
     <>
-      {(!enterpriseId || !isEnterpriseOnboardingComplete || !isKycVerified) && (
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')}></SubHeader>
           <RestrictedComponent />
         </>
       )}
-      {enterpriseId && isEnterpriseOnboardingComplete && isKycVerified && (
+      {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper>
           <SubHeader
             name={translations('title')}

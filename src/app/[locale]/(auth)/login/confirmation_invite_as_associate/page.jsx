@@ -43,20 +43,9 @@ const ConfirmationInviteAsAssocitePage = () => {
         'isEnterpriseOnboardingComplete',
         data?.data?.data?.user?.isEnterpriseOnboardingComplete,
       );
-      LocalStorageService.set(
-        'isKycVerified',
-        data?.data?.data?.user?.isKycVerified,
-      );
 
-      // if kyc is verified of user
-      if (data?.data?.data?.user?.isKycVerified) {
-        // redirect to home page
-        const redirectUrl = LocalStorageService.get('redirectUrl');
-        LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-        router.push(redirectUrl || '/');
-      } else {
-        router.push('/login/kyc');
-      }
+      // show user success message and then redirect to the dashboard
+      router.push('/login/enterprise/enterprise-onboarded-success');
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -121,19 +110,12 @@ const ConfirmationInviteAsAssocitePage = () => {
               type="Submit"
               className="w-full p-2"
               disabled={createUserSessionMutation.isPending}
-              onClick={() => router.push('/login/enterpriseOnboardingSearch')}
+              onClick={() =>
+                router.push('/login/enterprise/select_enterprise_type')
+              }
             >
               No
             </Button>
-          </div>
-
-          <div className="flex w-full flex-col gap-14">
-            <Link
-              href="/"
-              className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-            >
-              Skip for Now
-            </Link>
           </div>
         </div>
       </div>

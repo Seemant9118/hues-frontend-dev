@@ -125,4 +125,41 @@ export const userAuth = {
     endpoint: `/iam/kyc/verify-aadhaar-otp`,
     endpointKey: 'verify_aadhar_otp',
   },
+
+  // [NEW]
+  // 25. getEnterpriseDetailsForPanVerify
+  getEnterpriseDetailsForPanVerify: {
+    endpoint: `/enterprise/getrpacpc-enterprise-data/`,
+    endpointKey: 'get_enterprise_details_for_pan',
+  },
+
+  // 26. gstVerify
+  gstVerify: {
+    endpoint: `/enterprise/verifygst`,
+    endpointKey: 'verify_gst',
+  },
+
+  // 27. cin verify
+  cinVerify: {
+    endpoint: `/enterprise/verify-cin-or-llpin`,
+    endpointKey: 'verify_cin',
+  },
+
+  // 28. udyam verify
+  udyamVerify: {
+    endpoint: `/enterprise/verifyudyam`,
+    endpointKey: 'verify_udyam',
+  },
+
+  // 29. getEnterpriseDetailsFromEnterpriseId
+  getEnterpriseDetailsFromEnterpriseId: {
+    endpoint: `/enterprise/getrpacpc-enterprise-data/`,
+    endpointKey: 'get_enterprise_details_from_Id',
+  },
+
+  // 30. getOnboardingStatus
+  getOnboardingStatus: {
+    endpoint: `/enterprise/getonboardingstatus`,
+    endpointKey: 'get_onboarding_status',
+  },
 };
