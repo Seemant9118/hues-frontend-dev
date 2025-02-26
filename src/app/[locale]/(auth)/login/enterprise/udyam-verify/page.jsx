@@ -48,10 +48,10 @@ const UdyamVerify = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // api call
-    if (enterpriseData.udyam === '') {
-      router.push('/login/enterprise/enterprise-verification-details');
+    if (enterpriseData.udyamNumber === '') {
+      return router.push('/login/enterprise/enterprise-verification-details');
     } else {
-      verifyUdyamMutation.mutate(enterpriseData);
+      return verifyUdyamMutation.mutate(enterpriseData);
     }
   };
 
