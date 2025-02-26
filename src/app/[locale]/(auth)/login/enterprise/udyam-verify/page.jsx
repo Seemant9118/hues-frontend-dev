@@ -8,7 +8,6 @@ import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -49,7 +48,11 @@ const UdyamVerify = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // api call
-    verifyUdyamMutation.mutate(enterpriseData);
+    if (enterpriseData.udyam === '') {
+      router.push('/login/enterprise/enterprise-verification-details');
+    } else {
+      verifyUdyamMutation.mutate(enterpriseData);
+    }
   };
 
   const handleBack = () => {
@@ -100,15 +103,6 @@ const UdyamVerify = () => {
             Back
           </Button>
         </form>
-
-        <div className="flex w-full flex-col gap-20">
-          <Link
-            href="/login/enterprise/enterprise-verification-details"
-            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-          >
-            Skip for Now
-          </Link>
-        </div>
       </div>
     </div>
   );

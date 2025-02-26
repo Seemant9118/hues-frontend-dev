@@ -2,7 +2,6 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
-import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
@@ -17,7 +16,6 @@ import { LocalStorageService } from '@/lib/utils';
 import { gstVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -32,36 +30,16 @@ const GstVerificationPage = () => {
     enterpriseId,
   });
   const [isManualEntry, setIsManualEntry] = useState(false);
-  const [errorMsg, setErrorMsg] = useState({});
-
-  const validateGstNumber = (gstNumber) => {
-    const gstPattern =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    const error = {};
-
-    if (!gstNumber) {
-      error.gstNumber = '*Required GST Number';
-    } else if (!gstPattern.test(gstNumber)) {
-      error.gstNumber = '* Please provide a valid GST Number';
-    }
-
-    return error;
-  };
 
   const handleChangeGst = (e) => {
     const gstValue = e.target.value.toUpperCase(); // Ensure uppercase
     setEnterpriseOnboardData({ gst: gstValue });
     setIsManualEntry(true); // Mark as manual entry
-
-    // Run validation
-    const isAnyErrorMsg = validateGstNumber(gstValue);
-    setErrorMsg(isAnyErrorMsg);
   };
 
   const handleSelectGst = (value) => {
     setEnterpriseOnboardData({ gst: value });
     setIsManualEntry(false); // Mark as dropdown selection
-    setErrorMsg({}); // Clear any validation errors
   };
 
   const gstVerifyMutation = useMutation({
@@ -84,12 +62,12 @@ const GstVerificationPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const isAnyErrorMsg = validateGstNumber(enterpriseOnboardData.gst);
-    if (Object.keys(isAnyErrorMsg).length > 0) {
-      setErrorMsg(isAnyErrorMsg);
+
+    // API call
+    if (enterpriseOnboardData.gstNumber === '') {
+      return router.push('/login/enterprise/udyam-verify');
     } else {
-      // API call
-      gstVerifyMutation.mutate(enterpriseOnboardData);
+      return gstVerifyMutation.mutate(enterpriseOnboardData);
     }
   };
 
@@ -157,7 +135,6 @@ const GstVerificationPage = () => {
                 value={isManualEntry ? enterpriseOnboardData.gstNumber : ''} // Clear input if selected from dropdown
               />
             </div>
-            {errorMsg.gstNumber && <ErrorBox msg={errorMsg.gstNumber} />}
           </div>
 
           <Button
@@ -172,15 +149,6 @@ const GstVerificationPage = () => {
             Back
           </Button>
         </form>
-
-        <div className="flex w-full flex-col gap-20">
-          <Link
-            href="/login/enterprise/udyam-verify"
-            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-          >
-            Skip for Now
-          </Link>
-        </div>
       </div>
     </div>
   );
