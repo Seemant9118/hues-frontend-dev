@@ -203,7 +203,9 @@ const ProfileInfoPopUp = ({
         <div>
           <div
             onClick={() => {
-              router.push('/login/enterpriseOnboardingSearch');
+              router.push(
+                '/login/enterprise/select_enterprise_type?action=add_another_enterprise',
+              );
               setOpen(false);
             }}
             className="cursor-pointer rounded-sm p-2 text-sm font-semibold hover:bg-blue-500/10"

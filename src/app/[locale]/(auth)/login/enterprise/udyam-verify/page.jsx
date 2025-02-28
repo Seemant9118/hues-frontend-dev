@@ -14,11 +14,13 @@ import { toast } from 'sonner';
 
 const UdyamVerify = () => {
   const router = useRouter();
+  const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseData, setEnterpriseData] = useState({
     udyamNumber: '',
     enterpriseId,
+    type,
   });
 
   const handleChange = (e) => {

@@ -21,6 +21,10 @@ const ConfirmationPage = () => {
     onSuccess: (data) => {
       toast.success('Onboarding Resumes');
       LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
+      LocalStorageService.set('type', data?.data?.data?.type);
+      // res data set - !isGstVerified then gstData && !isEnterpriseOnboardingComplete - companydetails
+      LocalStorageService.set('companyData', data?.data?.data?.companyDetails);
+      LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
 
       if (!data?.data?.data?.isEnterprisePanVerified) {
         router.push(`/login/enterprise/select_enterprise_type`);

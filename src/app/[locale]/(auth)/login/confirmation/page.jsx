@@ -12,8 +12,6 @@ const ConfirmationPage = () => {
 
   const handleOnboardEnterprise = (e) => {
     e.preventDefault();
-
-    // api call to make enterprise onboarding started
     router.push('/login/enterprise/select_enterprise_type');
   };
 

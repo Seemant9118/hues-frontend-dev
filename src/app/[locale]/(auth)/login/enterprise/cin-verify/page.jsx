@@ -39,7 +39,7 @@ const CINVerificationPage = () => {
     onSuccess: (data) => {
       toast.success('CIN Verified Successfully');
       LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
-      LocalStorageService.set('gst', data?.data?.data?.gst);
+      // LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
 
       // if din matched
       if (data?.data?.data?.isDirector) {

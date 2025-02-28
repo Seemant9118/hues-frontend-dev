@@ -129,7 +129,7 @@ export const userAuth = {
   // [NEW]
   // 25. getEnterpriseDetailsForPanVerify
   getEnterpriseDetailsForPanVerify: {
-    endpoint: `/enterprise/getrpacpc-enterprise-data/`,
+    endpoint: `/enterprise/getenterprisedetails`,
     endpointKey: 'get_enterprise_details_for_pan',
   },
 
@@ -153,7 +153,7 @@ export const userAuth = {
 
   // 29. getEnterpriseDetailsFromEnterpriseId
   getEnterpriseDetailsFromEnterpriseId: {
-    endpoint: `/enterprise/getrpacpc-enterprise-data/`,
+    endpoint: `/enterprise/getenterprisedetails`,
     endpointKey: 'get_enterprise_details_from_Id',
   },
 
