@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 
 const CINVerificationPage = () => {
   const router = useRouter();
-  const cin = LocalStorageService.get('companyData')?.cin_number;
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -25,13 +24,17 @@ const CINVerificationPage = () => {
     userId,
   });
 
-  // fetching cin from localStorage
+  // fetching cin from localStorage and set in states
   useEffect(() => {
+    const cin =
+      LocalStorageService.get('companyData')?.cin ||
+      LocalStorageService.get('companyData')?.cin_number;
+
     setEnterpriseData((prev) => ({
       ...prev,
       cinOrLlpin: cin,
     }));
-  }, [cin]);
+  }, []);
 
   const verifyCINMutation = useMutation({
     mutationKey: [userAuth.cinVerify.mutationKey],
