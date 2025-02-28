@@ -33,6 +33,8 @@ const EnterpriseVerificationDetailsPage = () => {
     roc: '',
     doi: '',
     type: '',
+    panNumber: '',
+    CIN: '',
   });
   const [errorMsg, setErrorMsg] = React.useState({});
 
@@ -58,6 +60,8 @@ const EnterpriseVerificationDetailsPage = () => {
         roc: enterpriseData?.roc || '',
         doi: enterpriseData?.doi || '',
         type: enterpriseData?.type || '',
+        panNumber: enterpriseData?.panNumber || '',
+        CIN: enterpriseData?.cin || '',
       }));
     }
   }, [enterpriseData]);
