@@ -27,6 +27,7 @@ const CINVerificationPage = () => {
   // fetching cin from localStorage and set in states
   useEffect(() => {
     const cin =
+      LocalStorageService.get('companyData')?.company_data?.cin ||
       LocalStorageService.get('companyData')?.cin ||
       LocalStorageService.get('companyData')?.cin_number;
 
