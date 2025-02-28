@@ -104,10 +104,10 @@ const ProfileInfoPopUp = ({
         <Button
           variant="ghost"
           className={cn(
-            'flex w-full justify-start gap-2 rounded-sm border-none p-3 text-xs',
+            'flex w-full justify-start gap-2.5 rounded-sm border-none p-3 text-sm',
             open || pathName.includes('profile')
               ? 'bg-[#288AF91A] text-[#288AF9] hover:bg-[#288AF91A] hover:text-[#288AF9]'
-              : 'bg-transparent text-grey',
+              : 'bg-transparent text-gray-600',
           )}
           size="sm"
         >
