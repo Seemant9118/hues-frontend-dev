@@ -162,4 +162,10 @@ export const userAuth = {
     endpoint: `/enterprise/getonboardingstatus`,
     endpointKey: 'get_onboarding_status',
   },
+
+  // 31. addAnotherEnterprise
+  addAnotherEnterprise: {
+    endpoint: `/enterprise/addanotherenterprise`,
+    endpointKey: 'get_add_another_enterprises',
+  },
 };

@@ -104,13 +104,14 @@ const EnterpriseVerificationDetailsPage = () => {
       // set new access token
       const newAccessToken = refreshTokenValue?.data?.data?.access_token;
       LocalStorageService.set('token', newAccessToken);
-      LocalStorageService.set('enterpriseId', data.data.data.id);
+      const { id, isOnboardingCompleted } = data.data.data;
+      LocalStorageService.set('enterprise_Id', id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data.data.data.isOnboardingCompleted,
+        isOnboardingCompleted,
       );
 
-      // clear required data which was used in onboarding
+      // clear original data which was used in onboarding
       LocalStorageService.remove('companyData');
       LocalStorageService.remove('gst');
 

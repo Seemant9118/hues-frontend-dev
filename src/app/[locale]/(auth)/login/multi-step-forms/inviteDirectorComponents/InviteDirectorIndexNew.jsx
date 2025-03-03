@@ -16,12 +16,13 @@ const InviteDirectorIndexNew = ({
   setInvitationUrl,
 }) => {
   const router = useRouter();
+  const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [errorMsg, setErrorMsg] = useState({});
   const [inviteeData, setInviteeData] = useState({
-    fromEnterpriseId: enterpriseId,
-    toEnterpriseId: enterpriseId,
+    fromEnterpriseId: tempEnterpriseId ?? enterpriseId,
+    toEnterpriseId: tempEnterpriseId ?? enterpriseId,
     email: '',
     mobileNumber: '',
   });

@@ -15,25 +15,24 @@ const InviteDirectorPage = () => {
   const [invitationUrl, setInvitationUrl] = useState('');
 
   useEffect(() => {
-    if (!Number.isNaN(step)) {
-      // Ensure step is a valid number
+    if (!Number.isNaN(step) && step > 0) {
+      // Ensure step is a valid number and greater than 0
       setDirectorInviteStep(step);
     }
-  }, [step]);
+  }, [step]); // Use step directly in the dependency array
 
   return (
     <UserProvider>
       <div className="flex h-full items-center justify-center">
-        {directorInviteStep === 1 && (
+        {directorInviteStep === 1 ? (
           <InviteDirectorIndexNew
             setDirectorInviteStep={setDirectorInviteStep}
             setInvitationUrl={setInvitationUrl}
           />
-        )}
-        {directorInviteStep === 2 && (
+        ) : (
           <ShareLinkToDirectorNew
             invitationId={invitationId}
-            isManualGettingLink={!!step}
+            isManualGettingLink={!Number.isNaN(step)}
             invitationUrl={invitationUrl}
           />
         )}

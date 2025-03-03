@@ -31,7 +31,7 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  });
+  }, []);
 
   const mutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
@@ -41,51 +41,43 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
       // set access token
       LocalStorageService.set('token', data?.data?.data?.access_token);
+
+      const {
+        isOnboardingComplete,
+        isPanVerified,
+        isAadhaarVerified,
+        remainingAttempts,
+        isEnterprisestartedOnboarding,
+        enterpriseId,
+        isEnterpriseOnboardingComplete,
+        isAssociateRequestCreated,
+        isAssociateRequestAccepted,
+      } = data.data.data.user;
+
       // user onboarding related states
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.data?.user?.isOnboardingComplete,
-      );
-      LocalStorageService.set(
-        'isPanVerified',
-        data?.data?.data?.user?.isPanVerified,
-      );
-      LocalStorageService.set(
-        'isAadhaarVerified',
-        data?.data?.data?.user?.isAadhaarVerified,
-      );
-      LocalStorageService.set(
-        'attemptsRemaining',
-        data?.data?.data?.user?.remainingAttempts,
-      );
+      LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
+      LocalStorageService.set('isPanVerified', isPanVerified);
+      LocalStorageService.set('isAadhaarVerified', isAadhaarVerified);
+      LocalStorageService.set('attemptsRemaining', remainingAttempts);
 
       // enterprise onboarding related states
       LocalStorageService.set(
         'isEnterprisestartedOnboarding',
-        data?.data?.data?.user?.isEnterprisestartedOnboarding,
+        isEnterprisestartedOnboarding,
       );
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
+      LocalStorageService.set('enterprise_Id', enterpriseId);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
+        isEnterpriseOnboardingComplete,
       );
       LocalStorageService.set(
         'isAssociateRequestCreated',
-        data?.data?.data?.user?.isAssociateRequestCreated,
+        isAssociateRequestCreated,
       );
       LocalStorageService.set(
         'isAssociateRequestAccepted',
-        data?.data?.data?.user?.isAssociateRequestAccepted,
+        isAssociateRequestAccepted,
       );
-
-      // LocalStorageService.set(
-      //   'isKycVerified',
-      //   data?.data?.data?.user?.isKycVerified,
-      // );
-
       LocalStorageService.set('isDirector', data?.data?.data?.user?.isDirector);
 
       // check by calling api : directorInviteList
@@ -96,17 +88,10 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
       const isUserHaveValidDirectorInvites =
         directorInviteListData?.data?.data?.length > 0;
 
-      // const isCurrEnterpriseInvitationExist =
-      //   directorInviteListData?.data?.data?.some(
-      //     (directorInvite) =>
-      //       directorInvite.fromEnterprise.id.toString() ===
-      //       data?.data?.data?.user?.enterpriseId.toString(),
-      //   );
-
       toast.success('OTP verified successfully');
 
       // isUserOnboardingComplete
-      if (data?.data?.data?.user?.isOnboardingComplete) {
+      if (isOnboardingComplete) {
         // is logInWithInviteLink
         if (islogInWithInviteLink) {
           if (
@@ -127,39 +112,30 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         }
         // is not logInWithInviteLink
         else {
-          if (
-            data?.data?.data?.user?.isEnterprisestartedOnboarding &&
-            data?.data?.data?.user?.isEnterpriseOnboardingComplete
-          ) {
+          if (isEnterprisestartedOnboarding && isEnterpriseOnboardingComplete) {
             return router.push('/');
           } else if (
-            data?.data?.data?.user?.isEnterprisestartedOnboarding &&
-            !data?.data?.data?.user?.isEnterpriseOnboardingComplete
+            isEnterprisestartedOnboarding &&
+            !isEnterpriseOnboardingComplete
           ) {
             // enterprise onboarding started and but not completed perform pending actions
             return router.push('/login/enterprise/pending-actions');
           } else {
-            return router.push('/login/confirmation');
+            return router.push('/login/user/confirmation');
           }
         }
       }
       // User onboarding is incomplete
       else {
         // isPanverified and aaadhar verified then move to confirmation
-        if (
-          data?.data?.data?.user?.isPanVerified &&
-          data?.data?.data?.user?.isAadhaarVerified
-        ) {
-          return router.push('/login/confirmation');
+        if (isPanVerified && isAadhaarVerified) {
+          return router.push('/login/user/confirmation');
         }
         // isPanverified and !aadhar not verified then move to aadhar
-        else if (
-          data?.data?.data?.user?.isPanVerified &&
-          !data?.data?.data?.user?.isAadhaarVerified
-        ) {
-          return router.push('/login/aadhar-verification');
+        else if (isPanVerified && !isAadhaarVerified) {
+          return router.push('/login/user/aadhar-verification');
         } else {
-          return router.push('/login/pan-verification');
+          return router.push('/login/user/pan-verification');
         }
       }
     },

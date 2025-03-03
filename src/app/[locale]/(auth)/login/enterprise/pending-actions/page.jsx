@@ -20,104 +20,116 @@ const ConfirmationPage = () => {
     mutationFn: getOnboardingStatus,
     onSuccess: (data) => {
       toast.success('Onboarding Resumes');
-      LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
-      LocalStorageService.set('type', data?.data?.data?.type);
-      // res data set - !isGstVerified then gstData && !isEnterpriseOnboardingComplete - companydetails
-      LocalStorageService.set('companyData', data?.data?.data?.companyDetails);
-      LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
 
-      if (!data?.data?.data?.isEnterprisePanVerified) {
+      const {
+        enterpriseId,
+        type,
+        companyDetails,
+        gstData,
+        isEnterprisePanVerified,
+        isGstVerified,
+        isUdyamVerified,
+        isCinVerified,
+        isDirector,
+        isDirectorInviteSent,
+        invitationId,
+        isEnterpriseOnboardingComplete,
+      } = data.data.data;
+
+      LocalStorageService.set('enterprise_Id', enterpriseId);
+      LocalStorageService.set('type', type);
+      if (!isEnterpriseOnboardingComplete) {
+        LocalStorageService.set('companyData', companyDetails);
+      }
+      if (!isGstVerified) {
+        LocalStorageService.set('gst', gstData?.gstinResList);
+      }
+
+      if (!isEnterprisePanVerified) {
         router.push(`/login/enterprise/select_enterprise_type`);
       }
       // pending actions for properitorship
       if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        (data?.data?.data?.type === 'proprietorship' ||
-          data?.data?.data?.type === 'individual')
+        isEnterprisePanVerified &&
+        (type === 'proprietorship' || type === 'individual')
       ) {
         if (
-          data?.data?.data?.isGstVerified &&
-          data?.data?.data?.isUdyamVerified &&
-          data?.data?.data?.isEnterpriseOnboardingComplete
+          isGstVerified &&
+          isUdyamVerified &&
+          isEnterpriseOnboardingComplete
         ) {
           router.push('/login/enterprise/enterprise-onboarded-success');
         } else if (
-          data?.data?.data?.isGstVerified &&
-          data?.data?.data?.isUdyamVerified &&
-          !data?.data?.data?.isEnterpriseOnboardingComplete
+          isGstVerified &&
+          isUdyamVerified &&
+          !isEnterpriseOnboardingComplete
         ) {
           router.push('/login/enterprise/enterprise-verification-details');
         } else if (
-          data?.data?.data?.isGstVerified &&
-          !data?.data?.data?.isUdyamVerified &&
-          !data?.data?.data?.isEnterpriseOnboardingComplete
+          isGstVerified &&
+          !isUdyamVerified &&
+          !isEnterpriseOnboardingComplete
         ) {
           router.push('/login/enterprise/udyam-verify');
-        } else if (
-          !data?.data?.data?.isGstVerified &&
-          !data?.data?.data?.isEnterpriseOnboardingComplete
-        ) {
+        } else if (isEnterpriseOnboardingComplete) {
           router.push('/login/enterprise/gst-verify');
         }
       }
       // pending actions for Non-properitorship/Company
       else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        data?.data?.data?.isCinVerified &&
-        data?.data?.data?.isDirector &&
-        data?.data?.data?.isGstVerified &&
-        data?.data?.data?.isUdyamVerified &&
-        data?.data?.data?.isEnterpriseOnboardingComplete
+        isEnterprisePanVerified &&
+        isCinVerified &&
+        isDirector &&
+        isGstVerified &&
+        isUdyamVerified &&
+        isEnterpriseOnboardingComplete
       ) {
         router.push('/login/enterprise/enterprise-onboarded-success');
       } else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        data?.data?.data?.isCinVerified &&
-        data?.data?.data?.isDirector &&
-        data?.data?.data?.isGstVerified &&
-        data?.data?.data?.isUdyamVerified &&
-        !data?.data?.data?.isEnterpriseOnboardingComplete
+        isEnterprisePanVerified &&
+        isCinVerified &&
+        isDirector &&
+        isGstVerified &&
+        isUdyamVerified &&
+        !isEnterpriseOnboardingComplete
       ) {
         router.push('/login/enterprise/enterprise-verification-details');
       } else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        data?.data?.data?.isCinVerified &&
-        data?.data?.data?.isDirector &&
-        data?.data?.data?.isGstVerified &&
-        !data?.data?.data?.isUdyamVerified &&
-        !data?.data?.data?.isEnterpriseOnboardingComplete
+        isEnterprisePanVerified &&
+        isCinVerified &&
+        isDirector &&
+        isGstVerified &&
+        !isUdyamVerified &&
+        !isEnterpriseOnboardingComplete
       ) {
         router.push('/login/enterprise/udyam-verify');
       } else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        data?.data?.data?.isCinVerified &&
-        data?.data?.data?.isDirector &&
-        !data?.data?.data?.isGstVerified &&
-        !data?.data?.data?.isUdyamVerified &&
-        !data?.data?.data?.isEnterpriseOnboardingComplete
+        isEnterprisePanVerified &&
+        isCinVerified &&
+        isDirector &&
+        !isGstVerified &&
+        !isUdyamVerified &&
+        !isEnterpriseOnboardingComplete
       ) {
         router.push('/login/enterprise/gst-verify');
       } else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        data?.data?.data?.isCinVerified &&
-        !data?.data?.data?.isDirector &&
-        data?.data?.data?.isDirectorInviteSent &&
-        !data?.data?.data?.isEnterpriseOnboardingComplete
+        isEnterprisePanVerified &&
+        isCinVerified &&
+        !isDirector &&
+        isDirectorInviteSent &&
+        !isEnterpriseOnboardingComplete
       ) {
-        LocalStorageService.set('invitationId', data?.data?.data?.invitationId);
+        LocalStorageService.set('invitationId', invitationId);
         router.push('/login/enterprise/invite-director?step=2');
       } else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        data?.data?.data?.isCinVerified &&
-        !data?.data?.data?.isDirector &&
-        !data?.data?.data?.isDirectorInviteSent &&
-        !data?.data?.data?.isEnterpriseOnboardingComplete
+        isEnterprisePanVerified &&
+        isCinVerified &&
+        !isDirector &&
+        !isDirectorInviteSent &&
+        !isEnterpriseOnboardingComplete
       ) {
         router.push('/login/enterprise/invite-director?step=1');
-      } else if (
-        data?.data?.data?.isEnterprisePanVerified &&
-        !data?.data?.data?.isCinVerified
-      ) {
+      } else if (isEnterprisePanVerified && !isCinVerified) {
         router.push('/login/enterprise/cin-verify');
       }
     },

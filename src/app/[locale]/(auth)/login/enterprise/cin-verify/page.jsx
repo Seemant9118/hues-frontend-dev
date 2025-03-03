@@ -16,11 +16,12 @@ import { toast } from 'sonner';
 const CINVerificationPage = () => {
   const router = useRouter();
   const userId = LocalStorageService.get('user_profile');
+  const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseData, setEnterpriseData] = useState({
     cinOrLlpin: '',
-    enterpriseId,
+    enterpriseId: tempEnterpriseId ?? enterpriseId,
     userId,
   });
 
@@ -42,11 +43,12 @@ const CINVerificationPage = () => {
     mutationFn: cinVerify,
     onSuccess: (data) => {
       toast.success('CIN Verified Successfully');
-      LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
+      const { enterpriseId, isDirector } = data.data.data;
+      LocalStorageService.set('enterprise_Id', enterpriseId);
       // LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
 
       // if din matched
-      if (data?.data?.data?.isDirector) {
+      if (isDirector) {
         router.push('/login/enterprise/gst-verify');
       } else {
         router.push('/login/enterprise/invite-director');
