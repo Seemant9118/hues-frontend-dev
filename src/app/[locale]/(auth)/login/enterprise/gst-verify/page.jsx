@@ -31,12 +31,19 @@ const GstVerificationPage = () => {
     type,
   });
   const [isManualEntry, setIsManualEntry] = useState(false);
-  const [gstData, setGstData] = useState(null); // Initially null to avoid mismatch
+  const [gstData, setGstData] = useState(null);
 
   useEffect(() => {
-    // Fetch gstData from localStorage
     const storedGstData = LocalStorageService.get('gst');
     setGstData(storedGstData || []);
+
+    if (storedGstData?.length === 1) {
+      setEnterpriseOnboardData((prev) => ({
+        ...prev,
+        gstNumber: storedGstData[0].gstin,
+      }));
+      setIsManualEntry(false);
+    }
   }, []);
 
   const handleChangeGst = (e) => {
@@ -65,7 +72,7 @@ const GstVerificationPage = () => {
       router.push('/login/enterprise/udyam-verify');
     },
     onError: (error) => {
-      toast.error(error.data.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
@@ -82,7 +89,6 @@ const GstVerificationPage = () => {
     router.back();
   };
 
-  // Avoid rendering mismatch by returning null until gstData is loaded
   if (gstData === null) {
     return (
       <div className="flex h-full items-center justify-center">
