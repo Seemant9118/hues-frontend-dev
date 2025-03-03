@@ -32,7 +32,7 @@ const InviteDirectorPage = () => {
         ) : (
           <ShareLinkToDirectorNew
             invitationId={invitationId}
-            isManualGettingLink={!Number.isNaN(step)}
+            isManualGettingLink={!!searchParams.get('step')} // Checks if step exists
             invitationUrl={invitationUrl}
           />
         )}
