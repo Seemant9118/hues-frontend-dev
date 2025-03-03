@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { BadgeCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import AuthProgress from '../util-auth-components/AuthProgress';
+import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const ConfirmationPage = () => {
   const router = useRouter();

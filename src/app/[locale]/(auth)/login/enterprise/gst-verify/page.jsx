@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 const GstVerificationPage = () => {
   const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  // const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
   const router = useRouter();
 
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
@@ -68,7 +69,8 @@ const GstVerificationPage = () => {
     mutationFn: gstVerify,
     onSuccess: (data) => {
       toast.success('GST Verified Successfully');
-      LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
+      const { enterpriseId } = data.data.data;
+      LocalStorageService.set('enterprise_Id', enterpriseId);
       router.push('/login/enterprise/udyam-verify');
     },
     onError: (error) => {

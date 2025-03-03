@@ -22,12 +22,12 @@ const EnterprisePANVerifyPage = () => {
   const searchParams = useSearchParams();
   const enterpriseType = searchParams.get('type');
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  // const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     panNumber: '',
     type: enterpriseType,
-    enterpriseId,
+    // enterpriseId,
   });
   const [errorMsg, setErrorMsg] = useState({});
 
@@ -78,8 +78,11 @@ const EnterprisePANVerifyPage = () => {
     mutationFn: getEnterpriseDetailsForPanVerify,
     onSuccess: (data) => {
       toast.success('Pan Verified Successfully');
-      LocalStorageService.set('enterprise_Id', data?.data?.data?.enterpriseId);
-      LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
+
+      // states
+      const { enterpriseId, gstData, companyDetails } = data.data.data;
+      LocalStorageService.set('enterprise_Id', enterpriseId);
+      LocalStorageService.set('gst', gstData?.gstinResList);
 
       if (
         enterpriseType === 'proprietorship' ||
@@ -87,10 +90,7 @@ const EnterprisePANVerifyPage = () => {
       ) {
         router.push('/login/enterprise/gst-verify');
       } else {
-        LocalStorageService.set(
-          'companyData',
-          data?.data?.data?.companyDetails,
-        );
+        LocalStorageService.set('companyData', companyDetails);
         router.push('/login/enterprise/cin-verify');
       }
     },

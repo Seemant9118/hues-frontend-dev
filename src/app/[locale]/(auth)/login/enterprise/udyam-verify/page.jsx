@@ -36,10 +36,9 @@ const UdyamVerify = () => {
     mutationFn: UdyamVerify,
     onSuccess: (data) => {
       toast.success('UDYAM ID Verified Successfully');
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
+
+      const { enterpriseId } = data.data.data;
+      LocalStorageService.set('enterprise_Id', enterpriseId);
       router.push('/login/enterprise/enterprise-verification-details');
     },
     onError: (error) => {

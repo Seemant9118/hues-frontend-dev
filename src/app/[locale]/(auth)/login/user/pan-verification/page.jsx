@@ -22,7 +22,7 @@ import { useAuthProgress } from '@/context/AuthProgressContext';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import AuthProgress from '../util-auth-components/AuthProgress';
+import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
   const userID = LocalStorageService.get('user_profile');
@@ -194,7 +194,7 @@ const PanVerificationPage = () => {
       updateAuthProgress('isPanVerified', true);
 
       // redirection
-      router.push('/login/aadhar-verification');
+      router.push('/login/user/aadhar-verification');
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Oops, Something went wrong!');

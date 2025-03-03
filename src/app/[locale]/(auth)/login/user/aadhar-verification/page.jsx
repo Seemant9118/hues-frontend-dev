@@ -2,8 +2,8 @@
 
 import { UserProvider } from '@/context/UserContext';
 import React, { useEffect, useState } from 'react';
-import AadharNumberDetail from '../multi-step-forms/aadharVerificationComponents/AadharNumberDetail';
-import AadharVerifyOTP from '../multi-step-forms/aadharVerificationComponents/AadharVerifyOTP';
+import AadharNumberDetail from '../../multi-step-forms/aadharVerificationComponents/AadharNumberDetail';
+import AadharVerifyOTP from '../../multi-step-forms/aadharVerificationComponents/AadharVerifyOTP';
 
 const AadharVerificationPage = () => {
   const [aadharVerificationSteps, setAadharVerificationSteps] = useState(1);

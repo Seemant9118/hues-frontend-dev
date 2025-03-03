@@ -46,7 +46,7 @@ const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
       LocalStorageService.set('isEmailVerified', data?.data?.isEmailVerified);
 
       updateAuthProgress('isAadhaarVerified', true);
-      router.push('/login/confirmation');
+      router.push('/login/user/confirmation');
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || 'Something went wrong';
