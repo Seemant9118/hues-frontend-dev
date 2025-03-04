@@ -12,6 +12,7 @@ import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
+import InvitationActionModal from '../Modals/InvitationActionModal';
 import { Button } from '../ui/button';
 import {
   Collapsible,
@@ -19,7 +20,6 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { Progress } from '../ui/progress';
-import InvitationActionModal from '../Modals/InvitationActionModal';
 
 const OrdersOverview = ({
   isCollapsableOverview,
@@ -104,6 +104,19 @@ const OrdersOverview = ({
     });
   };
 
+  const clientStatus = (status) => {
+    switch (status) {
+      case 'PENDING':
+        return { infoText: 'Pending invites', ctaText: 'Take action' };
+      case 'INVITE_SENT':
+        return { infoText: 'Invite sent', ctaText: 'Remind' };
+      case 'INVITE_REJECTED':
+        return { infoText: 'Invite rejected', ctaText: 'Resend' };
+      default:
+        return null; // return null or an empty object instead of an empty string for consistency
+    }
+  };
+
   return (
     <>
       {!isCollapsableOverview && (
@@ -134,15 +147,21 @@ const OrdersOverview = ({
                 </p>
                 <p className="flex items-center text-xs font-bold text-[#A5ABBD]">
                   <span>+91 {mobileNumber}</span>
-                  <Dot size={24} />
-                  <span>Pending invite</span>
-                  <InvitationActionModal
-                    ctaName={'Take action'}
-                    title={'Pending Invites'}
-                    invitationData={orderDetails?.invitationData}
-                    isInviteActionModalOpen={isInviteActionModalOpen}
-                    setIsInviteActionModalOpen={setIsInviteActionModalOpen}
-                  />
+                  {orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' && (
+                    <>
+                      <Dot size={24} />
+                      <span>
+                        {clientStatus(orderDetails?.invitationStatus)}
+                      </span>
+                      <InvitationActionModal
+                        ctaName={'Take action'}
+                        title={'Pending Invites'}
+                        invitationData={orderDetails?.invitationData}
+                        isInviteActionModalOpen={isInviteActionModalOpen}
+                        setIsInviteActionModalOpen={setIsInviteActionModalOpen}
+                      />
+                    </>
+                  )}
                 </p>
               </section>
             </div>
