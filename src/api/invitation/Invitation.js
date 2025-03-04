@@ -44,4 +44,15 @@ export const invitation = {
     endpoint: `/enterprise/invitation/resendinvite/`,
     endpointKey: 'resend_invitation',
   },
+  // 10. remind invitation
+  remindInvitation: {
+    endpoint: `/enterprise/invitation/remindinvite/`,
+    endpointKey: 'remind_invitation',
+  },
+
+  // 11. get invitation status
+  getInvitationStatus: {
+    endpoint: `/enterprise/client/invitationstatus`,
+    endpointKey: 'get_invitation_status',
+  },
 };
