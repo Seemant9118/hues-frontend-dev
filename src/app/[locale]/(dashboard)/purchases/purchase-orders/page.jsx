@@ -97,20 +97,13 @@ const PurchaseOrders = () => {
       newFilterData = {};
     }
 
-    if (newFilterData) {
-      setFilterData(newFilterData);
-    }
+    setFilterData(newFilterData);
   }, [tab]);
 
-  // Fetch sales data with infinite scroll
+  // Fetch purchases data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [
-        orderApi.getPurchases.endpointKey,
-        enterpriseId,
-        tab,
-        filterData,
-      ],
+      queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
       queryFn: async ({ pageParam = 1 }) => {
         const response = await GetPurchases({
           id: enterpriseId,

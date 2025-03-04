@@ -92,15 +92,14 @@ const SalesOrder = () => {
     } else if (tab === 'receivables') {
       newFilterData = { invoiceStatus: true };
     }
-    if (newFilterData) {
-      setFilterData(newFilterData);
-    }
+
+    setFilterData(newFilterData);
   }, [tab]);
 
   // Fetch sales data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [orderApi.getSales.endpointKey, enterpriseId, tab, filterData],
+      queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
       queryFn: async ({ pageParam = 1 }) => {
         const response = await GetSales({
           id: enterpriseId,

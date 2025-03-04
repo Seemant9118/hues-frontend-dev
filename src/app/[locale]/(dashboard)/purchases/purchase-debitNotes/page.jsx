@@ -81,7 +81,6 @@ const PurchaseDebitNotes = () => {
     queryKey: [
       DebitNoteApi.getAllPurchaseDebitNotes.endpointKey,
       enterpriseId,
-      tab,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
