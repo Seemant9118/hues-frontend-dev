@@ -12,6 +12,7 @@ import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
+import InvitationActionModal from '../Modals/InvitationActionModal';
 import { Button } from '../ui/button';
 import {
   Collapsible,
@@ -29,10 +30,12 @@ const OrdersOverview = ({
   mobileNumber,
   amtPaid,
   totalAmount,
+  invitationData,
 }) => {
   const translations = useTranslations('components.order_overview');
 
   const queryClient = useQueryClient();
+  const [isInviteActionModalOpen, setIsInviteActionModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const pathName = usePathname();
@@ -130,8 +133,18 @@ const OrdersOverview = ({
                 <p className="text-lg font-bold">
                   {Name ?? 'Name not available'}
                 </p>
-                <p className="text-xs font-bold text-[#A5ABBD]">
-                  +91 {mobileNumber}
+                <p className="flex items-center text-xs font-bold text-[#A5ABBD]">
+                  <span>+91 {mobileNumber}</span>
+                  {orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' && (
+                    <InvitationActionModal
+                      status={invitationData?.invitationStatus}
+                      invitationId={invitationData?.invitationId}
+                      name={orderDetails?.clientName}
+                      mobileNumber={mobileNumber}
+                      isInviteActionModalOpen={isInviteActionModalOpen}
+                      setIsInviteActionModalOpen={setIsInviteActionModalOpen}
+                    />
+                  )}
                 </p>
               </section>
             </div>
