@@ -92,7 +92,7 @@ const PurchaseOrders = () => {
     } else if (tab === 'confirmed') {
       newFilterData = { status: ['ACCEPTED'], invoiceStatus: false };
     } else if (tab === 'payables') {
-      newFilterData = { paymentStatus: 'NOT_PAID' };
+      newFilterData = { paymentStatus: ['NOT_PAID'] };
     } else if (isOrderCreationSuccess) {
       newFilterData = {};
     }
