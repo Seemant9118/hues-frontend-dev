@@ -80,7 +80,6 @@ const SalesDebitNotes = () => {
     queryKey: [
       DebitNoteApi.getAllSalesDebitNotes.endpointKey,
       enterpriseId,
-      tab,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
