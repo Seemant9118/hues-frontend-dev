@@ -238,7 +238,7 @@ const Catalogue = () => {
               {!isLoading && cataloguesData?.length === 0 && (
                 <div className="flex h-full flex-col items-center justify-center gap-2 text-[#939090]">
                   <Image
-                    src={'/empty.png'}
+                    src={'/Empty.png'}
                     width={100}
                     height={100}
                     alt="emptyIcon"
