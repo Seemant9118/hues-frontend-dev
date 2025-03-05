@@ -3,6 +3,7 @@
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import GeneatePINModal from '@/components/Modals/GeneatePINModal';
 import Tooltips from '@/components/auth/Tooltips';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
@@ -147,6 +148,7 @@ function Profile() {
           <TabsTrigger value="permissions">
             {translations('tabs.label.tab4')}
           </TabsTrigger>
+          <TabsTrigger value="pinManagement">{'PIN Mangement'}</TabsTrigger>
         </TabsList>
 
         {/* ---checks : for if user skips */}
@@ -660,6 +662,10 @@ function Profile() {
 
         <TabsContent value="permissions">
           {translations('tabs.content.tab4.coming_soon')}
+        </TabsContent>
+
+        <TabsContent value="pinManagement">
+          <GeneatePINModal />
         </TabsContent>
       </Tabs>
     </Wrapper>
