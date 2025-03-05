@@ -120,7 +120,7 @@ function Services() {
           searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm, // Use debounced value here
+      enabled: !!debouncedSearchTerm && servicesData?.length > 0, // Use debounced value here
     });
 
   // Debounce logic with useCallback
@@ -188,7 +188,6 @@ function Services() {
                   <Tooltips
                     trigger={
                       <Button
-                        onClick={() => {}}
                         variant={'export'}
                         size="sm"
                         className="cursor-not-allowed"
@@ -198,19 +197,31 @@ function Services() {
                     }
                     content={translations('ctas.comingSoon')}
                   />
-                  <Button
-                    variant={'export'}
-                    size="sm"
-                    onClick={() =>
-                      exportTableToExcel(
-                        'services table',
-                        translations('title'),
-                      )
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant={
+                          servicesData?.length === 0 ? 'export' : 'outline'
+                        }
+                        size="sm"
+                        className={
+                          servicesData?.length === 0
+                            ? 'cursor-not-allowed'
+                            : 'cursor-pointer'
+                        }
+                        onClick={() =>
+                          exportTableToExcel(
+                            'services table',
+                            translations('title'),
+                          )
+                        }
+                      >
+                        <Upload size={14} />
+                      </Button>
                     }
-                  >
-                    <Upload size={14} />
-                    {translations('ctas.export')}
-                  </Button>
+                    content={translations('ctas.export')}
+                  />
+
                   <Button
                     onClick={() => setIsUploading(true)}
                     variant={'blue_outline'}
