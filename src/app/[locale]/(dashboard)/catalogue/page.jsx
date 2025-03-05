@@ -1,7 +1,9 @@
 'use client';
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
+import { debounce } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import UpdateCatalogue from '@/components/catalogue/UpdateCatalogue';
 import BulkConfirmAction from '@/components/Modals/BulkConfirmAction';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -10,6 +12,8 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
   bulkDeleteCatalogueItems,
@@ -17,12 +21,10 @@ import {
   searhedCatalogues,
 } from '@/services/Catalogue_Services/CatalogueServices';
 import { useQuery } from '@tanstack/react-query';
-import { debounce } from '@/appUtils/helperFunctions';
-import useMetaData from '@/custom-hooks/useMetaData';
 import { Eye, ListFilter, Share2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useCatalogueColumns } from './CatalogueColumns';
@@ -42,11 +44,25 @@ const Catalogue = () => {
   );
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedCatalogue, setSelectedCatalogue] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [catalogues, setCatalogues] = useState([]);
+  const [isUpdatingCatalogue, setIsUpdatingCatalogue] = useState(false);
+
+  // Synchronize state with query parameters
+  useEffect(() => {
+    const state = searchParams.get('action');
+    setIsUpdatingCatalogue(state === 'update');
+  }, [searchParams]);
+
+  useEffect(() => {
+    let newPath = '/catalogue';
+    if (isUpdatingCatalogue) newPath += `?action=update`;
+    router.push(newPath);
+  }, [isUpdatingCatalogue]);
 
   // catalogue api fetching
   const {
@@ -69,7 +85,7 @@ const Catalogue = () => {
           searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm, // Use debounced value here
+      enabled: !!debouncedSearchTerm && cataloguesData?.length > 0, // Use debounced value here
     });
 
   // Debounce logic with useCallback
@@ -117,7 +133,7 @@ const Catalogue = () => {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-full">
           {!enterpriseId && <RestrictedComponent />}
-          {enterpriseId && (
+          {enterpriseId && !isUpdatingCatalogue && (
             <div className="flex h-full flex-col">
               {/* Header */}
               <div className="flex w-full justify-between gap-2 py-2">
@@ -128,9 +144,9 @@ const Catalogue = () => {
                       <Button
                         size="sm"
                         variant="blue_outline"
-                        onClick={() =>
-                          router.push('/catalogue/update_catalogue')
-                        }
+                        onClick={() => {
+                          setIsUpdatingCatalogue(true);
+                        }}
                       >
                         {translations('ctas.update')}
                       </Button>
@@ -238,9 +254,7 @@ const Catalogue = () => {
                     trigger={
                       <Button
                         size="sm"
-                        onClick={() =>
-                          router.push('/catalogue/update_catalogue')
-                        }
+                        onClick={() => setIsUpdatingCatalogue(true)}
                       >
                         {translations('ctas.update')}
                       </Button>
@@ -250,6 +264,12 @@ const Catalogue = () => {
                 </div>
               )}
             </div>
+          )}
+          {enterpriseId && isUpdatingCatalogue && (
+            <UpdateCatalogue
+              isUpdatingCatalogue={isUpdatingCatalogue}
+              setIsUpdatingCatalogue={setIsUpdatingCatalogue}
+            />
           )}
         </Wrapper>
       )}
