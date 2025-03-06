@@ -1,9 +1,11 @@
 'use client';
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { invitation } from '@/api/invitation/Invitation';
 import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import Tooltips from '@/components/auth/Tooltips';
+import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -20,13 +22,18 @@ import {
   getClients,
   searchedClients,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Upload } from 'lucide-react';
+import {
+  generateLink,
+  remindInvitation,
+} from '@/services/Invitation_Service/Invitation_Service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useClientsColumns } from './useClientsColumns';
+
 // dynamic imports
 const UploadItems = dynamic(
   () => import('@/components/inventory/UploadItems'),
@@ -60,6 +67,9 @@ const ClientPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [clients, setClients] = useState([]);
+  const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
+  const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
+    useState(null);
 
   // api fetching for clients
   const {
@@ -82,7 +92,7 @@ const ClientPage = () => {
           searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm, // Use debounced value here
+      enabled: !!debouncedSearchTerm && clientsData?.length > 0, // Use debounced value here
     });
 
   // Debounce logic with useCallback
@@ -159,8 +169,46 @@ const ClientPage = () => {
     }
   };
 
+  // link generate
+  const generateLinkMutation = useMutation({
+    mutationFn: generateLink,
+    onSuccess: (data) => {
+      navigator.clipboard.writeText(
+        `${process.env.NEXT_PUBLIC_WEBSITE_URL}/login?invitationToken=${data.data.data}`,
+      );
+      toast.success('Link generated and copied to clipboard');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || translations('toasts.error'));
+    },
+  });
+  const getLink = (id) => {
+    generateLinkMutation.mutate(id);
+  };
+
+  // send reminder
+  const remindMutation = useMutation({
+    mutationKey: [invitation.remindInvitation.endpointKey],
+    mutationFn: remindInvitation,
+    onSuccess: () => {
+      toast.success('Invitation Reminded Successfully');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+  const sendReminder = (id) => {
+    remindMutation.mutate(id);
+  };
+
+  // onRowClick
+  const onRowClick = (row) => {
+    setIsEnterpriseDetailsShow(true);
+    setSelectedEnterpriseContent(row);
+  };
+
   // columns
-  const ClientsColumns = useClientsColumns();
+  const ClientsColumns = useClientsColumns(getLink, sendReminder);
 
   return (
     <>
@@ -184,6 +232,25 @@ const ClientPage = () => {
                   <Tooltips
                     trigger={
                       <Button
+                        variant={clientsData?.length > 0 ? 'outline' : 'export'}
+                        size="sm"
+                        onClick={() =>
+                          exportTableToExcel('client table', 'clients_list')
+                        }
+                        className={
+                          clientsData?.length === 0
+                            ? 'cursor-not-allowed'
+                            : 'cursor-pointer'
+                        }
+                      >
+                        <Download size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.tooltips.export')}
+                  />
+                  <Tooltips
+                    trigger={
+                      <Button
                         variant="blue_outline"
                         size="sm"
                         onClick={() => setIsUploading(true)}
@@ -193,22 +260,6 @@ const ClientPage = () => {
                       </Button>
                     }
                     content={translations('ctas.tooltips.upload')}
-                  />
-
-                  <Tooltips
-                    trigger={
-                      <Button
-                        variant={'export'}
-                        size="sm"
-                        onClick={() =>
-                          exportTableToExcel('client table', 'clients_list')
-                        }
-                      >
-                        <Upload size={14} />
-                        {translations('ctas.export')}
-                      </Button>
-                    }
-                    content={translations('ctas.tooltips.export')}
                   />
 
                   <Tooltips
@@ -233,6 +284,7 @@ const ClientPage = () => {
               (clientsData?.length > 0 ? (
                 <DataTable
                   id={'client table'}
+                  onRowClick={onRowClick}
                   columns={ClientsColumns}
                   data={clients ?? []}
                 />
@@ -250,6 +302,14 @@ const ClientPage = () => {
               files={files}
               setisUploading={setIsUploading}
               setFiles={setFiles}
+            />
+          )}
+
+          {isEnterpriseDetailsShow && (
+            <EnterpriseDetails
+              data={selectedEnterpriseContent}
+              isEnterpriseDetailsShow={isEnterpriseDetailsShow}
+              setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
             />
           )}
         </div>

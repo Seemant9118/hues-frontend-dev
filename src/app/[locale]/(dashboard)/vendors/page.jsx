@@ -1,9 +1,11 @@
 'use client';
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { invitation } from '@/api/invitation/Invitation';
 import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import Tooltips from '@/components/auth/Tooltips';
+import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -20,8 +22,12 @@ import {
   getVendors,
   searchedVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Upload } from 'lucide-react';
+import {
+  generateLink,
+  remindInvitation,
+} from '@/services/Invitation_Service/Invitation_Service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
@@ -60,6 +66,9 @@ const VendorsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [vendors, setVendors] = useState([]);
+  const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
+  const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
+    useState(null);
 
   // api fetching for clients
   const {
@@ -82,7 +91,7 @@ const VendorsPage = () => {
           searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm, // Use debounced value here
+      enabled: !!debouncedSearchTerm && vendorsData?.length > 0, // Use debounced value here
     });
 
   // Debounce logic with useCallback
@@ -159,8 +168,46 @@ const VendorsPage = () => {
     }
   };
 
+  // link generate
+  const generateLinkMutation = useMutation({
+    mutationFn: generateLink,
+    onSuccess: (data) => {
+      navigator.clipboard.writeText(
+        `${process.env.NEXT_PUBLIC_WEBSITE_URL}/login?invitationToken=${data.data.data}`,
+      );
+      toast.success('Link generated and copied to clipboard');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || translations('toasts.error'));
+    },
+  });
+  const getLink = (id) => {
+    generateLinkMutation.mutate(id);
+  };
+
+  // send reminder
+  const remindMutation = useMutation({
+    mutationKey: [invitation.remindInvitation.endpointKey],
+    mutationFn: remindInvitation,
+    onSuccess: () => {
+      toast.success('Invitation Reminded Successfully');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+  const sendRemind = (id) => {
+    remindMutation.mutate(id);
+  };
+
+  // onRowClick
+  const onRowClick = (row) => {
+    setIsEnterpriseDetailsShow(true);
+    setSelectedEnterpriseContent(row);
+  };
+
   // columns
-  const VendorsColumns = useVendorsColumns();
+  const VendorsColumns = useVendorsColumns(getLink, sendRemind);
 
   return (
     <>
@@ -181,6 +228,27 @@ const VendorsPage = () => {
                     toSearchTerm={searchTerm}
                     setToSearchTerm={setSearchTerm}
                   />
+
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant={vendorsData?.length > 0 ? 'outline' : 'export'}
+                        size="sm"
+                        onClick={() =>
+                          exportTableToExcel('vendor table', 'vendors_list')
+                        }
+                        className={
+                          vendorsData?.length === 0
+                            ? 'cursor-not-allowed'
+                            : 'cursor-pointer'
+                        }
+                      >
+                        <Download size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.tooltips.export')}
+                  />
+
                   <Tooltips
                     trigger={
                       <Button
@@ -193,21 +261,6 @@ const VendorsPage = () => {
                       </Button>
                     }
                     content={translations('ctas.tooltips.upload')}
-                  />
-                  <Tooltips
-                    trigger={
-                      <Button
-                        variant={'export'}
-                        size="sm"
-                        onClick={() =>
-                          exportTableToExcel('vendor table', 'vendors_list')
-                        }
-                      >
-                        <Upload size={14} />
-                        {translations('ctas.export')}
-                      </Button>
-                    }
-                    content={translations('ctas.tooltips.export')}
                   />
 
                   <Tooltips
@@ -232,6 +285,7 @@ const VendorsPage = () => {
               (vendorsData?.length > 0 ? (
                 <DataTable
                   id={'vendor table'}
+                  onRowClick={onRowClick}
                   columns={VendorsColumns}
                   data={vendors}
                 />
@@ -249,6 +303,14 @@ const VendorsPage = () => {
               files={files}
               setisUploading={setIsUploading}
               setFiles={setFiles}
+            />
+          )}
+
+          {isEnterpriseDetailsShow && (
+            <EnterpriseDetails
+              data={selectedEnterpriseContent}
+              isEnterpriseDetailsShow={isEnterpriseDetailsShow}
+              setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
             />
           )}
         </div>
