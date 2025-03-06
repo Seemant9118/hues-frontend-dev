@@ -15,7 +15,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Layers2 } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -265,8 +265,8 @@ const AddModal = ({ cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
     >
       {isOpen === undefined && (
         <DialogTrigger asChild>
-          <Button variant={'blue_outline'} size="sm">
-            <Layers2 size={14} />
+          <Button size="sm">
+            <PlusCircle size={14} />
             {btnName}
           </Button>
         </DialogTrigger>

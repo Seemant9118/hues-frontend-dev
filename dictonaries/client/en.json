@@ -40,7 +40,7 @@
             "column": {
                 "actions": {
                     "edit": "Edit",
-                    "resend": "Resend"
+                    "resend": "Resend Invite"
                 }
             }
         }

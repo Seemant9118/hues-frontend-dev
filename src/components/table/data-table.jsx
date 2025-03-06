@@ -74,8 +74,8 @@ export function DataTable({
               return (
                 <TableRow
                   className={cn(
-                    onRowClick ? 'hover:cursor-pointer' : '',
-                    'border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700',
+                    onRowClick ? 'hover:cursor-pointer hover:text-black' : '',
+                    'border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700',
                   )}
                   key={row.id}
                   data-state={row?.getIsSelected() && 'selected'}

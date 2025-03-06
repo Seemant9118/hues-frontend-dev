@@ -1,7 +1,6 @@
 'use client';
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import GenerateLink from '@/components/enterprise/GenerateLink';
 import ResendInvitation from '@/components/enterprise/ResendInvitaion';
 import EditModal from '@/components/Modals/EditModal';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -12,15 +11,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { updateClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import {
-  generateLink,
-  resendInvitation,
-} from '@/services/Invitation_Service/Invitation_Service';
+import { resendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-export const useClientsColumns = () => {
+export const useClientsColumns = (getLink, sendReminder) => {
   const translations = useTranslations('client');
   return [
     {
@@ -32,16 +28,6 @@ export const useClientsColumns = () => {
         />
       ),
     },
-    // {
-    //   accessorKey: 'address',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="ADDRESS" />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const { address } = row.original;
-    //     return <p className="truncate">{address}</p>;
-    //   },
-    // },
     {
       accessorKey: 'mobileNumber',
       header: ({ column }) => (
@@ -77,12 +63,6 @@ export const useClientsColumns = () => {
         />
       ),
     },
-    // {
-    //   accessorKey: 'gstNumber',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="GST No." />
-    //   ),
-    // },
     {
       accessorKey: 'invitation',
       header: ({ column }) => (
@@ -92,15 +72,35 @@ export const useClientsColumns = () => {
         />
       ),
       cell: ({ row }) => {
-        const id = row.original.invitationId;
         const { invitationStatus } = row.original;
-        return (
-          <GenerateLink
-            invitationStatus={invitationStatus}
-            invitationId={id}
-            mutationFunc={generateLink}
-          />
-        );
+
+        switch (invitationStatus) {
+          case 'PENDING':
+            return (
+              <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-700 bg-blue-100 p-1 text-blue-700">
+                {'Pending'}
+              </div>
+            );
+          case 'REJECTED':
+            return (
+              <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
+                {'Rejected'}
+              </div>
+            );
+
+          case 'ACCEPTED':
+            return (
+              <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+                {'Accepted by client'}
+              </div>
+            );
+          default:
+            return (
+              <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+                {'Accepted by you'}
+              </div>
+            );
+        }
       },
     },
     {
@@ -131,9 +131,26 @@ export const useClientsColumns = () => {
                   />
                 )}
                 {invitationStatus === 'PENDING' && (
-                  <>
+                  <div className="flex flex-col">
                     <Button
-                      className="w-full"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        sendReminder(invitationId);
+                      }}
+                    >
+                      {'Send Reminder'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        getLink(invitationId);
+                      }}
+                    >
+                      {'Copy Invite Link'}
+                    </Button>
+                    <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => {
@@ -153,7 +170,7 @@ export const useClientsColumns = () => {
                         setIsEditing={setIsEditing}
                       />
                     )}
-                  </>
+                  </div>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
