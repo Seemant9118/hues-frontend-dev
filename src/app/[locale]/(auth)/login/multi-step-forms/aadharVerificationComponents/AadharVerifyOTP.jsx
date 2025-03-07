@@ -2,8 +2,13 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
 import { useAuthProgress } from '@/context/AuthProgressContext';
+import { useUserData } from '@/context/UserDataContext';
 import { LocalStorageService } from '@/lib/utils';
-import { verifyAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import {
+  userUpdate,
+  verifyAadharOTP,
+} from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,9 +20,43 @@ import AuthProgress from '../../util-auth-components/AuthProgress';
 const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
   const router = useRouter();
   const { updateAuthProgress } = useAuthProgress();
+  const { userData } = useUserData(); // context
 
   // State for button loading
   const [loading, setLoading] = useState(false);
+
+  // user update mutation
+  const userUpdatemutation = useMutation({
+    mutationFn: (data) => userUpdate(data),
+    onSuccess: (data) => {
+      LocalStorageService.set(
+        'isOnboardingComplete',
+        data?.data?.data?.user?.isOnboardingComplete,
+      );
+      LocalStorageService.set(
+        'isPanVerified',
+        data?.data?.data?.user?.isPanVerified,
+      );
+      LocalStorageService.set(
+        'isAadhaarVerified',
+        data?.data?.data?.user?.isAadhaarVerified,
+      );
+      LocalStorageService.set(
+        'isEmailVerified',
+        data?.data?.data?.user?.isEmailVerified,
+      );
+      LocalStorageService.set(
+        'isEnterpriseOnboardingComplete',
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
+      );
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+    },
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
+  });
 
   const handleChangeOtp = (value) => {
     setVerifyOTPdata((prev) => ({
@@ -32,21 +71,17 @@ const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
 
     try {
       const response = await verifyAadharOTP(verifyOTPdata);
-      const { data } = response;
 
-      toast.success('OTP verified successfully');
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.isOnboardingComplete,
-      );
-      LocalStorageService.set(
-        'isAadhaarVerified',
-        data?.data?.isAadhaarVerified,
-      );
-      LocalStorageService.set('isEmailVerified', data?.data?.isEmailVerified);
+      if (response?.success) {
+        // Ensure the response indicates success
+        toast.success('OTP verified successfully');
 
-      updateAuthProgress('isAadhaarVerified', true);
-      router.push('/login/user/confirmation');
+        await userUpdatemutation.mutateAsync(userData); // Await the mutation if needed
+        updateAuthProgress('isAadhaarVerified', true);
+        router.push('/login/user/confirmation');
+      } else {
+        toast.error('OTP verification failed. Please try again.');
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || 'Something went wrong';
