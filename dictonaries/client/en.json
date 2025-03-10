@@ -40,7 +40,15 @@
             "column": {
                 "actions": {
                     "edit": "Edit",
-                    "resend": "Resend Invite"
+                    "resend": "Resend Invite",
+                    "copyInviteLink": "Copy Invite Link",
+                    "sendReminder": "Send Reminder"
+                },
+                "status": {
+                    "pending": "Pending",
+                    "acceptedByClient": "Accepted by client",
+                    "acceptedByYou": "Accepted by you",
+                    "rejected": "Rejected"
                 }
             }
         }

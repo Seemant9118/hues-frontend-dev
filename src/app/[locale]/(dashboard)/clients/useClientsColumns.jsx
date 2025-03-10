@@ -78,26 +78,26 @@ export const useClientsColumns = (getLink, sendReminder) => {
           case 'PENDING':
             return (
               <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-700 bg-blue-100 p-1 text-blue-700">
-                {'Pending'}
+                {translations('table.column.status.pending')}
               </div>
             );
           case 'REJECTED':
             return (
               <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
-                {'Rejected'}
+                {translations('table.column.status.rejected')}
               </div>
             );
 
           case 'ACCEPTED':
             return (
               <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
-                {'Accepted by client'}
+                {translations('table.column.status.acceptedByClient')}
               </div>
             );
           default:
             return (
               <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
-                {'Accepted by you'}
+                {translations('table.column.status.acceptedByYou')}
               </div>
             );
         }
@@ -139,7 +139,7 @@ export const useClientsColumns = (getLink, sendReminder) => {
                         sendReminder(invitationId);
                       }}
                     >
-                      {'Send Reminder'}
+                      {translations('table.column.actions.sendReminder')}
                     </Button>
                     <Button
                       size="sm"
@@ -148,7 +148,7 @@ export const useClientsColumns = (getLink, sendReminder) => {
                         getLink(invitationId);
                       }}
                     >
-                      {'Copy Invite Link'}
+                      {translations('table.column.actions.copyInviteLink')}
                     </Button>
                     <Button
                       size="sm"
