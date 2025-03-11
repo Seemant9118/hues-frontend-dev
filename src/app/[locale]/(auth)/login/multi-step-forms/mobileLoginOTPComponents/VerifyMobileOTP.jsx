@@ -1,22 +1,19 @@
 /* eslint-disable no-lonely-if */
-import { directorApi } from '@/api/director/directorApi';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
 import { LocalStorageService } from '@/lib/utils';
-import { directorInviteList } from '@/services/Director_Services/DirectorServices';
-import { userVerifyOtp } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { ArrowLeft, Clock5 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
-const VerifyMobileOTP = ({ setMobileLoginStep }) => {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+const VerifyMobileOTP = ({
+  setMobileLoginStep,
+  formDataWithMob,
+  generateOTPMutation,
+  verifyOTPMutation,
+}) => {
   const [startFrom, setStartFrom] = useState(30);
   const [otp, setOtp] = useState();
 
@@ -33,124 +30,13 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const mutation = useMutation({
-    mutationFn: (data) => userVerifyOtp(data),
-    // eslint-disable-next-line consistent-return
-    onSuccess: async (data) => {
-      // set refresh token
-      LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
-      // set access token
-      LocalStorageService.set('token', data?.data?.data?.access_token);
-
-      const {
-        isOnboardingComplete,
-        isPanVerified,
-        isAadhaarVerified,
-        remainingAttempts,
-        isEnterprisestartedOnboarding,
-        enterpriseId,
-        isEnterpriseOnboardingComplete,
-        isAssociateRequestCreated,
-        isAssociateRequestAccepted,
-      } = data.data.data.user;
-
-      // user onboarding related states
-      LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
-      LocalStorageService.set('isPanVerified', isPanVerified);
-      LocalStorageService.set('isAadhaarVerified', isAadhaarVerified);
-      LocalStorageService.set('attemptsRemaining', remainingAttempts);
-
-      // enterprise onboarding related states
-      LocalStorageService.set(
-        'isEnterprisestartedOnboarding',
-        isEnterprisestartedOnboarding,
-      );
-      LocalStorageService.set('enterprise_Id', enterpriseId);
-      LocalStorageService.set(
-        'isEnterpriseOnboardingComplete',
-        isEnterpriseOnboardingComplete,
-      );
-      LocalStorageService.set(
-        'isAssociateRequestCreated',
-        isAssociateRequestCreated,
-      );
-      LocalStorageService.set(
-        'isAssociateRequestAccepted',
-        isAssociateRequestAccepted,
-      );
-      LocalStorageService.set('isDirector', data?.data?.data?.user?.isDirector);
-
-      // check by calling api : directorInviteList
-      const directorInviteListData = await queryClient.fetchQuery({
-        queryKey: [directorApi.getDirectorInviteList.endpointKey],
-        queryFn: directorInviteList,
-      });
-      const isUserHaveValidDirectorInvites =
-        directorInviteListData?.data?.data?.length > 0;
-
-      toast.success('OTP verified successfully');
-
-      // isUserOnboardingComplete
-      if (isOnboardingComplete) {
-        // is logInWithInviteLink
-        if (islogInWithInviteLink) {
-          if (
-            islogInWithInviteLink?.data?.invitation?.invitationType ===
-              'CLIENT' ||
-            islogInWithInviteLink?.data?.invitation?.invitationType === 'VENDOR'
-          ) {
-            router.push('/login/enterprise/select_enterprise_type');
-          } else if (
-            islogInWithInviteLink?.data?.invitation?.invitationType ===
-              'DIRECTOR' &&
-            isUserHaveValidDirectorInvites
-          ) {
-            router.push('/login/confirmation_invite_as_director');
-          } else {
-            router.push('/login/confirmation_invite_as_associate');
-          }
-        }
-        // is not logInWithInviteLink
-        else {
-          if (isEnterprisestartedOnboarding && isEnterpriseOnboardingComplete) {
-            return router.push('/');
-          } else if (
-            isEnterprisestartedOnboarding &&
-            !isEnterpriseOnboardingComplete
-          ) {
-            // enterprise onboarding started and but not completed perform pending actions
-            return router.push('/login/enterprise/pending-actions');
-          } else {
-            return router.push('/login/user/confirmation');
-          }
-        }
-      }
-      // User onboarding is incomplete
-      else {
-        // isPanverified and aaadhar verified then move to confirmation
-        if (isPanVerified && isAadhaarVerified) {
-          return router.push('/login/user/confirmation');
-        }
-        // isPanverified and !aadhar not verified then move to aadhar
-        else if (isPanVerified && !isAadhaarVerified) {
-          return router.push('/login/user/aadhar-verification');
-        } else {
-          return router.push('/login/user/pan-verification');
-        }
-      }
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'OTP Invalid or Expired');
-    },
-  });
-
   const handleChangeOtp = (value) => {
     setOtp(value);
   };
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
-    mutation.mutate({
+    verifyOTPMutation.mutate({
       otpCode: otp,
       userId,
       operationType,
@@ -158,6 +44,10 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         ? islogInWithInviteLink.data.invitation
         : islogInWithInviteLink,
     });
+  };
+
+  const handleResendOTP = () => {
+    generateOTPMutation.mutate(formDataWithMob);
   };
 
   return (
@@ -201,7 +91,10 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setStartFrom(30)}
+              onClick={() => {
+                setStartFrom(30);
+                handleResendOTP(); // api call for re-generateOTP
+              }}
             >
               Resend
             </Button>
@@ -212,9 +105,9 @@ const VerifyMobileOTP = ({ setMobileLoginStep }) => {
         size="sm"
         type="Submit"
         className="w-full bg-[#288AF9] p-2"
-        disabled={mutation.isPending}
+        disabled={verifyOTPMutation.isPending}
       >
-        {mutation.isPending ? <Loading /> : 'Verify'}
+        {verifyOTPMutation.isPending ? <Loading /> : 'Verify'}
       </Button>
 
       <Button
