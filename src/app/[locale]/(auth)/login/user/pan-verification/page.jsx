@@ -163,6 +163,8 @@ const PanVerificationPage = () => {
       setErrorMsg({});
       // redirection
       router.push('/login/user/aadhar-verification');
+      // saving user data fetching from pan
+      LocalStorageService.set('enterpriseDetails', userData);
       // marked pan verified in context
       updateAuthProgress('isPanVerified', true);
     }

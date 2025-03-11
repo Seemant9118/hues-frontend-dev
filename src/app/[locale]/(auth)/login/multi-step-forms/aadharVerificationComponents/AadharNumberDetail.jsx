@@ -1,23 +1,17 @@
-import { userAuth } from '@/api/user_auth/Users';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
-import { sentAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
-import Link from 'next/link';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
-  setAadharVerificationSteps,
-  setVerifyOTPdata,
+  sendAadharOTPMutation,
 }) => {
   const [errorMsg, setErrorMsg] = useState({});
 
@@ -36,26 +30,6 @@ const AadharNumberDetail = ({
 
     return error;
   };
-
-  const sendAadharOTPMutation = useMutation({
-    mutationKey: [userAuth.sendAadharVerificationOTP.endpointKey],
-    mutationFn: sentAadharOTP,
-    onSuccess: (data) => {
-      if (data) {
-        toast.success('OTP sent successfully');
-        setVerifyOTPdata((prev) => ({
-          ...prev,
-          tranId: data?.data?.data?.data?.tran_id,
-        }));
-        setAadharVerificationSteps(2); // move to next step - verify oTP
-      } else {
-        toast.info('Please try after some time, server is not responding');
-      }
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
 
   const handleChange = (e) => {
     const { value } = e.target;
@@ -130,13 +104,6 @@ const AadharNumberDetail = ({
         >
           {sendAadharOTPMutation.isPending ? <Loading /> : 'Proceed'}
         </Button>
-
-        <Link
-          href="/"
-          className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-        >
-          Skip for Now
-        </Link>
       </div>
     </form>
   );
