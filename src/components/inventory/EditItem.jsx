@@ -5,6 +5,7 @@ import { cn, LocalStorageService } from '@/lib/utils';
 import React, { useState } from 'react';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import InputWithLabel from '../ui/InputWithLabel';
 
@@ -17,6 +18,7 @@ const EditItem = ({
   mutationFunc,
   queryKey,
 }) => {
+  const translations = useTranslations();
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const userId = LocalStorageService.get('user_profile');
@@ -128,7 +130,9 @@ const EditItem = ({
         'scrollBarStyles relative flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
-      <h2 className="text-2xl font-bold text-zinc-900">Edit Item</h2>
+      <h2 className="text-2xl font-bold text-zinc-900">
+        {translations('goods.components.add.title')}
+      </h2>
 
       {/* mandatory data fields */}
       {item.type === 'goods' ? (
@@ -136,14 +140,14 @@ const EditItem = ({
         <>
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Product Name (Brand)"
+              name={translations('goods.components.add.label.productName')}
               id="productName"
               required={true}
               onChange={onChange}
               value={item.productName}
             />
             <InputWithLabel
-              name="Manufacturer's Name"
+              name={translations('goods.components.add.label.manufactureName')}
               id="manufacturerName"
               required={true}
               onChange={onChange}
@@ -151,7 +155,7 @@ const EditItem = ({
             />
           </div>
           <InputWithLabel
-            name="Description"
+            name={translations('goods.components.add.label.description')}
             id="description"
             required={true}
             onChange={onChange}
@@ -159,28 +163,28 @@ const EditItem = ({
           />
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="HSN Code"
+              name={translations('goods.components.add.label.hsnCode')}
               id="hsnCode"
               required={true}
               onChange={onChange}
               value={item.hsnCode}
             />
             <InputWithLabel
-              name="Rate"
+              name={translations('goods.components.add.label.rate')}
               id="rate"
               required={true}
               onChange={onChange}
               value={item.rate}
             />
             <InputWithLabel
-              name="GST (%)"
+              name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
               required={true}
               onChange={onChange}
               value={item.gstPercentage}
             />
             <InputWithLabel
-              name="Quantity"
+              name={translations('goods.components.add.label.quantity')}
               id="quantity"
               required={true}
               onChange={onChange}
@@ -189,14 +193,14 @@ const EditItem = ({
           </div>
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Batch"
+              name={translations('goods.components.add.label.batch')}
               id="batch"
               // required={item.type == "goods"}
               onChange={onChange}
               value={item.batch}
             />
             <InputWithLabel
-              name="Expiry"
+              name={translations('goods.components.add.label.expiry')}
               id="expiry"
               // required={item.type === "goods" || item.type === "services"}
               onChange={onChange}
@@ -205,13 +209,7 @@ const EditItem = ({
           </div>
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Application"
-              id="applications"
-              onChange={onChange}
-              value={item.applications}
-            />
-            <InputWithLabel
-              name="GST ID"
+              name={translations('goods.components.add.label.manufacturerGST')}
               id="manufacturerGstId"
               onChange={onChange}
               value={item.manufacturerGstId}
@@ -219,28 +217,28 @@ const EditItem = ({
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             <InputWithLabel
-              name="Weight (kg)"
+              name={translations('goods.components.add.label.weight')}
               id="weight"
               // required={item.type == "goods"}
               onChange={onChange}
               value={item.weight}
             />
             <InputWithLabel
-              name="Length (cm)"
+              name={translations('goods.components.add.label.length')}
               id="length"
               // required={item.type == "goods"}
               onChange={onChange}
               value={item.length}
             />
             <InputWithLabel
-              name="Breadth (cm)"
+              name={translations('goods.components.add.label.breadth')}
               id="breadth"
               // required={item.type == "goods"}
               onChange={onChange}
               value={item.breadth}
             />
             <InputWithLabel
-              name="Height (cm)"
+              name={translations('goods.components.add.label.height')}
               id="height"
               // required={item.type == "goods"}
               onChange={onChange}
@@ -253,7 +251,7 @@ const EditItem = ({
         <>
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="Service Name (Brand)"
+              name={translations('services.components.add.label.serviceName')}
               id="serviceName"
               required={true}
               onChange={onChange}
@@ -261,7 +259,7 @@ const EditItem = ({
             />
           </div>
           <InputWithLabel
-            name="Description"
+            name={translations('services.components.add.label.description')}
             id="description"
             required={true}
             onChange={onChange}
@@ -269,28 +267,28 @@ const EditItem = ({
           />
           <div className="grid grid-cols-2 gap-2.5">
             <InputWithLabel
-              name="SAC"
+              name={translations('services.components.add.label.sac')}
               id="SAC"
               required={true}
               onChange={onChange}
               value={item.SAC}
             />
             <InputWithLabel
-              name="Rate"
+              name={translations('services.components.add.label.rate')}
               id="rate"
               required={true}
               onChange={onChange}
               value={item.rate}
             />
             <InputWithLabel
-              name="GST (%)"
+              name={translations('services.components.add.label.gst')}
               id="gstPercentage"
               required={true}
               onChange={onChange}
               value={item.gstPercentage}
             />
             <InputWithLabel
-              name="Expiry"
+              name={translations('services.components.add.label.expiry')}
               id="expiry"
               onChange={onChange}
               value={item.expiry}
@@ -317,10 +315,10 @@ const EditItem = ({
           }}
           variant={'outline'}
         >
-          Cancel
+          {translations('services.components.add.ctas.cancel')}
         </Button>
         <Button size="sm" type="submit">
-          Edit
+          {translations('services.components.add.ctas.edit')}
         </Button>
       </div>
     </form>

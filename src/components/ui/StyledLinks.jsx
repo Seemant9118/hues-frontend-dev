@@ -1,14 +1,18 @@
 'use client';
 
 import { useNotificationsCount } from '@/context/CountNotificationsContext';
+import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+
 import { useEffect, useState } from 'react';
 
 const StyledLinks = ({ link }) => {
+  const translations = useTranslations();
+
   const { totalUnreadNotifications } = useNotificationsCount();
+
   const pathname = usePathname();
   const [isSubTabShow, setIsSubTabShow] = useState(null);
 
@@ -34,10 +38,10 @@ const StyledLinks = ({ link }) => {
         <Link
           href={link.path}
           className={cn(
-            'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
+            'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-sm',
             isMainTabActive && !isSubTabActive
               ? 'bg-[#288AF91A] text-[#288AF9]'
-              : 'bg-transparent text-gray-500 hover:text-black',
+              : 'bg-transparent text-gray-600 hover:text-black',
           )}
         >
           <span
@@ -49,14 +53,15 @@ const StyledLinks = ({ link }) => {
           >
             <div className="flex items-center gap-2">
               {link.icon}
-              {link.name}
+              {translations(link.name)}
             </div>
 
-            {link.name === 'Notifications' && totalUnreadNotifications > 0 && (
-              <span className="rounded-full bg-[#FF4D4F] px-2 py-1 text-xs text-white">
-                {totalUnreadNotifications}
-              </span>
-            )}
+            {link.name === 'sidebar.notifications' &&
+              totalUnreadNotifications > 0 && (
+                <span className="rounded-full bg-[#FF4D4F] px-2 py-1 text-xs text-white">
+                  {totalUnreadNotifications}
+                </span>
+              )}
           </span>
         </Link>
 
@@ -88,14 +93,14 @@ const StyledLinks = ({ link }) => {
               href={subtab.path}
               key={subtab.path}
               className={cn(
-                'flex gap-2 rounded-sm border-none p-3 text-xs',
+                'flex gap-2 rounded-sm border-none p-3 text-sm',
                 pathname.startsWith(subtab.path)
                   ? 'bg-[#288AF91A] text-[#288AF9]'
-                  : 'bg-transparent text-gray-500 hover:text-black',
+                  : 'bg-transparent text-gray-600 hover:text-black',
               )}
             >
               {subtab.icon}
-              {subtab.name}
+              {translations(subtab.name)}
             </Link>
           ))}
         </ul>

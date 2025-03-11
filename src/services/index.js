@@ -22,39 +22,36 @@ APIinstance.interceptors.request.use(
 );
 
 APIinstance.interceptors.response.use(
-  async (response) => {
-    return response;
-  },
+  async (response) => response, // Directly return the response
 
   async (error) => {
+    const statusCode = error?.response?.status;
     const refreshTokenValue = LocalStorageService.get('refreshtoken');
-    // Handle errors
-    if (
-      !refreshTokenValue &&
-      (error?.response?.data?.statusCode === 401 ||
-        error?.response?.data?.statusCode === 403)
-    ) {
-      LocalStorageService.clear();
-      window.location.href = '/login';
-    }
-    // Refresh token logic when status is 401 or 403
-    if (
-      refreshTokenValue &&
-      (error?.response?.data?.statusCode === 401 ||
-        error?.response?.data?.statusCode === 403)
-    ) {
+
+    if (statusCode === 401 || statusCode === 403) {
+      // If no refresh token, clear storage and redirect to login
+      if (!refreshTokenValue) {
+        LocalStorageService.clear();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
       try {
-        // Fetch new token
-        const refreshTokenData = await refreshToken(); // api call we can pass refreshToken not access_token
+        // Attempt to refresh the token
+        const refreshTokenData = await refreshToken();
         const newAccessToken = refreshTokenData?.data?.data?.access_token;
 
         if (newAccessToken) {
-          LocalStorageService.set('token', newAccessToken); // Save new access token
+          LocalStorageService.set('token', newAccessToken);
+          // Retry the failed request with the new token
+          error.config.headers.Authorization = `Bearer ${newAccessToken}`;
+          return APIinstance(error.config);
         }
-      } catch (error) {
+      } catch (refreshError) {
         toast.error('Session expired. Please log in again.');
         LocalStorageService.clear();
         window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
     }
 

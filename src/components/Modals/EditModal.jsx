@@ -3,6 +3,7 @@ import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendo
 import { LocalStorageService } from '@/lib/utils';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -19,6 +20,8 @@ const EditModal = ({
   isEditing,
   setIsEditing,
 }) => {
+  const translations = useTranslations('components.addEditModal');
+
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -45,7 +48,7 @@ const EditModal = ({
         return;
       }
 
-      toast.success('Edited Successfully');
+      toast.success(translations('common.form.toasts.success.edited'));
       setOpen((prev) => !prev);
       setIsEditing(false);
       setEnterPriseData({
@@ -68,7 +71,10 @@ const EditModal = ({
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message ||
+          translations('common.form.toasts.error.common'),
+      );
     },
   });
 
@@ -79,7 +85,7 @@ const EditModal = ({
     const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
     if (enterpriseDataItem.name === '') {
-      errorObj.name = '*Required Name';
+      errorObj.name = translations('common.form.errorMsg.addNewEntity.name');
     }
 
     // if (enterpriseDataItem.address === '') {
@@ -87,9 +93,13 @@ const EditModal = ({
     // }
 
     if (enterpriseDataItem.mobileNumber === '') {
-      errorObj.mobileNumber = '*Required Phone';
+      errorObj.mobileNumber = translations(
+        'common.form.errorMsg.addNewEntity.phone.required',
+      );
     } else if (enterpriseDataItem.mobileNumber.length !== 10) {
-      errorObj.mobileNumber = '*Please enter a valid mobile number';
+      errorObj.mobileNumber = translations(
+        'common.form.errorMsg.addNewEntity.phone.valid',
+      );
     }
 
     // if (enterpriseDataItem.email === '') {
@@ -99,13 +109,17 @@ const EditModal = ({
       enterpriseDataItem?.email.length > 0 &&
       !emailPattern.test(enterpriseDataItem.email)
     ) {
-      errorObj.email = '*Please provide valid email';
+      errorObj.email = translations('common.form.errorMsg.addNewEntity.email');
     }
 
     if (enterpriseDataItem.panNumber === '') {
-      errorObj.panNumber = '*Required PAN';
+      errorObj.panNumber = translations(
+        'common.form.errorMsg.addNewEntity.pan.required',
+      );
     } else if (!panPattern.test(enterpriseDataItem.panNumber)) {
-      errorObj.panNumber = '* Please provide valid PAN Number';
+      errorObj.panNumber = translations(
+        'common.form.errorMsg.addNewEntity.pan.valid',
+      );
     }
 
     // if (enterpriseDataItem.gstNumber === '') {
@@ -148,7 +162,11 @@ const EditModal = ({
       }}
     >
       <DialogContent>
-        <DialogTitle>{cta.toUpperCase()}</DialogTitle>
+        <DialogTitle>
+          {cta === 'client'
+            ? translations('client.title')
+            : translations('vendor.title')}
+        </DialogTitle>
 
         {/* Editing component */}
 
@@ -156,7 +174,9 @@ const EditModal = ({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">Name</Label>
+                <Label className="font-semibold">
+                  {translations('common.form.label.addNewEntity.name')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
 
@@ -170,9 +190,6 @@ const EditModal = ({
                     ...prev,
                     name: e.target.value,
                   }));
-                  e.target.value === ''
-                    ? setErrorMsg('*Please fill required details - Name')
-                    : setErrorMsg('');
                 }}
                 value={enterpriseData.name}
               />
@@ -180,7 +197,9 @@ const EditModal = ({
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">GST IN</Label>
+                <Label className="font-semibold">
+                  {translations('common.form.label.addNewEntity.gst')}
+                </Label>
                 {/* <span className="text-red-600">*</span> */}
               </div>
               <Input
@@ -200,7 +219,9 @@ const EditModal = ({
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">Email</Label>
+                <Label className="font-semibold">
+                  {translations('common.form.label.addNewEntity.email')}
+                </Label>
                 {/* <span className="text-red-600">*</span> */}
               </div>
               <Input
@@ -221,7 +242,9 @@ const EditModal = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label className="font-semibold">Phone</Label>
+                  <Label className="font-semibold">
+                    {translations('common.form.label.addNewEntity.phone')}
+                  </Label>
                   <span className="text-red-600">*</span>
                 </div>
                 <Input
@@ -243,7 +266,10 @@ const EditModal = ({
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label className="font-semibold">PAN</Label>
+                  <Label className="font-semibold">
+                    {' '}
+                    {translations('common.form.label.addNewEntity.pan')}
+                  </Label>
                   <span className="text-red-600">*</span>
                 </div>
                 <Input
@@ -263,7 +289,9 @@ const EditModal = ({
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">Address</Label>
+                <Label className="font-semibold">
+                  {translations('common.form.label.addNewEntity.address')}
+                </Label>
                 {/* <span className="text-red-600">*</span> */}
               </div>
               <Input
@@ -304,11 +332,15 @@ const EditModal = ({
               }}
               variant={'outline'}
             >
-              Cancel
+              {translations('common.form.ctas.addNewEntity.cancel')}
             </Button>
 
             <Button type="submit" size="sm" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? <Loading /> : 'Edit'}
+              {updateMutation.isPending ? (
+                <Loading />
+              ) : (
+                translations('common.form.ctas.addNewEntity.edit')
+              )}
             </Button>
           </div>
         </form>

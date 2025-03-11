@@ -10,6 +10,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, RotateCcw, Upload, UploadCloud, X } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
@@ -39,6 +40,7 @@ import {
 import Wrapper from '../wrappers/Wrapper';
 
 const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+  const translations = useTranslations('components.record_payment_order');
   const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -114,21 +116,33 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
       invoicesForPayments?.invoicedTotalDueAmount,
     );
 
-    setPaymentData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (name === 'amount') {
+      // Allow only numbers & decimals, treating "0" as valid text input
+      if (/^\d*\.?\d*$/.test(value)) {
+        setPaymentData((prevData) => ({
+          ...prevData,
+          [name]: value, // Keep as string to preserve leading zeros
+        }));
+      }
+    } else {
+      setPaymentData((prevData) => ({
+        ...prevData,
+        [name]: value, // Keep as string to preserve leading zeros
+      }));
+    }
 
     if (name === 'amount') {
-      if (value > balanceAmount) {
+      const numericValue = parseFloat(value); // Convert to number for validation
+
+      if (value === '') {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
-          amountPaid: 'Amount exceeds balance amount',
+          amountPaid: translations('errorMsg.amount_paid_empty'),
         }));
-      } else if (value === '') {
+      } else if (!Number.isNaN(numericValue) && numericValue > balanceAmount) {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
-          amountPaid: 'Amount should not be empty',
+          amountPaid: translations('errorMsg.amount_paid_exceed'),
         }));
       } else {
         setErrorMsg((prevMsg) => ({
@@ -148,8 +162,9 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
     // Validate if the entered amount exceeds the invoice's balance amount
     if (newAmountPaid > invoices[invoiceIndex].invoicereceivabledueamount) {
-      newErrorMessages[invoiceId] =
-        `Amount Paid should not be greater than ₹${invoices[invoiceIndex].invoicereceivabledueamount}`;
+      newErrorMessages[invoiceId] = translations(
+        'errorMsg.amount_paid_not_greater_than',
+      )`₹${invoices[invoiceIndex].invoicereceivabledueamount}`;
     } else {
       newErrorMessages[invoiceId] = ''; // Clear the error if no issue
     }
@@ -169,11 +184,13 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
     // Validate if the total amount paid matches the payment amount
     if (totalAmountPaid > paymentData.amount) {
-      newErrorMessages.invoiceAmountPaid =
-        'Amount exceeds the total payment amount';
+      newErrorMessages.invoiceAmountPaid = translations(
+        'errorMsg.invoiceAmountPaid_exceed',
+      );
     } else if (totalAmountPaid < paymentData.amount) {
-      newErrorMessages.invoiceAmountPaid =
-        'Amount is less than the total payment amount';
+      newErrorMessages.invoiceAmountPaid = translations(
+        'errorMsg.invoiceAmountPaid_less',
+      );
     } else {
       newErrorMessages.invoiceAmountPaid = ''; // Clear the error when amounts match
     }
@@ -194,7 +211,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     mutationKey: [paymentApi.createPayment.endpointKey],
     mutationFn: createPayment,
     onSuccess: () => {
-      toast.success('Payment Recorded Successfully');
+      toast.success(translations('successMsg.payment_recorded_sucessfully'));
       setInvoices([]);
       setErrorMsg({});
       setPaymentData({
@@ -217,7 +234,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     },
     onError: (error) => {
       const errorMessage =
-        error?.response?.data?.message || 'Something went wrong';
+        error?.response?.data?.message || translations('errorMsg.common');
       toast.error(errorMessage);
     },
   });
@@ -229,14 +246,16 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
     try {
       const resData = await uploadPaymentProofs(enterpriseId, formData);
-      toast.success('Upload Successfully');
+      toast.success(translations('successMsg.upload_success'));
       setFiles((prev) => [...prev, file]);
       setPaymentData({
         ...paymentData,
         attachmentLink: resData?.data?.data,
       });
     } catch (error) {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     }
   };
 
@@ -253,7 +272,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     if (updatedPaymentData.paymentMode === '') {
       setErrorMsg((prevMsg) => ({
         ...prevMsg,
-        paymentMode: 'Required! Please select payment mode',
+        paymentMode: translations('errorMsg.payment_mode'),
       }));
     } else {
       setErrorMsg((prevMsg) => ({
@@ -265,7 +284,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     if (updatedPaymentData.amount === '') {
       setErrorMsg((prevMsg) => ({
         ...prevMsg,
-        amountPaid: 'Required!, Amount should not be empty',
+        amountPaid: translations('errorMsg.amount_paid_required'),
       }));
     } else {
       setErrorMsg((prevMsg) => ({
@@ -311,7 +330,9 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
             {/* select payment mode */}
             <div className="flex w-1/2 flex-col gap-2">
               <div>
-                <Label className="flex-shrink-0">Payment Mode</Label>{' '}
+                <Label className="flex-shrink-0">
+                  {translations('form.label.payment_mode')}
+                </Label>{' '}
                 <span className="text-red-600">*</span>
               </div>
 
@@ -335,14 +356,24 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="neft">NEFT</SelectItem>
-                  <SelectItem value="rtgs">RTGS</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                  <SelectItem value="creditDebitCard">
-                    Credit / Debit Card
+                  <SelectItem value="neft">
+                    {translations('form.label.options.neft')}
                   </SelectItem>
-                  <SelectItem value="cheque">Cheque</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="rtgs">
+                    {translations('form.label.options.rtgs')}
+                  </SelectItem>
+                  <SelectItem value="upi">
+                    {translations('form.label.options.upi')}
+                  </SelectItem>
+                  <SelectItem value="creditDebitCard">
+                    {translations('form.label.options.credit_debit')}
+                  </SelectItem>
+                  <SelectItem value="cheque">
+                    {translations('form.label.options.cheque')}
+                  </SelectItem>
+                  <SelectItem value="cash">
+                    {translations('form.label.options.cash')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
@@ -350,7 +381,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
             </div>
             {/* transaction ID */}
             <div className="flex w-1/2 flex-col gap-3">
-              <Label>Transaction ID</Label>
+              <Label> {translations('form.label.tran_id')}</Label>
               <div className="flex flex-col gap-1">
                 <Input
                   name="transactionId"
@@ -366,7 +397,9 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
             {/* Amount */}
             <div className="flex w-1/2 flex-col gap-2">
               <div>
-                <Label className="flex-shrink-0">Amount Paid</Label>{' '}
+                <Label className="flex-shrink-0">
+                  {translations('form.label.amount_paid')}
+                </Label>{' '}
                 <span className="text-red-600">*</span>
               </div>
               <div className="flex items-center gap-1">
@@ -424,7 +457,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
             {/* Balance */}
             <div className="flex w-1/2 flex-col gap-3">
-              <Label>Balance</Label>
+              <Label>{translations('form.label.balance')}</Label>
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
@@ -440,12 +473,13 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
         {/* Invoice table  */}
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-bold">Invoices</h2>
+          <h2 className="text-sm font-bold">
+            {translations('form.table.title')}
+          </h2>
           {isAutoSplitted && (
             <div className="flex items-center justify-between px-2">
               <span className="text-sm text-[#A5ABBD]">
-                Amount is auto-splitted, but you can customize it manually if
-                needed
+                {translations('form.table.para')}
               </span>
 
               {errorMsg.invoiceAmountPaid && (
@@ -464,31 +498,31 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                     colSpan={3}
                     className="shrink-0 text-xs font-bold text-black"
                   >
-                    INVOICE NO
+                    {translations('form.table.header.label.invoice_no')}
                   </TableHead>
                   <TableHead
                     colSpan={2}
                     className="shrink-0 text-xs font-bold text-black"
                   >
-                    DATE
+                    {translations('form.table.header.label.date')}
                   </TableHead>
                   <TableHead
                     colSpan={2}
                     className="shrink-0 text-xs font-bold text-black"
                   >
-                    QUANTITY
+                    {translations('form.table.header.label.quantity')}
                   </TableHead>
                   <TableHead
                     colSpan={2}
                     className="shrink-0 text-xs font-bold text-black"
                   >
-                    BALANCE AMOUNT
+                    {translations('form.table.header.label.balance_amt')}
                   </TableHead>
                   <TableHead
                     colSpan={2}
                     className="shrink-0 text-xs font-bold text-black"
                   >
-                    AMOUNT PAID
+                    {translations('form.table.header.label.amount_paid')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -535,7 +569,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
         {/* uploads payments proofs */}
         <div className="flex flex-col gap-4">
-          <Label>Upload Proof</Label>
+          <Label>{translations('form.upload_proof.title')}</Label>
           {files.map((file) => (
             <div
               key={file.name}
@@ -551,7 +585,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                     <Check size={10} />
                   </div>
                   <p className="text-xs font-medium leading-5 text-green-500">
-                    Upload Successfully!
+                    {translations('successMsg.upload_success')}
                   </p>
                 </div>
               </div>
@@ -567,21 +601,16 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
                 <UploadCloud className="text-[#288AF9]" size={40} />
                 <div className="flex flex-col gap-1">
                   <p className="text-xs font-medium text-darkText">
-                    Drag & Drop or Select a File (Max 10MB,
-                    <span className="font-bold text-[#288AF9]">
-                      {' '}
-                      .png /.pdf Formats
-                    </span>
-                    )
+                    {translations('form.upload_proof.para')}
                   </p>
                   <p className="text-xs font-normal text-[#288AF9]">
-                    Note - Upload Payment Proofs only.
+                    {translations('form.upload_proof.note')}
                   </p>
                 </div>
               </div>
               <Button variant="blue_outline">
                 <Upload />
-                Select
+                {translations('form.upload_proof.ctas.select')}
               </Button>
             </div>
           </FileUploader>
@@ -608,7 +637,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
             router.back();
           }}
         >
-          Discard
+          {translations('form.ctas.discard')}
         </Button>
         <Button
           onClick={handleSubmit}
@@ -619,7 +648,11 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
           size="sm"
           className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
         >
-          {createPaymentMutationFn.isPending ? <Loading /> : 'Create'}
+          {createPaymentMutationFn.isPending ? (
+            <Loading />
+          ) : (
+            translations('form.ctas.create')
+          )}
         </Button>
       </div>
     </Wrapper>

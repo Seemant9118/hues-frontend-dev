@@ -1,4 +1,8 @@
 export const catalogueApis = {
+  searchedCatalogues: {
+    endpoint: `/catalogue/search`,
+    endpointKey: 'searched_catalogue',
+  },
   createAndUpdateCatalogue: {
     endpoint: `/catalogue/additems/`,
     endpointKey: 'create_update_catalogue',

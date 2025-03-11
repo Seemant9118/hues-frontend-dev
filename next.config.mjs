@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+
+// next-intl plugin setup
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin(); // withNextIntl is a Next.js plugin
+
 const nextConfig = {
   webpack: (config) => {
     config.resolve.alias.canvas = false;
@@ -10,4 +16,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

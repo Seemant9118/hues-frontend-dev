@@ -3,6 +3,7 @@
 import { formattedAmount, isGstApplicable } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 
 export const useCreateSalesColumns = (
@@ -13,11 +14,14 @@ export const useCreateSalesColumns = (
   isGstApplicableForSalesOrders,
   isGstApplicableForPurchaseOrders,
 ) => {
+  const translations = useTranslations(
+    'components.create_edit_order.form.table.header',
+  );
   return [
     {
       accessorKey: 'productName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ITEM" />
+        <DataTableColumnHeader column={column} title={translations('item')} />
       ),
     },
     {
@@ -25,7 +29,7 @@ export const useCreateSalesColumns = (
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title="QUANTITY"
+          title={translations('quantity')}
           className="min-w-[50px]"
         />
       ),
@@ -33,7 +37,7 @@ export const useCreateSalesColumns = (
     {
       accessorKey: 'unitPrice',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PRICE" />
+        <DataTableColumnHeader column={column} title={translations('price')} />
       ),
     },
     ...(isGstApplicable(
@@ -47,7 +51,7 @@ export const useCreateSalesColumns = (
             header: ({ column }) => (
               <DataTableColumnHeader
                 column={column}
-                title="GST (%)"
+                title={translations('gst')}
                 className="min-w-[50px]"
               />
             ),
@@ -60,7 +64,11 @@ export const useCreateSalesColumns = (
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={isOrder === 'invoice' ? 'INVOICE VALUE' : 'VALUE'}
+          title={
+            isOrder === 'invoice'
+              ? translations('invoice_value')
+              : translations('value')
+          }
         />
       ),
       cell: ({ row }) => {
@@ -78,13 +86,19 @@ export const useCreateSalesColumns = (
           {
             accessorKey: 'totalGstAmount',
             header: ({ column }) => (
-              <DataTableColumnHeader column={column} title="TAX AMOUNT" />
+              <DataTableColumnHeader
+                column={column}
+                title={translations('tax_amount')}
+              />
             ),
           },
           {
             accessorKey: 'amount',
             header: ({ column }) => (
-              <DataTableColumnHeader column={column} title="AMOUNT" />
+              <DataTableColumnHeader
+                column={column}
+                title={translations('amount')}
+              />
             ),
             cell: ({ row }) => {
               const amount = parseFloat(row.getValue('totalAmount'));

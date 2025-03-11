@@ -1,0 +1,509 @@
+{
+    "components": {
+        "generate_link": {
+            "ctas_staus": {
+                "pending": "लिंक",
+                "accepted": "सक्रिय",
+                "rejected": "अस्वीकृत"
+            },
+            "toasts": {
+                "success": "लिंक उत्पन्न हुआ और क्लिपबोर्ड में कॉपी किया गया",
+                "error": "कुछ गलत हो गया"
+            }
+        },
+        "upload": {
+            "title": "अपलोड",
+            "uploadInfo": "फ़ाइल को खींचकर छोड़ें या चुनें (अधिकतम 10MB, .csv/.xlsx प्रारूप)",
+            "noteInfo": "नोट - केवल eSigned इन्वेंट्री के लिए व्यापार सक्षम है।",
+            "selectCta": "चयन करें",
+            "sampleCta": "नमूना",
+            "backCta": "देखें",
+            "messages": {
+                "uploadSuccessMsg": "सफलतापूर्वक अपलोड हुआ"
+            }
+        },
+        "addEditModal": {
+            "common": {
+                "form": {
+                    "label": {
+                        "identifiers": {
+                            "identifier_type": "पहचान प्रकार",
+                            "identifier_number": "पहचान संख्या"
+                        },
+                        "addNewEntity": {
+                            "name": "नाम",
+                            "gst": "जीएसटी नंबर",
+                            "email": "ईमेल",
+                            "phone": "फोन",
+                            "pan": "पैन",
+                            "address": "पता"
+                        }
+                    },
+                    "input": {
+                        "select": {
+                            "pan": "पैन",
+                            "gst": "जीएसटी"
+                        }
+                    },
+                    "errorMsg": {
+                        "identifiers": {
+                            "pan": "कृपया आगे बढ़ने के लिए पैन पूरा करें",
+                            "gst": "कृपया आगे बढ़ने के लिए जीएसटी नंबर पूरा करें"
+                        },
+                        "addNewEntity": {
+                            "name": "आवश्यक नाम",
+                            "phone": {
+                                "required": "आवश्यक फोन",
+                                "valid": "कृपया एक मान्य मोबाइल नंबर दर्ज करें"
+                            },
+                            "email": "कृपया मान्य ईमेल प्रदान करें",
+                            "pan": {
+                                "required": "आवश्यक पैन",
+                                "valid": "कृपया मान्य पैन नंबर प्रदान करें"
+                            }
+                        }
+                    },
+                    "infoMsg": {
+                        "toSearch": "खोजने के लिए एक पहचानकर्ता टाइप करें",
+                        "enterprise_not_available": "उपलब्ध नहीं है।"
+                    },
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "नए इकाई को जोड़ने के लिए जारी रखें",
+                            "invite": "आमंत्रित करें",
+                            "sent": "आमंत्रण भेजा गया"
+                        },
+                        "addNewEntity": {
+                            "cancel": "रद्द करें",
+                            "add": "जोड़ें",
+                            "edit": "संपादित करें"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "invitation": "आमंत्रण सफलतापूर्वक भेजा गया",
+                            "entityAdded": "इकाई सफलतापूर्वक जोड़ी गई",
+                            "edited": "सफलतापूर्वक संपादित किया गया"
+                        },
+                        "error": {
+                            "common": "कुछ गलत हो गया"
+                        }
+                    }
+                }
+            },
+            "client": {
+                "title": "ग्राहक",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "नए ग्राहक को जोड़ने के लिए जारी रखें"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "ग्राहक सफलतापूर्वक जोड़ा गया"
+                        }
+                    }
+                }
+            },
+            "vendor": {
+                "title": "विक्रेता",
+                "form": {
+                    "ctas": {
+                        "identifiers": {
+                            "continue": "नए विक्रेता को जोड़ने के लिए जारी रखें"
+                        }
+                    },
+                    "toasts": {
+                        "success": {
+                            "entityAdded": "विक्रेता सफलतापूर्वक जोड़ा गया"
+                        }
+                    }
+                }
+            }
+        },
+        "notificationsFilter": {
+            "cta": "फ़िल्टर",
+            "title": "फ़िल्टर",
+            "form": {
+                "label": {
+                    "chooseDate": "तारीख़ चुनें",
+                    "from": "से",
+                    "to": "तक",
+                    "chooseType": "प्रकार चुनें",
+                    "types_available": {
+                        "type1": {
+                            "value": "चालान"
+                        },
+                        "type2": {
+                            "value": "आदेश"
+                        },
+                        "type3": {
+                            "value": "निमंत्रण"
+                        },
+                        "type4": {
+                            "value": "आदेश वार्ता"
+                        }
+                    }
+                },
+                "ctas": {
+                    "clear": "साफ़ करें",
+                    "save": "लागू करें"
+                }
+            }
+        },
+        "profilePopUpInfo": {
+            "viewProfileCta": "प्रोफ़ाइल देखें",
+            "enterprises": "उद्यम",
+            "addAnotherCta": "एक और उद्यम जोड़ें",
+            "logoutCta": "लॉगआउट",
+            "accessDeniedCta": "पहुँच अस्वीकृत"
+        },
+        "filter": {
+            "title": "फ़िल्टर",
+            "form": {
+                "label": {
+                    "select_date": "तारीख़ चुनें",
+                    "select_amount_range": "राशि सीमा चुनें",
+                    "select_status": "स्थिति चुनें",
+                    "select_client": "क्लाइंट चुनें",
+                    "invoice_generated": "चालान जनरेट किया गया",
+                    "clear": "साफ़ करें"
+                },
+                "input": {
+                    "select_status": {
+                        "options": {
+                            "option1": "बोली प्राप्त हुई",
+                            "option2": "प्रस्ताव भेजा गया",
+                            "option3": "स्वीकृत",
+                            "option4": "अस्वीकृत",
+                            "option5": "वापस लिया गया",
+                            "option6": "बोली भेजी गई",
+                            "option7": "प्रस्ताव प्राप्त हुआ"
+                        }
+                    }
+                },
+                "ctas": {
+                    "apply": "लागू करें",
+                    "reset": "रीसेट करें"
+                }
+            }
+        },
+        "create_edit_order": {
+            "title": {
+                "offer": "प्रस्ताव",
+                "bid": "बोली",
+                "edit": "संपादित करें",
+                "sub_titles": {
+                    "add_item": "आइटम जोड़ें",
+                    "edit_item": "आइटम संपादित करें"
+                }
+            },
+            "form": {
+                "label": {
+                    "type": "क्लाइंट प्रकार",
+                    "client": "क्लाइंट",
+                    "customer": "ग्राहक",
+                    "vendor": "विक्रेता",
+                    "item_type": "आइटम प्रकार",
+                    "item": "आइटम",
+                    "quantity": "मात्रा",
+                    "price": "मूल्य",
+                    "invoice_value": "चालान मूल्यांकन",
+                    "value": "मूल्यांकन",
+                    "gst": "जीएसटी",
+                    "tax_amount": "कर राशि",
+                    "amount": "कुल राशि"
+                },
+                "errorMsg": {
+                    "customer": "*कृपया एक ग्राहक जोड़ें या चुनें",
+                    "client": "*कृपया एक क्लाइंट चुनें",
+                    "vendor": "*कृपया एक विक्रेता चुनें",
+                    "item_type": "*कृपया आइटम प्रकार चुनें",
+                    "item": "*आदेश बनाने के लिए कम से कम एक आइटम जोड़ें",
+                    "quantity": "*आवश्यक मात्रा",
+                    "price": "*आवश्यक मूल्य",
+                    "gst": "*आवश्यक (जीएसटी%)",
+                    "value": "*आवश्यक मूल्यांकन",
+                    "tax_amount": "*आवश्यक कर राशि",
+                    "amount": "*आवश्यक राशि"
+                },
+                "successMsg": {
+                    "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
+                    "offer_created_successfully": "विक्रय आदेश सफलतापूर्वक बनाया गया",
+                    "bid_created_successfully": "क्रय आदेश सफलतापूर्वक बनाया गया",
+                    "invoice_created_successfully": "चालान बनाया गया! कृपया नवीनतम चालान देखने के लिए पृष्ठ को ताज़ा करें"
+                },
+                "input": {
+                    "clientType": {
+                        "b2b": "बी2बी",
+                        "b2c": "बी2सी"
+                    },
+                    "client": {
+                        "placeholder": "क्लाइंट चुनें...",
+                        "add_new_client": "नया क्लाइंट जोड़ें"
+                    },
+                    "vendor": {
+                        "placeholder": "विक्रेता चुनें...",
+                        "add_new_vendor": "नया विक्रेता जोड़ें"
+                    },
+                    "item_type": {
+                        "goods": "सामान",
+                        "services": "सेवाएं",
+                        "placeholder": "आइटम प्रकार चुनें..."
+                    },
+                    "item": {
+                        "placeholder": "आइटम चुनें"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "आइटम",
+                        "quantity": "मात्रा",
+                        "price": "मूल्य",
+                        "gst": "जीएसटी (%)",
+                        "invoice_value": "चालान मूल्यांकन",
+                        "value": "मूल्यांकन",
+                        "tax_amount": "कर राशि",
+                        "amount": "कुल राशि"
+                    }
+                },
+                "ctas": {
+                    "cancel": "रद्द करें",
+                    "add": "जोड़ें",
+                    "create": "बनाएँ",
+                    "edit": "संपादित करें"
+                },
+                "footer": {
+                    "gross_amount": "कुल राशि",
+                    "tax_amount": "कर राशि",
+                    "total_amount": "कुल भुगतान राशि"
+                }
+            }
+        },
+        "redirection_pop_up": {
+            "para": "इस एंटरप्राइज़ ने आपका निमंत्रण स्वीकार नहीं किया है और आपके प्रस्ताव का जवाब देने में सक्षम नहीं होगा। क्या आप आगे बढ़ना चाहते हैं?",
+            "ctas": {
+                "yes": "हाँ",
+                "no": "नहीं"
+            }
+        },
+        "order_overview": {
+            "title": "सारांश",
+            "label": {
+                "order_id": "ऑर्डर आईडी",
+                "client_name": "ग्राहक का नाम",
+                "vendor_name": "विक्रेता का नाम",
+                "order_status": "ऑर्डर की स्थिति",
+                "payment_status": "भुगतान की स्थिति",
+                "total_amount": "कुल राशि",
+                "view_negotiation": "मोलभाव देखें"
+            },
+            "acknowledge_message": {
+                "infoText": "यह ऑर्डर सीधे हमारे ग्राहक/विक्रेता द्वारा रिकॉर्ड किया गया है। इसे अपनी ऑर्डर सूची में जोड़ने के लिए स्वीकार करें",
+                "ctas": {
+                    "undo": "पूर्ववत करें",
+                    "no": "नहीं",
+                    "yes": "हाँ"
+                }
+            },
+            "successMsg": {
+                "acknowledged_sucess": "ऑर्डर सफलतापूर्वक स्वीकार किया गया",
+                "undo_acknowledged_success": "ऑर्डर स्वीकार करना पूर्ववत सफलतापूर्वक"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया"
+            }
+        },
+        "invoice_overview": {
+            "title": "सारांश",
+            "label": {
+                "invoice_id": "चालान आईडी",
+                "order_id": "ऑर्डर आईडी",
+                "date": "तिथि",
+                "client_name": "ग्राहक का नाम",
+                "vendor_name": "विक्रेता का नाम",
+                "type": "प्रकार",
+                "payment_status": "भुगतान स्थिति",
+                "total_amount": "कुल राशि",
+                "debit_notes": "डेबिट नोट्स"
+            }
+        },
+        "past_invoices": {
+            "label": {
+                "date": "तारीख",
+                "total_amount": "कुल राशि",
+                "type": "प्रकार"
+            },
+            "emptyStateComponent": {
+                "title": "अभी तक कोई चालान नहीं",
+                "para": "आपने अभी तक कोई चालान नहीं बनाया है। अपने ऑर्डर्स का ट्रैक रखने के लिए पहला चालान बनाएं।",
+                "ctas": {
+                    "generate_invoice": "चालान बनाएं"
+                }
+            }
+        },
+        "invoice_modal": {
+            "title": "चालान",
+            "view": {
+                "placeholder": "चालान देखें"
+            },
+            "loading_document": "दस्तावेज़ लोड हो रहा है...",
+            "ctas": {
+                "cancel": "रद्द करें",
+                "download": "डाउनलोड"
+            }
+        },
+        "generate_invoice": {
+            "title": "इनवॉइस बनाएं",
+            "table": {
+                "header": {
+                    "item_name": "आइटम का नाम",
+                    "quantity": "मात्रा",
+                    "unit_price": "इकाई मूल्य",
+                    "total_amount": "कुल राशि"
+                }
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया"
+            },
+            "successMsg": {
+                "otp_sent": "ओटीपी भेजा गया"
+            }
+        },
+        "generate_invoice_modal_otp": {
+            "title": "इनवॉइस",
+            "ctas": {
+                "generate": "बनाएं",
+                "resend": "पुनः भेजें",
+                "verify": "सत्यापित करें और बनाएं",
+                "view": "देखें"
+            },
+            "infoText": {
+                "info": "वन टाइम पासवर्ड भेजा गया है",
+                "resend_info": "ओटीपी पुनः भेजें"
+            },
+            "successMsg": {
+                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया"
+            }
+        },
+        "preview_invoice_modal": {
+            "title": "इनवॉइस पूर्वावलोकन",
+            "cta": "पूर्वावलोकन"
+        },
+        "negotiation_component": {
+            "table": {
+                "header": {
+                    "label": {
+                        "item": "आइटम",
+                        "quantity": "मात्रा",
+                        "rate": "दर",
+                        "total": "कुल"
+                    }
+                },
+                "child_table": {
+                    "header": {
+                        "label": {
+                            "ask": "प्रस्ताव",
+                            "counter": "प्रतिप्रस्ताव"
+                        }
+                    }
+                },
+                "column_actions": {
+                    "history": {
+                        "placeholder": "मोलभाव इतिहास देखें",
+                        "infoTitle": "इतिहास ",
+                        "infoPara": "इस आइटम के लिए कोई मोलभाव इतिहास नहीं है।"
+                    },
+                    "who": {
+                        "buyer": "खरीदार",
+                        "you": "आप",
+                        "seller": "विक्रेता"
+                    }
+                }
+            },
+            "ctas": {
+                "cancel": "रद्द करें",
+                "submit": "जमा करें"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया",
+                "empty": "कृपया कम से कम एक मोलभाव आइटम भरें।"
+            },
+            "successMsg": {
+                "negotiation_submitted": "मोलभाव सफलतापूर्वक जमा किया गया"
+            }
+        },
+        "record_payment_order": {
+            "form": {
+                "label": {
+                    "payment_mode": "भुगतान मोड",
+                    "options": {
+                        "neft": "एनईएफटी",
+                        "rtgs": "आरटीजीएस",
+                        "upi": "यूपीआई",
+                        "credit_debit": "क्रेडिट / डेबिट कार्ड",
+                        "cheque": "चेक",
+                        "cash": "नकद"
+                    },
+                    "tran_id": "लेनदेन आईडी",
+                    "amount_paid": "भरी गई राशि",
+                    "balance": "शेष राशि"
+                },
+                "table": {
+                    "title": "इनवॉइस",
+                    "para": "राशि स्वचालित रूप से विभाजित की जाती है, लेकिन आवश्यकता होने पर आप इसे मैन्युअल रूप से कस्टमाइज़ कर सकते हैं",
+                    "header": {
+                        "label": {
+                            "invoice_no": "इनवॉइस नंबर",
+                            "date": "तारीख",
+                            "quantity": "मात्रा",
+                            "balance_amt": "शेष राशि",
+                            "amount_paid": "भरी गई राशि"
+                        }
+                    }
+                },
+                "upload_proof": {
+                    "title": "प्रूफ अपलोड करें",
+                    "para": "फ़ाइल को खींचें और छोड़ें या फ़ाइल चुनें (अधिकतम 10MB, .png/.pdf फॉर्मेट्स)",
+                    "note": "नोट - केवल भुगतान प्रमाण अपलोड करें।",
+                    "ctas": {
+                        "select": "चुनें"
+                    }
+                },
+                "ctas": {
+                    "revert": "वापस लें",
+                    "auto-split": "स्वतः-विभाजन",
+                    "create": "बनाएं",
+                    "discard": "त्यागें"
+                }
+            },
+            "successMsg": {
+                "payment_recorded_sucessfully": "भुगतान सफलतापूर्वक रिकॉर्ड किया गया",
+                "upload_success": "सफलतापूर्वक अपलोड हुआ"
+            },
+            "errorMsg": {
+                "payment_mode": "*आवश्यक! कृपया भुगतान मोड चुनें",
+                "amount_paid_required": "*आवश्यक! राशि खाली नहीं होनी चाहिए",
+                "amount_paid_empty": "राशि खाली नहीं होनी चाहिए",
+                "amount_paid_exceed": "राशि शेष राशि से अधिक है",
+                "amount_paid_not_greater_than": "भरी गई राशि इससे अधिक नहीं होनी चाहिए",
+                "invoiceAmountPaid_exceed": "राशि कुल भुगतान राशि से अधिक है",
+                "invoiceAmountPaid_less": "राशि कुल भुगतान राशि से कम है",
+                "common": "कुछ गलत हो गया"
+            }
+        },
+        "payment_details": {
+            "emptyStateComponent": {
+                "title": "अभी तक कोई भुगतान नहीं",
+                "para": "आपने अभी तक कोई भुगतान नहीं किया है। अपने लेनदेन को ट्रैक करने के लिए पहला भुगतान दर्ज करके शुरुआत करें।"
+            },
+            "ctas": {
+                "record_payment": "भुगतान दर्ज करें"
+            }
+        }
+    }
+}

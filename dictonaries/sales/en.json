@@ -1,0 +1,311 @@
+{
+    "sales": {
+        "sales-orders": {
+            "title": "Sales",
+            "emtpyStateComponent": {
+                "heading": "Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital signatures.",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Initiate sales and deals by receiving bids or making offers."
+                    },
+                    "subItem2": {
+                        "value": "Securely negotiate with digitally signed counter-offers and bids."
+                    },
+                    "subItem3": {
+                        "value": "Finalize deals with mutual digital signatures for binding commitment."
+                    },
+                    "subItem4": {
+                        "value": "Effortlessly create and share detailed invoices, completing sales professionally."
+                    }
+                }
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Order",
+                    "successMsg": "Order exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "offer": {
+                    "cta": "Offer",
+                    "placeholder": "Create a new Sales Order"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Under Review",
+                    "tab3": "Confirmed Orders",
+                    "tab4": "Receivables"
+                },
+                "content": {}
+            },
+            "table": {
+                "header": {
+                    "order_id": "ORDER ID",
+                    "date": "DATE",
+                    "customers_type": "CUSTOMERS TYPE",
+                    "customers": "CUSTOMERS",
+                    "status": "STATUS",
+                    "total_amount": "TOTAL AMOUNT"
+                },
+                "column_actions": {
+                    "edit": {
+                        "cta": "Edit",
+                        "successMsg": "Edited Successfully"
+                    },
+                    "delete": {
+                        "cta": "Delete",
+                        "cancel": "Cancel",
+                        "successMsg": "Deleted Successfully",
+                        "infoText": "You are removing this offer {orderId}"
+                    }
+                }
+            },
+            "order_details": {
+                "title": {
+                    "sales": "Sales",
+                    "order_details": "Order Details",
+                    "negotiation": "Negotiation",
+                    "generate_invoice": "Generate Invoice",
+                    "record_payment": "Record Payment"
+                },
+                "ctas": {
+                    "record_payment": "Record Payment",
+                    "generate_invoice": "Generate Invoice",
+                    "download": {
+                        "placeholder": "Download Order Details"
+                    },
+                    "more": {
+                        "placeholder": "More options",
+                        "edit": "Edit"
+                    },
+                    "footer_ctas": {
+                        "wait_response": "Waiting for Response",
+                        "negotiate": "Negotiate",
+                        "accept": "Accept"
+                    }
+                },
+                "tabs": {
+                    "label": {
+                        "tab1": "Overview",
+                        "tab2": "Invoices",
+                        "tab3": "Payment Receipts",
+                        "tab4": "Timeline"
+                    },
+                    "content": {
+                        "tab1": {
+                            "table": {
+                                "header": {
+                                    "item": "ITEM",
+                                    "invoice_quantity": "INVOICE/QUANTITY",
+                                    "quantity": "QUANTITY",
+                                    "ask_rate": "ASKING RATE",
+                                    "total_amount": "TOTAL AMOUNT"
+                                }
+                            }
+                        },
+                        "tab4": {
+                            "coming_soon": "Timeline here. Coming Soon..."
+                        }
+                    }
+                },
+                "successMsg": {
+                    "order_accepted": "Order Accepted"
+                },
+                "errorMsg": {
+                    "common": "Something went wrong"
+                }
+            }
+        },
+        "sales-invoices": {
+            "title": "Invoices",
+            "emtpyStateComponent": {
+                "heading": "Seamlessly manage sales, from bids to digital negotiations and secure invoicing with digital signatures.",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Initiate sales and deals by receiving bids or making offers."
+                    },
+                    "subItem2": {
+                        "value": "Securely negotiate with digitally signed counter-offers and bids."
+                    },
+                    "subItem3": {
+                        "value": "Finalize deals with mutual digital signatures for binding commitment."
+                    },
+                    "subItem4": {
+                        "value": "Effortlessly create and share detailed invoices, completing sales professionally."
+                    }
+                }
+            },
+            "emtpyStateComponent2": {
+                "heading": "No Debit Notes Raised"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Invoice",
+                    "successMsg": "Invoice exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "invoice": {
+                    "cta": "Invoice",
+                    "placeholder": "Create a new Sales Invoice"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Outstanding",
+                    "tab3": "Disputed"
+                }
+            },
+            "table": {
+                "header": {
+                    "invoice_id": "INVOICE ID",
+                    "date": "DATE",
+                    "customers_type": "CUSTOMERS TYPE",
+                    "customers": "CUSTOMERS",
+                    "status": "STATUS",
+                    "order_id": "ORDER ID",
+                    "total_amount": "TOTAL AMOUNT"
+                }
+            },
+            "invoice_details": {
+                "title": {
+                    "invoices": "Invoices",
+                    "invoice_details": "Invoice Details",
+                    "record_payment": "Record Payment"
+                },
+                "ctas": {
+                    "record_payment": "Record Payment",
+                    "share": {
+                        "placeholder": "Coming Soon.."
+                    },
+                    "download": {
+                        "placeholder": "Download Order Details"
+                    }
+                },
+                "tabs": {
+                    "label": {
+                        "tab1": "Overview",
+                        "tab2": "Payment Receipts",
+                        "tab3": "Debit Notes"
+                    },
+                    "content": {
+                        "tab1": {
+                            "table": {
+                                "header": {
+                                    "item": "Item",
+                                    "quantity": "Quantity",
+                                    "rate": "Rate",
+                                    "total_amount": "Total Amount"
+                                }
+                            }
+                        },
+                        "tab2": {
+                            "table": {
+                                "header": {
+                                    "payment_id": "Payment ID",
+                                    "amount": "Amount",
+                                    "date": "Date",
+                                    "invoice_no": "Invoice No."
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "No payments yet",
+                                "para": "You haven't made any payments yet. Start by generating your first payment to keep track of your transactions."
+                            }
+                        },
+                        "tab3": {
+                            "label": {
+                                "view_debit_notes": "View Debit Note",
+                                "date": "Date",
+                                "total_amount": "Total Amount",
+                                "type": "Type",
+                                "reason": "Reason"
+                            },
+                            "emtpyStateComponent": {
+                                "title": "No debit notes raised yet",
+                                "para": "You haven't any debit notes yet."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "sales-debit_notes": {
+            "title": "Debit Notes",
+            "emtpyStateComponent": {
+                "heading": "No Debit Notes Raised"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Debit Notes",
+                    "successMsg": "Debit Note exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Accepted",
+                    "tab3": "Rejected"
+                }
+            },
+            "table": {
+                "header": {
+                    "invoice_id": "INVOICE ID",
+                    "date": "DATE",
+                    "customers": "CUSTOMERS",
+                    "total_amount": "TOTAL AMOUNT",
+                    "status": "STATUS"
+                }
+            },
+            "debit_notes_details": {
+                "title": {
+                    "debit_notes": "Debit Notes",
+                    "debit_note_details": "Debit Note Details"
+                },
+                "label": {
+                    "date": "Date",
+                    "total_amount": "Total Amount",
+                    "type": "Type",
+                    "reason": "Reason"
+                },
+                "emtpyStateComponent": {
+                    "title": "No debit notes raised yet",
+                    "para": "You haven't any debit notes yet."
+                },
+                "comments": {
+                    "title": "Comments",
+                    "attached_files_heading": "Attached Files",
+                    "input": {
+                        "placeholder": "Type your comment here..."
+                    },
+                    "ctas": {
+                        "attach_file": {
+                            "placeholder": "Attach file"
+                        },
+                        "send": {
+                            "placeholder": "Send"
+                        }
+                    },
+                    "emtpyStateComponent": {
+                        "title": "No Comments yet",
+                        "para": "Say Something to start the conversation"
+                    }
+                },
+                "successMsg": {
+                    "file_attached_success": "File Attached Successfully",
+                    "comment_success": "Comment Successfully"
+                },
+                "errorMsg": {
+                    "comment_error_emtpy": "Comment can not be empty",
+                    "common": "Something went wrong"
+                },
+                "ctas": {
+                    "accept": "Accept",
+                    "reject": "Reject"
+                }
+            }
+        }
+    }
+}

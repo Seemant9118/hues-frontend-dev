@@ -1,19 +1,14 @@
 'use client';
 
-import { goodsApi } from '@/api/inventories/goods/goods';
-import { servicesApi } from '@/api/inventories/services/services';
+import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { userAuth } from '@/api/user_auth/Users';
-import { isGstApplicable } from '@/appUtils/helperFunctions';
+import {
+  getStylesForSelectComponent,
+  isGstApplicable,
+} from '@/appUtils/helperFunctions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -24,13 +19,11 @@ import {
 } from '@/components/ui/table';
 import { LocalStorageService } from '@/lib/utils';
 import {
-  GetAllProductGoods,
-  GetProductGoodsVendor,
-} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import {
-  GetAllProductServices,
-  GetServicesVendor,
-} from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
+  getProductCatalogue,
+  getServiceCatalogue,
+  getVendorProductCatalogue,
+  getVendorServiceCatalogue,
+} from '@/services/Catalogue_Services/CatalogueServices';
 import {
   OrderDetails,
   updateOrder,
@@ -38,29 +31,41 @@ import {
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
 import Loading from '../ui/Loading';
-import SearchInput from '../ui/SearchInput';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const EditOrder = ({
   onCancel,
-  name,
   cta,
   orderId,
   isEditingOrder,
   setIsOrderCreationSuccess,
 }) => {
-  const pathName = usePathname();
-  const isPurchasePage = pathName.includes('purchases');
+  const translations = useTranslations('components.create_edit_order');
+
   const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const [itemToSearch, setItemToSearch] = useState('');
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
+  const [selectedItem, setSelectedItem] = useState({
+    productName: '',
+    productType: '',
+    productId: '',
+    quantity: null,
+    unitPrice: null,
+    gstPerUnit: null,
+    totalAmount: null,
+    totalGstAmount: null,
+    negotiationStatus: 'NEW',
+  });
 
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -79,18 +84,6 @@ const EditOrder = ({
     isGstApplicableForPurchaseOrders,
     setIsGstApplicableForPurchaseOrders,
   ] = useState('');
-
-  const [selectedItem, setSelectedItem] = useState({
-    productName: '',
-    productType: '',
-    productId: '',
-    quantity: null,
-    unitPrice: null,
-    gstPerUnit: null,
-    totalAmount: null,
-    totalGstAmount: null,
-    negotiationStatus: 'NEW',
-  });
 
   // Fetch order details✅
   const {
@@ -234,82 +227,93 @@ const EditOrder = ({
     }));
   };
 
-  // client goods fetching
+  // [Client's Goods and Services]
+  // client's catalogue's goods fetching
   const { data: goodsData } = useQuery({
-    queryKey: [goodsApi.getAllProductGoods.endpointKey],
-    queryFn: () => GetAllProductGoods(enterpriseId),
+    queryKey: [catalogueApis.getProductCatalogue.endpointKey, enterpriseId],
+    queryFn: () => getProductCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'GOODS',
   });
-  const formattedGoodsData =
-    goodsData?.map((good) => ({
-      ...good,
-      productType: 'GOODS',
-      productName: good.productName,
-    })) || [];
-  // client services fetching
+  // client's goods options
+  const clientsGoodsOptions = goodsData?.map((good) => {
+    const value = { ...good, productType: 'GOODS', productName: good.name };
+    const label = good.name;
+
+    return { value, label };
+  });
+  // client catalogue services fetching
   const { data: servicesData } = useQuery({
-    queryKey: [servicesApi.getAllProductServices.endpointKey],
-    queryFn: () => GetAllProductServices(enterpriseId),
+    queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
+    queryFn: () => getServiceCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'SERVICE',
   });
-  const formattedServicesData =
-    servicesData?.map((service) => ({
+  // client's services options
+  const clientsServicesOptions = servicesData?.map((service) => {
+    const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.serviceName,
-    })) || [];
-  // selected data on the basis of itemType
-  const itemData =
-    order.invoiceType === 'GOODS' ? formattedGoodsData : formattedServicesData;
-  // searching item from list given "itemData" - Inventory
-  const searchItemData = itemData?.filter((item) => {
-    const itemName = item.productName ?? '';
-    return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
-  });
+      productName: service.name,
+    };
+    const label = service.name;
 
-  // vendor goods fetching
+    return { value, label };
+  });
+  // itemClientListingOptions on the basis of item type
+  const itemClientListingOptions =
+    order.invoiceType === 'GOODS'
+      ? clientsGoodsOptions
+      : clientsServicesOptions;
+
+  // [Vendor's Goods and Services]
+  // vendor catalogue goods fetching
   const { data: vendorGoodsData } = useQuery({
     queryKey: [
-      goodsApi.vendorProductGoods.endpointKey,
+      catalogueApis.getVendorProductCatalogue.endpointKey,
       order.sellerEnterpriseId,
     ],
-    queryFn: () => GetProductGoodsVendor(order.sellerEnterpriseId),
+    queryFn: () => getVendorProductCatalogue(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.sellerEnterpriseId,
+    enabled:
+      isPurchasePage &&
+      order.invoiceType === 'GOODS' &&
+      !!order.sellerEnterpriseId,
   });
-  const formattedVendorGoodsData =
-    vendorGoodsData?.map((good) => ({
-      ...good,
-      productType: 'GOODS',
-      productName: good.productName,
-    })) || [];
-  // vendor services fetching
+  // vendor's goods options
+  const vendorGoodsOptions = vendorGoodsData?.map((good) => {
+    const value = { ...good, productType: 'GOODS', productName: good.name };
+    const label = good.name;
+
+    return { value, label };
+  });
+  // vendor's catalogue services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
-      servicesApi.vendorServices.endpointKey,
+      catalogueApis.getVendorServiceCatalogue.endpointKey,
       order.sellerEnterpriseId,
     ],
-    queryFn: () => GetServicesVendor(order.sellerEnterpriseId),
+    queryFn: () => getVendorServiceCatalogue(order.sellerEnterpriseId),
     select: (res) => res.data.data,
-    enabled: !!order.sellerEnterpriseId,
+    enabled:
+      isPurchasePage &&
+      order.invoiceType === 'SERVICE' &&
+      !!order.sellerEnterpriseId,
   });
-  const formattedVendorServicesData =
-    vendorServicesData?.map((service) => ({
+  // vendor's service options
+  const vendorServiceOptions = vendorServicesData?.map((service) => {
+    const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.serviceName,
-    })) || [];
-  const vendorItemData =
-    order.invoiceType === 'GOODS'
-      ? formattedVendorGoodsData
-      : formattedVendorServicesData;
-  // searching vendor's item from list given "vendorItemData" - Inventory
-  const searchVendorsItemData = vendorItemData?.filter((item) => {
-    const itemName = item.productName ?? '';
-    return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
+      productName: service.name,
+    };
+    const label = service.name;
+
+    return { value, label };
   });
+  // itemVendorListingOptions on the basis of item type
+  const itemVendorListingOptions =
+    order.invoiceType === 'GOODS' ? vendorGoodsOptions : vendorServiceOptions;
 
   // fn for capitalization
   function capitalize(str) {
@@ -322,7 +326,7 @@ const EditOrder = ({
     mutationKey: [orderApi.updateOrder.endpointKey],
     mutationFn: (data) => updateOrder(orderId, data),
     onSuccess: () => {
-      toast.success('Order Updated Successfully');
+      toast.success(translations('form.successMsg.order_updated_successfully'));
       onCancel();
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       setIsOrderCreationSuccess((prev) => !prev);
@@ -345,10 +349,14 @@ const EditOrder = ({
 
   return (
     <Wrapper className="flex h-full flex-col py-2">
-      <SubHeader name={name}></SubHeader>
+      <SubHeader name={translations('title.edit')}></SubHeader>
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex w-1/2 flex-col gap-2">
-          <Label>{cta === 'offer' ? 'Client' : 'Vendor'}</Label>
+          <Label>
+            {cta === 'offer'
+              ? translations('form.label.client')
+              : translations('form.label.vendor')}
+          </Label>
           <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {cta === 'offer'
               ? orderDetails?.clientName
@@ -356,86 +364,71 @@ const EditOrder = ({
           </div>
         </div>
         <div className="flex w-1/2 flex-col gap-2">
-          <Label>Type</Label>
+          <Label>{translations('form.label.item_type')}</Label>
           <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
             {capitalize(orderDetails?.invoiceType)}
           </div>
         </div>
       </div>
       <div className="flex flex-col gap-2 rounded-sm border border-neutral-200 p-4">
-        <span className="font-semibold">Add Item</span>
+        <span className="font-semibold">
+          {translations('title.sub_titles.add_item')}
+        </span>
         <div className="flex items-center justify-between gap-4">
           <div className="flex w-full max-w-xs flex-col gap-2">
-            <Label>Item</Label>
+            <Label>{translations('form.label.item')}</Label>
             <div className="flex flex-col gap-1">
               <Select
-                onValueChange={(value) => {
+                name="items"
+                placeholder={translations('form.input.item.placeholder')}
+                options={
+                  cta === 'offer'
+                    ? itemClientListingOptions?.map((item) => ({
+                        ...item,
+                        isDisabled: !!order?.orderItems?.find(
+                          (orderItem) => orderItem.productId === item.value.id,
+                        ),
+                      }))
+                    : itemVendorListingOptions?.map((item) => ({
+                        ...item,
+                        isDisabled: !!order?.orderItems?.find(
+                          (orderItem) => orderItem.productId === item.value.id,
+                        ),
+                      }))
+                }
+                styles={getStylesForSelectComponent()}
+                onChange={(selectedOption) => {
                   const selectedItemData =
                     cta === 'offer'
-                      ? itemData?.find((item) => value === item.id)
-                      : vendorItemData?.find((item) => value === item.id);
+                      ? itemClientListingOptions?.find(
+                          (item) => item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                        )?.value
+                      : itemVendorListingOptions?.find(
+                          (item) => item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                        )?.value;
 
-                  setSelectedItem((prev) => ({
-                    ...prev,
-                    productId: value,
-                    productType: selectedItemData.productType,
-                    productName: selectedItemData.productName,
-                    unitPrice: selectedItemData.rate,
-                    gstPerUnit: isGstApplicable(
-                      isPurchasePage
-                        ? isGstApplicableForPurchaseOrders
-                        : isGstApplicableForSalesOrders,
-                    )
-                      ? selectedItemData.gstPercentage
-                      : 0,
-                  }));
+                  if (selectedItemData) {
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      productId: selectedItemData.id,
+                      productType: selectedItemData.productType,
+                      productName: selectedItemData.productName,
+                      unitPrice: selectedItemData.rate,
+                      gstPerUnit: isGstApplicable(
+                        isPurchasePage
+                          ? isGstApplicableForPurchaseOrders
+                          : isGstApplicableForSalesOrders,
+                      )
+                        ? selectedItemData.gstPercentage
+                        : 0,
+                    }));
+                  }
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {itemData.length > 0 && (
-                    <SearchInput
-                      toSearchTerm={itemToSearch}
-                      setToSearchTerm={setItemToSearch}
-                    />
-                  )}
-                  {cta === 'offer' &&
-                    searchItemData?.map((item) => (
-                      <SelectItem
-                        disabled={
-                          !!order.orderItems.find(
-                            (itemO) => itemO.productId === item.id,
-                          )
-                        }
-                        key={item.id}
-                        value={item.id}
-                      >
-                        {item.productName}
-                      </SelectItem>
-                    ))}
-
-                  {cta !== 'offer' &&
-                    searchVendorsItemData?.map((item) => (
-                      <SelectItem
-                        disabled={
-                          !!order.orderItems.find(
-                            (itemO) => itemO.productId === item.id,
-                          )
-                        }
-                        key={item.id}
-                        value={item.id}
-                      >
-                        {item.productName}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label>Quantity</Label>
+            <Label>{translations('form.label.quantity')}</Label>
             <div className="flex flex-col gap-1">
               <Input
                 type="number"
@@ -460,7 +453,7 @@ const EditOrder = ({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Price</Label>
+            <Label>{translations('form.label.price')}</Label>
             <div className="flex flex-col gap-1">
               <Input
                 value={selectedItem.unitPrice}
@@ -490,7 +483,8 @@ const EditOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex">
-                GST <span className="text-xs"> (%)</span>
+                {translations('form.label.gst')}
+                <span className="text-xs"> (%)</span>
               </Label>
               <div className="flex flex-col gap-1">
                 <Input
@@ -503,7 +497,9 @@ const EditOrder = ({
           )}
 
           <div className="flex flex-col gap-2">
-            <Label className="flex gap-1">Value</Label>
+            <Label className="flex gap-1">
+              {translations('form.label.value')}
+            </Label>
             <div className="flex flex-col gap-1">
               <Input
                 disabled
@@ -520,7 +516,7 @@ const EditOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex gap-1">
-                Tax Amount
+                {translations('form.label.tax_amount')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -539,7 +535,7 @@ const EditOrder = ({
               : isGstApplicableForSalesOrders,
           ) && (
             <div className="flex flex-col gap-2">
-              <Label>Amount</Label>
+              <Label>{translations('form.label.amount')}</Label>
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
@@ -568,7 +564,7 @@ const EditOrder = ({
               }));
             }}
           >
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
@@ -593,14 +589,14 @@ const EditOrder = ({
             }}
             variant="blue_outline"
           >
-            Add
+            {translations('form.ctas.add')}
           </Button>
         </div>
       </div>
       {/* selected item / Edit item table */}
       <div className="scrollBarStyles min-h-42 relative flex flex-col gap-2 overflow-auto rounded-md border px-4">
-        <span className="sticky top-0 z-20 w-full bg-white pt-4 font-bold">
-          Edit Items
+        <span className="sticky top-0 z-20 w-full pt-4 font-bold">
+          {translations('title.sub_titles.edit_item')}
         </span>
         {isLoading ? (
           <Loading />
@@ -611,13 +607,13 @@ const EditOrder = ({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      ITEM
+                      {translations('form.table.header.item')}
                     </TableHead>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      QUANTITY
+                      {translations('form.table.header.quantity')}
                     </TableHead>
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      PRICE
+                      {translations('form.table.header.price')}
                     </TableHead>
 
                     {isGstApplicable(
@@ -626,11 +622,11 @@ const EditOrder = ({
                         : isGstApplicableForSalesOrders,
                     ) && (
                       <TableHead className="shrink-0 text-xs font-bold text-black">
-                        GST (%)
+                        {translations('form.table.header.gst')}
                       </TableHead>
                     )}
                     <TableHead className="shrink-0 text-xs font-bold text-black">
-                      VALUE
+                      {translations('form.table.header.value')}
                     </TableHead>
                     {isGstApplicable(
                       isPurchasePage
@@ -639,10 +635,10 @@ const EditOrder = ({
                     ) && (
                       <>
                         <TableHead className="shrink-0 text-xs font-bold text-black">
-                          TAX AMOUNT
+                          {translations('form.table.header.tax_amount')}
                         </TableHead>
                         <TableHead className="shrink-0 text-xs font-bold text-black">
-                          AMOUNT
+                          {translations('form.table.header.amount')}
                         </TableHead>
                       </>
                     )}
@@ -690,8 +686,8 @@ const EditOrder = ({
                           : isGstApplicableForSalesOrders,
                       ) && (
                         <>
-                          <TableCell>{`₹ ${item.totalAmount.toFixed(2)}`}</TableCell>
                           <TableCell>{`₹ ${item.totalGstAmount}`}</TableCell>
+                          <TableCell>{`₹ ${item.totalAmount.toFixed(2)}`}</TableCell>
                         </>
                       )}
 
@@ -738,13 +734,17 @@ const EditOrder = ({
           ) && (
             <>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Gross Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.gross_amount')} :{' '}
+                </span>
                 <span className="rounded-md border bg-slate-100 p-2">
                   {handleCalculateGrossAmt()?.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Tax Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.tax_amount')} :{' '}
+                </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {totalGstAmt.toFixed(2)}
                 </span>
@@ -752,7 +752,9 @@ const EditOrder = ({
             </>
           )}
           <div className="flex items-center gap-2">
-            <span className="font-bold">Total Amount : </span>
+            <span className="font-bold">
+              {translations('form.footer.total_amount')} :{' '}
+            </span>
             <span className="rounded-md border bg-slate-100 p-2">
               {handleCalculateTotalAmounts()?.toFixed(2)}
             </span>
@@ -761,14 +763,18 @@ const EditOrder = ({
 
         <div className="flex gap-2">
           <Button size="sm" onClick={onCancel} variant={'outline'}>
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
             onClick={handleSubmit}
             disabled={updateOrderMutation.isPending}
           >
-            {updateOrderMutation.isPending ? <Loading /> : 'Edit'}
+            {updateOrderMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('form.ctas.edit')
+            )}
           </Button>
         </div>
       </div>

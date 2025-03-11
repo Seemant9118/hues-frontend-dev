@@ -15,7 +15,8 @@ import { LocalStorageService } from '@/lib/utils';
 import { SearchEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { sendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Layers2 } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ErrorBox from '../ui/ErrorBox';
@@ -30,13 +31,15 @@ import {
   SelectValue,
 } from '../ui/select';
 
-const AddModal = ({ type, cta, btnName, mutationFunc }) => {
+const AddModal = ({ cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
+  const translations = useTranslations('components.addEditModal');
+
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const panNumber = LocalStorageService.get('panClientVendor');
   const gstNumber = LocalStorageService.get('gstClientVendor');
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(isOpen ?? false);
   const [isAdding, setIsAdding] = useState(false);
   const [invitedIds, setInvitedIds] = useState([]);
   const [enterpriseData, setEnterPriseData] = useState({
@@ -99,11 +102,14 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
       if (data.data.message === 'Invitation already exists') {
         toast.info(data.data.message);
       } else {
-        toast.success('Invitation sent successfully');
+        toast.success(translations('common.form.toasts.success.invitation'));
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message);
+      toast.error(
+        error.response.data.message ||
+          translations('common.form.toasts.error.common'),
+      );
     },
   });
 
@@ -113,8 +119,8 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
     onSuccess: () => {
       toast.success(
         cta === 'client'
-          ? 'Client Added Successfully'
-          : 'Vendor Added Successfully',
+          ? translations('client.form.toasts.success.entityAdded')
+          : translations('vendor.form.toasts.success.entityAdded'),
       );
       setOpen((prev) => !prev);
       setEnterPriseData({
@@ -140,7 +146,10 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message ||
+          translations('common.form.toasts.error.common'),
+      );
     },
   });
 
@@ -151,7 +160,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
     const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 
     if (enterpriseDataItem.name === '') {
-      errorObj.name = '*Required Name';
+      errorObj.name = translations('common.form.errorMsg.addNewEntity.name');
     }
 
     // if (enterpriseDataItem.address === '') {
@@ -159,9 +168,13 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
     // }
 
     if (enterpriseDataItem.mobileNumber === '') {
-      errorObj.mobileNumber = '*Required Phone';
+      errorObj.mobileNumber = translations(
+        'common.form.errorMsg.addNewEntity.phone.required',
+      );
     } else if (enterpriseDataItem.mobileNumber.length !== 10) {
-      errorObj.mobileNumber = '*Please enter a valid mobile number';
+      errorObj.mobileNumber = translations(
+        'common.form.errorMsg.addNewEntity.phone.valid',
+      );
     }
 
     // if (enterpriseDataItem.email === '') {
@@ -171,13 +184,17 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
       enterpriseDataItem?.email.length > 0 &&
       !emailPattern.test(enterpriseDataItem.email)
     ) {
-      errorObj.email = '*Please provide valid email';
+      errorObj.email = translations('common.form.errorMsg.addNewEntity.email');
     }
 
     if (enterpriseDataItem.panNumber === '') {
-      errorObj.panNumber = '*Required PAN';
+      errorObj.panNumber = translations(
+        'common.form.errorMsg.addNewEntity.pan.required',
+      );
     } else if (!panPattern.test(enterpriseDataItem.panNumber)) {
-      errorObj.panNumber = '* Please provide valid PAN Number';
+      errorObj.panNumber = translations(
+        'common.form.errorMsg.addNewEntity.pan.valid',
+      );
     }
 
     // if (enterpriseDataItem.gstNumber === '') {
@@ -226,6 +243,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
       open={open}
       onOpenChange={() => {
         setOpen((prev) => !prev);
+        setIsOpen && setIsOpen((prev) => !prev);
         setSearchInput({
           idType: 'pan',
           idNumber: '',
@@ -245,14 +263,20 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
         setIsAdding(false);
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant={'blue_outline'} size="sm" className="w-full">
-          <Layers2 size={14} />
-          {btnName}
-        </Button>
-      </DialogTrigger>
+      {isOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button size="sm">
+            <PlusCircle size={14} />
+            {btnName}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
-        <DialogTitle>{cta.toUpperCase()}</DialogTitle>
+        <DialogTitle>
+          {cta === 'client'
+            ? translations('client.title')
+            : translations('vendor.title')}
+        </DialogTitle>
 
         {/* search inputs */}
         {!isAdding && (
@@ -260,7 +284,11 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
             <div className="flex items-center justify-between gap-4">
               <div className="flex w-1/2 flex-col gap-0.5">
                 <div>
-                  <Label className="flex-shrink-0">Identifier Type</Label>{' '}
+                  <Label className="flex-shrink-0">
+                    {translations(
+                      'common.form.label.identifiers.identifier_type',
+                    )}
+                  </Label>{' '}
                   <span className="text-red-600">*</span>
                 </div>
                 <Select
@@ -274,8 +302,12 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                     <SelectValue placeholder="PAN" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="gst">GST</SelectItem>
-                    <SelectItem value="pan">PAN</SelectItem>
+                    <SelectItem value="gst">
+                      {translations('common.form.input.select.gst')}
+                    </SelectItem>
+                    <SelectItem value="pan">
+                      {translations('common.form.input.select.pan')}
+                    </SelectItem>
                     {/* <SelectItem value="udyam">UDYAM</SelectItem> */}
                   </SelectContent>
                 </Select>
@@ -283,7 +315,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
               <div>
                 <InputWithLabel
                   className="max-w-sm rounded-md"
-                  name={`Identifier No. (${searchInput?.idType?.toUpperCase()})`}
+                  name={`${translations(
+                    'common.form.label.identifiers.identifier_number',
+                  )} (${searchInput?.idType === 'pan' ? translations('common.form.input.select.pan') : translations('common.form.input.select.gst')})`}
                   type="tel"
                   id="idNumber"
                   required={true}
@@ -326,11 +360,14 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                       className="font-bold text-green-800 underline hover:cursor-not-allowed"
                       disabled
                     >
-                      Invite sent
+                      {translations('common.form.ctas.identifiers.sent')}
                     </Button>
                   ) : (
-                    <Button onClick={() => handleSendInvite(sdata.id)}>
-                      Invite
+                    <Button
+                      onClick={() => handleSendInvite(sdata.id)}
+                      size="sm"
+                    >
+                      {translations('common.form.ctas.identifiers.invite')}
                     </Button>
                   )}
                 </div>
@@ -339,7 +376,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
             {searchData?.length === 0 && searchInput?.idNumber?.length >= 3 && (
               <div className="flex flex-col gap-1 px-2">
                 <span className="text-sm font-semibold">
-                  Enterprise not available.
+                  {translations('common.form.infoMsg.enterprise_not_available')}
                 </span>
 
                 {(() => {
@@ -356,11 +393,17 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                           }}
                           className="cursor-pointer text-sm font-semibold text-primary underline"
                         >
-                          Continue to add new {cta}
+                          {cta === 'client'
+                            ? translations(
+                                'client.form.ctas.identifiers.continue',
+                              )
+                            : translations(
+                                'vendor.form.ctas.identifiers.continue',
+                              )}
                         </span>
                       ) : (
                         <span className="text-sm font-semibold text-red-600">
-                          Please complete the PAN to proceed
+                          {translations('common.form.errorMsg.identifiers.pan')}
                         </span>
                       );
 
@@ -376,11 +419,17 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                           }}
                           className="cursor-pointer text-sm font-semibold text-primary underline"
                         >
-                          Continue to add new {cta}
+                          {cta === 'client'
+                            ? translations(
+                                'client.form.ctas.identifiers.continue',
+                              )
+                            : translations(
+                                'vendor.form.ctas.identifiers.continue',
+                              )}
                         </span>
                       ) : (
                         <span className="text-sm font-semibold text-red-600">
-                          Please complete the GST number to proceed
+                          {translations('common.form.errorMsg.identifiers.gst')}
                         </span>
                       );
 
@@ -393,7 +442,7 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
 
             {searchInput?.idNumber?.length < 3 && (
               <span className="rounded-sm border p-2 text-sm font-semibold">
-                Type an identifier to search
+                {translations('common.form.infoMsg.toSearch')}
               </span>
             )}
           </div>
@@ -405,7 +454,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label>Name</Label>
+                  <Label>
+                    {translations('common.form.label.addNewEntity.name')}
+                  </Label>
                   <span className="text-red-600">*</span>
                 </div>
 
@@ -419,9 +470,6 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                       ...prev,
                       name: e.target.value,
                     }));
-                    e.target.value === ''
-                      ? setErrorMsg('*Please fill required details - Name')
-                      : setErrorMsg('');
                   }}
                   value={enterpriseData.name}
                 />
@@ -429,7 +477,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label>GST IN</Label>
+                  <Label>
+                    {translations('common.form.label.addNewEntity.gst')}
+                  </Label>
                   {/* <span className="text-red-600">*</span> */}
                 </div>
                 <Input
@@ -449,7 +499,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label>Email</Label>
+                  <Label>
+                    {translations('common.form.label.addNewEntity.email')}
+                  </Label>
                   {/* <span className="text-red-600">*</span> */}
                 </div>
                 <Input
@@ -470,7 +522,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-1">
-                    <Label>Phone</Label>
+                    <Label>
+                      {translations('common.form.label.addNewEntity.phone')}
+                    </Label>
                     <span className="text-red-600">*</span>
                   </div>
                   <Input
@@ -492,7 +546,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-1">
-                    <Label>PAN</Label>
+                    <Label>
+                      {translations('common.form.label.addNewEntity.pan')}
+                    </Label>
                     <span className="text-red-600">*</span>
                   </div>
                   <Input
@@ -512,7 +568,9 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label>Address</Label>
+                  <Label>
+                    {translations('common.form.label.addNewEntity.address')}
+                  </Label>
                   {/* <span className="text-red-600">*</span> */}
                 </div>
                 <Input
@@ -541,11 +599,11 @@ const AddModal = ({ type, cta, btnName, mutationFunc }) => {
                 }}
                 variant={'outline'}
               >
-                Cancel
+                {translations('common.form.ctas.addNewEntity.cancel')}
               </Button>
 
               <Button type="submit" size="sm">
-                {type}
+                {translations('common.form.ctas.addNewEntity.add')}
               </Button>
             </div>
           </form>

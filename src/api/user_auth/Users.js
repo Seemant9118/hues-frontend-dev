@@ -110,4 +110,62 @@ export const userAuth = {
     endpoint: `/iam/user/getuseraccounts`,
     endpointKey: 'get_user_accounts',
   },
+  // 22. getPanDetails
+  getPanDetails: {
+    endpoint: `/iam/user/pandetails`,
+    endpointKey: 'get_pan_details',
+  },
+  // 23. sent aadhar verification otp
+  sendAadharVerificationOTP: {
+    endpoint: `/iam/kyc/send-aadhaar-otp`,
+    endpointKey: 'aadhar_verification_otp',
+  },
+  // 24 verify aadhar otp
+  verifyAadharOTP: {
+    endpoint: `/iam/kyc/verify-aadhaar-otp`,
+    endpointKey: 'verify_aadhar_otp',
+  },
+
+  // [NEW]
+  // 25. getEnterpriseDetailsForPanVerify
+  getEnterpriseDetailsForPanVerify: {
+    endpoint: `/enterprise/getenterprisedetails`,
+    endpointKey: 'get_enterprise_details_for_pan',
+  },
+
+  // 26. gstVerify
+  gstVerify: {
+    endpoint: `/enterprise/verifygst`,
+    endpointKey: 'verify_gst',
+  },
+
+  // 27. cin verify
+  cinVerify: {
+    endpoint: `/enterprise/verify-cin-or-llpin`,
+    endpointKey: 'verify_cin',
+  },
+
+  // 28. udyam verify
+  udyamVerify: {
+    endpoint: `/enterprise/verifyudyam`,
+    endpointKey: 'verify_udyam',
+  },
+
+  // 29. getEnterpriseDetailsFromEnterpriseId
+  getEnterpriseDetailsFromEnterpriseId: {
+    endpoint: `/enterprise/getenterprisedetails`,
+    endpointKey: 'get_enterprise_details_from_Id',
+  },
+
+  // 30. getOnboardingStatus
+  getOnboardingStatus: {
+    endpoint: `/enterprise/getonboardingstatus`,
+    endpointKey: 'get_onboarding_status',
+  },
+
+  // 31. addAnotherEnterprise
+  addAnotherEnterprise: {
+    endpoint: `/enterprise/addanotherenterprise`,
+    endpointKey: 'get_add_another_enterprises',
+  },
 };

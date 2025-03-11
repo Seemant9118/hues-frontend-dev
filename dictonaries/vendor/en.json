@@ -1,0 +1,56 @@
+{
+    "vendor": {
+        "title": "Vendors",
+        "emptyStateComponent": {
+            "heading": "Simplify procurement with our Vendors feature, offering immediate access to detailed vendor catalogs for efficient transactions.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Register vendors with essential details easily."
+                },
+                "subItem2": {
+                    "value": "Automatically access vendor catalogs within your purchasing workflow"
+                },
+                "subItem3": {
+                    "value": "Leverage vendor visibility for informed bids and streamlined purchases"
+                },
+                "subItem4": {
+                    "value": "Foster robust vendor relationships with tailored product engagement"
+                }
+            }
+        },
+        "ctas": {
+            "searchPlaceHolder": "Search ...",
+            "upload": "Upload",
+            "export": "Export",
+            "add": "Add",
+            "tooltips": {
+                "upload": "Upload vendors data in bulk",
+                "export": "Export vendors data",
+                "add": "Add a new vendor"
+            }
+        },
+        "table": {
+            "header": {
+                "name": "NAME",
+                "phone": "PHONE",
+                "email": "EMAIL",
+                "pan": "PAN",
+                "invitation": "INVITATION"
+            },
+            "column": {
+                "actions": {
+                    "edit": "Edit",
+                    "resend": "Resend Invite",
+                    "copyInviteLink": "Copy Invite Link",
+                    "sendReminder": "Send Reminder"
+                },
+                "status": {
+                    "pending": "Pending",
+                    "acceptedByVendor": "Accepted by vendor",
+                    "acceptedByYou": "Accepted by you",
+                    "rejected": "Rejected"
+                }
+            }
+        }
+    }
+}

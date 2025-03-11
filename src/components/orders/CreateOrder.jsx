@@ -3,17 +3,15 @@ import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { userAuth } from '@/api/user_auth/Users';
+import {
+  getStylesForSelectComponent,
+  isGstApplicable,
+} from '@/appUtils/helperFunctions';
 import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { LocalStorageService } from '@/lib/utils';
 import {
   getProductCatalogue,
@@ -21,24 +19,26 @@ import {
   getVendorProductCatalogue,
   getVendorServiceCatalogue,
 } from '@/services/Catalogue_Services/CatalogueServices';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import {
+  createClient,
+  getClients,
+} from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
-import { CreateEnterpriseUser } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import {
+  createVendor,
+  getVendors,
+} from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   CreateOrderService,
   createInvoice,
 } from '@/services/Orders_Services/Orders_Services';
+import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { userAuth } from '@/api/user_auth/Users';
-import {
-  getStylesForCreatableSelectComponent,
-  isGstApplicable,
-} from '@/appUtils/helperFunctions';
-import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
+import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -46,7 +46,6 @@ import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
-import SearchInput from '../ui/SearchInput';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
@@ -56,42 +55,23 @@ const CreateOrder = ({
   isCreatingSales,
   isCreatingPurchase,
   setSalesListing,
+  setPurchaseListing,
   onCancel,
   name,
   cta,
-  type,
   isOrder,
 }) => {
-  const pathName = usePathname();
-  const isPurchasePage = pathName.includes('purchases');
+  const translations = useTranslations('components.create_edit_order');
 
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
   const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
-  const [customerToSearch, setCustomerToSearch] = useState('');
-  const [itemToSearch, setItemToSearch] = useState('');
-
-  // fetch profileDetails API
-  const { data: profileDetails } = useQuery({
-    queryKey: [userAuth.getProfileDetails.endpointKey],
-    queryFn: () => getProfileDetails(userId),
-    select: (data) => data.data.data,
-    enabled:
-      (!!isCreatingInvoice || !!isCreatingSales) && isPurchasePage === false,
-  });
-
-  // for sales-order gst/non-gst check
-  const isGstApplicableForSalesOrders =
-    isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
-
-  // for purchase-orders gst/non-gst check
-  const [
-    isGstApplicableForPurchaseOrders,
-    setIsGstApplicableForPurchaseOrders,
-  ] = useState('');
-
   const [selectedValue, setSelectedValue] = useState(''); // Manage selected value
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
@@ -127,16 +107,46 @@ const CreateOrder = ({
         },
   );
 
-  // customer api fetching
+  // [GST/NON-GST Checking]
+  // fetch profileDetails API
+  const { data: profileDetails } = useQuery({
+    queryKey: [userAuth.getProfileDetails.endpointKey],
+    queryFn: () => getProfileDetails(userId),
+    select: (data) => data.data.data,
+    enabled:
+      (!!isCreatingInvoice || !!isCreatingSales) && isPurchasePage === false,
+  });
+  // for sales-order gst/non-gst check
+  const isGstApplicableForSalesOrders =
+    isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
+  // for purchase-orders gst/non-gst check
+  const [
+    isGstApplicableForPurchaseOrders,
+    setIsGstApplicableForPurchaseOrders,
+  ] = useState('');
+
+  // [clientType options]
+  const clientTypeOptions = [
+    {
+      value: 'B2B',
+      label: translations('form.input.clientType.b2b'),
+    },
+    {
+      value: 'B2C',
+      label: translations('form.input.clientType.b2c'),
+    },
+  ];
+
+  // [B2C customers]
+  // customer[B2C] api fetching
   const { data: customers } = useQuery({
     queryKey: [customerApis.getCustomers.endpointKey, enterpriseId],
     queryFn: () => getCustomers(enterpriseId),
     select: (res) => res.data.data,
     enabled: order.clientType === 'B2C',
   });
-
+  // customer options
   const [options, setOptions] = useState([]);
-
   // Transform customers data into options format
   useEffect(() => {
     if (customers) {
@@ -147,7 +157,6 @@ const CreateOrder = ({
       setOptions(transformedOptions);
     }
   }, [customers]);
-
   // Handle selection of an existing option
   const handleChange = (selectedOption) => {
     setOrder((prevOrder) => ({
@@ -155,7 +164,6 @@ const CreateOrder = ({
       buyerId: selectedOption ? selectedOption.value : null,
     }));
   };
-
   // Handle creation of a new option
   const handleCreate = (inputValue) => {
     const newOption = { value: inputValue, label: inputValue };
@@ -170,57 +178,105 @@ const CreateOrder = ({
     }));
   };
 
-  const createSalesColumns = useCreateSalesColumns(
-    isOrder,
-    setOrder,
-    setSelectedItem,
-    isPurchasePage,
-    isGstApplicableForSalesOrders,
-    isGstApplicableForPurchaseOrders,
-  );
-
-  // client/vendor fetching
+  // [clients]
+  // clients[B2B] fetching
   const { data: customerData } = useQuery({
-    queryKey: [
-      clientEnterprise.getClients.endpointKey,
-      vendorEnterprise.getVendors.endpointKey,
-    ],
-    queryFn: () => {
-      if (cta === 'offer') {
-        return getClients(enterpriseId, 'ORDER');
-      } else {
-        return getVendors(enterpriseId, 'ORDER');
-      }
-    },
+    queryKey: [clientEnterprise.getClients.endpointKey],
+    queryFn: () => getClients(enterpriseId, 'ORDER'),
     select: (res) => res.data.data,
-    enabled:
-      (isCreatingSales && order.clientType === 'B2B') || isCreatingPurchase,
+    enabled: cta === 'offer' && isCreatingSales && order.clientType === 'B2B',
   });
+  // client options
+  const clientOptions = [
+    ...(customerData?.map((customer) => {
+      const value = customer?.client?.id || customer?.id;
+      const label =
+        customer?.client?.name || customer.invitation?.userDetails?.name;
+      const isAccepted =
+        customer?.invitation === null || customer?.invitation === undefined
+          ? 'ACCEPTED'
+          : customer?.invitation?.status;
 
-  // searching client/vendor from list given "customerData"
-  const searchCustomerData = customerData?.filter((customer) => {
-    const clientName = customer.client?.name ?? '';
-    const userDetailsName = customer.invitation?.userDetails?.name ?? '';
-    return (
-      clientName.toLowerCase().includes(customerToSearch.toLowerCase()) ||
-      userDetailsName.toLowerCase().includes(customerToSearch.toLowerCase())
-    );
+      return { value, label, isAccepted };
+    }) ?? []),
+    {
+      value: 'add-new-client', // Special value for "Add New Client"
+      label: (
+        <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
+          <Plus size={14} /> {translations('form.input.client.add_new_client')}
+        </span>
+      ),
+      isAccepted: 'ACCEPTED',
+    },
+  ];
+
+  // [vendors]
+  // vendors fetching
+  const { data: vendorData } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryFn: () => getVendors(enterpriseId, 'ORDER'),
+    select: (res) => res.data.data,
+    enabled: cta === 'bid' && isCreatingPurchase && order.clientType === 'B2B',
   });
+  // vendors options
+  const vendorOptions = [
+    ...(
+      vendorData?.filter(
+        (vendor) => vendor?.vendor?.name && vendor?.vendor?.id !== null, // Filter valid vendors
+      ) ?? []
+    ) // Fallback to empty array if vendorData is undefined or null
+      .map((vendor) => {
+        const value = vendor?.vendor?.id || vendor?.id;
+        const label =
+          vendor?.vendor?.name || vendor.invitation?.userDetails?.name;
+        const isAccepted =
+          vendor?.invitation === null || vendor?.invitation === undefined
+            ? 'ACCEPTED'
+            : vendor?.invitation?.status;
+        const gstNumber = vendor?.vendor?.gstNumber;
 
-  // client catalogue goods fetching
+        return { value, label, isAccepted, gstNumber };
+      }),
+    // Special option for "Add New Vendor"
+    {
+      value: 'add-new-vendor', // Special value for "Add New Vendor"
+      label: (
+        <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
+          <Plus size={14} /> {translations('form.input.vendor.add_new_vendor')}
+        </span>
+      ),
+      isAccepted: 'ACCEPTED',
+      gstNumber: null, // Add any extra properties if needed
+    },
+  ];
+
+  // [item type]
+  const itemTypeOptions = [
+    {
+      value: 'GOODS',
+      label: translations('form.input.item_type.goods'),
+    },
+    {
+      value: 'SERVICE',
+      label: translations('form.input.item_type.services'),
+    },
+  ];
+
+  // [Client's Goods and Services]
+  // client's catalogue's goods fetching
   const { data: goodsData } = useQuery({
     queryKey: [catalogueApis.getProductCatalogue.endpointKey, enterpriseId],
     queryFn: () => getProductCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'GOODS',
   });
-  const formattedGoodsData =
-    goodsData?.map((good) => ({
-      ...good,
-      productType: 'GOODS',
-      productName: good.name,
-    })) || [];
+  // client's goods options
+  const clientsGoodsOptions = goodsData?.map((good) => {
+    const value = { ...good, productType: 'GOODS', productName: good.name };
+    const label = good.name;
 
+    return { value, label };
+  });
   // client catalogue services fetching
   const { data: servicesData } = useQuery({
     queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
@@ -228,23 +284,24 @@ const CreateOrder = ({
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'SERVICE',
   });
-  const formattedServicesData =
-    servicesData?.map((service) => ({
+  // client's services options
+  const clientsServicesOptions = servicesData?.map((service) => {
+    const value = {
       ...service,
       productType: 'SERVICE',
       productName: service.name,
-    })) || [];
+    };
+    const label = service.name;
 
-  // selected data on the basis of itemType
-  const itemData =
-    order.invoiceType === 'GOODS' ? formattedGoodsData : formattedServicesData;
-
-  // searching item from list given "itemData" - Inventory
-  const searchItemData = itemData?.filter((item) => {
-    const itemName = item.productName ?? '';
-    return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
+    return { value, label };
   });
+  // itemClientListingOptions on the basis of item type
+  const itemClientListingOptions =
+    order.invoiceType === 'GOODS'
+      ? clientsGoodsOptions
+      : clientsServicesOptions;
 
+  // [Vendor's Goods and Services]
   // vendor catalogue goods fetching
   const { data: vendorGoodsData } = useQuery({
     queryKey: [
@@ -258,14 +315,14 @@ const CreateOrder = ({
       order.invoiceType === 'GOODS' &&
       !!order.sellerEnterpriseId,
   });
-  const formattedVendorGoodsData =
-    vendorGoodsData?.map((good) => ({
-      ...good,
-      productType: 'GOODS',
-      productName: good.name,
-    })) || [];
+  // vendor's goods options
+  const vendorGoodsOptions = vendorGoodsData?.map((good) => {
+    const value = { ...good, productType: 'GOODS', productName: good.name };
+    const label = good.name;
 
-  // vendor catalogue services fetching
+    return { value, label };
+  });
+  // vendor's catalogue services fetching
   const { data: vendorServicesData } = useQuery({
     queryKey: [
       catalogueApis.getVendorServiceCatalogue.endpointKey,
@@ -278,23 +335,20 @@ const CreateOrder = ({
       order.invoiceType === 'SERVICE' &&
       !!order.sellerEnterpriseId,
   });
-  const formattedVendorServicesData =
-    vendorServicesData?.map((service) => ({
+  // vendor's service options
+  const vendorServiceOptions = vendorServicesData?.map((service) => {
+    const value = {
       ...service,
       productType: 'SERVICE',
       productName: service.name,
-    })) || [];
+    };
+    const label = service.name;
 
-  const vendorItemData =
-    order.invoiceType === 'GOODS'
-      ? formattedVendorGoodsData
-      : formattedVendorServicesData;
-
-  // searching vendor's item from list given "vendorItemData" - Inventory
-  const searchVendorsItemData = vendorItemData?.filter((item) => {
-    const itemName = item.productName ?? '';
-    return itemName.toLowerCase().includes(itemToSearch.toLowerCase());
+    return { value, label };
   });
+  // itemVendorListingOptions on the basis of item type
+  const itemVendorListingOptions =
+    order.invoiceType === 'GOODS' ? vendorGoodsOptions : vendorServiceOptions;
 
   // mutation - create order
   const orderMutation = useMutation({
@@ -302,11 +356,15 @@ const CreateOrder = ({
     onSuccess: (res) => {
       toast.success(
         cta === 'offer'
-          ? 'Sales Order Created Successfully'
-          : 'Purchase Order Created Successfully',
+          ? translations('form.successMsg.offer_created_successfully')
+          : translations('form.successMsg.bid_created_successfully'),
       );
       onCancel();
-      setSalesListing((prev) => [res.data.data, ...prev]);
+      if (isPurchasePage) {
+        setPurchaseListing((prev) => [res.data.data, ...prev]);
+      } else {
+        setSalesListing((prev) => [res.data.data, ...prev]);
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -318,7 +376,7 @@ const CreateOrder = ({
     mutationFn: createInvoice,
     onSuccess: () => {
       toast.success(
-        'Invoice created! Please refresh to view the latest Invoice',
+        translations('form.successMsg.invoice_created_successfully'),
       );
       onCancel();
       // setInvoiceListing((prev) => [res.data.data, ...prev]);
@@ -334,44 +392,56 @@ const CreateOrder = ({
 
     if (cta === 'offer') {
       if (order.clientType === 'B2B' && order?.buyerId == null) {
-        errorObj.buyerId = '*Please select a client';
+        errorObj.buyerId = translations('form.errorMsg.client');
       }
       if (order.clientType === 'B2C' && order?.buyerId == null) {
-        errorObj.buyerId = '*Please provide a phone number of customer';
+        errorObj.buyerId = translations('form.errorMsg.customer');
+      }
+      if (order.invoiceType === '') {
+        errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
       if (order?.orderItems?.length === 0) {
-        errorObj.orderItem = '*Please add atleast one item to create order';
+        errorObj.orderItem = translations('form.errorMsg.item');
       }
       if (selectedItem.quantity === null) {
-        errorObj.quantity = '*Required Quantity';
+        errorObj.quantity = translations('form.errorMsg.quantity');
       }
       if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = '*Required Price';
+        errorObj.unitPrice = translations('form.errorMsg.price');
       }
       if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = '*Required GST (%)';
+        errorObj.gstPerUnit = translations('form.errorMsg.gst');
+      }
+      if (selectedItem.totalGstAmount === null) {
+        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
       }
       if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = '*Required Amount';
+        errorObj.totalAmount = translations('form.errorMsg.amount');
       }
     } else {
       if (order?.sellerEnterpriseId == null) {
-        errorObj.sellerEnterpriseId = '*Please select a vendor';
+        errorObj.sellerEnterpriseId = translations('form.errorMsg.vendor');
+      }
+      if (order.invoiceType === '') {
+        errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
       if (order?.orderItem?.length === 0) {
-        errorObj.orderItem = '*Please add atleast one item to create order';
+        errorObj.orderItem = translations('form.errorMsg.item');
       }
       if (selectedItem.quantity === null) {
-        errorObj.quantity = '*Required Quantity';
+        errorObj.quantity = translations('form.errorMsg.quantity');
       }
       if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = '*Required Price';
+        errorObj.unitPrice = translations('form.errorMsg.price');
       }
       if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = '*Required GST (%)';
+        errorObj.gstPerUnit = translations('form.errorMsg.gst');
+      }
+      if (selectedItem.totalGstAmount === null) {
+        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
       }
       if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = '*Required Amount';
+        errorObj.totalAmount = translations('form.errorMsg.amount');
       }
     }
 
@@ -444,6 +514,16 @@ const CreateOrder = ({
     }
   };
 
+  // columns
+  const createSalesColumns = useCreateSalesColumns(
+    isOrder,
+    setOrder,
+    setSelectedItem,
+    isPurchasePage,
+    isGstApplicableForSalesOrders,
+    isGstApplicableForPurchaseOrders,
+  );
+
   if (!enterpriseId) {
     return (
       <div className="flex flex-col justify-center">
@@ -457,7 +537,13 @@ const CreateOrder = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <SubHeader name={name}></SubHeader>
+      <SubHeader
+        name={
+          cta === 'offer'
+            ? translations('title.offer')
+            : translations('title.bid')
+        }
+      ></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
@@ -469,28 +555,29 @@ const CreateOrder = ({
       )}
 
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        {/* client type only showed in sales not purchase */}
-        {cta === 'offer' && (
+        {/* client type only showed in sales invoices not in sales/purchase offer */}
+        {cta === 'offer' && isOrder === 'invoice' && (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
-              {'Client Type'}
+              {translations('form.label.type')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex w-full flex-col gap-1">
               <Select
-                defaultValue="B2B"
-                onValueChange={(value) => {
-                  setOrder((prev) => ({ ...prev, clientType: value }));
+                name="clientType"
+                options={clientTypeOptions}
+                styles={getStylesForSelectComponent()}
+                className="max-w-xs text-sm"
+                classNamePrefix="select"
+                defaultValue={clientTypeOptions[0]} // Provide the full object as the default value
+                onChange={(selectedOption) => {
+                  if (!selectedOption) return; // Guard clause for no selection
+                  setOrder((prev) => ({
+                    ...prev,
+                    clientType: selectedOption.value,
+                  })); // Update state with the selected value
                 }}
-              >
-                <SelectTrigger className="max-w-xs gap-5">
-                  <SelectValue placeholder="Select Client Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="B2B">B2B</SelectItem>
-                  <SelectItem value="B2C">B2C</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </div>
           </div>
         )}
@@ -499,7 +586,7 @@ const CreateOrder = ({
         {cta === 'offer' && order.clientType === 'B2C' && (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
-              {'Customer'}
+              {translations('form.label.customer')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex w-full flex-col gap-1">
@@ -510,10 +597,10 @@ const CreateOrder = ({
                 }
                 onChange={handleChange}
                 onCreateOption={handleCreate}
-                styles={getStylesForCreatableSelectComponent()}
-                className="text-sm"
+                styles={getStylesForSelectComponent()}
+                className="max-w-xs text-sm"
                 isClearable
-                placeholder="Customer Number"
+                placeholder="+91 1234567890"
                 options={options}
               />
 
@@ -526,81 +613,67 @@ const CreateOrder = ({
           order.clientType === 'B2B' && (
             <div className="flex w-1/2 flex-col gap-2">
               <Label className="flex gap-1">
-                {'Client'}
+                {translations('form.label.client')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex w-full flex-col gap-1">
                 <Select
-                  value={selectedValue} // Bind state to value
-                  onValueChange={(value) => {
-                    const selectedItem = JSON.parse(value); // Parse the JSON string
-                    const { id, isAcceptedCustomer } = selectedItem; // Destructure the parsed object
+                  name="clients"
+                  placeholder={translations('form.input.client.placeholder')}
+                  options={clientOptions}
+                  styles={getStylesForSelectComponent()}
+                  className="max-w-xs text-sm"
+                  classNamePrefix="select"
+                  value={
+                    clientOptions?.find(
+                      (option) => option.value === selectedValue?.value,
+                    ) || null
+                  } // Match selected value
+                  onChange={(selectedOption) => {
+                    if (!selectedOption) return; // Guard clause for no selection
 
-                    if (
-                      (id !== undefined &&
-                        isAcceptedCustomer === 'ACCEPTED' &&
-                        name === 'Offer') ||
-                      name === 'Invoice'
-                    ) {
-                      setRedirectPopUpOnFail(false);
-                      setOrder((prev) => ({
-                        ...prev,
-                        buyerId: id,
-                      }));
-                    } else if (name !== 'Invoice') {
-                      setOrder((prev) => ({
-                        ...prev,
-                        buyerId: id,
-                      }));
-                      setRedirectPopUpOnFail(true);
+                    const { value: id, isAccepted } = selectedOption; // Extract id and isAccepted from the selected option
+
+                    // Check if "Add New Client" is selected
+                    if (selectedOption.value === 'add-new-client') {
+                      setIsModalOpen(true); // Open the modal when "Add New Client" is selected
+                    } else {
+                      // Handle other client selections
+                      if (
+                        (id !== undefined &&
+                          isAccepted === 'ACCEPTED' &&
+                          name === 'Offer') ||
+                        name === 'Invoice'
+                      ) {
+                        setRedirectPopUpOnFail(false);
+                        setOrder((prev) => ({
+                          ...prev,
+                          buyerId: id,
+                        }));
+                      } else if (name !== 'Invoice') {
+                        setOrder((prev) => ({
+                          ...prev,
+                          buyerId: id,
+                        }));
+                        setRedirectPopUpOnFail(true);
+                      }
+
+                      setSelectedValue(selectedOption); // Update the state with the selected option
                     }
-                    setSelectedValue(value); // Update state with the selected value
                   }}
-                >
-                  <SelectTrigger className="max-w-xs">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* search bar for searching clients/vendor */}
-                    {customerData?.length > 0 && (
-                      <SearchInput
-                        toSearchTerm={customerToSearch}
-                        setToSearchTerm={setCustomerToSearch}
-                      />
-                    )}
-                    {/* if expected client is not in the list add a new client */}
-                    {type === 'sales' && searchCustomerData?.length === 0 && (
-                      <div className="flex flex-col items-center gap-1 py-2 text-xs">
-                        <span>Client Not Found</span>
-                      </div>
-                    )}
-                    <>
-                      {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                      {searchCustomerData?.map((customer) => (
-                        <SelectItem
-                          key={customer.id}
-                          value={JSON.stringify({
-                            id: customer?.client?.id ?? customer?.id,
-                            isAcceptedCustomer:
-                              customer?.invitation === null ||
-                              customer?.invitation === undefined
-                                ? 'ACCEPTED'
-                                : customer?.invitation?.status,
-                          })}
-                        >
-                          {customer?.client?.name ||
-                            customer.invitation?.userDetails?.name}
-                        </SelectItem>
-                      ))}
-                      <AddModal
-                        type={'Add Client'}
-                        cta="client"
-                        btnName="Add a new Client"
-                        mutationFunc={CreateEnterpriseUser}
-                      />
-                    </>
-                  </SelectContent>
-                </Select>
+                />
+
+                {/* Conditionally render the AddModal when "Add New Client" is selected */}
+                {isModalOpen && (
+                  <AddModal
+                    type="Add"
+                    cta="client"
+                    btnName="Add a new Client"
+                    mutationFunc={createClient}
+                    isOpen={isModalOpen}
+                    setIsOpen={setIsModalOpen}
+                  />
+                )}
                 {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
               </div>
             </div>
@@ -608,71 +681,54 @@ const CreateOrder = ({
         ) : (
           <div className="flex w-1/2 flex-col gap-2">
             <Label className="flex gap-1">
-              {'Vendor'}
+              {translations('form.label.vendor')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex w-full flex-col gap-1">
               <Select
-                defaultValue=""
-                onValueChange={(value) => {
-                  const selectedItem = JSON.parse(value); // Parse the JSON string
-                  const { id, gstNumber } = selectedItem; // Destructure the parsed object
-                  setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
+                name="vendors"
+                placeholder={translations('form.input.vendor.placeholder')}
+                options={vendorOptions}
+                styles={getStylesForSelectComponent()}
+                className="max-w-xs text-sm"
+                classNamePrefix="select"
+                value={
+                  vendorOptions?.find(
+                    (option) => option.value === selectedValue?.value,
+                  ) || null
+                } // Match selected value
+                onChange={(selectedOption) => {
+                  if (!selectedOption) return; // Guard clause for no selection
 
-                  setOrder((prev) => ({
-                    ...prev,
-                    sellerEnterpriseId: id,
-                  }));
+                  const { value: id, gstNumber } = selectedOption; // Extract id and isAccepted from the selected option
+
+                  // Check if "Add New Client" is selected
+                  if (selectedOption.value === 'add-new-vendor') {
+                    setIsModalOpen(true); // Open the modal when "Add New Vendor" is selected
+                  } else {
+                    setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      sellerEnterpriseId: id,
+                    }));
+
+                    setSelectedValue(selectedOption); // Update the state with the selected option
+                  }
                 }}
-              >
-                <SelectTrigger className="max-w-xs">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {/* search bar for searching clients/vendor */}
-                  {customerData?.length > 0 && (
-                    <SearchInput
-                      toSearchTerm={customerToSearch}
-                      setToSearchTerm={setCustomerToSearch}
-                    />
-                  )}
+              />
 
-                  {/* if expected vendor is not in the list add a new vendor */}
-                  {type === 'purchase' && searchCustomerData?.length === 0 && (
-                    <div className="flex flex-col items-center gap-1 py-2 text-xs">
-                      <span>Vendor Not Found</span>
-                    </div>
-                  )}
-
-                  <>
-                    {/* FILTER OUT ACCORDING TO CUSTOMERTOSEARCH */}
-                    {searchCustomerData
-                      ?.filter((customer) => !!customer?.vendor?.name)
-                      .map((customer) => (
-                        <SelectItem
-                          key={customer.id}
-                          value={JSON.stringify({
-                            id: customer?.vendor?.id,
-                            gstNumber: customer?.vendor?.gstNumber,
-                            isAcceptedCustomer:
-                              customer?.invitation === null ||
-                              customer?.invitation === undefined
-                                ? 'ACCEPTED'
-                                : customer?.invitation?.status,
-                          })}
-                        >
-                          {customer?.vendor?.name}
-                        </SelectItem>
-                      ))}
-                    <AddModal
-                      type={'Add Vendor'}
-                      cta="vendor"
-                      btnName="Add a new Vendor"
-                      mutationFunc={CreateEnterpriseUser}
-                    />
-                  </>
-                </SelectContent>
-              </Select>
+              {/* Conditionally render the AddModal when "Add New Client" is selected */}
+              {isModalOpen && (
+                <AddModal
+                  type="Add"
+                  cta="vendor"
+                  btnName="Add a new Vendor"
+                  mutationFunc={createVendor}
+                  isOpen={isModalOpen}
+                  setIsOpen={setIsModalOpen}
+                />
+              )}
               {errorMsg.sellerEnterpriseId && (
                 <ErrorBox msg={errorMsg.sellerEnterpriseId} />
               )}
@@ -682,108 +738,84 @@ const CreateOrder = ({
 
         <div className="flex w-1/2 flex-col gap-2">
           <Label className="flex gap-1">
-            Item Type
+            {translations('form.label.item_type')}
             <span className="text-red-600">*</span>
           </Label>
           <Select
-            onValueChange={(value) => {
-              setOrder((prev) => ({ ...prev, invoiceType: value }));
+            name="itemType"
+            placeholder={translations('form.input.item_type.placeholder')}
+            options={itemTypeOptions}
+            styles={getStylesForSelectComponent()}
+            className="max-w-xs text-sm"
+            classNamePrefix="select"
+            onChange={(selectedOption) => {
+              if (!selectedOption) return; // Guard clause for no selection
+              setOrder((prev) => ({
+                ...prev,
+                invoiceType: selectedOption.value,
+              })); // Update state with the selected value
             }}
-          >
-            <SelectTrigger className="max-w-xs gap-5">
-              <SelectValue placeholder="Select Item Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="GOODS">Goods</SelectItem>
-              <SelectItem value="SERVICE">Services</SelectItem>
-            </SelectContent>
-          </Select>
+          />
+          {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
         </div>
       </div>
       <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex w-full max-w-xs flex-col gap-2">
             <Label className="flex gap-1">
-              Item
+              {translations('form.label.item')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
               <Select
-                disabled={
+                name="items"
+                placeholder={translations('form.input.item.placeholder')}
+                options={
+                  cta === 'offer'
+                    ? itemClientListingOptions
+                    : itemVendorListingOptions
+                }
+                styles={getStylesForSelectComponent()}
+                isOptionDisabled={(option) => option.disabled} // Disable options conditionally
+                isDisabled={
                   (cta === 'offer' && order.buyerId == null) ||
                   (cta === 'bid' && order.sellerEnterpriseId == null) ||
                   order.invoiceType === ''
                 }
-                // defaultValue={selectedItem.product_id}
-                onValueChange={(value) => {
+                onChange={(selectedOption) => {
                   const selectedItemData =
                     cta === 'offer'
-                      ? itemData?.find((item) => value === item.id)
-                      : vendorItemData?.find((item) => value === item.id);
+                      ? itemClientListingOptions?.find(
+                          (item) => item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                        )?.value
+                      : itemVendorListingOptions?.find(
+                          (item) => item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                        )?.value;
 
-                  setSelectedItem((prev) => ({
-                    ...prev,
-                    productId: value,
-                    productType: selectedItemData.productType,
-                    productName: selectedItemData.productName,
-                    unitPrice: selectedItemData.rate,
-                    gstPerUnit: isGstApplicable(
-                      isPurchasePage
-                        ? isGstApplicableForPurchaseOrders
-                        : isGstApplicableForSalesOrders,
-                    )
-                      ? selectedItemData.gstPercentage
-                      : 0,
-                  }));
+                  if (selectedItemData) {
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      productId: selectedItemData.id,
+                      productType: selectedItemData.productType,
+                      productName: selectedItemData.productName,
+                      unitPrice: selectedItemData.rate,
+                      gstPerUnit: isGstApplicable(
+                        isPurchasePage
+                          ? isGstApplicableForPurchaseOrders
+                          : isGstApplicableForSalesOrders,
+                      )
+                        ? selectedItemData.gstPercentage
+                        : 0,
+                    }));
+                  }
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {itemData.length > 0 && (
-                    <SearchInput
-                      toSearchTerm={itemToSearch}
-                      setToSearchTerm={setItemToSearch}
-                    />
-                  )}
-                  {cta === 'offer' &&
-                    searchItemData?.map((item) => (
-                      <SelectItem
-                        disabled={
-                          !!order.orderItems.find(
-                            (itemO) => itemO.productId === item.id,
-                          )
-                        }
-                        key={item.id}
-                        value={item.id}
-                      >
-                        {item.productName}
-                      </SelectItem>
-                    ))}
-
-                  {cta !== 'offer' &&
-                    searchVendorsItemData?.map((item) => (
-                      <SelectItem
-                        disabled={
-                          !!order.orderItems.find(
-                            (itemO) => itemO.productId === item.id,
-                          )
-                        }
-                        key={item.id}
-                        value={item.id}
-                      >
-                        {item.productName}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              />
               {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
             </div>
           </div>
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              Quantity
+              {translations('form.label.quantity')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -816,7 +848,7 @@ const CreateOrder = ({
 
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              Price
+              {translations('form.label.price')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -853,7 +885,8 @@ const CreateOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex">
-                GST <span className="text-xs"> (%)</span>
+                {translations('form.label.gst')}
+                <span className="text-xs"> (%)</span>
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -869,7 +902,9 @@ const CreateOrder = ({
 
           <div className="flex flex-col gap-2">
             <Label className="flex gap-1">
-              {isOrder === 'invoice' ? 'Invoice Value' : 'Value'}
+              {isOrder === 'invoice'
+                ? translations('form.label.invoice_value')
+                : translations('form.label.value')}
               <span className="text-red-600">*</span>
             </Label>
             <div className="flex flex-col gap-1">
@@ -889,7 +924,7 @@ const CreateOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex gap-1">
-                Tax Amount
+                {translations('form.label.tax_amount')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -898,7 +933,7 @@ const CreateOrder = ({
                   value={selectedItem.totalGstAmount}
                   className="max-w-30"
                 />
-                {errorMsg.totalAmount && (
+                {errorMsg.totalGstAmount && (
                   <ErrorBox msg={errorMsg.totalGstAmount} />
                 )}
               </div>
@@ -912,7 +947,7 @@ const CreateOrder = ({
           ) && (
             <div className="flex flex-col gap-2">
               <Label className="flex gap-1">
-                Amount
+                {translations('form.label.amount')}
                 <span className="text-red-600">*</span>
               </Label>
               <div className="flex flex-col gap-1">
@@ -946,7 +981,7 @@ const CreateOrder = ({
               }));
             }}
           >
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
@@ -972,7 +1007,7 @@ const CreateOrder = ({
             }}
             variant="blue_outline"
           >
-            Add
+            {translations('form.ctas.add')}
           </Button>
         </div>
       </div>
@@ -991,13 +1026,17 @@ const CreateOrder = ({
           ) && (
             <>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Gross Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.gross_amount')} :
+                </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {grossAmt.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Tax Amount : </span>
+                <span className="font-bold">
+                  {translations('form.footer.tax_amount')} :{' '}
+                </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {totalGstAmt.toFixed(2)}
                 </span>
@@ -1005,7 +1044,9 @@ const CreateOrder = ({
             </>
           )}
           <div className="flex items-center gap-2">
-            <span className="font-bold">Total Amount : </span>
+            <span className="font-bold">
+              {translations('form.footer.total_amount')} :{' '}
+            </span>
             <span className="rounded-sm border bg-slate-100 p-2">
               {totalAmtWithGst.toFixed(2)}
             </span>
@@ -1014,7 +1055,7 @@ const CreateOrder = ({
 
         <div className="flex gap-2">
           <Button size="sm" onClick={onCancel} variant={'outline'}>
-            Cancel
+            {translations('form.ctas.cancel')}
           </Button>
           <Button
             size="sm"
@@ -1026,7 +1067,7 @@ const CreateOrder = ({
             {orderMutation.isPending || invoiceMutation.isPending ? (
               <Loading />
             ) : (
-              'Create'
+              translations('form.ctas.create')
             )}
           </Button>
         </div>

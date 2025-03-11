@@ -7,9 +7,12 @@ import {
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
+import InvitationActionModal from '../Modals/InvitationActionModal';
 import { Button } from '../ui/button';
 import {
   Collapsible,
@@ -17,7 +20,6 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { Progress } from '../ui/progress';
-import Tooltips from '../auth/Tooltips';
 
 const OrdersOverview = ({
   isCollapsableOverview,
@@ -28,8 +30,12 @@ const OrdersOverview = ({
   mobileNumber,
   amtPaid,
   totalAmount,
+  invitationData,
 }) => {
+  const translations = useTranslations('components.order_overview');
+
   const queryClient = useQueryClient();
+  const [isInviteActionModalOpen, setIsInviteActionModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const pathName = usePathname();
@@ -46,14 +52,16 @@ const OrdersOverview = ({
     ],
     mutationFn: updateAcknowledgeStatus,
     onSuccess: () => {
-      toast.success('Order Acknowledged Successfully');
+      toast.success(translations('successMsg.acknowledged_sucess'));
       queryClient.invalidateQueries([
         orderApi.getOrderDetails.endpointKey,
         orderId,
       ]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -65,14 +73,16 @@ const OrdersOverview = ({
     ],
     mutationFn: undoAcknowledgeStatus,
     onSuccess: () => {
-      toast.success('Undo Order Acknowledged Successfully');
+      toast.success(translations('successMsg.undo_acknowledged_success'));
       queryClient.invalidateQueries([
         orderApi.getOrderDetails.endpointKey,
         orderId,
       ]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -108,37 +118,64 @@ const OrdersOverview = ({
           <section className="flex">
             <div className="flex w-1/2 flex-col gap-4">
               <section className="flex flex-col gap-2">
-                <p className="text-xs font-bold">Order ID</p>
+                <p className="text-xs font-bold">
+                  {translations('label.order_id')}
+                </p>
                 <p className="text-sm font-bold">{orderId}</p>
               </section>
 
               <section className="flex flex-col gap-2">
                 <p className="text-xs font-bold">
-                  {isSalesDetailPage ? 'Client' : 'Vendor'} Name
+                  {isSalesDetailPage
+                    ? translations('label.client_name')
+                    : translations('label.vendor_name')}
                 </p>
                 <p className="text-lg font-bold">
                   {Name ?? 'Name not available'}
                 </p>
-                <p className="text-xs font-bold text-[#A5ABBD]">
-                  +91 {mobileNumber}
+                <p className="flex items-center text-xs font-bold text-[#A5ABBD]">
+                  <span>+91 {mobileNumber}</span>
+                  {orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' && (
+                    <InvitationActionModal
+                      status={invitationData?.invitationStatus}
+                      invitationId={invitationData?.invitationId}
+                      name={orderDetails?.clientName}
+                      mobileNumber={mobileNumber}
+                      isInviteActionModalOpen={isInviteActionModalOpen}
+                      setIsInviteActionModalOpen={setIsInviteActionModalOpen}
+                    />
+                  )}
                 </p>
               </section>
             </div>
             <div className="flex w-1/2 flex-col gap-4">
               <section className="flex flex-col gap-4">
-                <p className="text-xs font-bold">Order Status</p>
+                <p className="text-xs font-bold">
+                  {translations('label.order_status')}
+                </p>
                 <div>{multiStatus}</div>
               </section>
 
-              {(orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
-                orderDetails?.negotiationStatus === 'INVOICED') && (
+              {orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
+              orderDetails?.negotiationStatus === 'INVOICED' ? (
                 <section className="flex flex-col gap-5">
-                  <p className="text-xs font-bold">Payment Status</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.payment_status')}
+                  </p>
                   <Progress
                     className="w-1/2 bg-[#F3F3F3]"
                     value={paymentProgressPercent}
                   />
                   <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
+                </section>
+              ) : (
+                <section className="flex flex-col gap-3">
+                  <p className="text-xs font-bold">
+                    {translations('label.total_amount')}
+                  </p>
+                  <p className="text-sm font-bold">
+                    {`${formattedAmount(totalAmount)}`}
+                  </p>
                 </section>
               )}
             </div>
@@ -149,7 +186,8 @@ const OrdersOverview = ({
                   <Tooltips
                     trigger={
                       <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
-                        View Negotiation <MoveUpRight size={12} />
+                        {translations('label.view_negotiation')}
+                        <MoveUpRight size={12} />
                       </p>
                     }
                     content={'View Negotiation history'}
@@ -162,8 +200,7 @@ const OrdersOverview = ({
             <section className="flex items-center justify-between rounded-md bg-[#288AF90A] px-3 py-1.5">
               <span className="flex items-center gap-2 text-sm font-semibold">
                 <Info size={14} />
-                This order is directly recorded by our client/vendor.
-                Acknowledge to add it to your order list
+                {translations('acknowledge_message.infoText')}
               </span>
               <div className="flex gap-2">
                 {/* actionTaken : true, undo */}
@@ -174,7 +211,7 @@ const OrdersOverview = ({
                     variant="outline"
                     className="h-8 rounded-md text-xs"
                   >
-                    Undo
+                    {translations('acknowledge_message.ctas.undo')}
                   </Button>
                 )}
                 {/* actionTaken : false, yes/no */}
@@ -186,14 +223,14 @@ const OrdersOverview = ({
                       variant="outline"
                       className="h-8 rounded-md text-xs"
                     >
-                      No
+                      {translations('acknowledge_message.ctas.no')}
                     </Button>
                     <Button
                       onClick={() => handleAcknowledgeAcceptReject(true)}
                       size="sm"
                       className="h-8 rounded-md bg-[#288AF9] text-xs text-white"
                     >
-                      Yes
+                      {translations('acknowledge_message.ctas.yes')}
                     </Button>
                   </>
                 )}
@@ -223,41 +260,55 @@ const OrdersOverview = ({
             {!isOpen && (
               <section className="flex w-full animate-fadeInUp items-center justify-between">
                 <div className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">Order ID</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.order_id')}
+                  </p>
                   <p className="text-sm font-bold">{orderId}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-bold">
-                    {isSalesDetailPage ? 'Client' : 'Vendor'} Name
+                    {isSalesDetailPage
+                      ? translations('label.client_name')
+                      : translations('label.vendor_name')}
                   </p>
                   <p className="text-sm font-bold">
                     {Name ?? 'Name not available'}
                   </p>
                 </div>
                 <div className="flex flex-col gap-4">
-                  <p className="text-xs font-bold">Order Status</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.order_status')}
+                  </p>
                   <div>{multiStatus}</div>
                 </div>
                 <div className="flex flex-col gap-5">
-                  <p className="text-xs font-bold">Payment Status</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.payment_status')}
+                  </p>
                   <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
                 </div>
               </section>
             )}
-            {isOpen && <h1 className="text-sm font-bold">Overview</h1>}
+            {isOpen && (
+              <h1 className="text-sm font-bold">{translations('title')}</h1>
+            )}
           </div>
 
           <CollapsibleContent className="animate-fadeInUp space-y-2">
             <section className="flex h-48 gap-2 rounded-md p-5">
               <div className="flex w-1/2 flex-col gap-4">
                 <section className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">Order ID</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.order_id')}
+                  </p>
                   <p className="text-sm font-bold">{orderId}</p>
                 </section>
 
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-bold">
-                    {isSalesDetailPage ? 'Client' : 'Vendor'} Name
+                    {isSalesDetailPage
+                      ? translations('label.client_name')
+                      : translations('label.vendor_name')}
                   </p>
                   <p className="text-lg font-bold">
                     {Name ?? 'Name not available'}
@@ -269,12 +320,16 @@ const OrdersOverview = ({
               </div>
               <div className="flex w-1/2 flex-col gap-4">
                 <section className="flex flex-col gap-4">
-                  <p className="text-xs font-bold">Order Status</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.order_status')}
+                  </p>
                   <div>{multiStatus}</div>
                 </section>
 
                 <section className="flex flex-col gap-5">
-                  <p className="text-xs font-bold">Payment Status</p>
+                  <p className="text-xs font-bold">
+                    {translations('label.payment_status')}
+                  </p>
                   <Progress
                     className="w-1/2 bg-[#F3F3F3]"
                     value={paymentProgressPercent}
@@ -287,7 +342,8 @@ const OrdersOverview = ({
                 <div className="flex w-1/2 flex-col items-end gap-4">
                   <section className="flex flex-col gap-4">
                     <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
-                      View Negotiation <MoveUpRight size={12} />
+                      {translations('label.view_negotiation')}
+                      <MoveUpRight size={12} />
                     </p>
                   </section>
                 </div>

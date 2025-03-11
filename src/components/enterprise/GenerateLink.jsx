@@ -1,19 +1,22 @@
-import React from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 
 const GenerateLink = ({ invitationStatus, invitationId, mutationFunc }) => {
+  const translations = useTranslations('components.generate_link');
+
   const generateLinkMutation = useMutation({
     mutationFn: mutationFunc,
     onSuccess: (data) => {
       navigator.clipboard.writeText(
         `${process.env.NEXT_PUBLIC_WEBSITE_URL}/login?invitationToken=${data.data.data}`,
       );
-      toast.success('Link Generated & Copied to clipboard');
+      toast.success(translations('toasts.success'));
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translations('toasts.error'));
     },
   });
 
@@ -24,22 +27,26 @@ const GenerateLink = ({ invitationStatus, invitationId, mutationFunc }) => {
   switch (invitationStatus) {
     case 'PENDING':
       return (
-        <Button size="sm" onClick={handleClick}>
-          Link
+        <Button
+          size="20px"
+          className="w-20 rounded-[6px] p-1.5"
+          onClick={handleClick}
+        >
+          {translations('ctas_staus.pending')}
         </Button>
       );
     case 'REJECTED':
       return (
-        <span className="rounded-sm border border-red-600 bg-red-100 p-2 text-red-600">
-          Rejected
-        </span>
+        <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
+          {translations('ctas_staus.rejected')}
+        </div>
       );
 
     case 'ACCEPTED':
       return (
-        <span className="rounded-sm border border-green-600 bg-green-100 p-2 text-green-600">
-          Accepted
-        </span>
+        <div className="flex w-20 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+          {translations('ctas_staus.accepted')}
+        </div>
       );
     default:
       return '-';

@@ -15,6 +15,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Clock, History } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -31,6 +32,8 @@ const NegotiationComponent = ({
   isNegotiation,
   setIsNegotiation,
 }) => {
+  const translations = useTranslations('components.negotiation_component');
+
   const queryClient = useQueryClient();
   const pathName = usePathname();
   const isBid = pathName.includes('purchase-orders');
@@ -68,7 +71,9 @@ const NegotiationComponent = ({
       setNegotiationDetails(data?.data?.data);
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong!');
+      toast.error(
+        error.response?.data?.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -77,13 +82,15 @@ const NegotiationComponent = ({
     mutationKey: [orderApi.createBulkNegotiation.endpointKey],
     mutationFn: createBulkNegotiaion,
     onSuccess: () => {
-      toast.success('Negotiation submitted successfully');
+      toast.success(translations('successMsg.negotiation_submitted'));
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       setBulkNegotiateOrder([]);
       setIsNegotiation(false);
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message);
+      toast.error(
+        error.response?.data?.message || translations('errorMsg.common'),
+      );
     },
   });
 
@@ -137,7 +144,7 @@ const NegotiationComponent = ({
   const handleSubmit = () => {
     const extractedData = extractData();
     if (extractedData.negotiations.length === 0) {
-      toast.error('Please fill in at least one negotiation item.');
+      toast.error(translations('errorMsg.empty'));
       return;
     }
     createBulkNegotiationMutation.mutate(extractedData);
@@ -182,25 +189,25 @@ const NegotiationComponent = ({
               colSpan={2}
               className="shrink-0 text-xs font-bold text-black"
             >
-              ITEM
+              {translations('table.header.label.item')}
             </TableHead>
             <TableHead
               colSpan={2}
               className="shrink-0 text-center text-xs font-bold text-black"
             >
-              QUANTITY
+              {translations('table.header.label.quantity')}
             </TableHead>
             <TableHead
               colSpan={2}
               className="shrink-0 text-center text-xs font-bold text-black"
             >
-              RATE
+              {translations('table.header.label.rate')}
             </TableHead>
             <TableHead
               colSpan={2}
               className="shrink-0 text-center text-xs font-bold text-black"
             >
-              TOTAL
+              {translations('table.header.label.total')}
             </TableHead>
             <TableHead></TableHead>
           </TableRow>
@@ -210,22 +217,22 @@ const NegotiationComponent = ({
             <TableHead></TableHead>
             <TableHead></TableHead>
             <TableHead className="text-center text-xs font-semibold text-blue-900">
-              ASK
+              {translations('table.child_table.header.label.ask')}
             </TableHead>
             <TableHead className="text-center text-xs font-semibold text-blue-900">
-              COUNTER
+              {translations('table.child_table.header.label.counter')}
             </TableHead>
             <TableHead className="text-center text-xs font-semibold text-blue-900">
-              ASK
+              {translations('table.child_table.header.label.ask')}
             </TableHead>
             <TableHead className="text-center text-xs font-semibold text-blue-900">
-              COUNTER
+              {translations('table.child_table.header.label.counter')}
             </TableHead>
             <TableHead className="text-center text-xs font-semibold text-blue-900">
-              ASK
+              {translations('table.child_table.header.label.ask')}
             </TableHead>
             <TableHead className="text-center text-xs font-semibold text-blue-900">
-              COUNTER
+              {translations('table.child_table.header.label.counter')}
             </TableHead>
             <TableHead></TableHead>
           </TableRow>
@@ -302,7 +309,9 @@ const NegotiationComponent = ({
                         onClick={() => toggleHistory(index, item)}
                       />
                     }
-                    content={'View negotiation history'}
+                    content={translations(
+                      'table.column_actions.history.placeholder',
+                    )}
                   />
                 </TableCell>
               </TableRow>
@@ -334,22 +343,22 @@ const NegotiationComponent = ({
                         {pageIsSales &&
                           (negoData?.status === 'OFFER_SUBMITTED' ? (
                             <div className="flex w-32 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
-                              YOU
+                              {translations('table.column_actions.who.you')}
                             </div>
                           ) : (
                             <div className="w-32 rounded-md bg-yellow-500 p-2 text-center text-white">
-                              BUYER
+                              {translations('table.column_actions.who.buyer')}
                             </div>
                           ))}
 
                         {!pageIsSales &&
                           (negoData?.status === 'BID_SUBMITTED' ? (
                             <div className="flex w-32 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
-                              YOU
+                              {translations('table.column_actions.who.you')}
                             </div>
                           ) : (
                             <div className="w-32 rounded-md bg-yellow-500 p-2 text-center text-white">
-                              SELLER
+                              {translations('table.column_actions.who.seller')}
                             </div>
                           ))}
                       </TableCell>
@@ -377,9 +386,16 @@ const NegotiationComponent = ({
                     <TableCell colSpan={9} className="border">
                       <div className="bg-gray-100 p-4">
                         <h4 className="font-semibold">
-                          History for {item?.productDetails?.productName}
+                          {translations(
+                            'table.column_actions.history.infoTitle',
+                          )}
+                          {item?.productDetails?.productName}
                         </h4>
-                        <p>There is no negotiation history for this item.</p>
+                        <p>
+                          {translations(
+                            'table.column_actions.history.infoPara',
+                          )}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -400,14 +416,14 @@ const NegotiationComponent = ({
               size="sm"
               onClick={() => setIsNegotiation(false)}
             >
-              Cancel
+              {translations('ctas.cancel')}
             </Button>
             <Button
               className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
               size="sm"
               onClick={handleSubmit}
             >
-              Submit
+              {translations('ctas.submit')}
             </Button>
           </section>
         </div>
