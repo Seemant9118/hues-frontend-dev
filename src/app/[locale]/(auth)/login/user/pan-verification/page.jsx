@@ -8,37 +8,26 @@ import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
-import {
-  getPanDetails,
-  userUpdate,
-} from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { getPanDetails } from '@/services/User_Auth_Service/UserAuthServices';
+import { useQuery } from '@tanstack/react-query';
 import { Info, InfoIcon } from 'lucide-react';
 
 import { userAuth } from '@/api/user_auth/Users';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthProgress } from '@/context/AuthProgressContext';
+import { useUserData } from '@/context/UserDataContext';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
-  const userID = LocalStorageService.get('user_profile');
   const attemptsRemaining = LocalStorageService.get('attemptsRemaining');
 
-  const { updateAuthProgress } = useAuthProgress();
-
+  const { updateAuthProgress } = useAuthProgress(); // context
+  const { userData, setUserData } = useUserData(); // context
   const router = useRouter();
   const [isTandCModalOpen, setIsTandCModalOpen] = useState(false);
-  const [userData, setUserData] = useState({
-    userId: userID,
-    name: '',
-    dateOfBirth: '',
-    panNumber: '',
-    isTermsAndConditionApplied: false,
-  });
   const [errorMsg, setErrorMsg] = useState({});
 
   const onCheckedChangeTermsCondition = (checked) => {
@@ -165,45 +154,6 @@ const PanVerificationPage = () => {
     }
   }, [panDetails]);
 
-  // api mutation
-  const userUpdatemutation = useMutation({
-    mutationFn: (data) => userUpdate(data),
-    onSuccess: (data) => {
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.data?.user?.isOnboardingComplete,
-      );
-      LocalStorageService.set(
-        'isPanVerified',
-        data?.data?.data?.user?.isPanVerified,
-      );
-      LocalStorageService.set(
-        'isAadhaarVerified',
-        data?.data?.data?.user?.isAadhaarVerified,
-      );
-      LocalStorageService.set(
-        'isEmailVerified',
-        data?.data?.data?.user?.isEmailVerified,
-      );
-      LocalStorageService.set(
-        'isEnterpriseOnboardingComplete',
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
-      );
-
-      // marked pan verified in context
-      updateAuthProgress('isPanVerified', true);
-
-      // redirection
-      router.push('/login/user/aadhar-verification');
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Oops, Something went wrong!');
-    },
-    retry: (failureCount, error) => {
-      return error.response.status === 401;
-    },
-  });
-
   // handleProceed fn
   const handleProceed = (e) => {
     e.preventDefault();
@@ -211,7 +161,12 @@ const PanVerificationPage = () => {
 
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
-      userUpdatemutation.mutate(userData);
+      // redirection
+      router.push('/login/user/aadhar-verification');
+      // saving user data fetching from pan
+      LocalStorageService.set('enterpriseDetails', userData);
+      // marked pan verified in context
+      updateAuthProgress('isPanVerified', true);
     }
     setErrorMsg(isAnyError);
   };
@@ -388,16 +343,13 @@ const PanVerificationPage = () => {
               className="w-full"
               size="sm"
               disabled={
-                userUpdatemutation.isPending ||
                 errorPanDetails ||
                 isPanDetailsLoading ||
                 isPanDetailsFetching ||
                 attemptsRemaining === 0
               }
             >
-              {userUpdatemutation.isPending ||
-              isPanDetailsLoading ||
-              isPanDetailsFetching ? (
+              {isPanDetailsLoading || isPanDetailsFetching ? (
                 <Loading />
               ) : (
                 'Proceed'
