@@ -2,22 +2,84 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
 import { useAuthProgress } from '@/context/AuthProgressContext';
+import { useUserData } from '@/context/UserDataContext';
 import { LocalStorageService } from '@/lib/utils';
-import { verifyAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import {
+  userUpdate,
+  verifyAadharOTP,
+} from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
-import Link from 'next/link';
+import { Clock5 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
-const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
+const AadharVerifyOTP = ({
+  aadharNumber,
+  verifyOTPdata,
+  setVerifyOTPdata,
+  sendAadharOTPMutation,
+  startFrom,
+  setStartFrom,
+}) => {
   const router = useRouter();
   const { updateAuthProgress } = useAuthProgress();
-
+  const { userData } = useUserData(); // context
+  const [enterpriseDetails, setEnterpriseDetails] = useState(null);
   // State for button loading
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStartFrom((prevStartFrom) => prevStartFrom - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setEnterpriseDetails(
+      LocalStorageService.get('enterpriseDetails') || userData,
+    );
+  }, []);
+
+  // user update mutation
+  const userUpdatemutation = useMutation({
+    mutationFn: (data) => userUpdate(data),
+    onSuccess: (data) => {
+      LocalStorageService.set(
+        'isOnboardingComplete',
+        data?.data?.data?.user?.isOnboardingComplete,
+      );
+      LocalStorageService.set(
+        'isPanVerified',
+        data?.data?.data?.user?.isPanVerified,
+      );
+      LocalStorageService.set(
+        'isAadhaarVerified',
+        data?.data?.data?.user?.isAadhaarVerified,
+      );
+      LocalStorageService.set(
+        'isEmailVerified',
+        data?.data?.data?.user?.isEmailVerified,
+      );
+      LocalStorageService.set(
+        'isEnterpriseOnboardingComplete',
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
+      );
+
+      LocalStorageService.remove('enterpriseDetails');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+    },
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
+  });
 
   const handleChangeOtp = (value) => {
     setVerifyOTPdata((prev) => ({
@@ -32,21 +94,17 @@ const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
 
     try {
       const response = await verifyAadharOTP(verifyOTPdata);
-      const { data } = response;
 
-      toast.success('OTP verified successfully');
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.isOnboardingComplete,
-      );
-      LocalStorageService.set(
-        'isAadhaarVerified',
-        data?.data?.isAadhaarVerified,
-      );
-      LocalStorageService.set('isEmailVerified', data?.data?.isEmailVerified);
+      if (response?.status === 201) {
+        // Ensure the response indicates success
+        toast.success('OTP verified successfully');
 
-      updateAuthProgress('isAadhaarVerified', true);
-      router.push('/login/user/confirmation');
+        await userUpdatemutation.mutateAsync(enterpriseDetails); // Await the mutation if needed
+        updateAuthProgress('isAadhaarVerified', true);
+        router.push('/login/user/confirmation');
+      } else {
+        toast.error('OTP verification failed. Please try again.');
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || 'Something went wrong';
@@ -54,6 +112,10 @@ const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
     } finally {
       setLoading(false); // Disable loading state
     }
+  };
+
+  const handleResendOTP = () => {
+    sendAadharOTPMutation.mutate({ aadhaar: aadharNumber });
   };
 
   return (
@@ -88,7 +150,26 @@ const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
       />
 
       <p className="flex w-full items-center justify-center gap-2 text-sm text-[#A5ABBD]">
-        OTP Sent, valid for 10 mins only.
+        OTP Sent, Resend OTP in{' '}
+        <span className="flex items-center gap-1 font-semibold">
+          {startFrom >= 0 ? (
+            <p className="flex items-center gap-1">
+              <Clock5 size={15} />
+              00:{startFrom}s
+            </p>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={sendAadharOTPMutation?.isPending}
+              onClick={() => {
+                handleResendOTP();
+              }}
+            >
+              {sendAadharOTPMutation?.isPending ? <Loading /> : 'Resend'}
+            </Button>
+          )}
+        </span>
       </p>
       <Button
         size="sm"
@@ -98,13 +179,6 @@ const AadharVerifyOTP = ({ verifyOTPdata, setVerifyOTPdata }) => {
       >
         {loading ? <Loading /> : 'Verify'}
       </Button>
-
-      <Link
-        href="/"
-        className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-      >
-        Skip for Now
-      </Link>
     </form>
   );
 };

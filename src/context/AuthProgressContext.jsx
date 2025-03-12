@@ -37,14 +37,3 @@ export const useAuthProgress = () => {
   }
   return context;
 };
-
-// Example usage:
-// Wrap your app or component tree with AuthProgressProvider in index.js or App.js
-// import { AuthProgressProvider } from './path-to-this-file';
-//
-// ReactDOM.render(
-//   <AuthProgressProvider>
-//     <App />
-//   </AuthProgressProvider>,
-//   document.getElementById('root')
-// );
