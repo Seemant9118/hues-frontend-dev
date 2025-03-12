@@ -71,7 +71,7 @@ const ConfirmationPage = () => {
           !isEnterpriseOnboardingComplete
         ) {
           router.push('/login/enterprise/udyam-verify');
-        } else if (isEnterpriseOnboardingComplete) {
+        } else if (!isGstVerified) {
           router.push('/login/enterprise/gst-verify');
         }
       }
