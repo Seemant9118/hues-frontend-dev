@@ -129,7 +129,7 @@ export const userAuth = {
   // [NEW]
   // 25. getEnterpriseDetailsForPanVerify
   getEnterpriseDetailsForPanVerify: {
-    endpoint: `/enterprise/getrpacpc-enterprise-data/`,
+    endpoint: `/enterprise/getenterprisedetails`,
     endpointKey: 'get_enterprise_details_for_pan',
   },
 
@@ -153,7 +153,7 @@ export const userAuth = {
 
   // 29. getEnterpriseDetailsFromEnterpriseId
   getEnterpriseDetailsFromEnterpriseId: {
-    endpoint: `/enterprise/getrpacpc-enterprise-data/`,
+    endpoint: `/enterprise/getenterprisedetails`,
     endpointKey: 'get_enterprise_details_from_Id',
   },
 
@@ -161,5 +161,11 @@ export const userAuth = {
   getOnboardingStatus: {
     endpoint: `/enterprise/getonboardingstatus`,
     endpointKey: 'get_onboarding_status',
+  },
+
+  // 31. addAnotherEnterprise
+  addAnotherEnterprise: {
+    endpoint: `/enterprise/addanotherenterprise`,
+    endpointKey: 'get_add_another_enterprises',
   },
 };

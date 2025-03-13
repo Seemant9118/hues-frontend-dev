@@ -104,3 +104,6 @@ export const isGstApplicable = (isHaveGst) => {
   if (isHaveGst) return true;
   else return false;
 };
+
+// Utility function to handle empty strings and undefined values
+export const formatValue = (value) => (value?.trim() ? value : '-');

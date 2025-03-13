@@ -36,3 +36,11 @@ export const sendDirectorInvitation = (data) => {
 export const resendInvitation = (id) => {
   return APIinstance.post(`${invitation.resendInvitation.endpoint}${id}`);
 };
+
+export const remindInvitation = (id) => {
+  return APIinstance.post(`${invitation.remindInvitation.endpoint}${id}`);
+};
+
+export const getInvitationStatus = (data) => {
+  return APIinstance.post(invitation.getInvitationStatus.endpoint, data);
+};

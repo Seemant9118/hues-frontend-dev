@@ -40,7 +40,15 @@
             "column": {
                 "actions": {
                     "edit": "संपादित करें",
-                    "resend": "फिर से भेजें"
+                    "resend": "पुनः आमंत्रण भेजें",
+                    "copyInviteLink": "आमंत्रण लिंक कॉपी करें",
+                    "sendReminder": "अनुस्मारक भेजें"
+                },
+                "status": {
+                    "pending": "लंबित",
+                    "acceptedByVendor": "विक्रेता द्वारा स्वीकृत",
+                    "acceptedByYou": "आपके द्वारा स्वीकृत",
+                    "rejected": "अस्वीकृत"
                 }
             }
         }

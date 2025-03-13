@@ -155,3 +155,8 @@ export function getEnterpriseDetailsFromEnterpriseId(id) {
 export function getOnboardingStatus(data) {
   return APIinstance.post(userAuth.getOnboardingStatus.endpoint, data);
 }
+
+// 31. addAnotherEnterprise
+export function addAnotherEnterprise() {
+  return APIinstance.post(userAuth.addAnotherEnterprise.endpoint);
+}

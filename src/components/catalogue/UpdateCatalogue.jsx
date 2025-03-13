@@ -33,10 +33,10 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useGoodsColumnsForCatalogue } from './GoodsColumns';
-import { useServicesColumnsForCatalogue } from './ServicesColumns';
+import { useGoodsColumnsForCatalogue } from './useCatalogueGoodsColumns';
+import { useServicesColumnsForCatalogue } from './useCatalogueServiceColumns';
 
-const UpdateCatalogue = () => {
+const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
   useMetaData('Hues! - Update Catalogue', 'HUES CATALOGUE'); // dynamic title
 
   const translations = useTranslations('catalogue');
@@ -166,7 +166,7 @@ const UpdateCatalogue = () => {
     {
       id: 2,
       name: translations('components.update.title'),
-      path: `/catalogue/update_catalogue`,
+      path: `/catalogue/?action=update`,
       show: true, // Always show
     },
   ];
@@ -179,7 +179,7 @@ const UpdateCatalogue = () => {
     mutationFn: createUpdateCatalogue,
     onSuccess: () => {
       toast.success(translations('toast.messages.update.success'));
-      router.push('/catalogue/');
+      setIsUpdatingCatalogue(false);
       queryClient.invalidateQueries([
         catalogueApis.getCatalogues.endpointKey,
         enterpriseId,

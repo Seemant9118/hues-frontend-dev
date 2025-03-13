@@ -1,7 +1,7 @@
 'use client';
 
+import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { tokenApi } from '@/api/tokenApi/tokenApi';
-import { userAuth } from '@/api/user_auth/Users';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import DatePickers from '@/components/ui/DatePickers';
@@ -10,9 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
-import { UpdateEnterprise } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import {
+  getEnterpriseById,
+  UpdateEnterprise,
+} from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { refreshToken } from '@/services/Token_Services/TokenServices';
-import { getEnterpriseDetailsFromEnterpriseId } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -29,25 +31,21 @@ const EnterpriseVerificationDetailsPage = () => {
     email: '',
     roa: '',
     roc: '',
-    registrationDate: '',
+    doi: '',
     type: '',
+    panNumber: '',
+    CIN: '',
   });
   const [errorMsg, setErrorMsg] = React.useState({});
 
   // fetch details
   const { data: enterpriseData } = useQuery({
-    queryKey: [
-      userAuth.getEnterpriseDetailsFromEnterpriseId.endpointKey,
-      enterpriseId,
-    ],
-    queryFn: () =>
-      getEnterpriseDetailsFromEnterpriseId({
-        enterpriseId,
-      }),
+    queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseId],
+    queryFn: () => getEnterpriseById(enterpriseId),
     enabled: !!enterpriseId,
     select: (data) => data?.data?.data,
     retry: (failureCount, error) => {
-      return error.response.status === 401;
+      return error.response.status === 401 || error.response.status === 403;
     },
   });
 
@@ -58,10 +56,12 @@ const EnterpriseVerificationDetailsPage = () => {
         ...prev,
         name: enterpriseData?.name || '',
         email: enterpriseData?.email || '',
-        roa: enterpriseData?.roa || '',
+        roa: enterpriseData?.address || '',
         roc: enterpriseData?.roc || '',
-        registrationDate: enterpriseData?.registrationDate || '',
+        doi: enterpriseData?.doi || '',
         type: enterpriseData?.type || '',
+        panNumber: enterpriseData?.panNumber || '',
+        CIN: enterpriseData?.cin || '',
       }));
     }
   }, [enterpriseData]);
@@ -74,7 +74,7 @@ const EnterpriseVerificationDetailsPage = () => {
   const handleDateChange = (date) => {
     setEnterpriseOnboardData((prev) => ({
       ...prev,
-      registrationDate: date ? date.toISOString().split('T')[0] : '',
+      doi: date ? date.toISOString().split('T')[0] : '',
     }));
   };
 
@@ -86,8 +86,8 @@ const EnterpriseVerificationDetailsPage = () => {
     if (enterpriseOnboardD.roa === '') {
       error.roa = '*Required Registered Office Address';
     }
-    if (enterpriseOnboardD.registrationDate === '') {
-      error.registrationDate = '*Required Registration';
+    if (enterpriseOnboardD.doi === '') {
+      error.doi = '*Required Date of Incorporation';
     }
     return error;
   };
@@ -104,11 +104,16 @@ const EnterpriseVerificationDetailsPage = () => {
       // set new access token
       const newAccessToken = refreshTokenValue?.data?.data?.access_token;
       LocalStorageService.set('token', newAccessToken);
-      LocalStorageService.set('enterpriseId', data.data.data.id);
+      const { id, isOnboardingCompleted } = data.data.data;
+      LocalStorageService.set('enterprise_Id', id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data.data.data.isOnboardingCompleted,
+        isOnboardingCompleted,
       );
+
+      // clear original data which was used in onboarding
+      LocalStorageService.remove('companyData');
+      LocalStorageService.remove('gst');
 
       toast.success('Enterprise Successfully Verified');
 
@@ -250,33 +255,33 @@ const EnterpriseVerificationDetailsPage = () => {
 
           <div className="grid w-full items-center gap-1">
             <Label
-              htmlFor="registrationDate"
+              htmlFor="doi"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Registration Date <span className="text-red-600">*</span>{' '}
+              Date of Incorporation <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Registration Date"
+                content="Date of Incorporation"
               />
             </Label>
 
             <div className="relative">
-              {enterpriseData?.length > 0 ? (
+              {enterpriseData?.doi ? (
                 <Input
                   className="focus:font-bold"
                   type="text"
                   placeholder="Registration Date"
-                  name="registrationDate"
-                  value={enterpriseOnboardData.registrationDate}
+                  name="doi"
+                  value={enterpriseOnboardData.doi}
                   disabled
                 />
               ) : (
                 <div className="relative flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                   <DatePickers
-                    name="registrationDate"
+                    name="doi"
                     selected={
-                      enterpriseOnboardData.registrationDate
-                        ? new Date(enterpriseOnboardData.registrationDate)
+                      enterpriseOnboardData.doi
+                        ? new Date(enterpriseOnboardData.doi)
                         : null
                     }
                     onChange={handleDateChange}
@@ -286,9 +291,7 @@ const EnterpriseVerificationDetailsPage = () => {
                 </div>
               )}
             </div>
-            {errorMsg?.registrationDate && (
-              <ErrorBox msg={errorMsg.registrationDate} />
-            )}
+            {errorMsg?.doi && <ErrorBox msg={errorMsg.doi} />}
           </div>
 
           <div className="flex w-full flex-col gap-4">

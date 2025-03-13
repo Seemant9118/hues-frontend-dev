@@ -30,21 +30,23 @@ const ConfirmationInviteAsAssocitePage = () => {
     mutationKey: [userAuth.createUserSession.endpointKey],
     mutationFn: createUserSession,
     onSuccess: (data) => {
-      LocalStorageService.set('user_profile', data?.data?.data?.user?.userId);
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.data?.user?.isOnboardingComplete,
-      );
+      toast.success('Onboarding Completed');
+
+      const {
+        userId,
+        enterpriseId,
+        isOnboardingComplete,
+        isEnterpriseOnboardingComplete,
+      } = data.data.data.user;
+      LocalStorageService.set('user_profile', userId);
+      LocalStorageService.set('enterprise_Id', enterpriseId);
+      LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
+        isEnterpriseOnboardingComplete,
       );
 
-      // show user success message and then redirect to the dashboard
+      // show user success message and then success
       router.push('/login/enterprise/enterprise-onboarded-success');
     },
     onError: (error) => {

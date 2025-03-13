@@ -35,12 +35,20 @@
                 "phone": "PHONE",
                 "email": "EMAIL",
                 "pan": "PAN",
-                "invitation": "INVITAION"
+                "invitation": "INVITATION"
             },
             "column": {
                 "actions": {
                     "edit": "Edit",
-                    "resend": "Resend"
+                    "resend": "Resend Invite",
+                    "copyInviteLink": "Copy Invite Link",
+                    "sendReminder": "Send Reminder"
+                },
+                "status": {
+                    "pending": "Pending",
+                    "acceptedByVendor": "Accepted by vendor",
+                    "acceptedByYou": "Accepted by you",
+                    "rejected": "Rejected"
                 }
             }
         }

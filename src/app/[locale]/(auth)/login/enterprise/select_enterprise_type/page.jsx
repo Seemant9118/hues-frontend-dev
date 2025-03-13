@@ -11,7 +11,6 @@ const SelectEnterprisePage = () => {
   const enterprisesType = [
     'Proprietorship',
     'Partnership',
-    'LLP',
     'Pvt Ltd',
     'Public Ltd',
   ];
@@ -58,7 +57,7 @@ const SelectEnterprisePage = () => {
                 key={type}
                 name="enterpriseType"
                 option={type}
-                value={type.toLowerCase()}
+                value={type?.toLowerCase()}
                 checked={enterpriseOnboardData.type === type.toLowerCase()}
                 handleChange={() => handleEnterpriseType(type.toLowerCase())}
               />

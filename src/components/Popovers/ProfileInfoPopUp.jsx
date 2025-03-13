@@ -4,6 +4,7 @@ import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import { cn, LocalStorageService } from '@/lib/utils';
 import {
+  addAnotherEnterprise,
   getUserAccounts,
   LoggingOut,
   switchAccount,
@@ -33,6 +34,8 @@ const ProfileInfoPopUp = ({
   const [open, setOpen] = useState(false);
   const [bgColor, setBgColor] = useState('');
 
+  const [userEnterprises, setUserEnterprises] = useState([]);
+
   const { data: userAccounts } = useQuery({
     queryKey: [userAuth.getUserAccounts.endpointKey],
     queryFn: () => getUserAccounts(),
@@ -40,34 +43,67 @@ const ProfileInfoPopUp = ({
     enabled: open,
   });
 
+  useEffect(() => {
+    if (userAccounts) {
+      const sortedEnterprises = [...userAccounts].sort(
+        (a, b) => Number(b.isActiveEnterprise) - Number(a.isActiveEnterprise),
+      );
+      setUserEnterprises(sortedEnterprises);
+    }
+  }, [userAccounts]);
+
   // switch account mutation
   const switchAccountMutation = useMutation({
     mutationKey: [userAuth.switchAccount.endpointKey],
     mutationFn: switchAccount,
     onSuccess: (data) => {
       setOpen(false);
+
+      const {
+        userId,
+        enterpriseId,
+        isOnboardingComplete,
+        isEnterpriseOnboardingComplete,
+      } = data.data.data.user;
       // update all necessary details after switching accounts
       LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
       LocalStorageService.set('token', data?.data?.data?.access_token);
-      LocalStorageService.set('user_profile', data?.data?.data?.user?.userId);
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.data?.user?.isOnboardingComplete,
-      );
+      LocalStorageService.set('user_profile', userId);
+      LocalStorageService.set('enterprise_Id', enterpriseId);
+      LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
-      );
-      LocalStorageService.set(
-        'isKycVerified',
-        data?.data?.data?.user?.isKycVerified,
+        isEnterpriseOnboardingComplete,
       );
 
       toast.success('Enterprise Switch Successfully');
+
+      // Refresh the page
+      window.location.reload();
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  // add another enterprise mutation
+  const addAnotherEnterpriseMutation = useMutation({
+    mutationKey: [userAuth.addAnotherEnterprise.endpointKey],
+    mutationFn: addAnotherEnterprise,
+    onSuccess: (data) => {
+      // eslint-disable-next-line camelcase
+      const { userId, access_token, refresh_token } = data.data.data;
+
+      LocalStorageService.set('user_profile', userId);
+      LocalStorageService.set('token', access_token);
+      LocalStorageService.set('refreshtoken', refresh_token);
+
+      LocalStorageService.remove('enterprise_Id');
+
+      router.push(
+        '/login/enterprise/select_enterprise_type?action=add_another_enterprise',
+      );
+      setOpen(false);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -104,10 +140,10 @@ const ProfileInfoPopUp = ({
         <Button
           variant="ghost"
           className={cn(
-            'flex w-full justify-start gap-2 rounded-sm border-none p-3 text-xs',
+            'flex w-full justify-start gap-2.5 rounded-sm border-none p-3 text-sm font-normal',
             open || pathName.includes('profile')
-              ? 'bg-[#288AF91A] text-[#288AF9] hover:bg-[#288AF91A] hover:text-[#288AF9]'
-              : 'bg-transparent text-grey',
+              ? 'bg-[#288AF91A] text-primary hover:bg-[#288AF91A] hover:text-primary'
+              : 'bg-transparent text-gray-600',
           )}
           size="sm"
         >
@@ -115,7 +151,7 @@ const ProfileInfoPopUp = ({
           {translations(ctaName)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="absolute bottom-2 left-28 flex max-h-[350px] w-[350px] flex-col gap-5">
+      <PopoverContent className="absolute bottom-2 left-28 flex max-h-[400px] w-[350px] flex-col gap-5">
         {/* user information */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -147,23 +183,23 @@ const ProfileInfoPopUp = ({
         <div className="flex flex-col gap-1 p-1">
           <h1 className="text-sm">{translations(enterprises)}</h1>
 
-          <div className="scrollBarStyles flex max-h-40 flex-col gap-5 overflow-y-auto">
+          <div className="scrollBarStyles flex max-h-32 flex-col gap-5 overflow-y-auto">
             {/* availableenterprise lists */}
-            {userAccounts?.map((account) => (
+            {userEnterprises?.map((userAccount) => (
               <div
-                key={account?.userAccountId}
+                key={userAccount?.userAccountId}
                 className={cn(
                   'flex items-center justify-between rounded-sm p-2 hover:bg-blue-500/10',
-                  account?.isActiveEnterprise
+                  userAccount?.isActiveEnterprise
                     ? 'border border-primary bg-blue-500/10'
                     : 'cursor-pointer',
                 )}
                 onClick={() => {
-                  !account?.isActiveEnterprise &&
+                  !userAccount?.isActiveEnterprise &&
                     switchAccountMutation.mutate({
-                      userId: account?.user?.userId,
-                      userAccountId: account?.userAccountId,
-                      enterpriseId: account?.enterprise?.enterpriseId,
+                      userId: userAccount?.user?.userId,
+                      userAccountId: userAccount?.userAccountId,
+                      enterpriseId: userAccount?.enterprise?.enterpriseId,
                     });
                 }}
               >
@@ -171,15 +207,15 @@ const ProfileInfoPopUp = ({
                   <div
                     className={`${bgColor} flex h-10 w-12 items-center justify-center rounded-full text-sm text-white`}
                   >
-                    {getInitialsNames(account?.enterprise?.enterpriseName)}
+                    {getInitialsNames(userAccount?.enterprise?.enterpriseName)}
                   </div>
                   <div className="flex w-full justify-between gap-2">
                     <span className="text-sm font-bold">
-                      {account?.enterprise?.enterpriseName ??
+                      {userAccount?.enterprise?.enterpriseName ??
                         'Enterprise Not Completed'}
                     </span>
-                    {account?.enterprise?.enterpriseId &&
-                      !account?.enterprise?.isOnboardingCompleted && (
+                    {userAccount?.enterprise?.enterpriseId &&
+                      !userAccount?.enterprise?.isOnboardingCompleted && (
                         <Tooltips
                           trigger={
                             <span className="rounded-sm border-2 border-gray-400 p-1 text-center text-[10px] text-gray-600">
@@ -203,8 +239,7 @@ const ProfileInfoPopUp = ({
         <div>
           <div
             onClick={() => {
-              router.push('/login/enterpriseOnboardingSearch');
-              setOpen(false);
+              addAnotherEnterpriseMutation.mutate();
             }}
             className="cursor-pointer rounded-sm p-2 text-sm font-semibold hover:bg-blue-500/10"
           >

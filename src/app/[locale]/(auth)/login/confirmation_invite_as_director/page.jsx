@@ -30,23 +30,20 @@ const ConfirmationInviteAsDirectorPage = () => {
     mutationKey: [userAuth.createUserSession.endpointKey],
     mutationFn: createUserSession,
     onSuccess: (data) => {
-      LocalStorageService.set('user_profile', data?.data?.data?.user?.userId);
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
-      LocalStorageService.set(
-        'isOnboardingComplete',
-        data?.data?.data?.user?.isOnboardingComplete,
-      );
+      const {
+        userId,
+        enterpriseId,
+        isOnboardingComplete,
+        isEnterpriseOnboardingComplete,
+      } = data.data.data.user;
+
+      LocalStorageService.set('user_profile', userId);
+      LocalStorageService.set('enterprise_Id', enterpriseId);
+      LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
+        isEnterpriseOnboardingComplete,
       );
-      // LocalStorageService.set(
-      //   'isKycVerified',
-      //   data?.data?.data?.user?.isKycVerified,
-      // );
 
       router.push('/login/enterprise/select_enterprise_type');
     },

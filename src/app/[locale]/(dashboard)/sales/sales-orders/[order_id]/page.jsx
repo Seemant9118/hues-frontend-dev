@@ -1,5 +1,6 @@
 'use client';
 
+import { invitation } from '@/api/invitation/Invitation';
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
@@ -19,6 +20,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getInvitationStatus } from '@/services/Invitation_Service/Invitation_Service';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
@@ -156,10 +158,22 @@ const ViewOrder = () => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
   }, [isNegotiation]);
 
+  // api calling for orderDEtails
   const { isLoading, data: orderDetails } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
     select: (data) => data.data.data,
+  });
+
+  const { data: invitationData } = useQuery({
+    queryKey: [
+      invitation.getInvitationStatus.endpointKey,
+      orderDetails?.buyerId,
+    ],
+    queryFn: () => getInvitationStatus({ buyerId: orderDetails?.buyerId }),
+    select: (data) => data.data.data,
+    enabled: orderDetails?.buyerType === 'UNINVITED-ENTERPRISE',
+    refetchOnWindowFocus: false,
   });
 
   // accept mutation
@@ -403,6 +417,7 @@ const ViewOrder = () => {
                     mobileNumber={orderDetails?.mobileNumber}
                     amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
+                    invitationData={invitationData}
                   />
 
                   {/* orderDetail Table */}

@@ -161,7 +161,7 @@ function Profile() {
                 size="sm"
                 className="h-8 bg-[#288AF9]"
                 onClick={() => {
-                  router.push('/login/pan-verification');
+                  router.push('/login/user/pan-verification');
                 }}
               >
                 {translations('ctas.pendingActionsForCompletion.complete')}
@@ -181,7 +181,7 @@ function Profile() {
                 size="sm"
                 className="h-8 bg-[#288AF9]"
                 onClick={() => {
-                  router.push('/login/aadhar-verification');
+                  router.push('/login/user/aadhar-verification');
                 }}
               >
                 {translations('ctas.pendingActionsForCompletion.complete')}

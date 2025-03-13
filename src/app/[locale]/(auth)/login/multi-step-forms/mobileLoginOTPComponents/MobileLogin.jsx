@@ -5,23 +5,21 @@ import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { validationBase64 } from '@/services/Invitation_Service/Invitation_Service';
-import {
-  loginWithInvitation,
-  userGenerateOtp,
-} from '@/services/User_Auth_Service/UserAuthServices';
+import { loginWithInvitation } from '@/services/User_Auth_Service/UserAuthServices';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 
-const MobileLogin = ({ setMobileLoginStep }) => {
-  const [formDataWithMob, setFormDataWithMob] = useState({
-    mobileNumber: '',
-    countryCode: '+91',
-  });
-  const [errorMsg, setErrorMsg] = useState('');
-
+const MobileLogin = ({
+  setMobileLoginStep,
+  formDataWithMob,
+  setFormDataWithMob,
+  errorMsg,
+  setErrorMsg,
+  generateOTPMutation,
+}) => {
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get('invitationToken');
 
@@ -76,24 +74,6 @@ const MobileLogin = ({ setMobileLoginStep }) => {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: (data) => userGenerateOtp(data),
-    onSuccess: (data) => {
-      LocalStorageService.set('user_profile', data.data.data.userId);
-      LocalStorageService.set(
-        'user_mobile_number',
-        formDataWithMob.mobileNumber,
-      );
-      LocalStorageService.set('operation_type', data.data.data.operation_type);
-      LocalStorageService.set('invitationData', data.data.data.invitationData);
-      toast.success(data.data.message);
-      setMobileLoginStep(2);
-    },
-    onError: () => {
-      setErrorMsg('Failed to send OTP');
-    },
-  });
-
   const handleChangeMobLogin = (e) => {
     const { name, value } = e.target;
 
@@ -118,7 +98,7 @@ const MobileLogin = ({ setMobileLoginStep }) => {
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg('');
       if (!invitationToken) {
-        mutation.mutate(formDataWithMob); // normal flow
+        generateOTPMutation.mutate(formDataWithMob); // normal flow
       } else {
         loginInvitation.mutate({
           countryCode: inviteData.country_code,
@@ -175,12 +155,12 @@ const MobileLogin = ({ setMobileLoginStep }) => {
         </div>
 
         <Button
-          disabled={mutation.isPending}
+          disabled={generateOTPMutation.isPending}
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"
         >
-          {mutation.isPending ? (
+          {generateOTPMutation.isPending ? (
             <Loading />
           ) : (
             <div className="flex items-center gap-4">

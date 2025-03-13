@@ -38,10 +38,10 @@ const StyledLinks = ({ link }) => {
         <Link
           href={link.path}
           className={cn(
-            'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-xs',
+            'flex w-full items-center justify-between gap-2 rounded-sm border-none p-3 text-sm',
             isMainTabActive && !isSubTabActive
               ? 'bg-[#288AF91A] text-[#288AF9]'
-              : 'bg-transparent text-gray-500 hover:text-black',
+              : 'bg-transparent text-gray-600 hover:text-black',
           )}
         >
           <span
@@ -93,10 +93,10 @@ const StyledLinks = ({ link }) => {
               href={subtab.path}
               key={subtab.path}
               className={cn(
-                'flex gap-2 rounded-sm border-none p-3 text-xs',
+                'flex gap-2 rounded-sm border-none p-3 text-sm',
                 pathname.startsWith(subtab.path)
                   ? 'bg-[#288AF91A] text-[#288AF9]'
-                  : 'bg-transparent text-gray-500 hover:text-black',
+                  : 'bg-transparent text-gray-600 hover:text-black',
               )}
             >
               {subtab.icon}

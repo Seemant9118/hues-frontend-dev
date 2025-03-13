@@ -8,18 +8,19 @@ import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 const UdyamVerify = () => {
   const router = useRouter();
+  const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseData, setEnterpriseData] = useState({
     udyamNumber: '',
     enterpriseId,
+    type,
   });
 
   const handleChange = (e) => {
@@ -35,10 +36,9 @@ const UdyamVerify = () => {
     mutationFn: UdyamVerify,
     onSuccess: (data) => {
       toast.success('UDYAM ID Verified Successfully');
-      LocalStorageService.set(
-        'enterprise_Id',
-        data?.data?.data?.user?.enterpriseId,
-      );
+
+      const { enterpriseId } = data.data.data;
+      LocalStorageService.set('enterprise_Id', enterpriseId);
       router.push('/login/enterprise/enterprise-verification-details');
     },
     onError: (error) => {
@@ -49,7 +49,11 @@ const UdyamVerify = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // api call
-    verifyUdyamMutation.mutate(enterpriseData);
+    if (enterpriseData.udyamNumber === '') {
+      return router.push('/login/enterprise/enterprise-verification-details');
+    } else {
+      return verifyUdyamMutation.mutate(enterpriseData);
+    }
   };
 
   const handleBack = () => {
@@ -100,15 +104,6 @@ const UdyamVerify = () => {
             Back
           </Button>
         </form>
-
-        <div className="flex w-full flex-col gap-20">
-          <Link
-            href="/login/enterprise/enterprise-verification-details"
-            className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
-          >
-            Skip for Now
-          </Link>
-        </div>
       </div>
     </div>
   );

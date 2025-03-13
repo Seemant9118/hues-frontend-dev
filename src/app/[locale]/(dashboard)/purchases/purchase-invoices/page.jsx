@@ -102,7 +102,6 @@ const PurchaseInvoices = () => {
     queryKey: [
       invoiceApi.getAllPurchaseInvoices.endpointKey,
       enterpriseId,
-      tab,
       filterData,
     ],
     queryFn: async ({ pageParam = 1 }) => {
