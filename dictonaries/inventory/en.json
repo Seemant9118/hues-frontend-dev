@@ -30,7 +30,8 @@
         },
         "components": {
             "add": {
-                "title": "Item",
+                "title1": "Add Item",
+                "title2": "Edit Item",
                 "label": {
                     "type": "Type",
                     "productName": "Product Name",
@@ -44,6 +45,7 @@
                     "expiry": "Expiry",
                     "application": "Application",
                     "manufacturerGST": "Manufacturer's GST IN",
+                    "productDimension": "Product Dimension ( weight(gm) x L x B x H (cm)",
                     "weight": "Weight (grams)",
                     "length": "Length (cm)",
                     "breadth": "Breadth (cm)",
@@ -51,7 +53,8 @@
                 },
                 "ctas": {
                     "cancel": "Cancel",
-                    "add": "Add",
+                    "discard": "Discard",
+                    "create": "Create",
                     "edit": "Edit"
                 }
             }
@@ -107,7 +110,8 @@
         },
         "components": {
             "add": {
-                "title": "Item",
+                "title1": "Add Item",
+                "title2": "Edit Item",
                 "label": {
                     "type": "Type",
                     "serviceName": "Service Name",
@@ -120,7 +124,8 @@
                 },
                 "ctas": {
                     "cancel": "Cancel",
-                    "add": "Add",
+                    "discard": "Discard",
+                    "create": "Create",
                     "edit": "Edit"
                 }
             }
