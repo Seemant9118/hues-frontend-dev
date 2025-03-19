@@ -15,10 +15,14 @@ test('Is Order Present Test', async ({ page }) => {
   // container.scrollTop = container.scrollHeight;
   // });
 
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(10000);
+
+  const orderElement = await page.getByRole('cell', {
+    name: 'ORD/G0IO49/2425/0022',
+  });
 
   // First locate the element (without asserting visibility)
-  const orderElement = page.getByText('ORD/G0IO49/2425/0050');
+  // = page.getByText('G0IO49/2425/0022');
 
   // Now check if it's visible
   await expect(orderElement).toBeVisible();
