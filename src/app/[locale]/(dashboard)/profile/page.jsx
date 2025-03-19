@@ -1,8 +1,10 @@
 'use client';
 
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
+import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import GeneatePINModal from '@/components/Modals/GeneatePINModal';
 import Tooltips from '@/components/auth/Tooltips';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
@@ -15,6 +17,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { checkPINStatus } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import {
   getProfileDetails,
   LoggingOut,
@@ -108,6 +111,7 @@ function Profile() {
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
+    enabled: tab === 'userOverview' || tab === 'enterpriseOverview',
   });
 
   useMetaData(
@@ -119,6 +123,14 @@ function Profile() {
     const bgColorClass = getRandomBgColor();
     setBgColor(bgColorClass);
   }, []);
+
+  // check pin status
+  const { data: pinStatus } = useQuery({
+    queryKey: [pinSettings.checkPINStatus.endpointKey],
+    queryFn: () => checkPINStatus(),
+    select: (data) => data.data.data,
+    enabled: tab === 'pinSettings',
+  });
 
   return (
     <Wrapper className="h-full gap-8">
@@ -146,6 +158,9 @@ function Profile() {
           </TabsTrigger>
           <TabsTrigger value="permissions">
             {translations('tabs.label.tab4')}
+          </TabsTrigger>
+          <TabsTrigger value="pinSettings">
+            {translations('tabs.label.tab5')}
           </TabsTrigger>
         </TabsList>
 
@@ -660,6 +675,10 @@ function Profile() {
 
         <TabsContent value="permissions">
           {translations('tabs.content.tab4.coming_soon')}
+        </TabsContent>
+
+        <TabsContent value="pinSettings">
+          <GeneatePINModal isPINAvailable={pinStatus?.pinExists} />
         </TabsContent>
       </Tabs>
     </Wrapper>

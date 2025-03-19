@@ -1,7 +1,7 @@
+import { cn } from '@/lib/utils'; // Ensure the import path is correct
 import React from 'react';
-import { cn } from '@/lib/utils'; // Ensure that this is the correct import path
 
-function Slot(props) {
+function Slot({ isActive, char, hiddenPin = false }) {
   return (
     <div
       className={cn(
@@ -11,11 +11,13 @@ function Slot(props) {
         'rounded-md border-2 focus:bg-blue-600',
         'group-focus-within:border-accent-foreground/20 group-hover:border-accent-foreground/20',
         'outline outline-0 outline-accent-foreground/20',
-        { 'outline-4 outline-accent-foreground': props.isActive }, // Ensure cn handles object conditionally
+        { 'outline-4 outline-accent-foreground': isActive }, // Conditional outline
       )}
     >
-      {props.char !== null && (
-        <div className="text-[#288AF9]">{props.char}</div>
+      {char !== null && (
+        <div className={hiddenPin ? 'text-black' : 'text-primary'}>
+          {hiddenPin ? '*' : char}
+        </div>
       )}
     </div>
   );
