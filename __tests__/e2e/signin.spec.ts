@@ -31,7 +31,7 @@ test('Cannot Sign In with Wrong OTP', async ({ page }) => {
   await page.waitForSelector('text=Verify your number', { state: 'visible' });
   await page.getByRole('textbox').fill('1111');
   await page.getByRole('button', { name: 'Verify' }).click();
-  await expect(page.getByText('Internal server error')).toBeVisible({
+  await expect(page.getByText('Invalid OTP')).toBeVisible({
     timeout: 5000,
   });
 });

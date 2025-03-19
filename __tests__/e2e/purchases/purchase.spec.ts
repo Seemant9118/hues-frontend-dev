@@ -15,7 +15,7 @@ test('Has Under Review', async ({ page }) => {
   await page.getByRole('tab', { name: 'Under Review' }).click();
   await page.getByText('ORD/ZXZ0LT/2425/0002').click();
   await expect(page.getByText('ORD/ZXZ0LT/2425/0002')).toBeVisible();
-  await expect(page.getByText('Offer received')).toBeVisible();
+  await expect(page.getByText('Withdrawn')).toBeVisible();
 });
 
 test('Has Invoice', async ({ page }) => {
