@@ -8,17 +8,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useRouter } from '@/i18n/routing';
-import { LocalStorageService } from '@/lib/utils';
 import {
   createInvoiceForAcceptedOrder,
   createInvoiceForNewOrder,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
-import { Clock5, FileCog } from 'lucide-react';
+import { FileCog } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../ui/button';
@@ -29,7 +28,6 @@ const GenerateInvoiceModal = ({
   orderDetails,
   invoicedData,
   setInvoicedData,
-  generateOTP,
   disableCondition,
   setIsGenerateInvoice,
   handleClose,
@@ -39,30 +37,15 @@ const GenerateInvoiceModal = ({
   const router = useRouter();
   const params = useParams();
   const orderId = params.order_id;
-
-  const userMobileNumber = LocalStorageService.get('user_mobile_number');
   const [open, setOpen] = useState(false);
-  const [isOTPVerified, setOTPVerified] = useState(false);
-  const [startFrom, setStartFrom] = useState(30);
-
-  //   timer for resend
-  useEffect(() => {
-    if (startFrom <= 0) return; // Stop countdown when it reaches 0
-
-    const timer = setInterval(() => {
-      setStartFrom((prevStartFrom) => prevStartFrom - 1);
-    }, 1000);
-
-    // eslint-disable-next-line consistent-return
-    return () => clearInterval(timer);
-  }, [startFrom]); // Add dependency to stop timer when countdown ends
+  const [isPINVerified, setPINVerified] = useState(false);
 
   // mutation fn - generate Invoice : IF ACCEPTED
   const invoiceMutation = useMutation({
     mutationKey: [invoiceApi.createInvoiceForAcceptedOrder.endpointKey],
     mutationFn: createInvoiceForAcceptedOrder,
     onSuccess: () => {
-      setOTPVerified(true);
+      setPINVerified(true);
       toast.success(translations('successMsg.invoice_generate_success'));
       queryClient.invalidateQueries([
         invoiceApi.getInvoices.endpointKey,
@@ -81,7 +64,7 @@ const GenerateInvoiceModal = ({
     mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
     mutationFn: createInvoiceForNewOrder,
     onSuccess: () => {
-      setOTPVerified(true);
+      setPINVerified(true);
       toast.success(translations('successMsg.invoice_generate_success'));
       router.push('/sales/sales-orders');
     },
@@ -95,7 +78,7 @@ const GenerateInvoiceModal = ({
   const handleChangeOtp = (value) => {
     setInvoicedData((prev) => ({
       ...prev,
-      otpCode: value,
+      pin: value,
     }));
   };
 
@@ -113,34 +96,40 @@ const GenerateInvoiceModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" onClick={generateOTP} disabled={disableCondition}>
+        <Button size="sm" disabled={disableCondition}>
           <FileCog size={16} />
           {translations('ctas.generate')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] overflow-hidden">
         <DialogTitle>{translations('title')}</DialogTitle>
-        {/* OTP */}
-        {!isOTPVerified && (
+        {/* PIN */}
+        {!isPINVerified && (
           <form
             onSubmit={handleVerifiyOTP}
             className="z-20 flex flex-col items-center justify-center gap-5 p-5"
           >
-            <h2 className="w-full text-2xl font-bold">
-              {translations('ctas.verify')}
-            </h2>
-            <p className="w-full text-sm">
-              {translations('infoText.info')}
-              <span className="font-bold text-[#414656]">
-                +91 {userMobileNumber}
-              </span>
-            </p>
+            <div className="flex w-full flex-col gap-2">
+              <h2 className="w-full text-center text-2xl font-bold">
+                {translations('infoText.title')}
+              </h2>
+              <p className="flex w-full flex-col items-center gap-1 text-center text-sm">
+                {translations('infoText.info')}
+
+                <span
+                  className="cursor-pointer text-primary underline hover:text-black"
+                  onClick={() => router.push('/profile')}
+                >
+                  {translations('infoText.info2')}
+                </span>
+              </p>
+            </div>
 
             <OTPInput
               name="otp"
               onChange={handleChangeOtp}
               maxLength={4}
-              value={invoicedData?.otpCode}
+              value={invoicedData?.pin}
               containerClassName="group flex items-center has-[:disabled]:opacity-30"
               render={({ slots }) => (
                 <div className="flex gap-4">
@@ -150,25 +139,6 @@ const GenerateInvoiceModal = ({
                 </div>
               )}
             />
-            <p className="flex w-full items-center gap-2 text-sm text-[#A5ABBD]">
-              {translations('infoText.resend_info')}:{' '}
-              <span className="flex items-center gap-1 font-semibold">
-                {startFrom > 0 ? (
-                  <span className="flex items-center gap-1">
-                    <Clock5 size={15} />
-                    00:{startFrom.toString().padStart(2, '0')}
-                  </span>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="blue_outline"
-                    onClick={generateOTP}
-                  >
-                    {translations('ctas.resend')}
-                  </Button>
-                )}
-              </span>
-            </p>
             <Button
               size="sm"
               type="submit"
@@ -187,9 +157,9 @@ const GenerateInvoiceModal = ({
         )}
 
         {/* Confirm Action dialog */}
-        {isOTPVerified && invoiceMutation.isPending && <Loading />}
+        {isPINVerified && invoiceMutation.isPending && <Loading />}
 
-        {isOTPVerified && invoiceMutation.isSuccess && (
+        {isPINVerified && invoiceMutation.isSuccess && (
           <>
             <div className="flex items-center gap-2 text-xl font-bold">
               {translations('successMsg.invoice_generate_success')}

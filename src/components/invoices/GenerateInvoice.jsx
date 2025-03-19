@@ -1,8 +1,5 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import {
-  invoiceGenerateOTP,
-  previewInvoice,
-} from '@/services/Invoice_Services/Invoice_Services';
+import { previewInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -44,7 +41,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
 
   const [invoicedData, setInvoicedData] = useState({
-    otpCode: null,
+    pin: null,
     orderId: orderDetails?.id,
     gstAmount: orderDetails?.gstAmount,
     amount: orderDetails?.amount,
@@ -220,19 +217,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       ),
   });
 
-  const generateOTPMutation = useMutation({
-    mutationKey: [invoiceApi.generateOTPInvoice.endpointKey],
-    mutationFn: invoiceGenerateOTP,
-    onSuccess: () => toast.success(translations('successMsg.otp_sent')),
-    onError: (error) =>
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      ),
-  });
-
   const handlePreview = () => previewInvMutation.mutate(invoicedData);
-
-  const handleGenerateOTP = () => generateOTPMutation.mutate();
 
   // multiStatus components
   const multiStatus = (
@@ -431,7 +416,6 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
             orderDetails={orderDetails}
             invoicedData={invoicedData}
             setInvoicedData={setInvoicedData}
-            generateOTP={handleGenerateOTP}
             disableCondition={
               isAutoSelect ? false : invoicedData?.invoiceItems?.length === 0
             }

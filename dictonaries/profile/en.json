@@ -13,7 +13,8 @@
                 "tab1": "Overview",
                 "tab2": "Enterprise Overview",
                 "tab3": "Languages",
-                "tab4": "Permissions"
+                "tab4": "Permissions",
+                "tab5": "PIN Settings"
             },
             "content": {
                 "tab1": {
