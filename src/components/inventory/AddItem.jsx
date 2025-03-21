@@ -554,7 +554,7 @@ const AddItem = ({ onCancel, cta }) => {
           onClick={() => {
             if (redirectURL) {
               LocalStorageService.remove('redirectFromCatalogue'); // Clear the redirect URL
-              router.push(`/${redirectURL}/update_catalogue`);
+              router.push(`/${redirectURL}?action=update`);
             } else {
               LocalStorageService.remove('redirectFromCatalogue'); // Clear the redirect URL
               onCancel();
