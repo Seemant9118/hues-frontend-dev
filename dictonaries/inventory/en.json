@@ -45,7 +45,6 @@
                     "expiry": "Expiry",
                     "application": "Application",
                     "manufacturerGST": "Manufacturer's GST IN",
-                    "productDimension": "Product Dimension ( weight(gm) x L x B x H (cm)",
                     "weight": "Weight (grams)",
                     "length": "Length (cm)",
                     "breadth": "Breadth (cm)",
