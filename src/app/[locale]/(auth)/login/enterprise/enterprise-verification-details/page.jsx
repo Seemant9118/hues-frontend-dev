@@ -104,11 +104,11 @@ const EnterpriseVerificationDetailsPage = () => {
       // set new access token
       const newAccessToken = refreshTokenValue?.data?.data?.access_token;
       LocalStorageService.set('token', newAccessToken);
-      const { id, isOnboardingCompleted } = data.data.data;
+      const { id, isEnterpriseOnboardingComplete } = data.data.data;
       LocalStorageService.set('enterprise_Id', id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        isOnboardingCompleted,
+        isEnterpriseOnboardingComplete,
       );
 
       // clear original data which was used in onboarding
