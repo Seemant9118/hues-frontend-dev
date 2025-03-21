@@ -58,7 +58,6 @@ const AddItem = ({ onCancel, cta }) => {
     weight: '',
     length: '',
     breadth: '',
-    productDimension: '',
     height: '',
     applications: '',
     manufacturerGstId: '',
@@ -519,16 +518,36 @@ const AddItem = ({ onCancel, cta }) => {
             />
 
             <InputWithLabel
-              name={translations('goods.components.add.label.productDimension')}
-              id="productDimension"
+              name={translations('goods.components.add.label.weight')}
+              id="weight"
               onChange={onChange}
-              value={item.productDimension}
+              value={item.weight}
+            />
+
+            <InputWithLabel
+              name={translations('goods.components.add.label.length')}
+              id="length"
+              onChange={onChange}
+              value={item.length}
+            />
+
+            <InputWithLabel
+              name={translations('goods.components.add.label.breadth')}
+              id="breadth"
+              onChange={onChange}
+              value={item.breadth}
+            />
+
+            <InputWithLabel
+              name={translations('goods.components.add.label.height')}
+              id="height"
+              onChange={onChange}
+              value={item.height}
             />
           </div>
         </div>
       )}
 
-      {/* Make this bottom */}
       <div className="sticky bottom-0 z-10 flex justify-end gap-2 bg-white">
         <Button
           size="sm"
