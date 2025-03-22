@@ -1,3 +1,4 @@
+import { validateAadhaar } from '@/appUtils/ValidationUtils';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -13,32 +14,29 @@ const AadharNumberDetail = ({
   setAadharNumber,
   sendAadharOTPMutation,
 }) => {
-  const [errorMsg, setErrorMsg] = useState({});
+  const [errorMsg, setErrorMsg] = useState(null);
 
   // validation fn
   const validation = (aadharNumber) => {
-    let error = {};
-    const aadharPattern = /^\d{12}$/;
+    const errors = {};
+    errors.aadharNumber = validateAadhaar(aadharNumber);
 
-    if (aadharNumber === '') {
-      error.aadharNumber = '*Required Aadhar Number';
-    } else if (!aadharPattern.test(aadharNumber)) {
-      error.aadharNumber = '* Please provide valid Aadhar Number';
-    } else {
-      error = {};
-    }
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
 
-    return error;
+    return errors;
   };
 
   const handleChange = (e) => {
     const { value } = e.target;
 
-    if (value?.length !== 12) {
-      setErrorMsg({ aadharNumber: 'Aadhar number should be 12 digits' });
-    } else {
-      setErrorMsg({});
-    }
+    setErrorMsg({
+      ...errorMsg,
+      aadharNumber: validateAadhaar(value),
+    });
+
     setAadharNumber(value);
   };
 
@@ -98,9 +96,7 @@ const AadharNumberDetail = ({
           type="submit"
           className="w-full"
           size="sm"
-          disabled={
-            aadharNumber?.length !== 12 || sendAadharOTPMutation.isPending
-          }
+          disabled={sendAadharOTPMutation.isPending}
         >
           {sendAadharOTPMutation.isPending ? <Loading /> : 'Proceed'}
         </Button>

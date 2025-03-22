@@ -1,6 +1,8 @@
 'use client';
 
+import { validateEnterpriseType } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
+import ErrorBox from '@/components/ui/ErrorBox';
 import RadioSelect from '@/components/ui/RadioSelect';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,6 +19,7 @@ const SelectEnterprisePage = () => {
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     type: '',
   });
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleEnterpriseType = (enterpriseType) => {
     setEnterpriseOnboardData((values) => ({
@@ -31,9 +34,16 @@ const SelectEnterprisePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    router.push(
-      `/login/enterprise/pan-verify?type=${enterpriseOnboardData.type}`,
-    );
+    const errorMsg = validateEnterpriseType(enterpriseOnboardData.type);
+
+    if (errorMsg) {
+      setErrorMsg(errorMsg);
+    } else {
+      setErrorMsg('');
+      router.push(
+        `/login/enterprise/pan-verify?type=${enterpriseOnboardData.type}`,
+      );
+    }
   };
 
   return (
@@ -63,9 +73,10 @@ const SelectEnterprisePage = () => {
               />
             ))}
           </div>
+          {errorMsg && <ErrorBox msg={errorMsg} />}
         </div>
 
-        <div className="flex w-full flex-col gap-10">
+        <div className="flex w-full flex-col gap-2">
           <Button size="sm" type="submit" className="w-full bg-[#288AF9]">
             Proceed
           </Button>

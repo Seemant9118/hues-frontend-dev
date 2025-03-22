@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
+import { udyamVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -27,13 +28,13 @@ const UdyamVerify = () => {
     const { value } = e.target;
     setEnterpriseData((prev) => ({
       ...prev,
-      udyam: value,
+      udyamNumber: value,
     }));
   };
 
   const verifyUdyamMutation = useMutation({
     mutationKey: [userAuth.udyamVerify.endpointKey],
-    mutationFn: UdyamVerify,
+    mutationFn: udyamVerify,
     onSuccess: (data) => {
       toast.success('UDYAM ID Verified Successfully');
 
@@ -86,23 +87,25 @@ const UdyamVerify = () => {
                 name="udyam"
                 placeholder="Enter UDYAM ID"
                 className="uppercase focus:font-bold"
-                value={enterpriseData.udyam}
+                value={enterpriseData.udyamNumber}
                 onChange={handleChange}
               />
             </div>
           </div>
 
-          <Button
-            size="sm"
-            type="submit"
-            disabled={verifyUdyamMutation.isPending}
-          >
-            {verifyUdyamMutation.isPending ? <Loading /> : 'Proceed'}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleBack}>
-            <ArrowLeft size={14} />
-            Back
-          </Button>
+          <div className="flex w-full flex-col gap-2">
+            <Button
+              size="sm"
+              type="submit"
+              disabled={verifyUdyamMutation.isPending}
+            >
+              {verifyUdyamMutation.isPending ? <Loading /> : 'Proceed'}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft size={14} />
+              Back
+            </Button>
+          </div>
         </form>
       </div>
     </div>
