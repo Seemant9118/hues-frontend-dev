@@ -1,4 +1,5 @@
 import { invitation } from '@/api/invitation/Invitation';
+import { validatePhoneNumber } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
@@ -48,16 +49,6 @@ const MobileLogin = ({
     }
   }, [isSuccess, inviteData]);
 
-  const validation = (formData) => {
-    const error = {};
-    if (formData.mobileNumber.length === 0) {
-      error.mobileNumber = '*Phone Number is required to proceed';
-    } else if (formData.mobileNumber.length !== 10) {
-      error.mobileNumber = '*Please enter a 10 - digit phone number';
-    }
-    return error;
-  };
-
   // login with invitation
   const loginInvitation = useMutation({
     mutationFn: loginWithInvitation,
@@ -77,39 +68,40 @@ const MobileLogin = ({
   const handleChangeMobLogin = (e) => {
     const { name, value } = e.target;
 
-    // Handle validation for 10-digit mobile number
-    setErrorMsg((prev) => ({
-      ...prev,
-      mobileNumber:
-        value.length === 10 ? '' : '*Please enter a 10-digit mobile number',
-    }));
+    // Validate mobile number and update error message
+    const errorMessage = validatePhoneNumber(value);
+    setErrorMsg(errorMessage);
 
     // Update form data
-    setFormDataWithMob((values) => ({
-      ...values,
+    setFormDataWithMob((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
-    const isAnyError = validation(formDataWithMob);
 
-    if (Object.keys(isAnyError).length === 0) {
+    const errorMsg = validatePhoneNumber(formDataWithMob.mobileNumber);
+
+    if (!errorMsg) {
       setErrorMsg('');
+
       if (!invitationToken) {
-        generateOTPMutation.mutate(formDataWithMob); // normal flow
+        // Normal flow
+        generateOTPMutation.mutate(formDataWithMob);
       } else {
+        // Invitation flow
         loginInvitation.mutate({
-          countryCode: inviteData.country_code,
-          invitationPasscode: inviteData.invitation_passcode,
-          invitationReferenceId: inviteData.invitation_reference_id,
+          countryCode: inviteData?.country_code,
+          invitationPasscode: inviteData?.invitation_passcode,
+          invitationReferenceId: inviteData?.invitation_reference_id,
           mobileNumber: formDataWithMob.mobileNumber,
           invitationType: inviteData?.invitationData?.invitationType,
-        }); // invitation flow
+        });
       }
     } else {
-      setErrorMsg(isAnyError);
+      setErrorMsg(errorMsg);
     }
   };
 
@@ -151,7 +143,7 @@ const MobileLogin = ({
               value={formDataWithMob.mobileNumber}
             />
           </div>
-          {errorMsg.mobileNumber && <ErrorBox msg={errorMsg.mobileNumber} />}
+          {errorMsg && <ErrorBox msg={errorMsg} />}
         </div>
 
         <Button

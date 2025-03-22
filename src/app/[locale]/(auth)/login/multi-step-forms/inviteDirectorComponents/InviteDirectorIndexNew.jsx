@@ -1,4 +1,5 @@
 import { invitation } from '@/api/invitation/Invitation';
+import { validateEmail, validatePhoneNumber } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/Loading';
@@ -48,23 +49,17 @@ const InviteDirectorIndexNew = ({
   });
 
   const validation = (inviteeData) => {
-    const error = {};
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const errors = {};
 
-    // email validation
-    if (inviteeData.email === '') {
-      error.email = '*Required Email';
-    } else if (!emailPattern.test(inviteeData.email)) {
-      error.email = '*Please provide valid email';
-    }
+    errors.email = validateEmail(inviteeData.email);
+    errors.mobileNumber = validatePhoneNumber(inviteeData.mobileNumber);
 
-    if (inviteeData.mobileNumber === '') {
-      error.mobileNumber = '*Required Phone Number';
-    } else if (inviteeData?.mobileNumber?.length !== 10) {
-      error.mobileNumber = '*Please provide valid Phone Number';
-    }
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
 
-    return error;
+    return errors;
   };
 
   const handleSendInviteToDirector = () => {
@@ -132,7 +127,7 @@ const InviteDirectorIndexNew = ({
         </div>
       </form>
 
-      <div className="flex w-full flex-col gap-5">
+      <div className="flex w-full flex-col gap-2">
         <Button
           size="sm"
           onClick={handleSendInviteToDirector}
