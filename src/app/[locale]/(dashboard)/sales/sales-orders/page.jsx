@@ -245,7 +245,10 @@ const SalesOrder = () => {
                   <Tooltips
                     trigger={
                       <Button
-                        disabled={selectedOrders?.length === 0}
+                        disabled={
+                          selectedOrders?.length === 0 ||
+                          exportOrderMutation.isPending
+                        }
                         onClick={handleExportOrder}
                         variant="outline"
                         className="border border-[#A5ABBD] hover:bg-neutral-600/10"

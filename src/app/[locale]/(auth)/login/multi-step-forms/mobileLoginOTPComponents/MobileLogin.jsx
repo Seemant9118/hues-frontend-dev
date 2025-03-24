@@ -147,12 +147,12 @@ const MobileLogin = ({
         </div>
 
         <Button
-          disabled={generateOTPMutation.isPending}
+          disabled={generateOTPMutation.isPending || loginInvitation.isPending}
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"
         >
-          {generateOTPMutation.isPending ? (
+          {generateOTPMutation.isPending || loginInvitation.isPending ? (
             <Loading />
           ) : (
             <div className="flex items-center gap-4">

@@ -26,6 +26,7 @@ import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import InputWithLabel from '../ui/InputWithLabel';
+import Loading from '../ui/Loading';
 
 const AddItem = ({ onCancel, cta }) => {
   const translations = useTranslations();
@@ -564,8 +565,20 @@ const AddItem = ({ onCancel, cta }) => {
         >
           {translations('services.components.add.ctas.discard')}
         </Button>
-        <Button size="sm" type="submit" disabled={cta === 'Template'}>
-          {translations('services.components.add.ctas.create')}
+        <Button
+          size="sm"
+          type="submit"
+          disabled={
+            cta === 'Template' ||
+            mutationGoods.isPending ||
+            mutationServices.isPending
+          }
+        >
+          {mutationGoods.isPending || mutationServices.isPending ? (
+            <Loading size={14} />
+          ) : (
+            translations('services.components.add.ctas.create')
+          )}
         </Button>
       </div>
     </form>

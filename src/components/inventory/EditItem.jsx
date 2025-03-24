@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import InputWithLabel from '../ui/InputWithLabel';
+import Loading from '../ui/Loading';
 
 const EditItem = ({
   setIsEditing,
@@ -329,8 +330,12 @@ const EditItem = ({
         >
           {translations('services.components.add.ctas.cancel')}
         </Button>
-        <Button size="sm" type="submit">
-          {translations('services.components.add.ctas.edit')}
+        <Button size="sm" type="submit" disabled={updateMutation.isPending}>
+          {updateMutation.isPending ? (
+            <Loading size={14} />
+          ) : (
+            translations('services.components.add.ctas.edit')
+          )}
         </Button>
       </div>
     </form>
