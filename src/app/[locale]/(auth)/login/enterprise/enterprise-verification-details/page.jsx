@@ -317,7 +317,12 @@ const EnterpriseVerificationDetailsPage = () => {
           </div>
 
           <div className="flex w-full flex-col gap-4">
-            <Button size="sm" type="submit" className="w-full">
+            <Button
+              size="sm"
+              type="submit"
+              className="w-full"
+              disabled={enterpriseOnboardUpdateMutation.isPending}
+            >
               {enterpriseOnboardUpdateMutation.isPending ? (
                 <Loading />
               ) : (
