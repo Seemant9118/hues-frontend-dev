@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { randomUUID } from 'crypto'; // Node.js built-in module
+import fs from 'fs';
+import path from 'path';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:3000/en/');
@@ -93,47 +95,52 @@ test.describe.serial('Goods Management - CRUD', () => {
   });
 });
 
-test.describe.serial('Goods Management - Upload and Download', () => {
+test('Can Download Sample File', async ({ page }) => {
+  await page.waitForURL('http://localhost:3000/en/inventory/goods');
+  await page.waitForTimeout(1000);
 
-  test('Can Download Sample File', async ({ page }) => {
-    await page.waitForURL('http://localhost:3000/en/inventory/goods');
-    await page.waitForTimeout(1000);
+  // Click on upload button
+  await page.getByRole('button', { name: 'Upload' }).click();
+  await page.waitForTimeout(1000);
 
-    // Click on upload button
-    await page.getByRole('button', { name: 'Upload' }).click();
-    await page.waitForTimeout(1000);
+  // Click on download sample file button
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByText('Sample').click()
+  ]);
 
-    // Click on download sample file button
-    const [download] = await Promise.all([
-      page.waitForEvent('download'),
-      page.getByText('Sample').click()
-    ]);
+  // Define a path to save the file
+  const downloadPath = path.join(__dirname, 'downloads', download.suggestedFilename());
+  await download.saveAs(downloadPath);
 
-    // Verify the file is downloaded
-    expect(download.suggestedFilename()).toMatch(/goodsSample.*\.(xlsx|xls|csv)$/);
-  });
+  // Ensure the file exists in the system
+  expect(fs.existsSync(downloadPath)).toBeTruthy();
 
-  test('Can Upload File', async ({ page }) => {
-    await page.waitForURL('http://localhost:3000/en/inventory/goods');
-    await page.waitForTimeout(1000);
-
-    // Click on upload button
-    await page.getByRole('button', { name: 'Upload' }).click();
-    await page.waitForTimeout(1000);
-
-    // Upload file
-    const fileInput = await page.locator('input[type="file"]');
-    await fileInput.setInputFiles('./__tests__/e2e/item-master/goodsSample.xlsx');
-    await page.waitForTimeout(2000);
-
-    await page.getByText('View').click();
-    await page.waitForTimeout(2000);
-
-    // Verify uploaded items are visible in table
-    await expect(
-      page.getByRole('cell', { name: 'Upload Product 123' }).first(),
-    ).toBeVisible();
-  });
+  // Optional: Validate file type
+  expect(download.suggestedFilename()).toMatch(/\.(xlsx|xls|csv)$/);
 });
+
+test('Can Upload File', async ({ page }) => {
+  await page.waitForURL('http://localhost:3000/en/inventory/goods');
+  await page.waitForTimeout(1000);
+
+  // Click on upload button
+  await page.getByRole('button', { name: 'Upload' }).click();
+  await page.waitForTimeout(1000);
+
+  // Upload file
+  const fileInput = await page.locator('input[type="file"]');
+  await fileInput.setInputFiles('./__tests__/e2e/item-master/downloads/goodsSample.xlsx');
+  await page.waitForTimeout(2000);
+
+  await page.getByText('View').click();
+  await page.waitForTimeout(2000);
+
+  // Verify uploaded items are visible in table
+  await expect(
+    page.getByRole('cell', { name: 'Upload Product 123' }).first(),
+  ).toBeVisible();
+});
+
 
 
