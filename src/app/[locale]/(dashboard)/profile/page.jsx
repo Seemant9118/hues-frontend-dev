@@ -135,7 +135,12 @@ function Profile() {
   return (
     <Wrapper className="h-full gap-8">
       <SubHeader name="Profile">
-        <Button size="sm" variant="blue_outline" onClick={logout}>
+        <Button
+          size="sm"
+          variant="blue_outline"
+          onClick={logout}
+          disabled={logoutMutation.isPending}
+        >
           {translations('ctas.logout')}
         </Button>
       </SubHeader>

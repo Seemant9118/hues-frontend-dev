@@ -365,9 +365,14 @@ const AddModal = ({ cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
                   ) : (
                     <Button
                       onClick={() => handleSendInvite(sdata.id)}
+                      disabled={sendInvite.isPending}
                       size="sm"
                     >
-                      {translations('common.form.ctas.identifiers.invite')}
+                      {sendInvite.isPending ? (
+                        <Loading size={14} />
+                      ) : (
+                        translations('common.form.ctas.identifiers.invite')
+                      )}
                     </Button>
                   )}
                 </div>
@@ -602,8 +607,12 @@ const AddModal = ({ cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
                 {translations('common.form.ctas.addNewEntity.cancel')}
               </Button>
 
-              <Button type="submit" size="sm">
-                {translations('common.form.ctas.addNewEntity.add')}
+              <Button type="submit" size="sm" disabled={mutation.isPending}>
+                {mutation.isPending ? (
+                  <Loading size={14} />
+                ) : (
+                  translations('common.form.ctas.addNewEntity.add')
+                )}
               </Button>
             </div>
           </form>
