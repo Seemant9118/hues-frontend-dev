@@ -1,7 +1,6 @@
 'use client';
 
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
-import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import GeneatePINModal from '@/components/Modals/GeneatePINModal';
@@ -17,7 +16,6 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { checkPINStatus } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import {
   getProfileDetails,
   LoggingOut,
@@ -123,14 +121,6 @@ function Profile() {
     const bgColorClass = getRandomBgColor();
     setBgColor(bgColorClass);
   }, []);
-
-  // check pin status
-  const { data: pinStatus } = useQuery({
-    queryKey: [pinSettings.checkPINStatus.endpointKey],
-    queryFn: () => checkPINStatus(),
-    select: (data) => data.data.data,
-    enabled: tab === 'pinSettings',
-  });
 
   return (
     <Wrapper className="h-full gap-8">
@@ -683,7 +673,7 @@ function Profile() {
         </TabsContent>
 
         <TabsContent value="pinSettings">
-          <GeneatePINModal isPINAvailable={pinStatus?.pinExists} />
+          <GeneatePINModal isPINAvailable={profileDetails?.pinExists} />
         </TabsContent>
       </Tabs>
     </Wrapper>
