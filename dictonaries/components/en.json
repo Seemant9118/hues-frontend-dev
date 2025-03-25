@@ -379,15 +379,17 @@
                 "verify": "Verify"
             },
             "infoText": {
-                "title": "Enter PIN to generate invoice",
-                "info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
+                "title": "Enter PIN",
+                "pin_exist_info": "Enter a User PIN to Generate Invoice",
+                "pin_not_exist_info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
                 "info2": "click here"
             },
             "successMsg": {
                 "invoice_generate_success": " Invoice Generated Successfully"
             },
             "errorMsg": {
-                "common": "Something went wrong"
+                "common": "Something went wrong",
+                "pin_error": "PIN not remembered. Do you want to update it?"
             }
         },
         "preview_invoice_modal": {

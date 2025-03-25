@@ -1,6 +1,7 @@
 'use client';
 
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,8 @@ import {
   createInvoiceForAcceptedOrder,
   createInvoiceForNewOrder,
 } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { checkPINStatus } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { FileCog } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -39,6 +41,14 @@ const GenerateInvoiceModal = ({
   const orderId = params.order_id;
   const [open, setOpen] = useState(false);
   const [isPINVerified, setPINVerified] = useState(false);
+  const [isPINError, setIsPINError] = useState(false);
+
+  const { data: pinStatus } = useQuery({
+    queryKey: [pinSettings.checkPINStatus.endpointKey],
+    queryFn: () => checkPINStatus(),
+    select: (data) => data.data.data,
+    enabled: open,
+  });
 
   // mutation fn - generate Invoice : IF ACCEPTED
   const invoiceMutation = useMutation({
@@ -53,6 +63,9 @@ const GenerateInvoiceModal = ({
       ]);
     },
     onError: (error) => {
+      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+        setIsPINError(true);
+      }
       toast.error(
         error.response.data.message || translations('errorMsg.common'),
       );
@@ -69,6 +82,9 @@ const GenerateInvoiceModal = ({
       router.push('/sales/sales-orders');
     },
     onError: (error) => {
+      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+        setIsPINError(true);
+      }
       toast.error(
         error.response.data.message || translations('errorMsg.common'),
       );
@@ -114,14 +130,18 @@ const GenerateInvoiceModal = ({
                 {translations('infoText.title')}
               </h2>
               <p className="flex w-full flex-col items-center gap-1 text-center text-sm">
-                {translations('infoText.info')}
+                {pinStatus?.pinExists
+                  ? translations('infoText.pin_exist_info')
+                  : translations('infoText.pin_not_exist_info')}
 
-                <span
-                  className="cursor-pointer text-primary underline hover:text-black"
-                  onClick={() => router.push('/profile')}
-                >
-                  {translations('infoText.info2')}
-                </span>
+                {!pinStatus?.pinExists && (
+                  <span
+                    className="cursor-pointer text-primary underline hover:text-black"
+                    onClick={() => router.push('/profile')}
+                  >
+                    {translations('infoText.info2')}
+                  </span>
+                )}
               </p>
             </div>
 
@@ -153,6 +173,15 @@ const GenerateInvoiceModal = ({
                 translations('ctas.verify')
               )}
             </Button>
+
+            {isPINError && (
+              <p
+                className="cursor-pointer text-sm font-semibold hover:underline"
+                onClick={() => router.push('/profile')}
+              >
+                {translations('errorMsg.pin_error')}
+              </p>
+            )}
           </form>
         )}
 
