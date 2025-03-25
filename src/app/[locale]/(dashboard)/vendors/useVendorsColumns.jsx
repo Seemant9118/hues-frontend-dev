@@ -2,7 +2,6 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import ResendInvitation from '@/components/enterprise/ResendInvitaion';
-import EditModal from '@/components/Modals/EditModal';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,13 +9,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { updateVendor } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { resendInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 
-export const useVendorsColumns = (getLink, sendReminder) => {
+export const useVendorsColumns = (getLink, sendReminder, onEditClick) => {
   const translations = useTranslations('vendor');
 
   return [
@@ -108,9 +105,7 @@ export const useVendorsColumns = (getLink, sendReminder) => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [isEditing, setIsEditing] = useState(false);
-        const { id, invitationId, invitationStatus } = row.original;
+        const { invitationId, invitationStatus } = row.original;
 
         return (
           (invitationStatus === 'REJECTED' ||
@@ -155,22 +150,12 @@ export const useVendorsColumns = (getLink, sendReminder) => {
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        setIsEditing(true);
+                        onEditClick(row.original);
                       }}
                     >
                       <Pencil size={14} />
                       {translations('table.column.actions.edit')}
                     </Button>
-                    {isEditing && (
-                      <EditModal
-                        id={id}
-                        userData={row.original}
-                        cta="vendor"
-                        mutationFunc={updateVendor}
-                        isEditing={isEditing}
-                        setIsEditing={setIsEditing}
-                      />
-                    )}
                   </div>
                 )}
               </DropdownMenuContent>
