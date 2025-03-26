@@ -82,6 +82,17 @@ test('CSV export should contain data', async ({ page }) => {
   fs.unlinkSync(filePath);
 });
 
+test('Can click on Tabs Test', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Under Review' }).click();
+  await expect(page.getByText('ORD/G0IO49/2425/0004')).toBeVisible();
+  await page.getByRole('tab', { name: 'Confirmed Orders' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Seamlessly manage sales, from' }),
+  ).toBeVisible();
+  await page.getByRole('tab', { name: 'Receivables' }).click();
+  await expect(page.getByText('ORD/G0IO49/2425/0084')).toBeVisible();
+});
+
 test.describe.serial('Offer Management', () => {
   test.skip('Can Create Offer Test', async ({ page }) => {
     await page.getByRole('button', { name: 'Offer' }).click();
