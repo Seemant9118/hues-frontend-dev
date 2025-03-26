@@ -74,3 +74,12 @@ test.skip('Can Add New Invoice Test', async ({ page }) => {
       .nth(2),
   ).toBeVisible({ timeout: 5000 });
 });
+
+test('Can Click on Tabs Test', async ({ page }) => {
+  await page.getByRole('tab', { name: 'All' }).click();
+  await expect(page.getByText('INV/G0IO49/2425/0019')).toBeVisible();
+  await page.getByRole('tab', { name: 'Outstanding' }).click();
+  await expect(page.getByText('INV/G0IO49/2425/0019')).toBeVisible();
+  await page.getByRole('tab', { name: 'Disputed' }).click();
+  await expect(page.getByText('INV/G0IO49/2425/0001')).toBeVisible();
+});
