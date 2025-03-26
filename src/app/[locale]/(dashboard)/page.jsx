@@ -2,7 +2,6 @@
 
 import { invitation } from '@/api/invitation/Invitation';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
-import { Button } from '@/components/ui/button';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -12,18 +11,10 @@ import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const translations = useTranslations('dashboard');
-
-  const [shouldError, setShouldError] = useState(false);
-
-  useEffect(() => {
-    if (shouldError) {
-      throw new Error('Something went wrong by click on btn');
-    }
-  }, [shouldError]);
 
   // next-intl supports only object keys, not arrays. Use object keys for subItems.
   const keys = [
@@ -61,10 +52,6 @@ export default function Home() {
   return (
     <div className="flex h-full flex-col gap-5">
       <SubHeader name={translations('title')}></SubHeader>
-
-      <Button className="w-24 p-2" onClick={() => setShouldError(true)}>
-        Break the App
-      </Button>
 
       {/* Invitation table */}
       {enterpriseId &&
