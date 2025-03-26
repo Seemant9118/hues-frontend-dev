@@ -34,6 +34,21 @@ test('Is Order Present Test', async ({ page }) => {
   // Check for other elements
   await expect(page.getByText('Rishabh (B2B)')).toBeVisible();
 });
+
+test('Can filter Test', async ({ page }) => {
+  await page.getByRole('button', { name: 'Filter' }).click();
+  await page.getByPlaceholder('From').click();
+  await page.getByRole('combobox').nth(1).selectOption('February');
+  await page.getByLabel('Choose Wednesday, February 26th,').click();
+  await page.getByPlaceholder('To').click();
+  await page.getByRole('combobox').nth(1).selectOption('February');
+  await page.getByLabel('Choose Wednesday, February 26th,').click();
+  await page.getByRole('button', { name: 'Apply' }).click();
+  await expect(
+    page.getByRole('cell', { name: 'ORD/G0IO49/2425/' }),
+  ).toBeVisible();
+});
+
 test.describe.serial('Offer Management', () => {
   test.skip('Can Create Offer Test', async ({ page }) => {
     await page.getByRole('button', { name: 'Offer' }).click();
