@@ -12,7 +12,7 @@ const { defineConfig, devices } = require('@playwright/test');
  */
 module.exports = defineConfig({
   timeout: 30000,
-  // globalSetup: './__tests__/e2e/global-setup.ts',
+  globalSetup: './__tests__/e2e/global-setup.ts',
   testDir: './__tests__/e2e',
   /* Run tests in files in parallel */
   fullyParallel: true,
