@@ -5,7 +5,11 @@
       "value": "en",
       "domain": "localhost",
       "path": "/",
+
+      "expires": 1774683391.402611,
+
       "expires": 1773913159.004541,
+
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -37,6 +41,7 @@
         },
         {
           "name": "refreshtoken",
+
           "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsImlhdCI6MTc0MjM3NzE1OCwiZXhwIjoxNzQyOTgxOTU4fQ.BFISHP-z2DwA5JM82qVJmMSm1OGDuKHN9LiE_E-ifQ0\""
         },
         {
@@ -53,11 +58,13 @@
         },
         {
           "name": "invitationData",
-          "value": "undefined"
+
+          "value": "null"
         },
         {
           "name": "attemptsRemaining",
-          "value": "3"
+          "value": "2"
+
         },
         {
           "name": "isAssociateRequestCreated",
@@ -73,7 +80,9 @@
         },
         {
           "name": "token",
-          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsIm1vYmlsZV9udW1iZXIiOiI5NTMyNzUxNzcxIiwiZW50ZXJwcmlzZV9pZCI6NTIsImlhdCI6MTc0MjM3NzE1OCwiZXhwIjoxNzQyMzc3NzU4fQ.y_9YXCHivyih976WVicVtnWBNBzI8C1hUvh9miYB-Wg\""
+
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsIm1vYmlsZV9udW1iZXIiOiI5NTMyNzUxNzcxIiwiZW50ZXJwcmlzZV9pZCI6NTIsImlhdCI6MTc0MzE0NzM5NCwiZXhwIjoxNzQzMTQ3OTk0fQ.XRKCl2fI866rgLKVEMJQDYiOCxlv0hayHEnFb-0705o\""
+
         },
         {
           "name": "isEnterprisestartedOnboarding",

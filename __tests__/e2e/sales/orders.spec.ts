@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
+
 import fs from 'fs';
+
 
 test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:3000/en/');
@@ -16,6 +18,8 @@ test('Is Order Present Test', async ({ page }) => {
   // container.scrollTop = container.scrollHeight;
   // });
 
+
+
   await page.waitForTimeout(10000);
 
   const orderElement = await page.getByRole('cell', {
@@ -24,6 +28,7 @@ test('Is Order Present Test', async ({ page }) => {
 
   // First locate the element (without asserting visibility)
   // = page.getByText('G0IO49/2425/0022');
+
 
   // Now check if it's visible
   await expect(orderElement).toBeVisible();
@@ -35,6 +40,7 @@ test('Is Order Present Test', async ({ page }) => {
   // Check for other elements
   await expect(page.getByText('Rishabh (B2B)')).toBeVisible();
 });
+
 
 test('Can filter Test', async ({ page }) => {
   await page.getByRole('button', { name: 'Filter' }).click();
@@ -92,6 +98,7 @@ test('Can click on Tabs Test', async ({ page }) => {
   await page.getByRole('tab', { name: 'Receivables' }).click();
   await expect(page.getByText('ORD/G0IO49/2425/0084')).toBeVisible();
 });
+
 
 test.describe.serial('Offer Management', () => {
   test.skip('Can Create Offer Test', async ({ page }) => {
