@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'; // Node.js built-in module
 import fs from 'fs';
 import path from 'path';
 
+
 test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:3000/en/');
   await page.waitForTimeout(2000);
@@ -11,9 +12,11 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('link', { name: 'Services' }).click();
 });
 
+
 test.describe.serial('Services Management - CRUD', () => {
   const serviceName = `Test Service ${randomUUID().substring(0, 8)}`;
   const updatedServiceName = `Updated Service ${randomUUID().substring(0, 8)}`;
+
 
   test('Can Add Service Test', async ({ page }) => {
     await page.waitForTimeout(2000);
@@ -37,6 +40,7 @@ test.describe.serial('Services Management - CRUD', () => {
       page.getByRole('cell', { name: serviceName }).first(),
     ).toBeVisible({ timeout: 5000 });
   });
+
 
 
   test('Can Edit Service Test', async ({ page }) => {
@@ -75,11 +79,14 @@ test.describe.serial('Services Management - CRUD', () => {
     ).toBeVisible();
   });
 
+
   test('Can Delete Service Test', async ({ page }) => {
     await page.waitForURL('http://localhost:3000/en/inventory/services');
     await page.waitForTimeout(1000);
     // Locate the row that contains the specific serviceName
+
     const itemRow = page.getByRole('row', { name: updatedServiceName });
+
 
     // Click the "Open menu" button within that row
     await itemRow.getByRole('button', { name: 'Open menu' }).click();
@@ -89,6 +96,7 @@ test.describe.serial('Services Management - CRUD', () => {
     await page.waitForTimeout(1000);
   });
 });
+
 
 test('Can Download Sample File', async ({ page }) => {
   await page.waitForURL('http://localhost:3000/en/inventory/services');
@@ -136,4 +144,5 @@ test('Can Upload File', async ({ page }) => {
     page.getByRole('cell', { name: 'Upload Service 123' }).first(),
   ).toBeVisible();
 });
+
 

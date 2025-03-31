@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
+
 test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:3000/en/');
   await page.getByRole('link', { name: 'Clients' }).click({ timeout: 5000 });
@@ -18,6 +19,7 @@ test('Has a Client', async ({ page }) => {
 });
 
 const generateFakePAN = () =>
+
   `${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((c) => c)[(Math.random() * 26) | 0]}${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     .repeat(4)
     .split('')
@@ -40,6 +42,7 @@ const uniqueName = `Dummy Client ${Date.now()}`;
 const fakeNumber = Math.floor(1000000000 + Math.random() * 9000000000);
 
 test('can add new Client', async ({ page }) => {
+
   await page.getByRole('button', { name: 'Add' }).click();
   await page.getByLabel('Identifier Number (PAN) *').click();
   await page
@@ -55,6 +58,7 @@ test('can add new Client', async ({ page }) => {
     page.getByRole('cell', { name: uniqueName, exact: true }),
   ).toBeVisible();
 });
+
 
 test('can edit Client', async ({ page }) => {
   await page.waitForTimeout(2000);
@@ -163,3 +167,4 @@ test('Can Upload File', async ({ page }) => {
     page.getByRole('cell', { name: 'Upload Client 123' }).first(),
   ).toBeVisible();
 });
+
