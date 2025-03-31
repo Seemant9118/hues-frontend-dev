@@ -231,6 +231,39 @@
                 }
             }
         },
+        "sales-payments": {
+            "title": "Payments",
+            "title2": "Create a new payment record",
+            "emptyStateComponent": {
+                "heading": "No Payments yet",
+                "description": "You don’t have payment yet. Start by clicking on the Create Payment Record button"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Payments",
+                    "successMsg": "Payments exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "create_payment_record": {
+                    "cta": "Create Payment Record",
+                    "placeholder": "Create Payment Record"
+                }
+            },
+            "section": {
+                "table": {
+                    "header": {
+                        "payment_id": "PAYMENT ID",
+                        "vendor_name": "VENDOR NAME",
+                        "invoice_id": "INVOICE ID",
+                        "total_amount": "TOTAL AMOUNT",
+                        "amount_paid": "AMOUNT PAID",
+                        "mode_of_payment": "MODE OF PAYMENT",
+                        "payment_date": "PAYMENT DATE",
+                        "status": "STATUS"
+                    }
+                }
+            }
+        },
         "sales-debit_notes": {
             "title": "Debit Notes",
             "emtpyStateComponent": {
