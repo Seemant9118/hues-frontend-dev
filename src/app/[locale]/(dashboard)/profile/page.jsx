@@ -532,6 +532,7 @@ function Profile() {
                           <Pencil
                             size={12}
                             className="cursor-pointer"
+                            data-testid="edit-gst"
                             onClick={() =>
                               setIsEditing((prev) => ({
                                 ...prev,
@@ -592,6 +593,7 @@ function Profile() {
                           <Pencil
                             size={12}
                             className="cursor-pointer"
+                            data-testid="edit-udyam"
                             onClick={() =>
                               setIsEditing((prev) => ({
                                 ...prev,

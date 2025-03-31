@@ -1,0 +1,94 @@
+{
+  "cookies": [
+    {
+      "name": "NEXT_LOCALE",
+      "value": "en",
+      "domain": "localhost",
+      "path": "/",
+
+      "expires": 1774683391.402611,
+
+      "expires": 1773913159.004541,
+
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "isEnterpriseOnboardingComplete",
+          "value": "true"
+        },
+        {
+          "name": "isDirector",
+          "value": "false"
+        },
+        {
+          "name": "user_mobile_number",
+          "value": "\"9532751771\""
+        },
+        {
+          "name": "isOnboardingComplete",
+          "value": "true"
+        },
+        {
+          "name": "isAadhaarVerified",
+          "value": "true"
+        },
+        {
+          "name": "refreshtoken",
+
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsImlhdCI6MTc0MjM3NzE1OCwiZXhwIjoxNzQyOTgxOTU4fQ.BFISHP-z2DwA5JM82qVJmMSm1OGDuKHN9LiE_E-ifQ0\""
+        },
+        {
+          "name": "enterprise_Id",
+          "value": "52"
+        },
+        {
+          "name": "isAssociateRequestAccepted",
+          "value": "false"
+        },
+        {
+          "name": "isPanVerified",
+          "value": "true"
+        },
+        {
+          "name": "invitationData",
+
+          "value": "null"
+        },
+        {
+          "name": "attemptsRemaining",
+          "value": "2"
+
+        },
+        {
+          "name": "isAssociateRequestCreated",
+          "value": "false"
+        },
+        {
+          "name": "user_profile",
+          "value": "96"
+        },
+        {
+          "name": "operation_type",
+          "value": "\"mobile_login\""
+        },
+        {
+          "name": "token",
+
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsIm1vYmlsZV9udW1iZXIiOiI5NTMyNzUxNzcxIiwiZW50ZXJwcmlzZV9pZCI6NTIsImlhdCI6MTc0MzE0NzM5NCwiZXhwIjoxNzQzMTQ3OTk0fQ.XRKCl2fI866rgLKVEMJQDYiOCxlv0hayHEnFb-0705o\""
+
+        },
+        {
+          "name": "isEnterprisestartedOnboarding",
+          "value": "true"
+        }
+      ]
+    }
+  ]
+}
