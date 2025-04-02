@@ -11,10 +11,10 @@ import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import emptyImg from '../../../../../../public/Empty.png';
+import { PurchaseTable } from '../../purchases/purchasetable/PurchaseTable';
+import { usePaymentsColumn } from './usePaymentsColumn';
 
 const SalesPayments = () => {
   useMetaData('Hues! - Sales Payments', 'HUES PAYMENTS'); // dynamic title
@@ -29,8 +29,6 @@ const SalesPayments = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isCreatePaymentRecord, setIsCreatePaymentRecord] = useState(false);
-
-  // const paymentColumns = usePaymentsColumn();
 
   const salesPaymentsBreadCrumbs = [
     {
@@ -65,6 +63,45 @@ const SalesPayments = () => {
     // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
   }, [isCreatePaymentRecord, router]);
+
+  const onRowClick = (row) => {
+    router.push(`/sales/sales-payments/${row.id}`);
+  };
+
+  const paymentColumns = usePaymentsColumn();
+
+  const data = [
+    {
+      paymentId: 'PO123',
+      vendorName: 'KBC Enterprise',
+      invoiceId: 'JQQRXF/INV1234568934839',
+      totalAmount: '439',
+      amountPaid: '439',
+      modeOfPayment: 'Bank Transfer',
+      paymentDate: '23/02/2025',
+      status: 'Pending',
+    },
+    {
+      paymentId: 'PO123',
+      vendorName: 'KBC Enterprise',
+      invoiceId: 'JQQRXF/INV1234568934839',
+      totalAmount: '1000',
+      amountPaid: '590',
+      modeOfPayment: 'Bank Transfer',
+      paymentDate: '23/02/2025',
+      status: 'Approved',
+    },
+    {
+      paymentId: 'PO123',
+      vendorName: 'KBC Enterprise',
+      invoiceId: 'JQQRXF/INV1234568934839',
+      totalAmount: '439',
+      amountPaid: '439',
+      modeOfPayment: 'Bank Transfer',
+      paymentDate: '23/02/2025',
+      status: 'Rejected',
+    },
+  ];
 
   return (
     <>
@@ -123,21 +160,21 @@ const SalesPayments = () => {
 
               {/* Table when data is available */}
               {/* {!isPaymentsLoading && paymentsListing?.length > 0 && (
+              )} */}
               <PurchaseTable
                 id="purchase-debit-note-accepted"
                 columns={paymentColumns}
-                data={[]}
-                fetchNextPage={fetchNextPage}
-                isFetching={isFetching}
-                totalPages={paginationData?.totalPages}
-                currFetchedPage={paginationData?.currFetchedPage}
+                data={data}
+                // fetchNextPage={fetchNextPage}
+                // isFetching={isFetching}
+                // totalPages={paginationData?.totalPages}
+                // currFetchedPage={paginationData?.currFetchedPage}
+                // lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
                 onRowClick={onRowClick}
-                lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
               />
-            )} */}
 
               {/* Empty state */}
-              <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+              {/* <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                 <Image src={emptyImg} alt="emptyIcon" />
                 <p className="text-lg font-bold text-black">
                   {translations('emptyStateComponent.heading')}
@@ -151,7 +188,7 @@ const SalesPayments = () => {
                 >
                   {translations('ctas.create_payment_record.cta')}
                 </Button>
-              </div>
+              </div> */}
             </section>
           )}
 

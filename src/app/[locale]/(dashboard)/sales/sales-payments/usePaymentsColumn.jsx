@@ -2,9 +2,14 @@
 
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dot } from 'lucide-react';
-import moment from 'moment';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export const usePaymentsColumn = (setSelectedDebit) => {
@@ -79,12 +84,11 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { referenceNumber } = row.original;
-        const isBuyerRead = row.original?.readTracker?.buyerIsRead;
+        const { paymentId } = row.original;
+
         return (
           <div className="flex items-center">
-            {!isBuyerRead && <Dot size={32} className="text-[#3288ED]" />}
-            <span>{referenceNumber}</span>
+            <span>{paymentId}</span>
           </div>
         );
       },
@@ -98,12 +102,8 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { invoiceDate } = row.original;
-        return (
-          <div className="text-[#A5ABBD]">
-            {moment(invoiceDate).format('DD-MM-YYYY')}
-          </div>
-        );
+        const { vendorName } = row.original;
+        return <div className="text-[#A5ABBD]">{vendorName}</div>;
       },
     },
     {
@@ -115,8 +115,8 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { toEnterprise } = row.original;
-        return <div>{toEnterprise.name}</div>;
+        const { invoiceId } = row.original;
+        return <div className="w-28 truncate">{invoiceId}</div>;
       },
     },
     {
@@ -128,8 +128,8 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { amount } = row.original;
-        return formattedAmount(amount);
+        const { totalAmount } = row.original;
+        return formattedAmount(totalAmount);
       },
     },
     {
@@ -141,8 +141,8 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { amount } = row.original;
-        return formattedAmount(amount);
+        const { amountPaid } = row.original;
+        return formattedAmount(amountPaid);
       },
     },
     {
@@ -154,8 +154,8 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { amount } = row.original;
-        return formattedAmount(amount);
+        const { modeOfPayment } = row.original;
+        return modeOfPayment;
       },
     },
     {
@@ -167,8 +167,8 @@ export const usePaymentsColumn = (setSelectedDebit) => {
         />
       ),
       cell: ({ row }) => {
-        const { amount } = row.original;
-        return formattedAmount(amount);
+        const { paymentDate } = row.original;
+        return paymentDate;
       },
     },
     {
@@ -185,6 +185,36 @@ export const usePaymentsColumn = (setSelectedDebit) => {
           <div className="w-fit rounded-[5px] border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-sm">
             {capitalize(status)}
           </div>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const { status } = row.original;
+
+        if (status === 'Approved' || status === 'Rejected') return null;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="max-w-fit">
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+              >
+                <Pencil size={14} /> {'Edit'}
+              </span>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },

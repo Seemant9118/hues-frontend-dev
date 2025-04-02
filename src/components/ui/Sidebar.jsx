@@ -154,7 +154,7 @@ const Sidebar = () => {
         />
       </Link>
 
-      <div className="scrollBarStyles flex h-full flex-col justify-between overflow-y-auto pr-1">
+      <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1">
         {/* Navigation Links */}
         <nav className="flex flex-col gap-2">
           {links.map((link) => (
