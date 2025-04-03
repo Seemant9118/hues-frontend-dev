@@ -1,0 +1,91 @@
+name: Deploy NestJS App to EC2
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # This allows requesting the JWT
+      contents: read
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        continue-on-error: false # Stop on failure
+
+      # Step 2: Set up AWS credentials
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::730335228585:role/hues-prod-deployment
+          aws-region: ap-south-1
+        continue-on-error: false # Stop on failure
+
+      # Step 3: Log in to Amazon ECR
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+        continue-on-error: false # Stop on failure
+
+      # Step 4: Build & Push Docker image
+      - name: Build & Push Docker Image
+        run: |
+          IMAGE_URI="${{ steps.ecr-login.outputs.registry }}/${{ secrets.PROD_ECR_REPOSITORY }}"
+
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_BASE_URL }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_WEBSITE_URL }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_DIGIO_LOGO }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_DIGIO_SCRIPT_URL }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_DIGIO_ENV }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_NODE_ENV }}" >> .env
+          echo "PORT=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
+          echo "PORT=${{ secrets.SENTRY_AUTH_TOKEN }}" >> .env
+
+          #docker buildx create --use
+          #docker buildx build --no-cache --platform linux/arm64 -t $IMAGE_URI:latest --push .
+          docker build --no-cache -t $IMAGE_URI:latest --push .
+          echo "image=$IMAGE_URI:latest" >> $GITHUB_OUTPUT
+
+        continue-on-error: false # Stop on failure
+
+      # Step 5: Deploy to EC2
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USERNAME_PROD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+          port: 22
+          script: |
+            echo "AWS Region: ${{ secrets.AWS_REGION }}"
+            echo "App Name: ${{ secrets.APP_NAME }}"
+            echo "ECR Repository: ${{ secrets.PROD_ECR_REPOSITORY }}"
+            echo "App Port: ${{ secrets.PORT }}"
+
+            echo "Logging in to ECR..."
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ steps.ecr-login.outputs.registry }}
+
+            # Check if the container exists before trying to stop or remove it
+            if sudo docker ps -a --format '{{.Names}}' | grep -q ${{ secrets.APP_NAME }}; then
+              echo "Stopping existing container..."
+              sudo docker stop ${{ secrets.APP_NAME }} || true
+              sudo docker rm ${{ secrets.APP_NAME }} || true
+            else
+              echo "No existing container found with name ${{ secrets.APP_NAME }}."
+            fi
+
+            echo "Pulling latest image..."
+            sudo docker pull ${{ steps.ecr-login.outputs.registry }}/${{ secrets.PROD_ECR_REPOSITORY }}:latest
+            echo "Starting new container..."
+            sudo docker run -d --restart unless-stopped -p ${{ secrets.PORT }}:${{ secrets.PORT }} --name ${{ secrets.APP_NAME }} ${{ steps.ecr-login.outputs.registry }}/${{ secrets.PROD_ECR_REPOSITORY }}:latest
+        continue-on-error: false # Stop on failure
+
+      # Step 6
+      - name: Cleanup Docker Resources
+        run: sudo docker system prune -af --volumes
