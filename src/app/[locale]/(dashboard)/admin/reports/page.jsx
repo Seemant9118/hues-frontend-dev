@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import DashCard from '@/components/ui/DashCard';
+import FunnelCharts from '@/components/ui/FunnelCharts';
 import LineCharts from '@/components/ui/LineCharts';
 import PieCharts from '@/components/ui/PieCharts';
 import SearchInput from '@/components/ui/SearchInput';
@@ -58,6 +59,15 @@ const ONBOARDING_LINES = [
   { dataKey: 'legend1', name: 'Legend 1', color: '#007bff' }, // Blue
   { dataKey: 'legend2', name: 'Legend 2', color: '#E63946' }, // Red
   { dataKey: 'legend3', name: 'Legend 3', color: '#F8BA05' }, // Yellow ✅ Fixed
+];
+
+// data for funnel charts
+const funnelData = [
+  { name: 'Visitors', value: 5000 },
+  { name: 'Visitors', value: 4000 },
+  { name: 'Sign-ups', value: 2000 },
+  { name: 'Purchases', value: 1000 },
+  { name: 'Repeat Customers', value: 500 },
 ];
 
 const AdminReportsPage = () => {
@@ -122,6 +132,11 @@ const AdminReportsPage = () => {
           </div>
 
           {/* funnel Chart */}
+          {/* Line Chart */}
+          <div className="w-2/3 rounded-md border p-4">
+            <h3 className="mb-2 text-lg font-semibold">Onboarding Funnel</h3>
+            <FunnelCharts data={funnelData} />
+          </div>
         </div>
       </section>
     </Wrapper>
