@@ -13,6 +13,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Info, InfoIcon } from 'lucide-react';
 
 import { userAuth } from '@/api/user_auth/Users';
+import {
+  validatePan,
+  validateTermsAndConditions,
+} from '@/appUtils/ValidationUtils';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthProgress } from '@/context/AuthProgressContext';
@@ -28,7 +32,7 @@ const PanVerificationPage = () => {
   const { userData, setUserData } = useUserData(); // context
   const router = useRouter();
   const [isTandCModalOpen, setIsTandCModalOpen] = useState(false);
-  const [errorMsg, setErrorMsg] = useState({});
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const onCheckedChangeTermsCondition = (checked) => {
     // Update form data
@@ -47,32 +51,19 @@ const PanVerificationPage = () => {
   };
 
   // validation fn
-  const validation = (userDataItem) => {
-    const error = {};
-    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const validateForm = (userDataItem) => {
+    const errors = {};
+    errors.panNumber = validatePan(userDataItem.panNumber);
+    errors.isTermsAndConditionApplied = validateTermsAndConditions(
+      userDataItem.isTermsAndConditionApplied,
+    );
 
-    // name validation
-    if (userDataItem.name === '') {
-      error.name = '*Required Full Name';
-    }
-    // pan validation
-    if (userDataItem.panNumber === '') {
-      error.panNumber = '*Required PAN Number';
-    } else if (!panPattern.test(userData.panNumber)) {
-      error.panNumber = '* Please provide valid PAN Number';
-    }
-    // dateOfBirth validation
-    if (userData.dateOfBirth === '') {
-      error.dateOfBirth = '*Required Date of Birth';
-    }
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
 
-    // terms and condition validation
-    if (!userData.isTermsAndConditionApplied) {
-      error.isTermsAndConditionApplied =
-        '*Please accept the terms and conditions';
-    }
-
-    return error;
+    return errors;
   };
 
   // handleChange fn
@@ -81,22 +72,12 @@ const PanVerificationPage = () => {
 
     // pan validation
     if (name === 'panNumber') {
-      const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-      if (!panPattern.test(value) && value.length !== 10) {
-        // Reset error message if PAN is valid
-        setErrorMsg({
-          ...errorMsg,
-          panNumber: '* Please provide valid PAN Number',
-        });
-      } else {
-        // Set error message if PAN is invalid
-        setErrorMsg({
-          ...errorMsg,
-          panNumber: '',
-        });
-      }
-      setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
+      setErrorMsg({
+        ...errorMsg,
+        panNumber: validatePan(value),
+      });
 
+      setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
       return;
     }
 
@@ -157,7 +138,7 @@ const PanVerificationPage = () => {
   // handleProceed fn
   const handleProceed = (e) => {
     e.preventDefault();
-    const isAnyError = validation(userData);
+    const isAnyError = validateForm(userData);
 
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
@@ -306,7 +287,6 @@ const PanVerificationPage = () => {
                       disabled
                     />
                   </div>
-                  {errorMsg?.name && <ErrorBox msg={errorMsg?.name} />}
                 </div>
 
                 <div className="grid w-full items-center gap-1.5">
@@ -330,10 +310,6 @@ const PanVerificationPage = () => {
                     value={userData.dateOfBirth}
                     disabled
                   />
-
-                  {errorMsg?.dateOfBirth && (
-                    <ErrorBox msg={errorMsg?.dateOfBirth} />
-                  )}
                 </div>
               </>
             )}

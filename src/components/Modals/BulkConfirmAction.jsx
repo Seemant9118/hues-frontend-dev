@@ -84,6 +84,7 @@ const BulkConfirmAction = ({
           </DialogClose>
           <Button
             size="sm"
+            disabled={deleteBulkMutation.isPending}
             onClick={() => {
               deleteBulkMutation.mutate({
                 data: { catalogueItems: selectedItems },

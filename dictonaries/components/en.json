@@ -375,19 +375,21 @@
             "title": "Invoice",
             "ctas": {
                 "generate": "Generate",
-                "resend": "Resend",
-                "verify": "Verify To Generate",
-                "view": "View"
+                "view": "View",
+                "verify": "Verify"
             },
             "infoText": {
-                "info": "A one time password has been sent to",
-                "resend_info": "Resend OTP in"
+                "title": "Enter PIN",
+                "pin_exist_info": "Enter a User PIN to Generate Invoice",
+                "pin_not_exist_info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
+                "info2": "click here"
             },
             "successMsg": {
                 "invoice_generate_success": " Invoice Generated Successfully"
             },
             "errorMsg": {
-                "common": "Something went wrong"
+                "common": "Something went wrong",
+                "pin_error": "PIN not remembered. Do you want to update it?"
             }
         },
         "preview_invoice_modal": {
@@ -503,6 +505,53 @@
             },
             "ctas": {
                 "record_payment": "Record Payment"
+            }
+        },
+        "generate_pin_modal": {
+            "update_pin": "Update PIN",
+            "create_pin": "Create PIN",
+            "pin_description": "You can use this PIN to verify Invoices",
+            "success_messages": {
+                "pin_created": "PIN successfully created!",
+                "pin_updated": "PIN successfully updated!",
+                "otp_sent": "OTP sent successfully!",
+                "otp_verified": "OTP verified successfully!"
+            },
+            "error_messages": {
+                "common": "Something went wrong!"
+            },
+            "buttons": {
+                "update": "Update PIN",
+                "create": "Create PIN"
+            },
+            "helper_components": {
+                "titles": {
+                    "create_pin": "Create a New PIN",
+                    "confirm_pin": "Confirm PIN",
+                    "enter_current_pin": "Enter Current PIN",
+                    "enter_otp": "OTP Sent to your Registered Number"
+                },
+                "descriptions": {
+                    "create_pin": "Set a PIN to add more security",
+                    "confirm_pin": "Confirm PIN to proceed safely",
+                    "enter_current_pin": "Enter your current PIN to proceed",
+                    "enter_otp": "Verify OTP to change your PIN",
+                    "success_message": "You can now use it to authorize actions securely"
+                },
+                "buttons": {
+                    "next": "Next",
+                    "confirm": "Confirm",
+                    "verify": "Verify"
+                },
+                "messages": {
+                    "pin_mismatch": "PINs do not match!",
+                    "forgot_pin": "Forgot PIN?"
+                },
+                "steps": {
+                    "enter_pin": "Enter PIN",
+                    "enter_otp": "Enter OTP",
+                    "confirm_pin": "Confirm PIN"
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import InputWithLabel from '../ui/InputWithLabel';
+import Loading from '../ui/Loading';
 
 const EditItem = ({
   setIsEditing,
@@ -130,30 +131,89 @@ const EditItem = ({
         'scrollBarStyles relative flex h-full flex-col gap-3 overflow-y-auto p-2',
       )}
     >
-      <h2 className="text-2xl font-bold text-zinc-900">
-        {translations('goods.components.add.title')}
+      <h2 className="text-xl font-bold text-zinc-900">
+        {translations('goods.components.add.title2')}
       </h2>
 
-      {/* mandatory data fields */}
-      {item.type === 'goods' ? (
-        // for goods
-        <>
-          <div className="grid grid-cols-2 gap-2.5">
+      {/* ITEM OVERVIEW */}
+      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+        <h2 className="text-sm font-bold text-primary">ITEM OVERVIEW</h2>
+        <div className="grid grid-cols-3 grid-rows-2 items-center gap-4">
+          {/* product Name / Service Name */}
+          {item.type === 'goods' ? (
+            <div className="flex flex-col">
+              <InputWithLabel
+                className="max-w-xs"
+                name={translations('goods.components.add.label.productName')}
+                id="productName"
+                required={true}
+                onChange={onChange}
+                value={item.productName}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <InputWithLabel
+                name={translations('services.components.add.label.serviceName')}
+                id="serviceName"
+                required={true}
+                onChange={onChange}
+                value={item.serviceName}
+              />
+            </div>
+          )}
+
+          {/* hsnCode/SAC */}
+          {item.type === 'goods' ? (
+            <div className="flex flex-col">
+              <InputWithLabel
+                name={translations('goods.components.add.label.hsnCode')}
+                id="hsnCode"
+                required={true}
+                onChange={onChange}
+                value={item.hsnCode}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <InputWithLabel
+                name={translations('services.components.add.label.sac')}
+                id="SAC"
+                required={true}
+                onChange={onChange}
+                value={item.SAC}
+              />
+            </div>
+          )}
+
+          {/* Batch */}
+          {item.type === 'goods' && (
             <InputWithLabel
-              name={translations('goods.components.add.label.productName')}
-              id="productName"
-              required={true}
+              name={translations('goods.components.add.label.batch')}
+              id="batch"
               onChange={onChange}
-              value={item.productName}
+              value={item.batch}
             />
+          )}
+          {/* Expiry */}
+          <div className="grid w-full items-center gap-1.5">
             <InputWithLabel
-              name={translations('goods.components.add.label.manufactureName')}
-              id="manufacturerName"
-              required={true}
+              name={translations('goods.components.add.label.expiry')}
+              id="expiry"
               onChange={onChange}
-              value={item.manufacturerName}
+              value={item.expiry}
             />
           </div>
+          {/* application */}
+          <InputWithLabel
+            name={translations('goods.components.add.label.application')}
+            id="applications"
+            onChange={onChange}
+            value={item.applications}
+          />
+        </div>
+        {/* description */}
+        <div className="flex w-full flex-col">
           <InputWithLabel
             name={translations('goods.components.add.label.description')}
             id="description"
@@ -161,14 +221,15 @@ const EditItem = ({
             onChange={onChange}
             value={item.description}
           />
-          <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name={translations('goods.components.add.label.hsnCode')}
-              id="hsnCode"
-              required={true}
-              onChange={onChange}
-              value={item.hsnCode}
-            />
+        </div>
+      </div>
+
+      {/* PRICING */}
+      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+        <h2 className="text-sm font-bold text-primary">PRICING</h2>
+
+        <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
+          <div className="flex flex-col">
             <InputWithLabel
               name={translations('goods.components.add.label.rate')}
               id="rate"
@@ -176,6 +237,19 @@ const EditItem = ({
               onChange={onChange}
               value={item.rate}
             />
+          </div>
+          {item.type === 'goods' && (
+            <div className="flex flex-col">
+              <InputWithLabel
+                name={translations('goods.components.add.label.quantity')}
+                id="quantity"
+                required={true}
+                onChange={onChange}
+                value={item.quantity}
+              />
+            </div>
+          )}
+          <div className="flex flex-col">
             <InputWithLabel
               name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
@@ -183,128 +257,67 @@ const EditItem = ({
               onChange={onChange}
               value={item.gstPercentage}
             />
-            <InputWithLabel
-              name={translations('goods.components.add.label.quantity')}
-              id="quantity"
-              required={true}
-              onChange={onChange}
-              value={item.quantity}
-            />
           </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name={translations('goods.components.add.label.batch')}
-              id="batch"
-              // required={item.type == "goods"}
-              onChange={onChange}
-              value={item.batch}
-            />
-            <InputWithLabel
-              name={translations('goods.components.add.label.expiry')}
-              id="expiry"
-              // required={item.type === "goods" || item.type === "services"}
-              onChange={onChange}
-              value={item.expiry}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
+        </div>
+      </div>
+
+      {/* ADDITIONAL INFORMATION */}
+      {item.type === 'goods' && (
+        <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+          <h2 className="text-sm font-bold text-primary">
+            ADDITIONAL INFORMATION
+          </h2>
+
+          <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
+            <div className="flex flex-col">
+              <InputWithLabel
+                name={translations(
+                  'goods.components.add.label.manufactureName',
+                )}
+                id="manufacturerName"
+                required={true}
+                onChange={onChange}
+                value={item.manufacturerName}
+              />
+            </div>
+
             <InputWithLabel
               name={translations('goods.components.add.label.manufacturerGST')}
               id="manufacturerGstId"
               onChange={onChange}
               value={item.manufacturerGstId}
             />
-          </div>
-          <div className="grid grid-cols-4 gap-2.5">
+
             <InputWithLabel
               name={translations('goods.components.add.label.weight')}
               id="weight"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.weight}
             />
+
             <InputWithLabel
               name={translations('goods.components.add.label.length')}
               id="length"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.length}
             />
+
             <InputWithLabel
               name={translations('goods.components.add.label.breadth')}
               id="breadth"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.breadth}
             />
+
             <InputWithLabel
               name={translations('goods.components.add.label.height')}
               id="height"
-              // required={item.type == "goods"}
               onChange={onChange}
               value={item.height}
             />
           </div>
-        </>
-      ) : (
-        // for services
-        <>
-          <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name={translations('services.components.add.label.serviceName')}
-              id="serviceName"
-              required={true}
-              onChange={onChange}
-              value={item.serviceName}
-            />
-          </div>
-          <InputWithLabel
-            name={translations('services.components.add.label.description')}
-            id="description"
-            required={true}
-            onChange={onChange}
-            value={item.description}
-          />
-          <div className="grid grid-cols-2 gap-2.5">
-            <InputWithLabel
-              name={translations('services.components.add.label.sac')}
-              id="SAC"
-              required={true}
-              onChange={onChange}
-              value={item.SAC}
-            />
-            <InputWithLabel
-              name={translations('services.components.add.label.rate')}
-              id="rate"
-              required={true}
-              onChange={onChange}
-              value={item.rate}
-            />
-            <InputWithLabel
-              name={translations('services.components.add.label.gst')}
-              id="gstPercentage"
-              required={true}
-              onChange={onChange}
-              value={item.gstPercentage}
-            />
-            <InputWithLabel
-              name={translations('services.components.add.label.expiry')}
-              id="expiry"
-              onChange={onChange}
-              value={item.expiry}
-            />
-          </div>
-        </>
+        </div>
       )}
-
-      {/* optional data fields */}
-      <InputWithLabel
-        name="Application"
-        id="applications"
-        // required={item.type == "goods" || item.type === "services"}
-        onChange={onChange}
-        value={item.applications}
-      />
 
       <div className="sticky bottom-0 z-10 flex items-end justify-end gap-4 bg-white">
         <Button
@@ -317,8 +330,12 @@ const EditItem = ({
         >
           {translations('services.components.add.ctas.cancel')}
         </Button>
-        <Button size="sm" type="submit">
-          {translations('services.components.add.ctas.edit')}
+        <Button size="sm" type="submit" disabled={updateMutation.isPending}>
+          {updateMutation.isPending ? (
+            <Loading size={14} />
+          ) : (
+            translations('services.components.add.ctas.edit')
+          )}
         </Button>
       </div>
     </form>

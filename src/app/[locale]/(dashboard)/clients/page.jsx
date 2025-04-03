@@ -4,6 +4,7 @@ import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/clien
 import { invitation } from '@/api/invitation/Invitation';
 import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
+import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
 import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import { DataTable } from '@/components/table/data-table';
@@ -21,6 +22,7 @@ import {
   createClient,
   getClients,
   searchedClients,
+  updateClient,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   generateLink,
@@ -62,6 +64,8 @@ const ClientPage = () => {
   );
 
   const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingClient, setEditingClient] = useState();
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -207,8 +211,13 @@ const ClientPage = () => {
     setSelectedEnterpriseContent(row);
   };
 
+  const onEditClick = (userData) => {
+    setIsEditing(true);
+    setEditingClient(userData);
+  };
+
   // columns
-  const ClientsColumns = useClientsColumns(getLink, sendReminder);
+  const ClientsColumns = useClientsColumns(getLink, sendReminder, onEditClick);
 
   return (
     <>
@@ -310,6 +319,17 @@ const ClientPage = () => {
               data={selectedEnterpriseContent}
               isEnterpriseDetailsShow={isEnterpriseDetailsShow}
               setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
+            />
+          )}
+
+          {isEditing && (
+            <EditModal
+              id={editingClient.id}
+              userData={editingClient}
+              cta="client"
+              mutationFunc={updateClient}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
           )}
         </div>
