@@ -38,14 +38,14 @@ jobs:
           IMAGE_URI="${{ steps.ecr-login.outputs.registry }}/${{ secrets.PROD_ECR_REPOSITORY }}"
 
           echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_BASE_URL }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_WEBSITE_URL }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_DIGIO_LOGO }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_DIGIO_SCRIPT_URL }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_DIGIO_ENV }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_NODE_ENV }}" >> .env
-          echo "PORT=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
-          echo "PORT=${{ secrets.SENTRY_AUTH_TOKEN }}" >> .env
+          echo "NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }}" >> .env
+          echo "NEXT_PUBLIC_WEBSITE_URL=${{ secrets.NEXT_PUBLIC_WEBSITE_URL }}" >> .env
+          echo "NEXT_PUBLIC_DIGIO_LOGO=${{ secrets.NEXT_PUBLIC_DIGIO_LOGO }}" >> .env
+          echo "NEXT_PUBLIC_DIGIO_SCRIPT_URL=${{ secrets.NEXT_PUBLIC_DIGIO_SCRIPT_URL }}" >> .env
+          echo "NEXT_PUBLIC_DIGIO_ENV=${{ secrets.NEXT_PUBLIC_DIGIO_ENV }}" >> .env
+          echo "NEXT_PUBLIC_NODE_ENV=${{ secrets.NEXT_PUBLIC_NODE_ENV }}" >> .env
+          echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
+          echo "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}" >> .env
 
           #docker buildx create --use
           #docker buildx build --no-cache --platform linux/arm64 -t $IMAGE_URI:latest --push .
