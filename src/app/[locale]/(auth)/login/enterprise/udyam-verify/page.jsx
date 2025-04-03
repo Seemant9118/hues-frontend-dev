@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
@@ -10,7 +11,7 @@ import { udyamVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const UdyamVerify = () => {
@@ -18,11 +19,21 @@ const UdyamVerify = () => {
   const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const [isCheckedNotUdyam, setIsCheckedNotUdyam] = useState(false);
   const [enterpriseData, setEnterpriseData] = useState({
     udyamNumber: '',
     enterpriseId,
     type,
   });
+
+  useEffect(() => {
+    if (isCheckedNotUdyam) {
+      setEnterpriseData((prev) => ({
+        ...prev,
+        udyamNumber: '',
+      }));
+    }
+  }, [isCheckedNotUdyam]);
 
   const handleChange = (e) => {
     const { value } = e.target;
@@ -34,7 +45,7 @@ const UdyamVerify = () => {
 
   const verifyUdyamMutation = useMutation({
     mutationKey: [userAuth.udyamVerify.endpointKey],
-    mutationFn: udyamVerify,
+    mutationFn: udyamVerify, // Correct API function
     onSuccess: (data) => {
       toast.success('UDYAM ID Verified Successfully');
 
@@ -43,22 +54,16 @@ const UdyamVerify = () => {
       router.push('/login/enterprise/enterprise-verification-details');
     },
     onError: (error) => {
-      toast.error(error.response.data.messages || 'Something went wrong');
+      toast.error(error.response?.data?.message || 'Something went wrong');
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // api call
     if (enterpriseData.udyamNumber === '') {
       return router.push('/login/enterprise/enterprise-verification-details');
-    } else {
-      return verifyUdyamMutation.mutate(enterpriseData);
     }
-  };
-
-  const handleBack = () => {
-    router.back();
+    return verifyUdyamMutation.mutate(enterpriseData);
   };
 
   return (
@@ -78,7 +83,7 @@ const UdyamVerify = () => {
           onSubmit={handleSubmit}
         >
           <div className="flex flex-col gap-2">
-            <Label htmlFor="cin" className="font-medium text-[#121212]">
+            <Label htmlFor="udyam" className="font-medium text-[#121212]">
               UDYAM ID
             </Label>
             <div className="flex items-center hover:border-gray-600">
@@ -93,19 +98,30 @@ const UdyamVerify = () => {
             </div>
           </div>
 
-          <div className="flex w-full flex-col gap-2">
-            <Button
-              size="sm"
-              type="submit"
-              disabled={verifyUdyamMutation.isPending}
-            >
-              {verifyUdyamMutation.isPending ? <Loading /> : 'Proceed'}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft size={14} />
-              Back
-            </Button>
+          <div className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={isCheckedNotUdyam}
+              onCheckedChange={() => setIsCheckedNotUdyam((prev) => !prev)}
+            />
+            <span className="cursor-pointer text-sm font-semibold">
+              I do not have UDYAM ID
+            </span>
           </div>
+
+          <Button
+            size="sm"
+            type="submit"
+            disabled={
+              verifyUdyamMutation.isPending ||
+              (!isCheckedNotUdyam && !enterpriseData.udyamNumber.trim())
+            }
+          >
+            {verifyUdyamMutation.isPending ? <Loading /> : 'Proceed'}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={router.back}>
+            <ArrowLeft size={14} />
+            Back
+          </Button>
         </form>
       </div>
     </div>
