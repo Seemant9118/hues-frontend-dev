@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
@@ -23,7 +24,6 @@ import { toast } from 'sonner';
 const GstVerificationPage = () => {
   const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-  // const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
   const router = useRouter();
 
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
@@ -33,6 +33,7 @@ const GstVerificationPage = () => {
   });
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [gstData, setGstData] = useState(null);
+  const [isCheckedNotGst, setIsCheckedNotGst] = useState(false);
 
   useEffect(() => {
     const storedGstData = LocalStorageService.get('gst');
@@ -43,9 +44,20 @@ const GstVerificationPage = () => {
         ...prev,
         gstNumber: storedGstData[0].gstin,
       }));
-      setIsManualEntry(false);
+      setIsManualEntry(false); // Ensure manual entry is disabled when auto-filling
     }
   }, []);
+
+  useEffect(() => {
+    if (isCheckedNotGst) {
+      setEnterpriseOnboardData({
+        gstNumber: '',
+        enterpriseId,
+        type,
+      });
+      setIsManualEntry(false); // Reset manual entry if user opts for no GST
+    }
+  }, [isCheckedNotGst]);
 
   const handleChangeGst = (e) => {
     const gstValue = e.target.value.toUpperCase();
@@ -53,7 +65,7 @@ const GstVerificationPage = () => {
       ...prev,
       gstNumber: gstValue,
     }));
-    setIsManualEntry(true);
+    setIsManualEntry(gstValue.trim() !== ''); // Enable manual entry only when something is typed
   };
 
   const handleSelectGst = (value) => {
@@ -74,7 +86,7 @@ const GstVerificationPage = () => {
       router.push('/login/enterprise/udyam-verify');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response?.data?.message || 'Something went wrong');
     },
   });
 
@@ -163,11 +175,26 @@ const GstVerificationPage = () => {
               />
             </div>
           </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={isCheckedNotGst}
+              onCheckedChange={() => {
+                setIsCheckedNotGst((prev) => !prev);
+              }}
+            />
+            <span className="cursor-pointer text-sm font-semibold">
+              I do not have GST number
+            </span>
+          </div>
 
           <Button
             size="sm"
             type="submit"
-            disabled={gstVerifyMutation.isPending}
+            disabled={
+              gstVerifyMutation.isPending ||
+              (!isCheckedNotGst &&
+                enterpriseOnboardData.gstNumber.trim() === '')
+            }
           >
             {gstVerifyMutation.isPending ? <Loading /> : 'Proceed'}
           </Button>
