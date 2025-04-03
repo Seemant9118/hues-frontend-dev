@@ -34,7 +34,7 @@
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@sentry/nextjs": "^9.9.0",
+    "@sentry/nextjs": "^9.10.1",
     "@tanstack/react-query": "^5.29.2",
     "@tanstack/react-query-devtools": "^5.29.2",
     "@tanstack/react-table": "^8.13.2",

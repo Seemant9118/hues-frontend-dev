@@ -1,4 +1,5 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import {withSentryConfig} from '@sentry/nextjs';
+
 /** @type {import('next').NextConfig} */
 
 // next-intl plugin setup
