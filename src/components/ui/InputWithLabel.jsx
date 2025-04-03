@@ -16,7 +16,7 @@ const InputWithLabel = ({
         {name} {required && <span className="text-red-600">*</span>}
       </Label>
       <Input
-        className="rounded"
+        className="rounded-sm"
         type={type}
         value={value}
         onChange={onChange}

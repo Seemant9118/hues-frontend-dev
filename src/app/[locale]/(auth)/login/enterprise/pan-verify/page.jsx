@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { validatePan } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,14 +23,12 @@ const EnterprisePANVerifyPage = () => {
   const searchParams = useSearchParams();
   const enterpriseType = searchParams.get('type');
   const userId = LocalStorageService.get('user_profile');
-  // const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     panNumber: '',
     type: enterpriseType,
-    // enterpriseId,
   });
-  const [errorMsg, setErrorMsg] = useState({});
+  const [errorMsg, setErrorMsg] = useState('');
 
   const { data: userData, isSuccess } = useQuery({
     queryKey: [userAuth.getUserById.endpointKey, userId],
@@ -50,26 +49,12 @@ const EnterprisePANVerifyPage = () => {
     }));
   }, [isSuccess, enterpriseType, userData]);
 
-  // PAN validation function
-  const validatePanNumber = (panNumber) => {
-    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-    const errors = {};
-
-    if (!panNumber.trim()) {
-      errors.panNumber = '* Required PAN Number';
-    } else if (!panPattern.test(panNumber)) {
-      errors.panNumber = '* Please provide a valid PAN Number';
-    }
-
-    return errors;
-  };
-
   // Handle input change
   const handleChangePan = useCallback((e) => {
     const panValue = e.target.value.toUpperCase();
     setEnterpriseOnboardData((prev) => ({ ...prev, panNumber: panValue }));
 
-    const errors = validatePanNumber(panValue);
+    const errors = validatePan(panValue);
     setErrorMsg(errors);
   }, []);
 
@@ -103,23 +88,21 @@ const EnterprisePANVerifyPage = () => {
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      const errors = validatePanNumber(enterpriseOnboardData.panNumber);
+      const errors = validatePan(enterpriseOnboardData.panNumber);
 
-      if (Object.keys(errors).length > 0) {
+      if (errors) {
         setErrorMsg(errors);
         return;
       }
-
-      setErrorMsg({});
+      setErrorMsg('');
       getDetailsByPanVerifiedMutation.mutate(enterpriseOnboardData);
     },
     [enterpriseOnboardData.panNumber],
   );
 
   // Navigate back
-  const handleBack = useCallback(() => {
+  const handleBack = () =>
     router.push('/login/enterprise/select_enterprise_type');
-  }, [router]);
 
   return (
     <UserProvider>
@@ -162,28 +145,30 @@ const EnterprisePANVerifyPage = () => {
                   }
                 />
               </div>
-              {errorMsg.panNumber && (
+              {errorMsg && (
                 <span className="px-1 text-sm font-semibold text-red-600">
-                  {errorMsg.panNumber}
+                  {errorMsg}
                 </span>
               )}
             </div>
 
-            <Button
-              size="sm"
-              type="submit"
-              disabled={getDetailsByPanVerifiedMutation?.isPending}
-            >
-              {getDetailsByPanVerifiedMutation?.isPending ? (
-                <Loading />
-              ) : (
-                'Proceed'
-              )}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft size={14} />
-              Back
-            </Button>
+            <div className="flex w-full flex-col gap-2">
+              <Button
+                size="sm"
+                type="submit"
+                disabled={getDetailsByPanVerifiedMutation?.isPending}
+              >
+                {getDetailsByPanVerifiedMutation?.isPending ? (
+                  <Loading />
+                ) : (
+                  'Proceed'
+                )}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleBack}>
+                <ArrowLeft size={14} />
+                Back
+              </Button>
+            </div>
           </form>
         </div>
       </div>

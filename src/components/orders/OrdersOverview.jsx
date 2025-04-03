@@ -210,6 +210,7 @@ const OrdersOverview = ({
                     size="sm"
                     variant="outline"
                     className="h-8 rounded-md text-xs"
+                    disabled={undoAcknowlegeMutation.isPending}
                   >
                     {translations('acknowledge_message.ctas.undo')}
                   </Button>
@@ -222,6 +223,7 @@ const OrdersOverview = ({
                       size="sm"
                       variant="outline"
                       className="h-8 rounded-md text-xs"
+                      disabled={updateAcknowlegeMutation.isPending}
                     >
                       {translations('acknowledge_message.ctas.no')}
                     </Button>
@@ -229,6 +231,7 @@ const OrdersOverview = ({
                       onClick={() => handleAcknowledgeAcceptReject(true)}
                       size="sm"
                       className="h-8 rounded-md bg-[#288AF9] text-xs text-white"
+                      disabled={updateAcknowlegeMutation.isPending}
                     >
                       {translations('acknowledge_message.ctas.yes')}
                     </Button>

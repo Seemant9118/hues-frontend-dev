@@ -4,6 +4,7 @@ import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendo
 import { invitation } from '@/api/invitation/Invitation';
 import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
+import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
 import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import { DataTable } from '@/components/table/data-table';
@@ -21,6 +22,7 @@ import {
   createVendor,
   getVendors,
   searchedVendors,
+  updateVendor,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   generateLink,
@@ -62,6 +64,8 @@ const VendorsPage = () => {
 
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingVendor, setEditingVendor] = useState();
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
@@ -206,8 +210,13 @@ const VendorsPage = () => {
     setSelectedEnterpriseContent(row);
   };
 
+  const onEditClick = (userData) => {
+    setIsEditing(true);
+    setEditingVendor(userData);
+  };
+
   // columns
-  const VendorsColumns = useVendorsColumns(getLink, sendRemind);
+  const VendorsColumns = useVendorsColumns(getLink, sendRemind, onEditClick);
 
   return (
     <>
@@ -311,6 +320,17 @@ const VendorsPage = () => {
               data={selectedEnterpriseContent}
               isEnterpriseDetailsShow={isEnterpriseDetailsShow}
               setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
+            />
+          )}
+
+          {isEditing && (
+            <EditModal
+              id={editingVendor.id}
+              userData={editingVendor}
+              cta="vendor"
+              mutationFunc={updateVendor}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
           )}
         </div>

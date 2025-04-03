@@ -241,7 +241,10 @@ const PurchaseInvoices = () => {
                 <Tooltips
                   trigger={
                     <Button
-                      disabled={selectedInvoices?.length === 0}
+                      disabled={
+                        selectedInvoices?.length === 0 ||
+                        exportInvoiceMutation.isPending
+                      }
                       onClick={handleExportInvoice}
                       variant="outline"
                       className="border border-[#A5ABBD] hover:bg-neutral-600/10"

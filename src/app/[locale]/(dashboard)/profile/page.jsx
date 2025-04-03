@@ -3,6 +3,7 @@
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import GeneatePINModal from '@/components/Modals/GeneatePINModal';
 import Tooltips from '@/components/auth/Tooltips';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
@@ -108,6 +109,7 @@ function Profile() {
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
+    enabled: tab === 'userOverview' || tab === 'enterpriseOverview',
   });
 
   useMetaData(
@@ -123,7 +125,12 @@ function Profile() {
   return (
     <Wrapper className="h-full gap-8">
       <SubHeader name="Profile">
-        <Button size="sm" variant="blue_outline" onClick={logout}>
+        <Button
+          size="sm"
+          variant="blue_outline"
+          onClick={logout}
+          disabled={logoutMutation.isPending}
+        >
           {translations('ctas.logout')}
         </Button>
       </SubHeader>
@@ -146,6 +153,9 @@ function Profile() {
           </TabsTrigger>
           <TabsTrigger value="permissions">
             {translations('tabs.label.tab4')}
+          </TabsTrigger>
+          <TabsTrigger value="pinSettings">
+            {translations('tabs.label.tab5')}
           </TabsTrigger>
         </TabsList>
 
@@ -522,6 +532,7 @@ function Profile() {
                           <Pencil
                             size={12}
                             className="cursor-pointer"
+                            data-testid="edit-gst"
                             onClick={() =>
                               setIsEditing((prev) => ({
                                 ...prev,
@@ -582,6 +593,7 @@ function Profile() {
                           <Pencil
                             size={12}
                             className="cursor-pointer"
+                            data-testid="edit-udyam"
                             onClick={() =>
                               setIsEditing((prev) => ({
                                 ...prev,
@@ -660,6 +672,10 @@ function Profile() {
 
         <TabsContent value="permissions">
           {translations('tabs.content.tab4.coming_soon')}
+        </TabsContent>
+
+        <TabsContent value="pinSettings">
+          <GeneatePINModal isPINAvailable={profileDetails?.pinExists} />
         </TabsContent>
       </Tabs>
     </Wrapper>
