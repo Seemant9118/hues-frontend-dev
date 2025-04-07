@@ -228,11 +228,15 @@ const ViewDebitNote = () => {
 
               <Tooltips
                 trigger={
-                  <ArrowUp
-                    size={20}
-                    onClick={handleSubmitComment}
-                    className={'cursor-pointer hover:text-black'}
-                  />
+                  createCommentMutation.isPending ? (
+                    <Loading />
+                  ) : (
+                    <ArrowUp
+                      size={20}
+                      onClick={handleSubmitComment}
+                      className={'cursor-pointer hover:text-black'}
+                    />
+                  )
                 }
                 content={translations('comments.ctas.send.placeholder')}
               />
