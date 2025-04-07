@@ -27,7 +27,9 @@ const DebitNoteComment = ({ comment }) => {
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-sm font-bold">{comment?.createdbyname}</h1>
+          <h1 className="text-sm font-bold">
+            {comment?.createdbyname ?? 'Name not available'}
+          </h1>
           <p className="text-sm font-bold text-[#A5ABBD]">
             {formatDateTime(comment?.commentedat)}
           </p>
