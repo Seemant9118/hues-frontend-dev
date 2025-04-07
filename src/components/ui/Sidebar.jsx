@@ -71,11 +71,11 @@ const Sidebar = () => {
           icon: <ReceiptText size={16} />,
           path: '/sales/sales-invoices',
         },
-        {
-          name: 'sidebar.subTabs.payments',
-          icon: <ReceiptText size={16} />,
-          path: '/sales/sales-payments',
-        },
+        // {
+        //   name: 'sidebar.subTabs.payments',
+        //   icon: <ReceiptText size={16} />,
+        //   path: '/sales/sales-payments',
+        // },
         {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
@@ -98,11 +98,11 @@ const Sidebar = () => {
           icon: <ReceiptText size={16} />,
           path: '/purchases/purchase-invoices',
         },
-        {
-          name: 'sidebar.subTabs.payments',
-          icon: <ReceiptText size={16} />,
-          path: '/purchases/purchase-payments',
-        },
+        // {
+        //   name: 'sidebar.subTabs.payments',
+        //   icon: <ReceiptText size={16} />,
+        //   path: '/purchases/purchase-payments',
+        // },
         {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,

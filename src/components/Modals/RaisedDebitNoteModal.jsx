@@ -86,7 +86,7 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
               onClick={() => setIsOpen(true)}
               size="sm"
               variant="blue_outline"
-              className="text-xs"
+              className="font-bold"
             >
               Raise Debit Note
             </Button>
