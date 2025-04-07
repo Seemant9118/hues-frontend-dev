@@ -86,6 +86,17 @@ export function capitalize(str) {
   return '';
 }
 
+export function convertSnakeToTitleCase(input) {
+  if (input) {
+    return input
+      .toLowerCase()
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  return '-';
+}
+
 // debouncing fn
 export const debounce = (func, delay) => {
   let timeoutId;
