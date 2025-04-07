@@ -11,7 +11,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, RotateCcw, Upload, UploadCloud, X } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
@@ -42,29 +41,19 @@ import Wrapper from '../wrappers/Wrapper';
 const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const translations = useTranslations('components.record_payment_order');
   const queryClient = useQueryClient();
-  const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const [files, setFiles] = useState([]);
+  const [isAutoSplitted, setIsAutoSplitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState({});
+  // Set initial state for invoices
+  const [invoices, setInvoices] = useState([]);
+  const [paymentData, setPaymentData] = useState(new FormData());
 
   const { data: invoicesForPayments, isLoading } = useQuery({
     queryKey: [paymentApi.getInvoicesForPayments.endpointKey, orderId],
     queryFn: () => getInvoicesForPayments(orderId),
     enabled: !!orderId,
     select: (invoicesForPayments) => invoicesForPayments.data.data,
-  });
-
-  const [isAutoSplitted, setIsAutoSplitted] = useState(false);
-  const [errorMsg, setErrorMsg] = useState({});
-
-  // Set initial state for invoices
-  const [invoices, setInvoices] = useState([]);
-  const [paymentData, setPaymentData] = useState({
-    orderId,
-    amount: '',
-    paymentMode: '',
-    transactionId: '',
-    attachmentLink: '',
-    invoices,
   });
 
   // Update the invoices state once invoicesForPayments data is fetched
@@ -79,6 +68,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     }
   }, [invoicesForPayments]);
 
+  // payments splitFn
   const splitFn = (totalAmount) => {
     let remainingAmount = totalAmount;
 
@@ -634,7 +624,6 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               attachmentLink: '', // If it's a FormData object, consider setting it to null
               invoices: [],
             });
-            router.back();
           }}
         >
           {translations('form.ctas.discard')}

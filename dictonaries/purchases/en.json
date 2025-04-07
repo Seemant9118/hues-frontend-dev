@@ -67,10 +67,10 @@
                     "order_details": "Order Details",
                     "negotiation": "Negotiation",
                     "invoices": "Invoices",
-                    "record_payment": "Record Payment"
+                    "payment_advice": "Payment Advice"
                 },
                 "ctas": {
-                    "record_payment": "Record Payment",
+                    "payment_advice": "Payment Advice",
                     "generate_invoice": "Generate Invoice",
                     "download": {
                         "placeholder": "Download Order Details"
@@ -166,10 +166,11 @@
             "invoice_details": {
                 "title": {
                     "invoices": "Invoices",
-                    "invoice_details": "Invoice Details"
+                    "invoice_details": "Invoice Details",
+                    "payment_advice": "Payment Advice"
                 },
                 "ctas": {
-                    "record_payment": "Record Payment",
+                    "payment_advice": "Payment Advice",
                     "share": {
                         "placeholder": "Coming Soon.."
                     },
