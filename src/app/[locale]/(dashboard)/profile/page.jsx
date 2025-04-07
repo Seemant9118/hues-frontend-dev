@@ -1,10 +1,12 @@
 'use client';
 
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
+import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import GeneatePINModal from '@/components/Modals/GeneatePINModal';
 import Tooltips from '@/components/auth/Tooltips';
+import { DataTable } from '@/components/table/data-table';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -16,6 +18,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import { getPINLogs } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import {
   getProfileDetails,
   LoggingOut,
@@ -26,9 +29,13 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { usePINAuditLogsColumns } from './usePINAuditLogsColumns';
 
 function Profile() {
   const translations = useTranslations('profile');
+  const translationsTab4 = useTranslations(
+    'components.generate_pin_modal.audit_logs',
+  );
   const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -121,6 +128,16 @@ function Profile() {
     const bgColorClass = getRandomBgColor();
     setBgColor(bgColorClass);
   }, []);
+
+  // fetch pin audit logs
+  const { data: pinAuditLogs } = useQuery({
+    queryKey: [pinSettings.getPINLogs.endpointKey],
+    queryFn: () => getPINLogs(),
+    select: (data) => data.data.data,
+    enabled: tab === 'pinSettings',
+  });
+
+  const PINAuditLogsColumns = usePINAuditLogsColumns();
 
   return (
     <Wrapper className="h-full gap-8">
@@ -674,8 +691,15 @@ function Profile() {
           {translations('tabs.content.tab4.coming_soon')}
         </TabsContent>
 
-        <TabsContent value="pinSettings">
+        <TabsContent value="pinSettings" className="flex flex-col gap-10">
           <GeneatePINModal isPINAvailable={profileDetails?.pinExists} />
+
+          {pinAuditLogs?.length > 0 && (
+            <div className="flex h-full flex-col gap-2">
+              <h2 className="text-sm font-bold">{translationsTab4('title')}</h2>
+              <DataTable columns={PINAuditLogsColumns} data={pinAuditLogs} />
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </Wrapper>

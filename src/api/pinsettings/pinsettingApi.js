@@ -23,4 +23,8 @@ export const pinSettings = {
     endpoint: `/iam/user/resetpin`,
     endpointKey: 'reset_pin',
   },
+  getPINLogs: {
+    endpoint: `/iam/user/pin-logs`,
+    endpointKey: 'get_pin_logs',
+  },
 };

@@ -552,6 +552,21 @@
                     "enter_otp": "Enter OTP",
                     "confirm_pin": "Confirm PIN"
                 }
+            },
+            "audit_logs": {
+                "title": "PIN Audit Logs",
+                "table": {
+                    "header": {
+                        "label": {
+                            "pin_id": "PIN ID",
+                            "updated_by": "UPDATED BY",
+                            "update_on": "UPDATED ON",
+                            "action_type": "ACTION TYPE",
+                            "ip_address": "IP ADDRESS",
+                            "status": "STATUS"
+                        }
+                    }
+                }
             }
         }
     }
