@@ -27,18 +27,23 @@ const DebitNoteComment = ({ comment }) => {
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-sm font-bold">{comment.enterpriseName}</h1>
+          <h1 className="text-sm font-bold">
+            {comment?.createdbyname ?? 'Name not available'}
+          </h1>
           <p className="text-sm font-bold text-[#A5ABBD]">
-            {formatDateTime(comment.commentedAt)}
+            {formatDateTime(comment?.commentedat)}
           </p>
         </div>
 
-        <p className="text-sm text-[#7F8185]">{comment.comment}</p>
+        <p className="text-sm text-[#7F8185]">{comment.text}</p>
 
         <div className="flex gap-2">
-          {comment?.mediaLinks?.map((mediaImage) => (
-            <div key={mediaImage}>
-              <ViewImage mediaImage={mediaImage} />
+          {comment?.attachments?.map((attachment) => (
+            <div key={attachment?.id}>
+              <ViewImage
+                mediaName={attachment?.fileName}
+                mediaImage={attachment?.document?.url}
+              />
             </div>
           ))}
         </div>
