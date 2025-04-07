@@ -15,7 +15,6 @@ import {
   createComments,
   getComments,
   getDebitNote,
-  uploadMediaInComments,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUp, Building2, Check, Paperclip } from 'lucide-react';
@@ -37,9 +36,10 @@ const ViewDebitNote = () => {
   const debitNoteId = params.debit_id;
   const [files, setFiles] = useState([]);
   const [comment, setComment] = useState({
-    debitNoteId,
-    comment: '',
-    mediaLinks: [],
+    files: [],
+    contextType: '',
+    contextId: null,
+    text: '',
   });
 
   const debitNoteBreadCrumbs = [
@@ -68,32 +68,13 @@ const ViewDebitNote = () => {
   // get comments
   const { data: comments, isLoading: isCommentLoading } = useQuery({
     queryKey: [DebitNoteApi.getComments.endpointKey, debitNoteId],
-    queryFn: () => getComments(debitNoteId),
+    queryFn: () => getComments(debitNoteId, 'DEBIT_NOTE'),
     select: (comments) => comments.data.data,
   });
 
   const uploadMedia = async (file) => {
-    const formData = new FormData();
-    formData.append('files', file);
-
-    try {
-      const { data } = await uploadMediaInComments(formData);
-      toast.success(translations('successMsg.file_attached_success'));
-
-      setFiles((prev) => [...prev, file]);
-      // Use a functional state update to ensure you're appending correctly
-      setComment((prevComment) => ({
-        ...prevComment,
-        mediaLinks: [...prevComment.mediaLinks, data.data[0]], // Append the new link to the existing array
-      }));
-
-      return data.data[0];
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || translations('errorMsg.common');
-      toast.error(errorMessage);
-      throw new Error(errorMessage); // Throw error to notify Quill of failure
-    }
+    setFiles((prev) => [...prev, file]);
+    toast.success('File attached successfully!');
   };
 
   const createCommentMutation = useMutation({
@@ -105,12 +86,13 @@ const ViewDebitNote = () => {
         DebitNoteApi.getComments.endpointKey,
         debitNoteId,
       ]);
-      setFiles([]);
       setComment({
-        debitNoteId,
-        comment: '',
-        mediaLinks: [],
+        files: [],
+        contextType: '',
+        contextId: null,
+        text: '',
       });
+      setFiles([]);
     },
     onError: (error) => {
       toast.error(
@@ -120,15 +102,24 @@ const ViewDebitNote = () => {
   });
 
   const handleSubmitComment = () => {
-    if (!comment.comment.trim()) {
+    if (!comment.text.trim()) {
       toast.error(translations('errorMsg.comment_error_emtpy'));
       return;
     }
 
-    createCommentMutation.mutate({
-      ...comment,
-      mediaLinks: [...comment.mediaLinks], // Ensure mediaLinks is correctly passed
-    });
+    const formData = new FormData();
+    formData.append('contextType', 'DEBIT_NOTE'); // assuming fixed or dynamic context
+    formData.append('contextId', debitNoteId); // use actual ID here
+    formData.append('text', comment.text);
+
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+
+    createCommentMutation.mutate(formData);
   };
 
   // fn for capitalization
@@ -202,9 +193,9 @@ const ViewDebitNote = () => {
             {/* 2 */}
             <Textarea
               name="comment"
-              value={comment.comment}
+              value={comment.text}
               onChange={(e) => {
-                setComment((prev) => ({ ...prev, comment: e.target.value }));
+                setComment((prev) => ({ ...prev, text: e.target.value }));
               }}
               className="w-full flex-1 px-24"
               placeholder={translations('comments.input.placeholder')}
@@ -282,12 +273,12 @@ const ViewDebitNote = () => {
           <section className="flex flex-col gap-2">
             {isCommentLoading && <Loading />}
             {!isCommentLoading &&
-              comments.length > 0 &&
-              comments.map((comment) => (
-                <DebitNoteComment key={comment.id} comment={comment} />
+              comments?.length > 0 &&
+              comments?.map((comment) => (
+                <DebitNoteComment key={comment?.id} comment={comment} />
               ))}
 
-            {!isCommentLoading && comments.length === 0 && (
+            {!isCommentLoading && comments?.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
                 <h1>{translations('comments.emtpyStateComponent.title')}</h1>
                 <p>{translations('comments.emtpyStateComponent.para')}</p>
