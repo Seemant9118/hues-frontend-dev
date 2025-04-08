@@ -406,6 +406,7 @@ const ViewInvoice = () => {
               debitNoteStatus={debitNoteStatus}
               invoiceDetails={invoiceDetails?.invoiceDetails}
               setIsRecordingPayment={setIsPaymentAdvicing}
+              contextType={'PAYMENT_ADVICE'}
             />
           )}
         </>

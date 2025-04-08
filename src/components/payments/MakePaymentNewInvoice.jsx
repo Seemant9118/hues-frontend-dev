@@ -1,11 +1,9 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import { LocalStorageService } from '@/lib/utils';
 import {
   createPayment,
   getInvoicesForPayments,
-  uploadPaymentProofs,
 } from '@/services/Payment_Services/PaymentServices';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -34,10 +32,10 @@ const MakePaymentNewInvoice = ({
   setIsRecordingPayment,
   paymentStatus,
   debitNoteStatus,
+  contextType,
 }) => {
   const translations = useTranslations('components.record_payment_order');
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const router = useRouter();
   const [files, setFiles] = useState([]);
   const [errorMsg, setErrorMsg] = useState({});
@@ -47,7 +45,6 @@ const MakePaymentNewInvoice = ({
     amount: '',
     paymentMode: '',
     transactionId: '',
-    attachmentLink: '',
     invoices: [],
   });
 
@@ -88,10 +85,9 @@ const MakePaymentNewInvoice = ({
         amount: null,
         paymentMode: null,
         transactionId: null,
-        attachmentLink: '', // If it's a FormData object, consider setting it to null
         invoices: [],
       });
-      setFiles([]);
+      // setFiles([]);
       queryClient.invalidateQueries([
         paymentApi.getPaymentsList.endpointKey,
         invoiceDetails?.orderId,
@@ -155,58 +151,57 @@ const MakePaymentNewInvoice = ({
 
   // handle upload proofs fn
   const handleUploadChange = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('enterpriseId', enterpriseId);
-
-    try {
-      const resData = await uploadPaymentProofs(enterpriseId, formData);
-      toast.success(translations('successMsg.upload_success'));
-      setFiles((prev) => [...prev, file]);
-      setPaymentData({
-        ...paymentData,
-        attachmentLink: resData?.data?.data,
-      });
-    } catch (error) {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    }
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success('File attached successfully!');
   };
 
   // hanlde submit fn
   const handleSubmit = () => {
-    // Convert amount to a number (if valid) and update invoices
-    const filteredInvoices = invoices?.map((invoice) => ({
-      ...invoice,
-      amount: Number(paymentData?.amount) || 0, // Ensure a valid number
-    }));
+    const amount = Number(paymentData?.amount) || 0;
 
-    // Update paymentData with filtered invoices
+    // Filter and map invoices: only include those where amount > 0
+    const refactoredInvoices =
+      invoices
+        ?.filter(() => amount > 0) // filter globally based on the entered amount
+        .map(({ invoiceId }) => ({
+          invoiceId,
+          amount,
+        })) || [];
+
     const updatedPaymentData = {
       ...paymentData,
-      amount: Number(paymentData?.amount) || 0, // Ensure numeric value
-      invoices: filteredInvoices,
+      amount,
+      invoices: refactoredInvoices,
     };
 
-    const errorsMsg = {};
-
-    // Validation for payment mode
+    // Validate fields
+    const errors = {};
     if (!updatedPaymentData.paymentMode) {
-      errorsMsg.paymentMode = translations('errorMsg.payment_mode');
+      errors.paymentMode = translations('errorMsg.payment_mode');
+    }
+    if (!amount) {
+      errors.amountPaid = translations('errorMsg.amount_paid_required');
     }
 
-    // Validation for amount
-    if (!updatedPaymentData.amount) {
-      errorsMsg.amountPaid = translations('errorMsg.amount_paid_required');
-    }
+    setErrorMsg(errors);
+    if (Object.keys(errors).length > 0) return;
 
-    setErrorMsg(errorsMsg);
-
-    // If there are no errors, proceed with submission
-    if (Object.keys(errorsMsg).length === 0) {
-      createPaymentMutationFn.mutate(updatedPaymentData);
+    // Build FormData
+    const formData = new FormData();
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
     }
+    formData.append('orderId', updatedPaymentData.orderId);
+    formData.append('paymentMode', updatedPaymentData.paymentMode);
+    formData.append('transactionId', updatedPaymentData.transactionId);
+    formData.append('context', contextType);
+    formData.append('invoices', JSON.stringify(updatedPaymentData.invoices));
+    formData.append('amount', amount);
+
+    createPaymentMutationFn.mutate(formData);
   };
 
   return (
@@ -344,7 +339,7 @@ const MakePaymentNewInvoice = ({
             <Label className="text-sm font-semibold">
               {translations('form.upload_proof.title')}
             </Label>
-            {files.map((file) => (
+            {files?.map((file) => (
               <div
                 key={file.name}
                 className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
