@@ -1,17 +1,14 @@
 import { orderApi } from '@/api/order_api/order_api';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import { LocalStorageService } from '@/lib/utils';
 import {
   createPayment,
   getInvoicesForPayments,
-  uploadPaymentProofs,
 } from '@/services/Payment_Services/PaymentServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, RotateCcw, Upload, UploadCloud, X } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
@@ -39,32 +36,30 @@ import {
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
 
-const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
+const MakePaymentNew = ({
+  orderId,
+  orderDetails,
+  setIsRecordingPayment,
+  contextType,
+}) => {
   const translations = useTranslations('components.record_payment_order');
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const [isAutoSplitted, setIsAutoSplitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState({});
   const [files, setFiles] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [paymentData, setPaymentData] = useState({
+    amount: '',
+    paymentMode: '',
+    transactionId: '',
+    invoices,
+  });
 
   const { data: invoicesForPayments, isLoading } = useQuery({
     queryKey: [paymentApi.getInvoicesForPayments.endpointKey, orderId],
     queryFn: () => getInvoicesForPayments(orderId),
     enabled: !!orderId,
     select: (invoicesForPayments) => invoicesForPayments.data.data,
-  });
-
-  const [isAutoSplitted, setIsAutoSplitted] = useState(false);
-  const [errorMsg, setErrorMsg] = useState({});
-
-  // Set initial state for invoices
-  const [invoices, setInvoices] = useState([]);
-  const [paymentData, setPaymentData] = useState({
-    orderId,
-    amount: '',
-    paymentMode: '',
-    transactionId: '',
-    attachmentLink: '',
-    invoices,
   });
 
   // Update the invoices state once invoicesForPayments data is fetched
@@ -79,6 +74,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     }
   }, [invoicesForPayments]);
 
+  // payments splitFn
   const splitFn = (totalAmount) => {
     let remainingAmount = totalAmount;
 
@@ -155,55 +151,48 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
   const handleAmountPaidChange = (e, invoiceId, invoiceIndex) => {
     const { value } = e.target;
-    const newAmountPaid = parseFloat(value) || 0; // Parse the input as a number or default to 0
+    const newAmountPaid = parseFloat(value) || 0;
 
-    // Clone the error messages for invoices to update the specific error
+    const updatedInvoices = invoices.map((invoice, idx) => {
+      if (idx !== invoiceIndex) return invoice;
+      return { ...invoice, amount: newAmountPaid };
+    });
+
     const newErrorMessages = { ...errorMsg };
+    const invoiceDue = invoices[invoiceIndex]?.invoicereceivabledueamount || 0;
 
-    // Validate if the entered amount exceeds the invoice's balance amount
-    if (newAmountPaid > invoices[invoiceIndex].invoicereceivabledueamount) {
-      newErrorMessages[invoiceId] = translations(
-        'errorMsg.amount_paid_not_greater_than',
-      )`₹${invoices[invoiceIndex].invoicereceivabledueamount}`;
+    // Validate individual invoice amount
+    if (newAmountPaid > invoiceDue) {
+      newErrorMessages[invoiceId] =
+        `${translations('errorMsg.amount_paid_not_greater_than')} ₹${invoiceDue}`;
     } else {
-      newErrorMessages[invoiceId] = ''; // Clear the error if no issue
+      newErrorMessages[invoiceId] = '';
     }
 
-    // Update the specific invoice's amount
-    const updatedInvoices = invoices.map((inv, idx) =>
-      idx === invoiceIndex
-        ? { ...inv, amount: newAmountPaid } // Update the amount for the selected invoice
-        : inv,
-    );
-
-    // Calculate total amount paid across all invoices
+    // Validate total amount across all invoices
     const totalAmountPaid = updatedInvoices.reduce(
-      (total, inv) => total + Number(inv.amount),
+      (sum, inv) => sum + (Number(inv.amount) || 0),
       0,
     );
+    const expectedAmount = Number(paymentData.amount) || 0;
 
-    // Validate if the total amount paid matches the payment amount
-    if (totalAmountPaid > paymentData.amount) {
+    if (totalAmountPaid > expectedAmount) {
       newErrorMessages.invoiceAmountPaid = translations(
         'errorMsg.invoiceAmountPaid_exceed',
       );
-    } else if (totalAmountPaid < paymentData.amount) {
+    } else if (totalAmountPaid < expectedAmount) {
       newErrorMessages.invoiceAmountPaid = translations(
         'errorMsg.invoiceAmountPaid_less',
       );
     } else {
-      newErrorMessages.invoiceAmountPaid = ''; // Clear the error when amounts match
+      newErrorMessages.invoiceAmountPaid = '';
     }
 
-    // Update the error state for individual invoices
-    setErrorMsg(newErrorMessages);
-
-    // Update the paymentData with the new invoices state
     setInvoices(updatedInvoices);
-
-    setPaymentData((prevData) => ({
-      ...prevData,
-      invoices: updatedInvoices, // Ensure paymentData's invoices field is updated
+    setErrorMsg(newErrorMessages);
+    setPaymentData((prev) => ({
+      ...prev,
+      invoices: updatedInvoices,
     }));
   };
 
@@ -218,7 +207,6 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         amount: '',
         paymentMode: '',
         transactionId: '',
-        attachmentLink: '', // If it's a FormData object, consider setting it to null
         invoices: [],
       });
       setFiles([]);
@@ -240,28 +228,19 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   });
 
   const handleUploadChange = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('enterpriseId', enterpriseId);
-
-    try {
-      const resData = await uploadPaymentProofs(enterpriseId, formData);
-      toast.success(translations('successMsg.upload_success'));
-      setFiles((prev) => [...prev, file]);
-      setPaymentData({
-        ...paymentData,
-        attachmentLink: resData?.data?.data,
-      });
-    } catch (error) {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    }
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success('File attached successfully!');
   };
 
   const handleSubmit = () => {
     // Filter invoices where amountPaid > 0
     const filteredInvoices = invoices.filter((invoice) => invoice.amount > 0);
+
+    const refactoredInvoices = filteredInvoices.map((invoice) => ({
+      invoiceId: invoice.invoiceId,
+      amount: Number(invoice.amount),
+    }));
+
     // Update paymentData with filtered invoices
     const updatedPaymentData = {
       ...paymentData,
@@ -294,7 +273,21 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     }
 
     if (Object.values(errorMsg).some((msg) => msg === '')) {
-      createPaymentMutationFn.mutate(updatedPaymentData);
+      const formData = new FormData();
+      // handle files if any
+      if (files.length > 0) {
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+      }
+      formData.append('orderId', orderId);
+      formData.append('paymentMode', updatedPaymentData.paymentMode);
+      formData.append('transactionId', updatedPaymentData.transactionId);
+      formData.append('context', contextType);
+      formData.append('invoices', JSON.stringify(refactoredInvoices));
+      formData.append('amount', updatedPaymentData.amount);
+
+      createPaymentMutationFn.mutate(formData);
     }
   };
 
@@ -570,7 +563,7 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
         {/* uploads payments proofs */}
         <div className="flex flex-col gap-4">
           <Label>{translations('form.upload_proof.title')}</Label>
-          {files.map((file) => (
+          {files?.map((file) => (
             <div
               key={file.name}
               className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
@@ -634,7 +627,6 @@ const MakePaymentNew = ({ orderId, orderDetails, setIsRecordingPayment }) => {
               attachmentLink: '', // If it's a FormData object, consider setting it to null
               invoices: [],
             });
-            router.back();
           }}
         >
           {translations('form.ctas.discard')}
