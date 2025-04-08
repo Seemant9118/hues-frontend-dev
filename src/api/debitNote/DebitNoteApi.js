@@ -37,6 +37,10 @@ export const DebitNoteApi = {
     endpoint: `/comments/get`,
     endpointKey: 'get_comments',
   },
+  updateComments: {
+    endpoint: `/comments/update`,
+    endpointKey: 'update_comments',
+  },
 
   // upload media in comments
   uploadMediaInComments: {
