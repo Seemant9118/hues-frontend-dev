@@ -309,7 +309,7 @@ const AddItem = ({ onCancel, cta }) => {
         item.type === 'goods' ? handleSubmitGoods : handleSubmitServices
       }
       className={cn(
-        'scrollBarStyles relative flex h-full flex-col gap-5 overflow-y-auto p-2',
+        'scrollBarStyles relative flex h-full flex-col gap-2 overflow-y-auto p-2',
       )}
     >
       <h2 className="text-xl font-bold text-zinc-900">
@@ -317,7 +317,7 @@ const AddItem = ({ onCancel, cta }) => {
       </h2>
 
       {/* ITEM OVERVIEW */}
-      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+      <div className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-bold text-primary">ITEM OVERVIEW</h2>
         <div className="grid grid-cols-3 grid-rows-2 items-center gap-4">
           {/* Item type */}
@@ -447,7 +447,7 @@ const AddItem = ({ onCancel, cta }) => {
       </div>
 
       {/* PRICING */}
-      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+      <div className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-bold text-primary">PRICING</h2>
 
         <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
@@ -490,7 +490,7 @@ const AddItem = ({ onCancel, cta }) => {
 
       {/* ADDITIONAL INFORMATION */}
       {item.type === 'goods' && (
-        <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+        <div className="flex flex-col gap-3 p-4">
           <h2 className="text-sm font-bold text-primary">
             ADDITIONAL INFORMATION
           </h2>
