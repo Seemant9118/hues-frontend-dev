@@ -401,6 +401,7 @@ const ViewOrder = () => {
               orderId={params.order_id}
               orderDetails={orderDetails}
               setIsRecordingPayment={setIsPaymentAdvicing}
+              contextType="PAYMENT_ADVICE"
             />
           )}
 
