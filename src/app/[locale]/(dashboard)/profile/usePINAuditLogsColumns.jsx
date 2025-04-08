@@ -14,39 +14,6 @@ export const usePINAuditLogsColumns = () => {
   );
   return [
     {
-      accessorKey: 'id',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('pin_id')} />
-      ),
-    },
-    {
-      accessorKey: 'name',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('updated_by')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { name } = row.original;
-        return <div>{capitalize(name)}</div>;
-      },
-    },
-    {
-      accessorKey: 'createdat',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('update_on')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { createdat } = row.original;
-        const date = moment(createdat).format('DD-MM-YYYY');
-        return <div className="text-[#A5ABBD]">{date}</div>;
-      },
-    },
-    {
       accessorKey: 'actiontype',
       header: ({ column }) => (
         <DataTableColumnHeader
@@ -67,6 +34,20 @@ export const usePINAuditLogsColumns = () => {
           return <div>{convertSnakeToTitleCase(actiontype)}</div>;
         }
         return <div>-</div>;
+      },
+    },
+    {
+      accessorKey: 'createdat',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('update_on')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { createdat } = row.original;
+        const date = moment(createdat).format('DD-MM-YYYY');
+        return <div className="text-[#A5ABBD]">{date}</div>;
       },
     },
     {
