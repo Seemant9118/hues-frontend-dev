@@ -280,7 +280,11 @@ const ViewDebitNote = () => {
             {!isCommentLoading &&
               comments?.length > 0 &&
               comments?.map((comment) => (
-                <DebitNoteComment key={comment?.id} comment={comment} />
+                <DebitNoteComment
+                  key={comment?.id}
+                  debitNoteId={debitNoteId}
+                  comment={comment}
+                />
               ))}
 
             {!isCommentLoading && comments?.length === 0 && (
