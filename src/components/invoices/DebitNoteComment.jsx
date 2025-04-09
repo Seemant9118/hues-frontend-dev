@@ -1,4 +1,5 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import { LocalStorageService } from '@/lib/utils';
 import { updateComments } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Building2, Pencil, X } from 'lucide-react';
@@ -12,6 +13,7 @@ import { Textarea } from '../ui/textarea';
 const DebitNoteComment = ({ comment, debitNoteId }) => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [editedComments, setEditedComments] = useState({
     text: comment.text || '',
@@ -122,7 +124,7 @@ const DebitNoteComment = ({ comment, debitNoteId }) => {
           <div className="flex flex-col gap-1">
             <h1 className="flex items-center gap-2 text-sm font-bold">
               {comment?.enterprisename ?? 'Name not available'}
-              {!isEditing && (
+              {enterpriseId === comment?.enterpriseid && !isEditing && (
                 <Pencil
                   className="cursor-pointer hover:text-primary"
                   size={14}
