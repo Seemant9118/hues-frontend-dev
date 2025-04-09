@@ -485,7 +485,7 @@
             },
             "successMsg": {
                 "payment_recorded_sucessfully": "Payment Recorded Successfully",
-                "upload_success": "Upload Successfully"
+                "attached_sucess": "Attached Successfully"
             },
             "errorMsg": {
                 "payment_mode": "*Required! Please select payment mode",
