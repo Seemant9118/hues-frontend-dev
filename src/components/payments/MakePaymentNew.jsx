@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import { orderApi } from '@/api/order_api/order_api';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
@@ -6,7 +7,15 @@ import {
   getInvoicesForPayments,
 } from '@/services/Payment_Services/PaymentServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, RotateCcw, Upload, UploadCloud, X } from 'lucide-react';
+import {
+  Check,
+  FileText,
+  Image,
+  RotateCcw,
+  Upload,
+  UploadCloud,
+  X,
+} from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
@@ -196,6 +205,16 @@ const MakePaymentNew = ({
     }));
   };
 
+  // handle upload proofs fn
+  const handleAttached = async (file) => {
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success('File attached successfully!');
+  };
+
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+  };
+
   const createPaymentMutationFn = useMutation({
     mutationKey: [paymentApi.createPayment.endpointKey],
     mutationFn: createPayment,
@@ -226,11 +245,6 @@ const MakePaymentNew = ({
       toast.error(errorMessage);
     },
   });
-
-  const handleUploadChange = async (file) => {
-    setFiles((prevFiles) => [...prevFiles, file]);
-    toast.success('File attached successfully!');
-  };
 
   const handleSubmit = () => {
     // Filter invoices where amountPaid > 0
@@ -380,6 +394,10 @@ const MakePaymentNew = ({
                   name="transactionId"
                   className="max-w-md"
                   value={paymentData.transactionId}
+                  disabled={
+                    !paymentData.paymentMode ||
+                    paymentData.paymentMode === 'cash'
+                  }
                   onChange={handleInputChange}
                 />
               </div>
@@ -563,29 +581,47 @@ const MakePaymentNew = ({
         {/* uploads payments proofs */}
         <div className="flex flex-col gap-4">
           <Label>{translations('form.upload_proof.title')}</Label>
-          {files?.map((file) => (
-            <div
-              key={file.name}
-              className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
-            >
-              <div className="flex items-center gap-4">
-                <p className="text-xs font-medium leading-[18px]">
+          <div className="flex flex-wrap gap-4">
+            {files?.map((file) => (
+              <div
+                key={file.name}
+                className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+              >
+                {/* Remove Button */}
+                <X
+                  size={16}
+                  onClick={() => handleFileRemove(file)}
+                  className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                />
+
+                {/* File icon */}
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                  {file.name.split('.').pop() === 'pdf' ? (
+                    <FileText size={16} className="text-red-600" />
+                  ) : (
+                    <Image size={16} className="text-primary" />
+                  )}
+                </div>
+
+                {/* File name */}
+                <p className="truncate text-sm font-medium text-neutral-800">
                   {file.name}
                 </p>
-                <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
+
+                {/* Success message */}
                 <div className="flex items-center gap-2">
-                  <div className="rounded-full bg-green-500/10 p-2 text-green-500">
-                    <Check size={10} />
+                  <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                    <Check size={12} />
                   </div>
-                  <p className="text-xs font-medium leading-5 text-green-500">
-                    {translations('successMsg.upload_success')}
+                  <p className="text-xs font-medium text-green-600">
+                    {translations('successMsg.attached_sucess')}
                   </p>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
           <FileUploader
-            handleChange={handleUploadChange}
+            handleChange={handleAttached}
             name="file"
             types={['png', 'pdf']}
           >

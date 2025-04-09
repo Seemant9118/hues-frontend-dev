@@ -70,7 +70,7 @@
                     "payment_advice": "Payment Advice"
                 },
                 "ctas": {
-                    "payment_advice": "Payment Advice",
+                    "payment_advice": "Sent Payment advice",
                     "generate_invoice": "Generate Invoice",
                     "download": {
                         "placeholder": "Download Order Details"
@@ -170,7 +170,7 @@
                     "payment_advice": "Payment Advice"
                 },
                 "ctas": {
-                    "payment_advice": "Payment Advice",
+                    "payment_advice": "Sent Payment advice",
                     "share": {
                         "placeholder": "Coming Soon.."
                     },
