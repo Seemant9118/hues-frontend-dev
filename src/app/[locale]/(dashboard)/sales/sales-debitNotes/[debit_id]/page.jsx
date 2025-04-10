@@ -282,7 +282,7 @@ const ViewDebitNote = () => {
               comments?.map((comment) => (
                 <DebitNoteComment
                   key={comment?.id}
-                  debitNoteId={debitNoteId}
+                  invalidateId={debitNoteId}
                   comment={comment}
                 />
               ))}
