@@ -35,7 +35,7 @@ const LanguagesSwitcher = ({ translations }) => {
     <div className="flex h-full flex-col p-2">
       <div className="flex flex-col gap-2">
         <Label className="flex gap-1">
-          {translations('tabs.content.tab3.label.select')}
+          {translations('tabs.content.tab2.label.select')}
         </Label>
         <div className="flex w-full flex-col gap-1">
           <Select
