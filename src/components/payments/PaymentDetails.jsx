@@ -1,9 +1,9 @@
 import { paymentApi } from '@/api/payments/payment_api';
-import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
+import { getPaymentsFromOrder } from '@/services/Payment_Services/PaymentServices';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import emptyImg from '../../../public/Empty.png';
 import { DataTable } from '../table/data-table';
@@ -13,15 +13,24 @@ import { usePaymentColumns } from './paymentColumns';
 
 const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const translations = useTranslations('components.payment_details');
+  const router = useRouter();
   const pathName = usePathname();
   const isPurchasesPage = pathName.includes('purchase-orders');
 
   // FETCH API PAYMENTS_LIST
   const { data: paymentsList, isLoading: isPaymentsLoading } = useQuery({
-    queryKey: [paymentApi.getPaymentsList.endpointKey, orderId],
-    queryFn: () => getPaymentsList(orderId),
+    queryKey: [paymentApi.getPaymentsFromOrder.endpointKey, orderId],
+    queryFn: () => getPaymentsFromOrder(orderId),
     select: (paymentsList) => paymentsList?.data?.data,
   });
+
+  const onRowClick = (row) => {
+    if (pathName.includes('sales')) {
+      router.push(`/sales/sales-payments/${row.paymentid}`);
+    } else {
+      router.push(`/purchases/purchase-payments/${row.paymentid}`);
+    }
+  };
 
   const paymentColumns = usePaymentColumns();
 
@@ -30,7 +39,11 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   }
 
   return paymentsList?.length > 0 ? (
-    <DataTable columns={paymentColumns} data={paymentsList} />
+    <DataTable
+      onRowClick={onRowClick}
+      columns={paymentColumns}
+      data={paymentsList}
+    />
   ) : (
     <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />

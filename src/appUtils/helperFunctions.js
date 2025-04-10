@@ -21,53 +21,57 @@ export const getRandomBgColor = () => {
 };
 
 // style for react-select component
-export const getStylesForSelectComponent = () => {
-  return {
-    control: (base, state) => ({
-      ...base,
-      border: state.isFocused
-        ? '2.5px solid #298AFAFF' // Bold border when focused (color: blue)
-        : '1px solid #E2E8F0', // Default border
-      borderRadius: '9px',
-      boxShadow: 'none', // Removes focus outline shadow
-      height: '40px',
-      width: '20rem',
-      transition: 'border-color 0.2s', // Smooth transition for focus
-    }),
-    menu: (base) => ({
-      ...base,
-      width: '20rem',
-      borderRadius: '9px',
-      zIndex: 10,
-    }),
-    menuList: (base) => ({
-      ...base,
-      padding: '2px',
-      fontSize: '14px',
-      maxHeight: '150px',
-      overflowY: 'auto',
-
-      // Custom scrollbar styles
-      '&::-webkit-scrollbar': {
-        width: '0.5rem', // Scrollbar width
-      },
-      '&::-webkit-scrollbar-track': {
-        background: 'white', // Track background
-      },
-      '&::-webkit-scrollbar-thumb': {
-        borderRadius: '0.5rem', // Rounded scrollbar thumb
-        background: '#dadce0', // Thumb color
-      },
-      '&::-webkit-scrollbar-thumb:hover': {
-        background: '#c6c7c9', // Thumb color on hover
-      },
-
-      // Cross-browser support for Firefox
-      scrollbarWidth: 'thin',
-      scrollbarColor: '#dadce0 white', // Thumb and track colors for Firefox
-    }),
-  };
-};
+export const getStylesForSelectComponent = () => ({
+  control: (base, state) => ({
+    ...base,
+    borderRadius: '10px',
+    borderColor: state.isFocused ? '#3b82f6' : '#e5e7eb',
+    boxShadow: state.isFocused ? '0 0 0 1px #3b82f6' : 'none',
+    '&:hover': { borderColor: '#3b82f6' },
+    fontSize: '0.875rem',
+    minHeight: '40px',
+    paddingLeft: '4px',
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    display: 'flex',
+    flexWrap: 'nowrap',
+    overflowX: 'auto',
+    paddingLeft: '8px',
+    gap: '6px',
+  }),
+  multiValue: (base) => ({
+    ...base,
+    backgroundColor: '#f3f4f6', // Tailwind gray-100
+    borderRadius: '9999px',
+    padding: '2px 8px',
+    maxWidth: '140px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  }),
+  multiValueLabel: (base) => ({
+    ...base,
+    color: '#111827', // Tailwind gray-900
+    fontSize: '0.75rem',
+    fontWeight: '500',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  }),
+  multiValueRemove: (base) => ({
+    ...base,
+    color: '#6b7280',
+    ':hover': {
+      backgroundColor: '#ef4444',
+      color: 'white',
+    },
+  }),
+  indicatorsContainer: (base) => ({
+    ...base,
+    paddingRight: '8px',
+  }),
+});
 
 // formatAmount in Indian Rupee currency
 export const formattedAmount = (amount) => {

@@ -1,20 +1,26 @@
 'use client';
 
+import { paymentApi } from '@/api/payments/payment_api';
 import Tooltips from '@/components/auth/Tooltips';
-import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
-import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
+import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import emptyImg from '../../../../../../public/Empty.png';
+import { PurchaseTable } from '../purchasetable/PurchaseTable';
+import { usePaymentsColumn } from './usePaymentsColumn';
+
+const PAGE_LIMIT = 10;
 
 const PurchasePayments = () => {
   useMetaData('Hues! - Purchase Payments', 'HUES PAYMENTS'); // dynamic title
@@ -27,44 +33,88 @@ const PurchasePayments = () => {
   );
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isCreatePaymentAdvice, setIsCreatePaymentAdvice] = useState(false);
+  const observer = useRef(); // Ref for infinite scrolling observer
+  const [paymentsListing, setPaymentsListing] = useState(null);
+  const [paginationData, setPaginationData] = useState(null);
 
-  // const paymentColumns = usePaymentsColumn();
-
-  const purchasePaymentsBreadCrumbs = [
-    {
-      id: 1,
-      name: 'purchases.purchase-payments.title',
-      path: '/purchases/purchase-payments',
-      show: true, // Always show
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isLoading: isPaymentsLoading,
+  } = useInfiniteQuery({
+    queryKey: [paymentApi.getPaymentsList.endpointKey],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getPaymentsList({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        context: 'BUYER',
+      });
+      return response;
     },
-    {
-      id: 1,
-      name: 'purchases.purchase-payments.title2',
-      path: '/purchases/purchase-payments',
-      show: isCreatePaymentAdvice, // Always show
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-  ];
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
+  // data flattening - formatting
   useEffect(() => {
-    // Read the state from the query parameters
-    const action = searchParams.get('action');
-    setIsCreatePaymentAdvice(action === 'create');
-  }, [searchParams]);
+    if (!data) return;
 
-  useEffect(() => {
-    // Update URL based on the state (avoid shallow navigation for full update)
-    let newPath = `/purchases/purchase-payments`;
+    // Flatten Purchase payments data from all pages
+    const flattenedPurchasePaymentsData = data.pages
+      .map((page) => page?.data?.data?.data) // Assuming Purchase payments data is nested in `data.data.data`
+      .flat();
 
-    if (isCreatePaymentAdvice) {
-      newPath += '?action=create';
-    } else {
-      newPath += '';
-    }
-    // Use router.replace instead of push to avoid adding a new history entry
-    router.push(newPath);
-  }, [isCreatePaymentAdvice, router]);
+    // Deduplicate Purchase payments data based on unique `id`
+    const uniquePurchasePaymentsData = Array.from(
+      new Map(
+        flattenedPurchasePaymentsData.map((payment) => [
+          payment.paymentId, // Assuming `id` is the unique identifier for each sale invoice
+          payment,
+        ]),
+      ).values(),
+    );
+
+    // Update state with deduplicated Purchase payments data
+    setPaymentsListing(uniquePurchasePaymentsData);
+
+    // Calculate pagination data using the last page's information
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
+    });
+  }, [data]);
+
+  // Infinite scroll observer
+  const lastPurchasePaymentsRef = useCallback(
+    (node) => {
+      if (isFetching) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, fetchNextPage, hasNextPage],
+  );
+
+  const onRowClick = (row) => {
+    router.push(`/purchases/purchase-payments/${row.paymentId}`);
+  };
+
+  const paymentColumns = usePaymentsColumn();
 
   return (
     <>
@@ -78,55 +128,34 @@ const PurchasePayments = () => {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper>
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-            <div className="flex gap-2">
-              {/* Breadcrumbs */}
-              <OrderBreadCrumbs
-                possiblePagesBreadcrumbs={purchasePaymentsBreadCrumbs}
+            <div className="flex w-full items-center justify-between gap-2">
+              <SubHeader name={translations('title')} />
+              <Tooltips
+                trigger={
+                  <Button
+                    onClick={() => {}}
+                    variant="outline"
+                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                    size="sm"
+                  >
+                    <Download size={14} />
+                  </Button>
+                }
+                content={'Coming Soon...'}
               />
             </div>
-            {!isCreatePaymentAdvice && (
-              <div className="flex gap-2">
-                <Tooltips
-                  trigger={
-                    <Button
-                      onClick={() => setIsCreatePaymentAdvice(true)}
-                      size="sm"
-                    >
-                      {translations('ctas.create_payment_advice.cta')}
-                    </Button>
-                  }
-                  content={translations(
-                    'ctas.create_payment_advice.placeholder',
-                  )}
-                />
-                <Tooltips
-                  trigger={
-                    <Button
-                      onClick={() => {}}
-                      variant="outline"
-                      className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                      size="sm"
-                    >
-                      <Download size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.export.placeholder')}
-                />
-              </div>
-            )}
           </section>
 
-          {!isCreatePaymentAdvice && (
-            <section>
-              {/* Loading state */}
-              {/* {isPaymentsLoading && <Loading />} */}
+          <section>
+            {/* Loading state */}
+            {isPaymentsLoading && <Loading />}
 
-              {/* Table when data is available */}
-              {/* {!isPaymentsLoading && paymentsListing?.length > 0 && (
+            {/* Table when data is available */}
+            {!isPaymentsLoading && paymentsListing?.length > 0 && (
               <PurchaseTable
                 id="purchase-debit-note-accepted"
                 columns={paymentColumns}
-                data={[]}
+                data={paymentsListing}
                 fetchNextPage={fetchNextPage}
                 isFetching={isFetching}
                 totalPages={paginationData?.totalPages}
@@ -134,9 +163,10 @@ const PurchasePayments = () => {
                 onRowClick={onRowClick}
                 lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
               />
-            )} */}
+            )}
 
-              {/* Empty state */}
+            {/* Empty state */}
+            {!isPaymentsLoading && paymentsListing?.length === 0 && (
               <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                 <Image src={emptyImg} alt="emptyIcon" />
                 <p className="text-lg font-bold text-black">
@@ -145,23 +175,9 @@ const PurchasePayments = () => {
                 <p className="w-1/3 text-center">
                   {translations('emptyStateComponent.description')}
                 </p>
-                <Button
-                  onClick={() => setIsCreatePaymentAdvice(true)}
-                  size="sm"
-                >
-                  {translations('ctas.create_payment_advice.cta')}
-                </Button>
               </div>
-            </section>
-          )}
-
-          {isCreatePaymentAdvice && (
-            <MakePaymentNew
-              orderId="1"
-              orderDetails=""
-              setIsRecordingPayment={setIsCreatePaymentAdvice}
-            />
-          )}
+            )}
+          </section>
         </Wrapper>
       )}
     </>

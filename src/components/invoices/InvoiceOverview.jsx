@@ -57,7 +57,7 @@ const InvoiceOverview = ({
               <p className="text-sm font-bold">{Name}</p>
             </section>
 
-            <section className="flex w-1/4 flex-col gap-2">
+            <section className="flex w-fit flex-col gap-2">
               <p className="text-xs font-bold">
                 {translations('label.payment_status')}
               </p>
@@ -90,11 +90,11 @@ const InvoiceOverview = ({
               <p className="text-sm font-bold">{capitalize(type)}</p>
             </section>
 
-            <section className="flex w-1/4 flex-col gap-2">
+            <section className="flex w-fit flex-col gap-2">
               <p className="text-xs font-bold">
                 {translations('label.debit_notes')}
               </p>
-              <div>{debitNoteStatus}</div>
+              <div className="w-full">{debitNoteStatus}</div>
             </section>
           </div>
 

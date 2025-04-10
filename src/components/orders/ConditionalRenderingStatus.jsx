@@ -11,6 +11,12 @@ const ConditionalRenderingStatus = ({ status }) => {
       statusBG = '#39C06F1A';
       statusBorder = '#39C06F';
       break;
+    case 'PENDING':
+      statusText = 'Pending';
+      statusColor = '#F8BA05';
+      statusBG = '#F8BA051A';
+      statusBorder = '#F8BA05';
+      break;
     case 'NEW':
       statusText = 'New';
       statusColor = '#288AF9';
@@ -94,13 +100,10 @@ const ConditionalRenderingStatus = ({ status }) => {
 
     // debit/credit note status
     case 'NOT_RAISED':
-      statusText = 'Not Raised';
-      statusColor = '#288AF9';
-      statusBG = '#288AF91A';
-      statusBorder = '#288AF9';
+      statusText = '-';
       break;
     case 'RAISED':
-      statusText = 'Raised';
+      statusText = 'Debit Note Raised';
       statusColor = '#DD9745';
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';

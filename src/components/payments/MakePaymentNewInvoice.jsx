@@ -1,13 +1,24 @@
+import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
+import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
 import {
   createPayment,
   getInvoicesForPayments,
 } from '@/services/Payment_Services/PaymentServices';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, FileText, Image, Upload, UploadCloud, X } from 'lucide-react';
+import {
+  CalendarDays,
+  Check,
+  FileText,
+  Image,
+  Upload,
+  UploadCloud,
+  X,
+} from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +26,7 @@ import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
 import InvoiceOverview from '../invoices/InvoiceOverview';
 import { Button } from '../ui/button';
+import DatePickers from '../ui/DatePickers';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
@@ -43,9 +55,11 @@ const MakePaymentNewInvoice = ({
   const [paymentData, setPaymentData] = useState({
     orderId: invoiceDetails?.orderId,
     amount: '',
+    bankAccountId: '',
     paymentMode: '',
     transactionId: '',
     invoices: [],
+    paymentDate: '',
   });
 
   // api call for invoices
@@ -72,6 +86,12 @@ const MakePaymentNewInvoice = ({
     }));
     setInvoices(updatedInvoices);
   }, [invoicesForPayments]);
+
+  const { data: bankAccounts } = useQuery({
+    queryKey: [bankAccountApis.getBankAccounts.endpointKey],
+    queryFn: () => getBankAccounts(),
+    select: (data) => data.data.data,
+  });
 
   // mutation for create payment
   const createPaymentMutationFn = useMutation({
@@ -204,6 +224,11 @@ const MakePaymentNewInvoice = ({
     formData.append('context', contextType);
     formData.append('invoices', JSON.stringify(updatedPaymentData.invoices));
     formData.append('amount', amount);
+    const formattedPaymentDate = moment(updatedPaymentData.paymentDate).format(
+      'DD/MM/YYYY',
+    );
+    formData.append('paymentDate', formattedPaymentDate);
+    formData.append('bankAccountId', updatedPaymentData.bankAccountId);
 
     createPaymentMutationFn.mutate(formData);
   };
@@ -283,6 +308,81 @@ const MakePaymentNewInvoice = ({
                 {errorMsg.paymentMode && (
                   <ErrorBox msg={errorMsg.paymentMode} />
                 )}
+              </div>
+              {/* select payment Date */}
+              <div className="flex w-1/2 flex-col gap-2">
+                <div>
+                  <Label className="flex-shrink-0 text-sm font-semibold">
+                    {'Payment Date'}
+                  </Label>{' '}
+                  <span className="text-red-600">*</span>
+                </div>
+                <div className="relative flex h-10 max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <DatePickers
+                    selected={paymentData.paymentDate}
+                    onChange={(date) => {
+                      setPaymentData((prevData) => ({
+                        ...prevData,
+                        paymentDate: date,
+                      }));
+                      setErrorMsg((prevMsg) => ({
+                        ...prevMsg,
+                        paymentDate: '', // Clear any previous error for payment date
+                      }));
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    popperPlacement="top-right"
+                  />
+                  <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+                </div>
+
+                {errorMsg.paymentDate && (
+                  <ErrorBox msg={errorMsg.paymentDate} />
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              {/* Bank Account Details */}
+              <div className="flex w-1/2 flex-col gap-3">
+                <Label className="text-sm font-semibold">
+                  {'Bank Account Details'}
+                </Label>
+                <div className="flex flex-col gap-1">
+                  <Select
+                    defaultValue={paymentData.bankAccountId}
+                    onValueChange={(value) => {
+                      // Check if a payment mode is selected (non-empty value)
+                      if (value) {
+                        setErrorMsg((prevMsg) => ({
+                          ...prevMsg,
+                          bankAccountId: [],
+                        }));
+                      }
+                      setPaymentData((prevData) => ({
+                        ...prevData,
+                        bankAccountId: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger
+                      className="max-w-md"
+                      disabled={paymentData.paymentMode === 'cash'}
+                    >
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bankAccounts?.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {`Acc ${account.maskedAccountNumber}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errorMsg.bankAccountId && (
+                    <ErrorBox msg={errorMsg.bankAccountId} />
+                  )}
+                </div>
               </div>
               {/* transaction ID */}
               <div className="flex w-1/2 flex-col gap-2">
@@ -437,10 +537,7 @@ const MakePaymentNewInvoice = ({
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={
-            Object.values(errorMsg).some((msg) => msg !== '') ||
-            createPaymentMutationFn.isPending
-          }
+          disabled={createPaymentMutationFn.isPending}
           size="sm"
           className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
         >

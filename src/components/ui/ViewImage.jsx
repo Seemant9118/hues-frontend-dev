@@ -1,7 +1,7 @@
 'use client';
 
 import { getDocument } from '@/services/Template_Services/Template_Services';
-import { Eye } from 'lucide-react';
+import { File } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -45,7 +45,7 @@ const ViewImage = ({ mediaName, mediaImage }) => {
           disabled={loading}
         >
           <div className="flex w-full items-center gap-2">
-            <Eye size={14} className="shrink-0" />
+            <File size={14} className="shrink-0" />
             <span className="truncate">{mediaName}</span>
           </div>
         </Button>

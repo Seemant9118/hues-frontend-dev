@@ -238,6 +238,9 @@
                 "heading": "No Payments yet",
                 "description": "You don’t have payment yet. Start by clicking on the Create Payment Record button"
             },
+            "payment-details": {
+                "title": "Payments Details"
+            },
             "ctas": {
                 "export": {
                     "placeholder": "Export Selected Payments",
