@@ -4,10 +4,18 @@ export const paymentApi = {
     endpoint: `/payment/create`,
     endpointKey: 'create_payment',
   },
+  getPaymentsFromOrder: {
+    endpoint: `/payment/getpayments/`,
+    endpointKey: 'get_payments_from_order',
+  },
   //   2. get all payments list
   getPaymentsList: {
-    endpoint: `/payment/getpayments/`,
+    endpoint: `/payment/get`,
     endpointKey: 'get_payments',
+  },
+  getPaymentDetails: {
+    endpoint: `/payment/get/`,
+    endpointKey: 'get_payment_details',
   },
   //   3. get invoices for payment
   getInvoicesForPayments: {
@@ -23,5 +31,16 @@ export const paymentApi = {
   uploadPaymentProof: {
     endpoint: `/payment/upload`,
     endpointKey: 'upload_payment_proofs',
+  },
+
+  // acknowledge payment
+  acknowledgePayment: {
+    endpoint: `/payment/approve/`,
+    endpointKey: 'ack_payment',
+  },
+  // reject payment
+  rejectPayment: {
+    endpoint: `/payment/reject/`,
+    endpointKey: 'reject_payment',
   },
 };

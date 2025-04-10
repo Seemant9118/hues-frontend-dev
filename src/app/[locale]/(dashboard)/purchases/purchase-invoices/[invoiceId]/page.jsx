@@ -152,6 +152,10 @@ const ViewInvoice = () => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
+  const onRowClick = (row) => {
+    router.push(`/purchases/purchase-payments/${row.paymentid}`);
+  };
+
   return (
     <Wrapper className="h-full py-2">
       {isLoading && !invoiceDetails?.invoiceDetails && <Loading />}
@@ -283,7 +287,11 @@ const ViewInvoice = () => {
                 {isPaymentsLoading && <Loading />}
                 {/* orders overview */}
                 {!isPaymentsLoading && paymentsListing?.length > 0 && (
-                  <DataTable data={paymentsListing} columns={paymentsColumns} />
+                  <DataTable
+                    onRowClick={onRowClick}
+                    data={paymentsListing}
+                    columns={paymentsColumns}
+                  />
                 )}
                 {!isPaymentsLoading && paymentsListing?.length === 0 && (
                   <div className="flex h-[29rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
