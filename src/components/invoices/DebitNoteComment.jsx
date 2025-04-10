@@ -10,7 +10,7 @@ import ViewImage from '../ui/ViewImage';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
-const DebitNoteComment = ({ comment, debitNoteId }) => {
+const DebitNoteComment = ({ comment, invalidateId }) => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -40,7 +40,7 @@ const DebitNoteComment = ({ comment, debitNoteId }) => {
       toast.success('Comment updated');
       queryClient.invalidateQueries([
         DebitNoteApi.getComments.endpointKey,
-        debitNoteId,
+        invalidateId,
       ]);
       setIsEditing(false);
       setEditedComments((prev) => ({

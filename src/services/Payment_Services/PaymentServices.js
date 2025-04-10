@@ -6,9 +6,15 @@ export const createPayment = (data) => {
   return APIinstance.post(paymentApi.createPayment.endpoint, data);
 };
 
+export const getPaymentsFromOrder = (id) => {
+  return APIinstance.get(`${paymentApi.getPaymentsFromOrder.endpoint}${id}`);
+};
+
 // 2.get payments list
-export const getPaymentsList = (id) => {
-  return APIinstance.get(`${paymentApi.getPaymentsList.endpoint}${id}`);
+export const getPaymentsList = ({ page, limit, context }) => {
+  return APIinstance.get(
+    `${paymentApi.getPaymentsList.endpoint}?page=${page}&limit=${limit}&context=${context}`,
+  );
 };
 
 // 3.get invoices for payments
@@ -35,4 +41,16 @@ export const uploadPaymentProofs = (id, file) => {
     `${paymentApi.uploadPaymentProof.endpoint}?enterpriseId=${id}`,
     file,
   );
+};
+
+export const getPaymentsDetails = (id) => {
+  return APIinstance.get(`${paymentApi.getPaymentDetails.endpoint}${id}`);
+};
+
+export const acknowledgePayment = (id) => {
+  return APIinstance.post(`${paymentApi.acknowledgePayment.endpoint}${id}`);
+};
+
+export const rejectPayment = (id) => {
+  return APIinstance.post(`${paymentApi.rejectPayment.endpoint}${id}`);
 };

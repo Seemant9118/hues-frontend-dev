@@ -95,9 +95,7 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
         />
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center gap-5">
-        <DialogHeader className="text-lg font-bold">
-          Raised a Debit Note
-        </DialogHeader>
+        <DialogHeader className="text-lg font-bold">Debit Note</DialogHeader>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <div>
@@ -151,7 +149,7 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
               onClick={handleRaisedDebitNote}
               disabled={raisedDebitNoteMutation.isPending || errorMsg}
             >
-              {raisedDebitNoteMutation.isPending ? <Loading /> : 'Raised'}
+              {raisedDebitNoteMutation.isPending ? <Loading /> : 'Submit'}
             </Button>
           </div>
         </div>

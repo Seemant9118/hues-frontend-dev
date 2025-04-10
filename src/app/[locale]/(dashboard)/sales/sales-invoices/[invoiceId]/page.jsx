@@ -152,6 +152,10 @@ const ViewInvoice = () => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
+  const onRowClick = (row) => {
+    router.push(`/sales/sales-payments/${row.paymentid}`);
+  };
+
   return (
     <Wrapper className="h-full py-2">
       {/* headers */}
@@ -256,7 +260,11 @@ const ViewInvoice = () => {
           <TabsContent value="payment">
             {isPaymentsLoading && <Loading />}
             {!isPaymentsLoading && paymentsListing?.length > 0 && (
-              <DataTable data={paymentsListing} columns={paymentsColumns} />
+              <DataTable
+                onRowClick={onRowClick}
+                data={paymentsListing}
+                columns={paymentsColumns}
+              />
             )}
             {!isPaymentsLoading && paymentsListing?.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">

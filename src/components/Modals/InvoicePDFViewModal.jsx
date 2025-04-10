@@ -15,7 +15,7 @@ import Tooltips from '../auth/Tooltips';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ Url }) => {
+const InvoicePDFViewModal = ({ isPaymentReciept, Url }) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
   const { data: pdfDoc } = useQuery({
@@ -27,22 +27,38 @@ const InvoicePDFViewModal = ({ Url }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Tooltips
-          trigger={
-            <Button
-              onClick={() => setIsOpen(true)}
-              variant="outline"
-              size="sm"
-              className="flex items-center justify-center"
-            >
-              <Eye size={14} />
-            </Button>
-          }
-          content={translations('view.placeholder')}
-        />
+        {isPaymentReciept ? (
+          <Tooltips
+            trigger={
+              <Button
+                onClick={() => setIsOpen(true)}
+                variant="blue_outline"
+                size="sm"
+                className="flex items-center justify-center"
+              >
+                View Payment Reciept
+              </Button>
+            }
+            content={'Payment Reciept'}
+          />
+        ) : (
+          <Tooltips
+            trigger={
+              <Button
+                onClick={() => setIsOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center"
+              >
+                <Eye size={14} />
+              </Button>
+            }
+            content={translations('view.placeholder')}
+          />
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] p-1">
-        <DialogTitle className="p-2">{translations('title')}</DialogTitle>
+        <DialogTitle className="p-2">{'Preview'}</DialogTitle>
 
         {pdfDoc?.publicUrl ? (
           <div className="flex items-center justify-center">
