@@ -72,7 +72,7 @@ const InvoiceOverview = ({
                 {translations('label.order_id')}
               </p>
               <p
-                className="flex cursor-pointer items-center gap-1 text-sm font-bold hover:text-primary"
+                className="flex cursor-pointer items-center gap-0.5 text-sm font-bold hover:text-primary hover:underline"
                 onClick={() => {
                   if (isSalesDetailPage) {
                     router.push(`/sales/sales-orders/${orderId}`);
