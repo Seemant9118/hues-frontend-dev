@@ -114,14 +114,14 @@ const DebitNoteComment = ({ comment, invalidateId }) => {
   };
 
   return (
-    <div className="flex justify-start gap-2">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
+    <div className="flex justify-start gap-2 px-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#A5ABBD]">
         <Building2 size={20} />
       </div>
 
       <div className="flex w-full flex-col gap-2">
         <div className="flex justify-between">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             <h1 className="flex items-center gap-2 text-sm font-bold">
               {comment?.enterprisename ?? 'Name not available'}
               {enterpriseId === comment?.enterpriseid && !isEditing && (
@@ -132,7 +132,7 @@ const DebitNoteComment = ({ comment, invalidateId }) => {
                 />
               )}
             </h1>
-            <p className="text-sm font-bold text-[#A5ABBD]">
+            <p className="text-xs font-semibold text-[#A5ABBD]">
               {formatDateTime(comment?.commentedat)}
             </p>
           </div>
@@ -210,7 +210,7 @@ const DebitNoteComment = ({ comment, invalidateId }) => {
           </>
         ) : (
           <>
-            <p className="text-sm text-[#7F8185]">{comment.text}</p>
+            <p className="text-sm">{comment.text}</p>
             <div className="flex flex-wrap gap-2">
               {comment?.attachments?.map((attachment) => (
                 <ViewImage
