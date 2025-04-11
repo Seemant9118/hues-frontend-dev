@@ -153,7 +153,7 @@ const ViewInvoice = () => {
   }
 
   const onRowClick = (row) => {
-    router.push(`/purchases/purchase-payments/${row.paymentid}`);
+    router.push(`/purchases/purchase-payments/${row.paymentId}`);
   };
 
   return (

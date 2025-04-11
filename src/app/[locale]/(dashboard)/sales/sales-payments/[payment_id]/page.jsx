@@ -205,10 +205,10 @@ const PaymentDetails = () => {
                 )
                 .map((invoiceNo) => (
                   <div
-                    key={invoiceNo}
+                    key={invoiceNo?.id}
                     className="w-40 rounded-sm border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-xs text-black"
                   >
-                    {invoiceNo}
+                    {invoiceNo?.invoiceReferenceNumber}
                   </div>
                 ))}
 
