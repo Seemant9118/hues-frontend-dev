@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Link } from '@/i18n/routing';
 import {
   Bell,
   BookOpenText,
@@ -10,6 +11,7 @@ import {
   FileSymlink,
   Gauge,
   HandPlatter,
+  IndianRupee,
   Package,
   ReceiptText,
   ScrollText,
@@ -18,8 +20,6 @@ import {
   UserRound,
 } from 'lucide-react';
 import Image from 'next/image';
-
-import { Link } from '@/i18n/routing';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
@@ -74,7 +74,7 @@ const Sidebar = () => {
         },
         {
           name: 'sidebar.subTabs.payments',
-          icon: <ReceiptText size={16} />,
+          icon: <IndianRupee size={14} />,
           path: '/sales/sales-payments',
         },
         {
@@ -101,7 +101,7 @@ const Sidebar = () => {
         },
         {
           name: 'sidebar.subTabs.payments',
-          icon: <ReceiptText size={16} />,
+          icon: <IndianRupee size={14} />,
           path: '/purchases/purchase-payments',
         },
         {
@@ -160,7 +160,7 @@ const Sidebar = () => {
         />
       </Link>
 
-      <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1">
+      <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
         {/* Navigation Links */}
         <nav className="flex flex-col gap-2">
           {links.map((link) => (

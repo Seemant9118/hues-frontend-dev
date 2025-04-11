@@ -93,7 +93,7 @@ const StyledLinks = ({ link }) => {
               href={subtab.path}
               key={subtab.path}
               className={cn(
-                'flex gap-2 rounded-sm border-none p-3 text-sm',
+                'flex items-center gap-2 rounded-sm border-none p-3 text-sm',
                 pathname.startsWith(subtab.path)
                   ? 'bg-[#288AF91A] text-[#288AF9]'
                   : 'bg-transparent text-gray-600 hover:text-black',
