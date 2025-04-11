@@ -18,7 +18,7 @@ export const usePaymentColumns = () => {
   };
   return [
     {
-      accessorKey: 'paymentreferencenumber',
+      accessorKey: 'paymentReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -26,24 +26,24 @@ export const usePaymentColumns = () => {
         />
       ),
       cell: ({ row }) => {
-        const { paymentreferencenumber } = row.original;
+        const { paymentReferenceNumber } = row.original;
 
         return (
           <div className="flex items-center">
-            <span>{paymentreferencenumber}</span>
+            <span>{paymentReferenceNumber}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: 'paymentdate',
+      accessorKey: 'paymentDate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={translations('date')} />
       ),
       cell: ({ row }) => {
-        const { paymentdate } = row.original;
+        const { paymentDate } = row.original;
         const formattedDate =
-          paymentdate !== null ? moment(paymentdate).format('DD-MM-YYYY') : '-';
+          paymentDate !== null ? moment(paymentDate).format('DD-MM-YYYY') : '-';
         return <div className="text-[#A5ABBD]">{formattedDate}</div>;
       },
     },
@@ -62,7 +62,7 @@ export const usePaymentColumns = () => {
       },
     },
     {
-      accessorKey: 'invoicereferencenumbers',
+      accessorKey: 'invoiceReferenceNumbers',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -70,12 +70,12 @@ export const usePaymentColumns = () => {
         />
       ),
       cell: ({ row }) => {
-        const { invoicereferencenumbers } = row.original;
+        const { invoiceReferenceNumbers } = row.original;
 
         return (
           <div className="flex flex-col items-start gap-2">
-            {invoicereferencenumbers
-              .slice(0, showAll ? invoicereferencenumbers.length : 3)
+            {invoiceReferenceNumbers
+              .slice(0, showAll ? invoiceReferenceNumbers.length : 3)
               .map((invoiceNo) => (
                 <div
                   key={invoiceNo}
@@ -85,7 +85,7 @@ export const usePaymentColumns = () => {
                 </div>
               ))}
 
-            {invoicereferencenumbers.length > 3 && (
+            {invoiceReferenceNumbers.length > 3 && (
               <button
                 onClick={handleToggleShow}
                 className="text-xs text-blue-500 underline"
@@ -98,12 +98,12 @@ export const usePaymentColumns = () => {
       },
     },
     {
-      accessorKey: 'amountpaid',
+      accessorKey: 'amountPaid',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={translations('amount')} />
       ),
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue('amountpaid'));
+        const amount = parseFloat(row.getValue('amountPaid'));
 
         return <div className="font-medium">{formattedAmount(amount)}</div>;
       },

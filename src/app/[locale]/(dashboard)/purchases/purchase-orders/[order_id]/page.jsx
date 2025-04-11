@@ -236,7 +236,7 @@ const ViewOrder = () => {
             </div>
 
             <div className="flex gap-2">
-              {/* record payment CTA */}
+              {/* send payment advice CTA */}
               {!isPaymentAdvicing &&
                 (orderDetails.negotiationStatus === 'INVOICED' ||
                   orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
