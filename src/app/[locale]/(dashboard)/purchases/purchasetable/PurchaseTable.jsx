@@ -122,8 +122,10 @@ export function PurchaseTable({
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
               const row = rows[virtualRow.index];
               let isRead;
-              if (row.original?.readTracker) {
-                isRead = row.original?.readTracker?.buyerIsRead;
+              if (row.original?.readTracker || row.original.buyerIsRead) {
+                isRead =
+                  row.original?.readTracker?.buyerIsRead ||
+                  row.original.buyerIsRead;
               }
               return (
                 <TableRow

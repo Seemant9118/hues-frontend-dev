@@ -1,6 +1,7 @@
 'use client';
 
 import { paymentApi } from '@/api/payments/payment_api';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -10,12 +11,18 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+} from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { SalesTable } from '../salestable/SalesTable';
 import { usePaymentsColumn } from './usePaymentsColumn';
 
@@ -108,8 +115,23 @@ const SalesPayments = () => {
     [isFetching, fetchNextPage, hasNextPage],
   );
 
+  // [updateReadTracker Mutation : onRowClick] ✅
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   const onRowClick = (row) => {
-    router.push(`/sales/sales-payments/${row.paymentId}`);
+    const isSellerRead = row?.sellerIsRead;
+    if (isSellerRead) {
+      router.push(`/sales/sales-payments/${row.paymentId}`);
+    } else {
+      updateReadTrackerMutation.mutate(row.paymentId);
+      router.push(`/sales/sales-payments/${row.paymentId}`);
+    }
   };
 
   const paymentColumns = usePaymentsColumn();
