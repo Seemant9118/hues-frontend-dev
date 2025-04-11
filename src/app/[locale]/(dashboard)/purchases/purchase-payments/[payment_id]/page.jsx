@@ -14,6 +14,7 @@ import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import ViewImage from '@/components/ui/ViewImage';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/custom-hooks/useMetaData';
 import {
   createComments,
   getComments,
@@ -27,23 +28,25 @@ import {
   Clock,
   FileText,
   Image,
+  MoveUpRight,
   Paperclip,
   X,
 } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 const PaymentDetails = () => {
+  useMetaData('Hues! - Payments Details', 'HUES PAYMENT DETAILS');
   const translations = useTranslations('sales.sales-payments');
   const translationsComments = useTranslations(
     'sales.sales-debit_notes.debit_notes_details',
   );
   const queryClient = useQueryClient();
+  const router = useRouter();
   const params = useParams();
-  const [showAll, setShowAll] = useState(false);
   const [files, setFiles] = useState([]);
   const [comment, setComment] = useState({
     files: [],
@@ -51,9 +54,6 @@ const PaymentDetails = () => {
     contextId: null,
     text: '',
   });
-  const handleToggleShow = () => {
-    setShowAll(!showAll);
-  };
 
   const paymentsOrdersBreadCrumbs = [
     {
@@ -164,30 +164,22 @@ const PaymentDetails = () => {
           </div>
           <div>
             <p className="text-xs font-semibold">Invoice ID</p>
-            <div className="flex flex-col items-start gap-2">
-              {paymentsDetails?.invoiceReferenceNumbers
-                .slice(
-                  0,
-                  showAll ? paymentsDetails?.invoiceReferenceNumbers.length : 3,
-                )
-                .map((invoiceNo) => (
-                  <div
-                    key={invoiceNo?.id}
-                    className="w-40 rounded-sm border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-xs text-black"
-                  >
-                    {invoiceNo?.invoiceReferenceNumber}
-                  </div>
-                ))}
-
-              {paymentsDetails?.invoiceReferenceNumbers.length > 3 && (
-                <button
-                  onClick={handleToggleShow}
-                  className="text-xs text-blue-500 underline"
-                >
-                  {showAll ? 'Show less' : 'See more'}
-                </button>
-              )}
-            </div>
+            <p
+              onClick={() => {
+                router.push(
+                  `/purchases/purchase-invoices/${
+                    paymentsDetails?.invoiceReferenceNumbers[0].id
+                  }`,
+                );
+              }}
+              className="flex cursor-pointer items-center gap-0.5 text-sm font-bold hover:text-primary hover:underline"
+            >
+              {
+                paymentsDetails?.invoiceReferenceNumbers[0]
+                  .invoiceReferenceNumber
+              }
+              <MoveUpRight size={12} />
+            </p>
           </div>
           <div>
             <p className="text-xs font-semibold">Status</p>
@@ -205,6 +197,12 @@ const PaymentDetails = () => {
             </p>
           </div>
           <div>
+            <p className="text-xs font-semibold">Transaction ID</p>
+            <p className="text-sm font-bold">
+              {paymentsDetails?.transactionId || '-'}
+            </p>
+          </div>
+          {/* <div>
             <p className="text-xs font-semibold">
               More payments by same client
             </p>
@@ -221,19 +219,13 @@ const PaymentDetails = () => {
               {paymentsDetails?.otherPayments?.length === 0 ||
                 (paymentsDetails?.otherPayments === null && '-')}
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div>
-            <p className="text-xs font-semibold">Transaction ID</p>
+            <p className="text-xs font-semibold">Mode of Payment</p>
             <p className="text-sm font-bold">
-              {paymentsDetails?.transactionId || '-'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Total Amount</p>
-            <p className="text-sm font-bold">
-              {formattedAmount(paymentsDetails?.totalAmount)}
+              {paymentsDetails?.paymentMode.toUpperCase()}
             </p>
           </div>
           <div>
@@ -243,33 +235,33 @@ const PaymentDetails = () => {
             </p>
           </div>
           <div>
+            <p className="text-xs font-semibold">Total Amount</p>
+            <p className="text-sm font-bold">
+              {formattedAmount(paymentsDetails?.totalAmount)}
+            </p>
+          </div>
+          <div>
             <p className="text-xs font-semibold">Payment Date</p>
             <p className="text-sm font-bold">
               {moment(paymentsDetails?.paymentDate).format('DD/MM/YYYY')}
             </p>
           </div>
-          <div>
-            <p className="text-xs font-semibold">Mode of Payment</p>
-            <p className="text-sm font-bold">
-              {paymentsDetails?.paymentMode.toUpperCase()}
-            </p>
-          </div>
         </div>
         {/* ADDITIONAL PROOF */}
-        {paymentsDetails?.attachments?.length > 0 && (
-          <>
-            <p className="text-xs font-semibold">Additional Proof</p>
-            <div className="space-x-2">
-              {paymentsDetails?.attachments?.map((attachment) => (
-                <ViewImage
-                  key={attachment.id}
-                  mediaName={attachment.name}
-                  mediaImage={attachment?.url}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-semibold">Additional Proof</p>
+          <div className="space-x-2">
+            {paymentsDetails?.attachments?.length > 0
+              ? paymentsDetails?.attachments?.map((attachment) => (
+                  <ViewImage
+                    key={attachment.id}
+                    mediaName={attachment.name}
+                    mediaImage={attachment?.url}
+                  />
+                ))
+              : '-'}
+          </div>
+        </div>
       </div>
 
       {/* COMMENTS */}
