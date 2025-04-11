@@ -203,10 +203,11 @@
                         "tab2": {
                             "table": {
                                 "header": {
-                                    "payment_id": "Payment ID",
-                                    "amount": "Amount",
-                                    "date": "Date",
-                                    "invoice_no": "Invoice No."
+                                    "payment_id": "PAYMENT ID",
+                                    "amount": "AMOUNT PAID",
+                                    "date": "PAYMENT DATE",
+                                    "status": "STATUS",
+                                    "invoice_no": "INVOICE NO."
                                 }
                             },
                             "emtpyStateComponent": {
@@ -236,7 +237,7 @@
             "title2": "Create a new payment record",
             "emptyStateComponent": {
                 "heading": "No Payments yet",
-                "description": "You don’t have payment yet. Start by clicking on the Create Payment Record button"
+                "description": "You don’t have payment yet."
             },
             "payment-details": {
                 "title": "Payments Details"

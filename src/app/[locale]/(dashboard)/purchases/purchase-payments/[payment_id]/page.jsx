@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
@@ -18,7 +20,16 @@ import {
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getPaymentsDetails } from '@/services/Payment_Services/PaymentServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUp, Building2, Check, Clock, Paperclip } from 'lucide-react';
+import {
+  ArrowUp,
+  Building2,
+  Check,
+  Clock,
+  FileText,
+  Image,
+  Paperclip,
+  X,
+} from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -68,6 +79,10 @@ const PaymentDetails = () => {
   const uploadMedia = async (file) => {
     setFiles((prev) => [...prev, file]);
     toast.success('File attached successfully!');
+  };
+
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
   };
 
   // get comments
@@ -139,12 +154,11 @@ const PaymentDetails = () => {
       </section>
 
       {/* OVERVIEW */}
-      <div className="space-y-2 p-4 shadow-sm">
-        <h1 className="font-bold text-primary">OVERVIEW</h1>
+      <div className="space-y-2 rounded-md border p-4 shadow-sm">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold">Payment ID</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {paymentsDetails?.paymentReferenceNumber}
             </p>
           </div>
@@ -183,7 +197,7 @@ const PaymentDetails = () => {
           </div>
           <div>
             <p className="text-xs font-semibold">Client Name</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {paymentsDetails?.clientName} {`(${paymentsDetails?.clientType})`}
             </p>
             <p className="text-sm text-gray-400">
@@ -209,39 +223,34 @@ const PaymentDetails = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* PAYMENT DETAILS */}
-      <div className="space-y-2 p-4 shadow-sm">
-        <h1 className="font-bold text-primary">PAYMENT DETAILS</h1>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold">Transaction ID</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {paymentsDetails?.transactionId || '-'}
             </p>
           </div>
           <div>
             <p className="text-xs font-semibold">Total Amount</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {formattedAmount(paymentsDetails?.totalAmount)}
             </p>
           </div>
           <div>
             <p className="text-xs font-semibold">Amount Paid</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {formattedAmount(paymentsDetails?.amountPaid)}
             </p>
           </div>
           <div>
             <p className="text-xs font-semibold">Payment Date</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {moment(paymentsDetails?.paymentDate).format('DD/MM/YYYY')}
             </p>
           </div>
           <div>
             <p className="text-xs font-semibold">Mode of Payment</p>
-            <p className="font-medium">
+            <p className="text-sm font-bold">
               {paymentsDetails?.paymentMode.toUpperCase()}
             </p>
           </div>
@@ -337,27 +346,45 @@ const PaymentDetails = () => {
               {translationsComments('comments.attached_files_heading')}
             </span>
           )}
-          {files?.map((file) => (
-            <div
-              key={file.name}
-              className="flex items-center justify-between gap-2 rounded-sm border border-neutral-300 p-2"
-            >
-              <div className="flex items-center gap-4">
-                <p className="text-xs font-medium leading-[18px]">
+          <div className="flex flex-wrap gap-4">
+            {files?.map((file) => (
+              <div
+                key={file.name}
+                className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+              >
+                {/* Remove Button */}
+                <X
+                  size={16}
+                  onClick={() => handleFileRemove(file)}
+                  className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                />
+
+                {/* File icon */}
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                  {file.name.split('.').pop() === 'pdf' ? (
+                    <FileText size={16} className="text-red-600" />
+                  ) : (
+                    <Image size={16} className="text-primary" />
+                  )}
+                </div>
+
+                {/* File name */}
+                <p className="truncate text-sm font-medium text-neutral-800">
                   {file.name}
                 </p>
-                <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
+
+                {/* Success message */}
                 <div className="flex items-center gap-2">
-                  <div className="rounded-full bg-green-500/10 p-2 text-green-500">
-                    <Check size={10} />
+                  <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                    <Check size={12} />
                   </div>
-                  <p className="text-xs font-medium leading-5 text-green-500">
-                    {translationsComments('successMsg.file_attached_success')}
+                  <p className="text-xs font-medium text-green-600">
+                    {'File attached'}
                   </p>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* comments lists */}

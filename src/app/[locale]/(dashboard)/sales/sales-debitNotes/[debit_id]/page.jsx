@@ -3,7 +3,7 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import DebitNoteComment from '@/components/invoices/DebitNoteComment';
 import DebitNoteModal from '@/components/Modals/DebitNoteModal';
@@ -18,7 +18,15 @@ import {
   getDebitNote,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUp, Building2, Check, Paperclip } from 'lucide-react';
+import {
+  ArrowUp,
+  Building2,
+  Check,
+  FileText,
+  Image,
+  Paperclip,
+  X,
+} from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -78,6 +86,10 @@ const ViewDebitNote = () => {
     toast.success('File attached successfully!');
   };
 
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+  };
+
   const createCommentMutation = useMutation({
     mutationKey: [DebitNoteApi.createComments.endpointKey],
     mutationFn: createComments,
@@ -122,11 +134,6 @@ const ViewDebitNote = () => {
 
     createCommentMutation.mutate(formData);
   };
-
-  // fn for capitalization
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
 
   return (
     <Wrapper className="h-full py-2">
@@ -251,27 +258,46 @@ const ViewDebitNote = () => {
                 {translations('comments.attached_files_heading')}
               </span>
             )}
-            {files?.map((file) => (
-              <div
-                key={file.name}
-                className="flex items-center justify-between gap-2 rounded-sm border border-neutral-300 p-2"
-              >
-                <div className="flex items-center gap-4">
-                  <p className="text-xs font-medium leading-[18px]">
+            <div className="flex flex-wrap gap-4">
+              {files?.map((file) => (
+                <div
+                  key={file.name}
+                  className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                >
+                  {/* Remove Button */}
+                  <X
+                    size={16}
+                    onClick={() => handleFileRemove(file)}
+                    className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                  />
+
+                  {/* File icon */}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                    {file.name.split('.').pop() === 'pdf' ? (
+                      <FileText size={16} className="text-red-600" />
+                    ) : (
+                      // eslint-disable-next-line jsx-a11y/alt-text
+                      <Image size={16} className="text-primary" />
+                    )}
+                  </div>
+
+                  {/* File name */}
+                  <p className="truncate text-sm font-medium text-neutral-800">
                     {file.name}
                   </p>
-                  <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
+
+                  {/* Success message */}
                   <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-green-500/10 p-2 text-green-500">
-                      <Check size={10} />
+                    <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                      <Check size={12} />
                     </div>
-                    <p className="text-xs font-medium leading-5 text-green-500">
-                      {translations('successMsg.file_attached_success')}
+                    <p className="text-xs font-medium text-green-600">
+                      {'File attached'}
                     </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* comments lists */}

@@ -56,11 +56,11 @@ const ViewImage = ({ mediaName, mediaImage }) => {
           {loading && <Loading />}
           {!loading && publicUrl && (
             <Image
-              className="rounded-sm"
+              className="max-h-[1000px] w-auto max-w-full rounded-sm"
               src={publicUrl}
               alt="comment-attached-img"
-              width={400}
-              height={400}
+              width={500}
+              height={500}
             />
           )}
           {!loading && !publicUrl && (

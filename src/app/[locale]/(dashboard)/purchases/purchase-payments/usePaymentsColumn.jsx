@@ -3,6 +3,7 @@
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -85,12 +86,13 @@ export const usePaymentsColumn = () => {
       ),
       cell: ({ row }) => {
         const { paymentReferenceNumber } = row.original;
-
+        const isPurchasePaymentRead = row.original.buyerIsRead;
         return (
           <div className="flex items-center">
-            <span className="w-40 rounded-sm border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-xs text-black">
-              {paymentReferenceNumber}
-            </span>
+            {!isPurchasePaymentRead && (
+              <Dot size={32} className="text-[#3288ED]" />
+            )}
+            <span>{paymentReferenceNumber}</span>
           </div>
         );
       },
@@ -103,6 +105,21 @@ export const usePaymentsColumn = () => {
       cell: ({ row }) => {
         const { sellerName } = row.original;
         return <div>{sellerName}</div>;
+      },
+    },
+    {
+      accessorKey: 'paymentDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('payment_date')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { paymentDate } = row.original;
+        const formattedDate =
+          paymentDate !== null ? moment(paymentDate).format('DD/MM/YYYY') : '-';
+        return <div className="text-[#A5ABBD]">{formattedDate}</div>;
       },
     },
     {
@@ -138,16 +155,18 @@ export const usePaymentsColumn = () => {
       },
     },
     {
-      accessorKey: 'amount',
+      accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('total_amount')}
-        />
+        <DataTableColumnHeader column={column} title={translations('status')} />
       ),
       cell: ({ row }) => {
-        const { totalAmount } = row.original;
-        return formattedAmount(totalAmount);
+        const { status } = row.original;
+        return (
+          <div className="flex max-w-sm">
+            {' '}
+            <ConditionalRenderingStatus status={status} />
+          </div>
+        );
       },
     },
     {
@@ -164,6 +183,19 @@ export const usePaymentsColumn = () => {
       },
     },
     {
+      accessorKey: 'amount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('total_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { totalAmount } = row.original;
+        return formattedAmount(totalAmount);
+      },
+    },
+    {
       accessorKey: 'paymentMode',
       header: ({ column }) => (
         <DataTableColumnHeader
@@ -176,34 +208,7 @@ export const usePaymentsColumn = () => {
         return <span>{paymentMode.toUpperCase()}</span> || '-';
       },
     },
-    {
-      accessorKey: 'paymentDate',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('payment_date')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { paymentDate } = row.original;
-        return <div>{moment(paymentDate).format('DD/MM/YYYY')}</div>;
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('status')} />
-      ),
-      cell: ({ row }) => {
-        const { status } = row.original;
-        return (
-          <div className="flex max-w-sm">
-            {' '}
-            <ConditionalRenderingStatus status={status} />
-          </div>
-        );
-      },
-    },
+
     // {
     //   id: 'actions',
     //   enableHiding: false,
