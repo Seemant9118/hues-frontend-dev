@@ -439,7 +439,7 @@
                 "negotiation_submitted": "Negotiation submitted successfully"
             }
         },
-        "record_payment_order": {
+        "make_payment": {
             "form": {
                 "label": {
                     "payment_mode": "Payment Mode",
@@ -451,7 +451,10 @@
                         "cheque": "Cheque",
                         "cash": "Cash"
                     },
+                    "invoice_id": "Invoice ID",
                     "tran_id": "Transaction ID",
+                    "bank_acc_details": "Bank Account details",
+                    "payment_date": "Payment Date",
                     "amount_paid": "Amount Paid",
                     "balance": "Balance"
                 },
@@ -485,7 +488,7 @@
             },
             "successMsg": {
                 "payment_recorded_sucessfully": "Payment Recorded Successfully",
-                "attached_sucess": "Attached Successfully"
+                "attached_success": "Attached Successfully"
             },
             "errorMsg": {
                 "payment_mode": "*Required! Please select payment mode",
@@ -567,6 +570,48 @@
                         }
                     }
                 }
+            }
+        },
+        "paymentOverview": {
+            "paymentId": "Payment ID",
+            "invoiceId": "Invoice ID",
+            "status": "Status",
+            "clientName": "Client Name",
+            "vendorName": "Vendor Name",
+            "transactionId": "Transaction ID",
+            "modeOfPayment": "Mode of Payment",
+            "amountPaid": "Amount Paid",
+            "totalAmount": "Total Amount",
+            "paymentDate": "Payment Date",
+            "additionalProof": "Additional Proof",
+            "fallback": "-"
+        },
+        "raise_debit_note_modal": {
+            "trigger": {
+                "button": "Raise Debit Note",
+                "tooltip": "Raise a debit note"
+            },
+            "content": {
+                "title": "Debit Note",
+                "form": {
+                    "amount": {
+                        "label": "Amount",
+                        "required": "*",
+                        "error": "Amount should not be greater than total amount of invoice"
+                    },
+                    "remark": {
+                        "label": "Remark",
+                        "required": "*"
+                    },
+                    "actions": {
+                        "discard": "Discard",
+                        "submit": "Submit"
+                    }
+                }
+            },
+            "toast": {
+                "success": "Debit Note Raised",
+                "error": "Something went wrong"
             }
         }
     }

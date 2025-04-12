@@ -47,7 +47,7 @@ const MakePaymentNew = ({
   contextType,
   isDirectCreatePayment,
 }) => {
-  const translations = useTranslations('components.record_payment_order');
+  const translations = useTranslations('components.make_payment');
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState({});
   const [files, setFiles] = useState([]);
@@ -275,7 +275,9 @@ const MakePaymentNew = ({
             {/* Select Invoices */}
             <div className="flex w-1/3 flex-col gap-2">
               <div>
-                <Label className="flex-shrink-0">{'Invoice ID'}</Label>{' '}
+                <Label className="flex-shrink-0 text-sm font-semibold">
+                  {translations('form.label.invoice_id')}
+                </Label>{' '}
                 <span className="text-red-600">*</span>
               </div>
 
@@ -324,7 +326,7 @@ const MakePaymentNew = ({
             {/* select payment mode */}
             <div className="flex w-1/3 flex-col gap-2">
               <div>
-                <Label className="flex-shrink-0">
+                <Label className="flex-shrink-0 text-sm font-semibold">
                   {translations('form.label.payment_mode')}
                 </Label>{' '}
                 <span className="text-red-600">*</span>
@@ -376,7 +378,9 @@ const MakePaymentNew = ({
             {/* select payment Date */}
             <div className="flex w-1/3 flex-col gap-2">
               <div>
-                <Label className="flex-shrink-0">{'Payment Date'}</Label>{' '}
+                <Label className="flex-shrink-0 text-sm font-semibold">
+                  {translations('form.label.payment_date')}
+                </Label>{' '}
                 <span className="text-red-600">*</span>
               </div>
               <div className="relative flex h-10 max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -404,7 +408,9 @@ const MakePaymentNew = ({
           <div className="flex items-center">
             {/* Bank Account Details */}
             <div className="flex w-1/2 flex-col gap-3">
-              <Label>{'Bank Account Details'}</Label>
+              <Label className="text-sm font-semibold">
+                {translations('form.label.bank_acc_details')}
+              </Label>
               <div className="flex flex-col gap-1">
                 <Select
                   defaultValue={paymentData.bankAccountId}
@@ -444,7 +450,9 @@ const MakePaymentNew = ({
 
             {/* transaction ID */}
             <div className="flex w-1/2 flex-col gap-3">
-              <Label> {translations('form.label.tran_id')}</Label>
+              <Label className="text-sm font-semibold">
+                {translations('form.label.tran_id')}
+              </Label>
               <div className="flex flex-col gap-1">
                 <Input
                   name="transactionId"
@@ -464,9 +472,9 @@ const MakePaymentNew = ({
             {/* Amount */}
             <div className="flex w-1/2 flex-col gap-2">
               <div>
-                <Label className="flex-shrink-0">
+                <Label className="flex-shrink-0 text-sm font-semibold">
                   {translations('form.label.amount_paid')}
-                </Label>{' '}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
               <div className="flex items-center gap-1">
@@ -482,7 +490,9 @@ const MakePaymentNew = ({
 
             {/* Balance */}
             <div className="flex w-1/2 flex-col gap-3">
-              <Label>{translations('form.label.balance')}</Label>
+              <Label className="text-sm font-semibold">
+                {translations('form.label.balance')}
+              </Label>
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
@@ -498,7 +508,9 @@ const MakePaymentNew = ({
 
         {/* uploads payments proofs */}
         <div className="flex flex-col gap-4">
-          <Label>{translations('form.upload_proof.title')}</Label>
+          <Label className="text-sm font-semibold">
+            {translations('form.upload_proof.title')}
+          </Label>
           <div className="flex flex-wrap gap-4">
             {files?.map((file) => (
               <div
@@ -532,7 +544,7 @@ const MakePaymentNew = ({
                     <Check size={12} />
                   </div>
                   <p className="text-xs font-medium text-green-600">
-                    {translations('successMsg.attached_sucess')}
+                    {translations('successMsg.attached_success')}
                   </p>
                 </div>
               </div>

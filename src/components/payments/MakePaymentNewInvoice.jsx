@@ -46,7 +46,7 @@ const MakePaymentNewInvoice = ({
   debitNoteStatus,
   contextType,
 }) => {
-  const translations = useTranslations('components.record_payment_order');
+  const translations = useTranslations('components.make_payment');
   const queryClient = useQueryClient();
   const router = useRouter();
   const [files, setFiles] = useState([]);
@@ -313,7 +313,7 @@ const MakePaymentNewInvoice = ({
               <div className="flex w-1/2 flex-col gap-2">
                 <div>
                   <Label className="flex-shrink-0 text-sm font-semibold">
-                    {'Payment Date'}
+                    {translations('form.label.payment_date')}
                   </Label>{' '}
                   <span className="text-red-600">*</span>
                 </div>
@@ -346,7 +346,7 @@ const MakePaymentNewInvoice = ({
               {/* Bank Account Details */}
               <div className="flex w-1/2 flex-col gap-3">
                 <Label className="text-sm font-semibold">
-                  {'Bank Account Details'}
+                  {translations('form.label.bank_acc_details')}
                 </Label>
                 <div className="flex flex-col gap-1">
                   <Select
@@ -480,7 +480,7 @@ const MakePaymentNewInvoice = ({
                       <Check size={12} />
                     </div>
                     <p className="text-xs font-medium text-green-600">
-                      {translations('successMsg.attached_sucess')}
+                      {translations('successMsg.attached_success')}
                     </p>
                   </div>
                 </div>
