@@ -11,7 +11,7 @@ import { useState } from 'react';
 export const usePaymentsColumn = () => {
   const [showAll, setShowAll] = useState(false);
   const translations = useTranslations(
-    'purchases.purchase-payments.section.table.header',
+    'sales.sales-payments.section.table.header',
   );
 
   const handleToggleShow = () => {
@@ -101,7 +101,10 @@ export const usePaymentsColumn = () => {
     {
       accessorKey: 'clientName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={'CLIENT NAME'} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('client_name')}
+        />
       ),
       cell: ({ row }) => {
         const { clientName } = row.original;
@@ -126,7 +129,10 @@ export const usePaymentsColumn = () => {
     {
       accessorKey: 'invoiceReferenceNumbers',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={'INVOICE ID'} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('invoice_id')}
+        />
       ),
       cell: ({ row }) => {
         const { invoiceReferenceNumbers } = row.original;

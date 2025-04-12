@@ -257,13 +257,13 @@
                 "table": {
                     "header": {
                         "payment_id": "PAYMENT ID",
-                        "vendor_name": "VENDOR NAME",
-                        "invoice_id": "INVOICE ID",
-                        "total_amount": "TOTAL AMOUNT",
-                        "amount_paid": "AMOUNT PAID",
-                        "mode_of_payment": "MODE OF PAYMENT",
+                        "client_name": "CLIENT NAME",
                         "payment_date": "PAYMENT DATE",
-                        "status": "STATUS"
+                        "invoice_id": "INVOICE ID",
+                        "status": "STATUS",
+                        "amount_paid": "AMOUNT PAID",
+                        "total_amount": "TOTAL AMOUNT",
+                        "mode_of_payment": "MODE OF PAYMENT"
                     }
                 }
             }

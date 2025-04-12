@@ -4,17 +4,15 @@
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { paymentApi } from '@/api/payments/payment_api';
-import { formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import DebitNoteComment from '@/components/invoices/DebitNoteComment';
+import Comment from '@/components/comments/Comment';
 import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AcknowledgePayment from '@/components/payments/AcknowledgePayment';
+import PaymentOverview from '@/components/payments/PaymentsOverview';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
-import ViewImage from '@/components/ui/ViewImage';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import {
@@ -33,13 +31,11 @@ import {
   Check,
   FileText,
   Image,
-  MoveUpRight,
   Paperclip,
   X,
 } from 'lucide-react';
-import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -51,7 +47,6 @@ const PaymentDetails = () => {
   );
 
   const queryClient = useQueryClient();
-  const router = useRouter();
   const params = useParams();
   const [files, setFiles] = useState([]);
   const [comment, setComment] = useState({
@@ -188,117 +183,7 @@ const PaymentDetails = () => {
       </section>
 
       {/* OVERVIEW */}
-      <div className="space-y-2 rounded-md border p-4 shadow-sm">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div>
-            <p className="text-xs font-semibold">Payment ID</p>
-            <p className="text-sm font-bold">
-              {paymentsDetails?.paymentReferenceNumber}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Invoice ID</p>
-            <p
-              onClick={() => {
-                router.push(
-                  `/sales/sales-invoices/${
-                    paymentsDetails?.invoiceReferenceNumbers[0].id
-                  }`,
-                );
-              }}
-              className="flex cursor-pointer items-center gap-0.5 text-sm font-bold hover:text-primary hover:underline"
-            >
-              {
-                paymentsDetails?.invoiceReferenceNumbers[0]
-                  .invoiceReferenceNumber
-              }
-              <MoveUpRight size={12} />
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Status</p>
-            <div className="flex max-w-sm">
-              <ConditionalRenderingStatus status={paymentsDetails?.status} />
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Client Name</p>
-            <p className="text-sm font-bold">
-              {paymentsDetails?.clientName} {`(${paymentsDetails?.clientType})`}
-            </p>
-            <p className="text-sm text-gray-400">
-              {paymentsDetails?.number ?? '-'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Transaction ID</p>
-            <p className="text-sm font-bold">
-              {paymentsDetails?.transactionId || '-'}
-            </p>
-          </div>
-          {/* <div>
-            <p className="text-xs font-semibold">
-              More payments by same client
-            </p>
-            <div className="mt-1 space-x-2">
-              {paymentsDetails?.otherPayments?.length > 0 &&
-                paymentsDetails?.otherPayments?.map((payment) => (
-                  <span
-                    className="w-40 rounded-sm border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-xs text-black"
-                    key={payment}
-                  >
-                    {payment}
-                  </span>
-                ))}
-              {paymentsDetails?.otherPayments?.length === 0 ||
-                (paymentsDetails?.otherPayments === null && '-')}
-            </div>
-          </div> */}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div>
-            <p className="text-xs font-semibold">Mode of Payment</p>
-            <p className="text-sm font-bold">
-              {paymentsDetails?.paymentMode.toUpperCase()}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Amount Paid</p>
-            <p className="text-sm font-bold">
-              {formattedAmount(paymentsDetails?.amountPaid)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Total Amount</p>
-            <p className="text-sm font-bold">
-              {formattedAmount(paymentsDetails?.totalAmount)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold">Payment Date</p>
-            <p className="text-sm font-bold">
-              {moment(paymentsDetails?.paymentDate).format('DD/MM/YYYY')}
-            </p>
-          </div>
-        </div>
-        {/* ADDITIONAL PROOF */}
-
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold">Additional Proof</p>
-          <div className="space-x-2">
-            {paymentsDetails?.attachments?.length > 0
-              ? paymentsDetails?.attachments?.map((attachment) => (
-                  <ViewImage
-                    key={attachment.id}
-                    mediaName={attachment.name}
-                    mediaImage={attachment?.url}
-                  />
-                ))
-              : '-'}
-          </div>
-        </div>
-      </div>
+      <PaymentOverview paymentsDetails={paymentsDetails} />
 
       {/* COMMENTS */}
       <div className="flex h-full flex-col gap-4 p-2">
@@ -421,7 +306,7 @@ const PaymentDetails = () => {
           {!isCommentLoading &&
             comments?.length > 0 &&
             comments?.map((comment) => (
-              <DebitNoteComment
+              <Comment
                 key={comment?.id}
                 invalidateId={params.payment_id}
                 comment={comment}
