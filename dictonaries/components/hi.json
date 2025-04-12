@@ -439,10 +439,10 @@
                 "negotiation_submitted": "मोलभाव सफलतापूर्वक जमा किया गया"
             }
         },
-        "record_payment_order": {
+        "make_payment": {
             "form": {
                 "label": {
-                    "payment_mode": "भुगतान मोड",
+                    "payment_mode": "भुगतान का माध्यम",
                     "options": {
                         "neft": "एनईएफटी",
                         "rtgs": "आरटीजीएस",
@@ -451,9 +451,12 @@
                         "cheque": "चेक",
                         "cash": "नकद"
                     },
-                    "tran_id": "लेनदेन आईडी",
-                    "amount_paid": "भरी गई राशि",
-                    "balance": "शेष राशि"
+                    "invoice_id": "चालान आईडी",
+                    "tran_id": "लेन-देन आईडी",
+                    "bank_acc_details": "बैंक खाता विवरण",
+                    "payment_date": "भुगतान की तिथि",
+                    "amount_paid": "भुगतान की गई राशि",
+                    "balance": "बकाया राशि"
                 },
                 "table": {
                     "title": "इनवॉइस",
@@ -485,7 +488,7 @@
             },
             "successMsg": {
                 "payment_recorded_sucessfully": "भुगतान सफलतापूर्वक रिकॉर्ड किया गया",
-                "upload_success": "सफलतापूर्वक अपलोड हुआ"
+                "attached_success": "सफलतापूर्वक संलग्न किया गया"
             },
             "errorMsg": {
                 "payment_mode": "*आवश्यक! कृपया भुगतान मोड चुनें",
@@ -567,6 +570,48 @@
                         }
                     }
                 }
+            }
+        },
+        "paymentOverview": {
+            "paymentId": "भुगतान आईडी",
+            "invoiceId": "चालान आईडी",
+            "status": "स्थिति",
+            "clientName": "ग्राहक का नाम",
+            "vendorName": "विक्रेता का नाम",
+            "transactionId": "लेन-देन आईडी",
+            "modeOfPayment": "भुगतान का माध्यम",
+            "amountPaid": "भुगतान की गई राशि",
+            "totalAmount": "कुल राशि",
+            "paymentDate": "भुगतान तिथि",
+            "additionalProof": "अतिरिक्त प्रमाण",
+            "fallback": "-"
+        },
+        "raise_debit_note_modal": {
+            "trigger": {
+                "button": "डेबिट नोट जारी करें",
+                "tooltip": "डेबिट नोट जारी करें"
+            },
+            "content": {
+                "title": "डेबिट नोट",
+                "form": {
+                    "amount": {
+                        "label": "राशि",
+                        "required": "*",
+                        "error": "राशि चालान की कुल राशि से अधिक नहीं होनी चाहिए"
+                    },
+                    "remark": {
+                        "label": "टिप्पणी",
+                        "required": "*"
+                    },
+                    "actions": {
+                        "discard": "रद्द करें",
+                        "submit": "जमा करें"
+                    }
+                }
+            },
+            "toast": {
+                "success": "डेबिट नोट सफलतापूर्वक जारी किया गया",
+                "error": "कुछ गलत हो गया"
             }
         }
     }

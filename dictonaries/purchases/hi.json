@@ -67,10 +67,10 @@
                     "order_details": "ऑर्डर विवरण",
                     "negotiation": "मोलभाव",
                     "invoices": "चालान",
-                    "record_payment": "भुगतान रिकॉर्ड करें"
+                    "payment_advice": "भुगतान सलाह"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "payment_advice": "भुगतान सलाह भेजें",
                     "generate_invoice": "चालान उत्पन्न करें",
                     "download": {
                         "placeholder": "ऑर्डर विवरण डाउनलोड करें"
@@ -166,10 +166,11 @@
             "invoice_details": {
                 "title": {
                     "invoices": "चालान",
-                    "invoice_details": "चालान विवरण"
+                    "invoice_details": "चालान विवरण",
+                    "payment_advice": "भुगतान सलाह"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "payment_advice": "भुगतान सलाह भेजें",
                     "share": {
                         "placeholder": "शीघ्र आ रहा है.."
                     },
