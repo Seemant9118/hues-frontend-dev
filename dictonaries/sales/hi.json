@@ -257,13 +257,13 @@
                 "table": {
                     "header": {
                         "payment_id": "भुगतान आईडी",
-                        "vendor_name": "विक्रेता का नाम",
-                        "invoice_id": "चालान आईडी",
-                        "total_amount": "कुल राशि",
-                        "amount_paid": "भुगतान की गई राशि",
-                        "mode_of_payment": "भुगतान का तरीका",
+                        "client_name": "क्लाइंट नाम",
                         "payment_date": "भुगतान तिथि",
-                        "status": "स्थिति"
+                        "invoice_id": "चालान आईडी",
+                        "status": "स्थिति",
+                        "amount_paid": "भुगतान की गई राशि",
+                        "total_amount": "कुल राशि",
+                        "mode_of_payment": "भुगतान का तरीका"
                     }
                 }
             }

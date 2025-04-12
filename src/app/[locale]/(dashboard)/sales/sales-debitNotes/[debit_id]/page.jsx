@@ -5,7 +5,7 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import DebitNoteComment from '@/components/invoices/DebitNoteComment';
+import Comment from '@/components/comments/Comment';
 import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
@@ -306,7 +306,7 @@ const ViewDebitNote = () => {
             {!isCommentLoading &&
               comments?.length > 0 &&
               comments?.map((comment) => (
-                <DebitNoteComment
+                <Comment
                   key={comment?.id}
                   invalidateId={debitNoteId}
                   comment={comment}
