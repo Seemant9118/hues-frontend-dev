@@ -31,12 +31,10 @@ export const getStylesForSelectComponent = () => {
       borderRadius: '9px',
       boxShadow: 'none', // Removes focus outline shadow
       height: '40px',
-      width: '20rem',
       transition: 'border-color 0.2s', // Smooth transition for focus
     }),
     menu: (base) => ({
       ...base,
-      width: '20rem',
       borderRadius: '9px',
       zIndex: 10,
     }),

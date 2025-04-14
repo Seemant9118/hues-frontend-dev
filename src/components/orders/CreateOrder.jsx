@@ -1,7 +1,6 @@
 /* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { userAuth } from '@/api/user_auth/Users';
 import {
@@ -23,7 +22,6 @@ import {
   createClient,
   getClients,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 import {
   createVendor,
   getVendors,
@@ -37,9 +35,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
@@ -124,59 +121,6 @@ const CreateOrder = ({
     isGstApplicableForPurchaseOrders,
     setIsGstApplicableForPurchaseOrders,
   ] = useState('');
-
-  // [clientType options]
-  const clientTypeOptions = [
-    {
-      value: 'B2B',
-      label: translations('form.input.clientType.b2b'),
-    },
-    {
-      value: 'B2C',
-      label: translations('form.input.clientType.b2c'),
-    },
-  ];
-
-  // [B2C customers]
-  // customer[B2C] api fetching
-  const { data: customers } = useQuery({
-    queryKey: [customerApis.getCustomers.endpointKey, enterpriseId],
-    queryFn: () => getCustomers(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: order.clientType === 'B2C',
-  });
-  // customer options
-  const [options, setOptions] = useState([]);
-  // Transform customers data into options format
-  useEffect(() => {
-    if (customers) {
-      const transformedOptions = customers.map((customer) => ({
-        value: customer.mobileNumber,
-        label: `${customer.countryCode} ${customer.mobileNumber}`, // Displaying country code with mobile number
-      }));
-      setOptions(transformedOptions);
-    }
-  }, [customers]);
-  // Handle selection of an existing option
-  const handleChange = (selectedOption) => {
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      buyerId: selectedOption ? selectedOption.value : null,
-    }));
-  };
-  // Handle creation of a new option
-  const handleCreate = (inputValue) => {
-    const newOption = { value: inputValue, label: inputValue };
-
-    // Add the new option to the list of options
-    setOptions((prevOptions) => [...prevOptions, newOption]);
-
-    // Update the order state
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      buyerId: newOption.value,
-    }));
-  };
 
   // [clients]
   // clients[B2B] fetching
@@ -537,13 +481,7 @@ const CreateOrder = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <SubHeader
-        name={
-          cta === 'offer'
-            ? translations('title.offer')
-            : translations('title.bid')
-        }
-      ></SubHeader>
+      <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
@@ -553,62 +491,7 @@ const CreateOrder = ({
           setOrder={setOrder}
         />
       )}
-
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        {/* client type only showed in sales invoices not in sales/purchase offer */}
-        {cta === 'offer' && isOrder === 'invoice' && (
-          <div className="flex w-1/2 flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.type')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex w-full flex-col gap-1">
-              <Select
-                name="clientType"
-                options={clientTypeOptions}
-                styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
-                classNamePrefix="select"
-                defaultValue={clientTypeOptions[0]} // Provide the full object as the default value
-                onChange={(selectedOption) => {
-                  if (!selectedOption) return; // Guard clause for no selection
-                  setOrder((prev) => ({
-                    ...prev,
-                    clientType: selectedOption.value,
-                  })); // Update state with the selected value
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* customer flow only show in sales */}
-        {cta === 'offer' && order.clientType === 'B2C' && (
-          <div className="flex w-1/2 flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.customer')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex w-full flex-col gap-1">
-              <CreatableSelect
-                value={
-                  options?.find((option) => option.value === order.buyerId) ||
-                  null
-                }
-                onChange={handleChange}
-                onCreateOption={handleCreate}
-                styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
-                isClearable
-                placeholder="+91 1234567890"
-                options={options}
-              />
-
-              {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
-            </div>
-          </div>
-        )}
-
         {cta === 'offer' ? (
           order.clientType === 'B2B' && (
             <div className="flex w-1/2 flex-col gap-2">
