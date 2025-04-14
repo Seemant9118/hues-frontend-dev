@@ -174,12 +174,23 @@ const PaymentDetails = () => {
           possiblePagesBreadcrumbs={paymentsOrdersBreadCrumbs}
         />
 
-        {paymentsDetails?.status === 'ACCEPTED' && (
+        <div className="flex items-center gap-2">
           <InvoicePDFViewModal
-            isPaymentReciept={true}
-            Url={paymentsDetails?.receiptAttachment}
+            cta={
+              <Button size="sm" variant="blue_outline">
+                View Payment advice
+              </Button>
+            }
+            Url={paymentsDetails?.paymentAdviceAttachment}
           />
-        )}
+
+          {paymentsDetails?.status === 'ACCEPTED' && (
+            <InvoicePDFViewModal
+              cta={<Button size="sm">View Payment reciept</Button>}
+              Url={paymentsDetails?.receiptAttachment}
+            />
+          )}
+        </div>
       </section>
 
       {/* OVERVIEW */}

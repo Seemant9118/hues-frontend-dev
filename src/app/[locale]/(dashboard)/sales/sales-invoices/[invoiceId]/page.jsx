@@ -24,7 +24,7 @@ import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, MoveUpRight, Share2 } from 'lucide-react';
+import { Download, Eye, MoveUpRight, Share2 } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -199,7 +199,16 @@ const ViewInvoice = () => {
             />
           )}
           {/* View CTA modal */}
-          {!isRecordingPayment && <InvoicePDFViewModal Url={pvtUrl} />}
+          {!isRecordingPayment && (
+            <InvoicePDFViewModal
+              cta={
+                <Button size="sm" variant="outline">
+                  <Eye size={14} />
+                </Button>
+              }
+              Url={pvtUrl}
+            />
+          )}
 
           {/* download CTA */}
           {!isRecordingPayment && (

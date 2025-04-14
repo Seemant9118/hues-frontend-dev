@@ -8,14 +8,12 @@ import {
 } from '@/components/ui/dialog';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
-import Tooltips from '../auth/Tooltips';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ isPaymentReciept, Url }) => {
+const InvoicePDFViewModal = ({ cta, Url }) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
   const { data: pdfDoc } = useQuery({
@@ -26,37 +24,7 @@ const InvoicePDFViewModal = ({ isPaymentReciept, Url }) => {
   });
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {isPaymentReciept ? (
-          <Tooltips
-            trigger={
-              <Button
-                onClick={() => setIsOpen(true)}
-                variant="blue_outline"
-                size="sm"
-                className="flex items-center justify-center"
-              >
-                View Payment Reciept
-              </Button>
-            }
-            content={'Payment Reciept'}
-          />
-        ) : (
-          <Tooltips
-            trigger={
-              <Button
-                onClick={() => setIsOpen(true)}
-                variant="outline"
-                size="sm"
-                className="flex items-center justify-center"
-              >
-                <Eye size={14} />
-              </Button>
-            }
-            content={translations('view.placeholder')}
-          />
-        )}
-      </DialogTrigger>
+      <DialogTrigger asChild>{cta}</DialogTrigger>
       <DialogContent className="max-h-[40rem] max-w-[60rem] p-1">
         <DialogTitle className="p-2">{'Preview'}</DialogTitle>
 
