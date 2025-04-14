@@ -342,7 +342,7 @@ const ViewInvoice = () => {
                           <div className="flex gap-10">
                             <h1 className="text-sm">
                               <span className="font-bold text-[#ABB0C1]">
-                                {translations('tabs.content.tab3.label.date')}:{' '}
+                                {translations('tabs.content.tab3.label.date')}:
                               </span>
                               <span className="text-[#363940]">
                                 {moment(debitNote?.createdAt).format(
@@ -355,7 +355,7 @@ const ViewInvoice = () => {
                                 {translations(
                                   'tabs.content.tab3.label.total_amount',
                                 )}
-                                :{' '}
+                                :
                               </span>
                               <span className="font-bold text-[#363940]">
                                 {formattedAmount(debitNote?.amount)}
