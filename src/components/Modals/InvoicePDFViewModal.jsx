@@ -16,24 +16,29 @@ import { Button } from '../ui/button';
 const InvoicePDFViewModal = ({ cta, Url }) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
+
   const { data: pdfDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, Url],
     queryFn: () => getDocument(Url),
-    enabled: !!Url, // Only fetch if pvtUrl is available
+    enabled: isOpen && !!Url, // Only fetch if pvtUrl is available
     select: (res) => res.data.data,
   });
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{cta}</DialogTrigger>
+      <DialogTrigger asChild>
+        {React.cloneElement(cta, { key: 'invoice-pdf-cta' })}
+      </DialogTrigger>
+
       <DialogContent className="max-h-[40rem] max-w-[60rem] p-1">
         <DialogTitle className="p-2">{'Preview'}</DialogTitle>
 
-        {pdfDoc?.publicUrl ? (
-          <div className="flex items-center justify-center">
-            <ViewPdf url={pdfDoc?.publicUrl} />
+        {!pdfDoc ? (
+          <div className="flex items-center justify-center py-10">
+            <span>{translations('loading_document')}</span>
           </div>
         ) : (
-          <p>{translations('loading_document')}</p>
+          <ViewPdf url={pdfDoc.publicUrl} />
         )}
 
         <DialogFooter>
