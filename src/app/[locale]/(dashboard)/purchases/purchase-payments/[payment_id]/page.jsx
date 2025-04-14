@@ -9,6 +9,7 @@ import Comment from '@/components/comments/Comment';
 import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import PaymentOverview from '@/components/payments/PaymentsOverview';
+import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -139,13 +140,23 @@ const PaymentDetails = () => {
         <OrderBreadCrumbs
           possiblePagesBreadcrumbs={paymentsOrdersBreadCrumbs}
         />
-
-        {paymentsDetails?.status === 'ACCEPTED' && (
+        <div className="flex items-center gap-2">
           <InvoicePDFViewModal
-            isPaymentReciept={true}
-            Url={paymentsDetails?.receiptAttachment}
+            cta={
+              <Button size="sm" variant="blue_outline">
+                View Payment advice
+              </Button>
+            }
+            Url={paymentsDetails?.paymentAdviceAttachment}
           />
-        )}
+
+          {paymentsDetails?.status === 'ACCEPTED' && (
+            <InvoicePDFViewModal
+              cta={<Button size="sm">View Payment reciept</Button>}
+              Url={paymentsDetails?.receiptAttachment}
+            />
+          )}
+        </div>
       </section>
 
       {/* OVERVIEW */}

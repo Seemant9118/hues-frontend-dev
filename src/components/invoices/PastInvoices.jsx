@@ -3,7 +3,7 @@ import { formattedAmount } from '@/appUtils/helperFunctions';
 import { useRouter } from '@/i18n/routing';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { useQuery } from '@tanstack/react-query';
-import { MoveUpRight } from 'lucide-react';
+import { Eye, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -95,7 +95,14 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                     </div>
                   </div>
 
-                  <InvoicePDFViewModal Url={invoice?.attachmentLink} />
+                  <InvoicePDFViewModal
+                    cta={
+                      <Button size="sm" variant="outline">
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    Url={invoice?.attachmentLink}
+                  />
                 </section>
               </div>
             );
