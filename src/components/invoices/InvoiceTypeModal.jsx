@@ -34,8 +34,7 @@ const InvoiceTypeModal = ({ invoiceType, setInvoiceType }) => {
           {translations('cta.invoice')}
         </Button>
       </DialogTrigger>
-
-      <DialogContent className="max-w-xl">
+      <DialogContent className="flex max-w-xl flex-col gap-0.5">
         <DialogTitle className="text-lg font-semibold">
           {translations('title')}
         </DialogTitle>

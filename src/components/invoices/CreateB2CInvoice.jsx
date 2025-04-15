@@ -150,14 +150,16 @@ const CreateB2CInvoice = ({
       address: null,
     };
 
-    setOptions((prev) => [...prev, newOption]);
-    setOrder((prev) => ({
-      ...prev,
-      buyerId: inputValue,
-      buyerName: null,
-      buyerAddress: null,
-      addressType: null,
-    }));
+    if (inputValue?.length === 10) {
+      setOptions((prev) => [...prev, newOption]);
+      setOrder((prev) => ({
+        ...prev,
+        buyerId: inputValue,
+        buyerName: null,
+        buyerAddress: null,
+        addressType: null,
+      }));
+    }
   };
 
   // [address type]
@@ -168,7 +170,7 @@ const CreateB2CInvoice = ({
     },
     {
       value: 'deliveryPurchase',
-      label: 'DeliveryPurchase',
+      label: 'Delivery Purchase',
     },
   ];
 
@@ -401,75 +403,83 @@ const CreateB2CInvoice = ({
           </div>
 
           {/* Customer Name */}
-          <div className="flex w-full flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.customer_name')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <Input
-              type="text"
-              value={order.buyerName || ''}
-              onChange={(e) =>
-                setOrder((prev) => ({ ...prev, buyerName: e.target.value }))
-              }
-              placeholder={translations('form.label.customer_name')}
-              className="max-w-sm text-sm"
-            />
-            {errorMsg.buyerName && <ErrorBox msg={errorMsg.buyerName} />}
-          </div>
+          {order?.buyerId && (
+            <div className="flex w-full flex-col gap-2">
+              <Label className="flex gap-1">
+                {translations('form.label.customer_name')}
+                <span className="text-red-600">*</span>
+              </Label>
+              <Input
+                type="text"
+                value={order.buyerName || ''}
+                onChange={(e) =>
+                  setOrder((prev) => ({ ...prev, buyerName: e.target.value }))
+                }
+                placeholder={translations('form.label.customer_name')}
+                className="max-w-sm text-sm"
+              />
+              {errorMsg.buyerName && <ErrorBox msg={errorMsg.buyerName} />}
+            </div>
+          )}
 
           {/* Address Type */}
-          <div className="flex w-full flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.address_type')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <Select
-              value={addressTypesOptions.find(
-                (option) => option.value === order.addressType,
-              )}
-              onChange={(selectedOption) => {
-                setOrder((prev) => ({
-                  ...prev,
-                  addressType: selectedOption ? selectedOption.value : null,
-                  // Set the appropriate address based on the selected address type
-                  buyerAddress:
-                    selectedOption?.value === 'OTC'
-                      ? profileDetails?.enterpriseDetails?.address
-                      : prev.buyerAddress,
-                }));
-              }}
-              styles={getStylesForSelectComponent()}
-              className="max-w-sm text-sm"
-              isClearable
-              placeholder={translations('form.label.address_type')}
-              options={addressTypesOptions}
-            />
-            {errorMsg.addressType && <ErrorBox msg={errorMsg.addressType} />}
-          </div>
+          {order?.buyerId && (
+            <div className="flex w-full flex-col gap-2">
+              <Label className="flex gap-1">
+                {translations('form.label.address_type')}
+                <span className="text-red-600">*</span>
+              </Label>
+              <Select
+                value={addressTypesOptions.find(
+                  (option) => option.value === order.addressType,
+                )}
+                onChange={(selectedOption) => {
+                  setOrder((prev) => ({
+                    ...prev,
+                    addressType: selectedOption ? selectedOption.value : null,
+                    // Set the appropriate address based on the selected address type
+                    buyerAddress:
+                      selectedOption?.value === 'OTC'
+                        ? profileDetails?.enterpriseDetails?.address
+                        : '',
+                  }));
+                }}
+                styles={getStylesForSelectComponent()}
+                className="max-w-sm text-sm"
+                isClearable
+                placeholder={translations('form.label.address_type')}
+                options={addressTypesOptions}
+              />
+              {errorMsg.addressType && <ErrorBox msg={errorMsg.addressType} />}
+            </div>
+          )}
 
           {/* Address */}
-          <div className="flex w-full flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.customer_address')}
-              <span className="text-red-600">*</span>
-            </Label>
+          {order?.buyerId && (
+            <div className="flex w-full flex-col gap-2">
+              <Label className="flex gap-1">
+                {translations('form.label.customer_address')}
+                <span className="text-red-600">*</span>
+              </Label>
 
-            <Input
-              type="text"
-              value={order.buyerAddress || ''}
-              onChange={(e) => {
-                setOrder((prev) => ({
-                  ...prev,
-                  buyerAddress: e.target.value,
-                }));
-              }}
-              placeholder={translations('form.label.customer_address')}
-              className="max-w-sm text-sm"
-              disabled={order.addressType === 'OTC'}
-            />
-            {errorMsg.buyerAddress && <ErrorBox msg={errorMsg.buyerAddress} />}
-          </div>
+              <Input
+                type="text"
+                value={order.buyerAddress || ''}
+                onChange={(e) => {
+                  setOrder((prev) => ({
+                    ...prev,
+                    buyerAddress: e.target.value,
+                  }));
+                }}
+                placeholder={translations('form.label.customer_address')}
+                className="max-w-sm text-sm"
+                disabled={order.addressType === 'OTC'}
+              />
+              {errorMsg.buyerAddress && (
+                <ErrorBox msg={errorMsg.buyerAddress} />
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -483,6 +493,7 @@ const CreateB2CInvoice = ({
             </Label>
             <Select
               name="itemType"
+              isDisabled={order.buyerId === null || order.buyerId === ''}
               placeholder={translations('form.input.item_type.placeholder')}
               options={itemTypeOptions}
               styles={getStylesForSelectComponent()}
