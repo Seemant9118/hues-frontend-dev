@@ -371,7 +371,7 @@ const SalesInvoices = () => {
           {invoiceType === 'B2B' && (
             <CreateOrder
               type="invoice"
-              name="B2B Invoice"
+              name={translations('ctas.invoice.b2bCta')}
               cta="offer"
               isOrder="invoice"
               isCreatingInvoice={true}

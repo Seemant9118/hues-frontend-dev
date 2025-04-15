@@ -582,6 +582,18 @@
             "ctas": {
                 "record_payment": "Record Payment"
             }
+        },
+        "invoice_type_modal": {
+            "title": "Choose Invoice Type",
+            "cta": {
+                "invoice": "Invoice"
+            },
+            "types": {
+                "type1": "B2C (Business to Consumer)",
+                "type1_desc": "For direct sales to individual consumers,usually without GST registration.",
+                "type2": "B2B (Business to Business)",
+                "type2_desc": "For transactions between two registered businesses with GST details."
+            }
         }
     }
 }
