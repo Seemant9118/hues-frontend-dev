@@ -900,7 +900,7 @@ const CreateOrder = ({
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4">
+      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
         <div className="flex items-center gap-2">
           {isGstApplicable(
             isPurchasePage
