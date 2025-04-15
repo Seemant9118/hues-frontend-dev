@@ -23,11 +23,11 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import { PlusCircle, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-
+import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
 import { useRouter } from '@/i18n/routing';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -39,6 +39,13 @@ import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
   loading: () => <Loading />,
 });
+
+const CreateB2CInvoice = dynamic(
+  () => import('@/components/invoices/CreateB2CInvoice'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 // macros
 const PAGE_LIMIT = 10;
@@ -62,11 +69,11 @@ const SalesInvoices = () => {
   const router = useRouter();
   const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
+  const [invoiceType, setInvoiceType] = useState('');
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -239,7 +246,8 @@ const SalesInvoices = () => {
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          {!isCreatingInvoice && (
+          {/* Show invoice list if no invoice type selected */}
+          {!invoiceType && (
             <Wrapper className="h-full">
               <SubHeader
                 name={translations('title')}
@@ -264,18 +272,10 @@ const SalesInvoices = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => setIsCreatingInvoice(true)}
-                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                        size="sm"
-                      >
-                        <PlusCircle size={14} />
-                        {translations('ctas.invoice.cta')}
-                      </Button>
-                    }
-                    content={translations('ctas.invoice.placeholder')}
+                  {/* Invoice Type Modal trigger */}
+                  <InvoiceTypeModal
+                    invoiceType={invoiceType}
+                    setInvoiceType={setInvoiceType}
                   />
                 </div>
               </SubHeader>
@@ -292,11 +292,9 @@ const SalesInvoices = () => {
                         {translations('tabs.label.tab1')}
                       </TabsTrigger>
                       <TabsTrigger value="outstanding">
-                        {' '}
                         {translations('tabs.label.tab2')}
                       </TabsTrigger>
                       <TabsTrigger value="disputed">
-                        {' '}
                         {translations('tabs.label.tab3')}
                       </TabsTrigger>
                     </TabsList>
@@ -304,7 +302,7 @@ const SalesInvoices = () => {
 
                   <TabsContent value="all">
                     {isInvoiceLoading && <Loading />}
-                    {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                    {!isInvoiceLoading && invoiceListing?.length > 0 ? (
                       <SalesTable
                         id="sale-invoices"
                         columns={invoiceColumns}
@@ -316,17 +314,17 @@ const SalesInvoices = () => {
                         onRowClick={onRowClick}
                         lastSalesRef={lastSalesInvoiceRef}
                       />
-                    )}
-                    {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                    ) : (
                       <EmptyStageComponent
                         heading={translations('emtpyStateComponent.heading')}
                         subItems={keys}
                       />
                     )}
                   </TabsContent>
+
                   <TabsContent value="outstanding">
                     {isInvoiceLoading && <Loading />}
-                    {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                    {!isInvoiceLoading && invoiceListing?.length > 0 ? (
                       <SalesTable
                         id="sale-invoices"
                         columns={invoiceColumns}
@@ -338,17 +336,17 @@ const SalesInvoices = () => {
                         onRowClick={onRowClick}
                         lastSalesRef={lastSalesInvoiceRef}
                       />
-                    )}
-                    {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                    ) : (
                       <EmptyStageComponent
                         heading={translations('emtpyStateComponent.heading')}
                         subItems={keys}
                       />
                     )}
                   </TabsContent>
+
                   <TabsContent value="disputed">
                     {isInvoiceLoading && <Loading />}
-                    {!isInvoiceLoading && invoiceListing?.length > 0 && (
+                    {!isInvoiceLoading && invoiceListing?.length > 0 ? (
                       <SalesTable
                         id="sale-invoices-disputed"
                         columns={invoiceColumns}
@@ -360,9 +358,7 @@ const SalesInvoices = () => {
                         onRowClick={onRowClick}
                         lastSalesRef={lastSalesInvoiceRef}
                       />
-                    )}
-
-                    {!isInvoiceLoading && invoiceListing?.length === 0 && (
+                    ) : (
                       <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                         <Image src={emptyImg} alt="emptyIcon" />
                         <p>{translations('emtpyStateComponent2.heading')}</p>
@@ -374,16 +370,26 @@ const SalesInvoices = () => {
             </Wrapper>
           )}
 
-          {/* create invoice component */}
-          {isCreatingInvoice && (
+          {/* Show CreateOrder based on invoice type */}
+          {invoiceType === 'B2B' && (
             <CreateOrder
               type="invoice"
-              name="Invoice"
+              name={translations('ctas.invoice.b2bCta')}
               cta="offer"
               isOrder="invoice"
-              isCreatingInvoice={isCreatingInvoice}
-              setInvoiceListing={setInvoiceListing}
-              onCancel={() => setIsCreatingInvoice(false)}
+              isCreatingInvoice={true}
+              onCancel={() => setInvoiceType('')}
+            />
+          )}
+
+          {invoiceType === 'B2C' && (
+            <CreateB2CInvoice
+              cta="offer"
+              type="invoice"
+              name="B2C Invoice"
+              isOrder="invoice"
+              isCreatingInvoice={true}
+              onCancel={() => setInvoiceType('')}
             />
           )}
         </>

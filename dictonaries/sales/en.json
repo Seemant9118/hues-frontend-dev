@@ -147,6 +147,7 @@
                 },
                 "invoice": {
                     "cta": "Invoice",
+                    "b2bCta": "B2B Invoice",
                     "placeholder": "Create a new Sales Invoice"
                 }
             },

@@ -262,7 +262,85 @@
                         "quantity": "QUANTITY",
                         "price": "PRICE",
                         "gst": "GST (%)",
-                        "invoice_value": "Invoice Value",
+                        "invoice_value": "INVOICE VALUE",
+                        "value": "VALUE",
+                        "tax_amount": "TAX AMOUNT",
+                        "amount": "AMOUNT"
+                    }
+                },
+                "ctas": {
+                    "cancel": "Cancel",
+                    "add": "Add",
+                    "create": "Create",
+                    "edit": "Edit"
+                },
+                "footer": {
+                    "gross_amount": "Gross Amount",
+                    "tax_amount": "Tax Amount",
+                    "total_amount": "Total Amount"
+                }
+            }
+        },
+        "create_B2C_Invoice": {
+            "title": {
+                "b2cInvoice": "B2C Invoice"
+            },
+            "form": {
+                "label": {
+                    "customer": "Customer Number",
+                    "customer_name": "Customer Name",
+                    "customer_address": "Customer Address",
+                    "address_type": "Select Address Type",
+                    "item_type": "Item Type",
+                    "item": "Item",
+                    "quantity": "Quantity",
+                    "price": "Price",
+                    "invoice_value": "Invoice Value",
+                    "value": "Value",
+                    "gst": "GST",
+                    "tax_amount": "Tax Amount",
+                    "amount": "Amount"
+                },
+                "errorMsg": {
+                    "customer": "*Please add or select a Customer",
+                    "customer_name": "*Please write Customer name",
+                    "customer_address": "*Please write Customer address",
+                    "address_type": "*Please Select Address Type",
+                    "item_type": "*Please select Item Type",
+                    "item": "*Please add atleast one item to create order",
+                    "quantity": "*Required Quantity",
+                    "price": "*Required Price",
+                    "gst": "*Required (GST%)",
+                    "value": "*Required Value",
+                    "tax_amount": "*Required Tax Amount",
+                    "amount": "*Required Amount"
+                },
+                "successMsg": {
+                    "order_updated_successfully": "Order Updates Successfully",
+                    "offer_created_successfully": "Sales Order Created Successfully",
+                    "bid_created_successfully": "Purchase Order Created Successfully",
+                    "invoice_created_successfully": "Invoice created! Please refresh to view the latest Invoice"
+                },
+                "input": {
+                    "customer": {
+                        "placeholder": "Enter a number to search or add new one"
+                    },
+                    "item_type": {
+                        "goods": "Goods",
+                        "services": "Services",
+                        "placeholder": "Select Item Type..."
+                    },
+                    "item": {
+                        "placeholder": "Select Items"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "ITEM",
+                        "quantity": "QUANTITY",
+                        "price": "PRICE",
+                        "gst": "GST (%)",
+                        "invoice_value": "INVOICE VALUE",
                         "value": "VALUE",
                         "tax_amount": "TAX AMOUNT",
                         "amount": "AMOUNT"
@@ -508,6 +586,18 @@
             },
             "ctas": {
                 "record_payment": "Record Payment"
+            }
+        },
+        "invoice_type_modal": {
+            "title": "Choose Invoice Type",
+            "cta": {
+                "invoice": "Invoice"
+            },
+            "types": {
+                "type1": "B2C (Business to Consumer)",
+                "type1_desc": "For direct sales to individual consumers,usually without GST registration.",
+                "type2": "B2B (Business to Business)",
+                "type2_desc": "For transactions between two registered businesses with GST details."
             }
         },
         "generate_pin_modal": {
