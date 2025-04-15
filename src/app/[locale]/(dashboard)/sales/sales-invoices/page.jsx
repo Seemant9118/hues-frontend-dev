@@ -3,6 +3,7 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
+import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
   exportInvoice,
@@ -27,8 +29,7 @@ import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
-import { useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../public/Empty.png';
@@ -68,12 +69,39 @@ const SalesInvoices = () => {
 
   const router = useRouter();
   const observer = useRef(); // Ref for infinite scrolling observer
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState('all');
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
   const [invoiceType, setInvoiceType] = useState('');
+
+  // Synchronize state with query parameters
+  useEffect(() => {
+    const state = searchParams.get('action');
+    if (state === 'b2b' || state === 'b2c') {
+      setInvoiceType(state);
+    } else {
+      setInvoiceType('');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    let newPath = '/sales/sales-invoices/';
+
+    if (invoiceType === 'b2b') {
+      newPath += `?action=b2b`;
+    } else if (invoiceType === 'b2c') {
+      newPath += `?action=b2c`;
+    }
+
+    const currentPath = window.location.pathname + window.location.search;
+
+    if (currentPath !== newPath) {
+      router.push(newPath);
+    }
+  }, [invoiceType]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -371,7 +399,7 @@ const SalesInvoices = () => {
           )}
 
           {/* Show CreateOrder based on invoice type */}
-          {invoiceType === 'B2B' && (
+          {invoiceType === 'b2b' && (
             <CreateOrder
               type="invoice"
               name={translations('ctas.invoice.b2bCta')}
@@ -382,7 +410,7 @@ const SalesInvoices = () => {
             />
           )}
 
-          {invoiceType === 'B2C' && (
+          {invoiceType === 'b2c' && (
             <CreateB2CInvoice
               cta="offer"
               type="invoice"

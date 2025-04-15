@@ -41,7 +41,7 @@ const InvoiceTypeModal = ({ invoiceType, setInvoiceType }) => {
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <Card
-            onClick={() => handleSelect('B2C')}
+            onClick={() => handleSelect('b2c')}
             className={cn(
               'flex cursor-pointer flex-col gap-2 rounded-xl border p-4 shadow-sm transition hover:border-primary',
               invoiceType === 'B2C' && 'border-primary bg-muted',
@@ -53,7 +53,7 @@ const InvoiceTypeModal = ({ invoiceType, setInvoiceType }) => {
             </p>
           </Card>
           <Card
-            onClick={() => handleSelect('B2B')}
+            onClick={() => handleSelect('b2b')}
             className={cn(
               'flex cursor-pointer flex-col gap-2 rounded-xl border p-4 shadow-sm transition hover:border-primary',
               invoiceType === 'B2B' && 'border-primary bg-muted',
