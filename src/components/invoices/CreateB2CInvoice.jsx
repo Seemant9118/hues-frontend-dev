@@ -101,6 +101,7 @@ const CreateB2CInvoice = ({
     queryFn: () => getCustomersByNumber(customerIdentifier),
     select: (data) => data.data.data,
     enabled: !!customerIdentifier,
+    refetchOnWindowFocus: false,
   });
 
   const [options, setOptions] = useState([]);
@@ -109,7 +110,7 @@ const CreateB2CInvoice = ({
   useEffect(() => {
     if (customersSearchList) {
       const transformed = customersSearchList.map((customer) => ({
-        value: customer.mobileNumber,
+        value: customer.id || customer.mobileNumber,
         label: `${customer.countryCode} ${customer.mobileNumber}`,
         name: customer?.name,
         address: customer?.address,
@@ -730,7 +731,7 @@ const CreateB2CInvoice = ({
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4">
+      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
         <div className="flex items-center gap-2">
           {isGstApplicable(isGstApplicableForSalesOrders) && (
             <>
