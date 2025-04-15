@@ -15,7 +15,7 @@ import {
   getProductCatalogue,
   getServiceCatalogue,
 } from '@/services/Catalogue_Services/CatalogueServices';
-import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
+import { getCustomersByNumber } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 import { createInvoice } from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -38,7 +38,7 @@ const CreateB2CInvoice = ({
   isCreatingInvoice,
   onCancel,
 }) => {
-  const translations = useTranslations('components.create_edit_order');
+  const translations = useTranslations('components.create_B2C_Invoice');
 
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -54,10 +54,15 @@ const CreateB2CInvoice = ({
     totalAmount: null,
     totalGstAmount: null,
   });
+  const [inputValue, setInputValue] = useState('');
+  const [customerIdentifier, setCustomerIdentifier] = useState('');
   const [order, setOrder] = useState({
     clientType: 'B2C',
     sellerEnterpriseId: enterpriseId,
     buyerId: null,
+    buyerName: null,
+    addressType: null,
+    buyerAddress: null,
     gstAmount: null,
     amount: null,
     orderType: 'SALES',
@@ -77,45 +82,80 @@ const CreateB2CInvoice = ({
     !!profileDetails?.enterpriseDetails?.gstNumber;
 
   // [B2C customers]
-  // customer[B2C] api fetching
-  const { data: customers } = useQuery({
-    queryKey: [customerApis.getCustomers.endpointKey, enterpriseId],
-    queryFn: () => getCustomers(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: order.clientType === 'B2C',
-  });
-  // customer options
-  const [options, setOptions] = useState([]);
-  // Transform customers data into options format that can be used in select component
   useEffect(() => {
-    if (customers) {
-      const transformedOptions = customers.map((customer) => ({
-        value: customer.mobileNumber,
-        label: `${customer.countryCode} ${customer.mobileNumber}`, // Displaying country code with mobile number
-      }));
-      setOptions(transformedOptions);
-    }
-  }, [customers]);
+    const handler = setTimeout(() => {
+      setCustomerIdentifier(inputValue); // This triggers the search query
+    }, 300); // 300ms debounce delay
 
-  // Handle selection of an existing option
+    return () => {
+      clearTimeout(handler); // Clear on cleanup
+    };
+  }, [inputValue]);
+
+  // Fetch customers (only when there's input)
+  const { data: customersSearchList } = useQuery({
+    queryKey: [
+      customerApis.getCustomersByNumber.endpointKey,
+      customerIdentifier,
+    ],
+    queryFn: () => getCustomersByNumber(customerIdentifier),
+    select: (data) => data.data.data,
+    enabled: !!customerIdentifier,
+  });
+
+  const [options, setOptions] = useState([]);
+
+  // Transform API response into select options
+  useEffect(() => {
+    if (customersSearchList) {
+      const transformed = customersSearchList.map((customer) => ({
+        value: customer.mobileNumber,
+        label: `${customer.countryCode} ${customer.mobileNumber}`,
+        name: customer?.name,
+        address: customer?.address,
+        number: customer?.numobileNumber,
+      }));
+      setOptions(transformed);
+    }
+  }, [customersSearchList]);
+
+  // Handle existing selection
   const handleChange = (selectedOption) => {
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      buyerId: selectedOption ? selectedOption.value : null,
-    }));
+    if (selectedOption) {
+      setOrder((prev) => ({
+        ...prev,
+        buyerId: selectedOption.value,
+        buyerAddress: selectedOption.address,
+        buyerName: selectedOption.name,
+        addressType: 'deliveryPurchase',
+      }));
+    } else {
+      setOrder((prev) => ({
+        ...prev,
+        buyerId: null,
+        buyerAddress: null,
+        buyerName: null,
+        addressType: null,
+      }));
+    }
   };
 
-  // Handle creation of a new option
+  // Handle creation of new customer (not in list)
   const handleCreate = (inputValue) => {
-    const newOption = { value: inputValue, label: inputValue };
+    const newOption = {
+      value: inputValue,
+      label: inputValue,
+      name: null,
+      address: null,
+    };
 
-    // Add the new option to the list of options
-    setOptions((prevOptions) => [...prevOptions, newOption]);
-
-    // Update the order state
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      buyerId: newOption.value,
+    setOptions((prev) => [...prev, newOption]);
+    setOrder((prev) => ({
+      ...prev,
+      buyerId: inputValue,
+      buyerName: null,
+      buyerAddress: null,
+      addressType: null,
     }));
   };
 
@@ -128,18 +168,6 @@ const CreateB2CInvoice = ({
     {
       value: 'deliveryPurchase',
       label: 'DeliveryPurchase',
-    },
-  ];
-
-  // addresses fetched from an APIs
-  const addressesOptions = [
-    {
-      value: 'address1',
-      label: 'Address 1',
-    },
-    {
-      value: 'address2',
-      label: 'Address 2',
     },
   ];
 
@@ -209,19 +237,34 @@ const CreateB2CInvoice = ({
     },
   });
 
-  // validations
   const validation = ({ order, selectedItem }) => {
     const errorObj = {};
 
-    if (order.clientType === 'B2C' && order?.buyerId == null) {
-      errorObj.buyerId = translations('form.errorMsg.client');
+    // Buyer Details (for B2C only)
+    if (!order?.buyerId) {
+      errorObj.buyerId = translations('form.errorMsg.customer');
     }
+    if (!order?.buyerName || order.buyerName.trim() === '') {
+      errorObj.buyerName = translations('form.errorMsg.customer_name');
+    }
+    if (!order?.buyerAddress || order.buyerAddress.trim() === '') {
+      errorObj.buyerAddress = translations('form.errorMsg.customer_address');
+    }
+    if (!order?.addressType) {
+      errorObj.addressType = translations('form.errorMsg.address_type');
+    }
+
+    // Invoice Type
     if (order.invoiceType === '') {
       errorObj.invoiceType = translations('form.errorMsg.item_type');
     }
-    if (order?.orderItems?.length === 0) {
+
+    // Order Items
+    if (!order?.orderItems || order.orderItems.length === 0) {
       errorObj.orderItem = translations('form.errorMsg.item');
     }
+
+    // Selected Item Fields
     if (selectedItem.quantity === null) {
       errorObj.quantity = translations('form.errorMsg.quantity');
     }
@@ -316,12 +359,14 @@ const CreateB2CInvoice = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <SubHeader name={name}></SubHeader>
+      <SubHeader
+        name={name === 'B2C Invoice' && translations('title.b2cInvoice')}
+      ></SubHeader>
 
       {/* Customer section */}
       <div className="rounded-sm border border-neutral-200 p-4">
         <div className="grid grid-cols-2 gap-4">
-          {/* Customer Phone */}
+          {/* Customer Number */}
           <div className="flex w-full flex-col gap-2">
             <Label className="flex gap-1">
               {translations('form.label.customer')}
@@ -330,17 +375,26 @@ const CreateB2CInvoice = ({
             <div className="flex w-full flex-col gap-1">
               <CreatableSelect
                 value={
-                  options?.find((option) => option.value === order.buyerId) ||
+                  options.find((option) => option.value === order.buyerId) ||
                   null
                 }
                 onChange={handleChange}
                 onCreateOption={handleCreate}
+                onInputChange={(input, { action }) => {
+                  if (action === 'input-change') {
+                    setInputValue(input);
+                  }
+                }}
                 styles={getStylesForSelectComponent()}
                 className="max-w-sm text-sm"
                 isClearable
                 placeholder="+91 1234567890"
                 options={options}
+                noOptionsMessage={() =>
+                  translations('form.input.customer.placeholder')
+                }
               />
+
               {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
             </div>
           </div>
@@ -348,52 +402,72 @@ const CreateB2CInvoice = ({
           {/* Customer Name */}
           <div className="flex w-full flex-col gap-2">
             <Label className="flex gap-1">
-              Customer Name
+              {translations('form.label.customer_name')}
               <span className="text-red-600">*</span>
             </Label>
             <Input
               type="text"
-              value={order.customerName}
+              value={order.buyerName || ''}
               onChange={(e) =>
-                setOrder((prev) => ({ ...prev, customerName: e.target.value }))
+                setOrder((prev) => ({ ...prev, buyerName: e.target.value }))
               }
-              placeholder="Customer Name"
+              placeholder={translations('form.label.customer_name')}
               className="max-w-sm text-sm"
             />
+            {errorMsg.buyerName && <ErrorBox msg={errorMsg.buyerName} />}
           </div>
 
           {/* Address Type */}
           <div className="flex w-full flex-col gap-2">
             <Label className="flex gap-1">
-              Select Address Type
+              {translations('form.label.address_type')}
               <span className="text-red-600">*</span>
             </Label>
             <Select
-              value={order.addressType}
-              onChange={() => {}} // Add handler
+              value={addressTypesOptions.find(
+                (option) => option.value === order.addressType,
+              )}
+              onChange={(selectedOption) => {
+                setOrder((prev) => ({
+                  ...prev,
+                  addressType: selectedOption ? selectedOption.value : null,
+                  // Set the appropriate address based on the selected address type
+                  buyerAddress:
+                    selectedOption?.value === 'OTC'
+                      ? profileDetails?.enterpriseDetails?.address
+                      : prev.buyerAddress,
+                }));
+              }}
               styles={getStylesForSelectComponent()}
               className="max-w-sm text-sm"
               isClearable
-              placeholder="Select Address Type"
+              placeholder={translations('form.label.address_type')}
               options={addressTypesOptions}
             />
+            {errorMsg.addressType && <ErrorBox msg={errorMsg.addressType} />}
           </div>
 
           {/* Address */}
           <div className="flex w-full flex-col gap-2">
             <Label className="flex gap-1">
-              Select Address
+              {translations('form.label.customer_address')}
               <span className="text-red-600">*</span>
             </Label>
-            <Select
-              value={order.address}
-              onChange={() => {}} // Add handler
-              styles={getStylesForSelectComponent()}
+
+            <Input
+              type="text"
+              value={order.buyerAddress || ''}
+              onChange={(e) => {
+                setOrder((prev) => ({
+                  ...prev,
+                  buyerAddress: e.target.value,
+                }));
+              }}
+              placeholder={translations('form.label.customer_address')}
               className="max-w-sm text-sm"
-              isClearable
-              placeholder="Select Address"
-              options={addressesOptions}
+              disabled={order.addressType === 'OTC'}
             />
+            {errorMsg.buyerAddress && <ErrorBox msg={errorMsg.buyerAddress} />}
           </div>
         </div>
       </div>

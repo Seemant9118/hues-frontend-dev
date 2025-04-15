@@ -27,8 +27,6 @@ import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-
-import CreateB2CInvoice from '@/components/invoices/CreateB2CInvoice';
 import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
 import { useRouter } from '@/i18n/routing';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -41,6 +39,13 @@ import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
   loading: () => <Loading />,
 });
+
+const CreateB2CInvoice = dynamic(
+  () => import('@/components/invoices/CreateB2CInvoice'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 // macros
 const PAGE_LIMIT = 10;

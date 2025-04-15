@@ -281,6 +281,84 @@
                 }
             }
         },
+        "create_B2C_Invoice": {
+            "title": {
+                "b2cInvoice": "बी2सी चालान"
+            },
+            "form": {
+                "label": {
+                    "customer": "ग्राहक संख्या",
+                    "customer_name": "ग्राहक का नाम",
+                    "customer_address": "ग्राहक का पता",
+                    "address_type": "पता प्रकार चुनें",
+                    "item_type": "आइटम प्रकार",
+                    "item": "आइटम",
+                    "quantity": "मात्रा",
+                    "price": "मूल्य",
+                    "invoice_value": "चालान मूल्य",
+                    "value": "मूल्य",
+                    "gst": "जीएसटी",
+                    "tax_amount": "कर राशि",
+                    "amount": "कुल राशि"
+                },
+                "errorMsg": {
+                    "customer": "*कृपया ग्राहक जोड़ें या चुनें",
+                    "customer_name": "*कृपया ग्राहक का नाम लिखें",
+                    "customer_address": "*कृपया ग्राहक का पता लिखें",
+                    "address_type": "*कृपया पता प्रकार चुनें",
+                    "item_type": "*कृपया आइटम प्रकार चुनें",
+                    "item": "*ऑर्डर बनाने के लिए कम से कम एक आइटम जोड़ें",
+                    "quantity": "*मात्रा आवश्यक है",
+                    "price": "*मूल्य आवश्यक है",
+                    "gst": "*जीएसटी (%) आवश्यक है",
+                    "value": "*मूल्य आवश्यक है",
+                    "tax_amount": "*कर राशि आवश्यक है",
+                    "amount": "*कुल राशि आवश्यक है"
+                },
+                "successMsg": {
+                    "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
+                    "offer_created_successfully": "सेल्स ऑर्डर सफलतापूर्वक बनाया गया",
+                    "bid_created_successfully": "पर्चेज ऑर्डर सफलतापूर्वक बनाया गया",
+                    "invoice_created_successfully": "चालान बन गया है! कृपया नवीनतम चालान देखने के लिए रिफ्रेश करें"
+                },
+                "input": {
+                    "customer": {
+                        "placeholder": "नया जोड़ने या खोजने के लिए नंबर दर्ज करें"
+                    },
+                    "item_type": {
+                        "goods": "सामान",
+                        "services": "सेवाएँ",
+                        "placeholder": "आइटम प्रकार चुनें..."
+                    },
+                    "item": {
+                        "placeholder": "आइटम चुनें"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "आइटम",
+                        "quantity": "मात्रा",
+                        "price": "मूल्य",
+                        "gst": "जीएसटी (%)",
+                        "invoice_value": "चालान मूल्य",
+                        "value": "मूल्य",
+                        "tax_amount": "कर राशि",
+                        "amount": "कुल राशि"
+                    }
+                },
+                "ctas": {
+                    "cancel": "रद्द करें",
+                    "add": "जोड़ें",
+                    "create": "बनाएं",
+                    "edit": "संपादित करें"
+                },
+                "footer": {
+                    "gross_amount": "कुल राशि",
+                    "tax_amount": "कर राशि",
+                    "total_amount": "कुल देय राशि"
+                }
+            }
+        },
         "redirection_pop_up": {
             "para": "इस एंटरप्राइज़ ने आपका निमंत्रण स्वीकार नहीं किया है और आपके प्रस्ताव का जवाब देने में सक्षम नहीं होगा। क्या आप आगे बढ़ना चाहते हैं?",
             "ctas": {
