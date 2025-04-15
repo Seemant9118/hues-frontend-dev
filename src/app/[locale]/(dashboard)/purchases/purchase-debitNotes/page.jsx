@@ -220,7 +220,10 @@ const PurchaseDebitNotes = () => {
                 <Tooltips
                   trigger={
                     <Button
-                      disabled={selectedDebit?.length === 0}
+                      disabled={
+                        selectedDebit?.length === 0 ||
+                        exportInvoiceMutation.isPending
+                      }
                       onClick={handleExportDebitNotes}
                       variant="outline"
                       className="border border-[#A5ABBD] hover:bg-neutral-600/10"

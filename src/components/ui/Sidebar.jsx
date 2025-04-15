@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Link } from '@/i18n/routing';
 import {
   Bell,
   BookOpenText,
@@ -10,15 +11,15 @@ import {
   FileSymlink,
   Gauge,
   HandPlatter,
+  IndianRupee,
   Package,
   ReceiptText,
   ScrollText,
+  Settings,
   Store,
   UserRound,
 } from 'lucide-react';
 import Image from 'next/image';
-
-import { Link } from '@/i18n/routing';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
@@ -72,6 +73,11 @@ const Sidebar = () => {
           path: '/sales/sales-invoices',
         },
         {
+          name: 'sidebar.subTabs.payments',
+          icon: <IndianRupee size={14} />,
+          path: '/sales/sales-payments',
+        },
+        {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/sales/sales-debitNotes',
@@ -92,6 +98,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.invoices',
           icon: <ReceiptText size={16} />,
           path: '/purchases/purchase-invoices',
+        },
+        {
+          name: 'sidebar.subTabs.payments',
+          icon: <IndianRupee size={14} />,
+          path: '/purchases/purchase-payments',
         },
         {
           name: 'sidebar.subTabs.debitNotes',
@@ -129,43 +140,51 @@ const Sidebar = () => {
       icon: <Bell size={16} />,
       path: '/notification',
     },
+    {
+      name: 'sidebar.settings',
+      icon: <Settings size={16} />,
+      path: '/settings',
+    },
   ];
 
   return (
-    <div className="flex flex-col justify-between bg-[#F6F9FF] p-3">
-      <div className="flex w-full flex-col gap-10 py-2">
-        <Link href={'/'}>
-          <Image
-            src={'/hues_logo.png'}
-            height={25}
-            width={100}
-            placeholder="blur"
-            alt="Logo"
-            blurDataURL="/hues_logo.png"
-          />
-        </Link>
+    <aside className="flex flex-col gap-10 overflow-hidden bg-[#F6F9FF] pb-3 pl-3 pt-3">
+      <Link href="/">
+        <Image
+          src="/hues_logo.png"
+          height={25}
+          width={100}
+          placeholder="blur"
+          alt="Logo"
+          blurDataURL="/hues_logo.png"
+        />
+      </Link>
 
-        <div className="flex flex-col gap-2">
+      <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
+        {/* Navigation Links */}
+        <nav className="flex flex-col gap-2">
           {links.map((link) => (
             <StyledLinks key={link.name} link={link} />
           ))}
+        </nav>
+
+        {/* Action Links & Profile */}
+        <div className="flex flex-col gap-2">
+          {actionLinks.map((link) => (
+            <StyledLinks key={link.name} link={link} />
+          ))}
+
+          <ProfileInfoPopUp
+            ctaName="sidebar.profile"
+            viewProfileCta="components.profilePopUpInfo.viewProfileCta"
+            enterprises="components.profilePopUpInfo.enterprises"
+            addAnotherCta="components.profilePopUpInfo.addAnotherCta"
+            logoutCta="components.profilePopUpInfo.logoutCta"
+            accessDeniedCta="components.profilePopUpInfo.accessDeniedCta"
+          />
         </div>
       </div>
-
-      <div className="flex flex-col gap-2">
-        {actionLinks.map((link) => (
-          <StyledLinks key={link.name} link={link} />
-        ))}
-        <ProfileInfoPopUp
-          ctaName={'sidebar.profile'}
-          viewProfileCta={'components.profilePopUpInfo.viewProfileCta'}
-          enterprises={'components.profilePopUpInfo.enterprises'}
-          addAnotherCta={'components.profilePopUpInfo.addAnotherCta'}
-          logoutCta={'components.profilePopUpInfo.logoutCta'}
-          accessDeniedCta={'components.profilePopUpInfo.accessDeniedCta'}
-        />
-      </div>
-    </div>
+    </aside>
   );
 };
 

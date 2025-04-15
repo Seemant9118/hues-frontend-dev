@@ -101,24 +101,27 @@ const VerifyMobileOTP = ({
           )}
         </span>
       </p>
-      <Button
-        size="sm"
-        type="Submit"
-        className="w-full bg-[#288AF9] p-2"
-        disabled={verifyOTPMutation.isPending}
-      >
-        {verifyOTPMutation.isPending ? <Loading /> : 'Verify'}
-      </Button>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full p-2"
-        onClick={() => setMobileLoginStep(1)}
-      >
-        <ArrowLeft size={14} />
-        Back
-      </Button>
+      <div className="flex w-full flex-col gap-2">
+        <Button
+          size="sm"
+          type="Submit"
+          className="w-full bg-[#288AF9] p-2"
+          disabled={verifyOTPMutation.isPending}
+        >
+          {verifyOTPMutation.isPending ? <Loading /> : 'Verify'}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full p-2"
+          onClick={() => setMobileLoginStep(1)}
+        >
+          <ArrowLeft size={14} />
+          Back
+        </Button>
+      </div>
     </form>
   );
 };

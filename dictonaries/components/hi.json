@@ -452,20 +452,22 @@
         "generate_invoice_modal_otp": {
             "title": "इनवॉइस",
             "ctas": {
-                "generate": "बनाएं",
-                "resend": "पुनः भेजें",
-                "verify": "सत्यापित करें और बनाएं",
-                "view": "देखें"
+                "generate": "जनरेट करें",
+                "view": "देखें",
+                "verify": "सत्यापित करें"
             },
             "infoText": {
-                "info": "वन टाइम पासवर्ड भेजा गया है",
-                "resend_info": "ओटीपी पुनः भेजें"
+                "title": "पिन दर्ज करें",
+                "pin_exist_info": "इनवॉइस जनरेट करने के लिए अपना पिन दर्ज करें।",
+                "pin_not_exist_info": "आपके पास अभी तक पिन नहीं है। पहले पिन सेटिंग्स में जाकर अपना पिन सेट करें,",
+                "info2": "यहां क्लिक करें।"
             },
             "successMsg": {
-                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया"
+                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया।"
             },
             "errorMsg": {
-                "common": "कुछ गलत हो गया"
+                "common": "कुछ गलत हो गया।",
+                "pin_error": "पिन मान्य नहीं है। क्या आप इसे अपडेट करना चाहते हैं?"
             }
         },
         "preview_invoice_modal": {
@@ -515,10 +517,10 @@
                 "negotiation_submitted": "मोलभाव सफलतापूर्वक जमा किया गया"
             }
         },
-        "record_payment_order": {
+        "make_payment": {
             "form": {
                 "label": {
-                    "payment_mode": "भुगतान मोड",
+                    "payment_mode": "भुगतान का माध्यम",
                     "options": {
                         "neft": "एनईएफटी",
                         "rtgs": "आरटीजीएस",
@@ -527,9 +529,12 @@
                         "cheque": "चेक",
                         "cash": "नकद"
                     },
-                    "tran_id": "लेनदेन आईडी",
-                    "amount_paid": "भरी गई राशि",
-                    "balance": "शेष राशि"
+                    "invoice_id": "चालान आईडी",
+                    "tran_id": "लेन-देन आईडी",
+                    "bank_acc_details": "बैंक खाता विवरण",
+                    "payment_date": "भुगतान की तिथि",
+                    "amount_paid": "भुगतान की गई राशि",
+                    "balance": "बकाया राशि"
                 },
                 "table": {
                     "title": "इनवॉइस",
@@ -561,7 +566,7 @@
             },
             "successMsg": {
                 "payment_recorded_sucessfully": "भुगतान सफलतापूर्वक रिकॉर्ड किया गया",
-                "upload_success": "सफलतापूर्वक अपलोड हुआ"
+                "attached_success": "सफलतापूर्वक संलग्न किया गया"
             },
             "errorMsg": {
                 "payment_mode": "*आवश्यक! कृपया भुगतान मोड चुनें",
@@ -593,6 +598,110 @@
                 "type1_desc": "व्यक्तिगत उपभोक्ताओं को सीधे बिक्री के लिए, आमतौर पर बिना GST पंजीकरण के।",
                 "type2": "बी2बी (बिज़नेस टू बिज़नेस)",
                 "type2_desc": "दो पंजीकृत व्यवसायों के बीच लेन-देन के लिए, जिनके पास GST विवरण होते हैं।"
+            }
+        },
+        "generate_pin_modal": {
+            "update_pin": "पिन अपडेट करें",
+            "create_pin": "पिन बनाएं",
+            "pin_description": "आप इस पिन का उपयोग इनवॉइस सत्यापित करने के लिए कर सकते हैं",
+            "success_messages": {
+                "pin_created": "पिन सफलतापूर्वक बनाया गया!",
+                "pin_updated": "पिन सफलतापूर्वक अपडेट किया गया!",
+                "otp_sent": "ओटीपी सफलतापूर्वक भेजा गया!",
+                "otp_verified": "ओटीपी सफलतापूर्वक सत्यापित हुआ!"
+            },
+            "error_messages": {
+                "common": "कुछ गलत हो गया!"
+            },
+            "buttons": {
+                "update": "पिन अपडेट करें",
+                "create": "पिन बनाएं"
+            },
+            "helper_components": {
+                "titles": {
+                    "create_pin": "नया पिन बनाएं",
+                    "confirm_pin": "पिन की पुष्टि करें",
+                    "enter_current_pin": "वर्तमान पिन दर्ज करें",
+                    "enter_otp": "आपके पंजीकृत नंबर पर ओटीपी भेजा गया"
+                },
+                "descriptions": {
+                    "create_pin": "अधिक सुरक्षा के लिए एक पिन सेट करें",
+                    "confirm_pin": "सुरक्षित रूप से आगे बढ़ने के लिए पिन की पुष्टि करें",
+                    "enter_current_pin": "आगे बढ़ने के लिए अपना वर्तमान पिन दर्ज करें",
+                    "enter_otp": "अपना पिन बदलने के लिए ओटीपी सत्यापित करें",
+                    "success_message": "अब आप इसे सुरक्षित रूप से कार्यों को अधिकृत करने के लिए उपयोग कर सकते हैं"
+                },
+                "buttons": {
+                    "next": "आगे बढ़ें",
+                    "confirm": "पुष्टि करें",
+                    "verify": "सत्यापित करें"
+                },
+                "messages": {
+                    "pin_mismatch": "पिन मेल नहीं खाते!",
+                    "forgot_pin": "पिन भूल गए?"
+                },
+                "steps": {
+                    "enter_pin": "पिन दर्ज करें",
+                    "enter_otp": "ओटीपी दर्ज करें",
+                    "confirm_pin": "पिन की पुष्टि करें"
+                }
+            },
+            "audit_logs": {
+                "title": "पिन ऑडिट लॉग्स",
+                "table": {
+                    "header": {
+                        "label": {
+                            "pin_id": "पिन आईडी",
+                            "updated_by": "द्वारा अपडेट किया गया",
+                            "update_on": "पर अपडेट किया गया",
+                            "action_type": "क्रिया प्रकार",
+                            "ip_address": "आईपी पता",
+                            "status": "स्थिति"
+                        }
+                    }
+                }
+            }
+        },
+        "paymentOverview": {
+            "paymentId": "भुगतान आईडी",
+            "invoiceId": "चालान आईडी",
+            "status": "स्थिति",
+            "clientName": "ग्राहक का नाम",
+            "vendorName": "विक्रेता का नाम",
+            "transactionId": "लेन-देन आईडी",
+            "modeOfPayment": "भुगतान का माध्यम",
+            "amountPaid": "भुगतान की गई राशि",
+            "totalAmount": "कुल राशि",
+            "paymentDate": "भुगतान तिथि",
+            "additionalProof": "अतिरिक्त प्रमाण",
+            "fallback": "-"
+        },
+        "raise_debit_note_modal": {
+            "trigger": {
+                "button": "डेबिट नोट जारी करें",
+                "tooltip": "डेबिट नोट जारी करें"
+            },
+            "content": {
+                "title": "डेबिट नोट",
+                "form": {
+                    "amount": {
+                        "label": "राशि",
+                        "required": "*",
+                        "error": "राशि चालान की कुल राशि से अधिक नहीं होनी चाहिए"
+                    },
+                    "remark": {
+                        "label": "टिप्पणी",
+                        "required": "*"
+                    },
+                    "actions": {
+                        "discard": "रद्द करें",
+                        "submit": "जमा करें"
+                    }
+                }
+            },
+            "toast": {
+                "success": "डेबिट नोट सफलतापूर्वक जारी किया गया",
+                "error": "कुछ गलत हो गया"
             }
         }
     }

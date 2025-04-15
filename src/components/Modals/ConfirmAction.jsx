@@ -74,6 +74,7 @@ const ConfirmAction = ({
           </DialogClose>
           <Button
             size="sm"
+            disabled={deleteMutation.isPending}
             onClick={() => {
               deleteMutation.mutate({ id, type });
             }}

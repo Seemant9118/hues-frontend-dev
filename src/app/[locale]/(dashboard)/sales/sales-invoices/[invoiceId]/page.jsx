@@ -24,7 +24,7 @@ import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, MoveUpRight, Share2 } from 'lucide-react';
+import { Download, Eye, MoveUpRight, Share2 } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -152,6 +152,10 @@ const ViewInvoice = () => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
+  const onRowClick = (row) => {
+    router.push(`/sales/sales-payments/${row.paymentId}`);
+  };
+
   return (
     <Wrapper className="h-full py-2">
       {/* headers */}
@@ -195,7 +199,16 @@ const ViewInvoice = () => {
             />
           )}
           {/* View CTA modal */}
-          {!isRecordingPayment && <InvoicePDFViewModal Url={pvtUrl} />}
+          {!isRecordingPayment && (
+            <InvoicePDFViewModal
+              cta={
+                <Button size="sm" variant="outline">
+                  <Eye size={14} />
+                </Button>
+              }
+              Url={pvtUrl}
+            />
+          )}
 
           {/* download CTA */}
           {!isRecordingPayment && (
@@ -256,7 +269,11 @@ const ViewInvoice = () => {
           <TabsContent value="payment">
             {isPaymentsLoading && <Loading />}
             {!isPaymentsLoading && paymentsListing?.length > 0 && (
-              <DataTable data={paymentsListing} columns={paymentsColumns} />
+              <DataTable
+                onRowClick={onRowClick}
+                data={paymentsListing}
+                columns={paymentsColumns}
+              />
             )}
             {!isPaymentsLoading && paymentsListing?.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
@@ -325,7 +342,7 @@ const ViewInvoice = () => {
                           <div className="flex gap-10">
                             <h1 className="text-sm">
                               <span className="font-bold text-[#ABB0C1]">
-                                {translations('tabs.content.tab3.label.date')}:{' '}
+                                {translations('tabs.content.tab3.label.date')}:
                               </span>
                               <span className="text-[#363940]">
                                 {moment(debitNote?.createdAt).format(
@@ -338,7 +355,7 @@ const ViewInvoice = () => {
                                 {translations(
                                   'tabs.content.tab3.label.total_amount',
                                 )}
-                                :{' '}
+                                :
                               </span>
                               <span className="font-bold text-[#363940]">
                                 {formattedAmount(debitNote?.amount)}
@@ -385,6 +402,7 @@ const ViewInvoice = () => {
           debitNoteStatus={debitNoteStatus}
           invoiceDetails={invoiceDetails?.invoiceDetails}
           setIsRecordingPayment={setIsRecordingPayment}
+          contextType={'PAYMENT'}
         />
       )}
     </Wrapper>

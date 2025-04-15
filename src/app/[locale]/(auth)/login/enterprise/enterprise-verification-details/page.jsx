@@ -2,6 +2,11 @@
 
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { tokenApi } from '@/api/tokenApi/tokenApi';
+import {
+  validateDateOfIncorporation,
+  validateEnterpriseAddress,
+  validateEnterpriseName,
+} from '@/appUtils/ValidationUtils';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import DatePickers from '@/components/ui/DatePickers';
@@ -36,7 +41,7 @@ const EnterpriseVerificationDetailsPage = () => {
     panNumber: '',
     CIN: '',
   });
-  const [errorMsg, setErrorMsg] = React.useState({});
+  const [errorMsg, setErrorMsg] = React.useState(null);
 
   // fetch details
   const { data: enterpriseData } = useQuery({
@@ -72,24 +77,38 @@ const EnterpriseVerificationDetailsPage = () => {
   };
 
   const handleDateChange = (date) => {
+    if (!date) {
+      setEnterpriseOnboardData((prev) => ({
+        ...prev,
+        doi: '',
+      }));
+      return;
+    }
+
+    // Convert to local date string (YYYY-MM-DD)
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000)
+      .toISOString()
+      .split('T')[0];
+
     setEnterpriseOnboardData((prev) => ({
       ...prev,
-      doi: date ? date.toISOString().split('T')[0] : '',
+      doi: localDate,
     }));
   };
 
   const validation = (enterpriseOnboardD) => {
-    const error = {};
-    if (enterpriseOnboardD.name === '') {
-      error.name = '*Required Enterprise Name';
-    }
-    if (enterpriseOnboardD.roa === '') {
-      error.roa = '*Required Registered Office Address';
-    }
-    if (enterpriseOnboardD.doi === '') {
-      error.doi = '*Required Date of Incorporation';
-    }
-    return error;
+    const errors = {};
+    errors.name = validateEnterpriseName(enterpriseOnboardD.name);
+    errors.roa = validateEnterpriseAddress(enterpriseOnboardD.roa);
+    errors.doi = validateDateOfIncorporation(enterpriseOnboardD.doi);
+
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
+
+    return errors;
   };
 
   // mutation fn : update enterprise
@@ -104,11 +123,14 @@ const EnterpriseVerificationDetailsPage = () => {
       // set new access token
       const newAccessToken = refreshTokenValue?.data?.data?.access_token;
       LocalStorageService.set('token', newAccessToken);
-      const { id, isOnboardingCompleted } = data.data.data;
+      const { id, isOnboardingCompleted, isEnterpriseOnboardingComplete } =
+        data.data.data;
+
+      LocalStorageService.set('isOnboardingComplete', isOnboardingCompleted);
       LocalStorageService.set('enterprise_Id', id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        isOnboardingCompleted,
+        isEnterpriseOnboardingComplete,
       );
 
       // clear original data which was used in onboarding
@@ -295,7 +317,12 @@ const EnterpriseVerificationDetailsPage = () => {
           </div>
 
           <div className="flex w-full flex-col gap-4">
-            <Button size="sm" type="submit" className="w-full">
+            <Button
+              size="sm"
+              type="submit"
+              className="w-full"
+              disabled={enterpriseOnboardUpdateMutation.isPending}
+            >
               {enterpriseOnboardUpdateMutation.isPending ? (
                 <Loading />
               ) : (

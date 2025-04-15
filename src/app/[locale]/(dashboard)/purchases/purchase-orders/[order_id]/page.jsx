@@ -5,6 +5,7 @@ import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
@@ -69,6 +70,7 @@ const ViewOrder = () => {
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
+  const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
 
   const [tab, setTab] = useState('overview');
 
@@ -101,6 +103,12 @@ const ViewOrder = () => {
       path: `/purchases/purchase-orders/${params.order_id}/`,
       show: isPastInvoices, // Show only if isPastInvoices is true
     },
+    {
+      id: 5,
+      name: translations('title.payment_advice'),
+      path: `/sales/sales-orders/${params.order_id}`,
+      show: isPaymentAdvicing, // Show only if isPaymentAdvicing is true
+    },
   ];
 
   useEffect(() => {
@@ -108,21 +116,31 @@ const ViewOrder = () => {
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
     setIsPastInvoices(state === 'showInvoice');
+    setIsPaymentAdvicing(state === 'payment_advice');
   }, [searchParams]);
 
   useEffect(() => {
     // Update URL based on the state (avoid shallow navigation for full update)
-    const newPath = `/purchases/purchase-orders/${params.order_id}${
-      isNegotiation
-        ? '?state=negotiation'
-        : isPastInvoices
-          ? '?state=showInvoice'
-          : ''
-    }`;
+    let newPath = `/purchases/purchase-orders/${params.order_id}`;
 
+    if (isNegotiation) {
+      newPath += '?state=negotiation';
+    } else if (isPastInvoices) {
+      newPath += '?state=showInvoice';
+    } else if (isPaymentAdvicing) {
+      newPath += '?state=payment_advice';
+    } else {
+      newPath += '';
+    }
     // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
-  }, [isNegotiation, isPastInvoices, params.order_id, router]);
+  }, [
+    isNegotiation,
+    isPastInvoices,
+    isPaymentAdvicing,
+    params.order_id,
+    router,
+  ]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -218,9 +236,23 @@ const ViewOrder = () => {
             </div>
 
             <div className="flex gap-2">
+              {/* send payment advice CTA */}
+              {!isPaymentAdvicing &&
+                (orderDetails.negotiationStatus === 'INVOICED' ||
+                  orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
+                orderDetails?.metaData?.payment?.status !== 'PAID' && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    onClick={() => setIsPaymentAdvicing(true)}
+                    className="font-bold"
+                  >
+                    {translations('ctas.payment_advice')}
+                  </Button>
+                )}
               {/* ctas - share invoice create */}
               {/* download CTA */}
-              {!isNegotiation && (
+              {!isNegotiation && !isPaymentAdvicing && (
                 <Tooltips
                   trigger={
                     <Button
@@ -285,7 +317,7 @@ const ViewOrder = () => {
           </section>
 
           {/* switch tabs */}
-          {!isNegotiation && (
+          {!isNegotiation && !isPaymentAdvicing && (
             <section>
               <Tabs
                 value={tab}
@@ -364,6 +396,15 @@ const ViewOrder = () => {
           {/* Invoices Component */}
           {isPastInvoices && !isNegotiation && <PastInvoices />}
 
+          {isPaymentAdvicing && !isNegotiation && (
+            <MakePaymentNew
+              orderId={params.order_id}
+              orderDetails={orderDetails}
+              setIsRecordingPayment={setIsPaymentAdvicing}
+              contextType="PAYMENT_ADVICE"
+            />
+          )}
+
           {/* seprator */}
           {!isNegotiation && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
@@ -401,8 +442,13 @@ const ViewOrder = () => {
                                 size="sm"
                                 className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                                 onClick={handleAccept}
+                                disabled={acceptMutation.isPending}
                               >
-                                {translations('ctas.footer_ctas.accept')}
+                                {acceptMutation.isPending ? (
+                                  <Loading size={14} />
+                                ) : (
+                                  translations('ctas.footer_ctas.accept')
+                                )}
                               </Button>
                             </>
                           )}

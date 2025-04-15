@@ -422,8 +422,13 @@ const NegotiationComponent = ({
               className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
               size="sm"
               onClick={handleSubmit}
+              disabled={createBulkNegotiationMutation?.isPending}
             >
-              {translations('ctas.submit')}
+              {createBulkNegotiationMutation?.isPending ? (
+                <Loading size={14} />
+              ) : (
+                translations('ctas.submit')
+              )}
             </Button>
           </section>
         </div>

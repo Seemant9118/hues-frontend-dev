@@ -67,10 +67,10 @@
                     "order_details": "ऑर्डर विवरण",
                     "negotiation": "मोलभाव",
                     "invoices": "चालान",
-                    "record_payment": "भुगतान रिकॉर्ड करें"
+                    "payment_advice": "भुगतान सलाह"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "payment_advice": "भुगतान सलाह भेजें",
                     "generate_invoice": "चालान उत्पन्न करें",
                     "download": {
                         "placeholder": "ऑर्डर विवरण डाउनलोड करें"
@@ -166,10 +166,11 @@
             "invoice_details": {
                 "title": {
                     "invoices": "चालान",
-                    "invoice_details": "चालान विवरण"
+                    "invoice_details": "चालान विवरण",
+                    "payment_advice": "भुगतान सलाह"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "payment_advice": "भुगतान सलाह भेजें",
                     "share": {
                         "placeholder": "शीघ्र आ रहा है.."
                     },
@@ -221,6 +222,39 @@
                                 "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "purchase-payments": {
+            "title": "भुगतान",
+            "title2": "नया भुगतान सलाह बनाएँ",
+            "emptyStateComponent": {
+                "heading": "अभी तक कोई भुगतान नहीं",
+                "description": "आपके पास अभी कोई भुगतान नहीं है। भुगतान सलाह बनाने के लिए नीचे दिए गए बटन पर क्लिक करें।"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "चयनित भुगतानों का निर्यात करें",
+                    "successMsg": "भुगतान निर्यात हो गया है और डाउनलोड स्वचालित रूप से शुरू हो गया है",
+                    "errorMsg": "कुछ गलत हो गया"
+                },
+                "create_payment_advice": {
+                    "cta": "भुगतान सलाह बनाएँ",
+                    "placeholder": "भुगतान सलाह बनाएँ"
+                }
+            },
+            "section": {
+                "table": {
+                    "header": {
+                        "payment_id": "भुगतान आईडी",
+                        "vendor_name": "विक्रेता का नाम",
+                        "invoice_id": "चालान आईडी",
+                        "total_amount": "कुल राशि",
+                        "amount_paid": "भुगतान की गई राशि",
+                        "mode_of_payment": "भुगतान का तरीका",
+                        "payment_date": "भुगतान तिथि",
+                        "status": "स्थिति"
                     }
                 }
             }

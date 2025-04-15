@@ -474,6 +474,7 @@ const ViewOrder = () => {
               orderId={params.order_id}
               orderDetails={orderDetails}
               setIsRecordingPayment={setIsRecordingPayment}
+              contextType="PAYMENT"
             />
           )}
 
@@ -510,8 +511,13 @@ const ViewOrder = () => {
                               size="sm"
                               className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                               onClick={handleAccept}
+                              disabled={acceptMutation.isPending}
                             >
-                              {translations('ctas.footer_ctas.accept')}
+                              {acceptMutation.isPending ? (
+                                <Loading size={14} />
+                              ) : (
+                                translations('ctas.footer_ctas.accept')
+                              )}
                             </Button>
                           </>
                         )}

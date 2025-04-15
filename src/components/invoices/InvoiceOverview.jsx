@@ -57,7 +57,7 @@ const InvoiceOverview = ({
               <p className="text-sm font-bold">{Name}</p>
             </section>
 
-            <section className="flex w-1/4 flex-col gap-2">
+            <section className="flex w-fit flex-col gap-2">
               <p className="text-xs font-bold">
                 {translations('label.payment_status')}
               </p>
@@ -72,7 +72,7 @@ const InvoiceOverview = ({
                 {translations('label.order_id')}
               </p>
               <p
-                className="flex cursor-pointer items-center gap-1 text-sm font-bold hover:text-primary"
+                className="flex cursor-pointer items-center gap-0.5 text-sm font-bold hover:text-primary hover:underline"
                 onClick={() => {
                   if (isSalesDetailPage) {
                     router.push(`/sales/sales-orders/${orderId}`);
@@ -90,11 +90,11 @@ const InvoiceOverview = ({
               <p className="text-sm font-bold">{capitalize(type)}</p>
             </section>
 
-            <section className="flex w-1/4 flex-col gap-2">
+            <section className="flex w-fit flex-col gap-2">
               <p className="text-xs font-bold">
                 {translations('label.debit_notes')}
               </p>
-              <div>{debitNoteStatus}</div>
+              <div className="w-full">{debitNoteStatus}</div>
             </section>
           </div>
 
