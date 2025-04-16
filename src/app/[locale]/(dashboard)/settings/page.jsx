@@ -266,8 +266,10 @@ function Settings() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-4 rounded-sm border p-4">
-                <h1>{translations('tabs.content.tab1.heading1')}</h1>
+              <div className="flex flex-col gap-4 rounded-sm p-4">
+                <h1 className="font-semibold uppercase text-primary">
+                  {translations('tabs.content.tab1.heading1')}
+                </h1>
 
                 <div className="grid grid-cols-3 grid-rows-2 gap-8 p-2">
                   <div className="flex flex-col gap-1">
@@ -303,11 +305,21 @@ function Settings() {
                       {profileDetails?.enterpriseDetails?.email ?? '-'}
                     </span>
                   </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab1.label.address')}
+                    </Label>
+                    <span className="text-lg font-bold">
+                      {profileDetails?.enterpriseDetails?.address ?? '-'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 rounded-sm border p-4">
-                <h1>{translations('tabs.content.tab1.heading2')}</h1>
+              <div className="flex flex-col gap-4 rounded-sm p-4">
+                <h1 className="font-semibold uppercase text-primary">
+                  {translations('tabs.content.tab1.heading2')}
+                </h1>
 
                 <div className="grid grid-cols-3 grid-rows-1 gap-8 p-2">
                   <div className="flex flex-col gap-1">
@@ -486,7 +498,7 @@ function Settings() {
           {bankAccounts?.length > 0 && (
             <>
               <h1 className="text-xl font-semibold">Bank Accounts</h1>
-              <div className="flex w-full flex-wrap gap-2">
+              <div className="flex w-full flex-wrap gap-3">
                 {bankAccounts?.map((account) => (
                   <AccountDetails key={account.id} account={account} />
                 ))}

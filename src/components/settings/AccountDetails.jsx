@@ -3,7 +3,7 @@ import React from 'react';
 
 const AccountDetails = ({ account }) => {
   return (
-    <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+    <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800">
           {account.accountHolderName}

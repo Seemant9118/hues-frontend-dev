@@ -17,6 +17,7 @@
                         "type": "Type",
                         "mobile": "Mobile Number",
                         "email": "Email Address",
+                        "address": "Address",
                         "gst": "GST IN",
                         "udyam": "UDYAM"
                     },
