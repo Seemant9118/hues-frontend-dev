@@ -233,7 +233,9 @@ const CreateB2CInvoice = ({
         translations('form.successMsg.invoice_created_successfully'),
       );
       onCancel();
-      // setInvoiceListing((prev) => [res.data.data, ...prev]);
+      // setInvoiceType clear
+      // setOrder clear
+      // redirect to invoiceDetails page with res invoiceId
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');

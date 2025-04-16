@@ -66,7 +66,7 @@ const InvoiceOverview = ({
           </div>
 
           {/* second column */}
-          <div className="flex w-full flex-col justify-between">
+          <div className="flex w-full flex-col gap-3">
             <section className="flex flex-col gap-2">
               <p className="text-xs font-bold">
                 {translations('label.order_id')}
@@ -90,12 +90,14 @@ const InvoiceOverview = ({
               <p className="text-sm font-bold">{capitalize(type)}</p>
             </section>
 
-            <section className="flex w-fit flex-col gap-2">
-              <p className="text-xs font-bold">
-                {translations('label.debit_notes')}
-              </p>
-              <div className="w-full">{debitNoteStatus}</div>
-            </section>
+            {debitNoteStatus && (
+              <section className="flex w-fit flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {translations('label.debit_notes')}
+                </p>
+                <div className="w-full">{debitNoteStatus}</div>
+              </section>
+            )}
           </div>
 
           {/* third column */}
