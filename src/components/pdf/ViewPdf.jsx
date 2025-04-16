@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 // for hiding redundant text
@@ -11,7 +12,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 // Set the worker source for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-const ViewPdf = ({ url }) => {
+const ViewPdf = ({ url, isPDF }) => {
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
   const [pageWidth, setPageWidth] = useState(0);
@@ -57,9 +58,21 @@ const ViewPdf = ({ url }) => {
           ref={containerRef}
           className="scrollBarStyles h-[400px] w-[650px] overflow-y-auto overflow-x-hidden border shadow-2xl"
         >
-          <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page width={pageWidth} pageNumber={pageNo} />
-          </Document>
+          {isPDF && (
+            <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+              <Page width={pageWidth} pageNumber={pageNo} />
+            </Document>
+          )}
+          {!isPDF && (
+            <Image
+              className="h-auto w-auto max-w-full rounded-sm"
+              src={url}
+              alt="comment-attached-img"
+              layout="responsive"
+              width={500} // or any aspect ratio base
+              height={300}
+            />
+          )}
         </div>
 
         <Button

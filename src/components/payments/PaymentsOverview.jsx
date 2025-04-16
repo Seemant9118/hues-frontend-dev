@@ -1,11 +1,12 @@
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import { MoveUpRight } from 'lucide-react';
+import { File, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
+import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
-import ViewImage from '../ui/ViewImage';
+import { Button } from '../ui/button';
 
 const PaymentOverview = ({ paymentsDetails }) => {
   const translations = useTranslations('components.paymentOverview');
@@ -122,10 +123,21 @@ const PaymentOverview = ({ paymentsDetails }) => {
         <div className="space-x-2">
           {paymentsDetails?.attachments?.length > 0
             ? paymentsDetails.attachments.map((attachment) => (
-                <ViewImage
+                <InvoicePDFViewModal
                   key={attachment.id}
-                  mediaName={attachment.name}
-                  mediaImage={attachment.url}
+                  cta={
+                    <Button
+                      variant="outline"
+                      className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+                    >
+                      <div className="flex w-full items-center gap-2">
+                        <File size={14} className="shrink-0" />
+                        <span className="truncate">{attachment?.name}</span>
+                      </div>
+                    </Button>
+                  }
+                  Url={attachment?.url}
+                  name={attachment?.name}
                 />
               ))
             : translations('fallback')}
