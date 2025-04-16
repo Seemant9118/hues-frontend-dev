@@ -140,9 +140,13 @@ const ViewInvoice = () => {
   const paymentStatus = ConditionalRenderingStatus({
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
-  const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
-  });
+  const debitNoteStatus =
+    invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status ===
+      'RAISED' &&
+    ConditionalRenderingStatus({
+      status:
+        invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
+    });
 
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
