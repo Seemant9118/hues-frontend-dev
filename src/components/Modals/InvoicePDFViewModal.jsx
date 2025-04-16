@@ -1,4 +1,5 @@
 import { templateApi } from '@/api/templates_api/template_api';
+import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
 import {
   Dialog,
   DialogContent,
@@ -9,13 +10,20 @@ import {
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
 const InvoicePDFViewModal = ({ cta, Url }) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
+
+  // check that url Doc is PDF / image
+  const [isPDF, setIsPDF] = useState(false);
+  useEffect(() => {
+    const isCheck = Url?.split('?')[0].toLowerCase().endsWith('.pdf');
+    setIsPDF(isCheck);
+  }, [Url]); // <-- Add Url here
 
   const { data: pdfDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, Url],
@@ -38,7 +46,7 @@ const InvoicePDFViewModal = ({ cta, Url }) => {
             <span>{translations('loading_document')}</span>
           </div>
         ) : (
-          <ViewPdf url={pdfDoc.publicUrl} />
+          <ViewPdf url={pdfDoc.publicUrl} isPDF={isPDF} />
         )}
 
         <DialogFooter>
@@ -51,7 +59,10 @@ const InvoicePDFViewModal = ({ cta, Url }) => {
               {translations('ctas.cancel')}
             </Button>
             <Button size="sm" asChild className="bg-[#288AF9] text-white">
-              <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
+              <a
+                href={pdfDoc?.publicUrl}
+                download={getFilenameFromUrl(pdfDoc?.publicUrl)}
+              >
                 {translations('ctas.download')}
               </a>
             </Button>

@@ -20,6 +20,13 @@ export const getRandomBgColor = () => {
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
+export const getFilenameFromUrl = (url) => {
+  if (!url) return 'file';
+  const path = url.split('?')[0]; // Remove query params
+  const filename = path.substring(path.lastIndexOf('/') + 1);
+  return filename || 'file';
+};
+
 // style for react-select component
 export const getStylesForSelectComponent = () => {
   return {
