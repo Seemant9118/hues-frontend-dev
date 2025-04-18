@@ -5,7 +5,6 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
 import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
 import Tooltips from '@/components/auth/Tooltips';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
@@ -14,6 +13,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNewInvoice from '@/components/payments/MakePaymentNewInvoice';
 import { usePaymentColumns } from '@/components/payments/paymentColumns';
 import { DataTable } from '@/components/table/data-table';
+import InvoicePreview from '@/components/ui/InvoicePreview';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -45,6 +45,7 @@ const ViewInvoice = () => {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
   const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -176,7 +177,7 @@ const ViewInvoice = () => {
             </div>
             <div className="flex gap-2">
               {/* raised debit note CTA */}
-              {!isPaymentAdvicing && (
+              {!isPaymentAdvicing && !isPreviewOpen && (
                 <RaisedDebitNoteModal
                   orderId={invoiceDetails?.invoiceDetails?.orderId}
                   invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
@@ -185,6 +186,7 @@ const ViewInvoice = () => {
               )}
 
               {!isPaymentAdvicing &&
+                !isPreviewOpen &&
                 (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                   ?.status === 'NOT_PAID' ||
                   invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -217,19 +219,18 @@ const ViewInvoice = () => {
               )} */}
 
               {/* View CTA modal */}
-              {!isPaymentAdvicing && (
-                <InvoicePDFViewModal
-                  cta={
-                    <Button size="sm" variant="outline">
-                      <Eye size={14} />
-                    </Button>
-                  }
-                  Url={pvtUrl}
-                />
+              {!isPaymentAdvicing && !isPreviewOpen && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsPreviewOpen(true)}
+                >
+                  <Eye size={14} />
+                </Button>
               )}
 
               {/* download CTA */}
-              {!isPaymentAdvicing && (
+              {!isPaymentAdvicing && !isPreviewOpen && (
                 <Tooltips
                   trigger={
                     <Button
@@ -248,7 +249,7 @@ const ViewInvoice = () => {
               )}
             </div>
           </section>
-          {!isPaymentAdvicing && (
+          {!isPaymentAdvicing && !isPreviewOpen && (
             <Tabs
               value={tab}
               onValueChange={onTabChange}
@@ -421,13 +422,21 @@ const ViewInvoice = () => {
           )}
 
           {/* recordPayment component */}
-          {isPaymentAdvicing && (
+          {isPaymentAdvicing && !isPreviewOpen && (
             <MakePaymentNewInvoice
               paymentStatus={paymentStatus}
               debitNoteStatus={debitNoteStatus}
               invoiceDetails={invoiceDetails?.invoiceDetails}
               setIsRecordingPayment={setIsPaymentAdvicing}
               contextType={'PAYMENT_ADVICE'}
+            />
+          )}
+
+          {!isPaymentAdvicing && isPreviewOpen && (
+            <InvoicePreview
+              setIsPreviewOpen={setIsPreviewOpen}
+              url={pvtUrl}
+              isDownloadable={true}
             />
           )}
         </>

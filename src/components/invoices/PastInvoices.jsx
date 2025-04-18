@@ -102,6 +102,7 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                       </Button>
                     }
                     Url={invoice?.attachmentLink}
+                    isDownloadable={true}
                   />
                 </section>
               </div>

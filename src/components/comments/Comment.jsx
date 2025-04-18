@@ -2,13 +2,14 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { LocalStorageService } from '@/lib/utils';
 import { updateComments } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building2, Pencil, X } from 'lucide-react';
+import { Building2, File, Pencil, X } from 'lucide-react';
 import moment from 'moment';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import ViewImage from '../ui/ViewImage';
+import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 
 const Comment = ({ comment, invalidateId }) => {
   const queryClient = useQueryClient();
@@ -221,10 +222,21 @@ const Comment = ({ comment, invalidateId }) => {
             <p className="text-sm">{comment.text}</p>
             <div className="flex flex-wrap gap-2">
               {comment?.attachments?.map((attachment) => (
-                <ViewImage
+                <InvoicePDFViewModal
                   key={attachment.id}
-                  mediaName={attachment.fileName}
-                  mediaImage={attachment.document?.url}
+                  cta={
+                    <Button
+                      variant="outline"
+                      className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+                    >
+                      <div className="flex w-full items-center gap-2">
+                        <File size={14} className="shrink-0" />
+                        <span className="truncate">{attachment?.fileName}</span>
+                      </div>
+                    </Button>
+                  }
+                  Url={attachment.document?.url}
+                  name={attachment?.fileName}
                 />
               ))}
             </div>

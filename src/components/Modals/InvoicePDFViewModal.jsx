@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 import ViewPdf from '../pdf/ViewPdf';
 import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ cta, Url }) => {
+const InvoicePDFViewModal = ({ cta, Url, isDownloadable = false }) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -46,7 +46,7 @@ const InvoicePDFViewModal = ({ cta, Url }) => {
             <span>{translations('loading_document')}</span>
           </div>
         ) : (
-          <ViewPdf url={pdfDoc.publicUrl} isPDF={isPDF} />
+          <ViewPdf isAttachement={true} url={pdfDoc.publicUrl} isPDF={isPDF} />
         )}
 
         <DialogFooter>
@@ -58,14 +58,16 @@ const InvoicePDFViewModal = ({ cta, Url }) => {
             >
               {translations('ctas.cancel')}
             </Button>
-            <Button size="sm" asChild className="bg-[#288AF9] text-white">
-              <a
-                href={pdfDoc?.publicUrl}
-                download={getFilenameFromUrl(pdfDoc?.publicUrl)}
-              >
-                {translations('ctas.download')}
-              </a>
-            </Button>
+            {isDownloadable && (
+              <Button size="sm" asChild className="bg-[#288AF9] text-white">
+                <a
+                  href={pdfDoc?.publicUrl}
+                  download={getFilenameFromUrl(pdfDoc?.publicUrl)}
+                >
+                  {translations('ctas.download')}
+                </a>
+              </Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>

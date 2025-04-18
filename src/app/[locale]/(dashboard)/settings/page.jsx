@@ -13,6 +13,7 @@ import GeneatePINModal from '@/components/Modals/GeneatePINModal';
 import Tooltips from '@/components/auth/Tooltips';
 import AccountDetails from '@/components/settings/AccountDetails';
 import AddBankAccount from '@/components/settings/AddBankAccount';
+import InvoiceSettings from '@/components/settings/InvoiceSettings';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -141,7 +142,7 @@ function Settings() {
       <SubHeader name="Settings"></SubHeader>
 
       <Tabs
-        className="flex flex-col gap-4"
+        className="flex flex-col"
         value={tab}
         onValueChange={onTabChange}
         defaultValue={'enterpriseOverview'}
@@ -507,8 +508,9 @@ function Settings() {
           )}
         </TabsContent>
 
-        <TabsContent value="invoices">
-          {translations('tabs.content.tab4.coming_soon')}
+        <TabsContent value="invoices" className="flex flex-col gap-10">
+          {/* {translations('tabs.content.tab4.coming_soon')} */}
+          <InvoiceSettings />
         </TabsContent>
 
         <TabsContent value="offers">
