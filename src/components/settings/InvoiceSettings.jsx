@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import InvoicePreview from '../ui/InvoicePreview';
@@ -7,50 +7,141 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import Wrapper from '../wrappers/Wrapper';
 
-const skins = [
-  {
-    id: 'basic-blue',
-    title: 'Basic Blue',
-    description: 'Clean, professional design with blue accents',
-    image: '/InvoiceType1.png',
-  },
-  {
-    id: 'emerald',
-    title: 'Emerald',
-    description: 'Clean, professional design with emerald accents',
-    image: '/InvoiceType2.png',
-  },
-  {
-    id: 'royal-blue',
-    title: 'Royal Blue',
-    description: 'Clean, professional design with royal blue accents',
-    image: '/InvoiceType3.png',
-  },
-];
+// const skins = [
+//   {
+//     id: 'basic-blue',
+//     title: 'Basic Blue',
+//     description: 'Clean, professional design with blue accents',
+//     image: '/InvoiceType1.png',
+//   },
+//   {
+//     id: 'emerald',
+//     title: 'Emerald',
+//     description: 'Clean, professional design with emerald accents',
+//     image: '/InvoiceType2.png',
+//   },
+//   {
+//     id: 'royal-blue',
+//     title: 'Royal Blue',
+//     description: 'Clean, professional design with royal blue accents',
+//     image: '/InvoiceType3.png',
+//   },
+// ];
 
-export default function InvoiceSettings() {
-  const [selectedSkin, setSelectedSkin] = useState('basic-blue');
+export default function InvoiceSettings({
+  settings,
+  templates,
+  createSettingMutation,
+}) {
+  const [selectedSkin, setSelectedSkin] = useState(null);
   const [remarks, setRemarks] = useState('Thank you for your business!');
   const [socialLink, setSocialLink] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [formattedTemplates, setFormattedTemplates] = useState([]);
+
+  useEffect(() => {
+    if (!templates) return;
+
+    const transformedTemplates = templates.map((template) => ({
+      id: template.id,
+      title: template.name,
+      description:
+        template?.description || 'Clean, professional design with blue accents',
+      image: template.staticPreviewUrl || '/fallback-image.png',
+      isDefault: template.isDefault || false,
+    }));
+
+    setFormattedTemplates(transformedTemplates);
+
+    // Auto-select default skin if available
+    const defaultSkin = transformedTemplates.find((t) => t.isDefault);
+    if (defaultSkin) {
+      setSelectedSkin(defaultSkin);
+    } else {
+      setSelectedSkin(transformedTemplates[0]); // fallback to first if no default
+    }
+
+    // LOGIC TO SET INITIAL REMARKS & SOCIAL LINK
+    const customerRemarkSetting = settings?.settings?.find(
+      (s) => s.key === 'CUSTOMER_REMARK',
+    );
+    const socialLinkSetting = settings?.settings?.find(
+      (s) => s.key === 'SOCIAL_LINK',
+    );
+
+    if (customerRemarkSetting) {
+      setRemarks(customerRemarkSetting.value);
+    }
+
+    if (socialLinkSetting) {
+      setSocialLink(socialLinkSetting.value);
+    }
+  }, [templates, settings]);
+
+  // skin update
+  const handleUpdateSkin = (skin) => {
+    setSelectedSkin(skin);
+
+    const payload = {
+      contextKey: 'INVOICE',
+      settings: [
+        {
+          key: 'invoice.plugin.invoice-template',
+          value: skin?.id, // extract numeric ID
+        },
+      ],
+    };
+
+    createSettingMutation.mutate(payload);
+  };
+
+  // customer remarks update
+  const handleCustomerRemarkUpdate = (remarks) => {
+    const payload = {
+      contextKey: 'INVOICE',
+      settings: [
+        {
+          key: 'CUSTOMER_REMARK',
+          value: remarks,
+        },
+      ],
+    };
+
+    createSettingMutation.mutate(payload);
+  };
+
+  // social link update
+  const handleSocialLinkUpdate = (link) => {
+    const payload = {
+      contextKey: 'INVOICE',
+      settings: [
+        {
+          key: 'SOCIAL_LINK',
+          value: link,
+        },
+      ],
+    };
+
+    createSettingMutation.mutate(payload);
+  };
 
   return (
     <Wrapper className="flex flex-col gap-10 p-2">
       {!isPreviewOpen && (
-        <div>
+        <div className="flex flex-col gap-4">
           {/* Skins */}
           <div className="flex flex-col gap-4">
             <Label className="text-sm font-medium">Default Skin</Label>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {skins.map((skin) => (
+              {formattedTemplates?.map((skin) => (
                 <div
                   key={skin.id}
                   className={`cursor-pointer space-y-2 rounded-lg border p-4 transition hover:shadow-md ${
-                    selectedSkin === skin.id
+                    selectedSkin?.id === skin.id
                       ? 'border-blue-500 ring-1 ring-blue-500'
                       : 'border-gray-200'
                   }`}
-                  onClick={() => setSelectedSkin(skin.id)}
+                  onClick={() => handleUpdateSkin(skin)}
                 >
                   <h3 className="font-semibold">{skin.title}</h3>
                   <p className="text-sm text-gray-500">{skin.description}</p>
@@ -67,7 +158,10 @@ export default function InvoiceSettings() {
                     variant="blue_outline"
                     size="sm"
                     className="mt-2 w-full"
-                    onClick={() => setIsPreviewOpen(true)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent triggering skin select
+                      setIsPreviewOpen(true);
+                    }}
                   >
                     Preview
                   </Button>
@@ -87,10 +181,22 @@ export default function InvoiceSettings() {
               className="h-28 w-full resize-none rounded-md border p-2"
             />
             <div className="mt-2 flex justify-end gap-2">
-              <Button size="sm" variant="outline">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setRemarks('');
+                }}
+              >
                 Discard
               </Button>
-              <Button size="sm" variant="blue_outline">
+              <Button
+                size="sm"
+                variant="blue_outline"
+                onClick={() => {
+                  handleCustomerRemarkUpdate(remarks);
+                }}
+              >
                 Save
               </Button>
             </div>
@@ -109,18 +215,32 @@ export default function InvoiceSettings() {
               className="w-full rounded-md border p-2"
             />
             <div className="mt-2 flex justify-end gap-2">
-              <Button size="sm" variant="outline">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSocialLink('');
+                }}
+              >
                 Discard
               </Button>
-              <Button size="sm" variant="blue_outline">
+              <Button
+                size="sm"
+                variant="blue_outline"
+                onClick={() => {
+                  handleSocialLinkUpdate(socialLink);
+                }}
+              >
                 Save
               </Button>
             </div>
           </div>
         </div>
       )}
-      {isPreviewOpen && (
+      {isPreviewOpen && selectedSkin && (
         <InvoicePreview
+          handleSelectFn={() => handleUpdateSkin(selectedSkin)}
+          isSelectable={true}
           setIsPreviewOpen={setIsPreviewOpen}
           url={selectedSkin.image}
         />
