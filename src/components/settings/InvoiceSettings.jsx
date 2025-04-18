@@ -33,11 +33,31 @@ export default function InvoiceSettings({
   templates,
   createSettingMutation,
 }) {
+  const [currPreviewSkin, setCurrPreviewSkin] = useState(null);
   const [selectedSkin, setSelectedSkin] = useState(null);
   const [remarks, setRemarks] = useState('Thank you for your business!');
   const [socialLink, setSocialLink] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [formattedTemplates, setFormattedTemplates] = useState([]);
+
+  useEffect(() => {
+    if (settings?.settings) {
+      const customerRemarkSetting = settings.settings.find(
+        (s) => s.key === 'CUSTOMER_REMARK',
+      );
+      const socialLinkSetting = settings.settings.find(
+        (s) => s.key === 'SOCIAL_LINK',
+      );
+
+      if (customerRemarkSetting) {
+        setRemarks(customerRemarkSetting.value);
+      }
+
+      if (socialLinkSetting) {
+        setSocialLink(socialLinkSetting.value);
+      }
+    }
+  }, [settings]);
 
   useEffect(() => {
     if (!templates) return;
@@ -53,30 +73,9 @@ export default function InvoiceSettings({
 
     setFormattedTemplates(transformedTemplates);
 
-    // Auto-select default skin if available
     const defaultSkin = transformedTemplates.find((t) => t.isDefault);
-    if (defaultSkin) {
-      setSelectedSkin(defaultSkin);
-    } else {
-      setSelectedSkin(transformedTemplates[0]); // fallback to first if no default
-    }
-
-    // LOGIC TO SET INITIAL REMARKS & SOCIAL LINK
-    const customerRemarkSetting = settings?.settings?.find(
-      (s) => s.key === 'CUSTOMER_REMARK',
-    );
-    const socialLinkSetting = settings?.settings?.find(
-      (s) => s.key === 'SOCIAL_LINK',
-    );
-
-    if (customerRemarkSetting) {
-      setRemarks(customerRemarkSetting.value);
-    }
-
-    if (socialLinkSetting) {
-      setSocialLink(socialLinkSetting.value);
-    }
-  }, [templates, settings]);
+    setSelectedSkin(defaultSkin || transformedTemplates[0]);
+  }, [templates]);
 
   // skin update
   const handleUpdateSkin = (skin) => {
@@ -161,6 +160,7 @@ export default function InvoiceSettings({
                     onClick={(e) => {
                       e.stopPropagation(); // prevent triggering skin select
                       setIsPreviewOpen(true);
+                      setCurrPreviewSkin(skin.image);
                     }}
                   >
                     Preview
@@ -242,7 +242,7 @@ export default function InvoiceSettings({
           handleSelectFn={() => handleUpdateSkin(selectedSkin)}
           isSelectable={true}
           setIsPreviewOpen={setIsPreviewOpen}
-          url={selectedSkin.image}
+          url={currPreviewSkin}
         />
       )}
     </Wrapper>
