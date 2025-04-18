@@ -5,7 +5,6 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
 import Tooltips from '@/components/auth/Tooltips';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
@@ -13,6 +12,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNewInvoice from '@/components/payments/MakePaymentNewInvoice';
 import { usePaymentColumns } from '@/components/payments/paymentColumns';
 import { DataTable } from '@/components/table/data-table';
+import InvoicePreview from '@/components/ui/InvoicePreview';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,6 +43,7 @@ const ViewInvoice = () => {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -172,6 +173,7 @@ const ViewInvoice = () => {
         </div>
         <div className="flex gap-2">
           {!isRecordingPayment &&
+            !isPreviewOpen &&
             (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
               ?.status === 'NOT_PAID' ||
               invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -187,7 +189,7 @@ const ViewInvoice = () => {
             )}
 
           {/* share CTA */}
-          {!isRecordingPayment && (
+          {!isRecordingPayment && !isPreviewOpen && (
             <Tooltips
               trigger={
                 <Button
@@ -203,19 +205,18 @@ const ViewInvoice = () => {
             />
           )}
           {/* View CTA modal */}
-          {!isRecordingPayment && (
-            <InvoicePDFViewModal
-              cta={
-                <Button size="sm" variant="outline">
-                  <Eye size={14} />
-                </Button>
-              }
-              Url={pvtUrl}
-            />
+          {!isRecordingPayment && !isPreviewOpen && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsPreviewOpen(true)}
+            >
+              <Eye size={14} />
+            </Button>
           )}
 
           {/* download CTA */}
-          {!isRecordingPayment && (
+          {!isRecordingPayment && !isPreviewOpen && (
             <Tooltips
               trigger={
                 <Button size="sm" asChild variant="outline" className="w-full">
@@ -229,7 +230,7 @@ const ViewInvoice = () => {
           )}
         </div>
       </section>
-      {!isRecordingPayment && (
+      {!isRecordingPayment && !isPreviewOpen && (
         <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
           <TabsList className="border">
             <TabsTrigger value="overview">
@@ -400,13 +401,21 @@ const ViewInvoice = () => {
       )}
 
       {/* recordPayment component */}
-      {isRecordingPayment && (
+      {isRecordingPayment && !isPreviewOpen && (
         <MakePaymentNewInvoice
           paymentStatus={paymentStatus}
           debitNoteStatus={debitNoteStatus}
           invoiceDetails={invoiceDetails?.invoiceDetails}
           setIsRecordingPayment={setIsRecordingPayment}
           contextType={'PAYMENT'}
+        />
+      )}
+
+      {!isRecordingPayment && isPreviewOpen && (
+        <InvoicePreview
+          setIsPreviewOpen={setIsPreviewOpen}
+          url={pvtUrl}
+          isDownloadable={true}
         />
       )}
     </Wrapper>
