@@ -3,6 +3,7 @@
 import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
+import { settingsAPI } from '@/api/settings/settingsApi';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   capitalize,
@@ -27,6 +28,11 @@ import { LocalStorageService } from '@/lib/utils';
 import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
 import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getPINLogs } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
+import {
+  createSettings,
+  getSettingsByKey,
+  getTemplateForSettings,
+} from '@/services/Settings_Services/SettingsService';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, X } from 'lucide-react';
@@ -119,6 +125,34 @@ function Settings() {
     setBgColor(bgColorClass);
   }, []);
 
+  // fetch settings
+  const { data: settings } = useQuery({
+    queryKey: [settingsAPI.getSettingByKey.endpointKey],
+    queryFn: () => getSettingsByKey(tab.toUpperCase()),
+    select: (data) => data.data.data,
+    enabled: tab === 'invoice',
+  });
+
+  const { data: templates } = useQuery({
+    queryKey: [settingsAPI.getTemplateForSettings.endpointKey],
+    queryFn: () => getTemplateForSettings(),
+    select: (data) => data.data,
+    enabled: tab === 'invoice',
+  });
+
+  const createSettingMutation = useMutation({
+    mutationKey: [settingsAPI.createSettings.endpointKey],
+    mutationFn: createSettings,
+    onSuccess: () => {
+      toast.success('Setting Updated successfully');
+
+      queryClient.invalidateQueries([settingsAPI.getSettingByKey.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   // fetch pin audit logs
   const { data: pinAuditLogs } = useQuery({
     queryKey: [pinSettings.getPINLogs.endpointKey],
@@ -154,7 +188,7 @@ function Settings() {
           <TabsTrigger value="bankAccount">
             {translations('tabs.label.tab2')}
           </TabsTrigger>
-          <TabsTrigger value="invoices">
+          <TabsTrigger value="invoice">
             {translations('tabs.label.tab3')}
           </TabsTrigger>
           <TabsTrigger value="offers">
@@ -508,9 +542,13 @@ function Settings() {
           )}
         </TabsContent>
 
-        <TabsContent value="invoices" className="flex flex-col gap-10">
+        <TabsContent value="invoice" className="flex flex-col gap-10">
           {/* {translations('tabs.content.tab4.coming_soon')} */}
-          <InvoiceSettings />
+          <InvoiceSettings
+            settings={settings}
+            templates={templates}
+            createSettingMutation={createSettingMutation}
+          />
         </TabsContent>
 
         <TabsContent value="offers">

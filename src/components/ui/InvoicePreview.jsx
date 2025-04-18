@@ -20,6 +20,8 @@ import { Textarea } from './textarea';
 const InvoicePreview = ({
   setIsPreviewOpen,
   url,
+  handleSelectFn,
+  isSelectable = false,
   isDownloadable = false,
   isCustomerRemarksAddable = false,
   isBankAccountDetailsSelectable = false,
@@ -135,6 +137,18 @@ const InvoicePreview = ({
             >
               Download
             </a>
+          </Button>
+        )}
+
+        {isSelectable && (
+          <Button
+            size="sm"
+            onClick={() => {
+              handleSelectFn();
+              setIsPreviewOpen(false);
+            }}
+          >
+            Select
           </Button>
         )}
       </div>
