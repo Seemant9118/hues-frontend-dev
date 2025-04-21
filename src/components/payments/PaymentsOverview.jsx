@@ -82,9 +82,6 @@ const PaymentOverview = ({ paymentsDetails }) => {
             {paymentsDetails?.transactionId || translations('fallback')}
           </p>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <div>
           <p className="text-xs font-semibold">
             {translations('modeOfPayment')}
@@ -93,7 +90,9 @@ const PaymentOverview = ({ paymentsDetails }) => {
             {paymentsDetails?.paymentMode?.toUpperCase()}
           </p>
         </div>
+      </div>
 
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <div>
           <p className="text-xs font-semibold">{translations('amountPaid')}</p>
           <p className="text-sm font-bold">

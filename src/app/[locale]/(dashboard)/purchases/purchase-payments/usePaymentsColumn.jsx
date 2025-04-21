@@ -4,7 +4,6 @@ import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Dot } from 'lucide-react';
-import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -117,9 +116,8 @@ export const usePaymentsColumn = () => {
       ),
       cell: ({ row }) => {
         const { paymentDate } = row.original;
-        const formattedDate =
-          paymentDate !== null ? moment(paymentDate).format('DD/MM/YYYY') : '-';
-        return <div className="text-[#A5ABBD]">{formattedDate}</div>;
+
+        return <div className="text-[#A5ABBD]">{paymentDate || '-'}</div>;
       },
     },
     {
