@@ -65,7 +65,7 @@
                     },
                     "infoMsg": {
                         "toSearch": "खोजने के लिए एक पहचानकर्ता टाइप करें",
-                        "enterprise_not_available": "उपलब्ध नहीं है।"
+                        "enterprise_not_available": "एंटरप्राइज HUES पर सक्रिय नहीं है"
                     },
                     "ctas": {
                         "identifiers": {

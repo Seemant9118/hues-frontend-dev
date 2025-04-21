@@ -65,7 +65,7 @@
                     },
                     "infoMsg": {
                         "toSearch": "Type an identifier to search",
-                        "enterprise_not_available": "Enterprise not available."
+                        "enterprise_not_available": "Enterprise not active on HUES."
                     },
                     "ctas": {
                         "identifiers": {
