@@ -85,7 +85,7 @@ export default function InvoiceSettings({
       contextKey: 'INVOICE',
       settings: [
         {
-          key: 'invoice.plugin.invoice-template',
+          key: 'invoice.plugin.default.theme',
           value: skin?.id, // extract numeric ID
         },
       ],
