@@ -4,26 +4,30 @@ import { useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 
-const AddBankAccount = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
   const [formData, setFormData] = useState({
     accountHolderName: '',
     ifscCode: '',
     accountNumber: '',
   });
-
   const [errors, setErrors] = useState({});
+
+  // Close modal on external state change
+  const handleClose = () => {
+    setIsModalOpen(false);
+    setFormData({
+      accountHolderName: '',
+      ifscCode: '',
+      accountNumber: '',
+    });
+    setErrors({});
+  };
 
   const validate = () => {
     const newErrors = {};
@@ -69,21 +73,15 @@ const AddBankAccount = () => {
     }));
   };
 
-  // add bank accounts mutation
   const addBankAccountMutation = useMutation({
     mutationKey: [bankAccountApis.addBankAccount.endpointKey],
     mutationFn: addBankAccount,
     onSuccess: () => {
       toast.success('Bank account added successfully!');
-      setIsOpen(false);
-      setFormData({
-        accountHolderName: '',
-        ifscCode: '',
-        accountNumber: '',
-      });
+      handleClose();
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 
@@ -100,25 +98,7 @@ const AddBankAccount = () => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <div className="flex w-full items-center justify-between gap-2 rounded-md border p-4">
-        <div className="flex flex-col items-start gap-1 text-sm">
-          <p className="font-bold">Add a bank account</p>
-          <p className="text-gray-400">
-            Add a bank account to your Hues account
-          </p>
-        </div>
-        <DialogTrigger asChild>
-          <Button
-            size="sm"
-            variant="blue_outline"
-            onClick={() => setIsOpen(true)}
-          >
-            Add Bank Account
-          </Button>
-        </DialogTrigger>
-      </div>
-
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogContent>
         <DialogTitle>Add a Bank Account</DialogTitle>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
@@ -170,17 +150,12 @@ const AddBankAccount = () => {
             {errors.accountNumber && <ErrorBox msg={errors.accountNumber} />}
           </div>
 
+          {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
             <Button
               variant="outline"
-              onClick={() => {
-                setFormData({
-                  accountHolderName: '',
-                  ifscCode: '',
-                  accountNumber: '',
-                });
-                setIsOpen(false);
-              }}
+              type="button"
+              onClick={handleClose}
               size="sm"
             >
               Cancel

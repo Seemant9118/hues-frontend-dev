@@ -14,6 +14,7 @@ import {
   Check,
   FileText,
   Image,
+  Plus,
   Upload,
   UploadCloud,
   X,
@@ -39,6 +40,7 @@ import {
   SelectValue,
 } from '../ui/select';
 import Wrapper from '../wrappers/Wrapper';
+import AddBankAccount from '../settings/AddBankAccount';
 
 const MakePaymentNew = ({
   orderId,
@@ -60,6 +62,7 @@ const MakePaymentNew = ({
     bankAccountId: [],
     paymentDate: new Date(),
   });
+  const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
 
   const { data: bankAccounts } = useQuery({
     queryKey: [bankAccountApis.getBankAccounts.endpointKey],
@@ -268,6 +271,13 @@ const MakePaymentNew = ({
           totalAmount={orderDetails.amount + orderDetails.gstAmount}
         />
       )}
+
+      {isBankAccountAdding && (
+        <AddBankAccount
+          isModalOpen={isBankAccountAdding}
+          setIsModalOpen={setIsBankAccountAdding}
+        />
+      )}
       <div className="flex flex-col gap-4">
         {/* inputs */}
         <section className="flex flex-col gap-4 rounded-md border p-4">
@@ -440,6 +450,16 @@ const MakePaymentNew = ({
                         {`Acc ${account.maskedAccountNumber}`}
                       </SelectItem>
                     ))}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent closing the dropdown immediately
+                        setIsBankAccountAdding(true);
+                      }}
+                      className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                    >
+                      <Plus size={14} />
+                      Add New Bank Account
+                    </div>
                   </SelectContent>
                 </Select>
                 {errorMsg.bankAccountId && (
