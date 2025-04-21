@@ -136,7 +136,7 @@ function Settings() {
   const { data: templates } = useQuery({
     queryKey: [settingsAPI.getTemplateForSettings.endpointKey],
     queryFn: () => getTemplateForSettings(),
-    select: (data) => data.data,
+    select: (data) => data.data.data,
     enabled: tab === 'invoice',
   });
 

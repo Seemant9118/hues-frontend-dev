@@ -62,13 +62,13 @@ export default function InvoiceSettings({
   useEffect(() => {
     if (!templates) return;
 
-    const transformedTemplates = templates.map((template) => ({
+    const transformedTemplates = templates?.map((template) => ({
       id: template.id,
-      title: template.name,
+      title: template.title,
       description:
         template?.description || 'Clean, professional design with blue accents',
-      image: template.staticPreviewUrl || '/fallback-image.png',
-      isDefault: template.isDefault || false,
+      image: template?.image ? `data:image/png;base64,${template.image}` : '',
+      isDefault: template?.isDefault || false,
     }));
 
     setFormattedTemplates(transformedTemplates);
@@ -146,7 +146,7 @@ export default function InvoiceSettings({
                   <p className="text-sm text-gray-500">{skin.description}</p>
                   <div className="relative aspect-[5/3] overflow-hidden rounded bg-gray-50">
                     <Image
-                      src={skin.image}
+                      src={skin.image || '/InvoiceType1.png'}
                       alt={skin.title}
                       layout="fill"
                       objectFit="contain"
@@ -243,6 +243,7 @@ export default function InvoiceSettings({
           isSelectable={true}
           setIsPreviewOpen={setIsPreviewOpen}
           url={currPreviewSkin}
+          isBase64={true}
         />
       )}
     </Wrapper>

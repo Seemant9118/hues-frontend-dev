@@ -20,6 +20,7 @@ import { Textarea } from './textarea';
 const InvoicePreview = ({
   setIsPreviewOpen,
   url,
+  isBase64 = false,
   handleSelectFn,
   isSelectable = false,
   isDownloadable = false,
@@ -48,7 +49,7 @@ const InvoicePreview = ({
   const { data: pdfDoc, isLoading } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, url],
     queryFn: () => getDocument(url),
-    enabled: !!url,
+    enabled: !!url && !isBase64,
     select: (res) => res.data.data,
   });
 
@@ -114,7 +115,7 @@ const InvoicePreview = ({
           {isLoading ? (
             <span className="animate-pulse">Loading Document...</span>
           ) : (
-            <ViewPdf url={pdfDoc?.publicUrl} isPDF={isPDF} />
+            <ViewPdf url={pdfDoc?.publicUrl || url} isPDF={isPDF} />
           )}
         </div>
       </div>

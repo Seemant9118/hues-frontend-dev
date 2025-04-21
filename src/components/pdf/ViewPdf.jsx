@@ -22,21 +22,23 @@ const ViewPdf = ({ isAttachement, url, isPDF }) => {
 
   return (
     <section className="flex h-full w-full flex-col items-center justify-center gap-2 py-2">
-      <div className="flex items-center gap-4">
-        <Button
-          size="sm"
-          className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
-          variant="outline"
-          disabled={pageNo === 1}
-          onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
-        >
-          <ArrowLeft size={18} />
-        </Button>
+      <div className="flex h-full items-center justify-center gap-4">
+        {isPDF && (
+          <Button
+            size="sm"
+            className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
+            variant="outline"
+            disabled={pageNo === 1}
+            onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
+          >
+            <ArrowLeft size={18} />
+          </Button>
+        )}
         <div
           className={
             isAttachement
-              ? 'scrollBarStyles flex h-[450px] w-[650px] flex-col items-center overflow-y-auto overflow-x-hidden bg-[#F4F4F4]'
-              : ''
+              ? 'scrollBarStyles relative flex h-[450px] w-[650px] flex-col items-center overflow-y-auto overflow-x-hidden bg-[#F4F4F4]'
+              : 'relative h-full w-[500px]'
           }
         >
           {isPDF && (
@@ -46,25 +48,28 @@ const ViewPdf = ({ isAttachement, url, isPDF }) => {
           )}
           {!isPDF && (
             <Image
-              className="h-auto w-auto max-w-full rounded-sm"
               src={url}
               alt="img"
-              layout="responsive"
-              width={500} // or any aspect ratio base
-              height={300}
+              fill
+              className="rounded-sm object-contain"
+              unoptimized
             />
           )}
         </div>
 
-        <Button
-          size="sm"
-          className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
-          variant="outline"
-          disabled={pageNo === pages}
-          onClick={() => setPageNo((prev) => (prev < pages ? prev + 1 : pages))}
-        >
-          <ArrowRight size={18} />
-        </Button>
+        {isPDF && (
+          <Button
+            size="sm"
+            className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
+            variant="outline"
+            disabled={pageNo === pages}
+            onClick={() =>
+              setPageNo((prev) => (prev < pages ? prev + 1 : pages))
+            }
+          >
+            <ArrowRight size={18} />
+          </Button>
+        )}
       </div>
 
       <div className="p-2 text-sm font-bold">{`${pageNo} of ${pages} page`}</div>
