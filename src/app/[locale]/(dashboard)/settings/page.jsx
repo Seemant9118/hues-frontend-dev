@@ -63,6 +63,7 @@ function Settings() {
     identifierType: '',
     identifierNum: '',
   });
+  const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
 
   // update enterprise mutation
   const updateEnterpriseMutation = useMutation({
@@ -528,7 +529,25 @@ function Settings() {
         </TabsContent>
 
         <TabsContent value="bankAccount" className="flex flex-col gap-4">
-          <AddBankAccount />
+          <div className="flex w-full items-center justify-between gap-2 rounded-md border p-4">
+            <div className="flex flex-col items-start gap-1 text-sm">
+              <p className="font-bold">Add a bank account</p>
+              <p className="text-gray-400">
+                Add a bank account to your Hues account
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="blue_outline"
+              onClick={() => setIsBankAccountAdding(true)}
+            >
+              Add Bank Account
+            </Button>
+          </div>
+          <AddBankAccount
+            isModalOpen={isBankAccountAdding}
+            setIsModalOpen={setIsBankAccountAdding}
+          />
 
           {bankAccounts?.length > 0 && (
             <>
