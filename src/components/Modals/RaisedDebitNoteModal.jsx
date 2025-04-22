@@ -1,8 +1,8 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { raisedDebitNote } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
@@ -21,7 +21,7 @@ import { Textarea } from '../ui/textarea';
 
 const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
   const translations = useTranslations('components.raise_debit_note_modal');
-  const queryClient = useQueryClient();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [dataToRaisedDebitNote, setDataToRaisedDebitNote] = useState({
@@ -54,13 +54,10 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
   const raisedDebitNoteMutation = useMutation({
     mutationKey: [DebitNoteApi.raisedDebitNote.endpointKey],
     mutationFn: raisedDebitNote,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(translations('toast.success'));
       setIsOpen(false);
-      queryClient.invalidateQueries([
-        invoiceApi.getInvoice.endpointKey,
-        invoiceId,
-      ]);
+      router.push(`/purchases/purchase-debitNotes/${res.data.data.id}`);
       setDataToRaisedDebitNote({
         orderId: null,
         amount: null,
