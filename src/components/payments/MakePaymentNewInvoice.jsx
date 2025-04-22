@@ -1,5 +1,4 @@
 import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
-import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
@@ -8,7 +7,7 @@ import {
   getInvoicesForPayments,
 } from '@/services/Payment_Services/PaymentServices';
 import { Label } from '@radix-ui/react-label';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   CalendarDays,
   Check,
@@ -21,11 +20,12 @@ import {
 } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
 import InvoiceOverview from '../invoices/InvoiceOverview';
+import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from '../ui/button';
 import DatePickers from '../ui/DatePickers';
 import ErrorBox from '../ui/ErrorBox';
@@ -39,7 +39,6 @@ import {
   SelectValue,
 } from '../ui/select';
 import Wrapper from '../wrappers/Wrapper';
-import AddBankAccount from '../settings/AddBankAccount';
 
 const MakePaymentNewInvoice = ({
   invoiceDetails,
@@ -49,8 +48,9 @@ const MakePaymentNewInvoice = ({
   contextType,
 }) => {
   const translations = useTranslations('components.make_payment');
-  const queryClient = useQueryClient();
   const router = useRouter();
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
   const [files, setFiles] = useState([]);
   const [errorMsg, setErrorMsg] = useState({});
   const [invoices, setInvoices] = useState([]);
@@ -100,7 +100,7 @@ const MakePaymentNewInvoice = ({
   const createPaymentMutationFn = useMutation({
     mutationKey: [paymentApi.createPayment.endpointKey],
     mutationFn: createPayment,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(translations('successMsg.payment_recorded_sucessfully'));
       setErrorMsg({});
       setInvoices([]);
@@ -110,16 +110,12 @@ const MakePaymentNewInvoice = ({
         transactionId: null,
         invoices: [],
       });
-      // setFiles([]);
-      queryClient.invalidateQueries([
-        paymentApi.getPaymentsList.endpointKey,
-        invoiceDetails?.orderId,
-      ]);
-      queryClient.invalidateQueries([
-        invoiceApi.getInvoice.endpointKey,
-        invoiceDetails?.orderId,
-      ]);
-      setIsRecordingPayment(false);
+      // setIsRecordingPayment(false);
+      if (isPurchasePage) {
+        router.push(`/purchases/purchase-payments/${res.data.data.id}`);
+      } else {
+        router.push(`/sales/sales-payments/${res.data.data.id}`);
+      }
     },
     onError: (error) => {
       const errorMessage =

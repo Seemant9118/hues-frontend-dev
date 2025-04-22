@@ -20,6 +20,7 @@ import { createInvoice } from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
@@ -43,6 +44,7 @@ const CreateB2CInvoice = ({
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const router = useRouter();
   const [errorMsg, setErrorMsg] = useState({});
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
@@ -228,14 +230,11 @@ const CreateB2CInvoice = ({
   // mutation - create invoice
   const invoiceMutation = useMutation({
     mutationFn: createInvoice,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(
         translations('form.successMsg.invoice_created_successfully'),
       );
-      onCancel();
-      // setInvoiceType clear
-      // setOrder clear
-      // redirect to invoiceDetails page with res invoiceId
+      router.push(`/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -475,7 +474,6 @@ const CreateB2CInvoice = ({
                 }}
                 placeholder={translations('form.label.customer_address')}
                 className="max-w-sm text-sm"
-                disabled={order.addressType === 'OTC'}
               />
               {errorMsg.buyerAddress && (
                 <ErrorBox msg={errorMsg.buyerAddress} />
