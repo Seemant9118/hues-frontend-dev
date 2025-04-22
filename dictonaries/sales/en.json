@@ -333,7 +333,7 @@
                 },
                 "successMsg": {
                     "file_attached_success": "File Attached Successfully",
-                    "comment_success": "Comment Successfully"
+                    "comment_success": "Comment added Successfully"
                 },
                 "errorMsg": {
                     "comment_error_emtpy": "Comment can not be empty",

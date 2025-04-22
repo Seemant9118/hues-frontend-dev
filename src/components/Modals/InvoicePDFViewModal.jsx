@@ -9,70 +9,103 @@ import {
 } from '@/components/ui/dialog';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
+import { Download, Link, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import ViewPdf from '../pdf/ViewPdf';
-import { Button } from '../ui/button';
 
-const InvoicePDFViewModal = ({ cta, Url, isDownloadable = false }) => {
+const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
-
-  // check that url Doc is PDF / image
   const [isPDF, setIsPDF] = useState(false);
-  useEffect(() => {
-    const isCheck = Url?.split('?')[0].toLowerCase().endsWith('.pdf');
-    setIsPDF(isCheck);
-  }, [Url]); // <-- Add Url here
+  const [isImage, setIsImage] = useState(false);
 
-  const { data: pdfDoc } = useQuery({
+  useEffect(() => {
+    const fileExt = Url?.split('?')[0].toLowerCase();
+    setIsPDF(fileExt.endsWith('.pdf'));
+    setIsImage(
+      fileExt.endsWith('.png') ||
+        fileExt.endsWith('.jpg') ||
+        fileExt.endsWith('.jpeg') ||
+        fileExt.endsWith('.gif') ||
+        fileExt.endsWith('.webp'),
+    );
+  }, [Url]);
+
+  const { data: mediaDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, Url],
     queryFn: () => getDocument(Url),
-    enabled: isOpen && !!Url, // Only fetch if pvtUrl is available
+    enabled: isOpen && !!Url,
     select: (res) => res.data.data,
   });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {React.cloneElement(cta, { key: 'invoice-pdf-cta' })}
+        {React.cloneElement(cta, { key: 'invoice-media-cta' })}
       </DialogTrigger>
 
-      <DialogContent className="max-h-[40rem] max-w-[60rem] p-1">
-        <DialogTitle className="p-2">{'Preview'}</DialogTitle>
+      <DialogContent
+        isDefaultCloseIcon={false}
+        className="m-0 flex h-[42vw] max-w-[90vw] flex-col overflow-auto border-none bg-transparent shadow-none"
+      >
+        {/* Custom Close Button */}
 
-        {!pdfDoc ? (
+        <X
+          onClick={() => setIsOpen(false)}
+          className="absolute right-4 top-4 z-10 cursor-pointer p-1 text-white transition hover:text-primary"
+          size={28}
+        />
+
+        <DialogTitle className="text-white">{'Preview'}</DialogTitle>
+
+        {!mediaDoc ? (
           <div className="flex items-center justify-center py-10">
             <span>{translations('loading_document')}</span>
           </div>
         ) : (
-          <ViewPdf isAttachement={true} url={pdfDoc.publicUrl} isPDF={isPDF} />
+          <div className="flex h-full items-center justify-center">
+            {isPDF ? (
+              <ViewPdf isAttachement={true} url={mediaDoc.publicUrl} isPDF />
+            ) : isImage ? (
+              <Image
+                src={mediaDoc.publicUrl}
+                alt="Preview"
+                className="rounded-md"
+                width={400}
+                height={400}
+              />
+            ) : (
+              <span>{'Unable to load Document'}</span>
+            )}
+          </div>
         )}
 
         <DialogFooter>
-          <div className="flex w-full items-center justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsOpen(false)}
-            >
-              {translations('ctas.cancel')}
-            </Button>
-            {isDownloadable && (
-              <Button size="sm" asChild className="bg-[#288AF9] text-white">
-                <a
-                  href={pdfDoc?.publicUrl}
-                  download={getFilenameFromUrl(pdfDoc?.publicUrl)}
-                >
-                  {translations('ctas.download')}
-                </a>
-              </Button>
-            )}
-          </div>
+          {isDownloadable && mediaDoc?.publicUrl && (
+            <div className="flex w-full items-center gap-4">
+              <a
+                href={mediaDoc.publicUrl}
+                download={getFilenameFromUrl(mediaDoc.publicUrl)}
+              >
+                <Download size={24} className="text-white hover:text-primary" />
+              </a>
+              <p
+                onClick={() => {
+                  navigator.clipboard.writeText(mediaDoc.publicUrl);
+                  toast.success('Link copied to clipboard');
+                }}
+              >
+                <Link size={24} className="text-white hover:text-primary" />
+              </p>
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default InvoicePDFViewModal;
+export default InvoiceMediaViewModal;

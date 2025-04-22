@@ -41,7 +41,6 @@ import { toast } from 'sonner';
 
 const PaymentDetails = () => {
   useMetaData('Hues! - Payments Details', 'HUES PAYMENT DETAILS');
-  const translations = useTranslations('sales.sales-payments');
   const translationsComments = useTranslations(
     'sales.sales-debit_notes.debit_notes_details',
   );
@@ -121,7 +120,7 @@ const PaymentDetails = () => {
 
   const handleSubmitComment = () => {
     if (!comment.text.trim()) {
-      toast.error(translations('errorMsg.comment_error_emtpy'));
+      toast.error('Comment cannot be empty!');
       return;
     }
 

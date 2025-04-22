@@ -1,15 +1,12 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 // for hiding redundant text
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 
-// Set the worker source for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const ViewPdf = ({ isAttachement, url, isPDF }) => {
@@ -22,57 +19,48 @@ const ViewPdf = ({ isAttachement, url, isPDF }) => {
 
   return (
     <section className="flex h-full w-full flex-col items-center justify-center gap-2 py-2">
-      <div className="flex h-full items-center justify-center gap-4">
+      <div className="flex w-full items-center justify-between gap-2">
         {isPDF && (
-          <Button
-            size="sm"
-            className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
-            variant="outline"
+          <ChevronLeft
             disabled={pageNo === 1}
             onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
-          >
-            <ArrowLeft size={18} />
-          </Button>
+            size={24}
+            className="cursor-pointer text-white disabled:cursor-not-allowed disabled:text-[#A5ABBD]"
+          />
         )}
+
         <div
-          className={
-            isAttachement
-              ? 'scrollBarStyles relative flex h-[450px] w-[650px] flex-col items-center overflow-y-auto overflow-x-hidden bg-[#F4F4F4]'
-              : 'relative h-full w-[500px]'
-          }
+          className={`relative ${
+            isAttachement ? 'h-[460px] w-[460px]' : 'h-[460px] w-[460px]'
+          } scrollBarStyles overflow-auto rounded-md border bg-white p-2`}
         >
-          {isPDF && (
-            <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-              <Page width={400} pageNumber={pageNo} />
-            </Document>
-          )}
-          {!isPDF && (
-            <Image
-              src={url}
-              alt="img"
-              fill
-              className="rounded-sm object-contain"
-              unoptimized
+          <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+            <Page
+              pageNumber={pageNo}
+              width={440} // Slightly less than container width for padding
+              renderAnnotationLayer={false}
+              renderTextLayer={false}
             />
-          )}
+          </Document>
         </div>
 
         {isPDF && (
-          <Button
-            size="sm"
-            className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
-            variant="outline"
+          <ChevronRight
             disabled={pageNo === pages}
             onClick={() =>
               setPageNo((prev) => (prev < pages ? prev + 1 : pages))
             }
-          >
-            <ArrowRight size={18} />
-          </Button>
+            size={24}
+            className="cursor-pointer text-white disabled:cursor-not-allowed disabled:text-[#A5ABBD]"
+          />
         )}
       </div>
 
-      <div className="p-2 text-sm font-bold">{`${pageNo} of ${pages} page`}</div>
+      {isPDF && (
+        <div className="p-2 text-sm font-bold text-white">{`${pageNo} of ${pages} page${
+          pages > 1 ? 's' : ''
+        }`}</div>
+      )}
     </section>
   );
 };

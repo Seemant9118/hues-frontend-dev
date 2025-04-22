@@ -94,7 +94,7 @@ const PaymentDetails = () => {
     mutationKey: [DebitNoteApi.createComments.endpointKey],
     mutationFn: createComments,
     onSuccess: () => {
-      toast.success(translations('successMsg.comment_success'));
+      toast.success('Comment added successfully!');
       queryClient.invalidateQueries([
         DebitNoteApi.getComments.endpointKey,
         params.payment_id,
@@ -116,7 +116,7 @@ const PaymentDetails = () => {
 
   const handleSubmitComment = () => {
     if (!comment.text.trim()) {
-      toast.error(translations('errorMsg.comment_error_emtpy'));
+      toast.error('Comment cannot be empty!');
       return;
     }
 
