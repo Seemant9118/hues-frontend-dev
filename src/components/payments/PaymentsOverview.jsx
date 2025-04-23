@@ -1,6 +1,5 @@
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { File, MoveUpRight } from 'lucide-react';
-import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
@@ -109,10 +108,34 @@ const PaymentOverview = ({ paymentsDetails }) => {
 
         <div>
           <p className="text-xs font-semibold">{translations('paymentDate')}</p>
-          <p className="text-sm font-bold">
-            {moment(paymentsDetails?.paymentDate).format('DD/MM/YYYY')}
-          </p>
+          <p className="text-sm font-bold">{paymentsDetails?.paymentDate}</p>
         </div>
+
+        {paymentsDetails?.paymentMode !== 'cash' && (
+          <>
+            <div>
+              <p className="text-xs font-semibold">{'Bank and Branch Name'}</p>
+              <p className="text-sm font-bold">
+                {paymentsDetails?.bankName || '-'}
+              </p>
+              <p className="text-sm font-semibold">
+                {paymentsDetails?.branchName || '-'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold">{'Account Number'}</p>
+              <p className="text-sm font-bold">
+                {paymentsDetails?.maskedAccountNumber || '-'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold">{'IFSC Code'}</p>
+              <p className="text-sm font-bold">
+                {paymentsDetails?.ifscCode || '-'}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
