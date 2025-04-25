@@ -66,7 +66,7 @@ const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
             <span>{translations('loading_document')}</span>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center">
+          <div className="flex h-[520px] items-center justify-center">
             {isPDF ? (
               <ViewPdf isAttachement={true} url={mediaDoc.publicUrl} isPDF />
             ) : isImage ? (
@@ -78,7 +78,7 @@ const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
                 height={400}
               />
             ) : (
-              <span>{'Unable to load Document'}</span>
+              <span className="text-white">{'Unable to load Document'}</span>
             )}
           </div>
         )}

@@ -54,7 +54,7 @@ const InvoicePreview = ({
   });
 
   return (
-    <div className="flex h-[620px] w-full flex-col">
+    <div className="flex h-full w-full flex-col">
       <div
         className={cn(
           'flex h-full justify-between gap-6',
@@ -111,7 +111,7 @@ const InvoicePreview = ({
           )}
 
         {/* Right side: PDF Preview */}
-        <div className="flex h-full w-2/3 items-center justify-center bg-[#F4F4F4]">
+        <div className="flex h-[600px] w-2/3 items-center justify-center bg-[#F4F4F4]">
           {isLoading ? (
             <span className="animate-pulse">Loading Document...</span>
           ) : (
