@@ -32,7 +32,7 @@ import {
 } from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -46,6 +46,7 @@ import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
+import InvoiceTypeModal from '../invoices/InvoiceTypeModal';
 
 const CreateOrder = ({
   isCreatingInvoice,
@@ -55,6 +56,8 @@ const CreateOrder = ({
   name,
   cta,
   isOrder,
+  INVOICE_TYPE_DATA,
+  setInvoiceType,
 }) => {
   const translations = useTranslations('components.create_edit_order');
 
@@ -478,7 +481,24 @@ const CreateOrder = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <SubHeader name={name}></SubHeader>
+      {isOrder === 'invoice' ? (
+        <div className="flex items-end gap-0.5">
+          <SubHeader name={name}></SubHeader>
+
+          <InvoiceTypeModal
+            triggerInvoiceTypeModal={
+              <ChevronDown
+                className="cursor-pointer hover:text-primary"
+                size={20}
+              />
+            }
+            data={INVOICE_TYPE_DATA}
+            setInvoiceType={setInvoiceType}
+          />
+        </div>
+      ) : (
+        <SubHeader name={name}></SubHeader>
+      )}
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal

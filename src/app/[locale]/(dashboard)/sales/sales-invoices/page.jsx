@@ -25,7 +25,7 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import { Upload } from 'lucide-react';
+import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -51,6 +51,29 @@ const CreateB2CInvoice = dynamic(
 // macros
 const PAGE_LIMIT = 10;
 
+// Dummy data for invoice types
+const INVOICE_TYPE_DATA = [
+  {
+    id: 1,
+    type: 'b2c',
+    name: 'B2C Invoice',
+    description:
+      'For direct sales to individual consumers, usually without GST registration.',
+    isDefault: false,
+  },
+  {
+    id: 2,
+    type: 'b2b',
+    name: 'B2B Invoice',
+    description:
+      'For transactions between two registered businesses with GST details.',
+    isDefault: false,
+  },
+];
+
+// Get the default invoice type (if any)
+const defaultInvoiceType = INVOICE_TYPE_DATA.find((item) => item.isDefault);
+
 const SalesInvoices = () => {
   useMetaData('Hues! - Sales Invoices', 'HUES INVOICES'); // dynamic title
 
@@ -75,7 +98,7 @@ const SalesInvoices = () => {
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
-  const [invoiceType, setInvoiceType] = useState('');
+  const [invoiceType, setInvoiceType] = useState(''); // invoice type
 
   // Synchronize state with query parameters
   useEffect(() => {
@@ -300,11 +323,27 @@ const SalesInvoices = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  {/* Invoice Type Modal trigger */}
-                  <InvoiceTypeModal
-                    invoiceType={invoiceType}
-                    setInvoiceType={setInvoiceType}
-                  />
+                  {defaultInvoiceType ? (
+                    <Button
+                      size="sm"
+                      onClick={() => setInvoiceType(defaultInvoiceType.type)}
+                    >
+                      <PlusCircle size={14} />
+                      Invoice
+                    </Button>
+                  ) : (
+                    // Ask user to select invoice type
+                    <InvoiceTypeModal
+                      triggerInvoiceTypeModal={
+                        <Button size="sm">
+                          <PlusCircle size={14} />
+                          Invoice
+                        </Button>
+                      }
+                      data={INVOICE_TYPE_DATA}
+                      setInvoiceType={setInvoiceType}
+                    />
+                  )}
                 </div>
               </SubHeader>
 
@@ -407,6 +446,8 @@ const SalesInvoices = () => {
               isOrder="invoice"
               isCreatingInvoice={true}
               onCancel={() => setInvoiceType('')}
+              setInvoiceType={setInvoiceType}
+              INVOICE_TYPE_DATA={INVOICE_TYPE_DATA}
             />
           )}
 
@@ -418,6 +459,8 @@ const SalesInvoices = () => {
               isOrder="invoice"
               isCreatingInvoice={true}
               onCancel={() => setInvoiceType('')}
+              setInvoiceType={setInvoiceType}
+              INVOICE_TYPE_DATA={INVOICE_TYPE_DATA}
             />
           )}
         </>
