@@ -24,6 +24,8 @@ const InvoicePreview = ({
   handleSelectFn,
   isSelectable = false,
   isDownloadable = false,
+  handleCreateFn,
+  isCreatable = false,
   isCustomerRemarksAddable = false,
   isBankAccountDetailsSelectable = false,
   isSocialLinksAddable = false,
@@ -150,6 +152,18 @@ const InvoicePreview = ({
             }}
           >
             Select
+          </Button>
+        )}
+
+        {isCreatable && (
+          <Button
+            size="sm"
+            onClick={() => {
+              handleCreateFn();
+              setIsPreviewOpen(false);
+            }}
+          >
+            Create
           </Button>
         )}
       </div>
