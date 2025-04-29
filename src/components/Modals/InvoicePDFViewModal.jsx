@@ -63,7 +63,9 @@ const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
 
         {!mediaDoc ? (
           <div className="flex items-center justify-center py-10">
-            <span>{translations('loading_document')}</span>
+            <span className="text-white">
+              {translations('loading_document')}
+            </span>
           </div>
         ) : (
           <div className="flex h-[520px] items-center justify-center">

@@ -2,7 +2,6 @@
 
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
-import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
@@ -42,9 +41,8 @@ export const usePaymentColumns = () => {
       ),
       cell: ({ row }) => {
         const { paymentDate } = row.original;
-        const formattedDate =
-          paymentDate !== null ? moment(paymentDate).format('DD-MM-YYYY') : '-';
-        return <div className="text-[#A5ABBD]">{formattedDate}</div>;
+
+        return <div className="text-[#A5ABBD]">{paymentDate}</div>;
       },
     },
     {

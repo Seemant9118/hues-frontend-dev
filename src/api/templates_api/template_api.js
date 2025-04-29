@@ -45,4 +45,9 @@ export const templateApi = {
     endpoint: `/template/form/gets3link/`,
     endpointKey: 'get s3 document',
   },
+  // 10. view Document
+  viewDocument: {
+    endpoint: `/template/form/view`,
+    endpointKey: 'view_document',
+  },
 };
