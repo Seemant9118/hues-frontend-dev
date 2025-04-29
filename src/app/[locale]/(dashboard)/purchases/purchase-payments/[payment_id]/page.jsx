@@ -176,7 +176,7 @@ const PaymentDetails = () => {
 
         <div className="relative">
           {/* 1 */}
-          <div className="absolute left-5 top-2 flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
+          <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full bg-[#A5ABBD]">
             <Building2 size={20} />
           </div>
 
@@ -187,12 +187,12 @@ const PaymentDetails = () => {
             onChange={(e) => {
               setComment((prev) => ({ ...prev, text: e.target.value }));
             }}
-            className="w-full flex-1 px-24"
+            className="px-20 pt-[20px]"
             placeholder={translationsComments('comments.input.placeholder')}
           />
 
           {/* 3 */}
-          <div className="absolute right-10 top-5 flex gap-4 text-[#A5ABBD]">
+          <div className="absolute right-6 top-[24px] flex gap-4 text-[#A5ABBD]">
             <Tooltips
               trigger={
                 <label htmlFor="fileUpload">
@@ -307,7 +307,7 @@ const PaymentDetails = () => {
         </section>
       </div>
       {/* footer ctas */}
-      <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white shadow-md">
+      <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white">
         {paymentsDetails?.status === 'PENDING' && (
           <section className="flex gap-2 py-2">
             <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
