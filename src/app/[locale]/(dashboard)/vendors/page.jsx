@@ -2,7 +2,6 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invitation } from '@/api/invitation/Invitation';
-import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
@@ -32,7 +31,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useVendorsColumns } from './useVendorsColumns';
 
@@ -74,7 +73,7 @@ const VendorsPage = () => {
   const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
     useState(null);
 
-  // api fetching for clients
+  // Base vendors query
   const {
     isLoading,
     data: vendorsData,
@@ -86,30 +85,32 @@ const VendorsPage = () => {
     enabled: searchTerm?.length === 0,
   });
 
-  // Fetch searched catalogues
+  // Searched vendors query
   const { data: searchedVendorsData, isLoading: isSearchedVendorsLoading } =
     useQuery({
-      queryKey: [vendorEnterprise.searchedVendors.endpointKey, searchTerm],
+      queryKey: [
+        vendorEnterprise.searchedVendors.endpointKey,
+        debouncedSearchTerm,
+      ],
       queryFn: () =>
         searchedVendors({
-          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+          searchString: debouncedSearchTerm,
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && vendorsData?.length > 0, // Use debounced value here
+      enabled: !!debouncedSearchTerm && vendorsData?.length > 0,
     });
 
-  // Debounce logic with useCallback
-  const updateDebouncedSearchTerm = useCallback(
-    debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, DEBOUNCE_DELAY),
-    [],
-  );
   useEffect(() => {
-    updateDebouncedSearchTerm(searchTerm);
-  }, [searchTerm, updateDebouncedSearchTerm]);
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
 
-  // Consolidated state update logic
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  // Format & set vendors data
   useEffect(() => {
     if (debouncedSearchTerm && searchedVendorsData) {
       let formattedData = [];

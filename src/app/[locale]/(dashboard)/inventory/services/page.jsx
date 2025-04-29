@@ -1,7 +1,6 @@
 'use client';
 
 import { servicesApi } from '@/api/inventories/services/services';
-import { debounce } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -25,7 +24,7 @@ import { CircleFadingPlus, Share2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useServicesColumns } from './ServicesColumns';
 
@@ -99,7 +98,7 @@ function Services() {
     router.push(newPath);
   }, [router, isAdding, isEditing, isUploading]);
 
-  // get services api
+  // get services
   const {
     data: servicesData,
     isLoading,
@@ -108,31 +107,34 @@ function Services() {
     queryKey: [servicesApi.getAllProductServices.endpointKey],
     queryFn: () => GetAllProductServices(enterpriseId),
     select: (res) => res.data.data,
-    enabled: searchTerm?.length === 0,
+    enabled: searchTerm?.length === 0, // uses raw searchTerm here for immediate fallback
   });
 
-  // Fetch searched product goods
+  // Fetch searched services
   const { data: searchedServicesData, isLoading: isSearchServicesLoading } =
     useQuery({
-      queryKey: [servicesApi.getSearchedServices.endpointKey, searchTerm],
+      queryKey: [
+        servicesApi.getSearchedServices.endpointKey,
+        debouncedSearchTerm,
+      ],
       queryFn: () =>
         GetSearchedServices({
-          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+          searchString: debouncedSearchTerm,
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && servicesData?.length > 0, // Use debounced value here
+      enabled: !!debouncedSearchTerm && servicesData?.length > 0,
     });
 
-  // Debounce logic with useCallback
-  const updateDebouncedSearchTerm = useCallback(
-    debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, DEBOUNCE_DELAY),
-    [],
-  );
+  // Debounce searchTerm
   useEffect(() => {
-    updateDebouncedSearchTerm(searchTerm);
-  }, [searchTerm, updateDebouncedSearchTerm]);
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   // Consolidated state update logic
   useEffect(() => {
