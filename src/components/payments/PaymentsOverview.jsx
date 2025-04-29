@@ -1,4 +1,5 @@
 import { formattedAmount } from '@/appUtils/helperFunctions';
+import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { File, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,7 +12,6 @@ const PaymentOverview = ({ paymentsDetails }) => {
   const translations = useTranslations('components.paymentOverview');
   const router = useRouter();
   const pathName = usePathname();
-
   const isPaymentOnSales = pathName.includes('sales');
 
   if (!paymentsDetails) return null;
@@ -144,24 +144,49 @@ const PaymentOverview = ({ paymentsDetails }) => {
         </p>
         <div className="space-x-2">
           {paymentsDetails?.attachments?.length > 0
-            ? paymentsDetails.attachments.map((attachment) => (
-                <InvoicePDFViewModal
-                  key={attachment.id}
-                  cta={
-                    <Button
-                      variant="outline"
-                      className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
-                    >
-                      <div className="flex w-full items-center gap-2">
-                        <File size={14} className="shrink-0" />
-                        <span className="truncate">{attachment?.name}</span>
-                      </div>
-                    </Button>
+            ? paymentsDetails.attachments.map((attachment) => {
+                const isPdf = attachment?.url?.toLowerCase().endsWith('.pdf');
+
+                const handleClick = () => {
+                  if (isPdf) {
+                    viewPdfInNewTab(attachment.url);
+                  } else {
+                    // Open modal manually (if modal logic allows it)
+                    // Or rely on `InvoicePDFViewModal` for non-PDFs
                   }
-                  Url={attachment?.url}
-                  name={attachment?.name}
-                />
-              ))
+                };
+
+                return isPdf ? (
+                  <Button
+                    key={attachment.id}
+                    variant="outline"
+                    onClick={handleClick}
+                    className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+                  >
+                    <div className="flex w-full items-center gap-2">
+                      <File size={14} className="shrink-0" />
+                      <span className="truncate">{attachment?.name}</span>
+                    </div>
+                  </Button>
+                ) : (
+                  <InvoicePDFViewModal
+                    key={attachment.id}
+                    cta={
+                      <Button
+                        variant="outline"
+                        className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+                      >
+                        <div className="flex w-full items-center gap-2">
+                          <File size={14} className="shrink-0" />
+                          <span className="truncate">{attachment?.name}</span>
+                        </div>
+                      </Button>
+                    }
+                    Url={attachment?.url}
+                    name={attachment?.name}
+                  />
+                );
+              })
             : translations('fallback')}
         </div>
       </div>

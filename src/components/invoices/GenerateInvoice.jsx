@@ -1,6 +1,8 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { previewInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation } from '@tanstack/react-query';
+import base64ToBlob from 'base64toblob';
+import { Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
@@ -28,12 +30,6 @@ const GenerateInvoiceModal = dynamic(
     loading: () => <Loading />,
   },
 );
-const PreviewInvoice = dynamic(
-  () => import('@/components/Modals/PreviewInvoiceModal'),
-  {
-    loading: () => <Loading />,
-  },
-);
 
 const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const translations = useTranslations('components.generate_invoice');
@@ -54,6 +50,21 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [previewInvoiceBase64, setPreviewInvoiceBase64] = useState('');
   const [allSelected, setAllSelected] = useState(false);
+
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (previewInvoiceBase64) {
+      // Convert base64 string to blob only if it is provided
+      const blob = base64ToBlob(previewInvoiceBase64, 'application/pdf'); // Assuming it's a PDF, change MIME type if different
+      const newUrl = window.URL.createObjectURL(blob);
+      window.open(newUrl, '_blank');
+
+      // Clean up the blob URL when the component unmounts or the base64 string changes
+      return () => {
+        window.URL.revokeObjectURL(newUrl);
+      };
+    }
+  }, [previewInvoiceBase64]); // Dependency array to ensure effect runs only when base64StrToRenderPDF changes
 
   const calculatedInvoiceQuantity = (quantity, invoiceQuantity) => {
     const calculatedQty = quantity - invoiceQuantity;
@@ -405,11 +416,16 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         <div className="flex justify-end gap-4 border-t pt-4">
           <div className="mt-auto h-[1px] bg-neutral-300"></div>
           {!isAutoSelect && (
-            <PreviewInvoice
-              base64StrToRenderPDF={previewInvoiceBase64}
-              mutationFn={handlePreview}
-              disableCondition={invoicedData?.invoiceItems?.length === 0}
-            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-black"
+              onClick={() => handlePreview()}
+              disabled={invoicedData?.invoiceItems?.length === 0}
+            >
+              <Eye size={16} />
+              Preview
+            </Button>
           )}
 
           <GenerateInvoiceModal
