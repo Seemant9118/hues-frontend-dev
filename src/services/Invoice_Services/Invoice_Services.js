@@ -47,3 +47,7 @@ export const exportInvoice = (data) => {
     responseType: 'blob', // Specify response type here
   });
 };
+
+export const previewDirectInvoice = (data) => {
+  return APIinstance.post(invoiceApi.previewDirectInvoice.endpoint, data);
+};

@@ -17,11 +17,10 @@ import {
   getServiceCatalogue,
 } from '@/services/Catalogue_Services/CatalogueServices';
 import { getCustomersByNumber } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
-import { previewInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import { previewDirectInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { createInvoice } from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import base64ToBlob from 'base64toblob';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -49,8 +48,9 @@ const CreateB2CInvoice = ({
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const router = useRouter();
-  const [isInvoicePreview, setIsInvoicePreview] = useState(false);
+  const [isPINError, setIsPINError] = useState(false);
   const [url, setUrl] = useState(null);
+  const [isInvoicePreview, setIsInvoicePreview] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
@@ -76,6 +76,10 @@ const CreateB2CInvoice = ({
     orderType: 'SALES',
     invoiceType: '',
     orderItems: [],
+    bankAccountId: null,
+    socialLinks: null,
+    customerRemarks: null,
+    pin: null,
   });
 
   // [GST/NON-GST Checking]
@@ -324,16 +328,19 @@ const CreateB2CInvoice = ({
       router.push(`/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
+      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+        setIsPINError(true);
+      }
       toast.error(error.response.data.message || 'Something went wrong');
     },
   });
 
   // handling submit fn
-  const handleSubmit = () => {
+  const handleSubmit = (updateOrder) => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
 
     invoiceMutation.mutate({
-      ...order,
+      ...updateOrder,
       buyerId: Number(order.buyerId),
       amount: parseFloat(totalAmount.toFixed(2)),
       gstAmount: parseFloat(totalGstAmt.toFixed(2)),
@@ -341,23 +348,21 @@ const CreateB2CInvoice = ({
   };
 
   const previewInvMutation = useMutation({
-    mutationKey: [invoiceApi.previewInvoice.endpointKey],
-    mutationFn: previewInvoice,
+    mutationKey: [invoiceApi.previewDirectInvoice.endpointKey],
+    mutationFn: previewDirectInvoice,
     // eslint-disable-next-line consistent-return
     onSuccess: (data) => {
       if (data?.data?.data) {
         const base64StrToRenderPDF = data?.data?.data;
-        // Convert base64 string to blob only if it is provided
-        const blob = base64ToBlob(base64StrToRenderPDF, 'application/pdf'); // Assuming it's a PDF, change MIME type if different
-        const newUrl = window.URL.createObjectURL(blob);
+        const newUrl = `data:application/pdf;base64,${base64StrToRenderPDF}`;
         setUrl(newUrl);
+        setIsInvoicePreview(true);
 
         // // Clean up the blob URL when the component unmounts or the base64 string changes
         return () => {
           window.URL.revokeObjectURL(newUrl);
         };
       }
-      setIsInvoicePreview(true);
     },
     onError: (error) =>
       toast.error(
@@ -536,7 +541,7 @@ const CreateB2CInvoice = ({
           <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {/* Item Type */}
-              <div className="flex w-full flex-col gap-2">
+              <div className="flex max-w-sm flex-col gap-2 border">
                 <Label className="flex gap-1">
                   {translations('form.label.item_type')}
                   <span className="text-red-600">*</span>
@@ -857,13 +862,18 @@ const CreateB2CInvoice = ({
 
       {isInvoicePreview && (
         <InvoicePreview
+          order={order}
+          setOrder={setOrder}
+          setIsPreviewOpen={setIsInvoicePreview}
           url={url}
+          isPDFProp={true}
           handleCreateFn={handleSubmit}
           isCreatable={true}
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
           isSocialLinksAddable={true}
           isActionable={true}
+          isPINError={isPINError}
         />
       )}
     </Wrapper>
