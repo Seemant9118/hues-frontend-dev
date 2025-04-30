@@ -5,13 +5,17 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('link', { name: 'Vendors' }).click({ timeout: 5000 });
 });
 
-test('Search Vendor Test @search', async ({ page }) => {
+test('Vendors/ Search Full Vendor Name by typing Test @search', async ({
+  page,
+}) => {
   await page.getByPlaceholder('Search...').click({ timeout: 5000 });
   await page.keyboard.type('Dummy Vendor', { delay: 100 });
   await expect(page.getByText('Dummy Vendor')).toBeVisible({ timeout: 5000 });
 });
 
-test('Search Vendor Test - 1 @search', async ({ page }) => {
+test('Vendors/ Search Full Vendor Name by typing Test - 1 @search', async ({
+  page,
+}) => {
   await page.getByRole('textbox', { name: 'Search' }).click();
   await page.getByRole('textbox', { name: 'Search' }).fill('Kamlapuri Company');
   await expect(
@@ -19,7 +23,9 @@ test('Search Vendor Test - 1 @search', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('Search Vendor Test - 2 @search', async ({ page }) => {
+test('Vendors/ Search Full Vendor Name by typing Test - 2 @search', async ({
+  page,
+}) => {
   await page.getByRole('textbox', { name: 'Search' }).click();
   await page
     .getByRole('textbox', { name: 'Search' })
@@ -30,7 +36,9 @@ test('Search Vendor Test - 2 @search', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('Search Vendor Test - 3 @search', async ({ page }) => {
+test('Vendors/ Search Vendor Name by typing substring Test - 3 @search', async ({
+  page,
+}) => {
   await page.getByRole('textbox', { name: 'Search' }).click();
   await page.getByRole('textbox', { name: 'Search' }).fill('1741376118592');
   await page.waitForTimeout(2000);

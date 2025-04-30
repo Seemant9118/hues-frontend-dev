@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('link', { name: 'Clients' }).click({ timeout: 5000 });
 });
 
-test('Search Client Test @search', async ({ page }) => {
+test('Clients/ Search Client by typing Full Name Test @search', async ({
+  page,
+}) => {
   await page.getByPlaceholder('Search ...').click({ timeout: 5000 });
   await page.keyboard.type('Kamlapuri Services', { delay: 100 });
   await expect(page.getByText('Kamlapuri Services')).toBeVisible({
@@ -13,7 +15,9 @@ test('Search Client Test @search', async ({ page }) => {
   });
 });
 
-test('Search Client Test - 1 @search', async ({ page }) => {
+test('Clients/ Search Client by pasting Full Name Test @search', async ({
+  page,
+}) => {
   await page.getByRole('textbox', { name: 'Search' }).click();
   await page
     .getByRole('textbox', { name: 'Search' })
@@ -23,7 +27,9 @@ test('Search Client Test - 1 @search', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('Search Client Test - 2 @search', async ({ page }) => {
+test('Clients/ Search Client by pasting Full Name Test - 2 @search', async ({
+  page,
+}) => {
   await page
     .getByRole('textbox', { name: 'Search' })
     .fill('Dummy Client 1742814729344');
@@ -33,7 +39,9 @@ test('Search Client Test - 2 @search', async ({ page }) => {
   await expect(page.locator('td')).not.toContainText('No results.');
 });
 
-test('Search Client Test - 3 @search', async ({ page }) => {
+test('Clients/ Search Client by substring of Full Name Test - 3 @search', async ({
+  page,
+}) => {
   await page.getByRole('textbox', { name: 'Search' }).fill('Client 174281472');
   await expect(
     page.getByRole('cell', { name: 'Dummy Client 1742814729344' }),

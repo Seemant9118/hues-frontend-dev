@@ -5,27 +5,31 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('link', { name: 'Catalogue' }).click({ timeout: 5000 });
 });
 
-test('Search Product Test @search', async ({ page }) => {
+test('Catalouge/ Search Exact Product Test - 1 @search', async ({ page }) => {
   // check if a product is listed on searching
   await page.getByPlaceholder('Search...').click();
   await page.keyboard.type('DummyProduct', { delay: 100 });
   await expect(page.getByText('DummyProduct')).toBeVisible({ timeout: 5000 });
 });
 
-test('Search Service Test @search', async ({ page }) => {
+test('Catalouge/ Search Exact Service Test @search', async ({ page }) => {
   // check if a service is listed on searching
   await page.getByPlaceholder('Search...').click();
   await page.keyboard.type('dummyservice', { delay: 100 });
   await expect(page.getByText('dummyservice')).toBeVisible({ timeout: 5000 });
 });
 
-test('Search Test @search', async ({ page }) => {
+test('Catalouge/ Search substring of Product Name Test @search', async ({
+  page,
+}) => {
   // check if a service is listed on searching
   await page.getByPlaceholder('Search...').click();
   await page.keyboard.type('mmyPro', { delay: 100 });
   await expect(page.getByText('DummyProduct')).toBeVisible({ timeout: 5000 });
 });
-test('Search Test - 1 @search', async ({ page }) => {
+test('Catalouge/ Search manufacturer Name of a Product Test - 1 @search', async ({
+  page,
+}) => {
   // check if a service is listed on searching
   await page.getByPlaceholder('Search...').click();
   await page.keyboard.type('Nutella', { delay: 100 });
