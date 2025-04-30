@@ -1,32 +1,31 @@
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import InvoicePreview from '../ui/InvoicePreview';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import Wrapper from '../wrappers/Wrapper';
 
-// const skins = [
-//   {
-//     id: 'basic-blue',
-//     title: 'Basic Blue',
-//     description: 'Clean, professional design with blue accents',
-//     image: '/InvoiceType1.png',
-//   },
-//   {
-//     id: 'emerald',
-//     title: 'Emerald',
-//     description: 'Clean, professional design with emerald accents',
-//     image: '/InvoiceType2.png',
-//   },
-//   {
-//     id: 'royal-blue',
-//     title: 'Royal Blue',
-//     description: 'Clean, professional design with royal blue accents',
-//     image: '/InvoiceType3.png',
-//   },
-// ];
+// Dummy data for invoice types
+const INVOICE_TYPE_DATA = [
+  {
+    id: 1,
+    type: 'b2c',
+    name: 'B2C (Business to Consumer)',
+    description:
+      'For direct sales to individual consumers, usually without GST registration.',
+  },
+  {
+    id: 2,
+    type: 'b2b',
+    name: 'B2B (Business to Business)',
+    description:
+      'For transactions between two registered businesses with GST details.',
+  },
+];
 
 export default function InvoiceSettings({
   settings,
@@ -39,6 +38,7 @@ export default function InvoiceSettings({
   const [socialLink, setSocialLink] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [formattedTemplates, setFormattedTemplates] = useState([]);
+  const [defaultInvoiceType, setDefaultInvoiceType] = useState('');
 
   useEffect(() => {
     if (settings?.settings) {
@@ -49,12 +49,20 @@ export default function InvoiceSettings({
         (s) => s.key === 'SOCIAL_LINK',
       );
 
+      const defaultInvoiceTypeSettings = settings.settings.find(
+        (item) => item.key === 'invoice.default.type',
+      )?.value;
+
       if (customerRemarkSetting) {
         setRemarks(customerRemarkSetting.value);
       }
 
       if (socialLinkSetting) {
         setSocialLink(socialLinkSetting.value);
+      }
+
+      if (defaultInvoiceTypeSettings) {
+        setDefaultInvoiceType(defaultInvoiceTypeSettings);
       }
     }
   }, [settings]);
@@ -124,10 +132,49 @@ export default function InvoiceSettings({
     createSettingMutation.mutate(payload);
   };
 
+  const handleSelect = (itemType) => {
+    if (itemType) {
+      const payload = {
+        contextKey: 'INVOICE',
+        settings: [
+          {
+            key: 'invoice.default.type',
+            value: itemType,
+          },
+        ],
+      };
+      createSettingMutation.mutate(payload);
+    }
+  };
+
   return (
     <Wrapper className="flex flex-col gap-10 p-2">
       {!isPreviewOpen && (
         <div className="flex flex-col gap-4">
+          {/* Invoice Type */}
+          <div className="flex w-full flex-col gap-4">
+            <Label className="text-sm font-medium">Default Invoice Type</Label>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {INVOICE_TYPE_DATA?.map((item) => (
+                <Card
+                  key={item.id}
+                  onClick={() => handleSelect(item.type)}
+                  className={cn(
+                    'flex cursor-pointer flex-col gap-2 rounded-xl border p-4 shadow-sm transition hover:border-primary',
+                    defaultInvoiceType === item.type &&
+                      'border-primary bg-muted',
+                  )}
+                >
+                  <h3 className="font-semibold">{item.name}</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {item.description}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           {/* Skins */}
           <div className="flex flex-col gap-4">
             <Label className="text-sm font-medium">Default Skin</Label>
