@@ -290,7 +290,7 @@ export default function InvoiceSettings({
           isSelectable={true}
           setIsPreviewOpen={setIsPreviewOpen}
           url={currPreviewSkin}
-          isBase64={true}
+          isPDFProp={false}
         />
       )}
     </Wrapper>

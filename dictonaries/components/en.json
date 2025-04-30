@@ -272,7 +272,8 @@
                     "cancel": "Cancel",
                     "add": "Add",
                     "create": "Create",
-                    "edit": "Edit"
+                    "edit": "Edit",
+                    "next": "Next"
                 },
                 "footer": {
                     "gross_amount": "Gross Amount",
@@ -350,7 +351,8 @@
                     "cancel": "Cancel",
                     "add": "Add",
                     "create": "Create",
-                    "edit": "Edit"
+                    "edit": "Edit",
+                    "next": "Next"
                 },
                 "footer": {
                     "gross_amount": "Gross Amount",
