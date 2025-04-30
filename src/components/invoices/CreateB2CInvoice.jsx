@@ -32,7 +32,7 @@ import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
-import InvoiceTypeModal from './InvoiceTypeModal';
+import InvoiceTypePopover from './InvoiceTypePopover';
 
 const CreateB2CInvoice = ({
   cta,
@@ -40,8 +40,8 @@ const CreateB2CInvoice = ({
   isOrder,
   isCreatingInvoice,
   onCancel,
+  invoiceType,
   setInvoiceType,
-  INVOICE_TYPE_DATA,
 }) => {
   const translations = useTranslations('components.create_B2C_Invoice');
 
@@ -372,14 +372,14 @@ const CreateB2CInvoice = ({
           name={name === 'B2C Invoice' && translations('title.b2cInvoice')}
         ></SubHeader>
 
-        <InvoiceTypeModal
+        <InvoiceTypePopover
           triggerInvoiceTypeModal={
             <ChevronDown
               className="cursor-pointer hover:text-primary"
               size={20}
             />
           }
-          data={INVOICE_TYPE_DATA}
+          invoiceType={invoiceType}
           setInvoiceType={setInvoiceType}
         />
       </div>

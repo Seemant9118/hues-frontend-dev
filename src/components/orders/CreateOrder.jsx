@@ -40,13 +40,13 @@ import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
+import InvoiceTypePopover from '../invoices/InvoiceTypePopover';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
-import InvoiceTypeModal from '../invoices/InvoiceTypeModal';
 
 const CreateOrder = ({
   isCreatingInvoice,
@@ -56,7 +56,7 @@ const CreateOrder = ({
   name,
   cta,
   isOrder,
-  INVOICE_TYPE_DATA,
+  invoiceType,
   setInvoiceType,
 }) => {
   const translations = useTranslations('components.create_edit_order');
@@ -485,14 +485,14 @@ const CreateOrder = ({
         <div className="flex items-end gap-0.5">
           <SubHeader name={name}></SubHeader>
 
-          <InvoiceTypeModal
+          <InvoiceTypePopover
             triggerInvoiceTypeModal={
               <ChevronDown
                 className="cursor-pointer hover:text-primary"
                 size={20}
               />
             }
-            data={INVOICE_TYPE_DATA}
+            invoiceType={invoiceType}
             setInvoiceType={setInvoiceType}
           />
         </div>

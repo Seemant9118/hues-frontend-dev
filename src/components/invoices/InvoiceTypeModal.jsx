@@ -1,3 +1,4 @@
+import { settingsAPI } from '@/api/settings/settingsApi';
 import {
   Dialog,
   DialogContent,
@@ -5,8 +6,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { createSettings } from '@/services/Settings_Services/SettingsService';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Checkbox } from '../ui/checkbox';
@@ -18,6 +22,7 @@ const InvoiceTypeModal = ({
   setInvoiceType,
 }) => {
   const translations = useTranslations('components.invoice_type_modal');
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [currSelectedType, setCurrSelectedType] = useState('');
   const [setAsDefault, setSetAsDefault] = useState(false);
@@ -33,12 +38,39 @@ const InvoiceTypeModal = ({
     setCurrSelectedType(type);
   };
 
+  const createSettingMutation = useMutation({
+    mutationKey: [settingsAPI.createSettings.endpointKey],
+    mutationFn: createSettings,
+    onSuccess: () => {
+      toast.success('Default Invoice Type set successfully');
+      setInvoiceType(currSelectedType); // You can also pass `setAsDefault` if needed
+      setOpen(false);
+      // Invalidate the query to refresh the settings
+      queryClient.invalidateQueries([settingsAPI.getSettingByKey.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   const handleProceed = () => {
     if (currSelectedType) {
-      // In future you can hit API with `setAsDefault` here
-      setInvoiceType(currSelectedType); // You can also pass `setAsDefault` if needed
+      const payload = {
+        contextKey: 'INVOICE',
+        settings: [
+          {
+            key: 'invoice.default.type',
+            value: currSelectedType,
+          },
+        ],
+      };
 
-      setOpen(false);
+      if (setAsDefault) {
+        createSettingMutation.mutate(payload);
+      } else {
+        setInvoiceType(currSelectedType); // You can also pass `setAsDefault` if needed
+        setOpen(false);
+      }
     }
   };
 
@@ -68,7 +100,7 @@ const InvoiceTypeModal = ({
           ))}
         </div>
 
-        <div className="mb-4 mt-4 border" />
+        <div className="mb-2 mt-4 border-t" />
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex gap-2">

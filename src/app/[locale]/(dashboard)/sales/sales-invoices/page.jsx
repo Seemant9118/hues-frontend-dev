@@ -2,6 +2,7 @@
 
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import { settingsAPI } from '@/api/settings/settingsApi';
 import Tooltips from '@/components/auth/Tooltips';
 import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -19,11 +20,13 @@ import {
   getAllSalesInvoices,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
+import { getSettingsByKey } from '@/services/Settings_Services/SettingsService';
 import { Tabs } from '@radix-ui/react-tabs';
 import {
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQuery,
 } from '@tanstack/react-query';
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -59,7 +62,6 @@ const INVOICE_TYPE_DATA = [
     name: 'B2C Invoice',
     description:
       'For direct sales to individual consumers, usually without GST registration.',
-    isDefault: false,
   },
   {
     id: 2,
@@ -67,12 +69,8 @@ const INVOICE_TYPE_DATA = [
     name: 'B2B Invoice',
     description:
       'For transactions between two registered businesses with GST details.',
-    isDefault: false,
   },
 ];
-
-// Get the default invoice type (if any)
-const defaultInvoiceType = INVOICE_TYPE_DATA.find((item) => item.isDefault);
 
 const SalesInvoices = () => {
   useMetaData('Hues! - Sales Invoices', 'HUES INVOICES'); // dynamic title
@@ -99,6 +97,7 @@ const SalesInvoices = () => {
   const [paginationData, setPaginationData] = useState({});
   const [filterData, setFilterData] = useState({});
   const [invoiceType, setInvoiceType] = useState(''); // invoice type
+  const [defaultInvoiceType, setDefaultInvoiceType] = useState(''); // default invoice type
 
   // Synchronize state with query parameters
   useEffect(() => {
@@ -110,21 +109,21 @@ const SalesInvoices = () => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    let newPath = '/sales/sales-invoices/';
+  // useEffect(() => {
+  //   let newPath = '/sales/sales-invoices/';
 
-    if (invoiceType === 'b2b') {
-      newPath += `?action=b2b`;
-    } else if (invoiceType === 'b2c') {
-      newPath += `?action=b2c`;
-    }
+  //   if (invoiceType === 'b2b') {
+  //     newPath += `?action=b2b`;
+  //   } else if (invoiceType === 'b2c') {
+  //     newPath += `?action=b2c`;
+  //   }
 
-    const currentPath = window.location.pathname + window.location.search;
+  //   const currentPath = window.location.pathname + window.location.search;
 
-    if (currentPath !== newPath) {
-      router.push(newPath);
-    }
-  }, [invoiceType]);
+  //   if (currentPath !== newPath) {
+  //     router.push(newPath);
+  //   }
+  // }, [invoiceType]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -154,6 +153,28 @@ const SalesInvoices = () => {
 
     setFilterData(newFilterData);
   }, [tab]);
+
+  // fetch invoice settings keys
+  const { data: settings } = useQuery({
+    queryKey: [settingsAPI.getSettingByKey.endpointKey],
+    queryFn: () => getSettingsByKey('INVOICE'),
+    select: (data) => data.data.data.settings,
+  });
+
+  useEffect(() => {
+    if (settings) {
+      const defaultInvoiceTypeKey = settings.find(
+        (item) => item.key === 'invoice.default.type',
+      )?.value;
+
+      if (
+        defaultInvoiceTypeKey &&
+        defaultInvoiceTypeKey !== defaultInvoiceType
+      ) {
+        setDefaultInvoiceType(defaultInvoiceTypeKey);
+      }
+    }
+  }, [settings, defaultInvoiceType]);
 
   // [INVOICES_FETCHING]
   // Fetch invoices data with infinite scroll
@@ -326,7 +347,7 @@ const SalesInvoices = () => {
                   {defaultInvoiceType ? (
                     <Button
                       size="sm"
-                      onClick={() => setInvoiceType(defaultInvoiceType.type)}
+                      onClick={() => setInvoiceType(defaultInvoiceType)}
                     >
                       <PlusCircle size={14} />
                       Invoice
@@ -341,6 +362,7 @@ const SalesInvoices = () => {
                         </Button>
                       }
                       data={INVOICE_TYPE_DATA}
+                      defaultInvoiceType={defaultInvoiceType}
                       setInvoiceType={setInvoiceType}
                     />
                   )}
@@ -446,6 +468,7 @@ const SalesInvoices = () => {
               isOrder="invoice"
               isCreatingInvoice={true}
               onCancel={() => setInvoiceType('')}
+              invoiceType={invoiceType}
               setInvoiceType={setInvoiceType}
               INVOICE_TYPE_DATA={INVOICE_TYPE_DATA}
             />
@@ -459,6 +482,7 @@ const SalesInvoices = () => {
               isOrder="invoice"
               isCreatingInvoice={true}
               onCancel={() => setInvoiceType('')}
+              invoiceType={invoiceType}
               setInvoiceType={setInvoiceType}
               INVOICE_TYPE_DATA={INVOICE_TYPE_DATA}
             />
