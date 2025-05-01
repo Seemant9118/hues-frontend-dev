@@ -455,6 +455,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.rate')}
               id="rate"
+              type="number"
               required={true}
               onChange={onChange}
               value={item.rate}
@@ -464,6 +465,7 @@ const AddItem = ({ onCancel, cta }) => {
           {item.type === 'goods' && (
             <div className="flex flex-col">
               <InputWithLabel
+                type="number"
                 name={translations('goods.components.add.label.quantity')}
                 id="quantity"
                 required={true}
@@ -477,6 +479,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
+              type="number"
               required={true}
               onChange={onChange}
               value={item.gstPercentage}
@@ -521,6 +524,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.weight')}
               id="weight"
+              type="number"
               onChange={onChange}
               value={item.weight}
             />
@@ -528,6 +532,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.length')}
               id="length"
+              type="number"
               onChange={onChange}
               value={item.length}
             />
@@ -535,6 +540,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.breadth')}
               id="breadth"
+              type="number"
               onChange={onChange}
               value={item.breadth}
             />
@@ -542,6 +548,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.height')}
               id="height"
+              type="number"
               onChange={onChange}
               value={item.height}
             />
