@@ -23,6 +23,14 @@ export const useCreateSalesColumns = (
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={translations('item')} />
       ),
+      cell: ({ row }) => {
+        const { productName, serviceName } = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <span>{productName || serviceName}</span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'quantity',

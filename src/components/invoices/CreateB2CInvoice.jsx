@@ -383,6 +383,7 @@ const CreateB2CInvoice = ({
     isOrder,
     setOrder,
     setSelectedItem,
+    false,
     isGstApplicableForSalesOrders,
   );
 
@@ -543,9 +544,9 @@ const CreateB2CInvoice = ({
           </div>
 
           <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="flex items-center justify-between gap-4">
               {/* Item Type */}
-              <div className="flex max-w-sm flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.item_type')}
                   <span className="text-red-600">*</span>
@@ -556,7 +557,7 @@ const CreateB2CInvoice = ({
                   placeholder={translations('form.input.item_type.placeholder')}
                   options={itemTypeOptions}
                   styles={getStylesForSelectComponent()}
-                  className="w-full text-sm"
+                  className="text-sm"
                   classNamePrefix="select"
                   onChange={(selectedOption) => {
                     if (!selectedOption) return;
@@ -572,7 +573,7 @@ const CreateB2CInvoice = ({
               </div>
 
               {/* Item */}
-              <div className="flex w-full flex-col gap-2">
+              <div className="flex w-full max-w-xs flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.item')}
                   <span className="text-red-600">*</span>
@@ -583,7 +584,7 @@ const CreateB2CInvoice = ({
                   options={itemClientListingOptions}
                   styles={getStylesForSelectComponent()}
                   isOptionDisabled={(option) => option.disabled}
-                  className="w-full text-sm"
+                  className="text-sm"
                   isDisabled={
                     (cta === 'offer' && order.buyerId == null) ||
                     (cta === 'bid' && order.sellerEnterpriseId == null) ||
@@ -631,7 +632,7 @@ const CreateB2CInvoice = ({
               </div>
 
               {/* Quantity */}
-              <div className="flex w-full flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.quantity')}
                   <span className="text-red-600">*</span>
@@ -658,13 +659,13 @@ const CreateB2CInvoice = ({
                       totalGstAmount: gstAmt,
                     }));
                   }}
-                  className="w-full"
+                  className="max-w-30"
                 />
                 {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
               </div>
 
               {/* Price */}
-              <div className="flex w-full flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.price')}
                   <span className="text-red-600">*</span>
@@ -691,14 +692,14 @@ const CreateB2CInvoice = ({
                       totalGstAmount: gstAmt,
                     }));
                   }}
-                  className="w-full"
+                  className="max-w-30"
                 />
                 {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
               </div>
 
               {/* GST (%) */}
               {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex w-full flex-col gap-2">
+                <div className="flex flex-col gap-2">
                   <Label className="flex gap-1">
                     {translations('form.label.gst')}{' '}
                     <span className="text-xs">(%)</span>
@@ -708,7 +709,7 @@ const CreateB2CInvoice = ({
                     type="number"
                     disabled
                     value={selectedItem.gstPerUnit}
-                    className="w-full"
+                    className="max-w-14"
                   />
                   {errorMsg.gstPerUnit && (
                     <ErrorBox msg={errorMsg.gstPerUnit} />
@@ -717,7 +718,7 @@ const CreateB2CInvoice = ({
               )}
 
               {/* Invoice Value / Value */}
-              <div className="flex w-full flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   {isOrder === 'invoice'
                     ? translations('form.label.invoice_value')
@@ -728,7 +729,7 @@ const CreateB2CInvoice = ({
                   type="number"
                   disabled
                   value={selectedItem.totalAmount}
-                  className="w-full"
+                  className="max-w-30"
                 />
                 {errorMsg.totalAmount && (
                   <ErrorBox msg={errorMsg.totalAmount} />
@@ -737,7 +738,7 @@ const CreateB2CInvoice = ({
 
               {/* Tax Amount */}
               {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex w-full flex-col gap-2">
+                <div className="flex flex-col gap-2">
                   <Label className="flex gap-1">
                     {translations('form.label.tax_amount')}
                     <span className="text-red-600">*</span>
@@ -746,7 +747,7 @@ const CreateB2CInvoice = ({
                     type="number"
                     disabled
                     value={selectedItem.totalGstAmount}
-                    className="w-full"
+                    className="max-w-30"
                   />
                   {errorMsg.totalGstAmount && (
                     <ErrorBox msg={errorMsg.totalGstAmount} />
@@ -756,7 +757,7 @@ const CreateB2CInvoice = ({
 
               {/* Total Amount (With GST) */}
               {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex w-full flex-col gap-2">
+                <div className="flex flex-col gap-2">
                   <Label className="flex gap-1">
                     {translations('form.label.amount')}
                     <span className="text-red-600">*</span>
@@ -768,7 +769,7 @@ const CreateB2CInvoice = ({
                       (Number(selectedItem.totalAmount) || 0) +
                       (Number(selectedItem.totalGstAmount) || 0)
                     ).toFixed(2)}
-                    className="w-full"
+                    className="max-w-30"
                   />
                   {errorMsg.totalAmount && (
                     <ErrorBox msg={errorMsg.totalAmount} />
@@ -807,16 +808,13 @@ const CreateB2CInvoice = ({
                   }));
                   setSelectedItem({
                     productName: '',
-                    serviceName: '',
-                    sac: '',
-                    hsnCode: '',
                     productType: '',
                     productId: '',
-                    quantity: null,
-                    unitPrice: null,
-                    gstPerUnit: null,
-                    totalAmount: null,
-                    totalGstAmount: null,
+                    quantity: '',
+                    unitPrice: '',
+                    gstPerUnit: '',
+                    totalAmount: '',
+                    totalGstAmount: '',
                   });
                   setErrorMsg({});
                 }}

@@ -329,7 +329,7 @@
                     "item_type": {
                         "goods": "सामान",
                         "services": "सेवाएँ",
-                        "placeholder": "आइटम प्रकार चुनें..."
+                        "placeholder": "चुनें..."
                     },
                     "item": {
                         "placeholder": "आइटम चुनें"

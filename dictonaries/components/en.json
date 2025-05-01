@@ -329,7 +329,7 @@
                     "item_type": {
                         "goods": "Goods",
                         "services": "Services",
-                        "placeholder": "Select Item Type..."
+                        "placeholder": "Select..."
                     },
                     "item": {
                         "placeholder": "Select Items"
