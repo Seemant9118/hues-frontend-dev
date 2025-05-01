@@ -58,6 +58,9 @@ const CreateB2CInvoice = ({
   const [errorMsg, setErrorMsg] = useState({});
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
+    serviceName: '',
+    sac: '',
+    hsnCode: '',
     productType: '',
     productId: '',
     quantity: null,
@@ -66,6 +69,7 @@ const CreateB2CInvoice = ({
     totalAmount: null,
     totalGstAmount: null,
   });
+
   const [inputValue, setInputValue] = useState('');
   const [customerIdentifier, setCustomerIdentifier] = useState('');
   const [order, setOrder] = useState({
@@ -82,7 +86,7 @@ const CreateB2CInvoice = ({
     orderItems: [],
     bankAccountId: null,
     socialLinks: null,
-    customerRemarks: null,
+    remarks: null,
     pin: null,
   });
 
@@ -229,7 +233,7 @@ const CreateB2CInvoice = ({
     const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.name,
+      serviceName: service.name,
     };
     const label = service.name;
 
@@ -241,7 +245,7 @@ const CreateB2CInvoice = ({
       ? clientsGoodsOptions
       : clientsServicesOptions;
 
-  const validation = ({ order, selectedItem }) => {
+  const validationForPreview = ({ order }) => {
     const errorObj = {};
 
     // Buyer Details (for B2C only)
@@ -266,23 +270,6 @@ const CreateB2CInvoice = ({
     // Order Items
     if (!order?.orderItems || order.orderItems.length === 0) {
       errorObj.orderItem = translations('form.errorMsg.item');
-    }
-
-    // Selected Item Fields
-    if (selectedItem.quantity === null) {
-      errorObj.quantity = translations('form.errorMsg.quantity');
-    }
-    if (selectedItem.unitPrice === null) {
-      errorObj.unitPrice = translations('form.errorMsg.price');
-    }
-    if (selectedItem.gstPerUnit === null) {
-      errorObj.gstPerUnit = translations('form.errorMsg.gst');
-    }
-    if (selectedItem.totalGstAmount === null) {
-      errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
-    }
-    if (selectedItem.totalAmount === null) {
-      errorObj.totalAmount = translations('form.errorMsg.amount');
     }
 
     return errorObj;
@@ -374,13 +361,13 @@ const CreateB2CInvoice = ({
       ),
   });
 
-  const handlePreview = () => {
+  const handlePreview = (updatedOrder) => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-    const isError = validation({ order, selectedItem });
+    const isError = validationForPreview({ order });
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
       previewInvMutation.mutate({
-        ...order,
+        ...updatedOrder,
         invoiceItems: order.orderItems,
         buyerId: Number(order.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
@@ -558,7 +545,7 @@ const CreateB2CInvoice = ({
           <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {/* Item Type */}
-              <div className="flex max-w-sm flex-col gap-2 border">
+              <div className="flex max-w-sm flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.item_type')}
                   <span className="text-red-600">*</span>
@@ -608,18 +595,35 @@ const CreateB2CInvoice = ({
                     )?.value;
 
                     if (selectedItemData) {
-                      setSelectedItem((prev) => ({
-                        ...prev,
-                        productId: selectedItemData.id,
-                        productType: selectedItemData.productType,
-                        productName: selectedItemData.productName,
-                        unitPrice: selectedItemData.rate,
-                        gstPerUnit: isGstApplicable(
-                          isGstApplicableForSalesOrders,
-                        )
-                          ? selectedItemData.gstPercentage
-                          : 0,
-                      }));
+                      if (selectedItemData.productType === 'GOODS') {
+                        setSelectedItem((prev) => ({
+                          ...prev,
+                          productId: selectedItemData.id,
+                          productType: selectedItemData.productType,
+                          hsnCode: selectedItemData.hsnCode,
+                          productName: selectedItemData.productName,
+                          unitPrice: selectedItemData.rate,
+                          gstPerUnit: isGstApplicable(
+                            isGstApplicableForSalesOrders,
+                          )
+                            ? selectedItemData.gstPercentage
+                            : 0,
+                        }));
+                      } else {
+                        setSelectedItem((prev) => ({
+                          ...prev,
+                          productId: selectedItemData.id,
+                          productType: selectedItemData.productType,
+                          sac: selectedItemData.sac,
+                          serviceName: selectedItemData.serviceName,
+                          unitPrice: selectedItemData.rate,
+                          gstPerUnit: isGstApplicable(
+                            isGstApplicableForSalesOrders,
+                          )
+                            ? selectedItemData.gstPercentage
+                            : 0,
+                        }));
+                      }
                     }
                   }}
                 />
@@ -792,10 +796,10 @@ const CreateB2CInvoice = ({
               </Button>
               <Button
                 size="sm"
-                disabled={Object.values(selectedItem).some(
-                  (value) =>
-                    value === '' || value === null || value === undefined,
-                )} // if any item of selectedItem is empty then button must be disabled
+                disabled={
+                  selectedItem.productId === null ||
+                  selectedItem.productId === ''
+                } // if any item of selectedItem is empty then button must be disabled
                 onClick={() => {
                   setOrder((prev) => ({
                     ...prev,
@@ -803,13 +807,16 @@ const CreateB2CInvoice = ({
                   }));
                   setSelectedItem({
                     productName: '',
+                    serviceName: '',
+                    sac: '',
+                    hsnCode: '',
                     productType: '',
                     productId: '',
-                    quantity: '',
-                    unitPrice: '',
-                    gstPerUnit: '',
-                    totalAmount: '',
-                    totalGstAmount: '',
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
                   });
                   setErrorMsg({});
                 }}
@@ -863,7 +870,7 @@ const CreateB2CInvoice = ({
               </Button>
               <Button
                 size="sm"
-                onClick={handlePreview}
+                onClick={() => handlePreview(order)}
                 disabled={invoiceMutation.isPending}
               >
                 {previewInvMutation.isPending ? (
@@ -884,11 +891,12 @@ const CreateB2CInvoice = ({
           setIsPreviewOpen={setIsInvoicePreview}
           url={url}
           isPDFProp={true}
+          isPendingInvoice={invoiceMutation.isPending}
           handleCreateFn={handleSubmit}
+          handlePreview={handlePreview}
           isCreatable={true}
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
-          isSocialLinksAddable={true}
           isActionable={true}
           isPINError={isPINError}
         />

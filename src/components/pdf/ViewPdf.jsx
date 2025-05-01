@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
@@ -20,13 +21,17 @@ const ViewPdf = ({ url, isPDF }) => {
 
   return (
     <section className="flex h-full w-full flex-col items-center justify-center gap-10 py-2">
-      <div className="flex w-full items-center justify-between gap-2">
+      <div className="flex w-full items-center justify-between gap-2 px-24">
         {isPDF && (
           <ChevronLeft
             disabled={pageNo === 1}
             onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
             size={24}
-            className="cursor-pointer text-white disabled:cursor-not-allowed disabled:text-[#A5ABBD]"
+            className={cn(
+              'cursor-pointer disabled:cursor-not-allowed disabled:text-[#A5ABBD]',
+              isPDF ? 'text-black' : 'text-white',
+              pages > 1 ? 'cursor-pointer' : 'cursor-not-allowed',
+            )}
           />
         )}
         <div className="scrollBarStyles flex h-[480px] w-full items-center justify-center overflow-auto">
@@ -57,7 +62,11 @@ const ViewPdf = ({ url, isPDF }) => {
               setPageNo((prev) => (prev < pages ? prev + 1 : pages))
             }
             size={24}
-            className="cursor-pointer text-white disabled:cursor-not-allowed disabled:text-[#A5ABBD]"
+            className={cn(
+              'cursor-pointer disabled:cursor-not-allowed disabled:text-[#A5ABBD]',
+              isPDF ? 'text-black' : 'text-white',
+              pages > 1 ? 'cursor-pointer' : 'cursor-not-allowed',
+            )}
           />
         )}
       </div>

@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import Slot from '../ui/Slot';
+import Loading from '../ui/Loading';
 
 const PINVerifyModal = ({
   open,
@@ -18,6 +19,7 @@ const PINVerifyModal = ({
   customerRemarks,
   socialLinks,
   bankAccountId,
+  isPendingInvoice,
   handleCreateFn,
   isPINError,
 }) => {
@@ -41,7 +43,7 @@ const PINVerifyModal = ({
     } else {
       const updatedOrder = {
         ...order,
-        customerRemarks,
+        remarks: customerRemarks,
         socialLinks,
         bankAccountId,
         pin,
@@ -93,8 +95,13 @@ const PINVerifyModal = ({
               </div>
             )}
           />
-          <Button size="sm" type="submit" className="w-full">
-            {translations('ctas.verify')}
+          <Button
+            size="sm"
+            type="submit"
+            className="w-full"
+            disabled={isPendingInvoice}
+          >
+            {isPendingInvoice ? <Loading /> : translations('ctas.verify')}
           </Button>
 
           {isPINError && (

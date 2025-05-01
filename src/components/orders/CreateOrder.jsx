@@ -88,6 +88,7 @@ const CreateOrder = ({
     totalAmount: null,
     totalGstAmount: null,
   });
+
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
@@ -101,7 +102,7 @@ const CreateOrder = ({
           orderItems: [],
           bankAccountId: null,
           socialLinks: null,
-          customerRemarks: null,
+          remarks: null,
           pin: null,
         }
       : {
@@ -115,7 +116,7 @@ const CreateOrder = ({
           orderItems: [],
           bankAccountId: null,
           socialLinks: null,
-          customerRemarks: null,
+          remarks: null,
           pin: null,
         },
   );
@@ -249,7 +250,7 @@ const CreateOrder = ({
     const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.name,
+      serviceName: service.name,
     };
     const label = service.name;
 
@@ -300,7 +301,7 @@ const CreateOrder = ({
     const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.name,
+      serviceName: service.name,
     };
     const label = service.name;
 
@@ -498,13 +499,13 @@ const CreateOrder = ({
       ),
   });
 
-  const handlePreview = () => {
+  const handlePreview = (updatedOrder) => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
       previewInvMutation.mutate({
-        ...order,
+        ...updatedOrder,
         invoiceItems: order.orderItems,
         buyerId: Number(order.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
@@ -593,33 +594,23 @@ const CreateOrder = ({
                       onChange={(selectedOption) => {
                         if (!selectedOption) return; // Guard clause for no selection
 
-                        const { value: id, isAccepted } = selectedOption; // Extract id and isAccepted from the selected option
+                        const { value: id, isAccepted } = selectedOption;
 
-                        // Check if "Add New Client" is selected
-                        if (selectedOption.value === 'add-new-client') {
-                          setIsModalOpen(true); // Open the modal when "Add New Client" is selected
+                        if (id === 'add-new-client') {
+                          setIsModalOpen(true); // Open modal when "Add New Client" is selected
                         } else {
-                          // Handle other client selections
-                          if (
-                            (id !== undefined &&
-                              isAccepted === 'ACCEPTED' &&
-                              name === 'Offer') ||
-                            name === 'Invoice'
-                          ) {
-                            setRedirectPopUpOnFail(false);
-                            setOrder((prev) => ({
-                              ...prev,
-                              buyerId: id,
-                            }));
-                          } else if (name !== 'Invoice') {
-                            setOrder((prev) => ({
-                              ...prev,
-                              buyerId: id,
-                            }));
-                            setRedirectPopUpOnFail(true);
+                          setOrder((prev) => ({
+                            ...prev,
+                            buyerId: id,
+                          }));
+
+                          if (isOrder === 'invoice') {
+                            setRedirectPopUpOnFail(false); // Never show popup for invoice
+                          } else {
+                            setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED'); // Show popup only if client is uninvited
                           }
 
-                          setSelectedValue(selectedOption); // Update the state with the selected option
+                          setSelectedValue(selectedOption); // Update selected value
                         }
                       }}
                     />
@@ -748,28 +739,43 @@ const CreateOrder = ({
                         cta === 'offer'
                           ? itemClientListingOptions?.find(
                               (item) =>
-                                item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                                item.value.id === selectedOption?.value?.id,
                             )?.value
                           : itemVendorListingOptions?.find(
                               (item) =>
-                                item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                                item.value.id === selectedOption?.value?.id,
                             )?.value;
 
                       if (selectedItemData) {
-                        setSelectedItem((prev) => ({
-                          ...prev,
-                          productId: selectedItemData.id,
-                          productType: selectedItemData.productType,
-                          productName: selectedItemData.productName,
-                          unitPrice: selectedItemData.rate,
-                          gstPerUnit: isGstApplicable(
-                            isPurchasePage
-                              ? isGstApplicableForPurchaseOrders
-                              : isGstApplicableForSalesOrders,
-                          )
-                            ? selectedItemData.gstPercentage
-                            : 0,
-                        }));
+                        const isGstApplicableForPage = isPurchasePage
+                          ? isGstApplicable(isGstApplicableForPurchaseOrders)
+                          : isGstApplicable(isGstApplicableForSalesOrders);
+
+                        const gstPerUnit = isGstApplicableForPage
+                          ? selectedItemData.gstPercentage
+                          : 0;
+
+                        if (selectedItemData.productType === 'GOODS') {
+                          setSelectedItem((prev) => ({
+                            ...prev,
+                            productId: selectedItemData.id,
+                            productType: selectedItemData.productType,
+                            hsnCode: selectedItemData.hsnCode,
+                            productName: selectedItemData.productName,
+                            unitPrice: selectedItemData.rate,
+                            gstPerUnit,
+                          }));
+                        } else {
+                          setSelectedItem((prev) => ({
+                            ...prev,
+                            productId: selectedItemData.id,
+                            productType: selectedItemData.productType,
+                            sac: selectedItemData.sacCode,
+                            serviceName: selectedItemData.serviceName,
+                            unitPrice: selectedItemData.rate,
+                            gstPerUnit,
+                          }));
+                        }
                       }
                     }}
                   />
@@ -952,10 +958,10 @@ const CreateOrder = ({
               </Button>
               <Button
                 size="sm"
-                disabled={Object.values(selectedItem).some(
-                  (value) =>
-                    value === '' || value === null || value === undefined,
-                )} // if any item of selectedItem is empty then button must be disabled
+                disabled={
+                  selectedItem.productId === null ||
+                  selectedItem.productId === ''
+                } // if any item of selectedItem is empty then button must be disabled
                 onClick={() => {
                   setOrder((prev) => ({
                     ...prev,
@@ -1028,7 +1034,9 @@ const CreateOrder = ({
               <Button
                 size="sm"
                 onClick={() => {
-                  isOrder === 'invoice' ? handlePreview() : handleSubmit(order); // handlePreview for invoice and handleSubmit for order
+                  isOrder === 'invoice'
+                    ? handlePreview(order)
+                    : handleSubmit(order); // handlePreview for invoice and handleSubmit for order
                 }}
                 disabled={orderMutation.isPending || invoiceMutation.isPending}
               >
@@ -1052,11 +1060,12 @@ const CreateOrder = ({
           setIsPreviewOpen={setIsInvoicePreview}
           url={url}
           isPDFProp={true}
+          isPendingInvoice={invoiceMutation.isPending}
           handleCreateFn={handleSubmit}
+          handlePreview={handlePreview}
           isCreatable={true}
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
-          isSocialLinksAddable={true}
           isActionable={true}
           isPINError={isPINError}
         />
