@@ -1,7 +1,8 @@
 import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { addBankAccount } from '@/services/BankAccount_Services/BankAccountServices';
 import { useMutation } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import { Info } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
@@ -17,6 +18,17 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
     accountNumber: '',
   });
   const [errors, setErrors] = useState({});
+  const [attemptsRemaining, setAttemptsRemaining] = useState(null);
+
+  useEffect(() => {
+    setFormData({
+      accountHolderName: '',
+      ifscCode: '',
+      accountNumber: '',
+    });
+    setErrors({});
+    setAttemptsRemaining(null);
+  }, [isModalOpen]);
 
   // Close modal on external state change
   const handleClose = () => {
@@ -27,6 +39,7 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
       accountNumber: '',
     });
     setErrors({});
+    setAttemptsRemaining(null);
   };
 
   const validate = () => {
@@ -67,6 +80,15 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
       }));
     }
 
+    if (name === 'accountNumber') {
+      // if retype then clear the remaning attempts
+      setAttemptsRemaining(null);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+
     setErrors((prev) => ({
       ...prev,
       [name]: '',
@@ -81,6 +103,7 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
       handleClose();
     },
     onError: (error) => {
+      setAttemptsRemaining(error.response?.data?.data?.remainingAttempts || 0);
       toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
@@ -101,6 +124,18 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogContent>
         <DialogTitle>Add a Bank Account</DialogTitle>
+
+        {attemptsRemaining !== null && (
+          <div className="flex gap-2 rounded-sm bg-muted p-2">
+            <Info className="text-red-500" size={14} />
+            <p className="text-xs text-red-500">
+              {attemptsRemaining > 0
+                ? `You have ${attemptsRemaining} daily attempt${attemptsRemaining > 1 ? 's' : ''} remaining to add a bank account.`
+                : 'You have exhausted your daily attempts to add a bank account.'}
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {/* Account Holder Name */}
           <div className="space-y-1">
@@ -163,6 +198,7 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
             <Button
               type="submit"
               size="sm"
+              className="disabled:cursor-not-allowed"
               disabled={addBankAccountMutation.isPending}
             >
               {addBankAccountMutation.isPending ? <Loading /> : 'Submit'}
