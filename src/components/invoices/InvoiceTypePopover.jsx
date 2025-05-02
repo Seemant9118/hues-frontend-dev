@@ -8,37 +8,32 @@ import { cn } from '@/lib/utils';
 import { getSettingsByKey } from '@/services/Settings_Services/SettingsService';
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card } from '../ui/card';
 import { Label } from '../ui/label';
-
-// Dummy data for invoice types
-const INVOICE_TYPE_DATA = [
-  {
-    id: 1,
-    type: 'b2c',
-    name: 'B2C Invoice',
-    description:
-      'For direct sales to individual consumers, usually without GST registration.',
-  },
-  {
-    id: 2,
-    type: 'b2b',
-    name: 'B2B Invoice',
-    description:
-      'For transactions between two registered businesses with GST details.',
-  },
-];
 
 const InvoiceTypePopover = ({
   triggerInvoiceTypeModal,
   invoiceType,
   setInvoiceType,
 }) => {
+  const translations = useTranslations('components.invoiceType');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [defaultInvoiceType, setDefaultInvoiceType] = useState('');
+
+  const INVOICE_TYPE_DATA = [
+    {
+      id: 1,
+      type: 'b2c',
+    },
+    {
+      id: 2,
+      type: 'b2b',
+    },
+  ];
 
   // fetch invoice settings keys
   const { data: settings } = useQuery({
@@ -87,9 +82,11 @@ const InvoiceTypePopover = ({
                   'border-primary bg-muted',
               )}
             >
-              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-sm font-medium">
+                {translations(`types.${item.type}.name`)}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {item.description}
+                {translations(`types.${item.type}.description`)}
               </p>
             </Card>
           ))}
@@ -100,12 +97,12 @@ const InvoiceTypePopover = ({
         <div className="flex items-center justify-between gap-2">
           <Label className="flex items-center gap-1 text-sm font-medium">
             <Info size={14} />
-            You can change your default from{' '}
+            {translations('change_default_prefix')}
             <span
               className="cursor-pointer text-primary hover:underline"
               onClick={() => router.push('/settings?tab=invoice')}
             >
-              here
+              {translations('change_default_link')}
             </span>
           </Label>
         </div>

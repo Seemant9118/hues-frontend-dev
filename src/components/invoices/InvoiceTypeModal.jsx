@@ -16,16 +16,23 @@ import { Card } from '../ui/card';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 
-const InvoiceTypeModal = ({
-  triggerInvoiceTypeModal,
-  data,
-  setInvoiceType,
-}) => {
-  const translations = useTranslations('components.invoice_type_modal');
+const InvoiceTypeModal = ({ triggerInvoiceTypeModal, setInvoiceType }) => {
+  const translations = useTranslations('components.invoiceType');
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [currSelectedType, setCurrSelectedType] = useState('');
   const [setAsDefault, setSetAsDefault] = useState(false);
+
+  const INVOICE_TYPE_DATA = [
+    {
+      id: 1,
+      type: 'b2c',
+    },
+    {
+      id: 2,
+      type: 'b2b',
+    },
+  ];
 
   useEffect(() => {
     if (!open) {
@@ -42,14 +49,15 @@ const InvoiceTypeModal = ({
     mutationKey: [settingsAPI.createSettings.endpointKey],
     mutationFn: createSettings,
     onSuccess: () => {
-      toast.success('Default Invoice Type set successfully');
-      setInvoiceType(currSelectedType); // You can also pass `setAsDefault` if needed
+      toast.success(translations('toast_success'));
+      setInvoiceType(currSelectedType);
       setOpen(false);
-      // Invalidate the query to refresh the settings
       queryClient.invalidateQueries([settingsAPI.getSettingByKey.endpointKey]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error?.response?.data?.message || translations('toast_error'),
+      );
     },
   });
 
@@ -68,7 +76,7 @@ const InvoiceTypeModal = ({
       if (setAsDefault) {
         createSettingMutation.mutate(payload);
       } else {
-        setInvoiceType(currSelectedType); // You can also pass `setAsDefault` if needed
+        setInvoiceType(currSelectedType);
         setOpen(false);
       }
     }
@@ -83,7 +91,7 @@ const InvoiceTypeModal = ({
         </DialogTitle>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {data?.map((item) => (
+          {INVOICE_TYPE_DATA?.map((item) => (
             <Card
               key={item.id}
               onClick={() => handleSelect(item.type)}
@@ -92,9 +100,11 @@ const InvoiceTypeModal = ({
                 currSelectedType === item.type && 'border-primary bg-muted',
               )}
             >
-              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-sm font-medium">
+                {translations(`types.${item.type}.name`)}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {item.description}
+                {translations(`types.${item.type}.description`)}
               </p>
             </Card>
           ))}
@@ -110,11 +120,11 @@ const InvoiceTypeModal = ({
               onCheckedChange={(checked) => setSetAsDefault(!!checked)}
             />
             <Label htmlFor="set-as-default" className="text-xs">
-              Set as Default
+              {translations('set_as_default')}
             </Label>
           </div>
           <Button size="sm" className="w-20" onClick={handleProceed}>
-            Proceed
+            {translations('proceed_button')}
           </Button>
         </div>
       </DialogContent>

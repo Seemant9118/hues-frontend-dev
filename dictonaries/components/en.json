@@ -710,6 +710,48 @@
                 "success": "Debit Note Raised",
                 "error": "Something went wrong"
             }
+        },
+        "invoiceType": {
+            "title": "Select Invoice Type",
+            "set_as_default": "Set as Default",
+            "proceed_button": "Proceed",
+            "toast_success": "Default Invoice Type set successfully",
+            "toast_error": "Something went wrong",
+            "change_default_prefix": "You can change your default from",
+            "change_default_link": "here",
+            "types": {
+                "b2c": {
+                    "name": "B2C Invoice",
+                    "description": "For direct sales to individual consumers, usually without GST registration."
+                },
+                "b2b": {
+                    "name": "B2B Invoice",
+                    "description": "For transactions between two registered businesses with GST details."
+                }
+            }
+        },
+        "invoice_settings": {
+            "default_invoice_type": "Default Invoice Type",
+            "default_skin": "Default Skin",
+            "preview_button": "Preview",
+            "custom_remarks_label": "Custom Remarks",
+            "discard_button": "Discard",
+            "save_button": "Save",
+            "social_links_label": "Add Social links",
+            "social_links_placeholder": "Add link here",
+            "invoice_types": {
+                "b2c": {
+                    "name": "B2C (Business to Consumer)",
+                    "description": "For direct sales to individual consumers, usually without GST registration."
+                },
+                "b2b": {
+                    "name": "B2B (Business to Business)",
+                    "description": "For transactions between two registered businesses with GST details."
+                }
+            },
+            "template": {
+                "default_description": "Clean, professional design with blue accents"
+            }
         }
     }
 }
