@@ -50,7 +50,11 @@
                 },
                 "tab2": {},
                 "tab3": {
-                    "coming_soon": "Coming Soon..."
+                    "coming_soon": "Coming Soon...",
+                    "settingsUpdate": {
+                        "successMsg": "Settings Updated Successfully",
+                        "errorMsg": "Something went wrong while updating settings"
+                    }
                 },
                 "tab4": {
                     "coming_soon": "Coming Soon..."

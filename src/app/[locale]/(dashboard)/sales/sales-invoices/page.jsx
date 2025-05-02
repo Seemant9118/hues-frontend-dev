@@ -55,22 +55,6 @@ const CreateB2CInvoice = dynamic(
 const PAGE_LIMIT = 10;
 
 // Dummy data for invoice types
-const INVOICE_TYPE_DATA = [
-  {
-    id: 1,
-    type: 'b2c',
-    name: 'B2C Invoice',
-    description:
-      'For direct sales to individual consumers, usually without GST registration.',
-  },
-  {
-    id: 2,
-    type: 'b2b',
-    name: 'B2B Invoice',
-    description:
-      'For transactions between two registered businesses with GST details.',
-  },
-];
 
 const SalesInvoices = () => {
   useMetaData('Hues! - Sales Invoices', 'HUES INVOICES'); // dynamic title
@@ -350,7 +334,7 @@ const SalesInvoices = () => {
                       onClick={() => setInvoiceType(defaultInvoiceType)}
                     >
                       <PlusCircle size={14} />
-                      Invoice
+                      {translations('ctas.invoice.cta')}
                     </Button>
                   ) : (
                     // Ask user to select invoice type
@@ -358,11 +342,9 @@ const SalesInvoices = () => {
                       triggerInvoiceTypeModal={
                         <Button size="sm">
                           <PlusCircle size={14} />
-                          Invoice
+                          {translations('ctas.invoice.cta')}
                         </Button>
                       }
-                      data={INVOICE_TYPE_DATA}
-                      defaultInvoiceType={defaultInvoiceType}
                       setInvoiceType={setInvoiceType}
                     />
                   )}
@@ -470,7 +452,6 @@ const SalesInvoices = () => {
               onCancel={() => setInvoiceType('')}
               invoiceType={invoiceType}
               setInvoiceType={setInvoiceType}
-              INVOICE_TYPE_DATA={INVOICE_TYPE_DATA}
             />
           )}
 
@@ -484,7 +465,6 @@ const SalesInvoices = () => {
               onCancel={() => setInvoiceType('')}
               invoiceType={invoiceType}
               setInvoiceType={setInvoiceType}
-              INVOICE_TYPE_DATA={INVOICE_TYPE_DATA}
             />
           )}
         </>
