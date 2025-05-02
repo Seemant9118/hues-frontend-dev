@@ -1,44 +1,44 @@
+import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import InvoicePreview from '../ui/InvoicePreview';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import Wrapper from '../wrappers/Wrapper';
 
-// const skins = [
-//   {
-//     id: 'basic-blue',
-//     title: 'Basic Blue',
-//     description: 'Clean, professional design with blue accents',
-//     image: '/InvoiceType1.png',
-//   },
-//   {
-//     id: 'emerald',
-//     title: 'Emerald',
-//     description: 'Clean, professional design with emerald accents',
-//     image: '/InvoiceType2.png',
-//   },
-//   {
-//     id: 'royal-blue',
-//     title: 'Royal Blue',
-//     description: 'Clean, professional design with royal blue accents',
-//     image: '/InvoiceType3.png',
-//   },
-// ];
+// Dummy data for invoice types
+const INVOICE_TYPE_DATA = [
+  {
+    id: 1,
+    type: 'b2c',
+    nameKey: 'invoice_types.b2c.name',
+    descKey: 'invoice_types.b2c.description',
+  },
+  {
+    id: 2,
+    type: 'b2b',
+    nameKey: 'invoice_types.b2b.name',
+    descKey: 'invoice_types.b2b.description',
+  },
+];
 
 export default function InvoiceSettings({
   settings,
   templates,
   createSettingMutation,
 }) {
+  const translations = useTranslations('components.invoice_settings');
   const [currPreviewSkin, setCurrPreviewSkin] = useState(null);
   const [selectedSkin, setSelectedSkin] = useState(null);
   const [remarks, setRemarks] = useState('Thank you for your business!');
   const [socialLink, setSocialLink] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [formattedTemplates, setFormattedTemplates] = useState([]);
+  const [defaultInvoiceType, setDefaultInvoiceType] = useState('');
 
   useEffect(() => {
     if (settings?.settings) {
@@ -49,12 +49,20 @@ export default function InvoiceSettings({
         (s) => s.key === 'SOCIAL_LINK',
       );
 
+      const defaultInvoiceTypeSettings = settings.settings.find(
+        (item) => item.key === 'invoice.default.type',
+      )?.value;
+
       if (customerRemarkSetting) {
         setRemarks(customerRemarkSetting.value);
       }
 
       if (socialLinkSetting) {
         setSocialLink(socialLinkSetting.value);
+      }
+
+      if (defaultInvoiceTypeSettings) {
+        setDefaultInvoiceType(defaultInvoiceTypeSettings);
       }
     }
   }, [settings]);
@@ -66,7 +74,7 @@ export default function InvoiceSettings({
       id: template.id,
       title: template.title,
       description:
-        template?.description || 'Clean, professional design with blue accents',
+        template?.description || translations('template.default_description'),
       image: template?.image ? `data:image/png;base64,${template.image}` : '',
       isDefault: template?.isDefault || false,
     }));
@@ -124,13 +132,58 @@ export default function InvoiceSettings({
     createSettingMutation.mutate(payload);
   };
 
+  const handleSelect = (itemType) => {
+    if (itemType) {
+      const payload = {
+        contextKey: 'INVOICE',
+        settings: [
+          {
+            key: 'invoice.default.type',
+            value: itemType,
+          },
+        ],
+      };
+      createSettingMutation.mutate(payload);
+    }
+  };
+
   return (
     <Wrapper className="flex flex-col gap-10 p-2">
       {!isPreviewOpen && (
         <div className="flex flex-col gap-4">
+          {/* Invoice Type */}
+          <div className="flex w-full flex-col gap-4">
+            <Label className="text-sm font-medium">
+              {translations('default_invoice_type')}
+            </Label>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {INVOICE_TYPE_DATA?.map((item) => (
+                <Card
+                  key={item.id}
+                  onClick={() => handleSelect(item.type)}
+                  className={cn(
+                    'flex cursor-pointer flex-col gap-2 rounded-xl border p-4 shadow-sm transition hover:border-primary',
+                    defaultInvoiceType === item.type &&
+                      'border-primary bg-muted',
+                  )}
+                >
+                  <h3 className="font-semibold">
+                    {translations(item.nameKey)}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {translations(item.descKey)}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           {/* Skins */}
           <div className="flex flex-col gap-4">
-            <Label className="text-sm font-medium">Default Skin</Label>
+            <Label className="text-sm font-medium">
+              {translations('default_skin')}
+            </Label>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {formattedTemplates?.map((skin) => (
                 <div
@@ -163,7 +216,7 @@ export default function InvoiceSettings({
                       setCurrPreviewSkin(skin.image);
                     }}
                   >
-                    Preview
+                    {translations('preview_button')}
                   </Button>
                 </div>
               ))}
@@ -173,7 +226,7 @@ export default function InvoiceSettings({
           {/* Remarks */}
           <div className="flex flex-col">
             <Label className="mb-2 block text-sm font-medium">
-              Custom Remarks
+              {translations('custom_remarks_label')}
             </Label>
             <Textarea
               value={remarks}
@@ -188,7 +241,7 @@ export default function InvoiceSettings({
                   setRemarks('');
                 }}
               >
-                Discard
+                {translations('discard_button')}
               </Button>
               <Button
                 size="sm"
@@ -197,7 +250,7 @@ export default function InvoiceSettings({
                   handleCustomerRemarkUpdate(remarks);
                 }}
               >
-                Save
+                {translations('save_button')}
               </Button>
             </div>
           </div>
@@ -205,7 +258,7 @@ export default function InvoiceSettings({
           {/* Social Links */}
           <div className="flex flex-col">
             <Label className="mb-2 block text-sm font-medium">
-              Add Social links
+              {translations('social_links_label')}
             </Label>
             <Input
               type="text"
@@ -222,7 +275,7 @@ export default function InvoiceSettings({
                   setSocialLink('');
                 }}
               >
-                Discard
+                {translations('discard_button')}
               </Button>
               <Button
                 size="sm"
@@ -231,7 +284,7 @@ export default function InvoiceSettings({
                   handleSocialLinkUpdate(socialLink);
                 }}
               >
-                Save
+                {translations('save_button')}
               </Button>
             </div>
           </div>
@@ -243,7 +296,7 @@ export default function InvoiceSettings({
           isSelectable={true}
           setIsPreviewOpen={setIsPreviewOpen}
           url={currPreviewSkin}
-          isBase64={true}
+          isPDFProp={false}
         />
       )}
     </Wrapper>

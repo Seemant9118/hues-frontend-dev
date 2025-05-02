@@ -1,10 +1,13 @@
-import { templateApi } from '@/api/templates_api/template_api';
+import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
-import { getDocument } from '@/services/Template_Services/Template_Services';
+import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
 import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
+import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
@@ -18,39 +21,45 @@ import {
 import { Textarea } from './textarea';
 
 const InvoicePreview = ({
+  order,
+  isPDFProp,
   setIsPreviewOpen,
   url,
-  isBase64 = false,
   handleSelectFn,
   isSelectable = false,
   isDownloadable = false,
+  isPendingInvoice,
+  handleCreateFn,
+  handlePreview,
+  isCreatable = false,
   isCustomerRemarksAddable = false,
   isBankAccountDetailsSelectable = false,
   isSocialLinksAddable = false,
   isActionable = false,
+  isPINError,
 }) => {
+  const [open, setOpen] = useState(false);
   // State to determine if the document is a PDF
   const [isPDF, setIsPDF] = useState(false);
   // State for storing customer remarks
-  const [remarks, setRemarks] = useState('');
+  const [remarks, setRemarks] = useState('Thank you for your business!');
   // State for selected bank account
   // eslint-disable-next-line no-unused-vars
-  const [bankAccount, setBankAccount] = useState('');
+  const [bankAccount, setBankAccount] = useState(null);
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
+  const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
 
-  // Effect to check if the URL points to a PDF and update isPDF state
   useEffect(() => {
-    const isCheck = url?.split('?')[0].toLowerCase().endsWith('.pdf');
-    setIsPDF(isCheck);
+    if (!url) return;
+    setIsPDF(isPDFProp);
   }, [url]);
 
-  // Fetch the PDF document using the provided URL
-  const { data: pdfDoc, isLoading } = useQuery({
-    queryKey: [templateApi.getS3Document.endpointKey, url],
-    queryFn: () => getDocument(url),
-    enabled: !!url && !isBase64,
-    select: (res) => res.data.data,
+  const { data: bankAccounts } = useQuery({
+    queryKey: [bankAccountApis.getBankAccounts.endpointKey],
+    queryFn: () => getBankAccounts(),
+    select: (data) => data.data.data,
+    enabled: isBankAccountDetailsSelectable,
   });
 
   return (
@@ -62,61 +71,94 @@ const InvoicePreview = ({
         )}
       >
         {/* Left side: Controls */}
-        {isBankAccountDetailsSelectable &&
-          isCustomerRemarksAddable &&
-          isSocialLinksAddable && (
-            <div className="flex h-full w-1/3 flex-col gap-6">
-              {isCustomerRemarksAddable && (
-                <div>
-                  <Label className="text-sm font-medium">Custom Remarks</Label>
-                  <Textarea
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                    placeholder="Thank you for your business!"
-                    rows={4}
-                  />
-                </div>
-              )}
+        {isBankAccountDetailsSelectable && isCustomerRemarksAddable && (
+          <div className="flex h-full w-1/3 flex-col gap-6">
+            {isCustomerRemarksAddable && (
+              <div>
+                <Label className="text-sm font-medium">Custom Remarks</Label>
+                <Textarea
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  placeholder="Thank you for your business!"
+                  rows={4}
+                />
+              </div>
+            )}
 
-              {isBankAccountDetailsSelectable && (
-                <div>
-                  <Label className="text-sm font-medium">
-                    Select Bank Account details
-                  </Label>
-                  <Select onValueChange={setBankAccount}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Bank Account Details" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="acc1">Bank Account 1</SelectItem>
-                      <SelectItem value="acc2">Bank Account 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+            {isBankAccountAdding && (
+              <AddBankAccount
+                isModalOpen={isBankAccountAdding}
+                setIsModalOpen={setIsBankAccountAdding}
+              />
+            )}
 
-              {isSocialLinksAddable && (
-                <div>
-                  <Label className="text-sm font-medium">
-                    Add Social links
-                  </Label>
-                  <Input
-                    placeholder="https://twitter.com/yourhandle"
-                    value={socialLink}
-                    onChange={(e) => setSocialLink(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
+            {isBankAccountDetailsSelectable && (
+              <div>
+                <Label className="text-sm font-medium">
+                  Select Bank Account details
+                </Label>
+                <Select
+                  placeholder="Select Bank Account Details"
+                  defaultValue={bankAccount}
+                  onValueChange={(value) => {
+                    setBankAccount(value);
+                  }}
+                >
+                  <SelectTrigger placeholder="Select Bank Account Details">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bankAccounts?.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {`Acc ${account.maskedAccountNumber}`}
+                      </SelectItem>
+                    ))}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent closing the dropdown immediately
+                        setIsBankAccountAdding(true);
+                      }}
+                      className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                    >
+                      <Plus size={14} />
+                      Add New Bank Account
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isSocialLinksAddable && (
+              <div>
+                <Label className="text-sm font-medium">Add Social links</Label>
+                <Input
+                  placeholder="https://twitter.com/yourhandle"
+                  value={socialLink}
+                  onChange={(e) => setSocialLink(e.target.value)}
+                />
+              </div>
+            )}
+
+            <Button
+              size="sm"
+              onClick={() => {
+                const updatedOrder = {
+                  ...order,
+                  remarks,
+                  bankAccountId: bankAccount,
+                  socialLinks: socialLink,
+                };
+                handlePreview(updatedOrder);
+              }}
+            >
+              Apply changes
+            </Button>
+          </div>
+        )}
 
         {/* Right side: PDF Preview */}
         <div className="flex h-[600px] w-2/3 items-center justify-center bg-[#F4F4F4]">
-          {isLoading ? (
-            <span className="animate-pulse">Loading Document...</span>
-          ) : (
-            <ViewPdf url={pdfDoc?.publicUrl || url} isPDF={isPDF} />
-          )}
+          <ViewPdf url={url} isPDF={isPDF} />
         </div>
       </div>
 
@@ -132,10 +174,7 @@ const InvoicePreview = ({
         </Button>
         {isDownloadable && (
           <Button size="sm" asChild>
-            <a
-              href={pdfDoc?.publicUrl}
-              download={getFilenameFromUrl(pdfDoc?.publicUrl)}
-            >
+            <a href={url} download={getFilenameFromUrl(url)}>
               Download
             </a>
           </Button>
@@ -152,7 +191,29 @@ const InvoicePreview = ({
             Select
           </Button>
         )}
+
+        {isCreatable && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Create Invoice
+          </Button>
+        )}
       </div>
+      <PINVerifyModal
+        open={open}
+        setOpen={setOpen}
+        order={order}
+        customerRemarks={remarks}
+        socialLinks={socialLink}
+        bankAccountId={bankAccount}
+        isPendingInvoice={isPendingInvoice}
+        handleCreateFn={handleCreateFn} // pass the full updated order
+        isPINError={isPINError}
+      />
     </div>
   );
 };

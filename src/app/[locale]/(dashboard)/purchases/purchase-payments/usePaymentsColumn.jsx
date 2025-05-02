@@ -162,7 +162,11 @@ export const usePaymentsColumn = () => {
         return (
           <div className="flex max-w-sm">
             {' '}
-            <ConditionalRenderingStatus status={status} />
+            <ConditionalRenderingStatus
+              status={status}
+              isPayment={true}
+              isSellerPage={true}
+            />
           </div>
         );
       },

@@ -50,7 +50,7 @@ const OrderBreadCrumbs = ({
           .map((page, index, array) => {
             const isLast = index === array.length - 1;
             return isLast ? (
-              <BreadcrumbItem key={page.id}>
+              <BreadcrumbItem key={page.id} className="flex items-center gap-1">
                 <BreadcrumbPage>
                   <span className="text-lg font-bold">
                     {translations(page.name)}

@@ -145,12 +145,17 @@ function Settings() {
     mutationKey: [settingsAPI.createSettings.endpointKey],
     mutationFn: createSettings,
     onSuccess: () => {
-      toast.success('Setting Updated successfully');
+      toast.success(
+        translations('tabs.content.tab3.settingsUpdate.successMsg'),
+      );
 
       queryClient.invalidateQueries([settingsAPI.getSettingByKey.endpointKey]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(
+        error.response.data.message ||
+          translations('tabs.content.tab3.settingsUpdate.errorMsg'),
+      );
     },
   });
 
