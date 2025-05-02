@@ -72,8 +72,8 @@
                 "ctas": {
                     "payment_advice": "भुगतान सलाह भेजें",
                     "generate_invoice": "चालान उत्पन्न करें",
-                    "download": {
-                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                    "view": {
+                        "placeholder": "ऑर्डर विवरण करें"
                     },
                     "more": {
                         "placeholder": "अधिक विकल्प",

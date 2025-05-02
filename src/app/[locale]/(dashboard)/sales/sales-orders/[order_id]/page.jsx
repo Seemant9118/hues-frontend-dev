@@ -27,7 +27,7 @@ import {
   shareOrder,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, Download, MoreVertical, Pencil } from 'lucide-react';
+import { Clock, Eye, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -204,10 +204,9 @@ const ViewOrder = () => {
     mutationFn: shareOrder,
     onSuccess: (res) => {
       const { publicUrl } = res.data.data;
-      // Trigger file download
-      const link = document.createElement('a');
-      link.href = publicUrl;
-      link.click();
+
+      // PDF open in new tab
+      window.open(publicUrl, '_blank', 'noopener,noreferrer');
     },
     onError: (error) => {
       toast.error(
@@ -314,11 +313,11 @@ const ViewOrder = () => {
                         {downloadOrderMutation.isPending ? (
                           <Loading size={14} />
                         ) : (
-                          <Download size={14} />
+                          <Eye size={14} />
                         )}
                       </Button>
                     }
-                    content={translations('ctas.download.placeholder')}
+                    content={translations('ctas.view.placeholder')}
                   />
                 )}
 

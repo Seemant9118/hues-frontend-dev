@@ -1,4 +1,4 @@
-const ConditionalRenderingStatus = ({ status }) => {
+const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
   let statusText;
   let statusColor;
   let statusBG;
@@ -6,13 +6,17 @@ const ConditionalRenderingStatus = ({ status }) => {
 
   switch (status) {
     case 'ACCEPTED':
-      statusText = 'Accepted';
+      statusText = isPayment ? 'Acknowledged' : 'Accepted';
       statusColor = '#39C06F';
       statusBG = '#39C06F1A';
       statusBorder = '#39C06F';
       break;
     case 'PENDING':
-      statusText = 'Pending';
+      statusText = isPayment
+        ? isSellerPage
+          ? 'Not Acknowledged Yet'
+          : 'Not acknowledged by seller'
+        : 'Pending';
       statusColor = '#F8BA05';
       statusBG = '#F8BA051A';
       statusBorder = '#F8BA05';

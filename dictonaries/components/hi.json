@@ -448,7 +448,12 @@
                 "common": "कुछ गलत हो गया"
             },
             "successMsg": {
-                "otp_sent": "ओटीपी भेजा गया"
+                "otp_sent": "ओटीपी भेजा गया",
+                "successMsg.invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया।"
+            },
+            "ctas": {
+                "next": "अगला",
+                "cancel": "रद्द करें"
             }
         },
         "generate_invoice_modal_otp": {

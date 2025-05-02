@@ -448,7 +448,12 @@
                 "common": "Something went wrong"
             },
             "successMsg": {
-                "otp_sent": "OTP Sent"
+                "otp_sent": "OTP Sent",
+                "successMsg.invoice_generate_success": "Invoice Generated Successfully"
+            },
+            "ctas": {
+                "next": "Next",
+                "cancel": "Cancel"
             }
         },
         "generate_invoice_modal_otp": {

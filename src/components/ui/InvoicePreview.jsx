@@ -45,7 +45,7 @@ const InvoicePreview = ({
   const [remarks, setRemarks] = useState('Thank you for your business!');
   // State for selected bank account
   // eslint-disable-next-line no-unused-vars
-  const [bankAccount, setBankAccount] = useState('');
+  const [bankAccount, setBankAccount] = useState(null);
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
