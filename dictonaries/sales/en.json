@@ -72,8 +72,8 @@
                 "ctas": {
                     "record_payment": "Record Payment",
                     "generate_invoice": "Generate Invoice",
-                    "download": {
-                        "placeholder": "Download Order Details"
+                    "view": {
+                        "placeholder": "Preview order"
                     },
                     "more": {
                         "placeholder": "More options",

@@ -53,7 +53,11 @@ const PaymentOverview = ({ paymentsDetails }) => {
         <div>
           <p className="text-xs font-semibold">{translations('status')}</p>
           <div className="flex max-w-sm">
-            <ConditionalRenderingStatus status={paymentsDetails?.status} />
+            <ConditionalRenderingStatus
+              status={paymentsDetails?.status}
+              isPayment={true}
+              isSellerPage={isPaymentOnSales}
+            />
           </div>
         </div>
 
