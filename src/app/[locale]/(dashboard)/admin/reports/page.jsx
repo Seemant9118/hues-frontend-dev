@@ -7,16 +7,27 @@ import LineCharts from '@/components/ui/LineCharts';
 import PieCharts from '@/components/ui/PieCharts';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { Download } from 'lucide-react';
-import React from 'react';
+import { Download, UserRound } from 'lucide-react';
+import React, { useState } from 'react';
 
 // dashcards
 const dummyData = [
-  { title: 'Total Sign Up', numbers: '1,245', growth: '+12%', icon: '📈' },
-  { title: 'New Users', numbers: '320', growth: '-5%', icon: '👤' },
-  { title: 'Revenue', numbers: '$12,340', growth: '+8%', icon: '💰' },
-  { title: 'Orders', numbers: '789', growth: '+15%', icon: '📦' },
+  {
+    title: 'Total Sign-ups',
+    numbers: '1,245',
+    growth: '+12%',
+    icon: <UserRound size={16} className="text-green-500" />,
+  },
+  { title: 'Users Logins', numbers: '320', growth: '-5%', icon: '👤' },
+  {
+    title: 'First Order Created',
+    numbers: '$12,340',
+    growth: '+8%',
+    icon: '💰',
+  },
+  { title: 'Order Conversion', numbers: '789', growth: '+15%', icon: '📦' },
 ];
 
 // data for 2 lines Linechart
@@ -71,9 +82,15 @@ const funnelData = [
 ];
 
 const AdminReportsPage = () => {
+  const [tab, setTab] = useState('onboarding');
+
+  const onTabChange = (value) => {
+    setTab(value);
+  };
   return (
     <Wrapper>
-      <div className="flex items-center justify-between gap-2 p-1">
+      {/* headers */}
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
         <SubHeader name="Reports" />
         <div className="flex gap-2">
           <SearchInput searchPlaceholder="Search..." />
@@ -83,62 +100,139 @@ const AdminReportsPage = () => {
         </div>
       </div>
 
-      <section className="flex flex-col gap-5">
-        {/* Dashboard Metrics */}
-        <div className="flex h-full w-full gap-5">
-          {dummyData.map((data) => (
-            <DashCard
-              key={data.title}
-              title={data.title}
-              numbers={data.numbers}
-              growth={data.growth}
-              icon={data.icon}
-            />
-          ))}
-        </div>
+      {/* tabs */}
+      <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
+        {/* TabsHeader */}
+        <section className="sticky top-12 z-10 bg-white py-2">
+          <TabsList className="border">
+            <TabsTrigger
+              className={`w-24 ${tab === 'onboarding' ? 'shadow-customShadow' : ''}`}
+              value="onboarding"
+            >
+              Onboarding
+            </TabsTrigger>
+            <TabsTrigger
+              className={`w-24 ${tab === 'sales' ? 'shadow-customShadow' : ''}`}
+              value="sales"
+            >
+              Sales
+            </TabsTrigger>
+            <TabsTrigger
+              className={`${tab === 'purchase' ? 'shadow-customShadow' : ''}`}
+              value="purchase"
+            >
+              Purchase
+            </TabsTrigger>
+            <TabsTrigger
+              className={`w-24 ${tab === 'inventory' ? 'shadow-customShadow' : ''}`}
+              value="inventory"
+            >
+              Inventory
+            </TabsTrigger>
 
-        {/* Reports Section */}
-        <div className="flex justify-between gap-5">
-          {/* Pie Chart Placeholder */}
-          <div className="w-1/3 rounded-md border p-4">
-            <h3 className="mb-2 text-lg font-semibold">Invitation Status</h3>
-            {/* Add PieChart Component here */}
-            <PieCharts data={pieChartdata} colors={PIE_COLORS} />
-          </div>
+            <TabsTrigger
+              className={`w-24 ${tab === 'vendors' ? 'shadow-customShadow' : ''}`}
+              value="vendors"
+            >
+              Vendors
+            </TabsTrigger>
 
-          {/* Line Chart */}
-          <div className="w-2/3 rounded-md border p-4">
-            <h3 className="mb-2 text-lg font-semibold">Invitation Trend</h3>
-            <LineCharts
-              data={data}
-              lines={INVITATION_LINES}
-              width={700}
-              height={300}
-            />
-          </div>
-        </div>
+            <TabsTrigger
+              className={`w-24 ${tab === 'catalogues' ? 'shadow-customShadow' : ''}`}
+              value="catalogues"
+            >
+              Catalogues
+            </TabsTrigger>
 
-        {/* Reports Section 2 */}
-        <div className="flex justify-between gap-5">
-          {/* Line Chart */}
-          <div className="w-2/3 rounded-md border p-4">
-            <h3 className="mb-2 text-lg font-semibold">Onboarding Trend</h3>
-            <LineCharts
-              data={dataThreeLineChart}
-              lines={ONBOARDING_LINES}
-              width={700}
-              height={300}
-            />
-          </div>
+            <TabsTrigger
+              className={`w-24 ${tab === 'gst' ? 'shadow-customShadow' : ''}`}
+              value="gst"
+            >
+              GST
+            </TabsTrigger>
+          </TabsList>
+        </section>
 
-          {/* funnel Chart */}
-          {/* Line Chart */}
-          <div className="w-2/3 rounded-md border p-4">
-            <h3 className="mb-2 text-lg font-semibold">Onboarding Funnel</h3>
-            <FunnelCharts data={funnelData} />
-          </div>
-        </div>
-      </section>
+        {/* CurrentTabHeader */}
+        {tab === 'onboarding' && (
+          <section className="sticky top-24 z-10 bg-white px-2 py-4">
+            <h2 className="text-lg font-semibold">Onboarding Analytics</h2>
+            <p className="text-sm text-gray-500">
+              Track user sign-ups, engagement, and business activity
+            </p>
+          </section>
+        )}
+
+        <TabsContent value="onboarding" className="flex flex-col gap-4">
+          {/* Onboarding */}
+          <section className="flex flex-col gap-5">
+            {/* Dashboard Metrics */}
+            <div className="flex h-full w-full gap-5">
+              {dummyData.map((data) => (
+                <DashCard
+                  key={data.title}
+                  title={data.title}
+                  numbers={data.numbers}
+                  growth={data.growth}
+                  icon={data.icon}
+                />
+              ))}
+            </div>
+
+            {/* Reports Section */}
+            <div className="flex justify-between gap-5">
+              {/* Pie Chart Placeholder */}
+              <div className="w-1/3 rounded-md border p-4">
+                <h3 className="mb-2 text-lg font-semibold">
+                  Invitation Status
+                </h3>
+                {/* Add PieChart Component here */}
+                <PieCharts data={pieChartdata} colors={PIE_COLORS} />
+              </div>
+
+              {/* Line Chart */}
+              <div className="w-2/3 rounded-md border p-4">
+                <h3 className="mb-2 text-lg font-semibold">Invitation Trend</h3>
+                <LineCharts
+                  data={data}
+                  lines={INVITATION_LINES}
+                  width={700}
+                  height={300}
+                />
+              </div>
+            </div>
+
+            {/* Reports Section 2 */}
+            <div className="flex justify-between gap-5">
+              {/* Line Chart */}
+              <div className="w-2/3 rounded-md border p-4">
+                <h3 className="mb-2 text-lg font-semibold">Onboarding Trend</h3>
+                <LineCharts
+                  data={dataThreeLineChart}
+                  lines={ONBOARDING_LINES}
+                  width={700}
+                  height={300}
+                />
+              </div>
+
+              {/* funnel Chart */}
+              {/* Line Chart */}
+              <div className="w-2/3 rounded-md border p-4">
+                <h3 className="mb-2 text-lg font-semibold">
+                  Onboarding Funnel
+                </h3>
+                <FunnelCharts data={funnelData} />
+              </div>
+            </div>
+          </section>
+        </TabsContent>
+        <TabsContent value="sales">Coming Soon...</TabsContent>
+        <TabsContent value="purchase">Coming Soon...</TabsContent>
+        <TabsContent value="inventory">Coming Soon...</TabsContent>
+        <TabsContent value="vendors">Coming Soon...</TabsContent>
+        <TabsContent value="catalogues">Coming Soon...</TabsContent>
+        <TabsContent value="gst">Coming Soon...</TabsContent>
+      </Tabs>
     </Wrapper>
   );
 };
