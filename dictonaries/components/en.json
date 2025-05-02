@@ -449,7 +449,7 @@
             },
             "successMsg": {
                 "otp_sent": "OTP Sent",
-                "successMsg.invoice_generate_success": "Invoice Generated Successfully"
+                "invoice_generate_success": "Invoice Generated Successfully"
             },
             "ctas": {
                 "next": "Next",

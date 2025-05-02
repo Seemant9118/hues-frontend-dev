@@ -449,7 +449,7 @@
             },
             "successMsg": {
                 "otp_sent": "ओटीपी भेजा गया",
-                "successMsg.invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया।"
+                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया।"
             },
             "ctas": {
                 "next": "अगला",
