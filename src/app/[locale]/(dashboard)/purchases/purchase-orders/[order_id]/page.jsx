@@ -23,7 +23,7 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
-  shareOrder,
+  viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, Eye, MoreVertical, Pencil } from 'lucide-react';
@@ -173,22 +173,6 @@ const ViewOrder = () => {
     });
   };
 
-  // download mutaion
-  const downloadOrderMutation = useMutation({
-    mutationKey: [orderApi.shareOrder.endpointKey],
-    mutationFn: shareOrder,
-    onSuccess: (res) => {
-      const { publicUrl } = res.data.data;
-      // PDF open in new tab
-      window.open(publicUrl, '_blank', 'noopener,noreferrer');
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
-  });
-
   const OrderColumns = usePurchaseOrderColumns();
 
   // multiStatus components
@@ -254,19 +238,12 @@ const ViewOrder = () => {
                 <Tooltips
                   trigger={
                     <Button
-                      disabled={downloadOrderMutation.isPending}
-                      onClick={() =>
-                        downloadOrderMutation.mutate(params.order_id)
-                      }
+                      onClick={() => viewOrderinNewTab(params.order_id)}
                       size="sm"
                       variant="outline"
                       className="font-bold"
                     >
-                      {downloadOrderMutation.isPending ? (
-                        <Loading size={14} />
-                      ) : (
-                        <Eye size={14} />
-                      )}
+                      <Eye size={14} />
                     </Button>
                   }
                   content={translations('ctas.view.placeholder')}

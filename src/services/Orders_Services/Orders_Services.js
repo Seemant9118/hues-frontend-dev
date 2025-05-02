@@ -1,5 +1,6 @@
 import { orderApi } from '@/api/order_api/order_api';
 import { APIinstance } from '@/services';
+import { toast } from 'sonner';
 
 export const CreateOrderService = (data) => {
   return APIinstance.post(orderApi.createOrder.endpoint, data);
@@ -83,6 +84,37 @@ export const getUnconfirmedPurchases = ({ id, data }) => {
   );
 };
 
-export const shareOrder = (id) => {
-  return APIinstance.post(`${orderApi.shareOrder.endpoint}${id}`);
+export const viewOrderinNewTab = async (id) => {
+  try {
+    const response = await APIinstance.post(
+      `${orderApi.viewOrderinNewTab.endpoint}${id}`,
+      {},
+      { responseType: 'blob' },
+    );
+
+    const pdfBlob = response.data;
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const filename = `order-${id}.pdf`;
+
+    const htmlContent = `
+      <html>
+        <head><title>${filename}</title></head>
+        <body style="margin:0">
+          <iframe src="${pdfUrl}" type="application/pdf" width="100%" height="100%" style="border:none;"></iframe>
+        </body>
+      </html>
+    `;
+
+    const newTab = window.open();
+    if (newTab) {
+      newTab.document.open();
+      newTab.document.write(htmlContent);
+      newTab.document.close();
+    } else {
+      toast.error('Popup blocked. PDF download instead.');
+    }
+  } catch (error) {
+    toast.error('Error fetching Order PDF');
+  }
 };
