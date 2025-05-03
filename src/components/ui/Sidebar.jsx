@@ -24,6 +24,19 @@ import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
+  // const adminLinks = [
+  //   {
+  //     name: 'Reports',
+  //     icon: <SquareKanban size={16} />,
+  //     path: `/admin/reports`,
+  //   },
+  //   {
+  //     name: 'Enterprise List',
+  //     icon: <List size={16} />,
+  //     path: `/admin/enterprises`,
+  //   },
+  // ];
+
   const links = [
     {
       name: 'sidebar.dashboard',
@@ -159,6 +172,15 @@ const Sidebar = () => {
           blurDataURL="/hues_logo.png"
         />
       </Link>
+
+      <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1">
+        {/* admin Navigation Links */}
+        {/* <nav className="flex flex-col gap-2">
+          <span className="text-sm font-semibold">Admin</span>
+          {adminLinks.map((link) => (
+            <StyledLinks key={link.name} link={link} />
+          ))}
+        </nav> */}
 
       <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
         {/* Navigation Links */}
