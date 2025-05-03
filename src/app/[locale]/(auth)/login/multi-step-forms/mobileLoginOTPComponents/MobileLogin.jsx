@@ -9,6 +9,7 @@ import { validationBase64 } from '@/services/Invitation_Service/Invitation_Servi
 import { loginWithInvitation } from '@/services/User_Auth_Service/UserAuthServices';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -20,7 +21,9 @@ const MobileLogin = ({
   errorMsg,
   setErrorMsg,
   generateOTPMutation,
+  translations,
 }) => {
+  const translationForErrorMessages = useTranslations();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get('invitationToken');
 
@@ -57,11 +60,11 @@ const MobileLogin = ({
       LocalStorageService.set('user_mobile_number', inviteData.mobile_number);
       LocalStorageService.set('operation_type', data.data.data.operation_type);
       LocalStorageService.set('invitationData', data.data.data.invitationData);
-      toast.success(data.data.message);
+      toast.success(translations('toast.otpSent'));
       setMobileLoginStep(2); // verify mobile OTP
     },
     onError: () => {
-      setErrorMsg('Failed to send OTP');
+      setErrorMsg(translations('toast.failedToSendOtp'));
     },
   });
 
@@ -70,7 +73,7 @@ const MobileLogin = ({
 
     // Validate mobile number and update error message
     const errorMessage = validatePhoneNumber(value);
-    setErrorMsg(errorMessage);
+    setErrorMsg(translationForErrorMessages(errorMessage));
 
     // Update form data
     setFormDataWithMob((prev) => ({
@@ -109,16 +112,16 @@ const MobileLogin = ({
     <div className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10">
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Welcome to Hues
+          {translations('header.title')}
         </h1>
         <p className="w-full text-center text-sm text-[#A5ABBD]">
-          One account for all things{' '}
-          <span className="font-bold">Paraphernalia</span>
+          {translations('header.subtitle')}{' '}
+          <span className="font-bold">{translations('header.brandName')}</span>
         </p>
 
         {isLoading && (
           <div className="flex flex-col">
-            <span>Validating Invitation ...</span>
+            <span>{translations('validation.invitationLoading')}</span>
             <Loading />
           </div>
         )}
@@ -130,14 +133,15 @@ const MobileLogin = ({
       >
         <div className="flex flex-col gap-2">
           <Label htmlFor="mobile-number" className="font-medium text-[#121212]">
-            Phone number <span className="text-red-600">*</span>
+            {translations('form.phoneLabel')}{' '}
+            <span className="text-red-600">*</span>
           </Label>
           <div className="relative flex items-center hover:border-gray-600">
             <span className="absolute left-1.5 text-sm text-gray-600">+91</span>
             <Input
-              type="text"
+              type="number"
               name="mobileNumber"
-              placeholder="Enter a Aadhar linked phone number"
+              placeholder={translations('form.phonePlaceholder')}
               className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobileNumber}
@@ -156,7 +160,7 @@ const MobileLogin = ({
             <Loading />
           ) : (
             <div className="flex items-center gap-4">
-              <p>Send OTP</p>
+              <p>{translations('button.sendOtp')}</p>
             </div>
           )}
         </Button>

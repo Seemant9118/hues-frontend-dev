@@ -13,6 +13,7 @@ const VerifyMobileOTP = ({
   formDataWithMob,
   generateOTPMutation,
   verifyOTPMutation,
+  translations,
 }) => {
   const [startFrom, setStartFrom] = useState(30);
   const [otp, setOtp] = useState();
@@ -23,12 +24,22 @@ const VerifyMobileOTP = ({
   const islogInWithInviteLink = LocalStorageService.get('invitationData');
 
   useEffect(() => {
+    // If startFrom is already 0 or less, stop the timer
+    if (startFrom <= 0) return;
+
     const timer = setInterval(() => {
-      setStartFrom((prevStartFrom) => prevStartFrom - 1);
+      setStartFrom((prevStartFrom) => {
+        if (prevStartFrom <= 1) {
+          clearInterval(timer); // Clear the interval when it reaches 0
+          return 0; // Set it to 0 to avoid going negative
+        }
+        return prevStartFrom - 1;
+      });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    // eslint-disable-next-line consistent-return
+    return () => clearInterval(timer); // Cleanup on unmount or when startFrom changes
+  }, [startFrom]);
 
   const handleChangeOtp = (value) => {
     setOtp(value);
@@ -57,10 +68,11 @@ const VerifyMobileOTP = ({
     >
       <div className="flex flex-col gap-4">
         <h2 className="w-full text-center text-2xl font-bold">
-          Verify your number
+          {translations('verifyOtp.heading')}
         </h2>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-          An one time OTP has been sent to <span>+91 {userMobileNumber}</span>
+          {translations('verifyOtp.instruction')}{' '}
+          <span>+91 {userMobileNumber}</span>
         </p>
       </div>
 
@@ -80,14 +92,9 @@ const VerifyMobileOTP = ({
       />
 
       <p className="flex w-full items-center justify-center gap-2 text-sm text-[#A5ABBD]">
-        Resend OTP in{' '}
+        {translations('verifyOtp.resendSection.textBeforeTimer')}{' '}
         <span className="flex items-center gap-1 font-semibold">
-          {startFrom >= 0 ? (
-            <p className="flex items-center gap-1">
-              <Clock5 size={15} />
-              00:{startFrom}s
-            </p>
-          ) : (
+          {startFrom === 0 ? (
             <Button
               size="sm"
               variant="outline"
@@ -96,8 +103,15 @@ const VerifyMobileOTP = ({
                 handleResendOTP(); // api call for re-generateOTP
               }}
             >
-              Resend
+              {translations('verifyOtp.resendSection.resendButton')}
             </Button>
+          ) : (
+            <p className="flex items-center gap-1">
+              <Clock5 size={15} />
+              {translations('verifyOtp.resendSection.timer', {
+                seconds: startFrom.toString().padStart(2, '0'), // ensures "09", "08", etc.
+              })}
+            </p>
           )}
         </span>
       </p>
@@ -109,7 +123,11 @@ const VerifyMobileOTP = ({
           className="w-full bg-[#288AF9] p-2"
           disabled={verifyOTPMutation.isPending}
         >
-          {verifyOTPMutation.isPending ? <Loading /> : 'Verify'}
+          {verifyOTPMutation.isPending ? (
+            <Loading />
+          ) : (
+            translations('verifyOtp.buttons.verify')
+          )}
         </Button>
 
         <Button
@@ -119,7 +137,7 @@ const VerifyMobileOTP = ({
           onClick={() => setMobileLoginStep(1)}
         >
           <ArrowLeft size={14} />
-          Back
+          {translations('verifyOtp.buttons.back')}
         </Button>
       </div>
     </form>

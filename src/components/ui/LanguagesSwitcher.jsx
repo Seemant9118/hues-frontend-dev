@@ -2,14 +2,13 @@
 
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
 import { useUser } from '@/context/UserContext';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import Select from 'react-select';
 import { Label } from './label';
 
 const LanguagesSwitcher = ({ translations }) => {
   const { setLoading } = useUser();
-  const router = useRouter();
   const pathname = usePathname(); // Get current route path
 
   const optionsOfLanguages = [
@@ -25,10 +24,13 @@ const LanguagesSwitcher = ({ translations }) => {
 
   const handleChange = (selectedOption) => {
     const newLocale = selectedOption.value;
-    const currentPathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, ''); // Remove existing locale prefix
+    // ✅ Set the cookie manually (expires in 1 year)
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=${60 * 60 * 24 * 365}`;
 
+    const currentPathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, ''); // Remove existing locale prefix
     setLoading(true);
-    router.replace(`/${newLocale}${currentPathWithoutLocale}`);
+    // Force a full page reload to ensure server picks up cookie
+    window.location.href = `/${newLocale}${currentPathWithoutLocale}`;
   };
 
   return (

@@ -47,10 +47,11 @@ export const getStylesForSelectComponent = () => {
     }),
     menuList: (base) => ({
       ...base,
-      padding: '2px',
+      // padding: '2px',
       fontSize: '14px',
       maxHeight: '150px',
       overflowY: 'auto',
+      borderRadius: '9px',
 
       // Custom scrollbar styles
       '&::-webkit-scrollbar': {

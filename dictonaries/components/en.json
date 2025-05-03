@@ -752,6 +752,47 @@
             "template": {
                 "default_description": "Clean, professional design with blue accents"
             }
+        },
+        "validationUtils": {
+            "phone": {
+                "required": "*Phone Number is required to proceed",
+                "invalid": "*Please enter a 10 - digit phone number"
+            },
+            "pan": {
+                "required": "*Required PAN Number",
+                "invalid": "*Please provide a valid PAN Number"
+            },
+            "aadhaar": {
+                "required": "*Required Aadhaar Number",
+                "invalid": "*Please provide a valid Aadhaar Number"
+            },
+            "name": {
+                "required": "*Required Full Name"
+            },
+            "dob": {
+                "required": "*Required Date of Birth"
+            },
+            "terms": {
+                "required": "*Please accept the terms and conditions"
+            },
+            "enterprise": {
+                "type": {
+                    "required": "*Required Enterprise Type"
+                },
+                "name": {
+                    "required": "*Required Enterprise Name"
+                },
+                "address": {
+                    "required": "*Required Enterprise Address"
+                },
+                "dateOfIncorporation": {
+                    "required": "*Required Date of Incorporation"
+                }
+            },
+            "email": {
+                "required": "*Required Email",
+                "invalid": "*Please provide a valid email"
+            }
         }
     }
 }
