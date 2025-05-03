@@ -307,7 +307,7 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
             ((item.type === 'goods' && filteredOutProductGoods?.length > 0) ||
               (item.type === 'services' &&
                 filteredOutServices?.length > 0)) && (
-              <div className="absolute bottom-0 flex w-full items-center justify-end gap-2 p-2">
+              <div className="sticky bottom-0 z-10 flex w-full items-center justify-end gap-2 bg-white p-2">
                 <Button
                   variant="outline"
                   size="sm"

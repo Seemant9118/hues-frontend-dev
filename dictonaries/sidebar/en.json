@@ -8,12 +8,14 @@
         "clients": "Clients",
         "vendors": "Vendors",
         "notifications": "Notifications",
+        "settings": "Settings",
         "profile": "Profile",
         "subTabs": {
             "goods": "Goods",
             "services": "Services",
             "orders": "Orders",
             "invoices": "Invoices",
+            "payments": "Payments",
             "debitNotes": "Debit Notes"
         }
     }

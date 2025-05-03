@@ -5,11 +5,7 @@
       "value": "en",
       "domain": "localhost",
       "path": "/",
-
-      "expires": 1774683391.402611,
-
-      "expires": 1773913159.004541,
-
+      "expires": 1777526235.013277,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -20,53 +16,6 @@
       "origin": "http://localhost:3000",
       "localStorage": [
         {
-          "name": "isEnterpriseOnboardingComplete",
-          "value": "true"
-        },
-        {
-          "name": "isDirector",
-          "value": "false"
-        },
-        {
-          "name": "user_mobile_number",
-          "value": "\"9532751771\""
-        },
-        {
-          "name": "isOnboardingComplete",
-          "value": "true"
-        },
-        {
-          "name": "isAadhaarVerified",
-          "value": "true"
-        },
-        {
-          "name": "refreshtoken",
-
-          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsImlhdCI6MTc0MjM3NzE1OCwiZXhwIjoxNzQyOTgxOTU4fQ.BFISHP-z2DwA5JM82qVJmMSm1OGDuKHN9LiE_E-ifQ0\""
-        },
-        {
-          "name": "enterprise_Id",
-          "value": "52"
-        },
-        {
-          "name": "isAssociateRequestAccepted",
-          "value": "false"
-        },
-        {
-          "name": "isPanVerified",
-          "value": "true"
-        },
-        {
-          "name": "invitationData",
-
-          "value": "null"
-        },
-        {
-          "name": "attemptsRemaining",
-          "value": "2"
-
-        },
-        {
           "name": "isAssociateRequestCreated",
           "value": "false"
         },
@@ -75,18 +24,60 @@
           "value": "96"
         },
         {
-          "name": "operation_type",
-          "value": "\"mobile_login\""
+          "name": "isDirector",
+          "value": "false"
         },
         {
-          "name": "token",
-
-          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsIm1vYmlsZV9udW1iZXIiOiI5NTMyNzUxNzcxIiwiZW50ZXJwcmlzZV9pZCI6NTIsImlhdCI6MTc0MzE0NzM5NCwiZXhwIjoxNzQzMTQ3OTk0fQ.XRKCl2fI866rgLKVEMJQDYiOCxlv0hayHEnFb-0705o\""
-
+          "name": "isPanVerified",
+          "value": "true"
+        },
+        {
+          "name": "isEnterpriseOnboardingComplete",
+          "value": "true"
         },
         {
           "name": "isEnterprisestartedOnboarding",
           "value": "true"
+        },
+        {
+          "name": "isOnboardingComplete",
+          "value": "true"
+        },
+        {
+          "name": "invitationData",
+          "value": "undefined"
+        },
+        {
+          "name": "isAadhaarVerified",
+          "value": "true"
+        },
+        {
+          "name": "token",
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsIm1vYmlsZV9udW1iZXIiOiI5NTMyNzUxNzcxIiwiZW50ZXJwcmlzZV9pZCI6NTIsImlhdCI6MTc0NTk5MDIzMSwiZXhwIjoxNzQ1OTkwODMxfQ.aqfREkGtKjm-j7c4iQoh3WtR46Xk18tZ7uuZfxVXebc\""
+        },
+        {
+          "name": "refreshtoken",
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsImlhdCI6MTc0NTk5MDIzMSwiZXhwIjoxNzQ2NTk1MDMxfQ.IE55XUdcPr9LmZx16gZFuFvwKHLLsSnjXglNFT1XbKs\""
+        },
+        {
+          "name": "isAssociateRequestAccepted",
+          "value": "false"
+        },
+        {
+          "name": "enterprise_Id",
+          "value": "52"
+        },
+        {
+          "name": "user_mobile_number",
+          "value": "\"9532751771\""
+        },
+        {
+          "name": "operation_type",
+          "value": "\"mobile_login\""
+        },
+        {
+          "name": "attemptsRemaining",
+          "value": "3"
         }
       ]
     }

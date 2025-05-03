@@ -67,13 +67,13 @@
                     "order_details": "Order Details",
                     "negotiation": "Negotiation",
                     "invoices": "Invoices",
-                    "record_payment": "Record Payment"
+                    "payment_advice": "Payment Advice"
                 },
                 "ctas": {
-                    "record_payment": "Record Payment",
+                    "payment_advice": "Send Payment advice",
                     "generate_invoice": "Generate Invoice",
-                    "download": {
-                        "placeholder": "Download Order Details"
+                    "view": {
+                        "placeholder": "Preview order"
                     },
                     "more": {
                         "placeholder": "More options",
@@ -166,10 +166,11 @@
             "invoice_details": {
                 "title": {
                     "invoices": "Invoices",
-                    "invoice_details": "Invoice Details"
+                    "invoice_details": "Invoice Details",
+                    "payment_advice": "Payment Advice"
                 },
                 "ctas": {
-                    "record_payment": "Record Payment",
+                    "payment_advice": "Send Payment advice",
                     "share": {
                         "placeholder": "Coming Soon.."
                     },
@@ -221,6 +222,39 @@
                                 "para": "You haven't any debit notes yet."
                             }
                         }
+                    }
+                }
+            }
+        },
+        "purchase-payments": {
+            "title": "Payments",
+            "title2": "Create a new payment advice",
+            "emptyStateComponent": {
+                "heading": "No Payments yet",
+                "description": "You don’t have payment yet. Start by clicking on the Create Payment Advice button"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Payments",
+                    "successMsg": "Payments exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "create_payment_advice": {
+                    "cta": "Create Payment Advice",
+                    "placeholder": "Create Payment Advice"
+                }
+            },
+            "section": {
+                "table": {
+                    "header": {
+                        "payment_id": "PAYMENT ID",
+                        "vendor_name": "VENDOR NAME",
+                        "invoice_id": "INVOICE ID",
+                        "total_amount": "TOTAL AMOUNT",
+                        "amount_paid": "AMOUNT PAID",
+                        "mode_of_payment": "MODE OF PAYMENT",
+                        "payment_date": "PAYMENT DATE",
+                        "status": "STATUS"
                     }
                 }
             }

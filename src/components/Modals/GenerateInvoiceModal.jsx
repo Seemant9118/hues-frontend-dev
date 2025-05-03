@@ -1,6 +1,5 @@
 'use client';
 
-import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import {
   Dialog,
@@ -9,86 +8,38 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useRouter } from '@/i18n/routing';
-import {
-  createInvoiceForAcceptedOrder,
-  createInvoiceForNewOrder,
-} from '@/services/Invoice_Services/Invoice_Services';
 import { checkPINStatus } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { FileCog } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import Slot from '../ui/Slot';
 
 const GenerateInvoiceModal = ({
+  invoiceMutation,
+  invoiceMutationNew,
   orderDetails,
   invoicedData,
   setInvoicedData,
   disableCondition,
   setIsGenerateInvoice,
   handleClose,
+  isPINVerified,
+  isPINError,
 }) => {
   const translations = useTranslations('components.generate_invoice_modal_otp');
-  const queryClient = useQueryClient();
   const router = useRouter();
-  const params = useParams();
-  const orderId = params.order_id;
   const [open, setOpen] = useState(false);
-  const [isPINVerified, setPINVerified] = useState(false);
-  const [isPINError, setIsPINError] = useState(false);
 
   const { data: pinStatus } = useQuery({
     queryKey: [pinSettings.checkPINStatus.endpointKey],
     queryFn: () => checkPINStatus(),
     select: (data) => data.data.data,
     enabled: open,
-  });
-
-  // mutation fn - generate Invoice : IF ACCEPTED
-  const invoiceMutation = useMutation({
-    mutationKey: [invoiceApi.createInvoiceForAcceptedOrder.endpointKey],
-    mutationFn: createInvoiceForAcceptedOrder,
-    onSuccess: () => {
-      setPINVerified(true);
-      toast.success(translations('successMsg.invoice_generate_success'));
-      queryClient.invalidateQueries([
-        invoiceApi.getInvoices.endpointKey,
-        orderId,
-      ]);
-    },
-    onError: (error) => {
-      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
-        setIsPINError(true);
-      }
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
-  });
-
-  // mutation fn - new generate Invoice : IF NEW
-  const invoiceMutationNew = useMutation({
-    mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
-    mutationFn: createInvoiceForNewOrder,
-    onSuccess: () => {
-      setPINVerified(true);
-      toast.success(translations('successMsg.invoice_generate_success'));
-      router.push('/sales/sales-orders');
-    },
-    onError: (error) => {
-      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
-        setIsPINError(true);
-      }
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
   });
 
   const handleChangeOtp = (value) => {
@@ -137,7 +88,7 @@ const GenerateInvoiceModal = ({
                 {!pinStatus?.pinExists && (
                   <span
                     className="cursor-pointer text-primary underline hover:text-black"
-                    onClick={() => router.push('/profile')}
+                    onClick={() => router.push('/settings?tab=pinSettings')}
                   >
                     {translations('infoText.info2')}
                   </span>
@@ -177,7 +128,7 @@ const GenerateInvoiceModal = ({
             {isPINError && (
               <p
                 className="cursor-pointer text-sm font-semibold hover:underline"
-                onClick={() => router.push('/profile')}
+                onClick={() => router.push('/settings?tab=pinSettings')}
               >
                 {translations('errorMsg.pin_error')}
               </p>

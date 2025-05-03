@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
@@ -13,7 +14,9 @@ const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
   sendAadharOTPMutation,
+  translations,
 }) => {
+  const translationsForError = useTranslations();
   const [errorMsg, setErrorMsg] = useState(null);
 
   // validation fn
@@ -59,10 +62,10 @@ const AadharNumberDetail = ({
       <div className="flex flex-col gap-3">
         <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Verify your Aadhar
+          {translations('steps.aadharNum.title')}
         </h1>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-          Enter all the details to unlock Hues completely
+          {translations('steps.aadharNum.subtitle')}
         </p>
       </div>
 
@@ -72,7 +75,8 @@ const AadharNumberDetail = ({
             htmlFor="mobile-number"
             className="flex items-center gap-1 font-medium text-[#414656]"
           >
-            Aadhar <span className="text-red-600">*</span>{' '}
+            {translations('steps.aadharNum.label')}{' '}
+            <span className="text-red-600">*</span>{' '}
             <Tooltips
               trigger={<Info size={12} />}
               content="Aadhar: Your universal legal identifier for all government and financial interactions on Hues."
@@ -83,13 +87,15 @@ const AadharNumberDetail = ({
               // required={true}
               className="pr-36 focus:font-bold"
               type="text"
-              placeholder="Aadhar Card Number"
+              placeholder={translations('steps.aadharNum.placeholder')}
               name="aadharNumber"
               value={aadharNumber}
               onChange={handleChange}
             />
           </div>
-          {errorMsg?.aadharNumber && <ErrorBox msg={errorMsg?.aadharNumber} />}
+          {errorMsg?.aadharNumber && (
+            <ErrorBox msg={translationsForError(errorMsg?.aadharNumber)} />
+          )}
         </div>
 
         <Button
@@ -98,7 +104,11 @@ const AadharNumberDetail = ({
           size="sm"
           disabled={sendAadharOTPMutation.isPending}
         >
-          {sendAadharOTPMutation.isPending ? <Loading /> : 'Proceed'}
+          {sendAadharOTPMutation.isPending ? (
+            <Loading />
+          ) : (
+            translations('steps.aadharNum.button')
+          )}
         </Button>
       </div>
     </form>

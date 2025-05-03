@@ -65,7 +65,7 @@
                     },
                     "infoMsg": {
                         "toSearch": "खोजने के लिए एक पहचानकर्ता टाइप करें",
-                        "enterprise_not_available": "उपलब्ध नहीं है।"
+                        "enterprise_not_available": "एंटरप्राइज HUES पर सक्रिय नहीं है"
                     },
                     "ctas": {
                         "identifiers": {
@@ -232,7 +232,7 @@
                     "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
                     "offer_created_successfully": "विक्रय आदेश सफलतापूर्वक बनाया गया",
                     "bid_created_successfully": "क्रय आदेश सफलतापूर्वक बनाया गया",
-                    "invoice_created_successfully": "चालान बनाया गया! कृपया नवीनतम चालान देखने के लिए पृष्ठ को ताज़ा करें"
+                    "invoice_created_successfully": "चालान सफलतापूर्वक बनाया गया"
                 },
                 "input": {
                     "clientType": {
@@ -272,12 +272,92 @@
                     "cancel": "रद्द करें",
                     "add": "जोड़ें",
                     "create": "बनाएँ",
-                    "edit": "संपादित करें"
+                    "edit": "संपादित करें",
+                    "next": "अगला"
                 },
                 "footer": {
                     "gross_amount": "कुल राशि",
                     "tax_amount": "कर राशि",
                     "total_amount": "कुल भुगतान राशि"
+                }
+            }
+        },
+        "create_B2C_Invoice": {
+            "title": {
+                "b2cInvoice": "बी2सी चालान"
+            },
+            "form": {
+                "label": {
+                    "customer": "ग्राहक संख्या",
+                    "customer_name": "ग्राहक का नाम",
+                    "customer_address": "ग्राहक का पता",
+                    "address_type": "पता प्रकार चुनें",
+                    "item_type": "आइटम प्रकार",
+                    "item": "आइटम",
+                    "quantity": "मात्रा",
+                    "price": "मूल्य",
+                    "invoice_value": "चालान मूल्य",
+                    "value": "मूल्य",
+                    "gst": "जीएसटी",
+                    "tax_amount": "कर राशि",
+                    "amount": "कुल राशि"
+                },
+                "errorMsg": {
+                    "customer": "*कृपया ग्राहक जोड़ें या चुनें",
+                    "customer_name": "*कृपया ग्राहक का नाम लिखें",
+                    "customer_address": "*कृपया ग्राहक का पता लिखें",
+                    "address_type": "*कृपया पता प्रकार चुनें",
+                    "item_type": "*कृपया आइटम प्रकार चुनें",
+                    "item": "*ऑर्डर बनाने के लिए कम से कम एक आइटम जोड़ें",
+                    "quantity": "*मात्रा आवश्यक है",
+                    "price": "*मूल्य आवश्यक है",
+                    "gst": "*जीएसटी (%) आवश्यक है",
+                    "value": "*मूल्य आवश्यक है",
+                    "tax_amount": "*कर राशि आवश्यक है",
+                    "amount": "*कुल राशि आवश्यक है"
+                },
+                "successMsg": {
+                    "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
+                    "offer_created_successfully": "सेल्स ऑर्डर सफलतापूर्वक बनाया गया",
+                    "bid_created_successfully": "पर्चेज ऑर्डर सफलतापूर्वक बनाया गया",
+                    "invoice_created_successfully": "चालान सफलतापूर्वक बन गया है"
+                },
+                "input": {
+                    "customer": {
+                        "placeholder": "नया जोड़ने या खोजने के लिए नंबर दर्ज करें"
+                    },
+                    "item_type": {
+                        "goods": "सामान",
+                        "services": "सेवाएँ",
+                        "placeholder": "चुनें..."
+                    },
+                    "item": {
+                        "placeholder": "आइटम चुनें"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "आइटम",
+                        "quantity": "मात्रा",
+                        "price": "मूल्य",
+                        "gst": "जीएसटी (%)",
+                        "invoice_value": "चालान मूल्य",
+                        "value": "मूल्य",
+                        "tax_amount": "कर राशि",
+                        "amount": "कुल राशि"
+                    }
+                },
+                "ctas": {
+                    "cancel": "रद्द करें",
+                    "add": "जोड़ें",
+                    "create": "बनाएं",
+                    "edit": "संपादित करें",
+                    "next": "अगला"
+                },
+                "footer": {
+                    "gross_amount": "कुल राशि",
+                    "tax_amount": "कर राशि",
+                    "total_amount": "कुल देय राशि"
                 }
             }
         },
@@ -368,7 +448,12 @@
                 "common": "कुछ गलत हो गया"
             },
             "successMsg": {
-                "otp_sent": "ओटीपी भेजा गया"
+                "otp_sent": "ओटीपी भेजा गया",
+                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हो गया।"
+            },
+            "ctas": {
+                "next": "अगला",
+                "cancel": "रद्द करें"
             }
         },
         "generate_invoice_modal_otp": {
@@ -439,10 +524,10 @@
                 "negotiation_submitted": "मोलभाव सफलतापूर्वक जमा किया गया"
             }
         },
-        "record_payment_order": {
+        "make_payment": {
             "form": {
                 "label": {
-                    "payment_mode": "भुगतान मोड",
+                    "payment_mode": "भुगतान का माध्यम",
                     "options": {
                         "neft": "एनईएफटी",
                         "rtgs": "आरटीजीएस",
@@ -451,9 +536,12 @@
                         "cheque": "चेक",
                         "cash": "नकद"
                     },
-                    "tran_id": "लेनदेन आईडी",
-                    "amount_paid": "भरी गई राशि",
-                    "balance": "शेष राशि"
+                    "invoice_id": "चालान आईडी",
+                    "tran_id": "लेन-देन आईडी",
+                    "bank_acc_details": "बैंक खाता विवरण",
+                    "payment_date": "भुगतान की तिथि",
+                    "amount_paid": "भुगतान की गई राशि",
+                    "balance": "बकाया राशि"
                 },
                 "table": {
                     "title": "इनवॉइस",
@@ -485,7 +573,7 @@
             },
             "successMsg": {
                 "payment_recorded_sucessfully": "भुगतान सफलतापूर्वक रिकॉर्ड किया गया",
-                "upload_success": "सफलतापूर्वक अपलोड हुआ"
+                "attached_success": "सफलतापूर्वक संलग्न किया गया"
             },
             "errorMsg": {
                 "payment_mode": "*आवश्यक! कृपया भुगतान मोड चुनें",
@@ -505,6 +593,18 @@
             },
             "ctas": {
                 "record_payment": "भुगतान दर्ज करें"
+            }
+        },
+        "invoice_type_modal": {
+            "title": "इनवॉइस प्रकार चुनें",
+            "cta": {
+                "invoice": "इनवॉइस"
+            },
+            "types": {
+                "type1": "बी2सी (बिज़नेस टू कंज़्यूमर)",
+                "type1_desc": "व्यक्तिगत उपभोक्ताओं को सीधे बिक्री के लिए, आमतौर पर बिना GST पंजीकरण के।",
+                "type2": "बी2बी (बिज़नेस टू बिज़नेस)",
+                "type2_desc": "दो पंजीकृत व्यवसायों के बीच लेन-देन के लिए, जिनके पास GST विवरण होते हैं।"
             }
         },
         "generate_pin_modal": {
@@ -552,6 +652,146 @@
                     "enter_otp": "ओटीपी दर्ज करें",
                     "confirm_pin": "पिन की पुष्टि करें"
                 }
+            },
+            "audit_logs": {
+                "title": "पिन ऑडिट लॉग्स",
+                "table": {
+                    "header": {
+                        "label": {
+                            "pin_id": "पिन आईडी",
+                            "updated_by": "द्वारा अपडेट किया गया",
+                            "update_on": "पर अपडेट किया गया",
+                            "action_type": "क्रिया प्रकार",
+                            "ip_address": "आईपी पता",
+                            "status": "स्थिति"
+                        }
+                    }
+                }
+            }
+        },
+        "paymentOverview": {
+            "paymentId": "भुगतान आईडी",
+            "invoiceId": "चालान आईडी",
+            "status": "स्थिति",
+            "clientName": "ग्राहक का नाम",
+            "vendorName": "विक्रेता का नाम",
+            "transactionId": "लेन-देन आईडी",
+            "modeOfPayment": "भुगतान का माध्यम",
+            "amountPaid": "भुगतान की गई राशि",
+            "totalAmount": "कुल राशि",
+            "paymentDate": "भुगतान तिथि",
+            "additionalProof": "अतिरिक्त प्रमाण",
+            "fallback": "-"
+        },
+        "raise_debit_note_modal": {
+            "trigger": {
+                "button": "डेबिट नोट जारी करें",
+                "tooltip": "डेबिट नोट जारी करें"
+            },
+            "content": {
+                "title": "डेबिट नोट",
+                "form": {
+                    "amount": {
+                        "label": "राशि",
+                        "required": "*",
+                        "error": "राशि चालान की कुल राशि से अधिक नहीं होनी चाहिए"
+                    },
+                    "remark": {
+                        "label": "टिप्पणी",
+                        "required": "*"
+                    },
+                    "actions": {
+                        "discard": "रद्द करें",
+                        "submit": "जमा करें"
+                    }
+                }
+            },
+            "toast": {
+                "success": "डेबिट नोट सफलतापूर्वक जारी किया गया",
+                "error": "कुछ गलत हो गया"
+            }
+        },
+        "invoiceType": {
+            "title": "चालान प्रकार चुनें",
+            "set_as_default": "डिफ़ॉल्ट रूप से सेट करें",
+            "proceed_button": "आगे बढ़ें",
+            "toast_success": "डिफ़ॉल्ट चालान प्रकार सफलतापूर्वक सेट किया गया",
+            "toast_error": "कुछ गलत हो गया",
+            "change_default_prefix": "आप अपना डिफ़ॉल्ट बदल सकते हैं",
+            "change_default_link": "यहां से",
+            "types": {
+                "b2c": {
+                    "name": "बी2सी चालान",
+                    "description": "व्यक्तिगत उपभोक्ताओं को सीधे बिक्री के लिए, आमतौर पर बिना GST पंजीकरण के।"
+                },
+                "b2b": {
+                    "name": "बी2बी चालान",
+                    "description": "दो पंजीकृत व्यवसायों के बीच GST विवरण के साथ लेनदेन के लिए।"
+                }
+            }
+        },
+        "invoice_settings": {
+            "default_invoice_type": "डिफ़ॉल्ट चालान प्रकार",
+            "default_skin": "डिफ़ॉल्ट स्किन",
+            "preview_button": "पूर्वावलोकन",
+            "custom_remarks_label": "कस्टम टिप्पणी",
+            "discard_button": "रद्द करें",
+            "save_button": "सहेजें",
+            "social_links_label": "सोशल लिंक जोड़ें",
+            "social_links_placeholder": "यहाँ लिंक जोड़ें",
+            "invoice_types": {
+                "b2c": {
+                    "name": "बी2सी (बिज़नेस टू कंज़्यूमर)",
+                    "description": "व्यक्तिगत उपभोक्ताओं को सीधे बिक्री के लिए, आमतौर पर बिना GST पंजीकरण के।"
+                },
+                "b2b": {
+                    "name": "बी2बी (बिज़नेस टू बिज़नेस)",
+                    "description": "दो पंजीकृत व्यवसायों के बीच लेन-देन के लिए जिनके पास GST विवरण होते हैं।"
+                }
+            },
+            "template": {
+                "default_description": "नीले रंग के एक्सेंट के साथ साफ, पेशेवर डिज़ाइन"
+            }
+        },
+        "validationUtils": {
+            "phone": {
+                "required": "*फोन नंबर से आगे बढ़ने के लिए आवश्यक है",
+                "invalid": "*कृपया 10 अंकों का फोन नंबर दर्ज करें"
+            },
+            "pan": {
+                "required": "*पैन नंबर आवश्यक है",
+                "invalid": "*कृपया एक मान्य पैन नंबर प्रदान करें"
+            },
+            "aadhaar": {
+                "required": "*आधार नंबर आवश्यक है",
+                "invalid": "*कृपया एक मान्य आधार नंबर प्रदान करें"
+            },
+            "name": {
+                "required": "*पूरा नाम आवश्यक है"
+            },
+            "dob": {
+                "required": "*जन्म तिथि आवश्यक है"
+            },
+            "terms": {
+                "required": "*कृपया शर्तों और नियमों को स्वीकार करें"
+            },
+            "enterprise": {
+                "type": {
+                    "required": "*उद्यम प्रकार आवश्यक है"
+                },
+                "name": {
+                    "required": "*उद्यम नाम आवश्यक है"
+                },
+                "address": {
+                    "required": "*उद्यम पता आवश्यक है"
+                },
+                "dateOfIncorporation": {
+                    "required": "*संविधान की तिथि आवश्यक है"
+                }
+            },
+            "email": {
+                "required": "*ईमेल आवश्यक है",
+                "invalid": "*कृपया एक मान्य ईमेल प्रदान करें"
             }
         }
     }

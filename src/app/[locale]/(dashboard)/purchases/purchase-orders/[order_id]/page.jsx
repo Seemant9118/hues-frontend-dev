@@ -5,6 +5,7 @@ import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
@@ -22,10 +23,10 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
-  shareOrder,
+  viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, Download, MoreVertical, Pencil } from 'lucide-react';
+import { Clock, Eye, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -69,6 +70,7 @@ const ViewOrder = () => {
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
+  const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
 
   const [tab, setTab] = useState('overview');
 
@@ -101,6 +103,12 @@ const ViewOrder = () => {
       path: `/purchases/purchase-orders/${params.order_id}/`,
       show: isPastInvoices, // Show only if isPastInvoices is true
     },
+    {
+      id: 5,
+      name: translations('title.payment_advice'),
+      path: `/sales/sales-orders/${params.order_id}`,
+      show: isPaymentAdvicing, // Show only if isPaymentAdvicing is true
+    },
   ];
 
   useEffect(() => {
@@ -108,21 +116,31 @@ const ViewOrder = () => {
     const state = searchParams.get('state');
     setIsNegotiation(state === 'negotiation');
     setIsPastInvoices(state === 'showInvoice');
+    setIsPaymentAdvicing(state === 'payment_advice');
   }, [searchParams]);
 
   useEffect(() => {
     // Update URL based on the state (avoid shallow navigation for full update)
-    const newPath = `/purchases/purchase-orders/${params.order_id}${
-      isNegotiation
-        ? '?state=negotiation'
-        : isPastInvoices
-          ? '?state=showInvoice'
-          : ''
-    }`;
+    let newPath = `/purchases/purchase-orders/${params.order_id}`;
 
+    if (isNegotiation) {
+      newPath += '?state=negotiation';
+    } else if (isPastInvoices) {
+      newPath += '?state=showInvoice';
+    } else if (isPaymentAdvicing) {
+      newPath += '?state=payment_advice';
+    } else {
+      newPath += '';
+    }
     // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
-  }, [isNegotiation, isPastInvoices, params.order_id, router]);
+  }, [
+    isNegotiation,
+    isPastInvoices,
+    isPaymentAdvicing,
+    params.order_id,
+    router,
+  ]);
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -154,24 +172,6 @@ const ViewOrder = () => {
       status: 'ACCEPTED',
     });
   };
-
-  // download mutaion
-  const downloadOrderMutation = useMutation({
-    mutationKey: [orderApi.shareOrder.endpointKey],
-    mutationFn: shareOrder,
-    onSuccess: (res) => {
-      const { publicUrl } = res.data.data;
-      // Trigger file download
-      const link = document.createElement('a');
-      link.href = publicUrl;
-      link.click();
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
-  });
 
   const OrderColumns = usePurchaseOrderColumns();
 
@@ -218,28 +218,35 @@ const ViewOrder = () => {
             </div>
 
             <div className="flex gap-2">
+              {/* send payment advice CTA */}
+              {!isPaymentAdvicing &&
+                (orderDetails.negotiationStatus === 'INVOICED' ||
+                  orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
+                orderDetails?.metaData?.payment?.status !== 'PAID' && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    onClick={() => setIsPaymentAdvicing(true)}
+                    className="font-bold"
+                  >
+                    {translations('ctas.payment_advice')}
+                  </Button>
+                )}
               {/* ctas - share invoice create */}
               {/* download CTA */}
-              {!isNegotiation && (
+              {!isNegotiation && !isPaymentAdvicing && (
                 <Tooltips
                   trigger={
                     <Button
-                      disabled={downloadOrderMutation.isPending}
-                      onClick={() =>
-                        downloadOrderMutation.mutate(params.order_id)
-                      }
+                      onClick={() => viewOrderinNewTab(params.order_id)}
                       size="sm"
                       variant="outline"
                       className="font-bold"
                     >
-                      {downloadOrderMutation.isPending ? (
-                        <Loading size={14} />
-                      ) : (
-                        <Download size={14} />
-                      )}
+                      <Eye size={14} />
                     </Button>
                   }
-                  content={translations('ctas.download.placeholder')}
+                  content={translations('ctas.view.placeholder')}
                 />
               )}
 
@@ -285,7 +292,7 @@ const ViewOrder = () => {
           </section>
 
           {/* switch tabs */}
-          {!isNegotiation && (
+          {!isNegotiation && !isPaymentAdvicing && (
             <section>
               <Tabs
                 value={tab}
@@ -363,6 +370,15 @@ const ViewOrder = () => {
 
           {/* Invoices Component */}
           {isPastInvoices && !isNegotiation && <PastInvoices />}
+
+          {isPaymentAdvicing && !isNegotiation && (
+            <MakePaymentNew
+              orderId={params.order_id}
+              orderDetails={orderDetails}
+              setIsRecordingPayment={setIsPaymentAdvicing}
+              contextType="PAYMENT_ADVICE"
+            />
+          )}
 
           {/* seprator */}
           {!isNegotiation && (

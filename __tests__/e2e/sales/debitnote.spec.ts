@@ -1,5 +1,4 @@
-import { test, expect } from '@playwright/test';
-
+import { expect, test } from '@playwright/test';
 import fs from 'fs';
 
 test.beforeEach(async ({ page }) => {
@@ -10,18 +9,15 @@ test.beforeEach(async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await page.waitForLoadState('domcontentloaded');
   await page.getByRole('link', { name: 'Debit Notes' }).click();
-
 });
 
 test.describe.serial('Debit Note', () => {
   test('Check Order ID', async ({ page }) => {
-
     await page.getByText('DBN/IZA28P/2425/0001').click({ timeout: 5000 });
     await expect(page.getByText('DBN/IZA28P/2425/0001')).toBeVisible({
       timeout: 5000,
     });
   });
-
 
   test('Can Export Data', async ({ page }) => {
     await page.waitForTimeout(5000);
@@ -55,5 +51,4 @@ test.describe.serial('Debit Note', () => {
     // Optionally, delete the file after the test
     fs.unlinkSync(filePath);
   });
-
 });

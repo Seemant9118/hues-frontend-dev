@@ -1,8 +1,13 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { previewInvoice } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation } from '@tanstack/react-query';
+import {
+  createInvoiceForAcceptedOrder,
+  createInvoiceForNewOrder,
+  previewInvoice,
+} from '@/services/Invoice_Services/Invoice_Services';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import base64ToBlob from 'base64toblob';
 import { useTranslations } from 'next-intl';
-import dynamic from 'next/dynamic';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
@@ -10,6 +15,7 @@ import OrdersOverview from '../orders/OrdersOverview';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { Input } from '../ui/input';
+import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import {
   Table,
@@ -21,24 +27,14 @@ import {
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
 
-// dynamic imports
-const GenerateInvoiceModal = dynamic(
-  () => import('@/components/Modals/GenerateInvoiceModal'),
-  {
-    loading: () => <Loading />,
-  },
-);
-const PreviewInvoice = dynamic(
-  () => import('@/components/Modals/PreviewInvoiceModal'),
-  {
-    loading: () => <Loading />,
-  },
-);
-
 const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const translations = useTranslations('components.generate_invoice');
 
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const params = useParams();
   const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
+  const orderId = params.order_id;
 
   const [invoicedData, setInvoicedData] = useState({
     pin: null,
@@ -49,11 +45,29 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     invoiceType: orderDetails?.invoiceType || 'GOODS',
     invoiceItems: [],
   });
-
   const [productDetailsList, setProductDetailsList] = useState([]);
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [previewInvoiceBase64, setPreviewInvoiceBase64] = useState('');
   const [allSelected, setAllSelected] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [url, setUrl] = useState(null);
+  const [isPINError, setIsPINError] = useState(false);
+
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (previewInvoiceBase64) {
+      // Convert base64 string to blob only if it is provided
+      const blob = base64ToBlob(previewInvoiceBase64, 'application/pdf'); // Assuming it's a PDF, change MIME type if different
+      const newUrl = window.URL.createObjectURL(blob);
+      setUrl(newUrl);
+      setIsPreviewOpen(true); // Open the preview modal
+
+      // Clean up the blob URL when the component unmounts or the base64 string changes
+      return () => {
+        window.URL.revokeObjectURL(newUrl);
+      };
+    }
+  }, [previewInvoiceBase64]); // Dependency array to ensure effect runs only when base64StrToRenderPDF changes
 
   const calculatedInvoiceQuantity = (quantity, invoiceQuantity) => {
     const calculatedQty = quantity - invoiceQuantity;
@@ -205,6 +219,59 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       ...invoicedData,
       invoiceItems: [],
     });
+    setIsGenerateInvoice(false);
+  };
+
+  // mutation fn - generate Invoice : IF ACCEPTED
+  const invoiceMutation = useMutation({
+    mutationKey: [invoiceApi.createInvoiceForAcceptedOrder.endpointKey],
+    mutationFn: createInvoiceForAcceptedOrder,
+    onSuccess: (data) => {
+      toast.success(translations('successMsg.invoice_generate_success'));
+      queryClient.invalidateQueries([
+        invoiceApi.getInvoices.endpointKey,
+        orderId,
+      ]);
+      router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
+    },
+    onError: (error) => {
+      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+        setIsPINError(true);
+      }
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
+  // mutation fn - new generate Invoice : IF NEW
+  const invoiceMutationNew = useMutation({
+    mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
+    mutationFn: createInvoiceForNewOrder,
+    onSuccess: (data) => {
+      toast.success(translations('successMsg.invoice_generate_success'));
+
+      router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
+    },
+    onError: (error) => {
+      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+        setIsPINError(true);
+      }
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
+  // handling submit fn
+  const handleSubmit = (updateInvoice) => {
+    if (orderDetails?.negotiationStatus === 'NEW') {
+      const { amount, gstAmount, invoiceItems, orderType, ...newInvoicedData } =
+        updateInvoice;
+      invoiceMutationNew.mutate(newInvoicedData);
+      return;
+    }
+    invoiceMutation.mutate(updateInvoice);
   };
 
   const previewInvMutation = useMutation({
@@ -217,7 +284,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       ),
   });
 
-  const handlePreview = () => previewInvMutation.mutate(invoicedData);
+  const handlePreview = (invoices) => previewInvMutation.mutate(invoices);
 
   // multiStatus components
   const multiStatus = (
@@ -233,197 +300,228 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
   return (
     <Wrapper className="h-full">
-      {/* Collapsable overview */}
-      <OrdersOverview
-        isCollapsableOverview={true}
-        orderDetails={orderDetails}
-        orderId={orderDetails?.referenceNumber}
-        multiStatus={multiStatus}
-        Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
-        mobileNumber={orderDetails?.mobileNumber}
-        amtPaid={orderDetails?.amountPaid}
-        totalAmount={orderDetails.amount + orderDetails.gstAmount}
-      />
-      <section className="flex h-full flex-col justify-between">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-1">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={(value) => handleSelectAll(value)}
-                  disabled={isAutoSelect}
-                />
-              </TableHead>
-              <TableHead className="shrink-0 text-xs font-bold text-black">
-                {translations('table.header.item_name')}
-              </TableHead>
-              <TableHead className="shrink-0 text-xs font-bold text-black">
-                {translations('table.header.quantity')}
-              </TableHead>
-              <TableHead className="shrink-0 text-xs font-bold text-black">
-                {translations('table.header.unit_price')}
-              </TableHead>
-              <TableHead className="shrink-0 text-xs font-bold text-black">
-                {translations('table.header.total_amount')}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody className="shrink-0">
-            {productDetailsList.map((product, index) => {
-              return (
-                <TableRow key={product.id}>
-                  <TableCell colSpan={1}>
+      {!isPreviewOpen && (
+        <>
+          {/* Collapsable overview */}
+          <OrdersOverview
+            isCollapsableOverview={true}
+            orderDetails={orderDetails}
+            orderId={orderDetails?.referenceNumber}
+            multiStatus={multiStatus}
+            Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
+            mobileNumber={orderDetails?.mobileNumber}
+            amtPaid={orderDetails?.amountPaid}
+            totalAmount={orderDetails.amount + orderDetails.gstAmount}
+          />
+          <section className="flex h-full flex-col justify-between">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-1">
                     <Checkbox
-                      checked={product.isSelected}
-                      onCheckedChange={(value) => {
-                        const updatedList = [...productDetailsList];
-                        updatedList[index].isSelected = value;
-
-                        setProductDetailsList(updatedList);
-
-                        if (value) {
-                          const updatedItems = productDetailsList.map(
-                            (item, idx) => {
-                              if (idx === index) {
-                                return {
-                                  ...item,
-                                  totalAmount: item.quantity * item.unitPrice,
-                                  totalGstAmount: parseFloat(
-                                    (
-                                      item.quantity *
-                                      item.unitPrice *
-                                      (item.gstPerUnit / 100)
-                                    ).toFixed(2),
-                                  ),
-                                };
-                              }
-                              return item;
-                            },
-                          );
-
-                          setInvoicedData({
-                            ...invoicedData,
-                            invoiceItems: updatedItems.filter(
-                              (item) => item.isSelected,
-                            ),
-                          });
-                        } else {
-                          setInvoicedData((prev) => ({
-                            ...prev,
-                            invoiceItems: prev.invoiceItems.filter(
-                              (item) =>
-                                item.orderItemId !==
-                                updatedList[index].orderItemId,
-                            ),
-                          }));
-                        }
-                      }}
+                      checked={allSelected}
+                      onCheckedChange={(value) => handleSelectAll(value)}
                       disabled={isAutoSelect}
                     />
-                  </TableCell>
-
-                  <TableCell colSpan={1}>
-                    {product?.productName ?? product?.serviceName}
-                  </TableCell>
-
-                  <TableCell colSpan={1}>
-                    <div className="flex gap-1">
-                      <Button
-                        className="disabled:hover:cursor-not-allowed"
-                        variant="export"
-                        onClick={() => {
-                          if (product.quantity > 1) {
-                            updateProductDetailsList(
-                              index,
-                              product.quantity - 1,
-                            );
-                          }
-                        }}
-                        disabled={product?.quantity <= 1 || isAutoSelect}
-                      >
-                        -
-                      </Button>
-
-                      <Input
-                        type="number"
-                        name="quantity"
-                        className="w-20 rounded-sm pr-4"
-                        value={product?.quantity}
-                        onChange={(e) => {
-                          const newQty = parseInt(e.target.value, 10);
-                          if (
-                            !Number.isNaN(newQty) &&
-                            newQty >= 1 &&
-                            newQty <= initialQuantities?.[index]
-                          ) {
-                            updateProductDetailsList(index, newQty);
-                          }
-                        }}
-                        disabled={isAutoSelect}
-                      />
-
-                      <Button
-                        className="disabled:cursor-not-allowed"
-                        variant="export"
-                        onClick={() => {
-                          if (product?.quantity < initialQuantities[index]) {
-                            updateProductDetailsList(
-                              index,
-                              product.quantity + 1,
-                            );
-                          }
-                        }}
-                        disabled={
-                          product?.quantity >= initialQuantities[index] ||
-                          isAutoSelect
-                        }
-                      >
-                        +
-                      </Button>
-                    </div>
-                  </TableCell>
-
-                  <TableCell colSpan={1}>{product?.unitPrice}</TableCell>
-
-                  <TableCell colSpan={1}>
-                    <Input
-                      type="text"
-                      name="totalAmount"
-                      disabled
-                      className="w-32 disabled:cursor-not-allowed"
-                      value={`₹ ${(Number(product.totalAmount) || 0).toFixed(2)}`}
-                    />
-                  </TableCell>
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.item_name')}
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.quantity')}
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.unit_price')}
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.total_amount')}
+                  </TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
 
-        <div className="flex justify-end gap-4 border-t pt-4">
-          <div className="mt-auto h-[1px] bg-neutral-300"></div>
-          {!isAutoSelect && (
-            <PreviewInvoice
-              base64StrToRenderPDF={previewInvoiceBase64}
-              mutationFn={handlePreview}
-              disableCondition={invoicedData?.invoiceItems?.length === 0}
-            />
-          )}
+              <TableBody className="shrink-0">
+                {productDetailsList.map((product, index) => {
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell colSpan={1}>
+                        <Checkbox
+                          checked={product.isSelected}
+                          onCheckedChange={(value) => {
+                            const updatedList = [...productDetailsList];
+                            updatedList[index].isSelected = value;
 
-          <GenerateInvoiceModal
-            orderDetails={orderDetails}
-            invoicedData={invoicedData}
-            setInvoicedData={setInvoicedData}
-            disableCondition={
-              isAutoSelect ? false : invoicedData?.invoiceItems?.length === 0
-            }
-            setIsGenerateInvoice={setIsGenerateInvoice}
-            handleClose={onHandleClose}
-          />
-        </div>
-      </section>
+                            setProductDetailsList(updatedList);
+
+                            if (value) {
+                              const updatedItems = productDetailsList.map(
+                                (item, idx) => {
+                                  if (idx === index) {
+                                    return {
+                                      ...item,
+                                      totalAmount:
+                                        item.quantity * item.unitPrice,
+                                      totalGstAmount: parseFloat(
+                                        (
+                                          item.quantity *
+                                          item.unitPrice *
+                                          (item.gstPerUnit / 100)
+                                        ).toFixed(2),
+                                      ),
+                                    };
+                                  }
+                                  return item;
+                                },
+                              );
+
+                              setInvoicedData({
+                                ...invoicedData,
+                                invoiceItems: updatedItems.filter(
+                                  (item) => item.isSelected,
+                                ),
+                              });
+                            } else {
+                              setInvoicedData((prev) => ({
+                                ...prev,
+                                invoiceItems: prev.invoiceItems.filter(
+                                  (item) =>
+                                    item.orderItemId !==
+                                    updatedList[index].orderItemId,
+                                ),
+                              }));
+                            }
+                          }}
+                          disabled={isAutoSelect}
+                        />
+                      </TableCell>
+
+                      <TableCell colSpan={1}>
+                        {product?.productName ?? product?.serviceName}
+                      </TableCell>
+
+                      <TableCell colSpan={1}>
+                        <div className="flex gap-1">
+                          <Button
+                            className="disabled:hover:cursor-not-allowed"
+                            variant="export"
+                            debounceTime="300"
+                            onClick={() => {
+                              if (product.quantity > 1) {
+                                updateProductDetailsList(
+                                  index,
+                                  product.quantity - 1,
+                                );
+                              }
+                            }}
+                            disabled={product?.quantity <= 1 || isAutoSelect}
+                          >
+                            -
+                          </Button>
+
+                          <Input
+                            min={1}
+                            name="quantity"
+                            className="w-20 rounded-sm pr-4"
+                            value={product?.quantity}
+                            onChange={(e) => {
+                              const newQty = parseInt(e.target.value, 10);
+                              if (
+                                !Number.isNaN(newQty) &&
+                                newQty >= 1 &&
+                                newQty <= initialQuantities?.[index]
+                              ) {
+                                updateProductDetailsList(index, newQty);
+                              }
+                            }}
+                            disabled={isAutoSelect}
+                          />
+
+                          <Button
+                            className="disabled:cursor-not-allowed"
+                            variant="export"
+                            debounceTime="300"
+                            onClick={() => {
+                              if (
+                                product?.quantity < initialQuantities[index]
+                              ) {
+                                updateProductDetailsList(
+                                  index,
+                                  product.quantity + 1,
+                                );
+                              }
+                            }}
+                            disabled={
+                              product?.quantity >= initialQuantities[index] ||
+                              isAutoSelect
+                            }
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </TableCell>
+
+                      <TableCell colSpan={1}>{product?.unitPrice}</TableCell>
+
+                      <TableCell colSpan={1}>
+                        <Input
+                          type="text"
+                          name="totalAmount"
+                          disabled
+                          className="w-32 disabled:cursor-not-allowed"
+                          value={`₹ ${(Number(product.totalAmount) || 0).toFixed(2)}`}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+
+            <div className="flex justify-end gap-4 border-t pt-4">
+              <div className="mt-auto h-[1px] bg-neutral-300"></div>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onHandleClose()}
+              >
+                {translations('ctas.cancel')}
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => handlePreview(invoicedData)}
+                disabled={previewInvMutation.isPending}
+              >
+                {previewInvMutation.isPending ? (
+                  <Loading />
+                ) : (
+                  translations('ctas.next')
+                )}
+              </Button>
+            </div>
+          </section>
+        </>
+      )}
+
+      {isPreviewOpen && (
+        <InvoicePreview
+          order={invoicedData}
+          setOrder={setInvoicedData}
+          setIsPreviewOpen={setIsPreviewOpen}
+          url={url}
+          isPDFProp={true}
+          isPendingInvoice={
+            invoiceMutation.isPending || invoiceMutationNew.isPending
+          }
+          handleCreateFn={handleSubmit}
+          handlePreview={handlePreview}
+          isCreatable={true}
+          isCustomerRemarksAddable={true}
+          isBankAccountDetailsSelectable={true}
+          isActionable={true}
+          isPINError={isPINError}
+        />
+      )}
     </Wrapper>
   );
 };

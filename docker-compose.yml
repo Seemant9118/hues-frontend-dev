@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  #####################
+  ### WebApp Nodejs
+  #####################
+  abha-web:
+    container_name: ptpl_web_container
+    image: ptpl_web_image
+    restart: unless-stopped
+    build: .
+    networks:
+      - node_network
+    ports:
+      - '3000:3000'
+    # volumes:
+    #   - certbot-certs:/etc/letsencrypt/
+
+networks:
+  node_network:
+    name: node_network
+    external: true

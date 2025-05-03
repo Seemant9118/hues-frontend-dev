@@ -309,7 +309,7 @@ const AddItem = ({ onCancel, cta }) => {
         item.type === 'goods' ? handleSubmitGoods : handleSubmitServices
       }
       className={cn(
-        'scrollBarStyles relative flex h-full flex-col gap-5 overflow-y-auto p-2',
+        'scrollBarStyles relative flex h-full flex-col gap-2 overflow-y-auto p-2',
       )}
     >
       <h2 className="text-xl font-bold text-zinc-900">
@@ -317,7 +317,7 @@ const AddItem = ({ onCancel, cta }) => {
       </h2>
 
       {/* ITEM OVERVIEW */}
-      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+      <div className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-bold text-primary">ITEM OVERVIEW</h2>
         <div className="grid grid-cols-3 grid-rows-2 items-center gap-4">
           {/* Item type */}
@@ -447,7 +447,7 @@ const AddItem = ({ onCancel, cta }) => {
       </div>
 
       {/* PRICING */}
-      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+      <div className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-bold text-primary">PRICING</h2>
 
         <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
@@ -455,6 +455,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.rate')}
               id="rate"
+              type="number"
               required={true}
               onChange={onChange}
               value={item.rate}
@@ -464,6 +465,7 @@ const AddItem = ({ onCancel, cta }) => {
           {item.type === 'goods' && (
             <div className="flex flex-col">
               <InputWithLabel
+                type="number"
                 name={translations('goods.components.add.label.quantity')}
                 id="quantity"
                 required={true}
@@ -477,6 +479,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
+              type="number"
               required={true}
               onChange={onChange}
               value={item.gstPercentage}
@@ -490,7 +493,7 @@ const AddItem = ({ onCancel, cta }) => {
 
       {/* ADDITIONAL INFORMATION */}
       {item.type === 'goods' && (
-        <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+        <div className="flex flex-col gap-3 p-4">
           <h2 className="text-sm font-bold text-primary">
             ADDITIONAL INFORMATION
           </h2>
@@ -521,6 +524,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.weight')}
               id="weight"
+              type="number"
               onChange={onChange}
               value={item.weight}
             />
@@ -528,6 +532,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.length')}
               id="length"
+              type="number"
               onChange={onChange}
               value={item.length}
             />
@@ -535,6 +540,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.breadth')}
               id="breadth"
+              type="number"
               onChange={onChange}
               value={item.breadth}
             />
@@ -542,6 +548,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.height')}
               id="height"
+              type="number"
               onChange={onChange}
               value={item.height}
             />

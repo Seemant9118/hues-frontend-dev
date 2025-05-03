@@ -4,7 +4,7 @@ name: Deployment Workflow
 on:
   push:
     branches:
-      - release
+      - releaseOld
 
 jobs:
   deploy:

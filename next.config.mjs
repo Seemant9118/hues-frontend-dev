@@ -15,6 +15,7 @@ const nextConfig = {
   images: {
     domains: ['hues-dev.s3.ap-south-1.amazonaws.com'],
   },
+  output: 'standalone',
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {
@@ -22,10 +23,10 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
   org: 'ptpl',
-  project: 'hues-frontend',
+  project: 'hues',
 
   // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+  silent: true,
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/

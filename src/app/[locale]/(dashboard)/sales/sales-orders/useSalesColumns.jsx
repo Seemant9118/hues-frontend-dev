@@ -118,7 +118,7 @@ export const useSalesColumns = (
       cell: ({ row }) => {
         const { createdAt } = row.original;
         const date = moment(createdAt).format('DD-MM-YYYY');
-        return <div>{date}</div>;
+        return <div className="text-[#A5ABBD]">{date}</div>;
       },
     },
     {

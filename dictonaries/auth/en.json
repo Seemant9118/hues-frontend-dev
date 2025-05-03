@@ -1,0 +1,118 @@
+{
+    "auth": {
+        "mobileLogin": {
+            "header": {
+                "title": "Welcome to Hues",
+                "subtitle": "One account for all things",
+                "brandName": "Paraphernalia"
+            },
+            "validation": {
+                "invitationLoading": "Validating Invitation ..."
+            },
+            "form": {
+                "phoneLabel": "Phone number",
+                "phoneRequiredSymbol": "*",
+                "phonePlaceholder": "Enter a Aadhar linked phone number"
+            },
+            "button": {
+                "sendOtp": "Send OTP"
+            },
+            "errors": {
+                "failedToSendOtp": "Failed to send OTP"
+            },
+            "verifyOtp": {
+                "heading": "Verify your number",
+                "instruction": "A one-time OTP has been sent to",
+                "resendSection": {
+                    "textBeforeTimer": "Resend OTP in",
+                    "timer": "00:{seconds}s",
+                    "resendButton": "Resend"
+                },
+                "buttons": {
+                    "verify": "Verify",
+                    "back": "Back"
+                }
+            },
+            "toast": {
+                "otpSent": "OTP Sent",
+                "failedToSendOtp": "Failed to send OTP",
+                "otpVerifiedSuccess": "OTP verified successfully",
+                "otpInvalid": "OTP Invalid or Expired"
+            }
+        },
+        "userPanVerification": {
+            "profile": {
+                "title": "Complete your profile",
+                "subtitle": "Enter all the details to unlock Hues completely"
+            },
+            "pan": {
+                "label": "PAN",
+                "tooltip": "PAN: Your universal legal identifier for all government and financial interactions on Hues.",
+                "placeholder": "PAN Card Number",
+                "fetching": "Fetching details...",
+                "attempts_exhausted": "You have exhausted your daily limit to verify your PAN, please try again later.",
+                "attempts_remaining": "You have {count} attempts left to verify your PAN"
+            },
+            "tnc": {
+                "checkbox_label": "By selecting this box, I agree to all the",
+                "link": "Terms and Conditions",
+                "error": "*Please accept the terms and conditions"
+            },
+            "name": {
+                "label": "Full Name",
+                "tooltip": "Your full Name",
+                "placeholder": "Full Name"
+            },
+            "dob": {
+                "label": "Date of Birth",
+                "tooltip": "Hues requires age verification for secure transactions, ensuring a trustworthy user experience.",
+                "placeholder": "dd/MM/yyyy"
+            },
+            "actions": {
+                "proceed": "Proceed"
+            },
+            "error": {
+                "generic": "Oops, Something went wrong!"
+            }
+        },
+        "aadharVerification": {
+            "toast": {
+                "otp_sent_success": "OTP sent successfully",
+                "server_not_responding": "Please try after some time, server is not responding",
+                "generic_error": "Something went wrong"
+            },
+            "steps": {
+                "aadharNum": {
+                    "title": "Verify your Aadhar",
+                    "subtitle": "Enter all the details to unlock Hues completely",
+                    "label": "Aadhar",
+                    "tooltip": "Aadhar: Your universal legal identifier for all government and financial interactions on Hues.",
+                    "placeholder": "Aadhar Card Number",
+                    "button": "Proceed"
+                },
+                "verifyAadharNum": {
+                    "title": "Verify your Aadhaar",
+                    "subtitle": "An one time OTP has been sent to your number through which your Aadhaar is registered",
+                    "otp_placeholder": "Enter OTP",
+                    "resend_timer_text": "OTP Sent, Resend OTP in",
+                    "timer": "00:{seconds}s",
+                    "resend_button": "Resend",
+                    "verify_button": "Verify",
+                    "errors": {
+                        "otp_failed": "OTP verification failed. Please try again.",
+                        "something_went_wrong": "Something went wrong"
+                    },
+                    "success": {
+                        "otp_verified": "OTP Verified successfully"
+                    }
+                }
+            }
+        },
+        "confirmation": {
+            "title": "You have been successfully verified and onboarded",
+            "subtitle": "Your next step is to onboard your enterprise to start using this platform to its full potential",
+            "onboard_button": "Onboard Enterprise",
+            "skip_link": "Skip for Now"
+        }
+    }
+}

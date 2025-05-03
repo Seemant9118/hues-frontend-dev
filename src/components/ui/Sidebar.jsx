@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Link } from '@/i18n/routing';
 import {
   Bell,
   BookOpenText,
@@ -10,15 +11,15 @@ import {
   FileSymlink,
   Gauge,
   HandPlatter,
+  IndianRupee,
   Package,
   ReceiptText,
   ScrollText,
+  Settings,
   Store,
   UserRound,
 } from 'lucide-react';
 import Image from 'next/image';
-
-import { Link } from '@/i18n/routing';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
@@ -85,6 +86,11 @@ const Sidebar = () => {
           path: '/sales/sales-invoices',
         },
         {
+          name: 'sidebar.subTabs.payments',
+          icon: <IndianRupee size={14} />,
+          path: '/sales/sales-payments',
+        },
+        {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/sales/sales-debitNotes',
@@ -105,6 +111,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.invoices',
           icon: <ReceiptText size={16} />,
           path: '/purchases/purchase-invoices',
+        },
+        {
+          name: 'sidebar.subTabs.payments',
+          icon: <IndianRupee size={14} />,
+          path: '/purchases/purchase-payments',
         },
         {
           name: 'sidebar.subTabs.debitNotes',
@@ -142,6 +153,11 @@ const Sidebar = () => {
       icon: <Bell size={16} />,
       path: '/notification',
     },
+    {
+      name: 'sidebar.settings',
+      icon: <Settings size={16} />,
+      path: '/settings',
+    },
   ];
 
   return (
@@ -166,6 +182,7 @@ const Sidebar = () => {
           ))}
         </nav> */}
 
+      <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
         {/* Navigation Links */}
         <nav className="flex flex-col gap-2">
           {links.map((link) => (

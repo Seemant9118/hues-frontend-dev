@@ -1,7 +1,6 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { debounce } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -25,7 +24,7 @@ import { CircleFadingPlus, Share2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useGoodsColumns } from './GoodsColumns';
 
@@ -94,7 +93,6 @@ function Goods() {
     router.push(newPath);
   }, [router, isAdding, isEditing, isUploading]);
 
-  // Fetch all product goods
   const {
     data: allProductGoods,
     isLoading,
@@ -106,28 +104,31 @@ function Goods() {
     enabled: searchTerm?.length === 0,
   });
 
-  // Fetch searched product goods
   const { data: searchedProductGoods, isLoading: isSearchProductGoodsLoading } =
     useQuery({
-      queryKey: [goodsApi.getSearchedProductGoods.endpointKey, searchTerm],
+      queryKey: [
+        goodsApi.getSearchedProductGoods.endpointKey,
+        debouncedSearchTerm,
+      ],
       queryFn: () =>
         GetSearchedProductGoods({
-          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+          searchString: debouncedSearchTerm,
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && allProductGoods?.length > 0, // Use debounced value here
+      enabled: !!debouncedSearchTerm && allProductGoods?.length > 0,
     });
 
-  // Debounce logic with useCallback
-  const updateDebouncedSearchTerm = useCallback(
-    debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, DEBOUNCE_DELAY),
-    [],
-  );
+  // Debounce logic inside useEffect
   useEffect(() => {
-    updateDebouncedSearchTerm(searchTerm);
-  }, [searchTerm, updateDebouncedSearchTerm]);
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
+
+    // Cancel the timeout if searchTerm changes before the delay
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   // Consolidated state update logic
   useEffect(() => {

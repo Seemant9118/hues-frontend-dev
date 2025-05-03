@@ -1,0 +1,71 @@
+{
+    "settings": {
+        "title": "Settings",
+        "tabs": {
+            "label": {
+                "tab1": "Enterprise Overview",
+                "tab2": "Bank Account",
+                "tab3": "Invoices",
+                "tab4": "Offers",
+                "tab5": "PIN Settings"
+            },
+            "content": {
+                "tab1": {
+                    "label": {
+                        "pan": "PAN Card Number",
+                        "name": "Full Name",
+                        "type": "Type",
+                        "mobile": "Mobile Number",
+                        "email": "Email Address",
+                        "address": "Address",
+                        "gst": "GST IN",
+                        "udyam": "UDYAM"
+                    },
+                    "input": {
+                        "gst": {
+                            "placeholder": "Update GST IN"
+                        },
+                        "udyam": {
+                            "placeholder": "Update UDYAM"
+                        }
+                    },
+                    "ctas": {
+                        "cancel": "Cancel",
+                        "update": "Update"
+                    },
+                    "dummyData": {
+                        "name": "Your Enterprise Name",
+                        "type": "pvt. ltd."
+                    },
+                    "profilePicSection": {
+                        "title": "Enterprise Logo",
+                        "format": "JPEG and PNG format",
+                        "ctas": {
+                            "upload": "Upload",
+                            "delete": "Delete"
+                        }
+                    },
+                    "heading1": "Enterprise Information",
+                    "heading2": "Business Identification"
+                },
+                "tab2": {},
+                "tab3": {
+                    "coming_soon": "Coming Soon...",
+                    "settingsUpdate": {
+                        "successMsg": "Settings Updated Successfully",
+                        "errorMsg": "Something went wrong while updating settings"
+                    }
+                },
+                "tab4": {
+                    "coming_soon": "Coming Soon..."
+                }
+            }
+        },
+        "toasts": {
+            "update": {
+                "successMsg": "Enterprise Details Updated Successfully",
+                "errorMsg": "Invalid {type}"
+            }
+        }
+    }
+}

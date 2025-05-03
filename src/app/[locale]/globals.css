@@ -95,7 +95,6 @@ body::-webkit-scrollbar {
 }
 
 /* Track */
-
 .scrollBarStyles::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track {
   background: white;

@@ -104,7 +104,7 @@ export const orderApi = {
   },
 
   // 19. share order
-  shareOrder: {
+  viewOrderinNewTab: {
     endpoint: `/order/generalink/`,
     endpointKey: 'share_order',
   },

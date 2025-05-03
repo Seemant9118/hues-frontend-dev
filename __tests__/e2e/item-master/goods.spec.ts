@@ -1,9 +1,7 @@
-
 import { expect, test } from '@playwright/test';
 import { randomUUID } from 'crypto'; // Node.js built-in module
 import fs from 'fs';
 import path from 'path';
-
 
 test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:3000/en/');
@@ -12,12 +10,10 @@ test.beforeEach(async ({ page }) => {
   await page.waitForTimeout(2000);
 });
 
-
 test.describe.serial('Goods Management - CRUD', () => {
 
   const goodName = `Test Product ${randomUUID().substring(0, 8)}`;
   const updatedGoodName = `Updated Product ${randomUUID().substring(0, 8)}`;
-
 
   test('Can Add Good Test', async ({ page }) => {
     await page.getByRole('button', { name: 'Add', exact: true }).click();
@@ -41,14 +37,11 @@ test.describe.serial('Goods Management - CRUD', () => {
     await page.getByLabel('Batch').click();
     await page.getByLabel('Batch').fill('20250227');
     await page.getByRole('button', { name: 'Add' }).click();
-
     await page.waitForTimeout(2000);
-
     await expect(
       page.getByRole('cell', { name: goodName }).first(),
     ).toBeVisible();
   });
-
 
   test('Can Edit Good Test', async ({ page }) => {
     await page.waitForURL('http://localhost:3000/en/inventory/goods');
@@ -93,7 +86,6 @@ test.describe.serial('Goods Management - CRUD', () => {
     // Locate the row that contains the specific updatedGoodName
     const itemRow = page.getByRole('row', { name: updatedGoodName });
 
-
     // Click the "Open menu" button within that row
     await itemRow.getByRole('button', { name: 'Open menu' }).click();
     await page.locator('button.text-red-500').click();
@@ -102,7 +94,6 @@ test.describe.serial('Goods Management - CRUD', () => {
     await page.waitForTimeout(1000);
   });
 });
-
 
 test('Can Download Sample File', async ({ page }) => {
   await page.waitForURL('http://localhost:3000/en/inventory/goods');
@@ -150,7 +141,6 @@ test('Can Upload File', async ({ page }) => {
     page.getByRole('cell', { name: 'Upload Product 123' }).first(),
   ).toBeVisible();
 });
-
 
 
 

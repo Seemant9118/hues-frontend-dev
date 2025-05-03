@@ -20,6 +20,13 @@ export const getRandomBgColor = () => {
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
+export const getFilenameFromUrl = (url) => {
+  if (!url) return 'file';
+  const path = url.split('?')[0]; // Remove query params
+  const filename = path.substring(path.lastIndexOf('/') + 1);
+  return filename || 'file';
+};
+
 // style for react-select component
 export const getStylesForSelectComponent = () => {
   return {
@@ -31,21 +38,20 @@ export const getStylesForSelectComponent = () => {
       borderRadius: '9px',
       boxShadow: 'none', // Removes focus outline shadow
       height: '40px',
-      width: '20rem',
       transition: 'border-color 0.2s', // Smooth transition for focus
     }),
     menu: (base) => ({
       ...base,
-      width: '20rem',
       borderRadius: '9px',
       zIndex: 10,
     }),
     menuList: (base) => ({
       ...base,
-      padding: '2px',
+      // padding: '2px',
       fontSize: '14px',
       maxHeight: '150px',
       overflowY: 'auto',
+      borderRadius: '9px',
 
       // Custom scrollbar styles
       '&::-webkit-scrollbar': {
@@ -84,6 +90,17 @@ export function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
   return '';
+}
+
+export function convertSnakeToTitleCase(input) {
+  if (input) {
+    return input
+      .toLowerCase()
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  return '-';
 }
 
 // debouncing fn

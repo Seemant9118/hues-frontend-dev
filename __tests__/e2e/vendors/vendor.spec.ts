@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
-
 import fs from 'fs';
 import path from 'path';
-
 
 test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:3000/en/');
@@ -20,15 +18,10 @@ test('Vendor list is Visible', async ({ page }) => {
   const phoneCell = page.getByText('+91 7073455252');
   const vendorIdCell = page.getByRole('cell', { name: 'FLVPM8156A' });
 
-
   // Scroll and verify elements
-
-  // Scroll the container until the vendor name cell is visible
-
   await scrollableDiv.scrollIntoViewIfNeeded();
   await vendorNameCell.scrollIntoViewIfNeeded();
   await expect(vendorNameCell).toBeVisible();
-
 
   await phoneCell.scrollIntoViewIfNeeded();
   await expect(phoneCell).toBeVisible();
@@ -38,7 +31,6 @@ test('Vendor list is Visible', async ({ page }) => {
 });
 
 const generateFakePAN = () =>
-
   `${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((c) => c)[(Math.random() * 26) | 0]}${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     .repeat(4)
     .split('')
@@ -55,25 +47,21 @@ const generateFakePAN = () =>
     .repeat(1)
     .split('')
     .map((c) => c)[(Math.random() * 26) | 0]
-
   }${Math.random().toString().slice(2, 6)}${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((c) => c)[(Math.random() * 26) | 0]}`;
 
 const uniqueName = `Dummy Vendor ${Date.now()}`;
 const fakeNumber = Math.floor(1000000000 + Math.random() * 9000000000);
 
-
 test('Can Add Vendor', async ({ page }) => {
   await page.getByRole('button', { name: 'Add' }).click();
   await page.getByLabel('Identifier Number (PAN) *').click();
   await page.getByLabel('Identifier Number (PAN) *').fill(`${generateFakePAN()}`);
-
   await page.getByText('Continue to add new vendor').click();
   await page.locator('#name').click();
   await page.locator('#name').fill(uniqueName);
   await page.locator('#mobileNumber').click();
   await page.locator('#mobileNumber').fill(`${fakeNumber}`);
   await page.getByRole('button', { name: 'Add' }).click();
-
   await expect(page.getByRole('cell', { name: uniqueName, exact: true })).toBeVisible();
 });
 
@@ -175,5 +163,4 @@ test('Can Upload Vendor File', async ({ page }) => {
   await expect(
     page.getByRole('cell', { name: 'Upload Vendor 123' }).first(),
   ).toBeVisible();
-
 });

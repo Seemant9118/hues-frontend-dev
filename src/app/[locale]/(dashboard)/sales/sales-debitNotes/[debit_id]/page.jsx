@@ -3,9 +3,9 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import DebitNoteComment from '@/components/invoices/DebitNoteComment';
+import Comment from '@/components/comments/Comment';
 import DebitNoteModal from '@/components/Modals/DebitNoteModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import Loading from '@/components/ui/Loading';
@@ -16,10 +16,17 @@ import {
   createComments,
   getComments,
   getDebitNote,
-  uploadMediaInComments,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUp, Building2, Check, Paperclip } from 'lucide-react';
+import {
+  ArrowUp,
+  Building2,
+  Check,
+  FileText,
+  Image,
+  Paperclip,
+  X,
+} from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -38,9 +45,10 @@ const ViewDebitNote = () => {
   const debitNoteId = params.debit_id;
   const [files, setFiles] = useState([]);
   const [comment, setComment] = useState({
-    debitNoteId,
-    comment: '',
-    mediaLinks: [],
+    files: [],
+    contextType: '',
+    contextId: null,
+    text: '',
   });
 
   const debitNoteBreadCrumbs = [
@@ -69,49 +77,35 @@ const ViewDebitNote = () => {
   // get comments
   const { data: comments, isLoading: isCommentLoading } = useQuery({
     queryKey: [DebitNoteApi.getComments.endpointKey, debitNoteId],
-    queryFn: () => getComments(debitNoteId),
+    queryFn: () => getComments(debitNoteId, 'DEBIT_NOTE'),
     select: (comments) => comments.data.data,
   });
 
   const uploadMedia = async (file) => {
-    const formData = new FormData();
-    formData.append('files', file);
+    setFiles((prev) => [...prev, file]);
+    toast.success('File attached successfully!');
+  };
 
-    try {
-      const { data } = await uploadMediaInComments(formData);
-      toast.success(translations('successMsg.file_attached_success'));
-
-      setFiles((prev) => [...prev, file]);
-      // Use a functional state update to ensure you're appending correctly
-      setComment((prevComment) => ({
-        ...prevComment,
-        mediaLinks: [...prevComment.mediaLinks, data.data[0]], // Append the new link to the existing array
-      }));
-
-      return data.data[0];
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || translations('errorMsg.common');
-      toast.error(errorMessage);
-      throw new Error(errorMessage); // Throw error to notify Quill of failure
-    }
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
   };
 
   const createCommentMutation = useMutation({
     mutationKey: [DebitNoteApi.createComments.endpointKey],
     mutationFn: createComments,
     onSuccess: () => {
-      toast.success(translations('successMsg.comment_success'));
+      toast.success('Comment added successfully!');
       queryClient.invalidateQueries([
         DebitNoteApi.getComments.endpointKey,
         debitNoteId,
       ]);
-      setFiles([]);
       setComment({
-        debitNoteId,
-        comment: '',
-        mediaLinks: [],
+        files: [],
+        contextType: '',
+        contextId: null,
+        text: '',
       });
+      setFiles([]);
     },
     onError: (error) => {
       toast.error(
@@ -121,21 +115,25 @@ const ViewDebitNote = () => {
   });
 
   const handleSubmitComment = () => {
-    if (!comment.comment.trim()) {
-      toast.error(translations('errorMsg.comment_error_emtpy'));
+    if (!comment.text.trim()) {
+      toast.error('Comment cannot be empty!');
       return;
     }
 
-    createCommentMutation.mutate({
-      ...comment,
-      mediaLinks: [...comment.mediaLinks], // Ensure mediaLinks is correctly passed
-    });
-  };
+    const formData = new FormData();
+    formData.append('contextType', 'DEBIT_NOTE'); // assuming fixed or dynamic context
+    formData.append('contextId', debitNoteId); // use actual ID here
+    formData.append('text', comment.text);
 
-  // fn for capitalization
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+
+    createCommentMutation.mutate(formData);
+  };
 
   return (
     <Wrapper className="h-full py-2">
@@ -196,23 +194,23 @@ const ViewDebitNote = () => {
 
           <div className="relative">
             {/* 1 */}
-            <div className="absolute left-5 top-2 flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
+            <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
               <Building2 size={20} />
             </div>
 
             {/* 2 */}
             <Textarea
               name="comment"
-              value={comment.comment}
+              value={comment.text}
               onChange={(e) => {
-                setComment((prev) => ({ ...prev, comment: e.target.value }));
+                setComment((prev) => ({ ...prev, text: e.target.value }));
               }}
-              className="w-full flex-1 px-24"
+              className="px-20 pt-[20px]"
               placeholder={translations('comments.input.placeholder')}
             />
 
             {/* 3 */}
-            <div className="absolute right-10 top-5 flex gap-4 text-[#A5ABBD]">
+            <div className="absolute right-10 top-[24px] flex gap-4 text-[#A5ABBD]">
               <Tooltips
                 trigger={
                   <label htmlFor="fileUpload">
@@ -238,11 +236,15 @@ const ViewDebitNote = () => {
 
               <Tooltips
                 trigger={
-                  <ArrowUp
-                    size={20}
-                    onClick={handleSubmitComment}
-                    className={'cursor-pointer hover:text-black'}
-                  />
+                  createCommentMutation.isPending ? (
+                    <Loading />
+                  ) : (
+                    <ArrowUp
+                      size={20}
+                      onClick={handleSubmitComment}
+                      className={'cursor-pointer hover:text-black'}
+                    />
+                  )
                 }
                 content={translations('comments.ctas.send.placeholder')}
               />
@@ -256,39 +258,62 @@ const ViewDebitNote = () => {
                 {translations('comments.attached_files_heading')}
               </span>
             )}
-            {files?.map((file) => (
-              <div
-                key={file.name}
-                className="flex items-center justify-between gap-2 rounded-sm border border-neutral-300 p-2"
-              >
-                <div className="flex items-center gap-4">
-                  <p className="text-xs font-medium leading-[18px]">
+            <div className="flex flex-wrap gap-4">
+              {files?.map((file) => (
+                <div
+                  key={file.name}
+                  className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                >
+                  {/* Remove Button */}
+                  <X
+                    size={16}
+                    onClick={() => handleFileRemove(file)}
+                    className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                  />
+
+                  {/* File icon */}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                    {file.name.split('.').pop() === 'pdf' ? (
+                      <FileText size={16} className="text-red-600" />
+                    ) : (
+                      // eslint-disable-next-line jsx-a11y/alt-text
+                      <Image size={16} className="text-primary" />
+                    )}
+                  </div>
+
+                  {/* File name */}
+                  <p className="truncate text-sm font-medium text-neutral-800">
                     {file.name}
                   </p>
-                  <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
+
+                  {/* Success message */}
                   <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-green-500/10 p-2 text-green-500">
-                      <Check size={10} />
+                    <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                      <Check size={12} />
                     </div>
-                    <p className="text-xs font-medium leading-5 text-green-500">
-                      {translations('successMsg.file_attached_success')}
+                    <p className="text-xs font-medium text-green-600">
+                      {'File attached'}
                     </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* comments lists */}
           <section className="flex flex-col gap-2">
             {isCommentLoading && <Loading />}
             {!isCommentLoading &&
-              comments.length > 0 &&
-              comments.map((comment) => (
-                <DebitNoteComment key={comment.id} comment={comment} />
+              comments?.length > 0 &&
+              comments?.map((comment) => (
+                <Comment
+                  key={comment?.id}
+                  invalidateId={debitNoteId}
+                  comment={comment}
+                />
               ))}
 
-            {!isCommentLoading && comments.length === 0 && (
+            {!isCommentLoading && comments?.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
                 <h1>{translations('comments.emtpyStateComponent.title')}</h1>
                 <p>{translations('comments.emtpyStateComponent.para')}</p>

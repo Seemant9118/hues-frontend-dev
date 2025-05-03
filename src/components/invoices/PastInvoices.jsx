@@ -2,15 +2,15 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { useRouter } from '@/i18n/routing';
 import { getInvoices } from '@/services/Invoice_Services/Invoice_Services';
+import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { MoveUpRight } from 'lucide-react';
+import { Eye, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import emptyImg from '../../../public/Empty.png';
-import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
@@ -95,7 +95,13 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                     </div>
                   </div>
 
-                  <InvoicePDFViewModal Url={invoice?.attachmentLink} />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => viewPdfInNewTab(invoice?.attachmentLink)}
+                  >
+                    <Eye size={14} />
+                  </Button>
                 </section>
               </div>
             );

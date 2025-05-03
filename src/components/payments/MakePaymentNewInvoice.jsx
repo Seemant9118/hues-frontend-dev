@@ -1,22 +1,33 @@
-import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import { LocalStorageService } from '@/lib/utils';
+import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
 import {
   createPayment,
   getInvoicesForPayments,
-  uploadPaymentProofs,
 } from '@/services/Payment_Services/PaymentServices';
 import { Label } from '@radix-ui/react-label';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Upload, UploadCloud } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  CalendarDays,
+  Check,
+  FileText,
+  Image,
+  Plus,
+  Upload,
+  UploadCloud,
+  X,
+} from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
 import InvoiceOverview from '../invoices/InvoiceOverview';
+import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from '../ui/button';
+import DatePickers from '../ui/DatePickers';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
@@ -34,22 +45,25 @@ const MakePaymentNewInvoice = ({
   setIsRecordingPayment,
   paymentStatus,
   debitNoteStatus,
+  contextType,
 }) => {
-  const translations = useTranslations('components.record_payment_order');
-  const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const translations = useTranslations('components.make_payment');
   const router = useRouter();
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
   const [files, setFiles] = useState([]);
   const [errorMsg, setErrorMsg] = useState({});
   const [invoices, setInvoices] = useState([]);
   const [paymentData, setPaymentData] = useState({
     orderId: invoiceDetails?.orderId,
     amount: '',
+    bankAccountId: '',
     paymentMode: '',
     transactionId: '',
-    attachmentLink: '',
     invoices: [],
+    paymentDate: '',
   });
+  const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
 
   // api call for invoices
   const { data: invoicesForPayments } = useQuery({
@@ -76,11 +90,17 @@ const MakePaymentNewInvoice = ({
     setInvoices(updatedInvoices);
   }, [invoicesForPayments]);
 
+  const { data: bankAccounts } = useQuery({
+    queryKey: [bankAccountApis.getBankAccounts.endpointKey],
+    queryFn: () => getBankAccounts(),
+    select: (data) => data.data.data,
+  });
+
   // mutation for create payment
   const createPaymentMutationFn = useMutation({
     mutationKey: [paymentApi.createPayment.endpointKey],
     mutationFn: createPayment,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(translations('successMsg.payment_recorded_sucessfully'));
       setErrorMsg({});
       setInvoices([]);
@@ -88,19 +108,14 @@ const MakePaymentNewInvoice = ({
         amount: null,
         paymentMode: null,
         transactionId: null,
-        attachmentLink: '', // If it's a FormData object, consider setting it to null
         invoices: [],
       });
-      setFiles([]);
-      queryClient.invalidateQueries([
-        paymentApi.getPaymentsList.endpointKey,
-        invoiceDetails?.orderId,
-      ]);
-      queryClient.invalidateQueries([
-        invoiceApi.getInvoice.endpointKey,
-        invoiceDetails?.orderId,
-      ]);
-      setIsRecordingPayment(false);
+      // setIsRecordingPayment(false);
+      if (isPurchasePage) {
+        router.push(`/purchases/purchase-payments/${res.data.data.id}`);
+      } else {
+        router.push(`/sales/sales-payments/${res.data.data.id}`);
+      }
     },
     onError: (error) => {
       const errorMessage =
@@ -154,59 +169,67 @@ const MakePaymentNewInvoice = ({
   };
 
   // handle upload proofs fn
-  const handleUploadChange = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('enterpriseId', enterpriseId);
+  const handleAttached = async (file) => {
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success('File attached successfully!');
+  };
 
-    try {
-      const resData = await uploadPaymentProofs(enterpriseId, formData);
-      toast.success(translations('successMsg.upload_success'));
-      setFiles((prev) => [...prev, file]);
-      setPaymentData({
-        ...paymentData,
-        attachmentLink: resData?.data?.data,
-      });
-    } catch (error) {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    }
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
   };
 
   // hanlde submit fn
   const handleSubmit = () => {
-    // Convert amount to a number (if valid) and update invoices
-    const filteredInvoices = invoices?.map((invoice) => ({
-      ...invoice,
-      amount: Number(paymentData?.amount) || 0, // Ensure a valid number
-    }));
+    const amount = Number(paymentData?.amount) || 0;
 
-    // Update paymentData with filtered invoices
+    // Filter and map invoices: only include those where amount > 0
+    const refactoredInvoices =
+      invoices
+        ?.filter(() => amount > 0) // filter globally based on the entered amount
+        .map(({ invoiceId }) => ({
+          invoiceId,
+          amount,
+        })) || [];
+
     const updatedPaymentData = {
       ...paymentData,
-      amount: Number(paymentData?.amount) || 0, // Ensure numeric value
-      invoices: filteredInvoices,
+      amount,
+      invoices: refactoredInvoices,
     };
 
-    const errorsMsg = {};
-
-    // Validation for payment mode
+    // Validate fields
+    const errors = {};
     if (!updatedPaymentData.paymentMode) {
-      errorsMsg.paymentMode = translations('errorMsg.payment_mode');
+      errors.paymentMode = translations('errorMsg.payment_mode');
+    }
+    if (!amount) {
+      errors.amountPaid = translations('errorMsg.amount_paid_required');
     }
 
-    // Validation for amount
-    if (!updatedPaymentData.amount) {
-      errorsMsg.amountPaid = translations('errorMsg.amount_paid_required');
-    }
+    setErrorMsg(errors);
+    if (Object.keys(errors).length > 0) return;
 
-    setErrorMsg(errorsMsg);
-
-    // If there are no errors, proceed with submission
-    if (Object.keys(errorsMsg).length === 0) {
-      createPaymentMutationFn.mutate(updatedPaymentData);
+    // Build FormData
+    const formData = new FormData();
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
     }
+    formData.append('orderId', updatedPaymentData.orderId);
+    formData.append('paymentMode', updatedPaymentData.paymentMode);
+    formData.append('transactionId', updatedPaymentData.transactionId);
+    formData.append('context', contextType);
+    formData.append('invoices', JSON.stringify(updatedPaymentData.invoices));
+    formData.append('amount', amount);
+    const formattedPaymentDate = moment(updatedPaymentData.paymentDate).format(
+      'DD/MM/YYYY',
+    );
+    formData.append('paymentDate', formattedPaymentDate);
+    formData.append('bankAccountId', updatedPaymentData.bankAccountId);
+
+    createPaymentMutationFn.mutate(formData);
   };
 
   return (
@@ -227,6 +250,14 @@ const MakePaymentNewInvoice = ({
           amount={invoiceDetails?.totalAmount}
           amountPaid={invoiceDetails?.amountPaid}
         />
+
+        {isBankAccountAdding && (
+          <AddBankAccount
+            isModalOpen={isBankAccountAdding}
+            setIsModalOpen={setIsBankAccountAdding}
+          />
+        )}
+
         <div className="flex flex-col gap-4">
           {/* inputs */}
           <section className="flex flex-col gap-4 rounded-md border p-4">
@@ -285,6 +316,92 @@ const MakePaymentNewInvoice = ({
                   <ErrorBox msg={errorMsg.paymentMode} />
                 )}
               </div>
+              {/* select payment Date */}
+              <div className="flex w-1/2 flex-col gap-2">
+                <div>
+                  <Label className="flex-shrink-0 text-sm font-semibold">
+                    {translations('form.label.payment_date')}
+                  </Label>{' '}
+                  <span className="text-red-600">*</span>
+                </div>
+                <div className="relative flex h-10 max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <DatePickers
+                    selected={paymentData.paymentDate}
+                    onChange={(date) => {
+                      setPaymentData((prevData) => ({
+                        ...prevData,
+                        paymentDate: date,
+                      }));
+                      setErrorMsg((prevMsg) => ({
+                        ...prevMsg,
+                        paymentDate: '', // Clear any previous error for payment date
+                      }));
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    popperPlacement="top-right"
+                  />
+                  <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+                </div>
+
+                {errorMsg.paymentDate && (
+                  <ErrorBox msg={errorMsg.paymentDate} />
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              {/* Bank Account Details */}
+              <div className="flex w-1/2 flex-col gap-3">
+                <Label className="text-sm font-semibold">
+                  {translations('form.label.bank_acc_details')}
+                </Label>
+                <div className="flex flex-col gap-1">
+                  <Select
+                    defaultValue={paymentData.bankAccountId}
+                    onValueChange={(value) => {
+                      // Check if a payment mode is selected (non-empty value)
+                      if (value) {
+                        setErrorMsg((prevMsg) => ({
+                          ...prevMsg,
+                          bankAccountId: [],
+                        }));
+                      }
+                      setPaymentData((prevData) => ({
+                        ...prevData,
+                        bankAccountId: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger
+                      className="max-w-md"
+                      disabled={paymentData.paymentMode === 'cash'}
+                    >
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bankAccounts?.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {`Acc ${account.maskedAccountNumber}`}
+                        </SelectItem>
+                      ))}
+
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation(); // prevent closing the dropdown immediately
+                          setIsBankAccountAdding(true);
+                        }}
+                        className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-gray-100"
+                      >
+                        <Plus size={14} />
+                        Add New Bank Account
+                      </div>
+                    </SelectContent>
+                  </Select>
+                  {errorMsg.bankAccountId && (
+                    <ErrorBox msg={errorMsg.bankAccountId} />
+                  )}
+                </div>
+              </div>
               {/* transaction ID */}
               <div className="flex w-1/2 flex-col gap-2">
                 <Label className="text-sm font-semibold">
@@ -294,6 +411,10 @@ const MakePaymentNewInvoice = ({
                   <Input
                     name="transactionId"
                     className="max-w-md"
+                    disabled={
+                      !paymentData.paymentMode ||
+                      paymentData.paymentMode === 'cash'
+                    }
                     value={paymentData.transactionId}
                     onChange={handleInputChange}
                   />
@@ -344,29 +465,47 @@ const MakePaymentNewInvoice = ({
             <Label className="text-sm font-semibold">
               {translations('form.upload_proof.title')}
             </Label>
-            {files.map((file) => (
-              <div
-                key={file.name}
-                className="flex min-w-[700px] items-center justify-between gap-4 rounded-sm border border-neutral-300 p-4"
-              >
-                <div className="flex items-center gap-4">
-                  <p className="text-xs font-medium leading-[18px]">
+            <div className="flex flex-wrap gap-4">
+              {files?.map((file) => (
+                <div
+                  key={file.name}
+                  className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                >
+                  {/* Remove Button */}
+                  <X
+                    size={16}
+                    onClick={() => handleFileRemove(file)}
+                    className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                  />
+                  {/* File icon */}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                    {file.name.split('.').pop() === 'pdf' ? (
+                      <FileText size={16} className="text-red-600" />
+                    ) : (
+                      // eslint-disable-next-line jsx-a11y/alt-text
+                      <Image size={16} className="text-primary" />
+                    )}
+                  </div>
+
+                  {/* File name */}
+                  <p className="truncate text-sm font-medium text-neutral-800">
                     {file.name}
                   </p>
-                  <div className="h-1 w-1 rounded-full bg-neutral-400"></div>
+
+                  {/* Success message */}
                   <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-green-500/10 p-2 text-green-500">
-                      <Check size={10} />
+                    <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                      <Check size={12} />
                     </div>
-                    <p className="text-xs font-medium leading-5 text-green-500">
-                      {translations('successMsg.upload_success')}
+                    <p className="text-xs font-medium text-green-600">
+                      {translations('successMsg.attached_success')}
                     </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
             <FileUploader
-              handleChange={handleUploadChange}
+              handleChange={handleAttached}
               name="file"
               types={['png', 'pdf']}
             >
@@ -416,10 +555,7 @@ const MakePaymentNewInvoice = ({
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={
-            Object.values(errorMsg).some((msg) => msg !== '') ||
-            createPaymentMutationFn.isPending
-          }
+          disabled={createPaymentMutationFn.isPending}
           size="sm"
           className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
         >

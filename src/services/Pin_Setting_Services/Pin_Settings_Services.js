@@ -24,3 +24,7 @@ export const checkPINStatus = () => {
 export const resetPIN = (data) => {
   return APIinstance.post(pinSettings.resetPIN.endpoint, data);
 };
+
+export const getPINLogs = () => {
+  return APIinstance.post(pinSettings.getPINLogs.endpoint);
+};
