@@ -16,7 +16,7 @@ module.exports = defineConfig({
   testDir: './__tests__/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 3,
+  // retries: 3,
   workers: 4,
   reporter: 'html',
   use: {
