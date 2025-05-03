@@ -1,6 +1,7 @@
 import QueryWrapper from '@/components/wrappers/QueryWrapper';
 import { CountNotificationsProvider } from '@/context/CountNotificationsContext';
 import { NextIntlClientProvider } from 'next-intl';
+import { cookies } from 'next/headers';
 import { Toaster } from 'sonner';
 import './globals.css';
 import NotFound from './not-found';
@@ -12,59 +13,66 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children, params: { locale } }) {
-  let messages = {};
+  const cookieStore = cookies();
+  const localeFromCookie = cookieStore.get('NEXT_LOCALE')?.value;
+  const currLocale = localeFromCookie || locale;
 
+  let messages = {};
   try {
+    const authMessages = await import(
+      `../../../dictonaries/auth/${currLocale}.json`
+    );
     const dashboardMessages = (
-      await import(`../../../dictonaries/dashboard/${locale}.json`)
+      await import(`../../../dictonaries/dashboard/${currLocale}.json`)
     ).default;
 
     const sidebarMessages = (
-      await import(`../../../dictonaries/sidebar/${locale}.json`)
+      await import(`../../../dictonaries/sidebar/${currLocale}.json`)
     ).default;
 
     const inventoryMessages = await import(
-      `../../../dictonaries/inventory/${locale}.json`
+      `../../../dictonaries/inventory/${currLocale}.json`
     );
 
     const catalogueMessages = await import(
-      `../../../dictonaries/catalogue/${locale}.json`
+      `../../../dictonaries/catalogue/${currLocale}.json`
     );
 
     const salesMessages = await import(
-      `../../../dictonaries/sales/${locale}.json`
+      `../../../dictonaries/sales/${currLocale}.json`
     );
 
     const purchaseMessages = await import(
-      `../../../dictonaries/purchases/${locale}.json`
+      `../../../dictonaries/purchases/${currLocale}.json`
     );
 
     const clientMessages = await import(
-      `../../../dictonaries/client/${locale}.json`
+      `../../../dictonaries/client/${currLocale}.json`
     );
 
     const vendorMessages = await import(
-      `../../../dictonaries/vendor/${locale}.json`
+      `../../../dictonaries/vendor/${currLocale}.json`
     );
 
     const notificationsMessages = await import(
-      `../../../dictonaries/notification/${locale}.json`
+      `../../../dictonaries/notification/${currLocale}.json`
     );
 
     const settingsMessages = await import(
-      `../../../dictonaries/settings/${locale}.json`
+      `../../../dictonaries/settings/${currLocale}.json`
     );
 
     const profileMessages = await import(
-      `../../../dictonaries/profile/${locale}.json`
+      `../../../dictonaries/profile/${currLocale}.json`
     );
 
     const componentsMessages = await import(
-      `../../../dictonaries/components/${locale}.json`
+      `../../../dictonaries/components/${currLocale}.json`
     );
 
     // Merge the dashboard and sidebar messages into one object
     messages = {
+      ...authMessages,
       ...dashboardMessages,
       ...sidebarMessages,
       ...inventoryMessages,

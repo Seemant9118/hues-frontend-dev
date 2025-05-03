@@ -24,6 +24,7 @@ const AadharVerifyOTP = ({
   sendAadharOTPMutation,
   startFrom,
   setStartFrom,
+  translations,
 }) => {
   const router = useRouter();
   const { updateAuthProgress } = useAuthProgress();
@@ -74,7 +75,9 @@ const AadharVerifyOTP = ({
       LocalStorageService.remove('enterpriseDetails');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+      toast.error(
+        error.response.data.message || translations('toast.generic_error'),
+      );
     },
     retry: (failureCount, error) => {
       return error.response.status === 401;
@@ -97,17 +100,19 @@ const AadharVerifyOTP = ({
 
       if (response?.status === 201) {
         // Ensure the response indicates success
-        toast.success('OTP verified successfully');
+        toast.success(
+          translations('steps.verifyAadharNum.success.otp_verified'),
+        );
 
         await userUpdatemutation.mutateAsync(enterpriseDetails); // Await the mutation if needed
         updateAuthProgress('isAadhaarVerified', true);
         router.push('/login/user/confirmation');
       } else {
-        toast.error('OTP verification failed. Please try again.');
+        toast.error(translations('steps.verifyAadhaNum.error.otp_failed'));
       }
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || 'Something went wrong';
+        error.response?.data?.message || translations('toast.generic_error');
       toast.error(errorMessage);
     } finally {
       setLoading(false); // Disable loading state
@@ -126,11 +131,10 @@ const AadharVerifyOTP = ({
       <div className="flex flex-col gap-4">
         <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
         <h2 className="w-full text-center text-2xl font-bold">
-          Verify your Aadhaar
+          {translations('steps.verifyAadharNum.title')}
         </h2>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-          An one time OTP has been sent to your number through which your
-          Aadhaar is registered
+          {translations('steps.verifyAadharNum.subtitle')}
         </p>
       </div>
 
@@ -150,12 +154,14 @@ const AadharVerifyOTP = ({
       />
 
       <p className="flex w-full items-center justify-center gap-2 text-sm text-[#A5ABBD]">
-        OTP Sent, Resend OTP in{' '}
+        {translations('steps.verifyAadharNum.resend_timer_text')}{' '}
         <span className="flex items-center gap-1 font-semibold">
           {startFrom >= 0 ? (
             <p className="flex items-center gap-1">
               <Clock5 size={15} />
-              00:{startFrom}s
+              {translations('steps.verifyAadharNum.timer', {
+                timer: startFrom,
+              })}
             </p>
           ) : (
             <Button
@@ -166,7 +172,11 @@ const AadharVerifyOTP = ({
                 handleResendOTP();
               }}
             >
-              {sendAadharOTPMutation?.isPending ? <Loading /> : 'Resend'}
+              {sendAadharOTPMutation?.isPending ? (
+                <Loading />
+              ) : (
+                translations('steps.verifyAadharNum.resend_button')
+              )}
             </Button>
           )}
         </span>
@@ -177,7 +187,11 @@ const AadharVerifyOTP = ({
         className="w-full bg-[#288AF9] p-2"
         disabled={loading} // Disable button during loading
       >
-        {loading ? <Loading /> : 'Verify'}
+        {loading ? (
+          <Loading />
+        ) : (
+          translations('steps.verifyAadharNum.verify_button')
+        )}
       </Button>
     </form>
   );

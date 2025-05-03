@@ -11,6 +11,7 @@ import {
   userVerifyOtp,
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { Suspense, useState } from 'react';
 import { toast } from 'sonner';
@@ -18,6 +19,8 @@ import MobileLogin from '../multi-step-forms/mobileLoginOTPComponents/MobileLogi
 import VerifyMobileOTP from '../multi-step-forms/mobileLoginOTPComponents/VerifyMobileOTP';
 
 const MobileLoginPage = () => {
+  const translations = useTranslations('auth.mobileLogin');
+
   const queryClient = useQueryClient();
   const router = useRouter();
   const [mobileLoginStep, setMobileLoginStep] = useState(1);
@@ -39,14 +42,14 @@ const MobileLoginPage = () => {
       );
       LocalStorageService.set('operation_type', data.data.data.operation_type);
       LocalStorageService.set('invitationData', data.data.data.invitationData);
-      toast.success(data.data.message);
+      toast.success(translations('toast.otpSent'));
 
       if (mobileLoginStep === 1) {
         setMobileLoginStep(2);
       }
     },
     onError: () => {
-      setErrorMsg('Failed to send OTP');
+      setErrorMsg(translations('toast.failedToSendOtp'));
     },
   });
 
@@ -105,7 +108,7 @@ const MobileLoginPage = () => {
       const isUserHaveValidDirectorInvites =
         directorInviteListData?.data?.data?.length > 0;
 
-      toast.success('OTP verified successfully');
+      toast.success(translations('toast.otpVerifiedSuccess'));
 
       // isUserOnboardingComplete
       if (isOnboardingComplete) {
@@ -157,7 +160,9 @@ const MobileLoginPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'OTP Invalid or Expired');
+      toast.error(
+        error.response.data.message || translations('toast.otpInvalid'),
+      );
     },
   });
 
@@ -172,6 +177,7 @@ const MobileLoginPage = () => {
             errorMsg={errorMsg}
             setErrorMsg={setErrorMsg}
             generateOTPMutation={generateOTPMutation}
+            translations={translations}
           />
         )}
         {mobileLoginStep === 2 && (
@@ -180,6 +186,7 @@ const MobileLoginPage = () => {
             formDataWithMob={formDataWithMob}
             generateOTPMutation={generateOTPMutation}
             verifyOTPMutation={verifyOTPMutation}
+            translations={translations}
           />
         )}
       </div>

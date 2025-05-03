@@ -5,41 +5,41 @@ const validationPatterns = {
 
 export const validatePhoneNumber = (mobileNumber) => {
   if (mobileNumber?.length === 0) {
-    return '*Phone Number is required to proceed';
+    return 'components.validationUtils.phone.required';
   } else if (mobileNumber?.length !== 10) {
-    return '*Please enter a 10 - digit phone number';
+    return 'components.validationUtils.phone.invalid';
   }
   return '';
 };
 
 export const validatePan = (panNumber) => {
   if (!panNumber || panNumber.trim() === '') {
-    return '*Required PAN Number';
+    return 'components.validationUtils.pan.required';
   } else if (!validationPatterns.pan.test(panNumber)) {
-    return '*Please provide a valid PAN Number';
+    return 'components.validationUtils.pan.invalid';
   }
   return '';
 };
 
 export const validateAadhaar = (aadhaarNumber) => {
   if (!aadhaarNumber || aadhaarNumber.trim() === '') {
-    return '*Required Aadhaar Number';
+    return 'components.validationUtils.aadhaar.required';
   } else if (!validationPatterns.aadhaar.test(aadhaarNumber)) {
-    return '*Please provide a valid Aadhaar Number';
+    return 'components.validationUtils.aadhaar.invalid';
   }
   return '';
 };
 
 export const validateName = (name) => {
   if (!name || name.trim() === '') {
-    return '*Required Full Name';
+    return 'components.validationUtils.name.required';
   }
   return '';
 };
 
 export const validateDateOfBirth = (dateOfBirth) => {
   if (!dateOfBirth || dateOfBirth.trim() === '') {
-    return '*Required Date of Birth';
+    return 'components.validationUtils.dob.required';
   }
   return '';
 };
@@ -47,42 +47,42 @@ export const validateDateOfBirth = (dateOfBirth) => {
 export const validateTermsAndConditions = (isTermsAndConditionApplied) => {
   return isTermsAndConditionApplied
     ? ''
-    : '*Please accept the terms and conditions';
+    : 'components.validationUtils.terms.required';
 };
 
 export const validateEnterpriseType = (enterpriseType) => {
   if (!enterpriseType || enterpriseType.trim() === '') {
-    return '*Required Enterprise Type';
+    return 'components.validationUtils.enterprise.type.required';
   }
   return '';
 };
 
 export const validateEnterpriseName = (enterpriseName) => {
   if (!enterpriseName || enterpriseName.trim() === '') {
-    return '*Required Enterprise Name';
+    return 'components.validationUtils.enterprise.name.required';
   }
   return '';
 };
 
 export const validateEnterpriseAddress = (enterpriseAddress) => {
   if (!enterpriseAddress || enterpriseAddress.trim() === '') {
-    return '*Required Enterprise Address';
+    return 'components.validationUtils.enterprise.address.required';
   }
   return '';
 };
 
 export const validateDateOfIncorporation = (dateOfIncorporation) => {
   if (!dateOfIncorporation || dateOfIncorporation.trim() === '') {
-    return '*Required Date of Incorporation';
+    return 'components.validationUtils.enterprise.dateOfIncorporation.required';
   }
   return '';
 };
 
 export const validateEmail = (email) => {
   if (!email || email.trim() === '') {
-    return '*Required Email';
+    return 'components.validationUtils.email.required';
   } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-    return '*Please provide a valid email';
+    return 'components.validationUtils.email.invalid';
   }
   return '';
 };
