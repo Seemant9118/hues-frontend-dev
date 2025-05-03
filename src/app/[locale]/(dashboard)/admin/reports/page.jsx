@@ -93,7 +93,7 @@ const AdminReportsPage = () => {
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
         <SubHeader name="Reports" />
         <div className="flex gap-2">
-          <SearchInput searchPlaceholder="Search..." />
+          <SearchInput searchPlaceholder="Search..." disabled={true} />
           <Button size="sm" variant="outline">
             <Download size={14} />
           </Button>

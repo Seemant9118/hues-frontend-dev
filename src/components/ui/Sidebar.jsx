@@ -10,11 +10,9 @@ import {
   FileSymlink,
   Gauge,
   HandPlatter,
-  List,
   Package,
   ReceiptText,
   ScrollText,
-  SquareKanban,
   Store,
   UserRound,
 } from 'lucide-react';
@@ -25,18 +23,18 @@ import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
-  const adminLinks = [
-    {
-      name: 'Reports',
-      icon: <SquareKanban size={16} />,
-      path: `/admin/reports`,
-    },
-    {
-      name: 'Enterprise List',
-      icon: <List size={16} />,
-      path: `/admin/enterprises`,
-    },
-  ];
+  // const adminLinks = [
+  //   {
+  //     name: 'Reports',
+  //     icon: <SquareKanban size={16} />,
+  //     path: `/admin/reports`,
+  //   },
+  //   {
+  //     name: 'Enterprise List',
+  //     icon: <List size={16} />,
+  //     path: `/admin/enterprises`,
+  //   },
+  // ];
 
   const links = [
     {
@@ -161,13 +159,13 @@ const Sidebar = () => {
 
       <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1">
         {/* admin Navigation Links */}
-        <nav className="flex flex-col gap-2">
+        {/* <nav className="flex flex-col gap-2">
           <span className="text-sm font-semibold">Admin</span>
           {adminLinks.map((link) => (
             <StyledLinks key={link.name} link={link} />
           ))}
-          {/* popup for search */}
-        </nav>
+        </nav> */}
+
         {/* Navigation Links */}
         <nav className="flex flex-col gap-2">
           {links.map((link) => (
