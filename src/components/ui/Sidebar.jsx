@@ -173,9 +173,9 @@ const Sidebar = () => {
         />
       </Link>
 
-      <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1">
-        {/* admin Navigation Links */}
-        {/* <nav className="flex flex-col gap-2">
+      {/* <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1"> */}
+      {/* admin Navigation Links */}
+      {/* <nav className="flex flex-col gap-2">
           <span className="text-sm font-semibold">Admin</span>
           {adminLinks.map((link) => (
             <StyledLinks key={link.name} link={link} />
