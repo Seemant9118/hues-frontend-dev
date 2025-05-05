@@ -113,6 +113,129 @@
             "subtitle": "Your next step is to onboard your enterprise to start using this platform to its full potential",
             "onboard_button": "Onboard Enterprise",
             "skip_link": "Skip for Now"
+        },
+        "enterprise": {
+            "panVerify": {
+                "title": "Onboard your Enterprise",
+                "subtitle": "Enter all the details to unlock Hues completely",
+                "pan": {
+                    "label": "Enterprise PAN",
+                    "error": "Invalid PAN number"
+                },
+                "button": {
+                    "proceed": "Proceed",
+                    "back": "Back"
+                },
+                "toast": {
+                    "success": "Pan Verified Successfully",
+                    "error": "Something went wrong"
+                },
+                "routes": {
+                    "gst_verify": "/login/enterprise/gst-verify",
+                    "cin_verify": "/login/enterprise/cin-verify",
+                    "back": "/login/enterprise/select_enterprise_type"
+                }
+            },
+            "aadharVerify": {
+                "title": {
+                    "noGstFound": "No GST Number found against this PAN",
+                    "gstFound": "We found some GST Numbers against this PAN"
+                },
+                "subtitle": "Choose your principle place of business from the list below or add one",
+                "label": {
+                    "fetchedGst": "Fetched GST numbers",
+                    "enterGst": "Enter your GST number"
+                },
+                "placeholder": {
+                    "selectGst": "Choose your preferred GST number",
+                    "enterGst": "Enter your GST number"
+                },
+                "orText": "--- OR ---",
+                "checkbox": {
+                    "noGst": "I do not have GST number"
+                },
+                "button": {
+                    "proceed": "Proceed",
+                    "back": "Back"
+                },
+                "toast": {
+                    "success": "GST Verified Successfully",
+                    "error": "Something went wrong"
+                }
+            },
+            "cinVerify": {
+                "title": "We found a CIN for this enterpise",
+                "subtitle": "Verify the CIN Number and continue",
+                "label": "CIN",
+                "placeholder": "Enter your CIN number",
+                "button": {
+                    "verify": "Verify",
+                    "back": "Back"
+                },
+                "toast": {
+                    "success": "CIN Verified Successfully",
+                    "error": "Something went wrong"
+                }
+            },
+            "udyamVerify": {
+                "title": "Verify your UDYAM ID",
+                "subtitle": "Please enter the details and proceed",
+                "label": "UDYAM ID",
+                "placeholder": "Enter UDYAM ID",
+                "button": {
+                    "proceed": "Proceed",
+                    "back": "Back"
+                },
+                "checkbox": {
+                    "text": "I do not have UDYAM ID"
+                },
+                "toast": {
+                    "success": "UDYAM ID Verified Successfully",
+                    "error": "Something went wrong"
+                }
+            },
+            "enterpriseVerification": {
+                "heading": "Verify your Enterprise Details",
+                "subheading": "Verify your enterprise and proceed further",
+                "labels": {
+                    "enterpriseName": "Enterprise Name",
+                    "email": "Email",
+                    "phone": "Phone",
+                    "roa": "Registered Office Address",
+                    "roc": "ROC",
+                    "doi": "Date of Incorporation",
+                    "gstNumber": "GST Number"
+                },
+                "buttons": {
+                    "proceed": "Proceed",
+                    "back": "Back"
+                },
+                "placeholders": {
+                    "enterpriseName": "Enter enterprise name",
+                    "email": "Enter email",
+                    "phone": "Enter phone number",
+                    "roa": "Registered Office Address",
+                    "roc": "Registrar of Companies",
+                    "doi": "Date of Incorporation",
+                    "gstNumber": "Enter GST number"
+                },
+                "errors": {
+                    "enterpriseName": "Enterprise name is required",
+                    "email": "Email is required",
+                    "emailInvalid": "Invalid email address",
+                    "phone": "Phone number is required",
+                    "country": "Country is required",
+                    "state": "State is required",
+                    "city": "City is required",
+                    "address": "Address is required",
+                    "pincode": "Pincode is required",
+                    "gstNumber": "GST number is required"
+                },
+                "toast": {
+                    "success": "Enterprise Verified Successfully",
+                    "error": "Something went wrong"
+                }
+            }
         }
     }
 }
