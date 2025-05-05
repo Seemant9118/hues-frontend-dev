@@ -965,7 +965,13 @@ const CreateOrder = ({
                 onClick={() => {
                   setOrder((prev) => ({
                     ...prev,
-                    orderItems: [...prev.orderItems, selectedItem],
+                    orderItems: [
+                      ...prev.orderItems,
+                      {
+                        gstPercentage: selectedItem.gstPerUnit,
+                        ...selectedItem,
+                      },
+                    ],
                   }));
                   setSelectedItem({
                     productName: '',
