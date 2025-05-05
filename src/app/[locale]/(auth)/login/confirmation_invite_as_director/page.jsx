@@ -7,12 +7,14 @@ import { UserProvider } from '@/context/UserContext';
 import { LocalStorageService } from '@/lib/utils';
 import { createUserSession } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const ConfirmationInviteAsDirectorPage = () => {
+  const translations = useTranslations('auth.confirmationInviteAsDirector');
   const router = useRouter();
   const fromEnterpriseId = LocalStorageService.get(
     'InvitationFromEnterpriseId',
@@ -48,7 +50,7 @@ const ConfirmationInviteAsDirectorPage = () => {
       router.push('/login/enterprise/select_enterprise_type');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translations('toast.error'));
     },
   });
 
@@ -56,13 +58,13 @@ const ConfirmationInviteAsDirectorPage = () => {
   if (!inviteData) {
     return (
       <UserProvider>
-        <div className="flex h-full items-center justify-center">
-          <div>Oops, No Invitation Found!</div>
+        <div className="flex h-full flex-col items-center justify-center gap-2">
+          <div className="text-2xl">{translations('noInvitationFound')}</div>
           <Link
             href="/"
             className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
           >
-            You can skip for now
+            {translations('skipForNow')}
           </Link>
         </div>
       </UserProvider>
@@ -75,18 +77,18 @@ const ConfirmationInviteAsDirectorPage = () => {
         <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
           <div className="flex flex-col gap-4">
             <h1 className="w-full text-center text-xl font-bold text-[#121212]">
-              {inviteData?.data?.inviteeUserData?.name} has asked you to verify
-              details for{' '}
-              {inviteData?.data?.invitation?.fromEnterprise?.name ??
-                'enterpriseName'}
-              .
+              {translations('invitedHeading', {
+                userName: inviteData?.data?.inviteeUserData?.name,
+                enterpriseName:
+                  inviteData?.data?.invitation?.fromEnterprise?.name,
+              })}
             </h1>
 
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              Continue with{' '}
-              {inviteData?.data?.invitation?.fromEnterprise?.name ??
-                'enterpriseName'}
-              ?
+              {translations('continueWith', {
+                enterpriseName:
+                  inviteData?.data?.invitation?.fromEnterprise?.name,
+              })}
             </h1>
           </div>
 
@@ -102,7 +104,11 @@ const ConfirmationInviteAsDirectorPage = () => {
                 })
               }
             >
-              {createUserSessionMutation.isPending ? <Loading /> : 'Yes'}
+              {createUserSessionMutation.isPending ? (
+                <Loading />
+              ) : (
+                translations('yesButton')
+              )}
             </Button>
 
             <Button
@@ -113,7 +119,7 @@ const ConfirmationInviteAsDirectorPage = () => {
               disabled={createUserSessionMutation.isPending}
               onClick={() => router.push('/login/select_enterprise')}
             >
-              No
+              {translations('noButton')}
             </Button>
           </div>
 
@@ -122,7 +128,7 @@ const ConfirmationInviteAsDirectorPage = () => {
               href="/"
               className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
             >
-              Skip for Now
+              {translations('skipButton')}
             </Link>
           </div>
         </div>

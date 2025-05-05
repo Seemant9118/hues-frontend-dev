@@ -14,11 +14,14 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const EnterprisePANVerifyPage = () => {
+  const translations = useTranslations('auth.enterprise.panVerify');
+  const translationsForError = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const enterpriseType = searchParams.get('type');
@@ -62,7 +65,7 @@ const EnterprisePANVerifyPage = () => {
     mutationKey: [userAuth.getEnterpriseDetailsForPanVerify.endpointKey],
     mutationFn: getEnterpriseDetailsForPanVerify,
     onSuccess: (data) => {
-      toast.success('Pan Verified Successfully');
+      toast.success(translations('toast.success'));
 
       // states
       const { enterpriseId, gstData, companyDetails } = data.data.data;
@@ -80,7 +83,7 @@ const EnterprisePANVerifyPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translations('toast.error'));
     },
   });
 
@@ -111,10 +114,10 @@ const EnterprisePANVerifyPage = () => {
           {/* Header */}
           <div className="flex flex-col gap-4">
             <h1 className="text-center text-2xl font-bold text-[#121212]">
-              Onboard your Enterprise
+              {translations('title')}
             </h1>
             <p className="text-center text-sm font-semibold text-[#A5ABBD]">
-              Enter all the details to unlock Hues completely
+              {translations('subtitle')}
             </p>
           </div>
 
@@ -128,7 +131,8 @@ const EnterprisePANVerifyPage = () => {
                 htmlFor="pan-number"
                 className="font-medium text-[#121212]"
               >
-                Enterprise PAN <span className="text-red-600">*</span>
+                {translations('pan.label')}{' '}
+                <span className="text-red-600">*</span>
               </Label>
               <div className="flex items-center hover:border-gray-600">
                 <Input
@@ -147,7 +151,7 @@ const EnterprisePANVerifyPage = () => {
               </div>
               {errorMsg && (
                 <span className="px-1 text-sm font-semibold text-red-600">
-                  {errorMsg}
+                  {translationsForError(errorMsg)}
                 </span>
               )}
             </div>
@@ -161,12 +165,12 @@ const EnterprisePANVerifyPage = () => {
                 {getDetailsByPanVerifiedMutation?.isPending ? (
                   <Loading />
                 ) : (
-                  'Proceed'
+                  translations('button.proceed')
                 )}
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBack}>
                 <ArrowLeft size={14} />
-                Back
+                {translations('button.back')}
               </Button>
             </div>
           </form>

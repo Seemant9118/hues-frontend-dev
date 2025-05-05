@@ -7,10 +7,12 @@ import {
   PackageCheck,
   User,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 
 const AuthProgress = ({ isCurrAuthStep }) => {
   const { authProgress, updateAuthProgress } = useAuthProgress();
+  const translations = useTranslations('components.authProgress');
 
   const isPanVerifiedFromStorage = LocalStorageService.get('isPanVerified');
   const isAadharVerifiedFromStorage =
@@ -29,21 +31,21 @@ const AuthProgress = ({ isCurrAuthStep }) => {
     {
       id: 1,
       icon: <CreditCard size={14} />,
-      title: 'PAN Verification',
+      title: translations('step1'),
       isCurr: isCurrAuthStep === 'isPanVerificationStep',
       isDone: authProgress.isPanVerified,
     },
     {
       id: 2,
       icon: <User size={14} />,
-      title: 'Aadhar Verification',
+      title: translations('step2'),
       isCurr: isCurrAuthStep === 'isAadharVerificationStep',
       isDone: authProgress.isAadhaarVerified,
     },
     {
       id: 3,
       icon: <PackageCheck size={14} />,
-      title: 'Confirmation',
+      title: translations('step3'),
       isCurr: isCurrAuthStep === 'isConfirmationStep',
       isDone: authProgress.isConfirmation,
     },

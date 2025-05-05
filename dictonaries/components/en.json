@@ -753,6 +753,11 @@
                 "default_description": "Clean, professional design with blue accents"
             }
         },
+        "authProgress": {
+            "step1": "PAN Verification",
+            "step2": "Aadhar Verification",
+            "step3": "Confirmation"
+        },
         "validationUtils": {
             "phone": {
                 "required": "*Phone Number is required to proceed",

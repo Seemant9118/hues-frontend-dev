@@ -110,6 +110,214 @@
             "subtitle": "इस प्लेटफ़ॉर्म का पूरा लाभ उठाने के लिए अगला कदम है अपने एंटरप्राइज़ को ऑनबोर्ड करना",
             "onboard_button": "एंटरप्राइज़ ऑनबोर्ड करें",
             "skip_link": "फिलहाल छोड़ें"
+        },
+        "enterprise": {
+            "pendingActions": {
+                "heading": "उद्यम ऑनबोर्डिंग अधूरी है",
+                "description": "प्लेटफ़ॉर्म की सभी सुविधाओं का उपयोग करने के लिए लंबित कार्यों को पूरा करें",
+                "resumeButton": "ऑनबोर्डिंग जारी रखें",
+                "skipText": "अभी के लिए छोड़ें",
+                "toast": {
+                    "success": "ऑनबोर्डिंग फिर से शुरू हुआ",
+                    "error": "कुछ गलत हो गया"
+                }
+            },
+            "selectEnterprise": {
+                "heading": "उद्यम प्रकार",
+                "description": "कृपया वह श्रेणी चुनें जिससे आपका उद्यम संबंधित है",
+                "enterpriseTypes": {
+                    "proprietorship": "प्रोप्राइटरशिप",
+                    "partnership": "पार्टनरशिप",
+                    "pvtLtd": "प्राइवेट लिमिटेड",
+                    "publicLtd": "पब्लिक लिमिटेड"
+                },
+                "buttons": {
+                    "proceed": "आगे बढ़ें",
+                    "back": "वापस"
+                },
+                "errors": {
+                    "selectType": "कृपया एक उद्यम प्रकार चुनें"
+                }
+            },
+            "panVerify": {
+                "title": "अपने एंटरप्राइज को ऑनबोर्ड करें",
+                "subtitle": "Hues को पूरी तरह अनलॉक करने के लिए सभी विवरण दर्ज करें",
+                "pan": {
+                    "label": "एंटरप्राइज पैन",
+                    "error": "अमान्य पैन नंबर"
+                },
+                "button": {
+                    "proceed": "आगे बढ़ें",
+                    "back": "वापस"
+                },
+                "toast": {
+                    "success": "पैन सफलतापूर्वक सत्यापित हुआ",
+                    "error": "कुछ गलत हो गया"
+                },
+                "routes": {
+                    "gst_verify": "/login/enterprise/gst-verify",
+                    "cin_verify": "/login/enterprise/cin-verify",
+                    "back": "/login/enterprise/select_enterprise_type"
+                }
+            },
+            "aadharVerify": {
+                "title": {
+                    "noGstFound": "इस पैन के अंतर्गत कोई जीएसटी नंबर नहीं मिला",
+                    "gstFound": "हमें इस पैन के अंतर्गत कुछ जीएसटी नंबर मिले हैं"
+                },
+                "subtitle": "नीचे दी गई सूची से अपने मुख्य व्यावसायिक स्थान का चयन करें या एक नया जोड़ें",
+                "label": {
+                    "fetchedGst": "प्राप्त जीएसटी नंबर",
+                    "enterGst": "अपना जीएसटी नंबर दर्ज करें"
+                },
+                "placeholder": {
+                    "selectGst": "अपना पसंदीदा जीएसटी नंबर चुनें",
+                    "enterGst": "अपना जीएसटी नंबर दर्ज करें"
+                },
+                "orText": "--- या ---",
+                "checkbox": {
+                    "noGst": "मेरे पास जीएसटी नंबर नहीं है"
+                },
+                "button": {
+                    "proceed": "आगे बढ़ें",
+                    "back": "वापस"
+                },
+                "toast": {
+                    "success": "जीएसटी सफलतापूर्वक सत्यापित हो गया",
+                    "error": "कुछ गलत हो गया"
+                }
+            },
+            "cinVerify": {
+                "title": "हमने इस उद्यम के लिए CIN पाया है",
+                "subtitle": "CIN नंबर की सत्यापन करें और आगे बढ़ें",
+                "label": "CIN",
+                "placeholder": "अपना CIN नंबर दर्ज करें",
+                "button": {
+                    "verify": "सत्यापित करें",
+                    "back": "वापस"
+                },
+                "toast": {
+                    "success": "CIN सफलतापूर्वक सत्यापित किया गया",
+                    "error": "कुछ गलत हो गया"
+                }
+            },
+            "udyamVerify": {
+                "title": "अपने UDYAM ID की पुष्टि करें",
+                "subtitle": "कृपया विवरण भरें और आगे बढ़ें",
+                "label": "UDYAM ID",
+                "placeholder": "UDYAM ID दर्ज करें",
+                "button": {
+                    "proceed": "आगे बढ़ें",
+                    "back": "वापस"
+                },
+                "checkbox": {
+                    "text": "मेरे पास UDYAM ID नहीं है"
+                },
+                "toast": {
+                    "success": "UDYAM ID सफलतापूर्वक सत्यापित हुआ",
+                    "error": "कुछ गलत हो गया"
+                }
+            },
+            "enterpriseVerification": {
+                "heading": "अपने एंटरप्राइज़ विवरण सत्यापित करें",
+                "subheading": "अपने एंटरप्राइज़ को सत्यापित करें और आगे बढ़ें",
+                "labels": {
+                    "enterpriseName": "एंटरप्राइज़ नाम",
+                    "email": "ईमेल",
+                    "phone": "फ़ोन",
+                    "roa": "पंजीकृत कार्यालय का पता",
+                    "roc": "रजिस्ट्रार ऑफ़ कंपनीज़ (ROC)",
+                    "doi": "पंजीकरण की तिथि",
+                    "gstNumber": "GST नंबर"
+                },
+                "buttons": {
+                    "proceed": "आगे बढ़ें",
+                    "back": "वापस"
+                },
+                "placeholders": {
+                    "enterpriseName": "एंटरप्राइज़ नाम दर्ज करें",
+                    "email": "ईमेल दर्ज करें",
+                    "phone": "फ़ोन नंबर दर्ज करें",
+                    "roa": "पंजीकृत कार्यालय का पता दर्ज करें",
+                    "roc": "कंपनी रजिस्ट्रार दर्ज करें",
+                    "doi": "पंजीकरण की तिथि दर्ज करें",
+                    "gstNumber": "GST नंबर दर्ज करें"
+                },
+                "errors": {
+                    "enterpriseName": "एंटरप्राइज़ नाम आवश्यक है",
+                    "email": "ईमेल आवश्यक है",
+                    "emailInvalid": "अमान्य ईमेल पता",
+                    "phone": "फ़ोन नंबर आवश्यक है",
+                    "country": "देश आवश्यक है",
+                    "state": "राज्य आवश्यक है",
+                    "city": "शहर आवश्यक है",
+                    "address": "पता आवश्यक है",
+                    "pincode": "पिनकोड आवश्यक है",
+                    "gstNumber": "GST नंबर आवश्यक है"
+                },
+                "toast": {
+                    "success": "एंटरप्राइज़ सफलतापूर्वक सत्यापित हुआ",
+                    "error": "कुछ गलत हो गया"
+                }
+            },
+            "enterpriseConfirmation": {
+                "heading": "आपका एंटरप्राइज़ सफलतापूर्वक सत्यापित और ऑनबोर्ड किया गया है",
+                "description": "अब आप प्लेटफ़ॉर्म की सभी सुविधाओं का उपयोग कर सकते हैं और इसे इस्तेमाल करना शुरू कर सकते हैं।",
+                "continueButton": "जारी रखें",
+                "toastSuccess": "सफलतापूर्वक लॉग इन किया गया"
+            },
+            "inviteDirector": {
+                "heading": "कंपनी निदेशक को आमंत्रित करें",
+                "description": "इस उद्यम के विवरण को सत्यापित करने के लिए हमें MCA रिकॉर्ड के अनुसार एक अधिकृत हस्ताक्षरकर्ता की आवश्यकता है।",
+                "emailLabel": "ईमेल",
+                "emailPlaceholder": "patrick@gmail.com",
+                "phoneLabel": "फ़ोन नंबर",
+                "phonePlaceholder": "1234567890",
+                "sendInvite": "आमंत्रण भेजें",
+                "back": "वापस जाएं",
+                "toast": {
+                    "success": "आमंत्रण सफलतापूर्वक भेजा गया",
+                    "error": "कुछ गलत हो गया"
+                }
+            },
+            "shareLinkToDirector": {
+                "heading": {
+                    "manual": "निमंत्रण पहले ही निदेशक को भेजा जा चुका है",
+                    "auto": "निमंत्रण भेजा गया"
+                },
+                "description": "एक बार स्वीकृत हो जाने पर आप एंटरप्राइज डैशबोर्ड तक पहुंच सकते हैं",
+                "shareLinkLabel": "निमंत्रण लिंक साझा करें",
+                "copyButton": "कॉपी करें",
+                "getLinkButton": "लिंक प्राप्त करें",
+                "toast": {
+                    "copySuccess": "लिंक क्लिपबोर्ड पर कॉपी किया गया",
+                    "error": "कुछ गलत हो गया"
+                }
+            }
+        },
+        "confirmationInviteAsAssociate": {
+            "noInvitationFound": "ओह! कोई निमंत्रण नहीं मिला।",
+            "skipForNow": "आप अभी के लिए छोड़ सकते हैं",
+            "invitedHeading": "{enterpriseName} ने आपको अपनी टीम में आमंत्रित किया है",
+            "continueWith": "{enterpriseName} के साथ जारी रखें?",
+            "yesButton": "हाँ",
+            "noButton": "नहीं",
+            "toast": {
+                "onboardingSuccess": "ऑनबोर्डिंग सफल रही",
+                "error": "कुछ गलत हो गया"
+            }
+        },
+        "confirmationInviteAsDirector": {
+            "noInvitationFound": "ओह! कोई निमंत्रण नहीं मिला।",
+            "skipForNow": "आप अभी के लिए छोड़ सकते हैं",
+            "invitedHeading": "{userName} ने आपसे {enterpriseName} के लिए विवरण सत्यापित करने को कहा है।",
+            "continueWith": "{enterpriseName} के साथ जारी रखें?",
+            "yesButton": "हाँ",
+            "noButton": "नहीं",
+            "skipButton": "अभी के लिए छोड़",
+            "toast": {
+                "error": "कुछ गलत हो गया"
+            }
         }
     }
 }

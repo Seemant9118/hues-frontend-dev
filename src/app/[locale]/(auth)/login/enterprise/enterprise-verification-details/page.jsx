@@ -22,11 +22,16 @@ import {
 import { refreshToken } from '@/services/Token_Services/TokenServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const EnterpriseVerificationDetailsPage = () => {
+  const translations = useTranslations(
+    'auth.enterprise.enterpriseVerification',
+  );
+  const translationForError = useTranslations();
   const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -137,12 +142,12 @@ const EnterpriseVerificationDetailsPage = () => {
       LocalStorageService.remove('companyData');
       LocalStorageService.remove('gst');
 
-      toast.success('Enterprise Successfully Verified');
+      toast.success(translations('toast.success'));
 
       router.push('/login/enterprise/enterprise-onboarded-success');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+      toast.error(error.response.data.message || translations('toast.error'));
     },
   });
 
@@ -173,10 +178,10 @@ const EnterpriseVerificationDetailsPage = () => {
       >
         <div className="flex flex-col gap-2">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            Verify your Enterprise Details
+            {translations('heading')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Verify your enterprise and proceed further
+            {translations('subheading')}
           </p>
         </div>
 
@@ -186,10 +191,11 @@ const EnterpriseVerificationDetailsPage = () => {
               htmlFor="enterpriseName"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Enterprise Name <span className="text-red-600">*</span>{' '}
+              {translations('labels.enterpriseName')}{' '}
+              <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Your Enterprise Name"
+                content={translations('labels.enterpriseName')}
               />
             </Label>
 
@@ -197,21 +203,26 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder="Enterprise Name"
+                placeholder={translations('placeholders.enterpriseName')}
                 name="name"
                 value={enterpriseOnboardData.name}
                 onChange={handleChange}
               />
             </div>
-            {errorMsg?.name && <ErrorBox msg={errorMsg.name} />}
+            {errorMsg?.name && (
+              <ErrorBox msg={translationForError(errorMsg.name)} />
+            )}
           </div>
           <div className="grid w-full items-center gap-1">
             <Label
               htmlFor="email"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Email
-              <Tooltips trigger={<Info size={12} />} content="Your Email" />
+              {translations('labels.email')}
+              <Tooltips
+                trigger={<Info size={12} />}
+                content={translations('labels.email')}
+              />
             </Label>
 
             <div className="relative">
@@ -231,10 +242,11 @@ const EnterpriseVerificationDetailsPage = () => {
               htmlFor="roa"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Registered Office Address <span className="text-red-600">*</span>{' '}
+              {translations('labels.roa')}{' '}
+              <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Registered Office Address"
+                content={translations('labels.roa')}
               />
             </Label>
 
@@ -242,12 +254,14 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder="Registered Office Address"
+                placeholder={translations('placeholders.roa')}
                 name="roa"
                 value={enterpriseOnboardData.roa}
                 onChange={handleChange}
               />
-              {errorMsg?.roa && <ErrorBox msg={errorMsg.roa} />}
+              {errorMsg?.roa && (
+                <ErrorBox msg={translationForError(errorMsg.roa)} />
+              )}
             </div>
           </div>
 
@@ -256,10 +270,10 @@ const EnterpriseVerificationDetailsPage = () => {
               htmlFor="roc"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              ROC
+              {translations('labels.roc')}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Registrar of Companies"
+                content={translations('placeholders.roc')}
               />
             </Label>
 
@@ -267,7 +281,7 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder="ROC"
+                placeholder={translations('labels.roc')}
                 name="roc"
                 value={enterpriseOnboardData.roc}
                 onChange={handleChange}
@@ -280,10 +294,11 @@ const EnterpriseVerificationDetailsPage = () => {
               htmlFor="doi"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Date of Incorporation <span className="text-red-600">*</span>{' '}
+              {translations('labels.doi')}{' '}
+              <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Date of Incorporation"
+                content={translations('placeholders.doi')}
               />
             </Label>
 
@@ -292,7 +307,7 @@ const EnterpriseVerificationDetailsPage = () => {
                 <Input
                   className="focus:font-bold"
                   type="text"
-                  placeholder="Registration Date"
+                  placeholder={translations('placeholders.doi')}
                   name="doi"
                   value={enterpriseOnboardData.doi}
                   disabled
@@ -313,7 +328,9 @@ const EnterpriseVerificationDetailsPage = () => {
                 </div>
               )}
             </div>
-            {errorMsg?.doi && <ErrorBox msg={errorMsg.doi} />}
+            {errorMsg?.doi && (
+              <ErrorBox msg={translationForError(errorMsg.doi)} />
+            )}
           </div>
 
           <div className="flex w-full flex-col gap-4">
@@ -326,13 +343,13 @@ const EnterpriseVerificationDetailsPage = () => {
               {enterpriseOnboardUpdateMutation.isPending ? (
                 <Loading />
               ) : (
-                'Proceed'
+                translations('buttons.proceed')
               )}
             </Button>
 
             <Button variant="ghost" size="sm" onClick={handleBack}>
               <ArrowLeft size={14} />
-              Back
+              {translations('buttons.back')}
             </Button>
           </div>
         </div>

@@ -10,11 +10,13 @@ import { LocalStorageService } from '@/lib/utils';
 import { udyamVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const UdyamVerify = () => {
+  const translations = useTranslations('auth.enterprise.udyamVerify');
   const router = useRouter();
   const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -47,14 +49,14 @@ const UdyamVerify = () => {
     mutationKey: [userAuth.udyamVerify.endpointKey],
     mutationFn: udyamVerify, // Correct API function
     onSuccess: (data) => {
-      toast.success('UDYAM ID Verified Successfully');
+      toast.success(translations('toast.success'));
 
       const { enterpriseId } = data.data.data;
       LocalStorageService.set('enterprise_Id', enterpriseId);
       router.push('/login/enterprise/enterprise-verification-details');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(error.response?.data?.message || translations('toast.error'));
     },
   });
 
@@ -71,10 +73,10 @@ const UdyamVerify = () => {
       <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            Verify your UDYAM ID
+            {translations('title')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Please enter the details and proceed
+            {translations('subtitle')}
           </p>
         </div>
 
@@ -84,13 +86,13 @@ const UdyamVerify = () => {
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="udyam" className="font-medium text-[#121212]">
-              UDYAM ID
+              {translations('label')}
             </Label>
             <div className="flex items-center hover:border-gray-600">
               <Input
                 type="text"
                 name="udyam"
-                placeholder="Enter UDYAM ID"
+                placeholder={translations('placeholder')}
                 className="uppercase focus:font-bold"
                 value={enterpriseData.udyamNumber}
                 onChange={handleChange}
@@ -104,7 +106,7 @@ const UdyamVerify = () => {
               onCheckedChange={() => setIsCheckedNotUdyam((prev) => !prev)}
             />
             <span className="cursor-pointer text-sm font-semibold">
-              I do not have UDYAM ID
+              {translations('checkbox.text')}
             </span>
           </div>
 
@@ -116,11 +118,15 @@ const UdyamVerify = () => {
               (!isCheckedNotUdyam && !enterpriseData.udyamNumber.trim())
             }
           >
-            {verifyUdyamMutation.isPending ? <Loading /> : 'Proceed'}
+            {verifyUdyamMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('button.proceed')
+            )}
           </Button>
           <Button variant="ghost" size="sm" onClick={router.back}>
             <ArrowLeft size={14} />
-            Back
+            {translations('button.back')}
           </Button>
         </form>
       </div>
