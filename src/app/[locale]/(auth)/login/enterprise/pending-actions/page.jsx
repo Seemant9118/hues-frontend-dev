@@ -7,11 +7,13 @@ import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { getOnboardingStatus } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
 const ConfirmationPage = () => {
+  const translations = useTranslations('auth.enterprise.pendingActions');
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -19,7 +21,7 @@ const ConfirmationPage = () => {
     mutationKey: [userAuth.getOnboardingStatus.endpointKey, enterpriseId],
     mutationFn: getOnboardingStatus,
     onSuccess: (data) => {
-      toast.success('Onboarding Resumes');
+      toast.success(translations('toast.success'));
 
       const {
         enterpriseId,
@@ -134,7 +136,7 @@ const ConfirmationPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translations('toast.error'));
     },
   });
 
@@ -156,11 +158,10 @@ const ConfirmationPage = () => {
       >
         <div className="flex flex-col items-center gap-6">
           <h1 className="max-w-sm text-center text-2xl font-bold text-[#121212]">
-            Enterprise Onboarding Incomplete
+            {translations('heading')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Complete pending actions to able to access all the features of the
-            platform and start using it
+            {translations('description')}
           </p>
         </div>
 
@@ -174,13 +175,13 @@ const ConfirmationPage = () => {
             {getOnboardingStatusMutation.isPending ? (
               <Loading />
             ) : (
-              'Resume Onboarding'
+              translations('resumeButton')
             )}
           </Button>
 
           <ConfirmationModal onProceed={handleSkip}>
             <span className="flex w-full cursor-pointer items-center justify-center text-sm font-semibold text-[#121212] hover:underline">
-              Skip for Now
+              {translations('skipText')}
             </span>
           </ConfirmationModal>
         </div>

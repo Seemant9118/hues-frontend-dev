@@ -115,6 +115,33 @@
             "skip_link": "Skip for Now"
         },
         "enterprise": {
+            "pendingActions": {
+                "heading": "Enterprise Onboarding Incomplete",
+                "description": "Complete pending actions to able to access all the features of the platform and start using it",
+                "resumeButton": "Resume Onboarding",
+                "skipText": "Skip for Now",
+                "toast": {
+                    "success": "Onboarding Resumes",
+                    "error": "Something went wrong"
+                }
+            },
+            "selectEnterprise": {
+                "heading": "Enterprise type",
+                "description": "Please select the category your enterprise belongs to",
+                "enterpriseTypes": {
+                    "proprietorship": "Proprietorship",
+                    "partnership": "Partnership",
+                    "pvtLtd": "Pvt Ltd",
+                    "publicLtd": "Public Ltd"
+                },
+                "buttons": {
+                    "proceed": "Proceed",
+                    "back": "Back"
+                },
+                "errors": {
+                    "selectType": "Please select an enterprise type"
+                }
+            },
             "panVerify": {
                 "title": "Onboard your Enterprise",
                 "subtitle": "Enter all the details to unlock Hues completely",
@@ -235,6 +262,64 @@
                     "success": "Enterprise Verified Successfully",
                     "error": "Something went wrong"
                 }
+            },
+            "enterpriseConfirmation": {
+                "heading": "Your Enterprise has been successfully verified and onboarded",
+                "description": "You are now able to access all the features of the platform and start using it.",
+                "continueButton": "Continue",
+                "toastSuccess": "Logged In Successfully"
+            },
+            "inviteDirector": {
+                "heading": "Invite Company Director",
+                "description": "We need an authorised signatory as per MCA records to verify the details for this enterprise.",
+                "emailLabel": "Email",
+                "emailPlaceholder": "patrick@gmail.com",
+                "phoneLabel": "Phone Number",
+                "phonePlaceholder": "1234567890",
+                "sendInvite": "Send Invite",
+                "back": "Back",
+                "toast": {
+                    "success": "Invite sent Successfully",
+                    "error": "Something went wrong"
+                }
+            },
+            "shareLinkToDirector": {
+                "heading": {
+                    "manual": "Already, Invitation Sent to director",
+                    "auto": "Invite Sent"
+                },
+                "description": "Once it gets approved you can access the enterprise dashboard",
+                "shareLinkLabel": "Share invite link",
+                "copyButton": "Copy",
+                "getLinkButton": "Get Link",
+                "toast": {
+                    "copySuccess": "Link Copied to clipboard",
+                    "error": "Something went wrong"
+                }
+            }
+        },
+        "confirmationInviteAsAssociate": {
+            "noInvitationFound": "Oops, No Invitation Found!",
+            "skipForNow": "You can skip for now",
+            "invitedHeading": "{enterpriseName} has invited you in their team",
+            "continueWith": "Continue with {enterpriseName}?",
+            "yesButton": "Yes",
+            "noButton": "No",
+            "toast": {
+                "onboardingSuccess": "Onboarding Completed",
+                "error": "Something went wrong"
+            }
+        },
+        "confirmationInviteAsDirector": {
+            "noInvitationFound": "Oops, No Invitation Found!",
+            "skipForNow": "You can skip for now",
+            "invitedHeading": "{userName} has asked you to verify details for {enterpriseName}.",
+            "continueWith": "Continue with {enterpriseName}?",
+            "yesButton": "Yes",
+            "noButton": "No",
+            "skipButton": "Skip for now",
+            "toast": {
+                "error": "Something went wrong"
             }
         }
     }
