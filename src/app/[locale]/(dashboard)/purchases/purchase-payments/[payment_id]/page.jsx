@@ -24,7 +24,6 @@ import {
   ArrowUp,
   Building2,
   Check,
-  Clock,
   FileText,
   Image,
   Paperclip,
@@ -305,17 +304,6 @@ const PaymentDetails = () => {
             </div>
           )}
         </section>
-      </div>
-      {/* footer ctas */}
-      <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white">
-        {paymentsDetails?.status === 'PENDING' && (
-          <section className="flex gap-2 py-2">
-            <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-              <Clock size={12} />
-              Waiting for Acknowledgement
-            </span>
-          </section>
-        )}
       </div>
     </Wrapper>
   );

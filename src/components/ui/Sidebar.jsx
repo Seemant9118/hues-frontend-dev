@@ -5,7 +5,6 @@ import React from 'react';
 import { Link } from '@/i18n/routing';
 import {
   Bell,
-  BookOpenText,
   Boxes,
   ClipboardList,
   FileSymlink,
@@ -65,11 +64,11 @@ const Sidebar = () => {
         },
       ],
     },
-    {
-      name: 'sidebar.catalogue',
-      icon: <BookOpenText size={16} />,
-      path: '/catalogue',
-    },
+    // {
+    //   name: 'sidebar.catalogue',
+    //   icon: <BookOpenText size={16} />,
+    //   path: '/catalogue',
+    // },
     {
       name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
