@@ -81,7 +81,7 @@ const CreateOrder = ({
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
     productType: '',
-    productId: '',
+    productId: null,
     quantity: null,
     unitPrice: null,
     gstPerUnit: null,
@@ -223,6 +223,11 @@ const CreateOrder = ({
     },
   ];
 
+  // Items fetching
+  // util fn to check it item is already present in orderItems or not?
+  const isItemAlreadyAdded = (itemId) =>
+    order.orderItems?.some((item) => item.productId === itemId);
+
   // [Client's Goods and Services]
   // client's catalogue's goods fetching
   const { data: goodsData } = useQuery({
@@ -235,8 +240,9 @@ const CreateOrder = ({
   const clientsGoodsOptions = goodsData?.map((good) => {
     const value = { ...good, productType: 'GOODS', productName: good.name };
     const label = good.name;
+    const disabled = isItemAlreadyAdded(good.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // client catalogue services fetching
   const { data: servicesData } = useQuery({
@@ -253,8 +259,9 @@ const CreateOrder = ({
       serviceName: service.name,
     };
     const label = service.name;
+    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // itemClientListingOptions on the basis of item type
   const itemClientListingOptions =
@@ -280,8 +287,9 @@ const CreateOrder = ({
   const vendorGoodsOptions = vendorGoodsData?.map((good) => {
     const value = { ...good, productType: 'GOODS', productName: good.name };
     const label = good.name;
+    const disabled = isItemAlreadyAdded(good.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // vendor's catalogue services fetching
   const { data: vendorServicesData } = useQuery({
@@ -304,8 +312,9 @@ const CreateOrder = ({
       serviceName: service.name,
     };
     const label = service.name;
+    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // itemVendorListingOptions on the basis of item type
   const itemVendorListingOptions =
@@ -363,22 +372,27 @@ const CreateOrder = ({
         errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
       if (order?.orderItems?.length === 0) {
-        errorObj.orderItem = translations('form.errorMsg.item');
+        errorObj.orderItem =
+          isOrder === 'invoice'
+            ? translations('form.errorMsg.itemInvoice')
+            : translations('form.errorMsg.itemOrder');
       }
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = translations('form.errorMsg.quantity');
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = translations('form.errorMsg.price');
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = translations('form.errorMsg.gst');
-      }
-      if (selectedItem.totalGstAmount === null) {
-        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = translations('form.errorMsg.amount');
+      if (order?.orderItems?.length < 0) {
+        if (selectedItem.quantity === null) {
+          errorObj.quantity = translations('form.errorMsg.quantity');
+        }
+        if (selectedItem.unitPrice === null) {
+          errorObj.unitPrice = translations('form.errorMsg.price');
+        }
+        if (selectedItem.gstPerUnit === null) {
+          errorObj.gstPerUnit = translations('form.errorMsg.gst');
+        }
+        if (selectedItem.totalGstAmount === null) {
+          errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
+        }
+        if (selectedItem.totalAmount === null) {
+          errorObj.totalAmount = translations('form.errorMsg.amount');
+        }
       }
     } else {
       if (order?.sellerEnterpriseId == null) {
@@ -387,23 +401,25 @@ const CreateOrder = ({
       if (order.invoiceType === '') {
         errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
-      if (order?.orderItem?.length === 0) {
-        errorObj.orderItem = translations('form.errorMsg.item');
+      if (order?.orderItems?.length === 0) {
+        errorObj.orderItem = translations('form.errorMsg.itemBid');
       }
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = translations('form.errorMsg.quantity');
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = translations('form.errorMsg.price');
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = translations('form.errorMsg.gst');
-      }
-      if (selectedItem.totalGstAmount === null) {
-        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = translations('form.errorMsg.amount');
+      if (order?.orderItems?.length < 0) {
+        if (selectedItem.quantity === null) {
+          errorObj.quantity = translations('form.errorMsg.quantity');
+        }
+        if (selectedItem.unitPrice === null) {
+          errorObj.unitPrice = translations('form.errorMsg.price');
+        }
+        if (selectedItem.gstPerUnit === null) {
+          errorObj.gstPerUnit = translations('form.errorMsg.gst');
+        }
+        if (selectedItem.totalGstAmount === null) {
+          errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
+        }
+        if (selectedItem.totalAmount === null) {
+          errorObj.totalAmount = translations('form.errorMsg.amount');
+        }
       }
     }
 
@@ -721,6 +737,15 @@ const CreateOrder = ({
                 <div className="flex flex-col gap-1">
                   <Select
                     name="items"
+                    value={
+                      cta === 'offer'
+                        ? itemClientListingOptions?.find(
+                            (item) => item.value.id === selectedItem.productId,
+                          ) ?? null
+                        : itemVendorListingOptions?.find(
+                            (item) => item.value.id === selectedItem.productId,
+                          ) ?? null
+                    }
                     placeholder={translations('form.input.item.placeholder')}
                     options={
                       cta === 'offer'
@@ -728,7 +753,7 @@ const CreateOrder = ({
                         : itemVendorListingOptions
                     }
                     styles={getStylesForSelectComponent()}
-                    isOptionDisabled={(option) => option.disabled} // Disable options conditionally
+                    isOptionDisabled={(option) => option.disabled}
                     isDisabled={
                       (cta === 'offer' && order.buyerId == null) ||
                       (cta === 'bid' && order.sellerEnterpriseId == null) ||
@@ -779,6 +804,7 @@ const CreateOrder = ({
                       }
                     }}
                   />
+
                   {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
                 </div>
               </div>
@@ -794,7 +820,7 @@ const CreateOrder = ({
                       (cta === 'offer' && order.buyerId == null) ||
                       order.sellerEnterpriseId == null
                     }
-                    value={selectedItem.quantity}
+                    value={selectedItem.quantity || ''}
                     onChange={(e) => {
                       const totalAmt = parseFloat(
                         (e.target.value * selectedItem.unitPrice).toFixed(2),
@@ -822,11 +848,12 @@ const CreateOrder = ({
                 </Label>
                 <div className="flex flex-col gap-1">
                   <Input
+                    type="number"
                     disabled={
                       (cta === 'offer' && order.buyerId == null) ||
                       order.sellerEnterpriseId == null
                     }
-                    value={selectedItem.unitPrice}
+                    value={selectedItem.unitPrice || ''}
                     className="max-w-30"
                     onChange={(e) => {
                       const totalAmt = parseFloat(
@@ -837,7 +864,7 @@ const CreateOrder = ({
                       ); // total gstAmt
                       setSelectedItem((prevValue) => ({
                         ...prevValue,
-                        unitPrice: e.target.value,
+                        unitPrice: Number(e.target.value),
                         totalAmount: totalAmt,
                         totalGstAmount: gstAmt,
                       }));
@@ -861,7 +888,7 @@ const CreateOrder = ({
                   <div className="flex flex-col gap-1">
                     <Input
                       disabled
-                      value={selectedItem.gstPerUnit}
+                      value={selectedItem.gstPerUnit || ''}
                       className="max-w-14"
                     />
                     {errorMsg.gstPerUnit && (
@@ -881,7 +908,7 @@ const CreateOrder = ({
                 <div className="flex flex-col gap-1">
                   <Input
                     disabled
-                    value={selectedItem.totalAmount}
+                    value={selectedItem.totalAmount || ''}
                     className="max-w-30"
                   />
                   {errorMsg.totalAmount && (
@@ -903,7 +930,7 @@ const CreateOrder = ({
                   <div className="flex flex-col gap-1">
                     <Input
                       disabled
-                      value={selectedItem.totalGstAmount}
+                      value={selectedItem.totalGstAmount || ''}
                       className="max-w-30"
                     />
                     {errorMsg.totalGstAmount && (
@@ -926,10 +953,12 @@ const CreateOrder = ({
                   <div className="flex flex-col gap-1">
                     <Input
                       disabled
-                      value={(
-                        (Number(selectedItem.totalAmount) || 0) +
-                        (Number(selectedItem.totalGstAmount) || 0)
-                      ).toFixed(2)}
+                      value={
+                        (
+                          (Number(selectedItem.totalAmount) || 0) +
+                          (Number(selectedItem.totalGstAmount) || 0)
+                        ).toFixed(2) || ''
+                      }
                       className="max-w-30"
                     />
                     {errorMsg.totalAmount && (
@@ -946,11 +975,14 @@ const CreateOrder = ({
                 onClick={() => {
                   setSelectedItem((prev) => ({
                     ...prev,
-                    productId: '',
-                    productType: '',
                     productName: '',
-                    unitPrice: '',
-                    gstPerUnit: '',
+                    productType: '',
+                    productId: null,
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
                   }));
                 }}
               >
@@ -976,12 +1008,12 @@ const CreateOrder = ({
                   setSelectedItem({
                     productName: '',
                     productType: '',
-                    productId: '',
-                    quantity: '',
-                    unitPrice: '',
-                    gstPerUnit: '',
-                    totalAmount: '',
-                    totalGstAmount: '',
+                    productId: null,
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
                   });
                   setErrorMsg({});
                 }}
