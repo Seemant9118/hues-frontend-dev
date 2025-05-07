@@ -739,7 +739,8 @@ const CreateOrder = ({
                     name="items"
                     value={
                       cta === 'offer'
-                        ? itemClientListingOptions?.find(
+                        ? // eslint-disable-next-line prettier/prettier
+                          itemClientListingOptions?.find(
                             (item) => item.value.id === selectedItem.productId,
                           ) ?? null
                         : itemVendorListingOptions?.find(
