@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
@@ -739,8 +740,7 @@ const CreateOrder = ({
                     name="items"
                     value={
                       cta === 'offer'
-                        ? // eslint-disable-next-line prettier/prettier
-                          itemClientListingOptions?.find(
+                        ? itemClientListingOptions?.find(
                             (item) => item.value.id === selectedItem.productId,
                           ) ?? null
                         : itemVendorListingOptions?.find(
