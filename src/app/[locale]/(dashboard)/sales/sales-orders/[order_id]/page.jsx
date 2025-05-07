@@ -3,6 +3,7 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
+import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -394,6 +395,8 @@ const ViewOrder = () => {
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
                     invitationData={invitationData}
                   />
+
+                  <CommentBox contextId={params.order_id} context={'ORDER'} />
 
                   {/* orderDetail Table */}
                   <DataTable

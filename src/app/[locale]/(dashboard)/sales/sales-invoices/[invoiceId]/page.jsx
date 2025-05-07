@@ -6,6 +6,7 @@ import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import CommentBox from '@/components/comments/CommentBox';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -266,6 +267,8 @@ const ViewInvoice = () => {
                   amount={invoiceDetails?.invoiceDetails?.totalAmount}
                   amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
                 />
+
+                <CommentBox contextId={params.invoiceId} context={'INVOICE'} />
 
                 <DataTable data={invoiceItems} columns={invoiceItemsColumns} />
               </div>
