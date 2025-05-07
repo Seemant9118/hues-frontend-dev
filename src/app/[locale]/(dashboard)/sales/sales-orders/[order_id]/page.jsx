@@ -396,7 +396,7 @@ const ViewOrder = () => {
                     invitationData={invitationData}
                   />
 
-                  <CommentBox />
+                  <CommentBox contextId={params.order_id} context={'ORDER'} />
 
                   {/* orderDetail Table */}
                   <DataTable

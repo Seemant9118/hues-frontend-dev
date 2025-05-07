@@ -2,6 +2,7 @@
 
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
+import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -338,6 +339,9 @@ const ViewOrder = () => {
                     amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
                   />
+
+                  <CommentBox contextId={params.order_id} context={'ORDER'} />
+
                   <DataTable
                     columns={OrderColumns}
                     data={orderDetails.orderItems}
