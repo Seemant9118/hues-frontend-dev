@@ -62,7 +62,7 @@ const CreateB2CInvoice = ({
     sac: '',
     hsnCode: '',
     productType: '',
-    productId: '',
+    productId: null,
     quantity: null,
     unitPrice: null,
     gstPerUnit: null,
@@ -206,6 +206,11 @@ const CreateB2CInvoice = ({
     },
   ];
 
+  // Items fetching
+  // util fn to check it item is already present in orderItems or not?
+  const isItemAlreadyAdded = (itemId) =>
+    order.orderItems?.some((item) => item.productId === itemId);
+
   // [Client's Goods and Services]
   // client's catalogue's goods fetching
   const { data: goodsData } = useQuery({
@@ -218,9 +223,10 @@ const CreateB2CInvoice = ({
   const clientsGoodsOptions = goodsData?.map((good) => {
     const value = { ...good, productType: 'GOODS', productName: good.name };
     const label = good.name;
-
-    return { value, label };
+    const disabled = isItemAlreadyAdded(good.id);
+    return { value, label, disabled };
   });
+
   // client's catalogue services fetching
   const { data: servicesData } = useQuery({
     queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
@@ -237,7 +243,8 @@ const CreateB2CInvoice = ({
     };
     const label = service.name;
 
-    return { value, label };
+    const disabled = isItemAlreadyAdded(service.id);
+    return { value, label, disabled };
   });
   // itemClientListingOptions on the basis of item type
   const itemClientListingOptions =
@@ -269,7 +276,7 @@ const CreateB2CInvoice = ({
 
     // Order Items
     if (!order?.orderItems || order.orderItems.length === 0) {
-      errorObj.orderItem = translations('form.errorMsg.item');
+      errorObj.orderItem = translations('form.errorMsg.itemInvoice');
     }
 
     return errorObj;
@@ -580,6 +587,11 @@ const CreateB2CInvoice = ({
                 </Label>
                 <Select
                   name="items"
+                  value={
+                    itemClientListingOptions?.find(
+                      (item) => item.value.id === selectedItem.productId,
+                    ) ?? null
+                  }
                   placeholder={translations('form.input.item.placeholder')}
                   options={itemClientListingOptions}
                   styles={getStylesForSelectComponent()}
@@ -643,7 +655,7 @@ const CreateB2CInvoice = ({
                     (cta === 'offer' && order.buyerId == null) ||
                     order.sellerEnterpriseId == null
                   }
-                  value={selectedItem.quantity}
+                  value={selectedItem.quantity || ''}
                   onChange={(e) => {
                     const quantity = Number(e.target.value);
                     const totalAmt = parseFloat(
@@ -676,7 +688,7 @@ const CreateB2CInvoice = ({
                     (cta === 'offer' && order.buyerId == null) ||
                     order.sellerEnterpriseId == null
                   }
-                  value={selectedItem.unitPrice}
+                  value={selectedItem.unitPrice || ''}
                   onChange={(e) => {
                     const price = Number(e.target.value);
                     const totalAmt = parseFloat(
@@ -708,7 +720,7 @@ const CreateB2CInvoice = ({
                   <Input
                     type="number"
                     disabled
-                    value={selectedItem.gstPerUnit}
+                    value={selectedItem.gstPerUnit || ''}
                     className="max-w-14"
                   />
                   {errorMsg.gstPerUnit && (
@@ -728,7 +740,7 @@ const CreateB2CInvoice = ({
                 <Input
                   type="number"
                   disabled
-                  value={selectedItem.totalAmount}
+                  value={selectedItem.totalAmount || ''}
                   className="max-w-30"
                 />
                 {errorMsg.totalAmount && (
@@ -746,7 +758,7 @@ const CreateB2CInvoice = ({
                   <Input
                     type="number"
                     disabled
-                    value={selectedItem.totalGstAmount}
+                    value={selectedItem.totalGstAmount || ''}
                     className="max-w-30"
                   />
                   {errorMsg.totalGstAmount && (
@@ -765,10 +777,12 @@ const CreateB2CInvoice = ({
                   <Input
                     type="number"
                     disabled
-                    value={(
-                      (Number(selectedItem.totalAmount) || 0) +
-                      (Number(selectedItem.totalGstAmount) || 0)
-                    ).toFixed(2)}
+                    value={
+                      (
+                        (Number(selectedItem.totalAmount) || 0) +
+                        (Number(selectedItem.totalGstAmount) || 0)
+                      ).toFixed(2) || ''
+                    }
                     className="max-w-30"
                   />
                   {errorMsg.totalAmount && (
@@ -785,11 +799,17 @@ const CreateB2CInvoice = ({
                 onClick={() => {
                   setSelectedItem((prev) => ({
                     ...prev,
-                    productId: '',
-                    productType: '',
                     productName: '',
-                    unitPrice: '',
-                    gstPerUnit: '',
+                    serviceName: '',
+                    sac: '',
+                    hsnCode: '',
+                    productType: '',
+                    productId: null,
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
                   }));
                 }}
               >
@@ -814,13 +834,16 @@ const CreateB2CInvoice = ({
                   }));
                   setSelectedItem({
                     productName: '',
+                    serviceName: '',
+                    sac: '',
+                    hsnCode: '',
                     productType: '',
-                    productId: '',
-                    quantity: '',
-                    unitPrice: '',
-                    gstPerUnit: '',
-                    totalAmount: '',
-                    totalGstAmount: '',
+                    productId: null,
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
                   });
                   setErrorMsg({});
                 }}
