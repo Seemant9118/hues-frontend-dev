@@ -11,9 +11,11 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService } from '@/lib/utils';
 import { getAdminData } from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
 import { Download, UserRound } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 // dashcards
@@ -81,6 +83,10 @@ const funnelData = [
 ];
 
 const AdminReportsPage = () => {
+  const userId = LocalStorageService.get('user_profile');
+
+  const router = useRouter();
+
   const [tab, setTab] = useState('onboarding');
   const todayDate = new Date();
   const [dateRange, setDateRange] = useState([todayDate, todayDate]);
@@ -95,6 +101,7 @@ const AdminReportsPage = () => {
     queryFn: () => getAdminData(dateRange),
     select: (res) => res?.data?.data,
     enabled:
+      userId === 153 &&
       tab === 'onboarding' &&
       Array.isArray(dateRange) &&
       dateRange[0] !== null &&
@@ -115,6 +122,17 @@ const AdminReportsPage = () => {
     }
   }, [adminData]);
   const PIE_COLORS = ['#F8BA05', '#007bff'];
+
+  useEffect(() => {
+    if (userId !== 153) {
+      router.push('/unauthorized');
+    }
+  }, [userId]);
+
+  if (userId !== 153) {
+    // You can return null or a loader if needed
+    return null;
+  }
 
   return (
     <Wrapper>
