@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
@@ -32,6 +33,7 @@ const InvoicePreview = ({
   handleCreateFn,
   handlePreview,
   isCreatable = false,
+  isAddressAddable = false,
   isCustomerRemarksAddable = false,
   isBankAccountDetailsSelectable = false,
   isSocialLinksAddable = false,
@@ -44,17 +46,22 @@ const InvoicePreview = ({
   // State for storing customer remarks
   const [remarks, setRemarks] = useState('Thank you for your business!');
   // State for selected bank account
-  // eslint-disable-next-line no-unused-vars
   const [bankAccount, setBankAccount] = useState(null);
+  const [billingAddress, setBillingAddress] = useState(order?.buyerAddress);
+  const [shippingAddress, setShippingAddress] = useState(order?.buyerAddress);
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
+  const [isBiilingAddressAdding, setIsBillingAddressAdding] = useState(false);
 
   useEffect(() => {
     if (!url) return;
     setIsPDF(isPDFProp);
   }, [url]);
 
+  // address fetching
+
+  // bank accounts fetching
   const { data: bankAccounts } = useQuery({
     queryKey: [bankAccountApis.getBankAccounts.endpointKey],
     queryFn: () => getBankAccounts(),
@@ -73,6 +80,82 @@ const InvoicePreview = ({
         {/* Left side: Controls */}
         {isBankAccountDetailsSelectable && isCustomerRemarksAddable && (
           <div className="flex h-full w-1/3 flex-col gap-6">
+            {/* address */}
+            {isBiilingAddressAdding && (
+              <AddBankAccount
+                isModalOpen={isBiilingAddressAdding}
+                setIsModalOpen={setIsBillingAddressAdding}
+              />
+            )}
+            {isAddressAddable && (
+              <>
+                <div>
+                  <Label className="text-sm font-medium">
+                    Select Billing Address
+                  </Label>
+                  <Select
+                    onValueChange={(value) => {
+                      setBillingAddress(value);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Billing Address" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[]?.map((address) => (
+                        <SelectItem key={address.id} value={address.id}>
+                          {address}
+                        </SelectItem>
+                      ))}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation(); // prevent closing the dropdown immediately
+                          setIsBillingAddressAdding(true);
+                        }}
+                        className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                      >
+                        <Plus size={14} />
+                        Add New Address
+                      </div>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">
+                    Select Shipping Address
+                  </Label>
+                  <Select
+                    onValueChange={(value) => {
+                      setShippingAddress(value);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Shipping Address" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[]?.map((address) => (
+                        <SelectItem key={address.id} value={address.id}>
+                          {address}
+                        </SelectItem>
+                      ))}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation(); // prevent closing the dropdown immediately
+                          setIsBillingAddressAdding(true);
+                        }}
+                        className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                      >
+                        <Plus size={14} />
+                        Add New Address
+                      </div>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* customer remarks */}
             {isCustomerRemarksAddable && (
               <div>
                 <Label className="text-sm font-medium">Custom Remarks</Label>
@@ -85,27 +168,25 @@ const InvoicePreview = ({
               </div>
             )}
 
+            {/* bank accounts */}
             {isBankAccountAdding && (
               <AddBankAccount
                 isModalOpen={isBankAccountAdding}
                 setIsModalOpen={setIsBankAccountAdding}
               />
             )}
-
             {isBankAccountDetailsSelectable && (
               <div>
                 <Label className="text-sm font-medium">
                   Select Bank Account details
                 </Label>
                 <Select
-                  placeholder="Select Bank Account Details"
-                  defaultValue={bankAccount}
                   onValueChange={(value) => {
                     setBankAccount(value);
                   }}
                 >
-                  <SelectTrigger placeholder="Select Bank Account Details">
-                    <SelectValue />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Bank Account Details" />
                   </SelectTrigger>
                   <SelectContent>
                     {bankAccounts?.map((account) => (
@@ -128,6 +209,7 @@ const InvoicePreview = ({
               </div>
             )}
 
+            {/* social links */}
             {isSocialLinksAddable && (
               <div>
                 <Label className="text-sm font-medium">Add Social links</Label>
