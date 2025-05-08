@@ -1,76 +1,77 @@
 'use client';
 
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { Button } from '@/components/ui/button';
 import DashCard from '@/components/ui/DashCard';
+import DateRange from '@/components/ui/DateRange';
 import FunnelCharts from '@/components/ui/FunnelCharts';
-import LineCharts from '@/components/ui/LineCharts';
+import Loading from '@/components/ui/Loading';
 import PieCharts from '@/components/ui/PieCharts';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService } from '@/lib/utils';
+import { getAdminData } from '@/services/Admin_Services/AdminServices';
+import { useQuery } from '@tanstack/react-query';
 import { Download, UserRound } from 'lucide-react';
-import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
 // dashcards
-const dummyData = [
-  {
-    title: 'Total Sign-ups',
-    numbers: '1,245',
-    growth: '+12%',
-    icon: <UserRound size={16} className="text-green-500" />,
-  },
-  { title: 'Users Logins', numbers: '320', growth: '-5%', icon: '👤' },
-  {
-    title: 'First Order Created',
-    numbers: '$12,340',
-    growth: '+8%',
-    icon: '💰',
-  },
-  { title: 'Order Conversion', numbers: '789', growth: '+15%', icon: '📦' },
-];
+// const dummyData = [
+//   {
+//     title: 'Total Sign-ups',
+//     numbers: '1,245',
+//     growth: '+12%',
+//     icon: <UserRound size={16} className="text-green-500" />,
+//   },
+//   { title: 'Users Logins', numbers: '320', growth: '-5%', icon: '👤' },
+//   {
+//     title: 'First Order Created',
+//     numbers: '$12,340',
+//     growth: '+8%',
+//     icon: '💰',
+//   },
+//   { title: 'Order Conversion', numbers: '789', growth: '+15%', icon: '📦' },
+// ];
 
 // data for 2 lines Linechart
-const data = [
-  { name: 'Jan', accepted: 400, pending: 800 },
-  { name: 'Feb', accepted: 420, pending: 780 },
-  { name: 'Mar', accepted: 450, pending: 790 },
-  { name: 'Apr', accepted: 470, pending: 810 },
-  { name: 'May', accepted: 500, pending: 850 },
-  { name: 'Jun', accepted: 600, pending: 900 },
-  { name: 'Jul', accepted: 700, pending: 920 },
-  { name: 'Aug', accepted: 300, pending: 870 },
-  { name: 'Sep', accepted: 950, pending: 990 },
-];
-const INVITATION_LINES = [
-  { dataKey: 'accepted', name: 'Accepted', color: '#007bff' }, // Blue
-  { dataKey: 'pending', name: 'Pending', color: '#F8BA05' }, // Yellow
-];
+// const data = [
+//   { name: 'Jan', accepted: 400, pending: 800 },
+//   { name: 'Feb', accepted: 420, pending: 780 },
+//   { name: 'Mar', accepted: 450, pending: 790 },
+//   { name: 'Apr', accepted: 470, pending: 810 },
+//   { name: 'May', accepted: 500, pending: 850 },
+//   { name: 'Jun', accepted: 600, pending: 900 },
+//   { name: 'Jul', accepted: 700, pending: 920 },
+//   { name: 'Aug', accepted: 300, pending: 870 },
+//   { name: 'Sep', accepted: 950, pending: 990 },
+// ];
+// const INVITATION_LINES = [
+//   { dataKey: 'accepted', name: 'Accepted', color: '#007bff' }, // Blue
+//   { dataKey: 'pending', name: 'Pending', color: '#F8BA05' }, // Yellow
+// ];
 
 // data for pie charts
-const pieChartdata = [
-  { name: 'Pending', value: 400 },
-  { name: 'Accepted', value: 300 },
-];
-const PIE_COLORS = ['#F8BA05', '#007bff'];
 
 // data for 3 lines Linechart
-const dataThreeLineChart = [
-  { name: 'Jan', legend1: 400, legend2: 800, legend3: 600 },
-  { name: 'Feb', legend1: 420, legend2: 780, legend3: 620 },
-  { name: 'Mar', legend1: 450, legend2: 790, legend3: 630 },
-  { name: 'Apr', legend1: 470, legend2: 810, legend3: 650 },
-  { name: 'May', legend1: 500, legend2: 850, legend3: 700 },
-  { name: 'Jun', legend1: 600, legend2: 900, legend3: 750 },
-  { name: 'Jul', legend1: 700, legend2: 920, legend3: 780 },
-  { name: 'Aug', legend1: 300, legend2: 870, legend3: 740 },
-  { name: 'Sep', legend1: 950, legend2: 990, legend3: 820 },
-];
-const ONBOARDING_LINES = [
-  { dataKey: 'legend1', name: 'Legend 1', color: '#007bff' }, // Blue
-  { dataKey: 'legend2', name: 'Legend 2', color: '#E63946' }, // Red
-  { dataKey: 'legend3', name: 'Legend 3', color: '#F8BA05' }, // Yellow ✅ Fixed
-];
+// const dataThreeLineChart = [
+//   { name: 'Jan', legend1: 400, legend2: 800, legend3: 600 },
+//   { name: 'Feb', legend1: 420, legend2: 780, legend3: 620 },
+//   { name: 'Mar', legend1: 450, legend2: 790, legend3: 630 },
+//   { name: 'Apr', legend1: 470, legend2: 810, legend3: 650 },
+//   { name: 'May', legend1: 500, legend2: 850, legend3: 700 },
+//   { name: 'Jun', legend1: 600, legend2: 900, legend3: 750 },
+//   { name: 'Jul', legend1: 700, legend2: 920, legend3: 780 },
+//   { name: 'Aug', legend1: 300, legend2: 870, legend3: 740 },
+//   { name: 'Sep', legend1: 950, legend2: 990, legend3: 820 },
+// ];
+// const ONBOARDING_LINES = [
+//   { dataKey: 'legend1', name: 'Legend 1', color: '#007bff' }, // Blue
+//   { dataKey: 'legend2', name: 'Legend 2', color: '#E63946' }, // Red
+//   { dataKey: 'legend3', name: 'Legend 3', color: '#F8BA05' }, // Yellow ✅ Fixed
+// ];
 
 // data for funnel charts
 const funnelData = [
@@ -82,11 +83,57 @@ const funnelData = [
 ];
 
 const AdminReportsPage = () => {
+  const userId = LocalStorageService.get('user_profile');
+
+  const router = useRouter();
+
   const [tab, setTab] = useState('onboarding');
+  const todayDate = new Date();
+  const [dateRange, setDateRange] = useState([todayDate, todayDate]);
+  const [pieChartData, setPieChartData] = useState(null);
 
   const onTabChange = (value) => {
     setTab(value);
   };
+
+  const { data: adminData, isLoading } = useQuery({
+    queryKey: [AdminAPIs.getAdminData.endpointKey],
+    queryFn: () => getAdminData(dateRange),
+    select: (res) => res?.data?.data,
+    enabled:
+      userId === 153 &&
+      tab === 'onboarding' &&
+      Array.isArray(dateRange) &&
+      dateRange[0] !== null &&
+      dateRange[1] !== null,
+  });
+
+  useEffect(() => {
+    if (adminData?.invitationData) {
+      const accepted =
+        Number(adminData.invitationData.acceptedInvitations) || 0;
+      const total = Number(adminData.invitationData.totalInvitations) || 0;
+      const pending = total - accepted;
+
+      setPieChartData([
+        { name: 'Pending', value: pending },
+        { name: 'Accepted', value: accepted },
+      ]);
+    }
+  }, [adminData]);
+  const PIE_COLORS = ['#F8BA05', '#007bff'];
+
+  useEffect(() => {
+    if (userId !== 153) {
+      router.push('/unauthorized');
+    }
+  }, [userId]);
+
+  if (userId !== 153) {
+    // You can return null or a loader if needed
+    return null;
+  }
+
   return (
     <Wrapper>
       {/* headers */}
@@ -103,7 +150,7 @@ const AdminReportsPage = () => {
       {/* tabs */}
       <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
         {/* TabsHeader */}
-        <section className="sticky top-12 z-10 bg-white py-2">
+        <section className="sticky top-12 z-10 flex w-full justify-between bg-white py-2">
           <TabsList className="border">
             <TabsTrigger
               className={`w-24 ${tab === 'onboarding' ? 'shadow-customShadow' : ''}`}
@@ -151,11 +198,13 @@ const AdminReportsPage = () => {
               GST
             </TabsTrigger>
           </TabsList>
+
+          <DateRange dateRange={dateRange} setDateRange={setDateRange} />
         </section>
 
         {/* CurrentTabHeader */}
         {tab === 'onboarding' && (
-          <section className="sticky top-24 z-10 bg-white px-2 py-4">
+          <section className="bg-white px-2 py-4">
             <h2 className="text-lg font-semibold">Onboarding Analytics</h2>
             <p className="text-sm text-gray-500">
               Track user sign-ups, engagement, and business activity
@@ -165,66 +214,133 @@ const AdminReportsPage = () => {
 
         <TabsContent value="onboarding" className="flex flex-col gap-4">
           {/* Onboarding */}
-          <section className="flex flex-col gap-5">
-            {/* Dashboard Metrics */}
-            <div className="flex h-full w-full gap-5">
-              {dummyData.map((data) => (
-                <DashCard
-                  key={data.title}
-                  title={data.title}
-                  numbers={data.numbers}
-                  growth={data.growth}
-                  icon={data.icon}
-                />
-              ))}
-            </div>
+          {isLoading && <Loading />}
 
-            {/* Reports Section */}
-            <div className="flex justify-between gap-5">
-              {/* Pie Chart Placeholder */}
-              <div className="w-1/3 rounded-md border p-4">
-                <h3 className="mb-2 text-lg font-semibold">
-                  Invitation Status
-                </h3>
-                {/* Add PieChart Component here */}
-                <PieCharts data={pieChartdata} colors={PIE_COLORS} />
+          {!isLoading && (
+            <section className="flex flex-col gap-5">
+              {/* Dashboard Metrics */}
+              <div className="flex h-full w-full flex-wrap gap-5">
+                {/* total no. of signups */}
+                {adminData?.totalSignups && (
+                  <DashCard
+                    title={'Total Sign-ups'}
+                    numbers={adminData?.totalSignups}
+                    growth={'+12%'}
+                    icon={<UserRound size={16} className="text-green-500" />}
+                  />
+                )}
+
+                {/* total no. of users logins */}
+                {adminData?.numberOfPeopleLogedIn && (
+                  <DashCard
+                    title={'Users Logins'}
+                    numbers={adminData?.numberOfPeopleLogedIn}
+                    growth={'+5%'}
+                    icon={<UserRound size={16} className="text-green-500" />}
+                  />
+                )}
+
+                {/* total no. of order created */}
+                {adminData?.numberOfOrderCreated && (
+                  <DashCard
+                    title={'Total Order Created'}
+                    numbers={adminData?.numberOfOrderCreated}
+                    growth={'+5%'}
+                    icon={<UserRound size={16} className="text-green-500" />}
+                  />
+                )}
+
+                {/* total no. of mobile verified */}
+                {adminData?.mobileVerified && (
+                  <DashCard
+                    title={'Total Mobile Verified'}
+                    numbers={adminData?.mobileVerified}
+                    growth={'+5%'}
+                    icon={<UserRound size={16} className="text-green-500" />}
+                  />
+                )}
+
+                {/* total no. of pan verified */}
+                {adminData?.panVerified && (
+                  <DashCard
+                    title={'Total PAN Verified'}
+                    numbers={adminData?.panVerified}
+                    growth={'+5%'}
+                    icon={<UserRound size={16} className="text-green-500" />}
+                  />
+                )}
+
+                {/* total no. of aadhar verified */}
+                {adminData?.aadharVerified && (
+                  <DashCard
+                    title={'Total Aadhar Verified'}
+                    numbers={adminData?.aadharVerified}
+                    growth={'+5%'}
+                    icon={<UserRound size={16} className="text-green-500" />}
+                  />
+                )}
               </div>
 
-              {/* Line Chart */}
-              <div className="w-2/3 rounded-md border p-4">
-                <h3 className="mb-2 text-lg font-semibold">Invitation Trend</h3>
-                <LineCharts
-                  data={data}
-                  lines={INVITATION_LINES}
-                  width={700}
-                  height={300}
-                />
-              </div>
-            </div>
+              {/* Reports Section */}
+              <div className="flex justify-between gap-5">
+                {/* Pie Chart Placeholder */}
+                <div className="w-1/3 rounded-md border p-4">
+                  <h3 className="mb-2 text-lg font-semibold">
+                    Invitation Status
+                  </h3>
+                  {/* Add PieChart Component here */}
+                  <PieCharts
+                    data={pieChartData}
+                    totalInvitation={adminData.invitationData.totalInvitations}
+                    colors={PIE_COLORS}
+                  />
+                </div>
 
-            {/* Reports Section 2 */}
-            <div className="flex justify-between gap-5">
-              {/* Line Chart */}
-              <div className="w-2/3 rounded-md border p-4">
-                <h3 className="mb-2 text-lg font-semibold">Onboarding Trend</h3>
-                <LineCharts
-                  data={dataThreeLineChart}
-                  lines={ONBOARDING_LINES}
-                  width={700}
-                  height={300}
-                />
+                {/* funnel Chart */}
+                <div className="w-2/3 rounded-md border p-4">
+                  <h3 className="mb-2 text-lg font-semibold">
+                    Onboarding Funnel
+                  </h3>
+                  <FunnelCharts data={funnelData} />
+                </div>
+
+                {/* Line Chart */}
+                {/* <div className="w-2/3 rounded-md border p-4">
+                  <h3 className="mb-2 text-lg font-semibold">
+                    Invitation Trend
+                  </h3>
+                  <LineCharts
+                    data={data}
+                    lines={INVITATION_LINES}
+                    width={700}
+                    height={300}
+                  />
+                </div> */}
               </div>
 
-              {/* funnel Chart */}
-              {/* Line Chart */}
-              <div className="w-2/3 rounded-md border p-4">
-                <h3 className="mb-2 text-lg font-semibold">
-                  Onboarding Funnel
-                </h3>
-                <FunnelCharts data={funnelData} />
-              </div>
-            </div>
-          </section>
+              {/* Reports Section 2 */}
+              {/* <div className="flex justify-between gap-5">
+                <div className="w-2/3 rounded-md border p-4">
+                  <h3 className="mb-2 text-lg font-semibold">
+                    Onboarding Trend
+                  </h3>
+                  <LineCharts
+                    data={dataThreeLineChart}
+                    lines={ONBOARDING_LINES}
+                    width={700}
+                    height={300}
+                  />
+                </div>
+
+                <div className="w-2/3 rounded-md border p-4">
+                  <h3 className="mb-2 text-lg font-semibold">
+                    Onboarding Funnel
+                  </h3>
+                  <FunnelCharts data={funnelData} />
+                </div>
+              </div> */}
+            </section>
+          )}
         </TabsContent>
         <TabsContent value="sales">Coming Soon...</TabsContent>
         <TabsContent value="purchase">Coming Soon...</TabsContent>
