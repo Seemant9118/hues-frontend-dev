@@ -1,6 +1,6 @@
 const DashCard = ({ title, numbers, growth, icon }) => {
   return (
-    <div className="flex h-28 w-full max-w-xs flex-col justify-between rounded-xl border bg-white px-6 py-3 sm:max-w-sm md:max-w-md lg:max-w-lg">
+    <div className="flex h-28 w-full max-w-xs flex-col justify-between rounded-xl border bg-white px-6 py-3">
       {/* Title and Icon */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-500">{title}</div>

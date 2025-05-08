@@ -162,3 +162,7 @@ input[type='number'] {
 .infinite-datatable-scrollable-body {
   overflow-anchor: none;
 }
+
+.custom-range-atepicker-popper {
+  z-index: 20 !important;
+}
