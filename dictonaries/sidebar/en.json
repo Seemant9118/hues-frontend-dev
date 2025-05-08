@@ -5,8 +5,7 @@
         "catalogue": "Catalogue",
         "sales": "Sales",
         "purchases": "Purchases",
-        "clients": "Clients",
-        "vendors": "Vendors",
+        "contacts": "Contacts",
         "notifications": "Notifications",
         "settings": "Settings",
         "profile": "Profile",
@@ -16,7 +15,10 @@
             "orders": "Orders",
             "invoices": "Invoices",
             "payments": "Payments",
-            "debitNotes": "Debit Notes"
+            "debitNotes": "Debit Notes",
+            "clients": "Clients",
+            "vendors": "Vendors",
+            "customers": "Customers"
         }
     }
 }
