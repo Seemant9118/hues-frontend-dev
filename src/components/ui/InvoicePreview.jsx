@@ -1,17 +1,21 @@
 /* eslint-disable no-unused-vars */
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
+import { getAddress } from '@/services/address_Services/AddressServices';
 import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
+import AddAddress from '../settings/AddAddress';
 import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
+import Loading from './Loading';
 import {
   Select,
   SelectContent,
@@ -24,6 +28,7 @@ import { Textarea } from './textarea';
 const InvoicePreview = ({
   order,
   isPDFProp,
+  getAddressRelatedData,
   setIsPreviewOpen,
   url,
   handleSelectFn,
@@ -47,8 +52,10 @@ const InvoicePreview = ({
   const [remarks, setRemarks] = useState('Thank you for your business!');
   // State for selected bank account
   const [bankAccount, setBankAccount] = useState(null);
-  const [billingAddress, setBillingAddress] = useState(order?.buyerAddress);
-  const [shippingAddress, setShippingAddress] = useState(order?.buyerAddress);
+  const [billingAddress, setBillingAddress] = useState(order?.billingAddressId);
+  const [shippingAddress, setShippingAddress] = useState(
+    order?.shippingAddressId,
+  );
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
@@ -69,6 +76,18 @@ const InvoicePreview = ({
     enabled: isBankAccountDetailsSelectable,
   });
 
+  // address fetching
+  const { data: addressData, isLoading: isAddressDataLoading } = useQuery({
+    queryKey: [addressAPIs.getAddresses.endpointKey],
+    queryFn: () =>
+      getAddress(
+        getAddressRelatedData?.clientId,
+        getAddressRelatedData?.clientEnterpriseId,
+      ),
+    select: (data) => data.data.data,
+    enabled: isAddressAddable,
+  });
+
   return (
     <div className="flex h-full w-full flex-col">
       <div
@@ -82,7 +101,8 @@ const InvoicePreview = ({
           <div className="flex h-full w-1/3 flex-col gap-6">
             {/* address */}
             {isBiilingAddressAdding && (
-              <AddBankAccount
+              <AddAddress
+                clientId={getAddressRelatedData?.clientId}
                 isModalOpen={isBiilingAddressAdding}
                 setIsModalOpen={setIsBillingAddressAdding}
               />
@@ -91,66 +111,92 @@ const InvoicePreview = ({
               <>
                 <div>
                   <Label className="text-sm font-medium">
-                    Select Billing Address
+                    Select Client Billing Address
                   </Label>
-                  <Select
-                    onValueChange={(value) => {
-                      setBillingAddress(value);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Billing Address" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[]?.map((address) => (
-                        <SelectItem key={address.id} value={address.id}>
-                          {address}
-                        </SelectItem>
-                      ))}
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation(); // prevent closing the dropdown immediately
-                          setIsBillingAddressAdding(true);
-                        }}
-                        className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
-                      >
-                        <Plus size={14} />
-                        Add New Address
-                      </div>
-                    </SelectContent>
-                  </Select>
+                  {order.clientType === 'B2C' ? (
+                    <Input
+                      id="address"
+                      name="address"
+                      value={order.buyerAddress || ''}
+                      disabled
+                      placeholder="B2C Address"
+                    />
+                  ) : (
+                    <Select
+                      onValueChange={(value) => {
+                        setBillingAddress(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Billing Address" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isAddressDataLoading && <Loading />}
+                        {!isAddressDataLoading &&
+                          addressData &&
+                          addressData?.map((address) => (
+                            <SelectItem key={address.id} value={address.id}>
+                              {address.address}
+                            </SelectItem>
+                          ))}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation(); // prevent closing the dropdown immediately
+                            setIsBillingAddressAdding(true);
+                          }}
+                          className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                        >
+                          <Plus size={14} />
+                          Add New Address
+                        </div>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div>
                   <Label className="text-sm font-medium">
-                    Select Shipping Address
+                    Select Client Shipping Address
                   </Label>
-                  <Select
-                    onValueChange={(value) => {
-                      setShippingAddress(value);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Shipping Address" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[]?.map((address) => (
-                        <SelectItem key={address.id} value={address.id}>
-                          {address}
-                        </SelectItem>
-                      ))}
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation(); // prevent closing the dropdown immediately
-                          setIsBillingAddressAdding(true);
-                        }}
-                        className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
-                      >
-                        <Plus size={14} />
-                        Add New Address
-                      </div>
-                    </SelectContent>
-                  </Select>
+                  {order.clientType === 'B2C' ? (
+                    <Input
+                      id="address"
+                      name="address"
+                      value={order.buyerAddress || ''}
+                      disabled
+                      placeholder="B2C Address"
+                    />
+                  ) : (
+                    <Select
+                      onValueChange={(value) => {
+                        setShippingAddress(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Shipping Address" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isAddressDataLoading && <Loading />}
+                        {!isAddressDataLoading &&
+                          addressData &&
+                          addressData?.map((address) => (
+                            <SelectItem key={address.id} value={address.id}>
+                              {address.address}
+                            </SelectItem>
+                          ))}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation(); // prevent closing the dropdown immediately
+                            setIsBillingAddressAdding(true);
+                          }}
+                          className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                        >
+                          <Plus size={14} />
+                          Add New Address
+                        </div>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </>
             )}
@@ -229,6 +275,8 @@ const InvoicePreview = ({
                   remarks,
                   bankAccountId: bankAccount,
                   socialLinks: socialLink,
+                  billingAddressId: billingAddress,
+                  shippingAddressId: shippingAddress,
                 };
                 handlePreview(updatedOrder);
               }}
@@ -292,6 +340,8 @@ const InvoicePreview = ({
         customerRemarks={remarks}
         socialLinks={socialLink}
         bankAccountId={bankAccount}
+        billingAddress={billingAddress}
+        shippingAddress={shippingAddress}
         isPendingInvoice={isPendingInvoice}
         handleCreateFn={handleCreateFn} // pass the full updated order
         isPINError={isPINError}
