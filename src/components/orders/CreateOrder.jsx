@@ -89,7 +89,6 @@ const CreateOrder = ({
     totalAmount: null,
     totalGstAmount: null,
   });
-
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
@@ -105,6 +104,8 @@ const CreateOrder = ({
           socialLinks: null,
           remarks: null,
           pin: null,
+          billingAddressId: null,
+          shippingAddressId: null,
         }
       : {
           clientType: 'B2B',
@@ -119,8 +120,14 @@ const CreateOrder = ({
           socialLinks: null,
           remarks: null,
           pin: null,
+          billingAddressId: null,
+          shippingAddressId: null,
         },
   );
+  const [getAddressRelatedData, setGetAddressRelatedData] = useState({
+    clientId: null,
+    clientEnterpriseId: null,
+  });
 
   // [GST/NON-GST Checking]
   // fetch profileDetails API
@@ -158,8 +165,10 @@ const CreateOrder = ({
         customer?.invitation === null || customer?.invitation === undefined
           ? 'ACCEPTED'
           : customer?.invitation?.status;
+      const clientId = customer?.id;
+      const clientEnterpriseId = customer?.client?.id;
 
-      return { value, label, isAccepted };
+      return { value, label, isAccepted, clientId, clientEnterpriseId };
     }) ?? []),
     {
       value: 'add-new-client', // Special value for "Add New Client"
@@ -611,7 +620,12 @@ const CreateOrder = ({
                       onChange={(selectedOption) => {
                         if (!selectedOption) return; // Guard clause for no selection
 
-                        const { value: id, isAccepted } = selectedOption;
+                        const {
+                          value: id,
+                          isAccepted,
+                          clientId,
+                          clientEnterpriseId,
+                        } = selectedOption;
 
                         if (id === 'add-new-client') {
                           setIsModalOpen(true); // Open modal when "Add New Client" is selected
@@ -619,6 +633,11 @@ const CreateOrder = ({
                           setOrder((prev) => ({
                             ...prev,
                             buyerId: id,
+                          }));
+                          setGetAddressRelatedData((prev) => ({
+                            ...prev,
+                            clientId,
+                            clientEnterpriseId,
                           }));
 
                           if (isOrder === 'invoice') {
@@ -1096,6 +1115,7 @@ const CreateOrder = ({
         <InvoicePreview
           order={order}
           setOrder={setOrder}
+          getAddressRelatedData={getAddressRelatedData}
           setIsPreviewOpen={setIsInvoicePreview}
           url={url}
           isPDFProp={true}
@@ -1103,6 +1123,7 @@ const CreateOrder = ({
           handleCreateFn={handleSubmit}
           handlePreview={handlePreview}
           isCreatable={true}
+          isAddressAddable={true}
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
           isActionable={true}

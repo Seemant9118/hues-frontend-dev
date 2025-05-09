@@ -922,6 +922,7 @@ const CreateB2CInvoice = ({
           handleCreateFn={handleSubmit}
           handlePreview={handlePreview}
           isCreatable={true}
+          isAddressAddable={true}
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
           isActionable={true}

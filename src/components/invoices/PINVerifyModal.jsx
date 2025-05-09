@@ -19,6 +19,8 @@ const PINVerifyModal = ({
   customerRemarks,
   socialLinks,
   bankAccountId,
+  billingAddress,
+  shippingAddress,
   isPendingInvoice,
   handleCreateFn,
   isPINError,
@@ -46,6 +48,8 @@ const PINVerifyModal = ({
         remarks: customerRemarks,
         socialLinks,
         bankAccountId,
+        billingAddressId: billingAddress,
+        shippingAddressId: shippingAddress,
         pin,
       };
       handleCreateFn(updatedOrder);
