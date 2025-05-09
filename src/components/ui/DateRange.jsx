@@ -50,7 +50,7 @@ const DateRange = ({ dateRange, setDateRange }) => {
       <div className="flex gap-2">
         <select
           className="rounded-md border px-2 py-1 text-sm focus:outline-none"
-          value={date.getFullYear()}
+          value={date?.getFullYear()}
           onChange={({ target: { value } }) => changeYear(Number(value))}
         >
           {years.map((year) => (
@@ -61,7 +61,7 @@ const DateRange = ({ dateRange, setDateRange }) => {
         </select>
         <select
           className="rounded-md border px-2 py-1 text-sm focus:outline-none"
-          value={months[date.getMonth()]}
+          value={months[date?.getMonth()]}
           onChange={({ target: { value } }) =>
             changeMonth(months.indexOf(value))
           }

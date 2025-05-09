@@ -4,7 +4,6 @@ import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { Button } from '@/components/ui/button';
 import DashCard from '@/components/ui/DashCard';
 import DateRange from '@/components/ui/DateRange';
-import FunnelCharts from '@/components/ui/FunnelCharts';
 import Loading from '@/components/ui/Loading';
 import PieCharts from '@/components/ui/PieCharts';
 import SearchInput from '@/components/ui/SearchInput';
@@ -14,7 +13,14 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import { getAdminData } from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
-import { Download, UserRound } from 'lucide-react';
+import {
+  Boxes,
+  CreditCard,
+  Download,
+  Fingerprint,
+  TabletSmartphone,
+  UserRound,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
@@ -74,23 +80,43 @@ import React, { useEffect, useState } from 'react';
 // ];
 
 // data for funnel charts
-const funnelData = [
-  { name: 'Visitors', value: 5000 },
-  { name: 'Visitors', value: 4000 },
-  { name: 'Sign-ups', value: 2000 },
-  { name: 'Purchases', value: 1000 },
-  { name: 'Repeat Customers', value: 500 },
-];
+// const funnelData = [
+//   { name: 'Visitors', value: 5000 },
+//   { name: 'Visitors', value: 4000 },
+//   { name: 'Sign-ups', value: 2000 },
+//   { name: 'Purchases', value: 1000 },
+//   { name: 'Repeat Customers', value: 500 },
+// ];
 
 const AdminReportsPage = () => {
-  const userId = LocalStorageService.get('user_profile');
-
   const router = useRouter();
-
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkedAuth, setCheckedAuth] = useState(false);
   const [tab, setTab] = useState('onboarding');
+  const startDate = new Date('2024/03/01');
   const todayDate = new Date();
-  const [dateRange, setDateRange] = useState([todayDate, todayDate]);
+  const [dateRange, setDateRange] = useState([startDate, todayDate]);
   const [pieChartData, setPieChartData] = useState(null);
+  const token = LocalStorageService.get('token');
+
+  // to get data from JWT
+  function parseJwt(token) {
+    if (!token) return null;
+
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
+          .join(''),
+      );
+      return JSON.parse(payload);
+    } catch (error) {
+      return null;
+    }
+  }
 
   const onTabChange = (value) => {
     setTab(value);
@@ -101,7 +127,8 @@ const AdminReportsPage = () => {
     queryFn: () => getAdminData(dateRange),
     select: (res) => res?.data?.data,
     enabled:
-      userId === 153 &&
+      checkedAuth &&
+      isAdmin &&
       tab === 'onboarding' &&
       Array.isArray(dateRange) &&
       dateRange[0] !== null &&
@@ -124,15 +151,19 @@ const AdminReportsPage = () => {
   const PIE_COLORS = ['#F8BA05', '#007bff'];
 
   useEffect(() => {
-    if (userId !== 153) {
+    const tokenData = parseJwt(token);
+    const isAdminCheck = tokenData?.roles?.includes('ADMIN');
+    setIsAdmin(isAdminCheck);
+    setCheckedAuth(true);
+  }, [token]);
+
+  useEffect(() => {
+    if (checkedAuth && !isAdmin) {
       router.push('/unauthorized');
     }
-  }, [userId]);
+  }, [checkedAuth, isAdmin]);
 
-  if (userId !== 153) {
-    // You can return null or a loader if needed
-    return null;
-  }
+  if (!checkedAuth) return <Loading />;
 
   return (
     <Wrapper>
@@ -198,18 +229,19 @@ const AdminReportsPage = () => {
               GST
             </TabsTrigger>
           </TabsList>
-
-          <DateRange dateRange={dateRange} setDateRange={setDateRange} />
         </section>
 
         {/* CurrentTabHeader */}
         {tab === 'onboarding' && (
-          <section className="bg-white px-2 py-4">
-            <h2 className="text-lg font-semibold">Onboarding Analytics</h2>
-            <p className="text-sm text-gray-500">
-              Track user sign-ups, engagement, and business activity
-            </p>
-          </section>
+          <div className="flex items-center justify-between">
+            <section className="bg-white px-2 py-4">
+              <h2 className="text-lg font-semibold">Onboarding Analytics</h2>
+              <p className="text-sm text-gray-500">
+                Track user sign-ups, engagement, and business activity
+              </p>
+            </section>
+            <DateRange dateRange={dateRange} setDateRange={setDateRange} />
+          </div>
         )}
 
         <TabsContent value="onboarding" className="flex flex-col gap-4">
@@ -219,13 +251,13 @@ const AdminReportsPage = () => {
           {!isLoading && (
             <section className="flex flex-col gap-5">
               {/* Dashboard Metrics */}
-              <div className="flex h-full w-full flex-wrap gap-5">
+              <div className="grid grid-cols-3 grid-rows-2 gap-2">
                 {/* total no. of signups */}
                 {adminData?.totalSignups && (
                   <DashCard
                     title={'Total Sign-ups'}
                     numbers={adminData?.totalSignups}
-                    growth={'+12%'}
+                    // growth={'+12%'}
                     icon={<UserRound size={16} className="text-green-500" />}
                   />
                 )}
@@ -235,7 +267,7 @@ const AdminReportsPage = () => {
                   <DashCard
                     title={'Users Logins'}
                     numbers={adminData?.numberOfPeopleLogedIn}
-                    growth={'+5%'}
+                    // growth={'+5%'}
                     icon={<UserRound size={16} className="text-green-500" />}
                   />
                 )}
@@ -245,8 +277,8 @@ const AdminReportsPage = () => {
                   <DashCard
                     title={'Total Order Created'}
                     numbers={adminData?.numberOfOrderCreated}
-                    growth={'+5%'}
-                    icon={<UserRound size={16} className="text-green-500" />}
+                    // growth={'+5%'}
+                    icon={<Boxes size={16} className="text-green-500" />}
                   />
                 )}
 
@@ -255,8 +287,10 @@ const AdminReportsPage = () => {
                   <DashCard
                     title={'Total Mobile Verified'}
                     numbers={adminData?.mobileVerified}
-                    growth={'+5%'}
-                    icon={<UserRound size={16} className="text-green-500" />}
+                    // growth={'+5%'}
+                    icon={
+                      <TabletSmartphone size={16} className="text-green-500" />
+                    }
                   />
                 )}
 
@@ -265,8 +299,8 @@ const AdminReportsPage = () => {
                   <DashCard
                     title={'Total PAN Verified'}
                     numbers={adminData?.panVerified}
-                    growth={'+5%'}
-                    icon={<UserRound size={16} className="text-green-500" />}
+                    // growth={'+5%'}
+                    icon={<CreditCard size={16} className="text-green-500" />}
                   />
                 )}
 
@@ -275,8 +309,8 @@ const AdminReportsPage = () => {
                   <DashCard
                     title={'Total Aadhar Verified'}
                     numbers={adminData?.aadharVerified}
-                    growth={'+5%'}
-                    icon={<UserRound size={16} className="text-green-500" />}
+                    // growth={'+5%'}
+                    icon={<Fingerprint size={16} className="text-green-500" />}
                   />
                 )}
               </div>
@@ -284,25 +318,27 @@ const AdminReportsPage = () => {
               {/* Reports Section */}
               <div className="flex justify-between gap-5">
                 {/* Pie Chart Placeholder */}
-                <div className="w-1/3 rounded-md border p-4">
+                <div className="w-1/4 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Invitation Status
                   </h3>
                   {/* Add PieChart Component here */}
                   <PieCharts
                     data={pieChartData}
-                    totalInvitation={adminData.invitationData.totalInvitations}
+                    totalInvitation={
+                      adminData?.invitationData?.totalInvitations
+                    }
                     colors={PIE_COLORS}
                   />
                 </div>
 
                 {/* funnel Chart */}
-                <div className="w-2/3 rounded-md border p-4">
+                {/* <div className="w-2/3 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Onboarding Funnel
                   </h3>
                   <FunnelCharts data={funnelData} />
-                </div>
+                </div> */}
 
                 {/* Line Chart */}
                 {/* <div className="w-2/3 rounded-md border p-4">
