@@ -39,13 +39,15 @@ import emptyImg from '../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 
-// dynamic imports
-const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
-  loading: () => <Loading />,
-});
-
 const CreateB2CInvoice = dynamic(
   () => import('@/components/invoices/CreateB2CInvoice'),
+  {
+    loading: () => <Loading />,
+  },
+);
+
+const CreateB2BInvoice = dynamic(
+  () => import('@/components/invoices/CreateB2BInvoice'),
   {
     loading: () => <Loading />,
   },
@@ -93,21 +95,21 @@ const SalesInvoices = () => {
     }
   }, [searchParams]);
 
-  // useEffect(() => {
-  //   let newPath = '/sales/sales-invoices/';
+  useEffect(() => {
+    let newPath = '/sales/sales-invoices/';
 
-  //   if (invoiceType === 'b2b') {
-  //     newPath += `?action=b2b`;
-  //   } else if (invoiceType === 'b2c') {
-  //     newPath += `?action=b2c`;
-  //   }
+    if (invoiceType === 'b2b') {
+      newPath += `?action=b2b`;
+    } else if (invoiceType === 'b2c') {
+      newPath += `?action=b2c`;
+    }
 
-  //   const currentPath = window.location.pathname + window.location.search;
+    const currentPath = window.location.pathname + window.location.search;
 
-  //   if (currentPath !== newPath) {
-  //     router.push(newPath);
-  //   }
-  // }, [invoiceType]);
+    if (currentPath !== newPath) {
+      router.push(newPath);
+    }
+  }, [invoiceType]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -443,13 +445,12 @@ const SalesInvoices = () => {
 
           {/* Show CreateOrder based on invoice type */}
           {invoiceType === 'b2b' && (
-            <CreateOrder
-              type="invoice"
+            <CreateB2BInvoice
+              isCreatingInvoice={true}
+              onCancel={() => setInvoiceType('')}
               name={translations('ctas.invoice.b2bCta')}
               cta="offer"
               isOrder="invoice"
-              isCreatingInvoice={true}
-              onCancel={() => setInvoiceType('')}
               invoiceType={invoiceType}
               setInvoiceType={setInvoiceType}
             />

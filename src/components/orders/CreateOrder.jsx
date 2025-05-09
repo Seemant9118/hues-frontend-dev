@@ -3,7 +3,6 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
-import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getStylesForSelectComponent,
@@ -28,14 +27,10 @@ import {
   createVendor,
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import { previewDirectInvoice } from '@/services/Invoice_Services/Invoice_Services';
-import {
-  CreateOrderService,
-  createInvoice,
-} from '@/services/Orders_Services/Orders_Services';
+import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChevronDown, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -43,25 +38,20 @@ import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
-import InvoiceTypePopover from '../invoices/InvoiceTypePopover';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
-import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
-  isCreatingInvoice,
   isCreatingSales,
   isCreatingPurchase,
   onCancel,
   name,
   cta,
   isOrder,
-  invoiceType,
-  setInvoiceType,
 }) => {
   const translations = useTranslations('components.create_edit_order');
 
@@ -72,9 +62,6 @@ const CreateOrder = ({
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
 
-  const [isPINError, setIsPINError] = useState(false);
-  const [url, setUrl] = useState(null);
-  const [isInvoicePreview, setIsInvoicePreview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
   const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
@@ -124,10 +111,6 @@ const CreateOrder = ({
           shippingAddressId: null,
         },
   );
-  const [getAddressRelatedData, setGetAddressRelatedData] = useState({
-    clientId: null,
-    clientEnterpriseId: null,
-  });
 
   // [GST/NON-GST Checking]
   // fetch profileDetails API
@@ -135,8 +118,7 @@ const CreateOrder = ({
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
-    enabled:
-      (!!isCreatingInvoice || !!isCreatingSales) && isPurchasePage === false,
+    enabled: !!isCreatingSales && isPurchasePage === false,
   });
   // for sales-order gst/non-gst check
   const isGstApplicableForSalesOrders =
@@ -350,23 +332,6 @@ const CreateOrder = ({
     },
   });
 
-  // mutation - create invoice
-  const invoiceMutation = useMutation({
-    mutationFn: createInvoice,
-    onSuccess: (res) => {
-      toast.success(
-        translations('form.successMsg.invoice_created_successfully'),
-      );
-      router.push(`/sales/sales-invoices/${res.data.data.id}`);
-    },
-    onError: (error) => {
-      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
-        setIsPINError(true);
-      }
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
   // validations
   const validation = ({ order, selectedItem }) => {
     const errorObj = {};
@@ -475,68 +440,18 @@ const CreateOrder = ({
   const { totalGstAmt } = handleSetTotalAmt();
 
   // handling submit fn
-  const handleSubmit = (updateOrder) => {
+  const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
 
     if (Object.keys(isError).length === 0) {
-      if (isOrder === 'invoice') {
-        invoiceMutation.mutate({
-          ...updateOrder,
-          buyerId: Number(order.buyerId),
-          amount: parseFloat(totalAmount.toFixed(2)),
-          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-        });
-        setErrorMsg({});
-      } else {
-        orderMutation.mutate({
-          ...order,
-          buyerId: Number(order.buyerId),
-          amount: parseFloat(totalAmount.toFixed(2)),
-          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-        });
-        setErrorMsg({});
-      }
-    } else {
-      setErrorMsg(isError);
-    }
-  };
-
-  const previewInvMutation = useMutation({
-    mutationKey: [invoiceApi.previewDirectInvoice.endpointKey],
-    mutationFn: previewDirectInvoice,
-    // eslint-disable-next-line consistent-return
-    onSuccess: (data) => {
-      if (data?.data?.data) {
-        const base64StrToRenderPDF = data?.data?.data;
-        const newUrl = `data:application/pdf;base64,${base64StrToRenderPDF}`;
-        setUrl(newUrl);
-        setIsInvoicePreview(true);
-
-        // // Clean up the blob URL when the component unmounts or the base64 string changes
-        return () => {
-          window.URL.revokeObjectURL(newUrl);
-        };
-      }
-    },
-    onError: (error) =>
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      ),
-  });
-
-  const handlePreview = (updatedOrder) => {
-    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-    const isError = validation({ order, selectedItem });
-    if (Object.keys(isError).length === 0) {
-      setErrorMsg({});
-      previewInvMutation.mutate({
-        ...updatedOrder,
-        invoiceItems: order.orderItems,
+      orderMutation.mutate({
+        ...order,
         buyerId: Number(order.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
       });
+      setErrorMsg({});
     } else {
       setErrorMsg(isError);
     }
@@ -565,24 +480,7 @@ const CreateOrder = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      {isOrder === 'invoice' ? (
-        <div className="flex items-end gap-0.5">
-          <SubHeader name={name}></SubHeader>
-
-          <InvoiceTypePopover
-            triggerInvoiceTypeModal={
-              <ChevronDown
-                className="cursor-pointer hover:text-primary"
-                size={20}
-              />
-            }
-            invoiceType={invoiceType}
-            setInvoiceType={setInvoiceType}
-          />
-        </div>
-      ) : (
-        <SubHeader name={name}></SubHeader>
-      )}
+      <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
@@ -592,544 +490,496 @@ const CreateOrder = ({
           setOrder={setOrder}
         />
       )}
-      {!isInvoicePreview && (
-        <>
-          <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-            {cta === 'offer' ? (
-              order.clientType === 'B2B' && (
-                <div className="flex w-1/2 flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.client')}
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  <div className="flex w-full flex-col gap-1">
-                    <Select
-                      name="clients"
-                      placeholder={translations(
-                        'form.input.client.placeholder',
-                      )}
-                      options={clientOptions}
-                      styles={getStylesForSelectComponent()}
-                      className="max-w-xs text-sm"
-                      classNamePrefix="select"
-                      value={
-                        clientOptions?.find(
-                          (option) => option.value === selectedValue?.value,
-                        ) || null
-                      } // Match selected value
-                      onChange={(selectedOption) => {
-                        if (!selectedOption) return; // Guard clause for no selection
 
-                        const {
-                          value: id,
-                          isAccepted,
-                          clientId,
-                          clientEnterpriseId,
-                        } = selectedOption;
-
-                        if (id === 'add-new-client') {
-                          setIsModalOpen(true); // Open modal when "Add New Client" is selected
-                        } else {
-                          setOrder((prev) => ({
-                            ...prev,
-                            buyerId: id,
-                          }));
-                          setGetAddressRelatedData((prev) => ({
-                            ...prev,
-                            clientId,
-                            clientEnterpriseId,
-                          }));
-
-                          if (isOrder === 'invoice') {
-                            setRedirectPopUpOnFail(false); // Never show popup for invoice
-                          } else {
-                            setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED'); // Show popup only if client is uninvited
-                          }
-
-                          setSelectedValue(selectedOption); // Update selected value
-                        }
-                      }}
-                    />
-
-                    {/* Conditionally render the AddModal when "Add New Client" is selected */}
-                    {isModalOpen && (
-                      <AddModal
-                        type="Add"
-                        cta="client"
-                        btnName="Add a new Client"
-                        mutationFunc={createClient}
-                        isOpen={isModalOpen}
-                        setIsOpen={setIsModalOpen}
-                      />
-                    )}
-                    {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
-                  </div>
-                </div>
-              )
-            ) : (
-              <div className="flex w-1/2 flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.vendor')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex w-full flex-col gap-1">
-                  <Select
-                    name="vendors"
-                    placeholder={translations('form.input.vendor.placeholder')}
-                    options={vendorOptions}
-                    styles={getStylesForSelectComponent()}
-                    className="max-w-xs text-sm"
-                    classNamePrefix="select"
-                    value={
-                      vendorOptions?.find(
-                        (option) => option.value === selectedValue?.value,
-                      ) || null
-                    } // Match selected value
-                    onChange={(selectedOption) => {
-                      if (!selectedOption) return; // Guard clause for no selection
-
-                      const { value: id, gstNumber } = selectedOption; // Extract id and isAccepted from the selected option
-
-                      // Check if "Add New Client" is selected
-                      if (selectedOption.value === 'add-new-vendor') {
-                        setIsModalOpen(true); // Open the modal when "Add New Vendor" is selected
-                      } else {
-                        setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
-
-                        setOrder((prev) => ({
-                          ...prev,
-                          sellerEnterpriseId: id,
-                        }));
-
-                        setSelectedValue(selectedOption); // Update the state with the selected option
-                      }
-                    }}
-                  />
-
-                  {/* Conditionally render the AddModal when "Add New Client" is selected */}
-                  {isModalOpen && (
-                    <AddModal
-                      type="Add"
-                      cta="vendor"
-                      btnName="Add a new Vendor"
-                      mutationFunc={createVendor}
-                      isOpen={isModalOpen}
-                      setIsOpen={setIsModalOpen}
-                    />
-                  )}
-                  {errorMsg.sellerEnterpriseId && (
-                    <ErrorBox msg={errorMsg.sellerEnterpriseId} />
-                  )}
-                </div>
-              </div>
-            )}
-
+      <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
+        {cta === 'offer' ? (
+          order.clientType === 'B2B' && (
             <div className="flex w-1/2 flex-col gap-2">
               <Label className="flex gap-1">
-                {translations('form.label.item_type')}
+                {translations('form.label.client')}
                 <span className="text-red-600">*</span>
               </Label>
+              <div className="flex w-full flex-col gap-1">
+                <Select
+                  name="clients"
+                  placeholder={translations('form.input.client.placeholder')}
+                  options={clientOptions}
+                  styles={getStylesForSelectComponent()}
+                  className="max-w-xs text-sm"
+                  classNamePrefix="select"
+                  value={
+                    clientOptions?.find(
+                      (option) => option.value === selectedValue?.value,
+                    ) || null
+                  } // Match selected value
+                  onChange={(selectedOption) => {
+                    if (!selectedOption) return; // Guard clause for no selection
+
+                    const { value: id, isAccepted } = selectedOption;
+
+                    if (id === 'add-new-client') {
+                      setIsModalOpen(true); // Open modal when "Add New Client" is selected
+                    } else {
+                      setOrder((prev) => ({
+                        ...prev,
+                        buyerId: id,
+                      }));
+
+                      if (isOrder === 'invoice') {
+                        setRedirectPopUpOnFail(false); // Never show popup for invoice
+                      } else {
+                        setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED'); // Show popup only if client is uninvited
+                      }
+
+                      setSelectedValue(selectedOption); // Update selected value
+                    }
+                  }}
+                />
+
+                {/* Conditionally render the AddModal when "Add New Client" is selected */}
+                {isModalOpen && (
+                  <AddModal
+                    type="Add"
+                    cta="client"
+                    btnName="Add a new Client"
+                    mutationFunc={createClient}
+                    isOpen={isModalOpen}
+                    setIsOpen={setIsModalOpen}
+                  />
+                )}
+                {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="flex w-1/2 flex-col gap-2">
+            <Label className="flex gap-1">
+              {translations('form.label.vendor')}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex w-full flex-col gap-1">
               <Select
-                name="itemType"
-                placeholder={translations('form.input.item_type.placeholder')}
-                options={itemTypeOptions}
+                name="vendors"
+                placeholder={translations('form.input.vendor.placeholder')}
+                options={vendorOptions}
                 styles={getStylesForSelectComponent()}
                 className="max-w-xs text-sm"
                 classNamePrefix="select"
+                value={
+                  vendorOptions?.find(
+                    (option) => option.value === selectedValue?.value,
+                  ) || null
+                } // Match selected value
                 onChange={(selectedOption) => {
                   if (!selectedOption) return; // Guard clause for no selection
-                  setOrder((prev) => ({
-                    ...prev,
-                    invoiceType: selectedOption.value,
-                  })); // Update state with the selected value
+
+                  const { value: id, gstNumber } = selectedOption; // Extract id and isAccepted from the selected option
+
+                  // Check if "Add New Client" is selected
+                  if (selectedOption.value === 'add-new-vendor') {
+                    setIsModalOpen(true); // Open the modal when "Add New Vendor" is selected
+                  } else {
+                    setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      sellerEnterpriseId: id,
+                    }));
+
+                    setSelectedValue(selectedOption); // Update the state with the selected option
+                  }
                 }}
               />
-              {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
+
+              {/* Conditionally render the AddModal when "Add New Client" is selected */}
+              {isModalOpen && (
+                <AddModal
+                  type="Add"
+                  cta="vendor"
+                  btnName="Add a new Vendor"
+                  mutationFunc={createVendor}
+                  isOpen={isModalOpen}
+                  setIsOpen={setIsModalOpen}
+                />
+              )}
+              {errorMsg.sellerEnterpriseId && (
+                <ErrorBox msg={errorMsg.sellerEnterpriseId} />
+              )}
             </div>
           </div>
-          <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex w-full max-w-xs flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.item')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Select
-                    name="items"
-                    value={
-                      cta === 'offer'
-                        ? itemClientListingOptions?.find(
-                            (item) => item.value.id === selectedItem.productId,
-                          ) ?? null
-                        : itemVendorListingOptions?.find(
-                            (item) => item.value.id === selectedItem.productId,
-                          ) ?? null
-                    }
-                    placeholder={translations('form.input.item.placeholder')}
-                    options={
-                      cta === 'offer'
-                        ? itemClientListingOptions
-                        : itemVendorListingOptions
-                    }
-                    styles={getStylesForSelectComponent()}
-                    isOptionDisabled={(option) => option.disabled}
-                    isDisabled={
-                      (cta === 'offer' && order.buyerId == null) ||
-                      (cta === 'bid' && order.sellerEnterpriseId == null) ||
-                      order.invoiceType === ''
-                    }
-                    onChange={(selectedOption) => {
-                      const selectedItemData =
-                        cta === 'offer'
-                          ? itemClientListingOptions?.find(
-                              (item) =>
-                                item.value.id === selectedOption?.value?.id,
-                            )?.value
-                          : itemVendorListingOptions?.find(
-                              (item) =>
-                                item.value.id === selectedOption?.value?.id,
-                            )?.value;
+        )}
 
-                      if (selectedItemData) {
-                        const isGstApplicableForPage = isPurchasePage
-                          ? isGstApplicable(isGstApplicableForPurchaseOrders)
-                          : isGstApplicable(isGstApplicableForSalesOrders);
+        <div className="flex w-1/2 flex-col gap-2">
+          <Label className="flex gap-1">
+            {translations('form.label.item_type')}
+            <span className="text-red-600">*</span>
+          </Label>
+          <Select
+            name="itemType"
+            placeholder={translations('form.input.item_type.placeholder')}
+            options={itemTypeOptions}
+            styles={getStylesForSelectComponent()}
+            className="max-w-xs text-sm"
+            classNamePrefix="select"
+            onChange={(selectedOption) => {
+              if (!selectedOption) return; // Guard clause for no selection
+              setOrder((prev) => ({
+                ...prev,
+                invoiceType: selectedOption.value,
+              })); // Update state with the selected value
+            }}
+          />
+          {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
+        </div>
+      </div>
+      <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex w-full max-w-xs flex-col gap-2">
+            <Label className="flex gap-1">
+              {translations('form.label.item')}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex flex-col gap-1">
+              <Select
+                name="items"
+                value={
+                  cta === 'offer'
+                    ? itemClientListingOptions?.find(
+                        (item) => item.value.id === selectedItem.productId,
+                      ) ?? null
+                    : itemVendorListingOptions?.find(
+                        (item) => item.value.id === selectedItem.productId,
+                      ) ?? null
+                }
+                placeholder={translations('form.input.item.placeholder')}
+                options={
+                  cta === 'offer'
+                    ? itemClientListingOptions
+                    : itemVendorListingOptions
+                }
+                styles={getStylesForSelectComponent()}
+                isOptionDisabled={(option) => option.disabled}
+                isDisabled={
+                  (cta === 'offer' && order.buyerId == null) ||
+                  (cta === 'bid' && order.sellerEnterpriseId == null) ||
+                  order.invoiceType === ''
+                }
+                onChange={(selectedOption) => {
+                  const selectedItemData =
+                    cta === 'offer'
+                      ? itemClientListingOptions?.find(
+                          (item) => item.value.id === selectedOption?.value?.id,
+                        )?.value
+                      : itemVendorListingOptions?.find(
+                          (item) => item.value.id === selectedOption?.value?.id,
+                        )?.value;
 
-                        const gstPerUnit = isGstApplicableForPage
-                          ? selectedItemData.gstPercentage
-                          : 0;
+                  if (selectedItemData) {
+                    const isGstApplicableForPage = isPurchasePage
+                      ? isGstApplicable(isGstApplicableForPurchaseOrders)
+                      : isGstApplicable(isGstApplicableForSalesOrders);
 
-                        if (selectedItemData.productType === 'GOODS') {
-                          setSelectedItem((prev) => ({
-                            ...prev,
-                            productId: selectedItemData.id,
-                            productType: selectedItemData.productType,
-                            hsnCode: selectedItemData.hsnCode,
-                            productName: selectedItemData.productName,
-                            unitPrice: selectedItemData.rate,
-                            gstPerUnit,
-                          }));
-                        } else {
-                          setSelectedItem((prev) => ({
-                            ...prev,
-                            productId: selectedItemData.id,
-                            productType: selectedItemData.productType,
-                            sac: selectedItemData.sacCode,
-                            serviceName: selectedItemData.serviceName,
-                            unitPrice: selectedItemData.rate,
-                            gstPerUnit,
-                          }));
-                        }
-                      }
-                    }}
-                  />
+                    const gstPerUnit = isGstApplicableForPage
+                      ? selectedItemData.gstPercentage
+                      : 0;
 
-                  {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.quantity')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    type="number"
-                    disabled={
-                      (cta === 'offer' && order.buyerId == null) ||
-                      order.sellerEnterpriseId == null
-                    }
-                    value={selectedItem.quantity || ''}
-                    onChange={(e) => {
-                      const totalAmt = parseFloat(
-                        (e.target.value * selectedItem.unitPrice).toFixed(2),
-                      ); // totalAmt excluding gst
-                      const gstAmt = parseFloat(
-                        (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                      ); // total gstAmt
+                    if (selectedItemData.productType === 'GOODS') {
                       setSelectedItem((prev) => ({
                         ...prev,
-                        quantity: Number(e.target.value),
-                        totalAmount: totalAmt,
-                        totalGstAmount: gstAmt,
+                        productId: selectedItemData.id,
+                        productType: selectedItemData.productType,
+                        hsnCode: selectedItemData.hsnCode,
+                        productName: selectedItemData.productName,
+                        unitPrice: selectedItemData.rate,
+                        gstPerUnit,
                       }));
-                    }}
-                    className="max-w-30"
-                  />
-                  {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.price')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    type="number"
-                    disabled={
-                      (cta === 'offer' && order.buyerId == null) ||
-                      order.sellerEnterpriseId == null
+                    } else {
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        productId: selectedItemData.id,
+                        productType: selectedItemData.productType,
+                        sac: selectedItemData.sacCode,
+                        serviceName: selectedItemData.serviceName,
+                        unitPrice: selectedItemData.rate,
+                        gstPerUnit,
+                      }));
                     }
-                    value={selectedItem.unitPrice || ''}
-                    className="max-w-30"
-                    onChange={(e) => {
-                      const totalAmt = parseFloat(
-                        (selectedItem.quantity * e.target.value).toFixed(2),
-                      ); // totalAmt excluding gst
-                      const gstAmt = parseFloat(
-                        (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                      ); // total gstAmt
-                      setSelectedItem((prevValue) => ({
-                        ...prevValue,
-                        unitPrice: Number(e.target.value),
-                        totalAmount: totalAmt,
-                        totalGstAmount: gstAmt,
-                      }));
-                    }}
-                  />
-                  {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
-                </div>
-              </div>
+                  }
+                }}
+              />
 
-              {isGstApplicable(
-                isPurchasePage
-                  ? isGstApplicableForPurchaseOrders
-                  : isGstApplicableForSalesOrders,
-              ) && (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex">
-                    {translations('form.label.gst')}
-                    <span className="text-xs"> (%)</span>
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  <div className="flex flex-col gap-1">
-                    <Input
-                      disabled
-                      value={selectedItem.gstPerUnit || ''}
-                      className="max-w-14"
-                    />
-                    {errorMsg.gstPerUnit && (
-                      <ErrorBox msg={errorMsg.gstPerUnit} />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {isOrder === 'invoice'
-                    ? translations('form.label.invoice_value')
-                    : translations('form.label.value')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem.totalAmount || ''}
-                    className="max-w-30"
-                  />
-                  {errorMsg.totalAmount && (
-                    <ErrorBox msg={errorMsg.totalAmount} />
-                  )}
-                </div>
-              </div>
-
-              {isGstApplicable(
-                isPurchasePage
-                  ? isGstApplicableForPurchaseOrders
-                  : isGstApplicableForSalesOrders,
-              ) && (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.tax_amount')}
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  <div className="flex flex-col gap-1">
-                    <Input
-                      disabled
-                      value={selectedItem.totalGstAmount || ''}
-                      className="max-w-30"
-                    />
-                    {errorMsg.totalGstAmount && (
-                      <ErrorBox msg={errorMsg.totalGstAmount} />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {isGstApplicable(
-                isPurchasePage
-                  ? isGstApplicableForPurchaseOrders
-                  : isGstApplicableForSalesOrders,
-              ) && (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.amount')}
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  <div className="flex flex-col gap-1">
-                    <Input
-                      disabled
-                      value={
-                        (
-                          (Number(selectedItem.totalAmount) || 0) +
-                          (Number(selectedItem.totalGstAmount) || 0)
-                        ).toFixed(2) || ''
-                      }
-                      className="max-w-30"
-                    />
-                    {errorMsg.totalAmount && (
-                      <ErrorBox msg={errorMsg.totalAmount} />
-                    )}
-                  </div>
-                </div>
-              )}
+              {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
             </div>
-            <div className="flex items-center justify-end gap-4">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              {translations('form.label.quantity')}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex flex-col gap-1">
+              <Input
+                type="number"
+                disabled={
+                  (cta === 'offer' && order.buyerId == null) ||
+                  order.sellerEnterpriseId == null
+                }
+                value={selectedItem.quantity || ''}
+                onChange={(e) => {
+                  const totalAmt = parseFloat(
+                    (e.target.value * selectedItem.unitPrice).toFixed(2),
+                  ); // totalAmt excluding gst
+                  const gstAmt = parseFloat(
+                    (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                  ); // total gstAmt
                   setSelectedItem((prev) => ({
                     ...prev,
-                    productName: '',
-                    productType: '',
-                    productId: null,
-                    quantity: null,
-                    unitPrice: null,
-                    gstPerUnit: null,
-                    totalAmount: null,
-                    totalGstAmount: null,
+                    quantity: Number(e.target.value),
+                    totalAmount: totalAmt,
+                    totalGstAmount: gstAmt,
                   }));
                 }}
-              >
-                {translations('form.ctas.cancel')}
-              </Button>
-              <Button
-                size="sm"
-                disabled={
-                  selectedItem.productId === null ||
-                  selectedItem.productId === ''
-                } // if any item of selectedItem is empty then button must be disabled
-                onClick={() => {
-                  setOrder((prev) => ({
-                    ...prev,
-                    orderItems: [
-                      ...prev.orderItems,
-                      {
-                        gstPercentage: selectedItem.gstPerUnit,
-                        ...selectedItem,
-                      },
-                    ],
-                  }));
-                  setSelectedItem({
-                    productName: '',
-                    productType: '',
-                    productId: null,
-                    quantity: null,
-                    unitPrice: null,
-                    gstPerUnit: null,
-                    totalAmount: null,
-                    totalGstAmount: null,
-                  });
-                  setErrorMsg({});
-                }}
-                variant="blue_outline"
-              >
-                {translations('form.ctas.add')}
-              </Button>
+                className="max-w-30"
+              />
+              {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
 
-          {/* selected item table */}
-          <DataTable data={order.orderItems} columns={createSalesColumns} />
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              {translations('form.label.price')}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex flex-col gap-1">
+              <Input
+                type="number"
+                disabled={
+                  (cta === 'offer' && order.buyerId == null) ||
+                  order.sellerEnterpriseId == null
+                }
+                value={selectedItem.unitPrice || ''}
+                className="max-w-30"
+                onChange={(e) => {
+                  const totalAmt = parseFloat(
+                    (selectedItem.quantity * e.target.value).toFixed(2),
+                  ); // totalAmt excluding gst
+                  const gstAmt = parseFloat(
+                    (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                  ); // total gstAmt
+                  setSelectedItem((prevValue) => ({
+                    ...prevValue,
+                    unitPrice: Number(e.target.value),
+                    totalAmount: totalAmt,
+                    totalGstAmount: gstAmt,
+                  }));
+                }}
+              />
+              {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
+            </div>
+          </div>
 
-          <div className="mt-auto h-[1px] bg-neutral-300"></div>
-
-          <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
-            <div className="flex items-center gap-2">
-              {isGstApplicable(
-                isPurchasePage
-                  ? isGstApplicableForPurchaseOrders
-                  : isGstApplicableForSalesOrders,
-              ) && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">
-                      {translations('form.footer.gross_amount')} :
-                    </span>
-                    <span className="rounded-sm border bg-slate-100 p-2">
-                      {grossAmt.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">
-                      {translations('form.footer.tax_amount')} :{' '}
-                    </span>
-                    <span className="rounded-sm border bg-slate-100 p-2">
-                      {totalGstAmt.toFixed(2)}
-                    </span>
-                  </div>
-                </>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="font-bold">
-                  {translations('form.footer.total_amount')} :{' '}
-                </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalAmtWithGst.toFixed(2)}
-                </span>
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex">
+                {translations('form.label.gst')}
+                <span className="text-xs"> (%)</span>
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.gstPerUnit || ''}
+                  className="max-w-14"
+                />
+                {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
               </div>
             </div>
+          )}
 
-            <div className="flex gap-2">
-              <Button size="sm" onClick={onCancel} variant={'outline'}>
-                {translations('form.ctas.cancel')}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  isOrder === 'invoice'
-                    ? handlePreview(order)
-                    : handleSubmit(order); // handlePreview for invoice and handleSubmit for order
-                }}
-                disabled={orderMutation.isPending || invoiceMutation.isPending}
-              >
-                {orderMutation.isPending || invoiceMutation.isPending ? (
-                  <Loading />
-                ) : isOrder === 'invoice' ? (
-                  translations('form.ctas.next')
-                ) : (
-                  translations('form.ctas.create')
-                )}
-              </Button>
+          <div className="flex flex-col gap-2">
+            <Label className="flex gap-1">
+              {isOrder === 'invoice'
+                ? translations('form.label.invoice_value')
+                : translations('form.label.value')}
+              <span className="text-red-600">*</span>
+            </Label>
+            <div className="flex flex-col gap-1">
+              <Input
+                disabled
+                value={selectedItem.totalAmount || ''}
+                className="max-w-30"
+              />
+              {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
             </div>
           </div>
-        </>
-      )}
 
-      {isInvoicePreview && (
-        <InvoicePreview
-          order={order}
-          setOrder={setOrder}
-          getAddressRelatedData={getAddressRelatedData}
-          setIsPreviewOpen={setIsInvoicePreview}
-          url={url}
-          isPDFProp={true}
-          isPendingInvoice={invoiceMutation.isPending}
-          handleCreateFn={handleSubmit}
-          handlePreview={handlePreview}
-          isCreatable={true}
-          isAddressAddable={true}
-          isCustomerRemarksAddable={true}
-          isBankAccountDetailsSelectable={true}
-          isActionable={true}
-          isPINError={isPINError}
-        />
-      )}
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex gap-1">
+                {translations('form.label.tax_amount')}
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={selectedItem.totalGstAmount || ''}
+                  className="max-w-30"
+                />
+                {errorMsg.totalGstAmount && (
+                  <ErrorBox msg={errorMsg.totalGstAmount} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <div className="flex flex-col gap-2">
+              <Label className="flex gap-1">
+                {translations('form.label.amount')}
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="flex flex-col gap-1">
+                <Input
+                  disabled
+                  value={
+                    (
+                      (Number(selectedItem.totalAmount) || 0) +
+                      (Number(selectedItem.totalGstAmount) || 0)
+                    ).toFixed(2) || ''
+                  }
+                  className="max-w-30"
+                />
+                {errorMsg.totalAmount && (
+                  <ErrorBox msg={errorMsg.totalAmount} />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-4">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSelectedItem((prev) => ({
+                ...prev,
+                productName: '',
+                productType: '',
+                productId: null,
+                quantity: null,
+                unitPrice: null,
+                gstPerUnit: null,
+                totalAmount: null,
+                totalGstAmount: null,
+              }));
+            }}
+          >
+            {translations('form.ctas.cancel')}
+          </Button>
+          <Button
+            size="sm"
+            disabled={
+              selectedItem.productId === null || selectedItem.productId === ''
+            } // if any item of selectedItem is empty then button must be disabled
+            onClick={() => {
+              setOrder((prev) => ({
+                ...prev,
+                orderItems: [
+                  ...prev.orderItems,
+                  {
+                    gstPercentage: selectedItem.gstPerUnit,
+                    ...selectedItem,
+                  },
+                ],
+              }));
+              setSelectedItem({
+                productName: '',
+                productType: '',
+                productId: null,
+                quantity: null,
+                unitPrice: null,
+                gstPerUnit: null,
+                totalAmount: null,
+                totalGstAmount: null,
+              });
+              setErrorMsg({});
+            }}
+            variant="blue_outline"
+          >
+            {translations('form.ctas.add')}
+          </Button>
+        </div>
+      </div>
+
+      {/* selected item table */}
+      <DataTable data={order.orderItems} columns={createSalesColumns} />
+
+      <div className="mt-auto h-[1px] bg-neutral-300"></div>
+
+      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
+        <div className="flex items-center gap-2">
+          {isGstApplicable(
+            isPurchasePage
+              ? isGstApplicableForPurchaseOrders
+              : isGstApplicableForSalesOrders,
+          ) && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">
+                  {translations('form.footer.gross_amount')} :
+                </span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {grossAmt.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">
+                  {translations('form.footer.tax_amount')} :{' '}
+                </span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {totalGstAmt.toFixed(2)}
+                </span>
+              </div>
+            </>
+          )}
+          <div className="flex items-center gap-2">
+            <span className="font-bold">
+              {translations('form.footer.total_amount')} :{' '}
+            </span>
+            <span className="rounded-sm border bg-slate-100 p-2">
+              {totalAmtWithGst.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Button size="sm" onClick={onCancel} variant={'outline'}>
+            {translations('form.ctas.cancel')}
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={orderMutation.isPending}
+          >
+            {orderMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('form.ctas.create')
+            )}
+          </Button>
+        </div>
+      </div>
     </Wrapper>
   );
 };
