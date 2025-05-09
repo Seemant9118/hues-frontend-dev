@@ -2,7 +2,6 @@
 
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import Tooltips from '@/components/auth/Tooltips';
-import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -56,9 +55,6 @@ const CustomerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [customers, setCustomers] = useState([]);
-  const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
-  const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
-    useState(null);
 
   // api fetching for clients
   const {
@@ -125,12 +121,6 @@ const CustomerPage = () => {
   //       toast.error(error.response.data.message || 'Something went wrong');
   //     }
   //   };
-
-  // onRowClick
-  const onRowClick = (row) => {
-    setIsEnterpriseDetailsShow(true);
-    setSelectedEnterpriseContent(row);
-  };
 
   // columns
   const CustomersColumns = useCustomersColumns();
@@ -209,7 +199,6 @@ const CustomerPage = () => {
               (customersData?.length > 0 ? (
                 <DataTable
                   id={'customers table'}
-                  onRowClick={onRowClick}
                   columns={CustomersColumns}
                   data={customers ?? []}
                 />
@@ -220,14 +209,6 @@ const CustomerPage = () => {
                 />
               ))}
           </Wrapper>
-
-          {isEnterpriseDetailsShow && (
-            <EnterpriseDetails
-              data={selectedEnterpriseContent}
-              isEnterpriseDetailsShow={isEnterpriseDetailsShow}
-              setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
-            />
-          )}
         </div>
       )}
     </>
