@@ -4,19 +4,21 @@
         "itemMaster": "आइटम मास्टर",
         "catalogue": "कैटलॉग",
         "sales": "बिक्री",
-        "purchases": "खरीद",
-        "clients": "ग्राहक",
-        "vendors": "विक्रेता",
-        "notifications": "सूचनाएं",
+        "purchases": "खरीदारी",
+        "contacts": "संपर्क",
+        "notifications": "सूचनाएँ",
         "settings": "सेटिंग्स",
         "profile": "प्रोफ़ाइल",
         "subTabs": {
             "goods": "सामान",
-            "services": "सेवाएं",
-            "orders": "आदेश",
+            "services": "सेवाएँ",
+            "orders": "ऑर्डर",
             "invoices": "चालान",
             "payments": "भुगतान",
-            "debitNotes": "डेबिट नोट्स"
+            "debitNotes": "डेबिट नोट्स",
+            "clients": "क्लाइंट्स",
+            "vendors": "विक्रेता",
+            "customers": "ग्राहक"
         }
     }
 }

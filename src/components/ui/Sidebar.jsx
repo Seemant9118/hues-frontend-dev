@@ -11,10 +11,12 @@ import {
   Gauge,
   HandPlatter,
   IndianRupee,
+  NotebookTabs,
   Package,
   ReceiptText,
   ScrollText,
   Settings,
+  ShoppingCart,
   Store,
   UserRound,
 } from 'lucide-react';
@@ -124,15 +126,28 @@ const Sidebar = () => {
       ],
     },
     {
-      name: 'sidebar.clients',
-      icon: <UserRound size={16} />,
+      name: 'sidebar.contacts',
+      icon: <NotebookTabs size={16} />,
       path: '/clients',
+      subTab: [
+        {
+          name: 'sidebar.subTabs.clients',
+          icon: <UserRound size={16} />,
+          path: '/clients',
+        },
+        {
+          name: 'sidebar.subTabs.vendors',
+          icon: <Store size={16} />,
+          path: '/vendors',
+        },
+        {
+          name: 'sidebar.subTabs.customers',
+          icon: <ShoppingCart size={16} />,
+          path: '/customers',
+        },
+      ],
     },
-    {
-      name: 'sidebar.vendors',
-      icon: <Store size={16} />,
-      path: '/vendors',
-    },
+
     // {
     //   name: 'Members',
     //   icon: <Users size={16} />,
