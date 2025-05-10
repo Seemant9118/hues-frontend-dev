@@ -44,6 +44,7 @@ const InvoicePreview = ({
   isSocialLinksAddable = false,
   isActionable = false,
   isPINError,
+  setIsPINError,
 }) => {
   const [open, setOpen] = useState(false);
   // State to determine if the document is a PDF
@@ -85,7 +86,7 @@ const InvoicePreview = ({
         getAddressRelatedData?.clientEnterpriseId,
       ),
     select: (data) => data.data.data,
-    enabled: isAddressAddable,
+    enabled: isAddressAddable && order?.clientType === 'B2B',
   });
 
   return (
@@ -345,6 +346,7 @@ const InvoicePreview = ({
         isPendingInvoice={isPendingInvoice}
         handleCreateFn={handleCreateFn} // pass the full updated order
         isPINError={isPINError}
+        setIsPINError={setIsPINError}
       />
     </div>
   );

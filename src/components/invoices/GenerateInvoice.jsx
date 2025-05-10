@@ -520,6 +520,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
           isBankAccountDetailsSelectable={true}
           isActionable={true}
           isPINError={isPINError}
+          setIsPINError={setIsPINError}
         />
       )}
     </Wrapper>
