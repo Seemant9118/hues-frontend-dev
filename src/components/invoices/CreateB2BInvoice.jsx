@@ -818,6 +818,7 @@ const CreateB2BInvoice = ({
           isBankAccountDetailsSelectable={true}
           isActionable={true}
           isPINError={isPINError}
+          setIsPINError={setIsPINError}
         />
       )}
     </Wrapper>
