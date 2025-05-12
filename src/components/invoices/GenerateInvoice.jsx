@@ -38,6 +38,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
   const [invoicedData, setInvoicedData] = useState({
     pin: null,
+    clientType: orderDetails?.clientType,
     orderId: orderDetails?.id,
     gstAmount: orderDetails?.gstAmount,
     amount: orderDetails?.amount,
@@ -52,6 +53,10 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [url, setUrl] = useState(null);
   const [isPINError, setIsPINError] = useState(false);
+  const [getAddressRelatedData] = useState({
+    clientId: orderDetails?.clientId,
+    clientEnterpriseId: orderDetails?.clientEnterpriseId,
+  });
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
@@ -507,6 +512,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         <InvoicePreview
           order={invoicedData}
           setOrder={setInvoicedData}
+          getAddressRelatedData={getAddressRelatedData}
           setIsPreviewOpen={setIsPreviewOpen}
           url={url}
           isPDFProp={true}
@@ -516,6 +522,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
           handleCreateFn={handleSubmit}
           handlePreview={handlePreview}
           isCreatable={true}
+          isAddressAddable={true}
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
           isActionable={true}
