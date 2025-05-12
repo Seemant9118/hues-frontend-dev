@@ -313,35 +313,31 @@ const AdminReportsPage = () => {
                     icon={<Fingerprint size={16} className="text-green-500" />}
                   />
                 )}
-              </div>
+                {/* Reports Section */}
+                <div className="flex flex-col justify-between gap-5">
+                  {/* Pie Chart Placeholder */}
+                  <div className="rounded-md border px-6 py-3">
+                    <h3 className="text-sm text-gray-500">Invitation Status</h3>
+                    {/* Add PieChart Component here */}
+                    <PieCharts
+                      data={pieChartData}
+                      totalInvitation={
+                        adminData?.invitationData?.totalInvitations
+                      }
+                      colors={PIE_COLORS}
+                    />
+                  </div>
 
-              {/* Reports Section */}
-              <div className="flex justify-between gap-5">
-                {/* Pie Chart Placeholder */}
-                <div className="w-1/4 rounded-md border p-4">
-                  <h3 className="mb-2 text-lg font-semibold">
-                    Invitation Status
-                  </h3>
-                  {/* Add PieChart Component here */}
-                  <PieCharts
-                    data={pieChartData}
-                    totalInvitation={
-                      adminData?.invitationData?.totalInvitations
-                    }
-                    colors={PIE_COLORS}
-                  />
-                </div>
-
-                {/* funnel Chart */}
-                {/* <div className="w-2/3 rounded-md border p-4">
+                  {/* funnel Chart */}
+                  {/* <div className="w-2/3 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Onboarding Funnel
                   </h3>
                   <FunnelCharts data={funnelData} />
                 </div> */}
 
-                {/* Line Chart */}
-                {/* <div className="w-2/3 rounded-md border p-4">
+                  {/* Line Chart */}
+                  {/* <div className="w-2/3 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Invitation Trend
                   </h3>
@@ -352,6 +348,7 @@ const AdminReportsPage = () => {
                     height={300}
                   />
                 </div> */}
+                </div>
               </div>
 
               {/* Reports Section 2 */}
