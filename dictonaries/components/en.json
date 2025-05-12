@@ -476,7 +476,7 @@
             },
             "errorMsg": {
                 "common": "Something went wrong",
-                "pin_error": "PIN not remembered. Do you want to update it?"
+                "pin_error": "Forgot PIN?"
             }
         },
         "preview_invoice_modal": {

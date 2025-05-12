@@ -3,7 +3,6 @@ import {
   checkPINStatus,
   generateOTP,
   resetPIN,
-  updatePIN,
   verifyOTP,
 } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -17,7 +16,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   StepConfirmPIN,
   StepCreatePIN,
-  StepEnterCurrentPIN,
   StepEnterOTP,
 } from '../Modals/HelperComponentsPINSettings';
 import { Button } from '../ui/button';
@@ -50,7 +48,6 @@ const PINVerifyModal = ({
   const [newPin, setNewPin] = useState(''); // new pin
   const [confirmNewPin, setConfirmNewPin] = useState(''); // confir new pin
   const [steps, setSteps] = useState({
-    update_pin: 1,
     forgot_pin: 1,
   });
   const [otp, setOtp] = useState(''); // otp for forgot
@@ -58,7 +55,7 @@ const PINVerifyModal = ({
 
   useEffect(() => {
     if (!open) {
-      setSteps({ update_pin: 1, forgot_pin: 1 });
+      setSteps({ forgot_pin: 1 });
       setMode(null);
       setPin('');
       setNewPin('');
@@ -66,6 +63,7 @@ const PINVerifyModal = ({
       setOtp('');
       setIsActivateUpdatePinMode(false);
       setIsPINError(false);
+      setUpdateSuccessMessage('');
     }
   }, [open]);
 
@@ -76,35 +74,14 @@ const PINVerifyModal = ({
     enabled: !!open,
   });
 
-  const updatePinMutation = useMutation({
-    mutationKey: [pinSettings.updatePIN.endpointKey],
-    mutationFn: updatePIN,
-    onSuccess: () => {
-      toast.success(translationsUpdatePIN('success_messages.pin_updated'));
-      setSteps({ update_pin: 1, forgot_pin: 1 });
-      setMode(null);
-      setPin('');
-      setNewPin('');
-      setConfirmNewPin('');
-      setOtp('');
-      setIsActivateUpdatePinMode(false);
-      setIsPINError(false);
-      // state for pin update successfully now input new pin
-      setUpdateSuccessMessage('PIN Update Successfully, Try new update PIN');
-    },
-    onError: (error) => {
-      toast.error(
-        error?.response?.data?.message || translations('error_messages.common'),
-      );
-    },
-  });
-
   const generateOtpMutation = useMutation({
     mutationKey: [pinSettings.generateOTP.endpointKey],
     mutationFn: generateOTP,
     onSuccess: () => {
       toast.success(translationsUpdatePIN('success_messages.otp_sent'));
-      setMode('forgot');
+      setIsActivateUpdatePinMode(true);
+      setMode('forgot'); // by default update
+      setPin(''); // clear current written pin
     },
     onError: (error) => {
       toast.error(
@@ -134,7 +111,7 @@ const PINVerifyModal = ({
     mutationFn: resetPIN,
     onSuccess: () => {
       toast.success(translationsUpdatePIN('success_messages.pin_updated'));
-      setSteps({ update_pin: 1, forgot_pin: 1 });
+      setSteps({ forgot_pin: 1 });
       setMode(null);
       setPin('');
       setNewPin('');
@@ -143,7 +120,9 @@ const PINVerifyModal = ({
       setIsActivateUpdatePinMode(false);
       setIsPINError(false);
       // state for pin update successfully now input new pin
-      setUpdateSuccessMessage('PIN Update Successfully, Try new update PIN');
+      setUpdateSuccessMessage(
+        'Your PIN has been updated. Use the new PIN to proceed.',
+      );
     },
     onError: (error) => {
       toast.error(
@@ -174,39 +153,6 @@ const PINVerifyModal = ({
   };
 
   const stepComponents = {
-    update: {
-      1: (
-        <StepEnterCurrentPIN
-          pin={pin}
-          setPin={setPin}
-          setSteps={setSteps}
-          generateOtpMutation={generateOtpMutation}
-          translations={translationsUpdatePIN}
-        />
-      ),
-      2: (
-        <StepCreatePIN
-          newPin={newPin}
-          setNewPin={setNewPin}
-          setSteps={setSteps}
-          mode={mode}
-          translations={translationsUpdatePIN}
-        />
-      ),
-      3: (
-        <StepConfirmPIN
-          pin={pin}
-          newPin={newPin}
-          confirmPin={confirmNewPin}
-          setConfirmPin={setConfirmNewPin}
-          mode={mode}
-          isPINAvailable={pinStatus?.pinExists}
-          updatePinMutation={updatePinMutation}
-          resetPinMutation={resetPinMutation}
-          translations={translationsUpdatePIN}
-        />
-      ),
-    },
     forgot: {
       1: (
         <StepEnterOTP
@@ -233,7 +179,6 @@ const PINVerifyModal = ({
           setConfirmPin={setConfirmNewPin}
           mode={mode}
           isPINAvailable={pinStatus?.pinExists}
-          updatePinMutation={updatePinMutation}
           resetPinMutation={resetPinMutation}
           translations={translationsUpdatePIN}
         />
@@ -298,9 +243,7 @@ const PINVerifyModal = ({
               <p
                 className="cursor-pointer text-sm font-semibold hover:underline"
                 onClick={() => {
-                  setIsActivateUpdatePinMode(true);
-                  setMode('update'); // by default update
-                  setPin(''); // clear current written pin
+                  generateOtpMutation.mutate();
                 }}
               >
                 {translations('errorMsg.pin_error')}
