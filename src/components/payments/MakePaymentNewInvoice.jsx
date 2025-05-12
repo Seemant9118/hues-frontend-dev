@@ -178,6 +178,44 @@ const MakePaymentNewInvoice = ({
     setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
   };
 
+  const validation = (updatedPaymentData) => {
+    const error = {};
+
+    // invoices
+    if (updatedPaymentData?.invoices?.length === 0) {
+      error.invoices = translations('errorMsg.invoices');
+    }
+
+    // payment date
+    if (!updatedPaymentData?.paymentDate) {
+      error.paymentDate = translations('errorMsg.payment_date');
+    }
+
+    // payment mode
+    if (
+      !updatedPaymentData.paymentMode ||
+      updatedPaymentData.paymentMode.trim() === ''
+    ) {
+      error.paymentMode =
+        translations('errorMsg.payment_mode') ||
+        'Please select a payment mode.';
+    }
+
+    // amount paid
+    if (
+      !updatedPaymentData.amount ||
+      Number.isNaN(updatedPaymentData.amount) ||
+      Number(updatedPaymentData.amount) <= 0
+    ) {
+      error.amountPaid =
+        translations('errorMsg.amount_paid_required') ||
+        'Amount must be greater than 0.';
+    }
+
+    // Update error state
+    return error;
+  };
+
   // hanlde submit fn
   const handleSubmit = () => {
     const amount = Number(paymentData?.amount) || 0;
@@ -197,39 +235,33 @@ const MakePaymentNewInvoice = ({
       invoices: refactoredInvoices,
     };
 
-    // Validate fields
-    const errors = {};
-    if (!updatedPaymentData.paymentMode) {
-      errors.paymentMode = translations('errorMsg.payment_mode');
-    }
-    if (!amount) {
-      errors.amountPaid = translations('errorMsg.amount_paid_required');
-    }
+    const isErrors = validation(updatedPaymentData);
+    // If no errors, proceed
+    if (Object.keys(isErrors).length === 0) {
+      // Build FormData
+      const formData = new FormData();
+      // handle files if any
+      if (files.length > 0) {
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+      }
+      formData.append('orderId', updatedPaymentData.orderId);
+      formData.append('paymentMode', updatedPaymentData.paymentMode);
+      formData.append('transactionId', updatedPaymentData.transactionId);
+      formData.append('context', contextType);
+      formData.append('invoices', JSON.stringify(updatedPaymentData.invoices));
+      formData.append('amount', amount);
+      const formattedPaymentDate = moment(
+        updatedPaymentData.paymentDate,
+      ).format('DD/MM/YYYY');
+      formData.append('paymentDate', formattedPaymentDate);
+      formData.append('bankAccountId', updatedPaymentData.bankAccountId);
 
-    setErrorMsg(errors);
-    if (Object.keys(errors).length > 0) return;
-
-    // Build FormData
-    const formData = new FormData();
-    // handle files if any
-    if (files.length > 0) {
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
+      createPaymentMutationFn.mutate(formData);
+    } else {
+      setErrorMsg(isErrors);
     }
-    formData.append('orderId', updatedPaymentData.orderId);
-    formData.append('paymentMode', updatedPaymentData.paymentMode);
-    formData.append('transactionId', updatedPaymentData.transactionId);
-    formData.append('context', contextType);
-    formData.append('invoices', JSON.stringify(updatedPaymentData.invoices));
-    formData.append('amount', amount);
-    const formattedPaymentDate = moment(updatedPaymentData.paymentDate).format(
-      'DD/MM/YYYY',
-    );
-    formData.append('paymentDate', formattedPaymentDate);
-    formData.append('bankAccountId', updatedPaymentData.bankAccountId);
-
-    createPaymentMutationFn.mutate(formData);
   };
 
   return (
@@ -397,9 +429,6 @@ const MakePaymentNewInvoice = ({
                       </div>
                     </SelectContent>
                   </Select>
-                  {errorMsg.bankAccountId && (
-                    <ErrorBox msg={errorMsg.bankAccountId} />
-                  )}
                 </div>
               </div>
               {/* transaction ID */}

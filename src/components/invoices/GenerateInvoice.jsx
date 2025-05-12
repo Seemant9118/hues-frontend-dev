@@ -14,6 +14,7 @@ import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 import OrdersOverview from '../orders/OrdersOverview';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
@@ -21,6 +22,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -46,6 +48,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     invoiceType: orderDetails?.invoiceType || 'GOODS',
     invoiceItems: [],
   });
+  const [errorMsg, setErrorMsg] = useState(null);
   const [productDetailsList, setProductDetailsList] = useState([]);
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [previewInvoiceBase64, setPreviewInvoiceBase64] = useState('');
@@ -159,31 +162,51 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     }));
   }, [invoicedData.invoiceItems]);
 
-  const updateProductDetailsList = (index, newQuantity) => {
-    const updatedList = productDetailsList
-      .map((item, idx) =>
-        idx === index
-          ? {
-              ...item,
-              quantity: newQuantity,
-              totalAmount: newQuantity * item.unitPrice,
-              totalGstAmount: parseFloat(
-                (
-                  newQuantity *
-                  item.unitPrice *
-                  (item.gstPerUnit / 100)
-                ).toFixed(2),
-              ),
-            }
-          : item,
-      )
-      .filter((item) => item.quantity > 0); // Filter out zero quantity items
+  const updateProductDetailsList = (orderItemId, newQty) => {
+    setProductDetailsList((prevList) =>
+      prevList.map((item) => {
+        if (item.orderItemId === orderItemId) {
+          return {
+            ...item,
+            quantity: newQty,
+            totalAmount:
+              newQty && !Number.isNaN(newQty) ? newQty * item.unitPrice : 0,
+            totalGstAmount:
+              newQty && !Number.isNaN(newQty)
+                ? parseFloat(
+                    (newQty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
+                      2,
+                    ),
+                  )
+                : 0,
+          };
+        }
+        return item;
+      }),
+    );
 
-    setProductDetailsList(updatedList);
-    setInvoicedData((prev) => ({
-      ...prev,
-      invoiceItems: updatedList.filter((item) => item.isSelected),
-    }));
+    // ✅ Validation block
+    const matchedItem = orderDetails?.orderItems?.find(
+      (item) => item.id === orderItemId,
+    );
+    const maxQty =
+      (matchedItem?.quantity || 0) - (matchedItem?.invoiceQuantity || 0);
+
+    const newErrorMsg = { ...errorMsg };
+
+    if (newQty === '' || newQty === null || newQty === undefined) {
+      newErrorMsg[`quantity_${orderItemId}`] = 'Quantity cannot be empty';
+    } else if (!Number.isInteger(newQty) || newQty <= 0) {
+      newErrorMsg[`quantity_${orderItemId}`] =
+        'Quantity must be a valid number';
+    } else if (newQty > maxQty) {
+      newErrorMsg[`quantity_${orderItemId}`] =
+        `You can only select up to ${maxQty} items`;
+    } else {
+      delete newErrorMsg[`quantity_${orderItemId}`]; // ✅ Clear if valid
+    }
+
+    setErrorMsg(newErrorMsg);
   };
 
   const handleSelectAll = (isSelected) => {
@@ -289,7 +312,49 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       ),
   });
 
-  const handlePreview = (invoices) => previewInvMutation.mutate(invoices);
+  const validations = (invoices) => {
+    const error = {};
+
+    // Check if any invoice is selected
+    if (invoices?.invoiceItems?.length === 0) {
+      error.isAnyInvoiceSelected =
+        'Please select at least one Invoice to generate';
+    }
+
+    invoices?.invoiceItems?.forEach((item) => {
+      const id = item?.orderItemId; // ✅ correct reference to orderItem
+      const quantity = item?.quantity;
+
+      const matchedOrderItem = orderDetails?.orderItems?.find(
+        (orderItem) => orderItem.id === id,
+      );
+
+      const maxQuantity =
+        Number(matchedOrderItem?.quantity || 0) -
+        Number(matchedOrderItem?.invoiceQuantity || 0);
+
+      if (quantity === '' || quantity === null || quantity === undefined) {
+        error[`quantity_${id}`] = 'Quantity cannot be empty';
+      } else if (!Number.isInteger(quantity) || quantity <= 0) {
+        error[`quantity_${id}`] = 'Quantity must be a valid number';
+      } else if (quantity > maxQuantity) {
+        error[`quantity_${id}`] =
+          `You can only select up to ${maxQuantity} items`;
+      }
+    });
+
+    return error;
+  };
+
+  const handlePreview = (invoices) => {
+    const isErrors = validations(invoices);
+
+    if (Object.keys(isErrors).length === 0) {
+      previewInvMutation.mutate(invoices);
+    } else {
+      setErrorMsg(isErrors);
+    }
+  };
 
   // multiStatus components
   const multiStatus = (
@@ -332,7 +397,10 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                   <TableHead className="shrink-0 text-xs font-bold text-black">
                     {translations('table.header.item_name')}
                   </TableHead>
-                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                  <TableHead
+                    className="shrink-0 text-xs font-bold text-black"
+                    colSpan="2"
+                  >
                     {translations('table.header.quantity')}
                   </TableHead>
                   <TableHead className="shrink-0 text-xs font-bold text-black">
@@ -384,6 +452,10 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                                   (item) => item.isSelected,
                                 ),
                               });
+                              setErrorMsg((prevMsg) => ({
+                                ...prevMsg,
+                                isAnyInvoiceSelected: '',
+                              }));
                             } else {
                               setInvoicedData((prev) => ({
                                 ...prev,
@@ -403,64 +475,82 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                         {product?.productName ?? product?.serviceName}
                       </TableCell>
 
-                      <TableCell colSpan={1}>
-                        <div className="flex gap-1">
-                          <Button
-                            className="disabled:hover:cursor-not-allowed"
-                            variant="export"
-                            debounceTime="300"
-                            onClick={() => {
-                              if (product.quantity > 1) {
-                                updateProductDetailsList(
-                                  index,
-                                  product.quantity - 1,
-                                );
-                              }
-                            }}
-                            disabled={product?.quantity <= 1 || isAutoSelect}
-                          >
-                            -
-                          </Button>
+                      <TableCell colSpan={2}>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex gap-1">
+                            <Button
+                              className="disabled:hover:cursor-not-allowed"
+                              variant="export"
+                              debounceTime="300"
+                              onClick={() => {
+                                if (product.quantity > 1) {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    product.quantity - 1,
+                                  );
+                                }
+                              }}
+                              disabled={product?.quantity <= 1 || isAutoSelect}
+                            >
+                              -
+                            </Button>
 
-                          <Input
-                            min={1}
-                            name="quantity"
-                            className="w-20 rounded-sm pr-4"
-                            value={product?.quantity}
-                            onChange={(e) => {
-                              const newQty = parseInt(e.target.value, 10);
-                              if (
-                                !Number.isNaN(newQty) &&
-                                newQty >= 1 &&
-                                newQty <= initialQuantities?.[index]
-                              ) {
-                                updateProductDetailsList(index, newQty);
-                              }
-                            }}
-                            disabled={isAutoSelect}
-                          />
+                            <Input
+                              min={1}
+                              name="quantity"
+                              className="w-20 rounded-sm pr-4"
+                              value={product?.quantity}
+                              onChange={(e) => {
+                                const newQty = parseInt(e.target.value, 10);
 
-                          <Button
-                            className="disabled:cursor-not-allowed"
-                            variant="export"
-                            debounceTime="300"
-                            onClick={() => {
-                              if (
-                                product?.quantity < initialQuantities[index]
-                              ) {
-                                updateProductDetailsList(
-                                  index,
-                                  product.quantity + 1,
-                                );
+                                // Optional: allow clearing the field
+                                if (e.target.value === '') {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    '',
+                                  );
+                                  return;
+                                }
+
+                                if (!Number.isNaN(newQty)) {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    newQty,
+                                  );
+                                }
+                              }}
+                              disabled={isAutoSelect}
+                            />
+
+                            <Button
+                              className="disabled:cursor-not-allowed"
+                              variant="export"
+                              debounceTime="300"
+                              onClick={() => {
+                                if (
+                                  product?.quantity < initialQuantities[index]
+                                ) {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    product.quantity + 1,
+                                  );
+                                }
+                              }}
+                              disabled={
+                                product?.quantity >= initialQuantities[index] ||
+                                isAutoSelect
                               }
-                            }}
-                            disabled={
-                              product?.quantity >= initialQuantities[index] ||
-                              isAutoSelect
-                            }
-                          >
-                            +
-                          </Button>
+                            >
+                              +
+                            </Button>
+                          </div>
+
+                          {/* 👇 Validation error for this quantity field */}
+                          {errorMsg?.[`quantity_${product.orderItemId}`] && (
+                            <ErrorBox
+                              msg={errorMsg[`quantity_${product.orderItemId}`]}
+                            />
+                          )}
                         </div>
                       </TableCell>
 
@@ -479,6 +569,16 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                   );
                 })}
               </TableBody>
+
+              {errorMsg?.isAnyInvoiceSelected && (
+                <TableFooter className="w-full shrink-0">
+                  <TableRow>
+                    <TableCell colSpan="6">
+                      <ErrorBox msg={errorMsg?.isAnyInvoiceSelected} />
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              )}
             </Table>
 
             <div className="flex justify-end gap-4 border-t pt-4">

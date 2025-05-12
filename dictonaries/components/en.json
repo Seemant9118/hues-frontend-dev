@@ -578,7 +578,9 @@
                 "attached_success": "Attached Successfully"
             },
             "errorMsg": {
+                "invoices":"*Required! Please select invoice",
                 "payment_mode": "*Required! Please select payment mode",
+                "payment_date":"*Required! Please select payment date",
                 "amount_paid_required": "*Required!, Amount should not be empty",
                 "amount_paid_empty": "Amount should not be empty",
                 "amount_paid_exceed": "Amount exceeds balance amount",
