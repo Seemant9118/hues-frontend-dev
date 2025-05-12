@@ -62,7 +62,7 @@ const MakePaymentNew = ({
     transactionId: '',
     invoices,
     bankAccountId: [],
-    paymentDate: new Date(),
+    paymentDate: null,
   });
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
 
@@ -143,6 +143,44 @@ const MakePaymentNew = ({
     setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
   };
 
+  const validation = (updatedPaymentData) => {
+    const error = {};
+
+    // invoices
+    if (updatedPaymentData?.invoices?.length === 0) {
+      error.invoices = translations('errorMsg.invoices');
+    }
+
+    // payment date
+    if (!updatedPaymentData?.paymentDate) {
+      error.paymentDate = translations('errorMsg.payment_date');
+    }
+
+    // payment mode
+    if (
+      !updatedPaymentData.paymentMode ||
+      updatedPaymentData.paymentMode.trim() === ''
+    ) {
+      error.paymentMode =
+        translations('errorMsg.payment_mode') ||
+        'Please select a payment mode.';
+    }
+
+    // amount paid
+    if (
+      !updatedPaymentData.amount ||
+      Number.isNaN(updatedPaymentData.amount) ||
+      Number(updatedPaymentData.amount) <= 0
+    ) {
+      error.amountPaid =
+        translations('errorMsg.amount_paid_required') ||
+        'Amount must be greater than 0.';
+    }
+
+    // Update error state
+    return error;
+  };
+
   const createPaymentMutationFn = useMutation({
     mutationKey: [paymentApi.createPayment.endpointKey],
     mutationFn: createPayment,
@@ -172,52 +210,19 @@ const MakePaymentNew = ({
 
   const handleSubmit = () => {
     const amountPaid = Number(paymentData?.amount) || 0;
-
     // Invoice structure formatting
     const refactoredInvoices = paymentData?.invoices?.map((invoice) => ({
       invoiceId: invoice.invoiceId,
       amount: amountPaid,
     }));
-
     const updatedPaymentData = {
       ...paymentData,
       invoices: refactoredInvoices,
     };
 
-    // Temporary error container
-    const errors = {
-      invoices: '',
-      paymentMode: '',
-      amountPaid: '',
-      bankAccountId: '',
-      transactionId: '',
-    };
-
-    if (
-      !updatedPaymentData.paymentMode ||
-      updatedPaymentData.paymentMode.trim() === ''
-    ) {
-      errors.paymentMode =
-        translations('errorMsg.payment_mode') ||
-        'Please select a payment mode.';
-    }
-
-    if (
-      !updatedPaymentData.amount ||
-      Number.isNaN(updatedPaymentData.amount) ||
-      Number(updatedPaymentData.amount) <= 0
-    ) {
-      errors.amountPaid =
-        translations('errorMsg.amount_paid_required') ||
-        'Amount must be greater than 0.';
-    }
-
-    // Update error state
-    setErrorMsg(errors);
-
+    const isErrors = validation(updatedPaymentData);
     // If no errors, proceed
-    const hasErrors = Object.values(errors).some((msg) => msg !== '');
-    if (!hasErrors) {
+    if (Object.keys(isErrors).length === 0) {
       const formData = new FormData();
 
       if (files.length > 0) {
@@ -239,6 +244,8 @@ const MakePaymentNew = ({
       formData.append('paymentDate', formattedPaymentDate);
 
       createPaymentMutationFn.mutate(formData);
+    } else {
+      setErrorMsg(isErrors);
     }
   };
 
@@ -304,7 +311,7 @@ const MakePaymentNew = ({
                   if (selectedInvoice) {
                     setErrorMsg((prevMsg) => ({
                       ...prevMsg,
-                      invoice: '',
+                      invoices: '',
                     }));
                   }
                   setPaymentData((prevData) => ({
@@ -421,7 +428,6 @@ const MakePaymentNew = ({
               </Label>
               <div className="flex flex-col gap-1">
                 <Select
-                  defaultValue={paymentData.bankAccountId}
                   onValueChange={(value) => {
                     // Check if a payment mode is selected (non-empty value)
                     if (value) {
@@ -460,9 +466,6 @@ const MakePaymentNew = ({
                     </div>
                   </SelectContent>
                 </Select>
-                {errorMsg.bankAccountId && (
-                  <ErrorBox msg={errorMsg.bankAccountId} />
-                )}
               </div>
             </div>
 
