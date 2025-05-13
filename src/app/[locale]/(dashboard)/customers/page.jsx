@@ -14,7 +14,7 @@ import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   getCustomers,
-  getCustomersByNumber,
+  getSearchedCustomers,
 } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 import { useQuery } from '@tanstack/react-query';
 import { Download, PlusCircle, Upload } from 'lucide-react';
@@ -71,11 +71,11 @@ const CustomerPage = () => {
   const { data: searchedCustomersData, isLoading: issearchedCustomersLoading } =
     useQuery({
       queryKey: [
-        customerApis.getCustomersByNumber.endpointKey,
+        customerApis.getSearchedCustomers.endpointKey,
         debouncedSearchTerm,
       ],
       queryFn: () =>
-        getCustomersByNumber({
+        getSearchedCustomers({
           searchString: debouncedSearchTerm,
         }),
       select: (res) => res.data.data,
@@ -142,7 +142,6 @@ const CustomerPage = () => {
                   searchPlaceholder={translations('ctas.searchPlaceHolder')}
                   toSearchTerm={searchTerm}
                   setToSearchTerm={setSearchTerm}
-                  disabled={true}
                 />
                 <Tooltips
                   trigger={

@@ -10,3 +10,7 @@ export const getCustomersByNumber = (identifier) => {
     `${customerApis.getCustomersByNumber.endpoint}?indentifier=${identifier}`,
   );
 };
+
+export const getSearchedCustomers = (data) => {
+  return APIinstance.post(customerApis.getSearchedCustomers.endpoint, data);
+};
