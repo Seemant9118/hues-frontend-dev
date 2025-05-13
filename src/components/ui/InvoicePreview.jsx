@@ -13,6 +13,7 @@ import ViewPdf from '../pdf/ViewPdf';
 import AddAddress from '../settings/AddAddress';
 import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from './button';
+import ErrorBox from './ErrorBox';
 import { Input } from './input';
 import { Label } from './label';
 import Loading from './Loading';
@@ -61,6 +62,19 @@ const InvoicePreview = ({
   const [socialLink, setSocialLink] = useState('');
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
   const [isBiilingAddressAdding, setIsBillingAddressAdding] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const validation = (order) => {
+    const errors = {};
+    // address
+    if (!order?.billingAddressId) {
+      errors.billingAddress = '*Required! Please select billing address';
+    }
+    if (!order?.shippingAddressId) {
+      errors.shippingAddress = '*Required! Please select shipping address';
+    }
+    return errors;
+  };
 
   useEffect(() => {
     if (!url) return;
@@ -113,6 +127,7 @@ const InvoicePreview = ({
                 <div>
                   <Label className="text-sm font-medium">
                     Select Client Billing Address
+                    <span className="text-red-600">*</span>
                   </Label>
                   {order.clientType === 'B2C' ? (
                     <Input
@@ -125,7 +140,13 @@ const InvoicePreview = ({
                   ) : (
                     <Select
                       onValueChange={(value) => {
-                        setBillingAddress(value);
+                        if (value) {
+                          setErrorMsg((prev) => ({
+                            ...prev,
+                            billingAddress: '',
+                          }));
+                          setBillingAddress(value);
+                        }
                       }}
                     >
                       <SelectTrigger>
@@ -153,11 +174,15 @@ const InvoicePreview = ({
                       </SelectContent>
                     </Select>
                   )}
+                  {errorMsg?.billingAddress && (
+                    <ErrorBox msg={errorMsg.billingAddress} />
+                  )}
                 </div>
 
                 <div>
                   <Label className="text-sm font-medium">
                     Select Client Shipping Address
+                    <span className="text-red-600">*</span>
                   </Label>
                   {order.clientType === 'B2C' ? (
                     <Input
@@ -170,7 +195,13 @@ const InvoicePreview = ({
                   ) : (
                     <Select
                       onValueChange={(value) => {
-                        setShippingAddress(value);
+                        if (value) {
+                          setErrorMsg((prev) => ({
+                            ...prev,
+                            shippingAddress: '',
+                          }));
+                          setShippingAddress(value);
+                        }
                       }}
                     >
                       <SelectTrigger>
@@ -197,6 +228,9 @@ const InvoicePreview = ({
                         </div>
                       </SelectContent>
                     </Select>
+                  )}
+                  {errorMsg?.shippingAddress && (
+                    <ErrorBox msg={errorMsg.shippingAddress} />
                   )}
                 </div>
               </>
@@ -279,7 +313,18 @@ const InvoicePreview = ({
                   billingAddressId: billingAddress,
                   shippingAddressId: shippingAddress,
                 };
-                handlePreview(updatedOrder);
+
+                if (order?.clientType === 'B2B') {
+                  const errors = validation(updatedOrder);
+                  if (Object.keys(errors).length > 0) {
+                    setErrorMsg(errors);
+                  } else {
+                    handlePreview(updatedOrder);
+                    setErrorMsg(null); // Clear previous errors if any
+                  }
+                } else {
+                  handlePreview(updatedOrder);
+                }
               }}
             >
               Apply changes
@@ -327,7 +372,26 @@ const InvoicePreview = ({
           <Button
             size="sm"
             onClick={() => {
-              setOpen(true);
+              const updatedOrder = {
+                ...order,
+                remarks,
+                bankAccountId: bankAccount,
+                socialLinks: socialLink,
+                billingAddressId: billingAddress,
+                shippingAddressId: shippingAddress,
+              };
+
+              if (order?.clientType === 'B2B') {
+                const errors = validation(updatedOrder);
+                if (Object.keys(errors).length > 0) {
+                  setErrorMsg(errors);
+                } else {
+                  setOpen(true);
+                  setErrorMsg(null); // Clear previous errors if any
+                }
+              } else {
+                setOpen(true);
+              }
             }}
           >
             Create Invoice
@@ -344,7 +408,7 @@ const InvoicePreview = ({
         billingAddress={billingAddress}
         shippingAddress={shippingAddress}
         isPendingInvoice={isPendingInvoice}
-        handleCreateFn={handleCreateFn} // pass the full updated order
+        handleCreateFn={handleCreateFn}
         isPINError={isPINError}
         setIsPINError={setIsPINError}
       />

@@ -201,7 +201,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         'Quantity must be a valid number';
     } else if (newQty > maxQty) {
       newErrorMsg[`quantity_${orderItemId}`] =
-        `You can only select up to ${maxQty} items`;
+        `Only ${maxQty} items available for invoicing`;
     } else {
       delete newErrorMsg[`quantity_${orderItemId}`]; // ✅ Clear if valid
     }
@@ -339,7 +339,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         error[`quantity_${id}`] = 'Quantity must be a valid number';
       } else if (quantity > maxQuantity) {
         error[`quantity_${id}`] =
-          `You can only select up to ${maxQuantity} items`;
+          `Only ${maxQuantity} items available for invoicing`;
       }
     });
 
