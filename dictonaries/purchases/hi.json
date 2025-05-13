@@ -67,9 +67,11 @@
                     "order_details": "ऑर्डर विवरण",
                     "negotiation": "मोलभाव",
                     "invoices": "चालान",
-                    "payment_advice": "भुगतान सलाह"
+                    "payment_advice": "भुगतान सलाह",
+                    "upload_attachements": "अटैचमेंट अपलोड करें"
                 },
                 "ctas": {
+                    "upload_attachements": "अटैचमेंट अपलोड करें",
                     "payment_advice": "भुगतान सलाह भेजें",
                     "generate_invoice": "चालान उत्पन्न करें",
                     "view": {
@@ -83,6 +85,17 @@
                         "wait_response": "प्रतिक्रिया की प्रतीक्षा",
                         "negotiate": "मोलभाव करें",
                         "accept": "स्वीकार करें"
+                    }
+                },
+                "fileUploader": {
+                    "instruction": "फ़ाइल खींचें और छोड़ें या चुनें (अधिकतम 10MB, .png / .pdf फ़ॉर्मेट)",
+                    "note": "नोट - केवल अटैचमेंट अपलोड करें",
+                    "attachedFilesLabel": "संलग्न फ़ाइलें",
+                    "fileAttachedMessage": "सफलतापूर्वक संलग्न किया गया",
+                    "buttons": {
+                        "select": "चुनें",
+                        "cancel": "रद्द करें",
+                        "upload": "अपलोड करें"
                     }
                 },
                 "tabs": {

@@ -6,13 +6,13 @@ import {
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowUp,
   Building2,
   Check,
   ChevronDown,
   ChevronUp,
   FileText,
   Image,
+  MessageCircleMore,
   Paperclip,
   X,
 } from 'lucide-react';
@@ -45,7 +45,6 @@ const CommentBox = ({ contextId, context }) => {
     queryKey: [DebitNoteApi.getComments.endpointKey],
     queryFn: () => getComments(contextId, context),
     select: (comments) => comments.data.data,
-    enabled: isOpen,
   });
 
   const createCommentMutation = useMutation({
@@ -111,8 +110,12 @@ const CommentBox = ({ contextId, context }) => {
         }
       >
         {!isOpen && (
-          <section className="flex w-full animate-fadeInUp items-center justify-between">
+          <section className="flex w-full animate-fadeInUp items-center gap-2">
+            <MessageCircleMore size={16} />
             <h1 className="text-sm font-bold">Comments</h1>
+            {comments?.length > 0 && (
+              <span className="text-xs">{`( ${comments?.length} comments )`}</span>
+            )}
           </section>
         )}
         {isOpen && <h1 className="text-sm font-bold">{'Comments'}</h1>}
@@ -144,7 +147,7 @@ const CommentBox = ({ contextId, context }) => {
           />
 
           {/* 3 */}
-          <div className="absolute right-6 top-[24px] flex gap-4 text-[#A5ABBD]">
+          <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
             <Tooltips
               trigger={
                 <label htmlFor="fileUpload">
@@ -173,11 +176,9 @@ const CommentBox = ({ contextId, context }) => {
                 createCommentMutation?.isPending ? (
                   <Loading />
                 ) : (
-                  <ArrowUp
-                    size={20}
-                    onClick={handleSubmitComment}
-                    className={'cursor-pointer hover:text-black'}
-                  />
+                  <Button size="sm" onClick={handleSubmitComment}>
+                    Send
+                  </Button>
                 )
               }
               content={'send'}

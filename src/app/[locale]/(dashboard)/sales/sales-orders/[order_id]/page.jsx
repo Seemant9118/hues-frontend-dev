@@ -1,5 +1,6 @@
 'use client';
 
+import { attachementsAPI } from '@/api/attachmentApi/attachementAPI';
 import { invitation } from '@/api/invitation/Invitation';
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
@@ -27,12 +28,25 @@ import {
   OrderDetails,
   viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
+import { createAttachements } from '@/services/attachment_services/AttachementServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, Eye, MoreVertical, Pencil } from 'lucide-react';
+import {
+  Check,
+  Clock,
+  Eye,
+  FileText,
+  Image,
+  MoreVertical,
+  Pencil,
+  Upload,
+  UploadCloud,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
@@ -84,7 +98,9 @@ const ViewOrder = () => {
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+  const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   const [tab, setTab] = useState('overview');
+  const [files, setFiles] = useState([]);
 
   const onTabChange = (value) => {
     setTab(value);
@@ -121,6 +137,12 @@ const ViewOrder = () => {
       path: `/sales/sales-orders/${params.order_id}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true
     },
+    {
+      id: 6,
+      name: translations('title.upload_attachements'),
+      path: `/sales/sales-orders/${params.order_id}`,
+      show: isUploadingAttachements, // Show only if isUploadingAttachements is true
+    },
   ];
 
   useEffect(() => {
@@ -129,6 +151,7 @@ const ViewOrder = () => {
     setIsNegotiation(state === 'negotiation');
     setIsGenerateInvoice(state === 'generateInvoice');
     setIsRecordingPayment(state === 'recordPayment');
+    setIsUploadingAttachements(state === 'uploadingAttachements');
   }, [searchParams]);
 
   useEffect(() => {
@@ -141,6 +164,8 @@ const ViewOrder = () => {
       newPath += '?state=generateInvoice';
     } else if (isRecordingPayment) {
       newPath += '?state=recordPayment';
+    } else if (isUploadingAttachements) {
+      newPath += '?state=uploadingAttachements';
     } else {
       newPath += '';
     }
@@ -151,6 +176,7 @@ const ViewOrder = () => {
     isNegotiation,
     isGenerateInvoice,
     isRecordingPayment,
+    isUploadingAttachements,
     params.order_id,
     router,
   ]);
@@ -199,6 +225,50 @@ const ViewOrder = () => {
     });
   };
 
+  // [ATTACHMENTS]
+  // handle upload proofs fn
+  const handleAttached = async (file) => {
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success('File attached successfully!');
+  };
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+  };
+
+  const createAttachments = useMutation({
+    mutationKey: [attachementsAPI.createAttachement.endpointKey],
+    mutationFn: createAttachements,
+    onSuccess: () => {
+      toast.success('Attachements Upload Successfully');
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      setFiles([]);
+      setIsUploadingAttachements(false);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something Went Wrong');
+    },
+  });
+
+  const uploadAttachements = () => {
+    if (files?.length === 0) {
+      toast.error('Please select atleast one file to upload');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('contextType', 'ORDER'); // assuming fixed or dynamic context
+    formData.append('contextId', params.order_id); // use actual ID here
+
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+
+    createAttachments.mutate(formData);
+  };
+
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
   // multiStatus components
@@ -245,8 +315,21 @@ const ViewOrder = () => {
               />
             </div>
             <div className="flex gap-2">
+              {/* upload attachments */}
+              {!isUploadingAttachements && (
+                <Button
+                  variant="blue_outline"
+                  size="sm"
+                  onClick={() => setIsUploadingAttachements(true)}
+                  className="font-bold"
+                >
+                  {translations('ctas.upload_attachements')}
+                </Button>
+              )}
+
               {/* record payment CTA */}
-              {!isGenerateInvoice &&
+              {!isUploadingAttachements &&
+                !isGenerateInvoice &&
                 !isRecordingPayment &&
                 (orderDetails.negotiationStatus === 'INVOICED' ||
                   orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
@@ -261,7 +344,8 @@ const ViewOrder = () => {
                   </Button>
                 )}
               {/* generateInvoice CTA */}
-              {!isGenerateInvoice &&
+              {!isUploadingAttachements &&
+                !isGenerateInvoice &&
                 !isRecordingPayment &&
                 !orderDetails?.invoiceGenerationCompleted &&
                 (orderDetails?.negotiationStatus === 'ACCEPTED' ||
@@ -279,7 +363,8 @@ const ViewOrder = () => {
                 )}
 
               {/* download CTA */}
-              {!isGenerateInvoice &&
+              {!isUploadingAttachements &&
+                !isGenerateInvoice &&
                 !isRecordingPayment &&
                 !isNegotiation &&
                 orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
@@ -299,7 +384,7 @@ const ViewOrder = () => {
                 )}
 
               {/* share CTA */}
-              {/* {!isGenerateInvoice &&
+              {/* {!isUploadingAttachements && !isGenerateInvoice &&
                 !isRecordingPayment &&
                 !isNegotiation &&
                 orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
@@ -311,7 +396,8 @@ const ViewOrder = () => {
                 )} */}
 
               {/* more ctas */}
-              {!isGenerateInvoice &&
+              {!isUploadingAttachements &&
+                !isGenerateInvoice &&
                 !isRecordingPayment &&
                 !isNegotiation &&
                 orderDetails.negotiationStatus === 'NEW' &&
@@ -346,204 +432,318 @@ const ViewOrder = () => {
           </section>
 
           {/* switch tabs */}
-          {!isGenerateInvoice && !isNegotiation && !isRecordingPayment && (
-            <section>
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'overview'}
-              >
-                <section className="sticky top-12 bg-white py-2">
-                  <TabsList className="border">
-                    <TabsTrigger
-                      className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
-                      value="overview"
-                    >
-                      {translations('tabs.label.tab1')}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
-                      value="invoices"
-                    >
-                      {translations('tabs.label.tab2')}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
-                      value="payment"
-                    >
-                      {translations('tabs.label.tab3')}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
-                      value="timeline"
-                    >
-                      {translations('tabs.label.tab4')}
-                    </TabsTrigger>
-                  </TabsList>
-                </section>
+          {!isUploadingAttachements &&
+            !isGenerateInvoice &&
+            !isNegotiation &&
+            !isRecordingPayment && (
+              <section>
+                <Tabs
+                  value={tab}
+                  onValueChange={onTabChange}
+                  defaultValue={'overview'}
+                >
+                  <section className="sticky top-12 bg-white py-2">
+                    <TabsList className="border">
+                      <TabsTrigger
+                        className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
+                        value="overview"
+                      >
+                        {translations('tabs.label.tab1')}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
+                        value="invoices"
+                      >
+                        {translations('tabs.label.tab2')}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
+                        value="payment"
+                      >
+                        {translations('tabs.label.tab3')}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
+                        value="timeline"
+                      >
+                        {translations('tabs.label.tab4')}
+                      </TabsTrigger>
+                    </TabsList>
+                  </section>
 
-                <TabsContent value="overview" className="flex flex-col gap-4">
-                  {/* orders overview */}
-                  <OrdersOverview
-                    isCollapsableOverview={false}
-                    orderDetails={orderDetails}
-                    orderId={orderDetails?.referenceNumber}
-                    multiStatus={multiStatus}
-                    Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
-                    mobileNumber={orderDetails?.mobileNumber}
-                    amtPaid={orderDetails?.amountPaid}
-                    totalAmount={orderDetails.amount + orderDetails.gstAmount}
-                    invitationData={invitationData}
-                  />
+                  <TabsContent value="overview" className="flex flex-col gap-4">
+                    {/* orders overview */}
+                    <OrdersOverview
+                      isCollapsableOverview={false}
+                      orderDetails={orderDetails}
+                      orderId={orderDetails?.referenceNumber}
+                      multiStatus={multiStatus}
+                      Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
+                      mobileNumber={orderDetails?.mobileNumber}
+                      amtPaid={orderDetails?.amountPaid}
+                      totalAmount={orderDetails.amount + orderDetails.gstAmount}
+                      invitationData={invitationData}
+                    />
 
-                  <CommentBox contextId={params.order_id} context={'ORDER'} />
+                    <CommentBox contextId={params.order_id} context={'ORDER'} />
 
-                  {/* orderDetail Table */}
-                  <DataTable
-                    columns={OrderColumns}
-                    data={orderDetails?.orderItems}
-                  ></DataTable>
-                </TabsContent>
-                <TabsContent value="invoices">
-                  <PastInvoices
-                    setIsGenerateInvoice={setIsGenerateInvoice}
-                    orderDetails={orderDetails}
-                  />
-                </TabsContent>
-                <TabsContent value="payment">
-                  <PaymentDetails
-                    orderId={params.order_id}
-                    orderDetails={orderDetails}
-                    setIsRecordingPayment={setIsRecordingPayment}
-                  />
-                </TabsContent>
-                <TabsContent value="timeline">
-                  {translations('tabs.content.tab4.coming_soon')}
-                </TabsContent>
-              </Tabs>
-            </section>
-          )}
+                    {/* orderDetail Table */}
+                    <DataTable
+                      columns={OrderColumns}
+                      data={orderDetails?.orderItems}
+                    ></DataTable>
+                  </TabsContent>
+                  <TabsContent value="invoices">
+                    <PastInvoices
+                      setIsGenerateInvoice={setIsGenerateInvoice}
+                      orderDetails={orderDetails}
+                    />
+                  </TabsContent>
+                  <TabsContent value="payment">
+                    <PaymentDetails
+                      orderId={params.order_id}
+                      orderDetails={orderDetails}
+                      setIsRecordingPayment={setIsRecordingPayment}
+                    />
+                  </TabsContent>
+                  <TabsContent value="timeline">
+                    {translations('tabs.content.tab4.coming_soon')}
+                  </TabsContent>
+                </Tabs>
+              </section>
+            )}
 
           {/* Negotiation Component */}
-          {isNegotiation && !isGenerateInvoice && !isRecordingPayment && (
-            <NegotiationComponent
-              orderDetails={orderDetails}
-              isNegotiation={isNegotiation}
-              setIsNegotiation={setIsNegotiation}
-            />
-          )}
+          {isNegotiation &&
+            !isGenerateInvoice &&
+            !isRecordingPayment &&
+            !isUploadingAttachements && (
+              <NegotiationComponent
+                orderDetails={orderDetails}
+                isNegotiation={isNegotiation}
+                setIsNegotiation={setIsNegotiation}
+              />
+            )}
 
           {/* seprator */}
-          {!isNegotiation && !isGenerateInvoice && !isRecordingPayment && (
-            <div className="mt-auto h-[1px] bg-neutral-300"></div>
-          )}
+          {!isNegotiation &&
+            !isGenerateInvoice &&
+            !isRecordingPayment &&
+            !isUploadingAttachements && (
+              <div className="mt-auto h-[1px] bg-neutral-300"></div>
+            )}
 
           {/* generate Invoice component */}
-          {isGenerateInvoice && !isNegotiation && !isRecordingPayment && (
-            <GenerateInvoice
-              orderDetails={orderDetails}
-              setIsGenerateInvoice={setIsGenerateInvoice}
-            />
-          )}
+          {isGenerateInvoice &&
+            !isNegotiation &&
+            !isRecordingPayment &&
+            !isUploadingAttachements && (
+              <GenerateInvoice
+                orderDetails={orderDetails}
+                setIsGenerateInvoice={setIsGenerateInvoice}
+              />
+            )}
 
           {/* recordPayment component */}
-          {isRecordingPayment && !isGenerateInvoice && !isNegotiation && (
-            <MakePaymentNew
-              orderId={params.order_id}
-              orderDetails={orderDetails}
-              setIsRecordingPayment={setIsRecordingPayment}
-              contextType="PAYMENT"
-            />
-          )}
+          {isRecordingPayment &&
+            !isGenerateInvoice &&
+            !isNegotiation &&
+            !isUploadingAttachements && (
+              <MakePaymentNew
+                orderId={params.order_id}
+                orderDetails={orderDetails}
+                setIsRecordingPayment={setIsRecordingPayment}
+                contextType="PAYMENT"
+              />
+            )}
+
+          {/* upload attachements */}
+          {isUploadingAttachements &&
+            !isGenerateInvoice &&
+            !isNegotiation &&
+            !isRecordingPayment && (
+              <div className="mt-4 flex h-full flex-col justify-between gap-4">
+                <div>
+                  <FileUploader
+                    handleChange={handleAttached}
+                    name="file"
+                    types={['png', 'pdf']}
+                  >
+                    <div className="mb-2 flex min-w-[700px] cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-[#288AF9] px-5 py-10">
+                      <div className="flex items-center gap-4">
+                        <UploadCloud className="text-[#288AF9]" size={40} />
+                        <div className="flex flex-col gap-1">
+                          <p className="text-xs font-medium text-darkText">
+                            {translations('fileUploader.instruction')}
+                          </p>
+                          <p className="text-xs font-normal text-[#288AF9]">
+                            {translations('fileUploader.note')}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="blue_outline">
+                        <Upload />
+                        {translations('fileUploader.buttons.select')}
+                      </Button>
+                    </div>
+                  </FileUploader>
+                  {files?.length > 0 && (
+                    <span className="mt-2 w-full text-sm font-semibold">
+                      {translations('fileUploader.attachedFilesLabel')}
+                    </span>
+                  )}
+                  <div className="mt-4 flex flex-wrap gap-4">
+                    {files?.map((file) => (
+                      <div
+                        key={file.name}
+                        className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                      >
+                        {/* Remove Button */}
+                        <X
+                          size={16}
+                          onClick={() => handleFileRemove(file)}
+                          className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                        />
+
+                        {/* File icon */}
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                          {file.name.split('.').pop() === 'pdf' ? (
+                            <FileText size={16} className="text-red-600" />
+                          ) : (
+                            // eslint-disable-next-line jsx-a11y/alt-text
+                            <Image size={16} className="text-primary" />
+                          )}
+                        </div>
+
+                        {/* File name */}
+                        <p className="truncate text-sm font-medium text-neutral-800">
+                          {file.name}
+                        </p>
+
+                        {/* Success message */}
+                        <div className="flex items-center gap-2">
+                          <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                            <Check size={12} />
+                          </div>
+                          <p className="text-xs font-medium text-green-600">
+                            {translations('fileUploader.fileAttachedMessage')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-end justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsUploadingAttachements(false);
+                      setFiles([]);
+                    }}
+                  >
+                    {translations('fileUploader.buttons.cancel')}
+                  </Button>
+                  <Button size="sm" onClick={uploadAttachements}>
+                    {translations('fileUploader.buttons.upload')}
+                  </Button>
+                </div>
+              </div>
+            )}
 
           {/* footer ctas */}
-          <div className="sticky bottom-0 z-10 flex justify-end bg-white">
-            <section className="flex gap-2">
-              {/* status NEW */}
-              {tab === 'overview' &&
-                !isGenerateInvoice &&
-                !isRecordingPayment &&
-                orderDetails?.negotiationStatus === 'NEW' &&
-                orderDetails?.sellerEnterpriseId === enterpriseId && (
-                  <>
-                    {orderDetails?.orderType === 'SALES' && (
-                      <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                        <Clock size={12} />
-                        {translations('ctas.footer_ctas.wait_response')}
-                      </span>
-                    )}
-
-                    {orderDetails?.orderType === 'PURCHASE' && (
-                      <div className="flex w-full justify-end gap-2">
-                        {!isNegotiation && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-32"
-                              onClick={() => setIsNegotiation(true)}
-                            >
-                              {translations('ctas.footer_ctas.negotiate')}
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                              onClick={handleAccept}
-                              disabled={acceptMutation.isPending}
-                            >
-                              {acceptMutation.isPending ? (
-                                <Loading size={14} />
-                              ) : (
-                                translations('ctas.footer_ctas.accept')
-                              )}
-                            </Button>
-                          </>
+          {!isUploadingAttachements &&
+            !isGenerateInvoice &&
+            !isNegotiation &&
+            !isRecordingPayment && (
+              <div className="sticky bottom-0 z-10 flex justify-end bg-white">
+                <section className="flex gap-2">
+                  {/* status NEW */}
+                  {tab === 'overview' &&
+                    !isGenerateInvoice &&
+                    !isRecordingPayment &&
+                    orderDetails?.negotiationStatus === 'NEW' &&
+                    orderDetails?.sellerEnterpriseId === enterpriseId && (
+                      <>
+                        {orderDetails?.orderType === 'SALES' && (
+                          <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
+                            <Clock size={12} />
+                            {translations('ctas.footer_ctas.wait_response')}
+                          </span>
                         )}
-                      </div>
-                    )}
-                  </>
-                )}
 
-              {/* status NEGOTIATION */}
-              {tab === 'overview' &&
-                !isGenerateInvoice &&
-                !isRecordingPayment &&
-                orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-                orderDetails?.sellerEnterpriseId === enterpriseId && (
-                  <>
-                    {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
-                      <div className="flex w-full justify-end gap-2">
-                        {!isNegotiation && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-32"
-                              onClick={() => setIsNegotiation(true)}
-                            >
-                              {translations('ctas.footer_ctas.negotiate')}
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                              onClick={handleAccept}
-                            >
-                              {translations('ctas.footer_ctas.accept')}
-                            </Button>
-                          </>
+                        {orderDetails?.orderType === 'PURCHASE' && (
+                          <div className="flex w-full justify-end gap-2">
+                            {!isNegotiation && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-32"
+                                  onClick={() => setIsNegotiation(true)}
+                                >
+                                  {translations('ctas.footer_ctas.negotiate')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                                  onClick={handleAccept}
+                                  disabled={acceptMutation.isPending}
+                                >
+                                  {acceptMutation.isPending ? (
+                                    <Loading size={14} />
+                                  ) : (
+                                    translations('ctas.footer_ctas.accept')
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
-                    {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                      <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                        <Clock size={12} />{' '}
-                        {translations('ctas.footer_ctas.wait_response')}
-                      </span>
+                  {/* status NEGOTIATION */}
+                  {tab === 'overview' &&
+                    !isGenerateInvoice &&
+                    !isRecordingPayment &&
+                    orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+                    orderDetails?.sellerEnterpriseId === enterpriseId && (
+                      <>
+                        {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
+                          <div className="flex w-full justify-end gap-2">
+                            {!isNegotiation && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-32"
+                                  onClick={() => setIsNegotiation(true)}
+                                >
+                                  {translations('ctas.footer_ctas.negotiate')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                                  onClick={handleAccept}
+                                >
+                                  {translations('ctas.footer_ctas.accept')}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
+                          <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
+                            <Clock size={12} />{' '}
+                            {translations('ctas.footer_ctas.wait_response')}
+                          </span>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-            </section>
-          </div>
+                </section>
+              </div>
+            )}
         </>
       )}
     </Wrapper>

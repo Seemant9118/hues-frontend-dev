@@ -1,5 +1,6 @@
 'use client';
 
+import { attachementsAPI } from '@/api/attachmentApi/attachementAPI';
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
@@ -26,12 +27,25 @@ import {
   OrderDetails,
   viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
+import { createAttachements } from '@/services/attachment_services/AttachementServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, Eye, MoreVertical, Pencil } from 'lucide-react';
+import {
+  Check,
+  Clock,
+  Eye,
+  FileText,
+  Image,
+  MoreVertical,
+  Pencil,
+  Upload,
+  UploadCloud,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FileUploader } from 'react-drag-drop-files';
 import { toast } from 'sonner';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 // dynamic imports
@@ -72,6 +86,8 @@ const ViewOrder = () => {
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
+  const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
+  const [files, setFiles] = useState([]);
 
   const [tab, setTab] = useState('overview');
 
@@ -107,8 +123,14 @@ const ViewOrder = () => {
     {
       id: 5,
       name: translations('title.payment_advice'),
-      path: `/sales/sales-orders/${params.order_id}`,
+      path: `/purchases/purchase-orders/${params.order_id}`,
       show: isPaymentAdvicing, // Show only if isPaymentAdvicing is true
+    },
+    {
+      id: 6,
+      name: translations('title.upload_attachements'),
+      path: `/purchases/purchase-orders/${params.order_id}`,
+      show: isUploadingAttachements, // Show only if isUploadingAttachements is true
     },
   ];
 
@@ -118,6 +140,7 @@ const ViewOrder = () => {
     setIsNegotiation(state === 'negotiation');
     setIsPastInvoices(state === 'showInvoice');
     setIsPaymentAdvicing(state === 'payment_advice');
+    setIsUploadingAttachements(state === 'uploadingAttachements');
   }, [searchParams]);
 
   useEffect(() => {
@@ -130,6 +153,8 @@ const ViewOrder = () => {
       newPath += '?state=showInvoice';
     } else if (isPaymentAdvicing) {
       newPath += '?state=payment_advice';
+    } else if (isUploadingAttachements) {
+      newPath += '?state=uploadingAttachements';
     } else {
       newPath += '';
     }
@@ -139,6 +164,7 @@ const ViewOrder = () => {
     isNegotiation,
     isPastInvoices,
     isPaymentAdvicing,
+    isUploadingAttachements,
     params.order_id,
     router,
   ]);
@@ -172,6 +198,50 @@ const ViewOrder = () => {
       orderId: Number(params.order_id),
       status: 'ACCEPTED',
     });
+  };
+
+  // handle upload proofs fn
+  const handleAttached = async (file) => {
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success('File attached successfully!');
+  };
+
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+  };
+
+  const createAttachments = useMutation({
+    mutationKey: [attachementsAPI.createAttachement.endpointKey],
+    mutationFn: createAttachements,
+    onSuccess: () => {
+      toast.success('Attachements Upload Successfully');
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      setFiles([]);
+      setIsUploadingAttachements(false);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something Went Wrong');
+    },
+  });
+
+  const uploadAttachements = () => {
+    if (files?.length === 0) {
+      toast.error('Please select atleast one file to upload');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('contextType', 'ORDER'); // assuming fixed or dynamic context
+    formData.append('contextId', params.order_id); // use actual ID here
+
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+
+    createAttachments.mutate(formData);
   };
 
   const OrderColumns = usePurchaseOrderColumns();
@@ -219,8 +289,20 @@ const ViewOrder = () => {
             </div>
 
             <div className="flex gap-2">
+              {/* upload attachments */}
+              {!isUploadingAttachements && (
+                <Button
+                  variant="blue_outline"
+                  size="sm"
+                  onClick={() => setIsUploadingAttachements(true)}
+                  className="font-bold"
+                >
+                  {translations('ctas.upload_attachements')}
+                </Button>
+              )}
               {/* send payment advice CTA */}
-              {!isPaymentAdvicing &&
+              {!isUploadingAttachements &&
+                !isPaymentAdvicing &&
                 (orderDetails.negotiationStatus === 'INVOICED' ||
                   orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
                 orderDetails?.metaData?.payment?.status !== 'PAID' && (
@@ -235,24 +317,26 @@ const ViewOrder = () => {
                 )}
               {/* ctas - share invoice create */}
               {/* download CTA */}
-              {!isNegotiation && !isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      onClick={() => viewOrderinNewTab(params.order_id)}
-                      size="sm"
-                      variant="outline"
-                      className="font-bold"
-                    >
-                      <Eye size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.view.placeholder')}
-                />
-              )}
+              {!isUploadingAttachements &&
+                !isNegotiation &&
+                !isPaymentAdvicing && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => viewOrderinNewTab(params.order_id)}
+                        size="sm"
+                        variant="outline"
+                        className="font-bold"
+                      >
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.view.placeholder')}
+                  />
+                )}
 
               {/* share CTA */}
-              {/* {!isNegotiation && (
+              {/* {!isUploadingAttachements && !isNegotiation && (
                 <ShareOrderInvoice
                   heading={'Share Order Details'}
                   queryKey={orderApi.shareOrder.endpointKey}
@@ -293,7 +377,7 @@ const ViewOrder = () => {
           </section>
 
           {/* switch tabs */}
-          {!isNegotiation && !isPaymentAdvicing && (
+          {!isUploadingAttachements && !isNegotiation && !isPaymentAdvicing && (
             <section>
               <Tabs
                 value={tab}
@@ -364,7 +448,7 @@ const ViewOrder = () => {
           )}
 
           {/* Negotiation Component */}
-          {isNegotiation && !isPastInvoices && (
+          {isNegotiation && !isPastInvoices && !isUploadingAttachements && (
             <NegotiationComponent
               orderDetails={orderDetails}
               isNegotiation={isNegotiation}
@@ -373,9 +457,11 @@ const ViewOrder = () => {
           )}
 
           {/* Invoices Component */}
-          {isPastInvoices && !isNegotiation && <PastInvoices />}
+          {isPastInvoices && !isNegotiation && !isUploadingAttachements && (
+            <PastInvoices />
+          )}
 
-          {isPaymentAdvicing && !isNegotiation && (
+          {isPaymentAdvicing && !isNegotiation && !isUploadingAttachements && (
             <MakePaymentNew
               orderId={params.order_id}
               orderDetails={orderDetails}
@@ -384,13 +470,105 @@ const ViewOrder = () => {
             />
           )}
 
+          {/* upload attachements */}
+          {isUploadingAttachements && !isNegotiation && !isPaymentAdvicing && (
+            <div className="mt-4 flex h-full flex-col justify-between gap-4">
+              <div>
+                <FileUploader
+                  handleChange={handleAttached}
+                  name="file"
+                  types={['png', 'pdf']}
+                >
+                  <div className="mb-2 flex min-w-[700px] cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-[#288AF9] px-5 py-10">
+                    <div className="flex items-center gap-4">
+                      <UploadCloud className="text-[#288AF9]" size={40} />
+                      <div className="flex flex-col gap-1">
+                        <p className="text-xs font-medium text-darkText">
+                          {translations('fileUploader.instruction')}
+                        </p>
+                        <p className="text-xs font-normal text-[#288AF9]">
+                          {translations('fileUploader.note')}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="blue_outline">
+                      <Upload />
+                      {translations('fileUploader.buttons.select')}
+                    </Button>
+                  </div>
+                </FileUploader>
+                {files?.length > 0 && (
+                  <span className="mt-2 w-full text-sm font-semibold">
+                    {translations('fileUploader.attachedFilesLabel')}
+                  </span>
+                )}
+                <div className="mt-4 flex flex-wrap gap-4">
+                  {files?.map((file) => (
+                    <div
+                      key={file.name}
+                      className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                    >
+                      {/* Remove Button */}
+                      <X
+                        size={16}
+                        onClick={() => handleFileRemove(file)}
+                        className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                      />
+
+                      {/* File icon */}
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                        {file.name.split('.').pop() === 'pdf' ? (
+                          <FileText size={16} className="text-red-600" />
+                        ) : (
+                          // eslint-disable-next-line jsx-a11y/alt-text
+                          <Image size={16} className="text-primary" />
+                        )}
+                      </div>
+
+                      {/* File name */}
+                      <p className="truncate text-sm font-medium text-neutral-800">
+                        {file.name}
+                      </p>
+
+                      {/* Success message */}
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                          <Check size={12} />
+                        </div>
+                        <p className="text-xs font-medium text-green-600">
+                          {translations('fileUploader.fileAttachedMessage')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-end justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsUploadingAttachements(false);
+                    setFiles([]);
+                  }}
+                >
+                  {translations('fileUploader.buttons.cancel')}
+                </Button>
+                <Button size="sm" onClick={() => uploadAttachements(files)}>
+                  {translations('fileUploader.buttons.upload')}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* seprator */}
-          {!isNegotiation && (
+          {!isNegotiation && !isUploadingAttachements && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
           )}
 
           {/* Footer ctas */}
-          {!isNegotiation && (
+          {!isNegotiation && !isUploadingAttachements && (
             <div className="sticky bottom-0 z-10 flex justify-end">
               <section className="flex gap-2">
                 {/* status NEW */}

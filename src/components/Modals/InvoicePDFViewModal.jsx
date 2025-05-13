@@ -24,7 +24,7 @@ const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
 
   useEffect(() => {
     const fileExt = Url?.split('?')[0].toLowerCase();
-    setIsPDF(fileExt.endsWith('.pdf'));
+    setIsPDF(fileExt?.endsWith('.pdf'));
     setIsImage(
       fileExt.endsWith('.png') ||
         fileExt.endsWith('.jpg') ||
