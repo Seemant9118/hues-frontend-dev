@@ -67,9 +67,11 @@
                     "order_details": "Order Details",
                     "negotiation": "Negotiation",
                     "invoices": "Invoices",
-                    "payment_advice": "Payment Advice"
+                    "payment_advice": "Payment Advice",
+                    "upload_attachements": "Upload Attachements"
                 },
                 "ctas": {
+                    "upload_attachements": "Upload Attachements",
                     "payment_advice": "Send Payment advice",
                     "generate_invoice": "Generate Invoice",
                     "view": {
@@ -83,6 +85,17 @@
                         "wait_response": "Waiting for Response",
                         "negotiate": "Negotiate",
                         "accept": "Accept"
+                    }
+                },
+                "fileUploader": {
+                    "instruction": "Drag & Drop or Select a File (Max 10MB, .png / .pdf Formats)",
+                    "note": "Note - Upload attachments only",
+                    "attachedFilesLabel": "Attached files",
+                    "fileAttachedMessage": "Successfully attached",
+                    "buttons": {
+                        "select": "Select",
+                        "cancel": "Cancel",
+                        "upload": "Upload"
                     }
                 },
                 "tabs": {

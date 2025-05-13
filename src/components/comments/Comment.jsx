@@ -235,57 +235,54 @@ const Comment = ({ comment, invalidateId }) => {
           <>
             <p className="text-sm">{comment.text}</p>
             <div className="flex flex-wrap gap-2">
-              {comment?.attachments?.length > 0
-                ? comment.attachments.map((attachment) => {
-                    const isPdf = attachment?.document?.url
-                      ?.toLowerCase()
-                      .endsWith('.pdf');
+              {comment?.attachments?.length > 0 &&
+                comment.attachments.map((attachment) => {
+                  const isPdf = attachment?.document?.url
+                    ?.toLowerCase()
+                    .endsWith('.pdf');
 
-                    const handleClick = () => {
-                      if (isPdf) {
-                        viewPdfInNewTab(attachment?.document?.url);
-                      } else {
-                        // Open modal manually (if modal logic allows it)
-                        // Or rely on `InvoicePDFViewModal` for non-PDFs
+                  const handleClick = () => {
+                    if (isPdf) {
+                      viewPdfInNewTab(attachment?.document?.url);
+                    } else {
+                      // Open modal manually (if modal logic allows it)
+                      // Or rely on `InvoicePDFViewModal` for non-PDFs
+                    }
+                  };
+
+                  return isPdf ? (
+                    <Button
+                      key={attachment.id}
+                      variant="outline"
+                      onClick={handleClick}
+                      className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+                    >
+                      <div className="flex w-full items-center gap-2">
+                        <File size={14} className="shrink-0" />
+                        <span className="truncate">{attachment?.fileName}</span>
+                      </div>
+                    </Button>
+                  ) : (
+                    <InvoicePDFViewModal
+                      key={attachment.id}
+                      cta={
+                        <Button
+                          variant="outline"
+                          className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <File size={14} className="shrink-0" />
+                            <span className="truncate">
+                              {attachment?.fileName}
+                            </span>
+                          </div>
+                        </Button>
                       }
-                    };
-
-                    return isPdf ? (
-                      <Button
-                        key={attachment.id}
-                        variant="outline"
-                        onClick={handleClick}
-                        className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
-                      >
-                        <div className="flex w-full items-center gap-2">
-                          <File size={14} className="shrink-0" />
-                          <span className="truncate">
-                            {attachment?.fileName}
-                          </span>
-                        </div>
-                      </Button>
-                    ) : (
-                      <InvoicePDFViewModal
-                        key={attachment.id}
-                        cta={
-                          <Button
-                            variant="outline"
-                            className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
-                          >
-                            <div className="flex w-full items-center gap-2">
-                              <File size={14} className="shrink-0" />
-                              <span className="truncate">
-                                {attachment?.fileName}
-                              </span>
-                            </div>
-                          </Button>
-                        }
-                        Url={attachment?.document?.url}
-                        name={attachment?.fileName}
-                      />
-                    );
-                  })
-                : '-'}
+                      Url={attachment?.document?.url}
+                      name={attachment?.fileName}
+                    />
+                  );
+                })}
             </div>
           </>
         )}

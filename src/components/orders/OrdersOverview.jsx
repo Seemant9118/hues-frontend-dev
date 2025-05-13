@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import { acknowledgeApi } from '@/api/acknowledgements/acknowledgeApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
@@ -5,20 +6,35 @@ import {
   undoAcknowledgeStatus,
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
+import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Image,
+  Info,
+  MoveUpRight,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
 import InvitationActionModal from '../Modals/InvitationActionModal';
+import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '../ui/collapsible';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import { Progress } from '../ui/progress';
 
 const OrdersOverview = ({
@@ -130,7 +146,7 @@ const OrdersOverview = ({
                     ? translations('label.client_name')
                     : translations('label.vendor_name')}
                 </p>
-                <p className="text-lg font-bold">
+                <p className="h-8 w-10/12 truncate text-lg font-bold">
                   {Name ?? 'Name not available'}
                 </p>
                 <p className="flex items-center text-xs font-bold text-[#A5ABBD]">
@@ -179,6 +195,118 @@ const OrdersOverview = ({
                 </section>
               )}
             </div>
+            {/* attachments - only show when attachements present */}
+            {orderDetails?.attachments?.length > 0 && (
+              <div className="flex w-1/2 flex-col gap-4">
+                <section className="flex flex-col gap-4">
+                  <p className="text-xs font-bold">{'Attachments'}</p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {orderDetails.attachments.slice(0, 3).map((attachment) => {
+                      const isPdf = attachment?.documenturl
+                        ?.toLowerCase()
+                        .endsWith('.pdf');
+
+                      const handleClick = () => {
+                        if (isPdf) {
+                          viewPdfInNewTab(attachment?.documenturl);
+                        } else {
+                          // handle non-PDF logic or modal trigger
+                        }
+                      };
+
+                      return isPdf ? (
+                        <div
+                          key={attachment.attachmentid}
+                          onClick={handleClick}
+                          className="cursor-pointer overflow-hidden rounded-full border px-2 hover:bg-muted hover:text-primary"
+                        >
+                          <div className="flex w-full items-center gap-2 p-1">
+                            <FileText size={16} className="text-red-600" />
+                            <span className="truncate text-xs">
+                              {attachment?.attachmentfilename}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <InvoicePDFViewModal
+                          key={attachment.attachmentid}
+                          cta={
+                            <div className="cursor-pointer overflow-hidden rounded-full border px-2 hover:bg-muted hover:text-primary">
+                              <div className="flex items-center gap-2 p-1">
+                                <Image size={16} className="text-primary" />
+                                <span className="truncate text-xs">
+                                  {attachment?.attachmentfilename}
+                                </span>
+                              </div>
+                            </div>
+                          }
+                          Url={attachment?.documenturl}
+                          name={attachment?.attachmentfilename}
+                        />
+                      );
+                    })}
+
+                    {orderDetails.attachments.length > 3 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <div className="cursor-pointer rounded-full border px-2 py-1 text-xs hover:bg-muted hover:text-primary">
+                            +{orderDetails.attachments.length - 3} more
+                          </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="max-w-[300px]">
+                          {orderDetails.attachments
+                            .slice(3)
+                            .map((attachment) => {
+                              const isPdf = attachment?.documenturl
+                                ?.toLowerCase()
+                                .endsWith('.pdf');
+
+                              const handleClick = () => {
+                                if (isPdf) {
+                                  viewPdfInNewTab(attachment?.documenturl);
+                                } else {
+                                  // handle non-PDF logic or modal trigger
+                                }
+                              };
+
+                              return isPdf ? (
+                                <DropdownMenuItem
+                                  key={attachment.attachmentid}
+                                  onSelect={handleClick}
+                                  className="flex items-center gap-2 text-xs"
+                                >
+                                  <FileText
+                                    size={16}
+                                    className="text-red-600"
+                                  />
+                                  {attachment?.attachmentfilename}
+                                </DropdownMenuItem>
+                              ) : (
+                                <InvoicePDFViewModal
+                                  key={attachment.attachmentid}
+                                  cta={
+                                    <DropdownMenuItem className="flex items-center gap-2 text-xs">
+                                      <Image
+                                        size={16}
+                                        className="text-primary"
+                                      />
+                                      {attachment?.attachmentfilename}
+                                    </DropdownMenuItem>
+                                  }
+                                  Url={attachment?.documenturl}
+                                  name={attachment?.attachmentfilename}
+                                />
+                              );
+                            })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </section>
+              </div>
+            )}
+
             {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
               orderDetails?.negotiationStatus === 'INVOICED') && (
               <div className="flex w-1/2 flex-col items-end gap-4">
