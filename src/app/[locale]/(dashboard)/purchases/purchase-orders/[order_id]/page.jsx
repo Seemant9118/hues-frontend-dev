@@ -555,8 +555,16 @@ const ViewOrder = () => {
                 >
                   {translations('fileUploader.buttons.cancel')}
                 </Button>
-                <Button size="sm" onClick={() => uploadAttachements(files)}>
-                  {translations('fileUploader.buttons.upload')}
+                <Button
+                  size="sm"
+                  onClick={() => uploadAttachements(files)}
+                  disabled={createAttachments?.isPending}
+                >
+                  {createAttachments?.isPending ? (
+                    <Loading />
+                  ) : (
+                    translations('fileUploader.buttons.upload')
+                  )}
                 </Button>
               </div>
             </div>

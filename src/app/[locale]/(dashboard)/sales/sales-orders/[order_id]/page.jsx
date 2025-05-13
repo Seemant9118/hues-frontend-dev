@@ -316,16 +316,19 @@ const ViewOrder = () => {
             </div>
             <div className="flex gap-2">
               {/* upload attachments */}
-              {!isUploadingAttachements && (
-                <Button
-                  variant="blue_outline"
-                  size="sm"
-                  onClick={() => setIsUploadingAttachements(true)}
-                  className="font-bold"
-                >
-                  {translations('ctas.upload_attachements')}
-                </Button>
-              )}
+              {!isUploadingAttachements &&
+                !isNegotiation &&
+                !isGenerateInvoice &&
+                !isRecordingPayment && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    onClick={() => setIsUploadingAttachements(true)}
+                    className="font-bold"
+                  >
+                    {translations('ctas.upload_attachements')}
+                  </Button>
+                )}
 
               {/* record payment CTA */}
               {!isUploadingAttachements &&
@@ -645,8 +648,16 @@ const ViewOrder = () => {
                   >
                     {translations('fileUploader.buttons.cancel')}
                   </Button>
-                  <Button size="sm" onClick={uploadAttachements}>
-                    {translations('fileUploader.buttons.upload')}
+                  <Button
+                    size="sm"
+                    onClick={uploadAttachements}
+                    disabled={createAttachments?.isPending}
+                  >
+                    {createAttachments?.isPending ? (
+                      <Loading />
+                    ) : (
+                      translations('fileUploader.buttons.upload')
+                    )}
                   </Button>
                 </div>
               </div>
