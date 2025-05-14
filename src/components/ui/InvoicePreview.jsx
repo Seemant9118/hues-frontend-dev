@@ -45,7 +45,7 @@ const InvoicePreview = ({
   isSocialLinksAddable = false,
   isActionable = false,
   isPINError,
-  setIsPINError,
+  setIsPINError = false,
 }) => {
   const [open, setOpen] = useState(false);
   // State to determine if the document is a PDF
@@ -333,13 +333,12 @@ const InvoicePreview = ({
         )}
 
         {/* Right side: PDF Preview */}
-        <div className="flex h-[600px] w-2/3 items-center justify-center bg-[#F4F4F4]">
+        <div className="flex h-full w-2/3 items-center justify-center bg-[#F4F4F4]">
           <ViewPdf url={url} isPDF={isPDF} />
         </div>
       </div>
 
       {/* Footer CTA for downloading the PDF */}
-
       <div className="flex w-full items-center justify-end gap-2">
         <Button
           size="sm"
@@ -398,20 +397,22 @@ const InvoicePreview = ({
           </Button>
         )}
       </div>
-      <PINVerifyModal
-        open={open}
-        setOpen={setOpen}
-        order={order}
-        customerRemarks={remarks}
-        socialLinks={socialLink}
-        bankAccountId={bankAccount}
-        billingAddress={billingAddress}
-        shippingAddress={shippingAddress}
-        isPendingInvoice={isPendingInvoice}
-        handleCreateFn={handleCreateFn}
-        isPINError={isPINError}
-        setIsPINError={setIsPINError}
-      />
+      {isCreatable && (
+        <PINVerifyModal
+          open={open}
+          setOpen={setOpen}
+          order={order}
+          customerRemarks={remarks}
+          socialLinks={socialLink}
+          bankAccountId={bankAccount}
+          billingAddress={billingAddress}
+          shippingAddress={shippingAddress}
+          isPendingInvoice={isPendingInvoice}
+          handleCreateFn={handleCreateFn}
+          isPINError={isPINError}
+          setIsPINError={setIsPINError}
+        />
+      )}
     </div>
   );
 };
