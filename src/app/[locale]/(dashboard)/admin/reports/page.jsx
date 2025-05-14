@@ -10,7 +10,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService } from '@/lib/utils';
+import { useRBAC } from '@/context/RBACcontext';
 import { getAdminData } from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -90,33 +90,12 @@ import React, { useEffect, useState } from 'react';
 
 const AdminReportsPage = () => {
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkedAuth, setCheckedAuth] = useState(false);
+  const { hasPageAccess, canPerformAction } = useRBAC();
   const [tab, setTab] = useState('onboarding');
   const startDate = new Date('2024/03/01');
   const todayDate = new Date();
   const [dateRange, setDateRange] = useState([startDate, todayDate]);
   const [pieChartData, setPieChartData] = useState(null);
-  const token = LocalStorageService.get('token');
-
-  // to get data from JWT
-  function parseJwt(token) {
-    if (!token) return null;
-
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
-          .join(''),
-      );
-      return JSON.parse(payload);
-    } catch (error) {
-      return null;
-    }
-  }
 
   const onTabChange = (value) => {
     setTab(value);
@@ -127,8 +106,7 @@ const AdminReportsPage = () => {
     queryFn: () => getAdminData(dateRange),
     select: (res) => res?.data?.data,
     enabled:
-      checkedAuth &&
-      isAdmin &&
+      canPerformAction('adminReports', 'fetchedAdminData') &&
       tab === 'onboarding' &&
       Array.isArray(dateRange) &&
       dateRange[0] !== null &&
@@ -151,19 +129,10 @@ const AdminReportsPage = () => {
   const PIE_COLORS = ['#F8BA05', '#007bff'];
 
   useEffect(() => {
-    const tokenData = parseJwt(token);
-    const isAdminCheck = tokenData?.roles?.includes('ADMIN');
-    setIsAdmin(isAdminCheck);
-    setCheckedAuth(true);
-  }, [token]);
-
-  useEffect(() => {
-    if (checkedAuth && !isAdmin) {
-      router.push('/unauthorized');
+    if (!hasPageAccess('adminReports')) {
+      router.replace('/unauthorized');
     }
-  }, [checkedAuth, isAdmin]);
-
-  if (!checkedAuth) return <Loading />;
+  }, []);
 
   return (
     <Wrapper>

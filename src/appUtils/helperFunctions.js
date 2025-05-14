@@ -124,3 +124,22 @@ export const isGstApplicable = (isHaveGst) => {
 
 // Utility function to handle empty strings and undefined values
 export const formatValue = (value) => (value?.trim() ? value : '-');
+
+// to get data from JWT
+export const parseJwt = (token) => {
+  if (!token) return null;
+
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join(''),
+    );
+    return JSON.parse(payload);
+  } catch (error) {
+    return null;
+  }
+};
