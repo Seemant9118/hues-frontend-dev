@@ -21,11 +21,11 @@ import { getPaymentsDetails } from '@/services/Payment_Services/PaymentServices'
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowUp,
   Building2,
   Check,
   FileText,
   Image,
+  MessageCircle,
   Paperclip,
   X,
 } from 'lucide-react';
@@ -169,9 +169,12 @@ const PaymentDetails = () => {
       <PaymentOverview paymentsDetails={paymentsDetails} />
       {/* COMMENTS */}
       <div className="flex h-full flex-col gap-4 p-2">
-        <h1 className="text-sm font-bold">
-          {translationsComments('comments.title')}
-        </h1>
+        <section className="flex w-full items-center gap-2">
+          <MessageCircle size={16} />
+          <h1 className="text-sm font-bold">
+            {translationsComments('comments.title')}
+          </h1>
+        </section>
 
         <div className="relative">
           {/* 1 */}
@@ -191,7 +194,7 @@ const PaymentDetails = () => {
           />
 
           {/* 3 */}
-          <div className="absolute right-6 top-[24px] flex gap-4 text-[#A5ABBD]">
+          <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
             <Tooltips
               trigger={
                 <label htmlFor="fileUpload">
@@ -219,14 +222,12 @@ const PaymentDetails = () => {
 
             <Tooltips
               trigger={
-                createCommentMutation.isPending ? (
+                createCommentMutation?.isPending ? (
                   <Loading />
                 ) : (
-                  <ArrowUp
-                    size={20}
-                    onClick={handleSubmitComment}
-                    className={'cursor-pointer hover:text-black'}
-                  />
+                  <Button size="sm" onClick={handleSubmitComment}>
+                    Send
+                  </Button>
                 )
               }
               content={translationsComments('comments.ctas.send.placeholder')}

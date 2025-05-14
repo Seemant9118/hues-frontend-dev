@@ -3,7 +3,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { updateComments } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building2, File, Pencil, X } from 'lucide-react';
+import { Building2, Dot, File, X } from 'lucide-react';
 import moment from 'moment';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -27,11 +27,11 @@ const Comment = ({ comment, invalidateId }) => {
     const itemDateTime = moment(itemDateT);
     const now = moment();
 
-    if (itemDateTime.isSame(now, 'day'))
-      return `Today ${itemDateTime.format('HH:mm:ss')}`;
-    if (itemDateTime.isSame(now.clone().subtract(1, 'days'), 'day'))
-      return `Yesterday ${itemDateTime.format('HH:mm:ss')}`;
-    return `${itemDateTime.format('DD-MM-YYYY HH:mm:ss')}`;
+    if (itemDateTime.isSame(now, 'day')) {
+      return itemDateTime.format('hh:mm A'); // e.g., 10:00 AM
+    }
+
+    return itemDateTime.format('D MMMM, YYYY'); // e.g., 12 April, 2025
   };
 
   const updateCommentMutation = useMutation({
@@ -123,12 +123,16 @@ const Comment = ({ comment, invalidateId }) => {
       <div className="flex w-full flex-col gap-2">
         <div className="flex justify-between">
           <div className="flex flex-col gap-0.5">
-            <h1 className="flex items-center gap-2 text-sm font-bold">
+            <h1 className="flex items-center text-sm font-bold">
               {comment?.enterprisename ?? 'Name not available'}
+              <Dot size={16} className="text-[#A5ABBD]" />
+              <p className="text-xs font-semibold text-[#A5ABBD]">
+                {formatDateTime(comment?.commentedat)}
+              </p>
+              <Dot size={16} className="text-[#A5ABBD]" />
               {enterpriseId === comment?.enterpriseid && !isEditing && (
-                <Pencil
-                  className="cursor-pointer hover:text-primary"
-                  size={14}
+                <span
+                  className="cursor-pointer text-xs text-primary hover:underline"
                   onClick={() => {
                     setIsEditing(true);
                     setEditedComments({
@@ -138,12 +142,11 @@ const Comment = ({ comment, invalidateId }) => {
                       commentId: comment.commentid ?? null,
                     });
                   }}
-                />
+                >
+                  Edit
+                </span>
               )}
             </h1>
-            <p className="text-xs font-semibold text-[#A5ABBD]">
-              {formatDateTime(comment?.commentedat)}
-            </p>
           </div>
         </div>
 

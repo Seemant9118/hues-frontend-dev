@@ -7,6 +7,7 @@ import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import Comment from '@/components/comments/Comment';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -18,11 +19,11 @@ import {
 } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowUp,
   Building2,
   Check,
   FileText,
   Image,
+  MessageCircle,
   Paperclip,
   X,
 } from 'lucide-react';
@@ -187,9 +188,12 @@ const ViewDebitNote = () => {
 
         {/* comments  */}
         <div className="flex h-full flex-col gap-4 p-2">
-          <h1 className="text-sm font-bold">
-            {translations('comments.title')}
-          </h1>
+          <section className="flex w-full items-center gap-2">
+            <MessageCircle size={16} />
+            <h1 className="text-sm font-bold">
+              {translations('comments.title')}
+            </h1>
+          </section>
 
           <div className="relative">
             {/* 1 */}
@@ -209,7 +213,7 @@ const ViewDebitNote = () => {
             />
 
             {/* 3 */}
-            <div className="absolute right-10 top-[24px] flex gap-4 text-[#A5ABBD]">
+            <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
               <Tooltips
                 trigger={
                   <label htmlFor="fileUpload">
@@ -235,14 +239,12 @@ const ViewDebitNote = () => {
 
               <Tooltips
                 trigger={
-                  createCommentMutation.isPending ? (
+                  createCommentMutation?.isPending ? (
                     <Loading />
                   ) : (
-                    <ArrowUp
-                      size={20}
-                      onClick={handleSubmitComment}
-                      className={'cursor-pointer hover:text-black'}
-                    />
+                    <Button size="sm" onClick={handleSubmitComment}>
+                      Send
+                    </Button>
                   )
                 }
                 content={translations('comments.ctas.send.placeholder')}
