@@ -225,8 +225,9 @@ const CommentBox = ({ contextId, context }) => {
             <h1 className="text-sm font-bold">Comments</h1>
           </section>
         )}
+
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" debounceTime={0}>
             {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </Button>
         </CollapsibleTrigger>

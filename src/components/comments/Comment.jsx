@@ -13,15 +13,28 @@ import { Textarea } from '../ui/textarea';
 
 const Comment = ({ comment, invalidateId }) => {
   const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const [isEditing, setIsEditing] = useState(false);
   const [editedComments, setEditedComments] = useState({
     text: '',
     files: [],
     attachementsToDelete: [],
     commentId: null,
   });
+
+  const isCommentCanBeEdited = (comment) => {
+    if (!comment?.commentedat) return false;
+
+    const commentedAt = new Date(comment.commentedat);
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+
+    // only valid till 15 mins after comment created
+    return commentedAt > fifteenMinutesAgo;
+  };
+
+  const isCommentEdited = (comment) =>
+    comment?.commentedat !== comment?.updatedat;
 
   const formatDateTime = (itemDateT) => {
     const itemDateTime = moment(itemDateT);
@@ -125,27 +138,32 @@ const Comment = ({ comment, invalidateId }) => {
           <div className="flex flex-col gap-0.5">
             <h1 className="flex items-center text-sm font-bold">
               {comment?.enterprisename ?? 'Name not available'}
-              <Dot size={16} className="text-[#A5ABBD]" />
+              <Dot size={24} className="text-[#A5ABBD]" />
               <p className="text-xs font-semibold text-[#A5ABBD]">
                 {formatDateTime(comment?.commentedat)}
               </p>
-              <Dot size={16} className="text-[#A5ABBD]" />
-              {enterpriseId === comment?.enterpriseid && !isEditing && (
-                <span
-                  className="cursor-pointer text-xs text-primary hover:underline"
-                  onClick={() => {
-                    setIsEditing(true);
-                    setEditedComments({
-                      text: comment.text || '',
-                      files: [],
-                      attachementsToDelete: [],
-                      commentId: comment.commentid ?? null,
-                    });
-                  }}
-                >
-                  Edit
-                </span>
-              )}
+
+              {enterpriseId === comment?.enterpriseid &&
+                !isEditing &&
+                isCommentCanBeEdited(comment) && (
+                  <>
+                    <Dot size={24} className="text-[#A5ABBD]" />
+                    <span
+                      className="cursor-pointer text-xs text-primary hover:underline"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditedComments({
+                          text: comment.text || '',
+                          files: [],
+                          attachementsToDelete: [],
+                          commentId: comment.commentid ?? null,
+                        });
+                      }}
+                    >
+                      Edit
+                    </span>
+                  </>
+                )}
             </h1>
           </div>
         </div>
@@ -236,7 +254,14 @@ const Comment = ({ comment, invalidateId }) => {
           </>
         ) : (
           <>
-            <p className="text-sm">{comment.text}</p>
+            <p className="text-sm">
+              {comment.text}{' '}
+              {isCommentEdited(comment) && (
+                <span className="font-semibold italic text-gray-400">
+                  {`(Edited)`}
+                </span>
+              )}
+            </p>
             <div className="flex flex-wrap gap-2">
               {comment?.attachments?.length > 0 &&
                 comment.attachments.map((attachment) => {
