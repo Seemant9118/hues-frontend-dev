@@ -15,4 +15,8 @@ export const settingsAPI = {
     endpoint: `/template/custom/get`,
     endpointKey: 'get_template',
   },
+  invoicePreviewConfig: {
+    endpoint: `/order/invoice/preview-config`,
+    endpointKey: 'invoice_preview_condfig',
+  },
 };

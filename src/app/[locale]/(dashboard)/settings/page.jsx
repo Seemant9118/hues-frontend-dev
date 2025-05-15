@@ -15,6 +15,7 @@ import Tooltips from '@/components/auth/Tooltips';
 import AccountDetails from '@/components/settings/AccountDetails';
 import AddBankAccount from '@/components/settings/AddBankAccount';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
+import PaymentSettings from '@/components/settings/PaymentSettings';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -126,12 +127,20 @@ function Settings() {
     setBgColor(bgColorClass);
   }, []);
 
-  // fetch settings
-  const { data: settings } = useQuery({
+  // fetch settings - invoice
+  const { data: invoiceSettings } = useQuery({
     queryKey: [settingsAPI.getSettingByKey.endpointKey],
-    queryFn: () => getSettingsByKey(tab.toUpperCase()),
+    queryFn: () => getSettingsByKey('INVOICE'),
     select: (data) => data.data.data,
     enabled: tab === 'invoice',
+  });
+
+  // fetch settings - payment terms
+  const { data: paymentTermsSettings } = useQuery({
+    queryKey: [settingsAPI.getSettingByKey.endpointKey],
+    queryFn: () => getSettingsByKey('PAYMENT_TERMS'),
+    select: (data) => data.data.data,
+    enabled: tab === 'paymentTerms',
   });
 
   const { data: templates } = useQuery({
@@ -197,11 +206,14 @@ function Settings() {
           <TabsTrigger value="invoice">
             {translations('tabs.label.tab3')}
           </TabsTrigger>
-          <TabsTrigger value="offers">
+          <TabsTrigger value="paymentTerms">
             {translations('tabs.label.tab4')}
           </TabsTrigger>
-          <TabsTrigger value="pinSettings">
+          <TabsTrigger value="offers">
             {translations('tabs.label.tab5')}
+          </TabsTrigger>
+          <TabsTrigger value="pinSettings">
+            {translations('tabs.label.tab6')}
           </TabsTrigger>
         </TabsList>
 
@@ -569,14 +581,21 @@ function Settings() {
         <TabsContent value="invoice" className="flex flex-col gap-10">
           {/* {translations('tabs.content.tab4.coming_soon')} */}
           <InvoiceSettings
-            settings={settings}
+            settings={invoiceSettings}
             templates={templates}
             createSettingMutation={createSettingMutation}
           />
         </TabsContent>
 
+        <TabsContent value="paymentTerms">
+          <PaymentSettings
+            settings={paymentTermsSettings}
+            createSettingMutation={createSettingMutation}
+          />
+        </TabsContent>
+
         <TabsContent value="offers">
-          {translations('tabs.content.tab4.coming_soon')}
+          {translations('tabs.content.tab5.coming_soon')}
         </TabsContent>
 
         <TabsContent value="pinSettings" className="flex flex-col gap-10">

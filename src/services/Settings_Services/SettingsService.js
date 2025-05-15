@@ -16,3 +16,7 @@ export const getSettingsById = () => {
 export const getTemplateForSettings = () => {
   return APIinstance.get(settingsAPI.getTemplateForSettings.endpoint);
 };
+
+export const getInvoicePreviewConfig = (data) => {
+  return APIinstance.post(settingsAPI.invoicePreviewConfig.endpoint, data);
+};

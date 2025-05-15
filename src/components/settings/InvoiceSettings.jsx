@@ -43,10 +43,10 @@ export default function InvoiceSettings({
   useEffect(() => {
     if (settings?.settings) {
       const customerRemarkSetting = settings.settings.find(
-        (s) => s.key === 'CUSTOMER_REMARK',
+        (s) => s.key === 'invoice.default.remark',
       );
       const socialLinkSetting = settings.settings.find(
-        (s) => s.key === 'SOCIAL_LINK',
+        (s) => s.key === 'invoice.social-link',
       );
 
       const defaultInvoiceTypeSettings = settings.settings.find(
@@ -93,7 +93,7 @@ export default function InvoiceSettings({
       contextKey: 'INVOICE',
       settings: [
         {
-          key: 'invoice.plugin.default.theme',
+          key: 'invoice.default.theme',
           value: skin?.id, // extract numeric ID
         },
       ],
@@ -108,7 +108,7 @@ export default function InvoiceSettings({
       contextKey: 'INVOICE',
       settings: [
         {
-          key: 'CUSTOMER_REMARK',
+          key: 'invoice.default.remark',
           value: remarks,
         },
       ],
@@ -123,7 +123,7 @@ export default function InvoiceSettings({
       contextKey: 'INVOICE',
       settings: [
         {
-          key: 'SOCIAL_LINK',
+          key: 'invoice.social-link',
           value: link,
         },
       ],
