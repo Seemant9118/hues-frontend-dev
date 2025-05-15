@@ -136,7 +136,7 @@ const EditItem = ({
       </h2>
 
       {/* ITEM OVERVIEW */}
-      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+      <div className="flex flex-col gap-3 rounded-md">
         <h2 className="text-sm font-bold text-primary">ITEM OVERVIEW</h2>
         <div className="grid grid-cols-3 grid-rows-2 items-center gap-4">
           {/* product Name / Service Name */}
@@ -225,7 +225,7 @@ const EditItem = ({
       </div>
 
       {/* PRICING */}
-      <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+      <div className="flex flex-col gap-3 rounded-md">
         <h2 className="text-sm font-bold text-primary">PRICING</h2>
 
         <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
@@ -263,7 +263,7 @@ const EditItem = ({
 
       {/* ADDITIONAL INFORMATION */}
       {item.type === 'goods' && (
-        <div className="flex flex-col gap-3 rounded-md border border-[#EDEEF2] p-4">
+        <div className="flex flex-col gap-3 rounded-md">
           <h2 className="text-sm font-bold text-primary">
             ADDITIONAL INFORMATION
           </h2>
