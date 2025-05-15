@@ -6,8 +6,9 @@
                 "tab1": "Enterprise Overview",
                 "tab2": "Bank Account",
                 "tab3": "Invoices",
-                "tab4": "Offers",
-                "tab5": "PIN Settings"
+                "tab4": "Payment Terms",
+                "tab5": "Offers",
+                "tab6": "PIN Settings"
             },
             "content": {
                 "tab1": {
@@ -57,6 +58,9 @@
                     }
                 },
                 "tab4": {
+                    "coming_soon": "Coming Soon..."
+                },
+                "tab5": {
                     "coming_soon": "Coming Soon..."
                 }
             }

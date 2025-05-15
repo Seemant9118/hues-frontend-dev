@@ -1,18 +1,18 @@
 /* eslint-disable no-unused-vars */
-import { addressAPIs } from '@/api/addressApi/addressApis';
-import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
+import { settingsAPI } from '@/api/settings/settingsApi';
 import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
-import { getAddress } from '@/services/address_Services/AddressServices';
-import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
+import { getInvoicePreviewConfig } from '@/services/Settings_Services/SettingsService';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { CalendarDays, Plus } from 'lucide-react';
+import moment from 'moment';
 import { useEffect, useState } from 'react';
 import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
 import AddAddress from '../settings/AddAddress';
 import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from './button';
+import DatePickers from './DatePickers';
 import ErrorBox from './ErrorBox';
 import { Input } from './input';
 import { Label } from './label';
@@ -58,6 +58,9 @@ const InvoicePreview = ({
   const [shippingAddress, setShippingAddress] = useState(
     order?.shippingAddressId,
   );
+  const [paymentTerms, setPaymentTerms] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [paymentDueDate, setPaymentDueDate] = useState(null);
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
@@ -81,39 +84,48 @@ const InvoicePreview = ({
     setIsPDF(isPDFProp);
   }, [url]);
 
-  // address fetching
-
-  // bank accounts fetching
-  const { data: bankAccounts } = useQuery({
-    queryKey: [bankAccountApis.getBankAccounts.endpointKey],
-    queryFn: () => getBankAccounts(),
-    select: (data) => data.data.data,
-    enabled: isBankAccountDetailsSelectable,
-  });
-
-  // address fetching
-  const { data: addressData, isLoading: isAddressDataLoading } = useQuery({
-    queryKey: [addressAPIs.getAddresses.endpointKey],
+  // fetching req data for invoice preview
+  const { data: invoicePreviewConfig, isLoading } = useQuery({
+    queryKey: [settingsAPI.invoicePreviewConfig.endpointKey],
     queryFn: () =>
-      getAddress(
-        getAddressRelatedData?.clientId,
-        getAddressRelatedData?.clientEnterpriseId,
-      ),
+      getInvoicePreviewConfig({
+        clientId: getAddressRelatedData?.clientId,
+        clientEnterpriseId: getAddressRelatedData?.clientEnterpriseId,
+      }),
     select: (data) => data.data.data,
-    enabled: isAddressAddable && order?.clientType === 'B2B',
+    enabled: !!isCreatable,
   });
+  useEffect(() => {
+    if (!invoicePreviewConfig) return;
+
+    // remarks
+    setRemarks(invoicePreviewConfig.defaultRemarks);
+
+    // due date (number of days)
+    const dueInDays = Number(invoicePreviewConfig.dueDate);
+    setPaymentDueDate(dueInDays);
+
+    // Calculate selected date as today + dueDate days
+    const today = new Date();
+    const calculatedDate = new Date(today);
+    calculatedDate.setDate(today.getDate() + dueInDays);
+    setSelectedDate(calculatedDate);
+
+    // payment terms
+    setPaymentTerms(invoicePreviewConfig.paymentTerms);
+  }, [invoicePreviewConfig]);
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       <div
         className={cn(
-          'flex h-full justify-between gap-6',
+          'flex h-[93%] justify-between gap-2',
           !isActionable && 'flex items-center justify-center',
         )}
       >
         {/* Left side: Controls */}
         {isBankAccountDetailsSelectable && isCustomerRemarksAddable && (
-          <div className="flex h-full w-1/3 flex-col gap-6">
+          <div className="navScrollBarStyles flex h-full w-1/3 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2">
             {/* address */}
             {isBiilingAddressAdding && (
               <AddAddress
@@ -153,10 +165,10 @@ const InvoicePreview = ({
                         <SelectValue placeholder="Select Billing Address" />
                       </SelectTrigger>
                       <SelectContent>
-                        {isAddressDataLoading && <Loading />}
-                        {!isAddressDataLoading &&
-                          addressData &&
-                          addressData?.map((address) => (
+                        {isLoading && <Loading />}
+                        {!isLoading &&
+                          invoicePreviewConfig?.addressList &&
+                          invoicePreviewConfig?.addressList?.map((address) => (
                             <SelectItem key={address.id} value={address.id}>
                               {address.address}
                             </SelectItem>
@@ -208,10 +220,10 @@ const InvoicePreview = ({
                         <SelectValue placeholder="Select Shipping Address" />
                       </SelectTrigger>
                       <SelectContent>
-                        {isAddressDataLoading && <Loading />}
-                        {!isAddressDataLoading &&
-                          addressData &&
-                          addressData?.map((address) => (
+                        {isLoading && <Loading />}
+                        {!isLoading &&
+                          invoicePreviewConfig?.addressList &&
+                          invoicePreviewConfig?.addressList?.map((address) => (
                             <SelectItem key={address.id} value={address.id}>
                               {address.address}
                             </SelectItem>
@@ -236,19 +248,6 @@ const InvoicePreview = ({
               </>
             )}
 
-            {/* customer remarks */}
-            {isCustomerRemarksAddable && (
-              <div>
-                <Label className="text-sm font-medium">Custom Remarks</Label>
-                <Textarea
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Thank you for your business!"
-                  rows={4}
-                />
-              </div>
-            )}
-
             {/* bank accounts */}
             {isBankAccountAdding && (
               <AddBankAccount
@@ -270,7 +269,7 @@ const InvoicePreview = ({
                     <SelectValue placeholder="Select Bank Account Details" />
                   </SelectTrigger>
                   <SelectContent>
-                    {bankAccounts?.map((account) => (
+                    {invoicePreviewConfig?.bankAccounts?.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         {`Acc ${account.maskedAccountNumber}`}
                       </SelectItem>
@@ -290,6 +289,48 @@ const InvoicePreview = ({
               </div>
             )}
 
+            {/* payment terms */}
+            <div className="flex flex-col">
+              <Label className="mb-2 block text-sm font-medium">
+                Payment Terms
+              </Label>
+              <Textarea
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+                className="navScrollBarStyles h-28 w-full resize-none rounded-md border p-2"
+                placeholder="Enter your custom Payment terms..."
+              />
+            </div>
+            {/* due date */}
+            <div className="flex flex-col">
+              <Label className="mb-2 block text-sm font-medium">
+                Payment Due Date
+              </Label>
+              <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <DatePickers
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date)}
+                  dateFormat="dd/MM/yyyy"
+                  popperPlacement="right"
+                />
+                <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+              </div>
+            </div>
+
+            {/* customer remarks */}
+            {isCustomerRemarksAddable && (
+              <div>
+                <Label className="text-sm font-medium">Custom Remarks</Label>
+                <Textarea
+                  value={remarks}
+                  className="navScrollBarStyles"
+                  onChange={(e) => setRemarks(e.target.value)}
+                  placeholder="Thank you for your business!"
+                  rows={2}
+                />
+              </div>
+            )}
+
             {/* social links */}
             {isSocialLinksAddable && (
               <div>
@@ -302,33 +343,39 @@ const InvoicePreview = ({
               </div>
             )}
 
-            <Button
-              size="sm"
-              onClick={() => {
-                const updatedOrder = {
-                  ...order,
-                  remarks,
-                  bankAccountId: bankAccount,
-                  socialLinks: socialLink,
-                  billingAddressId: billingAddress,
-                  shippingAddressId: shippingAddress,
-                };
+            <div className="sticky bottom-0 z-10 border-t bg-white pt-2 shadow-md">
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={() => {
+                  const formatDate = moment(selectedDate).format('DD-MM-yyyy');
+                  const updatedOrder = {
+                    ...order,
+                    remarks,
+                    bankAccountId: bankAccount,
+                    socialLinks: socialLink,
+                    billingAddressId: billingAddress,
+                    shippingAddressId: shippingAddress,
+                    dueDate: formatDate,
+                    paymentTerms,
+                  };
 
-                if (order?.clientType === 'B2B') {
-                  const errors = validation(updatedOrder);
-                  if (Object.keys(errors).length > 0) {
-                    setErrorMsg(errors);
+                  if (order?.clientType === 'B2B') {
+                    const errors = validation(updatedOrder);
+                    if (Object.keys(errors).length > 0) {
+                      setErrorMsg(errors);
+                    } else {
+                      handlePreview(updatedOrder);
+                      setErrorMsg(null); // Clear previous errors if any
+                    }
                   } else {
                     handlePreview(updatedOrder);
-                    setErrorMsg(null); // Clear previous errors if any
                   }
-                } else {
-                  handlePreview(updatedOrder);
-                }
-              }}
-            >
-              Apply changes
-            </Button>
+                }}
+              >
+                Apply changes
+              </Button>
+            </div>
           </div>
         )}
 
@@ -407,6 +454,8 @@ const InvoicePreview = ({
           bankAccountId={bankAccount}
           billingAddress={billingAddress}
           shippingAddress={shippingAddress}
+          dueDate={selectedDate}
+          paymentTerms={paymentTerms}
           isPendingInvoice={isPendingInvoice}
           handleCreateFn={handleCreateFn}
           isPINError={isPINError}

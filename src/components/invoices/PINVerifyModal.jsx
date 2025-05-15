@@ -8,6 +8,7 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { MoveLeft } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -32,6 +33,8 @@ const PINVerifyModal = ({
   bankAccountId,
   billingAddress,
   shippingAddress,
+  dueDate,
+  paymentTerms,
   isPendingInvoice,
   handleCreateFn,
   isPINError,
@@ -139,6 +142,7 @@ const PINVerifyModal = ({
     if (pin.length < 4) {
       toast.error('Enter a valid PIN');
     } else {
+      const formatDate = moment(dueDate).format('DD-MM-yyyy');
       const updatedOrder = {
         ...order,
         remarks: customerRemarks,
@@ -147,6 +151,8 @@ const PINVerifyModal = ({
         billingAddressId: billingAddress,
         shippingAddressId: shippingAddress,
         pin,
+        dueDate: formatDate,
+        paymentTerms,
       };
       handleCreateFn(updatedOrder);
     }
