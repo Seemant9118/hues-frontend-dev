@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { useRBAC } from '@/context/RBACcontext';
 import { Link } from '@/i18n/routing';
 import {
   Bell,
@@ -17,6 +18,7 @@ import {
   ScrollText,
   Settings,
   ShoppingCart,
+  SquareKanban,
   Store,
   UserRound,
 } from 'lucide-react';
@@ -25,19 +27,22 @@ import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
-  // const adminLinks = [
-  //   {
-  //     name: 'Reports',
-  //     icon: <SquareKanban size={16} />,
-  //     path: `/admin/reports`,
-  //   },
-  //   {
-  //     name: 'Enterprise List',
-  //     icon: <List size={16} />,
-  //     path: `/admin/enterprises`,
-  //   },
-  // ];
+  const { hasPageAccess } = useRBAC();
 
+  const adminLinks = hasPageAccess('adminReports')
+    ? [
+        {
+          name: 'Reports',
+          icon: <SquareKanban size={16} />,
+          path: `/admin/reports`,
+        },
+        // {
+        //   name: 'Enterprise List',
+        //   icon: <List size={16} />,
+        //   path: `/admin/enterprises`,
+        // },
+      ]
+    : [];
   const links = [
     {
       name: 'sidebar.dashboard',
@@ -188,21 +193,26 @@ const Sidebar = () => {
       </Link>
 
       {/* <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1"> */}
-      {/* admin Navigation Links */}
-      {/* <nav className="flex flex-col gap-2">
-          <span className="text-sm font-semibold">Admin</span>
-          {adminLinks.map((link) => (
-            <StyledLinks key={link.name} link={link} />
-          ))}
-        </nav> */}
 
       <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
-        {/* Navigation Links */}
-        <nav className="flex flex-col gap-2">
-          {links.map((link) => (
-            <StyledLinks key={link.name} link={link} />
-          ))}
-        </nav>
+        <div className="flex flex-col gap-2">
+          {/* admin Navigation Links */}
+          {adminLinks?.length > 0 && (
+            <nav className="flex flex-col gap-2 border-b py-1">
+              <span className="text-sm font-semibold">Admin</span>
+              {adminLinks.map((link) => (
+                <StyledLinks key={link.name} link={link} />
+              ))}
+            </nav>
+          )}
+
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-2">
+            {links.map((link) => (
+              <StyledLinks key={link.name} link={link} />
+            ))}
+          </nav>
+        </div>
 
         {/* Action Links & Profile */}
         <div className="flex flex-col gap-2">
