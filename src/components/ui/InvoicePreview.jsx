@@ -339,7 +339,7 @@ const InvoicePreview = ({
       </div>
 
       {/* Footer CTA for downloading the PDF */}
-      <div className="flex w-full items-center justify-end gap-2">
+      <div className="mt-2 flex w-full items-center justify-end gap-2">
         <Button
           size="sm"
           variant="outline"
