@@ -655,18 +655,40 @@ const CreateB2CInvoice = ({
                     (cta === 'offer' && order.buyerId == null) ||
                     order.sellerEnterpriseId == null
                   }
-                  value={selectedItem.quantity || ''}
+                  value={
+                    selectedItem.quantity == null || selectedItem.quantity === 0
+                      ? ''
+                      : selectedItem.quantity
+                  }
                   onChange={(e) => {
-                    const quantity = Number(e.target.value);
+                    const inputValue = e.target.value;
+
+                    // Allow user to clear input
+                    if (inputValue === '') {
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        quantity: 0,
+                        totalAmount: 0,
+                        totalGstAmount: 0,
+                      }));
+                      return;
+                    }
+
+                    const value = Number(inputValue);
+
+                    // Prevent negative
+                    if (value < 0) return;
+
                     const totalAmt = parseFloat(
-                      (quantity * selectedItem.unitPrice).toFixed(2),
+                      (value * selectedItem.unitPrice).toFixed(2),
                     );
                     const gstAmt = parseFloat(
                       (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                     );
+
                     setSelectedItem((prev) => ({
                       ...prev,
-                      quantity,
+                      quantity: value,
                       totalAmount: totalAmt,
                       totalGstAmount: gstAmt,
                     }));
@@ -688,18 +710,41 @@ const CreateB2CInvoice = ({
                     (cta === 'offer' && order.buyerId == null) ||
                     order.sellerEnterpriseId == null
                   }
-                  value={selectedItem.unitPrice || ''}
+                  value={
+                    selectedItem.unitPrice == null ||
+                    selectedItem.unitPrice === 0
+                      ? ''
+                      : selectedItem.unitPrice
+                  }
                   onChange={(e) => {
-                    const price = Number(e.target.value);
+                    const inputValue = e.target.value;
+
+                    // Allow user to clear input
+                    if (inputValue === '') {
+                      setSelectedItem((prevValue) => ({
+                        ...prevValue,
+                        unitPrice: 0,
+                        totalAmount: 0,
+                        totalGstAmount: 0,
+                      }));
+                      return;
+                    }
+
+                    const value = Number(inputValue);
+
+                    // Prevent negative
+                    if (value < 0) return;
+
                     const totalAmt = parseFloat(
-                      (selectedItem.quantity * price).toFixed(2),
+                      (selectedItem.quantity * value).toFixed(2),
                     );
                     const gstAmt = parseFloat(
                       (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                     );
-                    setSelectedItem((prev) => ({
-                      ...prev,
-                      unitPrice: price,
+
+                    setSelectedItem((prevValue) => ({
+                      ...prevValue,
+                      unitPrice: value,
                       totalAmount: totalAmt,
                       totalGstAmount: gstAmt,
                     }));
@@ -818,9 +863,12 @@ const CreateB2CInvoice = ({
               <Button
                 size="sm"
                 disabled={
-                  selectedItem.productId === null ||
-                  selectedItem.productId === ''
-                } // if any item of selectedItem is empty then button must be disabled
+                  !selectedItem.productId ||
+                  !selectedItem.quantity ||
+                  selectedItem.quantity <= 0 ||
+                  !selectedItem.unitPrice ||
+                  selectedItem.unitPrice <= 0
+                }
                 onClick={() => {
                   setOrder((prev) => ({
                     ...prev,

@@ -546,17 +546,41 @@ const CreateB2BInvoice = ({
                       (cta === 'offer' && order.buyerId == null) ||
                       order.sellerEnterpriseId == null
                     }
-                    value={selectedItem.quantity || ''}
+                    value={
+                      selectedItem.quantity == null ||
+                      selectedItem.quantity === 0
+                        ? ''
+                        : selectedItem.quantity
+                    }
                     onChange={(e) => {
+                      const inputValue = e.target.value;
+
+                      // Allow user to clear input
+                      if (inputValue === '') {
+                        setSelectedItem((prev) => ({
+                          ...prev,
+                          quantity: 0,
+                          totalAmount: 0,
+                          totalGstAmount: 0,
+                        }));
+                        return;
+                      }
+
+                      const value = Number(inputValue);
+
+                      // Prevent negative
+                      if (value < 0) return;
+
                       const totalAmt = parseFloat(
-                        (e.target.value * selectedItem.unitPrice).toFixed(2),
-                      ); // totalAmt excluding gst
+                        (value * selectedItem.unitPrice).toFixed(2),
+                      );
                       const gstAmt = parseFloat(
                         (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                      ); // total gstAmt
+                      );
+
                       setSelectedItem((prev) => ({
                         ...prev,
-                        quantity: Number(e.target.value),
+                        quantity: value,
                         totalAmount: totalAmt,
                         totalGstAmount: gstAmt,
                       }));
@@ -579,18 +603,42 @@ const CreateB2BInvoice = ({
                       (cta === 'offer' && order.buyerId == null) ||
                       order.sellerEnterpriseId == null
                     }
-                    value={selectedItem.unitPrice || ''}
+                    value={
+                      selectedItem.unitPrice == null ||
+                      selectedItem.unitPrice === 0
+                        ? ''
+                        : selectedItem.unitPrice
+                    }
                     className="max-w-30"
                     onChange={(e) => {
+                      const inputValue = e.target.value;
+
+                      // Allow user to clear input
+                      if (inputValue === '') {
+                        setSelectedItem((prevValue) => ({
+                          ...prevValue,
+                          unitPrice: 0,
+                          totalAmount: 0,
+                          totalGstAmount: 0,
+                        }));
+                        return;
+                      }
+
+                      const value = Number(inputValue);
+
+                      // Prevent negative
+                      if (value < 0) return;
+
                       const totalAmt = parseFloat(
-                        (selectedItem.quantity * e.target.value).toFixed(2),
-                      ); // totalAmt excluding gst
+                        (selectedItem.quantity * value).toFixed(2),
+                      );
                       const gstAmt = parseFloat(
                         (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                      ); // total gstAmt
+                      );
+
                       setSelectedItem((prevValue) => ({
                         ...prevValue,
-                        unitPrice: Number(e.target.value),
+                        unitPrice: value,
                         totalAmount: totalAmt,
                         totalGstAmount: gstAmt,
                       }));
@@ -705,9 +753,12 @@ const CreateB2BInvoice = ({
               <Button
                 size="sm"
                 disabled={
-                  selectedItem.productId === null ||
-                  selectedItem.productId === ''
-                } // if any item of selectedItem is empty then button must be disabled
+                  !selectedItem.productId ||
+                  !selectedItem.quantity ||
+                  selectedItem.quantity <= 0 ||
+                  !selectedItem.unitPrice ||
+                  selectedItem.unitPrice <= 0
+                }
                 onClick={() => {
                   setOrder((prev) => ({
                     ...prev,
