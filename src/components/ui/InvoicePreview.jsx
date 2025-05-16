@@ -290,32 +290,36 @@ const InvoicePreview = ({
             )}
 
             {/* payment terms */}
-            <div className="flex flex-col">
-              <Label className="mb-2 block text-sm font-medium">
-                Payment Terms
-              </Label>
-              <Textarea
-                value={paymentTerms}
-                onChange={(e) => setPaymentTerms(e.target.value)}
-                className="navScrollBarStyles h-28 w-full resize-none rounded-md border p-2"
-                placeholder="Enter your custom Payment terms..."
-              />
-            </div>
-            {/* due date */}
-            <div className="flex flex-col">
-              <Label className="mb-2 block text-sm font-medium">
-                Payment Due Date
-              </Label>
-              <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                <DatePickers
-                  selected={selectedDate}
-                  onChange={(date) => setSelectedDate(date)}
-                  dateFormat="dd/MM/yyyy"
-                  popperPlacement="right"
+            {order?.clientType === 'B2B' && (
+              <div className="flex flex-col">
+                <Label className="mb-2 block text-sm font-medium">
+                  Payment Terms
+                </Label>
+                <Textarea
+                  value={paymentTerms}
+                  onChange={(e) => setPaymentTerms(e.target.value)}
+                  className="navScrollBarStyles h-28 w-full resize-none rounded-md border p-2"
+                  placeholder="Enter your custom Payment terms..."
                 />
-                <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
               </div>
-            </div>
+            )}
+            {/* due date */}
+            {order?.clientType === 'B2B' && (
+              <div className="flex flex-col">
+                <Label className="mb-2 block text-sm font-medium">
+                  Payment Due Date
+                </Label>
+                <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <DatePickers
+                    selected={selectedDate}
+                    onChange={(date) => setSelectedDate(date)}
+                    dateFormat="dd/MM/yyyy"
+                    popperPlacement="right"
+                  />
+                  <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+                </div>
+              </div>
+            )}
 
             {/* customer remarks */}
             {isCustomerRemarksAddable && (

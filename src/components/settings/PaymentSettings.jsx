@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import { Input } from '../ui/input';
 
 export default function PaymentSettings({ settings, createSettingMutation }) {
   const [paymentTerms, setPaymentTerms] = useState('');
@@ -54,9 +55,9 @@ export default function PaymentSettings({ settings, createSettingMutation }) {
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-2">
+    <div className="flex h-full w-full gap-4">
       {/* payment terms */}
-      <div className="flex flex-col">
+      <div className="flex w-1/2 flex-col">
         <Label className="mb-2 block text-sm font-medium">Payment Terms</Label>
         <Textarea
           value={paymentTerms}
@@ -86,14 +87,14 @@ export default function PaymentSettings({ settings, createSettingMutation }) {
         </div>
       </div>
       {/* due date */}
-      <div className="flex flex-col">
+      <div className="flex w-1/2 flex-col">
         <Label className="mb-2 block text-sm font-medium">
           Payment Due Date
         </Label>
-        <Textarea
+        <Input
+          type="number"
           value={paymentDueDate}
           onChange={(e) => setPaymentDueDate(e.target.value)}
-          className="h-28 w-full resize-none rounded-md border p-2"
           placeholder="Enter your due date in days.. eg. 15, 20, 30 ... etc."
         />
         <div className="mt-2 flex justify-end gap-2">

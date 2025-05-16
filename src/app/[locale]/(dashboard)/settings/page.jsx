@@ -319,7 +319,7 @@ function Settings() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-4 rounded-sm p-4">
+              <div className="flex flex-col gap-4">
                 <h1 className="font-semibold uppercase text-primary">
                   {translations('tabs.content.tab1.heading1')}
                 </h1>
@@ -330,7 +330,7 @@ function Settings() {
                       {translations('tabs.content.tab1.label.name')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.name ?? '-'}
+                      {profileDetails?.enterpriseDetails?.name || '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -338,7 +338,7 @@ function Settings() {
                       {translations('tabs.content.tab1.label.type')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.type ?? '-'}
+                      {profileDetails?.enterpriseDetails?.type || '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -347,7 +347,7 @@ function Settings() {
                     </Label>
                     <span className="text-lg font-bold">
                       +91{' '}
-                      {profileDetails?.enterpriseDetails?.mobileNumber ?? '-'}
+                      {profileDetails?.enterpriseDetails?.mobileNumber || '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -355,7 +355,7 @@ function Settings() {
                       {translations('tabs.content.tab1.label.email')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.email ?? '-'}
+                      {profileDetails?.enterpriseDetails?.email || '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -363,13 +363,13 @@ function Settings() {
                       {translations('tabs.content.tab1.label.address')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.address ?? '-'}
+                      {profileDetails?.enterpriseDetails?.address || '-'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 rounded-sm p-4">
+              <div className="flex flex-col gap-4">
                 <h1 className="font-semibold uppercase text-primary">
                   {translations('tabs.content.tab1.heading2')}
                 </h1>
@@ -380,7 +380,7 @@ function Settings() {
                       {translations('tabs.content.tab1.label.pan')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.panNumber ?? '-'}
+                      {profileDetails?.enterpriseDetails?.panNumber || '-'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">

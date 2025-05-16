@@ -223,69 +223,71 @@ export default function InvoiceSettings({
             </div>
           </div>
 
-          {/* Remarks */}
-          <div className="flex flex-col">
-            <Label className="mb-2 block text-sm font-medium">
-              {translations('custom_remarks_label')}
-            </Label>
-            <Textarea
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              className="h-28 w-full resize-none rounded-md border p-2"
-            />
-            <div className="mt-2 flex justify-end gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setRemarks('');
-                }}
-              >
-                {translations('discard_button')}
-              </Button>
-              <Button
-                size="sm"
-                variant="blue_outline"
-                onClick={() => {
-                  handleCustomerRemarkUpdate(remarks);
-                }}
-              >
-                {translations('save_button')}
-              </Button>
+          <div className="flex gap-4">
+            {/* Remarks */}
+            <div className="flex w-1/2 flex-col">
+              <Label className="mb-2 block text-sm font-medium">
+                {translations('custom_remarks_label')}
+              </Label>
+              <Textarea
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                className="h-16 w-full resize-none rounded-md border p-2"
+              />
+              <div className="mt-2 flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setRemarks('');
+                  }}
+                >
+                  {translations('discard_button')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="blue_outline"
+                  onClick={() => {
+                    handleCustomerRemarkUpdate(remarks);
+                  }}
+                >
+                  {translations('save_button')}
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Social Links */}
-          <div className="flex flex-col">
-            <Label className="mb-2 block text-sm font-medium">
-              {translations('social_links_label')}
-            </Label>
-            <Input
-              type="text"
-              placeholder="Add link here"
-              value={socialLink}
-              onChange={(e) => setSocialLink(e.target.value)}
-              className="w-full rounded-md border p-2"
-            />
-            <div className="mt-2 flex justify-end gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setSocialLink('');
-                }}
-              >
-                {translations('discard_button')}
-              </Button>
-              <Button
-                size="sm"
-                variant="blue_outline"
-                onClick={() => {
-                  handleSocialLinkUpdate(socialLink);
-                }}
-              >
-                {translations('save_button')}
-              </Button>
+            {/* Social Links */}
+            <div className="flex w-1/2 flex-col">
+              <Label className="mb-2 block text-sm font-medium">
+                {translations('social_links_label')}
+              </Label>
+              <Input
+                type="text"
+                placeholder="Add link here"
+                value={socialLink}
+                onChange={(e) => setSocialLink(e.target.value)}
+                className="w-full rounded-md border p-2"
+              />
+              <div className="mt-2 flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSocialLink('');
+                  }}
+                >
+                  {translations('discard_button')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="blue_outline"
+                  onClick={() => {
+                    handleSocialLinkUpdate(socialLink);
+                  }}
+                >
+                  {translations('save_button')}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
