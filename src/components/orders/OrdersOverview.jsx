@@ -6,23 +6,14 @@ import {
   undoAcknowledgeStatus,
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
-import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  ImageIcon,
-  Info,
-  MoveUpRight,
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
 import InvitationActionModal from '../Modals/InvitationActionModal';
-import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import {
   Collapsible,
@@ -54,19 +45,19 @@ const OrdersOverview = ({
 
   const paymentProgressPercent = (amtPaid / totalAmount) * 100;
 
-  const [showAll, setShowAll] = useState(false);
+  // const [showAll, setShowAll] = useState(false);
 
-  const attachmentsToShow = showAll
-    ? orderDetails.attachments
-    : orderDetails.attachments.slice(0, 3);
+  // const attachmentsToShow = showAll
+  //   ? orderDetails.attachments
+  //   : orderDetails.attachments.slice(0, 3);
 
-  const handleClick = (attachment) => {
-    const isPdf = attachment?.documenturl?.toLowerCase().endsWith('.pdf');
-    if (isPdf) {
-      viewPdfInNewTab(attachment?.documenturl);
-    }
-    // else you can handle modal inside InvoicePDFViewModal
-  };
+  // const handleClick = (attachment) => {
+  //   const isPdf = attachment?.documenturl?.toLowerCase().endsWith('.pdf');
+  //   if (isPdf) {
+  //     viewPdfInNewTab(attachment?.documenturl);
+  //   }
+  //   // else you can handle modal inside InvoicePDFViewModal
+  // };
 
   // update acknowledge status : yes or no
   const updateAcknowlegeMutation = useMutation({
@@ -204,7 +195,7 @@ const OrdersOverview = ({
               )}
             </div>
             {/* attachments - only show when attachements present */}
-            {orderDetails?.attachments?.length > 0 && (
+            {/* {orderDetails?.attachments?.length > 0 && (
               <div className="flex h-full w-1/2 flex-col gap-4">
                 <section className="flex flex-col gap-4">
                   <p className="text-xs font-bold">{'Attachments'}</p>
@@ -258,7 +249,7 @@ const OrdersOverview = ({
                   </div>
                 </section>
               </div>
-            )}
+            )} */}
 
             {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
               orderDetails?.negotiationStatus === 'INVOICED') && (
