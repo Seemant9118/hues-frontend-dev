@@ -39,7 +39,7 @@ const EnterpriseVerificationDetailsPage = () => {
   const [enterpriseOnboardData, setEnterpriseOnboardData] = React.useState({
     name: '',
     email: '',
-    roa: '',
+    address: '',
     roc: '',
     doi: '',
     type: '',
@@ -66,7 +66,7 @@ const EnterpriseVerificationDetailsPage = () => {
         ...prev,
         name: enterpriseData?.name || '',
         email: enterpriseData?.email || '',
-        roa: enterpriseData?.address || '',
+        address: enterpriseData?.address || '',
         roc: enterpriseData?.roc || '',
         doi: enterpriseData?.doi || '',
         type: enterpriseData?.type || '',
@@ -105,7 +105,7 @@ const EnterpriseVerificationDetailsPage = () => {
   const validation = (enterpriseOnboardD) => {
     const errors = {};
     errors.name = validateEnterpriseName(enterpriseOnboardD.name);
-    errors.roa = validateEnterpriseAddress(enterpriseOnboardD.roa);
+    errors.address = validateEnterpriseAddress(enterpriseOnboardD.address);
     errors.doi = validateDateOfIncorporation(enterpriseOnboardD.doi);
 
     // Remove empty error messages
@@ -239,7 +239,7 @@ const EnterpriseVerificationDetailsPage = () => {
 
           <div className="grid w-full items-center gap-1">
             <Label
-              htmlFor="roa"
+              htmlFor="address"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
               {translations('labels.roa')}{' '}
@@ -255,11 +255,11 @@ const EnterpriseVerificationDetailsPage = () => {
                 className="focus:font-bold"
                 type="text"
                 placeholder={translations('placeholders.roa')}
-                name="roa"
-                value={enterpriseOnboardData.roa}
+                name="address"
+                value={enterpriseOnboardData.address}
                 onChange={handleChange}
               />
-              {errorMsg?.roa && (
+              {errorMsg?.address && (
                 <ErrorBox msg={translationForError(errorMsg.roa)} />
               )}
             </div>
