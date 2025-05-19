@@ -720,6 +720,7 @@ const CreateOrder = ({
               <Input
                 type="number"
                 min={1}
+                step={1}
                 disabled={
                   (cta === 'offer' && order.buyerId == null) ||
                   order.sellerEnterpriseId == null
@@ -743,10 +744,11 @@ const CreateOrder = ({
                     return;
                   }
 
+                  // Prevent non-integer or negative input
                   const value = Number(inputValue);
 
-                  // Prevent negative
-                  if (value < 0) return;
+                  // Reject if not a positive integer
+                  if (!/^\d+$/.test(inputValue) || value < 1) return;
 
                   const totalAmt = parseFloat(
                     (value * selectedItem.unitPrice).toFixed(2),

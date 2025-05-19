@@ -651,6 +651,8 @@ const CreateB2CInvoice = ({
                 </Label>
                 <Input
                   type="number"
+                  step={1}
+                  min={1}
                   disabled={
                     (cta === 'offer' && order.buyerId == null) ||
                     order.sellerEnterpriseId == null
@@ -674,10 +676,12 @@ const CreateB2CInvoice = ({
                       return;
                     }
 
+                    // Reject if not a positive integer
+                    if (!/^\d+$/.test(inputValue)) return;
+
                     const value = Number(inputValue);
 
-                    // Prevent negative
-                    if (value < 0) return;
+                    if (value < 1) return;
 
                     const totalAmt = parseFloat(
                       (value * selectedItem.unitPrice).toFixed(2),
@@ -695,6 +699,7 @@ const CreateB2CInvoice = ({
                   }}
                   className="max-w-30"
                 />
+
                 {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
               </div>
 

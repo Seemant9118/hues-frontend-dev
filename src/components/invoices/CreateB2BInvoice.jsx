@@ -542,6 +542,8 @@ const CreateB2BInvoice = ({
                 <div className="flex flex-col gap-1">
                   <Input
                     type="number"
+                    step={1}
+                    min={1}
                     disabled={
                       (cta === 'offer' && order.buyerId == null) ||
                       order.sellerEnterpriseId == null
@@ -566,10 +568,12 @@ const CreateB2BInvoice = ({
                         return;
                       }
 
+                      // Reject non-integer or negative values
+                      if (!/^\d+$/.test(inputValue)) return;
+
                       const value = Number(inputValue);
 
-                      // Prevent negative
-                      if (value < 0) return;
+                      if (value < 1) return;
 
                       const totalAmt = parseFloat(
                         (value * selectedItem.unitPrice).toFixed(2),

@@ -27,7 +27,7 @@ import {
   viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, Eye, MoreVertical, Pencil } from 'lucide-react';
+import { Eye, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -559,12 +559,12 @@ const ViewOrder = () => {
                   orderDetails?.negotiationStatus === 'NEW' &&
                   orderDetails?.buyerId === enterpriseId && (
                     <>
-                      {orderDetails?.orderType === 'PURCHASE' && (
+                      {/* {orderDetails?.orderType === 'PURCHASE' && (
                         <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
                           <Clock size={12} />{' '}
                           {translations('ctas.footer_ctas.wait_response')}
                         </span>
-                      )}
+                      )} */}
 
                       {orderDetails?.orderType === 'SALES' && (
                         <div className="flex w-full justify-end gap-2">
@@ -625,12 +625,12 @@ const ViewOrder = () => {
                           )}
                         </div>
                       )}
-                      {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
+                      {/* {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
                         <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
                           <Clock size={12} />{' '}
                           {translations('ctas.footer_ctas.wait_response')}
                         </span>
-                      )}
+                      )} */}
                     </>
                   )}
               </section>
