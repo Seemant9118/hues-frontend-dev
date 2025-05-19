@@ -14,3 +14,7 @@ export const getBankAccount = (id) => {
     `${bankAccountApis.getBackAccountById.endpoint}/${id}`,
   );
 };
+
+export const getRemainingAttempts = () => {
+  return APIinstance.get(bankAccountApis.getRemainingAttempts.endpoint);
+};

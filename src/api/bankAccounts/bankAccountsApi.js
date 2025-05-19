@@ -11,4 +11,8 @@ export const bankAccountApis = {
     endpoint: `/enterprise/bank-account/get/`,
     endpointKey: 'get_bank_account',
   },
+  getRemainingAttempts: {
+    endpoint: `/enterprise/bank-account/attempts-remaining`,
+    endpointKey: 'get_remaining_attempts',
+  },
 };
