@@ -73,7 +73,7 @@ const MobileLogin = ({
 
     // Validate mobile number and update error message
     const errorMessage = validatePhoneNumber(value);
-    setErrorMsg(translationForErrorMessages(errorMessage));
+    setErrorMsg(errorMessage);
 
     // Update form data
     setFormDataWithMob((prev) => ({
@@ -147,7 +147,7 @@ const MobileLogin = ({
               value={formDataWithMob.mobileNumber}
             />
           </div>
-          {errorMsg && <ErrorBox msg={errorMsg} />}
+          {errorMsg && <ErrorBox msg={translationForErrorMessages(errorMsg)} />}
         </div>
 
         <Button
