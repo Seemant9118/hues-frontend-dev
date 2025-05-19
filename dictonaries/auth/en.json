@@ -54,8 +54,8 @@
                 "attempts_remaining": "You have {count} attempts left to verify your PAN"
             },
             "tnc": {
-                "checkbox_label": "By selecting this box, I agree to all the",
-                "link": "Terms and Conditions",
+                "checkbox_label": "I agree to the terms of this agreement.",
+                "link": "(see full agreement)",
                 "error": "*Please accept the terms and conditions"
             },
             "name": {
