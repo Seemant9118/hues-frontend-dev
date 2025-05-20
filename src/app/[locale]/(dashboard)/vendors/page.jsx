@@ -119,9 +119,12 @@ const VendorsPage = () => {
         formattedData = searchedVendorsData.flatMap((user) => {
           let userDetails;
           if (user.vendor && user?.vendor?.name !== null) {
-            userDetails = { ...user.vendor };
+            userDetails = { ...user.vendor, address: user?.address };
           } else {
-            userDetails = { ...user?.invitation?.userDetails };
+            userDetails = {
+              ...user?.invitation?.userDetails,
+              address: user?.address,
+            };
           }
 
           return {
@@ -140,9 +143,12 @@ const VendorsPage = () => {
         formattedData = vendorsData.flatMap((user) => {
           let userDetails;
           if (user.vendor && user?.vendor?.name !== null) {
-            userDetails = { ...user.vendor };
+            userDetails = { ...user.vendor, address: user?.address };
           } else {
-            userDetails = { ...user?.invitation?.userDetails };
+            userDetails = {
+              ...user?.invitation?.userDetails,
+              address: user?.address,
+            };
           }
 
           return {

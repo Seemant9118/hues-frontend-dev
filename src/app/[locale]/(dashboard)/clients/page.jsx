@@ -119,9 +119,12 @@ const ClientPage = () => {
         formattedData = searchedClientsData.flatMap((user) => {
           let userDetails;
           if (user.client && user?.client?.name !== null) {
-            userDetails = { ...user.client };
+            userDetails = { ...user.client, address: user?.address };
           } else {
-            userDetails = { ...user?.invitation?.userDetails };
+            userDetails = {
+              ...user?.invitation?.userDetails,
+              address: user?.address,
+            };
           }
 
           return {
@@ -140,9 +143,12 @@ const ClientPage = () => {
         formattedData = clientsData.flatMap((user) => {
           let userDetails;
           if (user.client && user?.client?.name !== null) {
-            userDetails = { ...user.client };
+            userDetails = { ...user.client, address: user?.address };
           } else {
-            userDetails = { ...user?.invitation?.userDetails };
+            userDetails = {
+              ...user?.invitation?.userDetails,
+              address: user?.address,
+            };
           }
 
           return {

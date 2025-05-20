@@ -44,7 +44,9 @@ const EnterpriseDetails = ({
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-gray-500">Enterprise Address</p>
-                <p className="font-medium">{formatValue(data?.address)}</p>
+                <p className="font-medium">
+                  {formatValue(data?.address?.address)}
+                </p>
               </div>
             </div>
           </div>

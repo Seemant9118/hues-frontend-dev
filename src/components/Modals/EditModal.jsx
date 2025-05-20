@@ -1,10 +1,12 @@
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { LocalStorageService } from '@/lib/utils';
+import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
 import { Label } from '@radix-ui/react-label';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
@@ -27,16 +29,24 @@ const EditModal = ({
 
   const [open, setOpen] = useState(isEditing);
   const [errorMsg, setErrorMsg] = useState({});
+  const cleanedAddress = userData?.address?.address?.replace(
+    /,\s*[^,]+,\s*[^-]+-\s*\d{6}$/,
+    '',
+  );
   const [enterpriseData, setEnterPriseData] = useState({
     enterpriseId,
     name: userData?.name || '',
-    address: userData?.address || '',
+    pincode: userData?.address?.pincode || '',
+    city: userData?.address?.district || '',
+    state: userData?.address?.state || '',
+    address: cleanedAddress || '',
     countryCode: '+91',
     mobileNumber: userData?.mobileNumber || '',
     email: userData?.email || '',
     panNumber: userData?.panNumber || '',
     gstNumber: userData?.gstNumber || '',
     userType: cta,
+    addressId: userData?.address?.id || '',
   });
 
   // update enterprise mutation
@@ -54,6 +64,9 @@ const EditModal = ({
       setEnterPriseData({
         enterpriseId: '',
         name: '',
+        pincode: '',
+        city: '',
+        state: '',
         address: '',
         countryCode: '',
         mobileNumber: '',
@@ -142,6 +155,50 @@ const EditModal = ({
     setErrorMsg(isError);
   };
 
+  const {
+    data: addressData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [
+      addressAPIs.getAddressFromPincode.endpointKey,
+      enterpriseData.pincode,
+    ],
+    enabled: enterpriseData?.pincode?.length === 6,
+    queryFn: async () => {
+      try {
+        const res = await getDataFromPinCode(enterpriseData.pincode);
+        return res?.data?.data;
+      } catch (err) {
+        if (err?.response?.status === 400) {
+          setErrorMsg((prev) => ({
+            ...prev,
+            pincode: 'Invalid pincode. Please try valid pincode',
+          }));
+          setEnterPriseData((prev) => ({
+            ...prev,
+            city: '',
+            state: '',
+          }));
+        } else {
+          toast.error('Failed to fetch address details');
+        }
+        throw err; // rethrow so React Query knows it failed
+      }
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (addressData) {
+      setEnterPriseData((prev) => ({
+        ...prev,
+        city: addressData.district || '',
+        state: addressData.state || '',
+      }));
+    }
+  }, [addressData]);
+
   return (
     <Dialog
       open={open}
@@ -170,11 +227,11 @@ const EditModal = ({
 
         {/* Editing component */}
 
-        <form className="rounded-md p-2 text-sm" onSubmit={handleEditSubmit}>
-          <div className="flex flex-col gap-4">
+        <form onSubmit={handleEditSubmit}>
+          <div className="navScrollBarStyles flex max-h-[500px] flex-col gap-4 overflow-y-auto px-2">
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">
+                <Label className="text-sm">
                   {translations('common.form.label.addNewEntity.name')}
                 </Label>
                 <span className="text-red-600">*</span>
@@ -197,7 +254,7 @@ const EditModal = ({
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">
+                <Label className="text-sm">
                   {translations('common.form.label.addNewEntity.gst')}
                 </Label>
                 {/* <span className="text-red-600">*</span> */}
@@ -219,7 +276,7 @@ const EditModal = ({
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">
+                <Label className="text-sm">
                   {translations('common.form.label.addNewEntity.email')}
                 </Label>
                 {/* <span className="text-red-600">*</span> */}
@@ -242,7 +299,7 @@ const EditModal = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label className="font-semibold">
+                  <Label className="text-sm">
                     {translations('common.form.label.addNewEntity.phone')}
                   </Label>
                   <span className="text-red-600">*</span>
@@ -266,7 +323,7 @@ const EditModal = ({
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <Label className="font-semibold">
+                  <Label className="text-sm">
                     {' '}
                     {translations('common.form.label.addNewEntity.pan')}
                   </Label>
@@ -287,9 +344,78 @@ const EditModal = ({
                 {errorMsg.panNumber && <ErrorBox msg={errorMsg.panNumber} />}
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <Label className="text-sm" htmlFor="pincode">
+                  Pincode <span className="text-red-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    id="pincode"
+                    name="pincode"
+                    className="pr-10"
+                    value={enterpriseData.pincode}
+                    onChange={(e) => {
+                      const { name, value } = e.target;
+                      if (enterpriseData?.pincode?.length !== 5) {
+                        setEnterPriseData((prev) => ({
+                          ...prev,
+                          city: '',
+                          state: '',
+                        }));
+                      }
+                      setEnterPriseData((prev) => ({
+                        ...prev,
+                        [name]: value,
+                      }));
+
+                      setErrorMsg((prev) => ({
+                        ...prev,
+                        [name]: '',
+                      }));
+                    }}
+                    placeholder="Enter Pincode"
+                  />
+                  {(isLoading || isFetching) && (
+                    <div className="absolute right-1 top-2 text-gray-500">
+                      <Loading />
+                    </div>
+                  )}
+                </div>
+                {errorMsg.pincode && <ErrorBox msg={errorMsg.pincode} />}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <Label className="text-sm" htmlFor="city">
+                  City <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="city"
+                  name="city"
+                  disabled
+                  value={enterpriseData.city}
+                  placeholder="Auto-filled via pincode"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-sm" htmlFor="state">
+                State <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="state"
+                name="state"
+                value={enterpriseData.state}
+                disabled
+                placeholder="Auto-filled via pincode"
+              />
+            </div>
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="font-semibold">
+                <Label className="text-sm">
                   {translations('common.form.label.addNewEntity.address')}
                 </Label>
                 {/* <span className="text-red-600">*</span> */}

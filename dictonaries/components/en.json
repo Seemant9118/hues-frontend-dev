@@ -60,6 +60,10 @@
                             "pan": {
                                 "required": "Required PAN",
                                 "valid": "Please provide valid PAN Number"
+                            },
+                            "pincode": {
+                                "required": "Required Pincode",
+                                "valid": "Please provide valid Pincode"
                             }
                         }
                     },
@@ -578,9 +582,9 @@
                 "attached_success": "Attached Successfully"
             },
             "errorMsg": {
-                "invoices":"*Required! Please select invoice",
+                "invoices": "*Required! Please select invoice",
                 "payment_mode": "*Required! Please select payment mode",
-                "payment_date":"*Required! Please select payment date",
+                "payment_date": "*Required! Please select payment date",
                 "amount_paid_required": "*Required!, Amount should not be empty",
                 "amount_paid_empty": "Amount should not be empty",
                 "amount_paid_exceed": "Amount exceeds balance amount",
@@ -790,6 +794,10 @@
                 },
                 "name": {
                     "required": "*Required Enterprise Name"
+                },
+                "pincode": {
+                    "required": "*Required Enterprise Pincode",
+                    "invalid": "*Please provide a valid Pincode"
                 },
                 "address": {
                     "required": "*Required Enterprise Address"
