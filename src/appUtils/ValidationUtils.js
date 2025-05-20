@@ -64,6 +64,15 @@ export const validateEnterpriseName = (enterpriseName) => {
   return '';
 };
 
+export const validatePinCode = (pinCode) => {
+  if (!pinCode || pinCode.trim() === '') {
+    return 'components.validationUtils.enterprise.pincode.required';
+  } else if (pinCode.length !== 6) {
+    return 'components.validationUtils.enterprise.pincode.invalid';
+  }
+  return '';
+};
+
 export const validateEnterpriseAddress = (enterpriseAddress) => {
   if (!enterpriseAddress || enterpriseAddress.trim() === '') {
     return 'components.validationUtils.enterprise.address.required';

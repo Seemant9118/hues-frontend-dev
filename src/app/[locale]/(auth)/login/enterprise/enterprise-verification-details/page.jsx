@@ -1,11 +1,13 @@
 'use client';
 
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { tokenApi } from '@/api/tokenApi/tokenApi';
 import {
   validateDateOfIncorporation,
   validateEnterpriseAddress,
   validateEnterpriseName,
+  validatePinCode,
 } from '@/appUtils/ValidationUtils';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
+import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
 import {
   getEnterpriseById,
   UpdateEnterprise,
@@ -39,6 +42,9 @@ const EnterpriseVerificationDetailsPage = () => {
   const [enterpriseOnboardData, setEnterpriseOnboardData] = React.useState({
     name: '',
     email: '',
+    pincode: '',
+    city: '',
+    state: '',
     address: '',
     roc: '',
     doi: '',
@@ -62,11 +68,17 @@ const EnterpriseVerificationDetailsPage = () => {
   // setDetails
   useEffect(() => {
     if (enterpriseData) {
+      const cleanedAddress = enterpriseData?.address?.address
+        ?.replace(/\s-\s\d{6}$/, '')
+        .trim();
       setEnterpriseOnboardData((prev) => ({
         ...prev,
         name: enterpriseData?.name || '',
         email: enterpriseData?.email || '',
-        address: enterpriseData?.address || '',
+        pincode: enterpriseData?.address?.pincode || '',
+        city: enterpriseData?.address?.city || '',
+        state: enterpriseData?.state || '',
+        address: cleanedAddress || '',
         roc: enterpriseData?.roc || '',
         doi: enterpriseData?.doi || '',
         type: enterpriseData?.type || '',
@@ -78,7 +90,22 @@ const EnterpriseVerificationDetailsPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'pincode') {
+      if (enterpriseOnboardData?.pincode?.length !== 5) {
+        setEnterpriseOnboardData((prev) => ({
+          ...prev,
+          city: '',
+          state: '',
+        }));
+      }
+    }
     setEnterpriseOnboardData((values) => ({ ...values, [name]: value }));
+
+    setErrorMsg((prev) => ({
+      ...prev,
+      [name]: '',
+    }));
   };
 
   const handleDateChange = (date) => {
@@ -100,11 +127,61 @@ const EnterpriseVerificationDetailsPage = () => {
       ...prev,
       doi: localDate,
     }));
+
+    setErrorMsg((prev) => ({
+      ...prev,
+      doi: '',
+    }));
   };
+
+  const {
+    data: addressData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [
+      addressAPIs.getAddressFromPincode.endpointKey,
+      enterpriseOnboardData?.pincode,
+    ],
+    enabled: enterpriseOnboardData?.pincode?.length === 6,
+    queryFn: async () => {
+      try {
+        const res = await getDataFromPinCode(enterpriseOnboardData?.pincode);
+        return res?.data?.data;
+      } catch (err) {
+        if (err?.response?.status === 400) {
+          setErrorMsg((prev) => ({
+            ...prev,
+            pincode: translations('errors.pincodeInvalid'),
+          }));
+          setEnterpriseOnboardData((prev) => ({
+            ...prev,
+            city: '',
+            state: '',
+          }));
+        } else {
+          toast.error('Failed to fetch address details');
+        }
+        throw err; // rethrow so React Query knows it failed
+      }
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (addressData) {
+      setEnterpriseOnboardData((prev) => ({
+        ...prev,
+        city: addressData.district || '',
+        state: addressData.state || '',
+      }));
+    }
+  }, [addressData]);
 
   const validation = (enterpriseOnboardD) => {
     const errors = {};
     errors.name = validateEnterpriseName(enterpriseOnboardD.name);
+    errors.pincode = validatePinCode(enterpriseOnboardD.pincode);
     errors.address = validateEnterpriseAddress(enterpriseOnboardD.address);
     errors.doi = validateDateOfIncorporation(enterpriseOnboardD.doi);
 
@@ -174,7 +251,7 @@ const EnterpriseVerificationDetailsPage = () => {
     <div className="flex h-full items-start justify-center">
       <form
         onSubmit={handleSubmit}
-        className="flex w-[450px] flex-col items-center gap-10 py-2"
+        className="flex w-[500px] flex-col items-center gap-5"
       >
         <div className="flex flex-col gap-2">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
@@ -185,8 +262,8 @@ const EnterpriseVerificationDetailsPage = () => {
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-5">
-          <div className="grid w-full items-center gap-1">
+        <div className="navScrollBarStyles flex max-h-[400px] w-full flex-col gap-5 overflow-y-auto">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="enterpriseName"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -213,7 +290,7 @@ const EnterpriseVerificationDetailsPage = () => {
               <ErrorBox msg={translationForError(errorMsg.name)} />
             )}
           </div>
-          <div className="grid w-full items-center gap-1">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="email"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -237,16 +314,66 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1">
+          <div className="grid grid-cols-2 gap-4 px-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="pincode">
+                {translations('labels.pincode')}{' '}
+                <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  id="pincode"
+                  name="pincode"
+                  className="pr-10"
+                  value={enterpriseOnboardData?.pincode}
+                  onChange={handleChange}
+                  placeholder={translations('placeholders.pincode')}
+                />
+                {(isLoading || isFetching) && (
+                  <div className="absolute right-1 top-2 text-gray-500">
+                    <Loading />
+                  </div>
+                )}
+              </div>
+              {errorMsg?.pincode && (
+                <ErrorBox msg={translationForError(errorMsg?.pincode)} />
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="city">{translations('labels.city')}</Label>
+              <Input
+                id="city"
+                name="city"
+                disabled
+                value={enterpriseOnboardData?.city}
+                placeholder={translations('placeholders.city')}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1 px-2">
+            <Label htmlFor="state">{translations('labels.state')}</Label>
+            <Input
+              id="state"
+              name="state"
+              value={enterpriseOnboardData?.state}
+              disabled
+              placeholder={translations('placeholders.state')}
+            />
+          </div>
+
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="address"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              {translations('labels.roa')}{' '}
+              {translations('labels.address')}{' '}
               <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content={translations('labels.roa')}
+                content={translations('labels.address')}
               />
             </Label>
 
@@ -254,18 +381,18 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder={translations('placeholders.roa')}
+                placeholder={translations('placeholders.address')}
                 name="address"
                 value={enterpriseOnboardData.address}
                 onChange={handleChange}
               />
               {errorMsg?.address && (
-                <ErrorBox msg={translationForError(errorMsg.roa)} />
+                <ErrorBox msg={translationForError(errorMsg.address)} />
               )}
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="roc"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -289,7 +416,7 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="doi"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -332,26 +459,25 @@ const EnterpriseVerificationDetailsPage = () => {
               <ErrorBox msg={translationForError(errorMsg.doi)} />
             )}
           </div>
+        </div>
+        <div className="flex w-full flex-col gap-4">
+          <Button
+            size="sm"
+            type="submit"
+            className="w-full"
+            disabled={enterpriseOnboardUpdateMutation.isPending}
+          >
+            {enterpriseOnboardUpdateMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('buttons.proceed')
+            )}
+          </Button>
 
-          <div className="flex w-full flex-col gap-4">
-            <Button
-              size="sm"
-              type="submit"
-              className="w-full"
-              disabled={enterpriseOnboardUpdateMutation.isPending}
-            >
-              {enterpriseOnboardUpdateMutation.isPending ? (
-                <Loading />
-              ) : (
-                translations('buttons.proceed')
-              )}
-            </Button>
-
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft size={14} />
-              {translations('buttons.back')}
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={handleBack}>
+            <ArrowLeft size={14} />
+            {translations('buttons.back')}
+          </Button>
         </div>
       </form>
     </div>

@@ -228,7 +228,10 @@
                     "enterpriseName": "Enterprise Name",
                     "email": "Email",
                     "phone": "Phone",
-                    "roa": "Registered Office Address",
+                    "pincode": "Pincode",
+                    "city": "City",
+                    "state": "State",
+                    "address": "Address",
                     "roc": "ROC",
                     "doi": "Date of Incorporation",
                     "gstNumber": "GST Number"
@@ -241,7 +244,10 @@
                     "enterpriseName": "Enter enterprise name",
                     "email": "Enter email",
                     "phone": "Enter phone number",
-                    "roa": "Registered Office Address",
+                    "pincode": "Enter pincode",
+                    "city": "Auto-filled via pincode",
+                    "state": "Auto-filled via pincode",
+                    "address": "Address",
                     "roc": "Registrar of Companies",
                     "doi": "Date of Incorporation",
                     "gstNumber": "Enter GST number"
@@ -256,6 +262,7 @@
                     "city": "City is required",
                     "address": "Address is required",
                     "pincode": "Pincode is required",
+                    "pincodeInvalid": "Invalid pincode. Please try valid pincode",
                     "gstNumber": "GST number is required"
                 },
                 "toast": {
