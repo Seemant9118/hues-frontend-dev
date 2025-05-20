@@ -68,9 +68,10 @@ const EnterpriseVerificationDetailsPage = () => {
   // setDetails
   useEffect(() => {
     if (enterpriseData) {
-      const cleanedAddress = enterpriseData?.address?.address
-        ?.replace(/\s-\s\d{6}$/, '')
-        .trim();
+      const cleanedAddress = enterpriseData?.address?.address?.replace(
+        /,\s[^,]+,\s[^-]+-\s*\d+$/,
+        '',
+      );
       setEnterpriseOnboardData((prev) => ({
         ...prev,
         name: enterpriseData?.name || '',
