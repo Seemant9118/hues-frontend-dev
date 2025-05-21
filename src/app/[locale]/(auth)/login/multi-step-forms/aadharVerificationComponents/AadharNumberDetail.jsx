@@ -1,3 +1,4 @@
+import { validateAadhaar } from '@/appUtils/ValidationUtils';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -5,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
@@ -12,33 +14,32 @@ const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
   sendAadharOTPMutation,
+  translations,
 }) => {
-  const [errorMsg, setErrorMsg] = useState({});
+  const translationsForError = useTranslations();
+  const [errorMsg, setErrorMsg] = useState(null);
 
   // validation fn
   const validation = (aadharNumber) => {
-    let error = {};
-    const aadharPattern = /^\d{12}$/;
+    const errors = {};
+    errors.aadharNumber = validateAadhaar(aadharNumber);
 
-    if (aadharNumber === '') {
-      error.aadharNumber = '*Required Aadhar Number';
-    } else if (!aadharPattern.test(aadharNumber)) {
-      error.aadharNumber = '* Please provide valid Aadhar Number';
-    } else {
-      error = {};
-    }
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
 
-    return error;
+    return errors;
   };
 
   const handleChange = (e) => {
     const { value } = e.target;
 
-    if (value?.length !== 12) {
-      setErrorMsg({ aadharNumber: 'Aadhar number should be 12 digits' });
-    } else {
-      setErrorMsg({});
-    }
+    setErrorMsg({
+      ...errorMsg,
+      aadharNumber: validateAadhaar(value),
+    });
+
     setAadharNumber(value);
   };
 
@@ -61,10 +62,10 @@ const AadharNumberDetail = ({
       <div className="flex flex-col gap-3">
         <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Verify your Aadhar
+          {translations('steps.aadharNum.title')}
         </h1>
         <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-          Enter all the details to unlock Hues completely
+          {translations('steps.aadharNum.subtitle')}
         </p>
       </div>
 
@@ -74,7 +75,8 @@ const AadharNumberDetail = ({
             htmlFor="mobile-number"
             className="flex items-center gap-1 font-medium text-[#414656]"
           >
-            Aadhar <span className="text-red-600">*</span>{' '}
+            {translations('steps.aadharNum.label')}{' '}
+            <span className="text-red-600">*</span>{' '}
             <Tooltips
               trigger={<Info size={12} />}
               content="Aadhar: Your universal legal identifier for all government and financial interactions on Hues."
@@ -85,24 +87,28 @@ const AadharNumberDetail = ({
               // required={true}
               className="pr-36 focus:font-bold"
               type="text"
-              placeholder="Aadhar Card Number"
+              placeholder={translations('steps.aadharNum.placeholder')}
               name="aadharNumber"
               value={aadharNumber}
               onChange={handleChange}
             />
           </div>
-          {errorMsg?.aadharNumber && <ErrorBox msg={errorMsg?.aadharNumber} />}
+          {errorMsg?.aadharNumber && (
+            <ErrorBox msg={translationsForError(errorMsg?.aadharNumber)} />
+          )}
         </div>
 
         <Button
           type="submit"
           className="w-full"
           size="sm"
-          disabled={
-            aadharNumber?.length !== 12 || sendAadharOTPMutation.isPending
-          }
+          disabled={sendAadharOTPMutation.isPending}
         >
-          {sendAadharOTPMutation.isPending ? <Loading /> : 'Proceed'}
+          {sendAadharOTPMutation.isPending ? (
+            <Loading />
+          ) : (
+            translations('steps.aadharNum.button')
+          )}
         </Button>
       </div>
     </form>

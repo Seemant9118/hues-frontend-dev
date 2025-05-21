@@ -9,9 +9,11 @@ export default function Tooltips({ trigger, content }) {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+        <TooltipTrigger className="cursor-pointer" asChild>
+          {trigger}
+        </TooltipTrigger>
         <TooltipContent>
-          <p>{content}</p>
+          <p className="max-w-sm">{content}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -1,22 +1,29 @@
 'use client';
 
+import { validateEnterpriseType } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
+import ErrorBox from '@/components/ui/ErrorBox';
 import RadioSelect from '@/components/ui/RadioSelect';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const SelectEnterprisePage = () => {
+  const translations = useTranslations('auth.enterprise.selectEnterprise');
+  const translationsForError = useTranslations();
   const router = useRouter();
   const enterprisesType = [
-    'Proprietorship',
-    'Partnership',
-    'Pvt Ltd',
-    'Public Ltd',
+    translations('enterpriseTypes.proprietorship'),
+    translations('enterpriseTypes.partnership'),
+    translations('enterpriseTypes.pvtLtd'),
+    translations('enterpriseTypes.publicLtd'),
   ];
+
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     type: '',
   });
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleEnterpriseType = (enterpriseType) => {
     setEnterpriseOnboardData((values) => ({
@@ -31,9 +38,16 @@ const SelectEnterprisePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    router.push(
-      `/login/enterprise/pan-verify?type=${enterpriseOnboardData.type}`,
-    );
+    const errorMsg = validateEnterpriseType(enterpriseOnboardData.type);
+
+    if (errorMsg) {
+      setErrorMsg(errorMsg);
+    } else {
+      setErrorMsg('');
+      router.push(
+        `/login/enterprise/pan-verify?type=${enterpriseOnboardData.type}`,
+      );
+    }
   };
 
   return (
@@ -44,10 +58,10 @@ const SelectEnterprisePage = () => {
       >
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            Enterprise type
+            {translations('heading')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Please select the category your enterprise belongs to
+            {translations('description')}
           </p>
         </div>
         <div className="grid w-full items-center gap-3">
@@ -63,16 +77,17 @@ const SelectEnterprisePage = () => {
               />
             ))}
           </div>
+          {errorMsg && <ErrorBox msg={translationsForError(errorMsg)} />}
         </div>
 
-        <div className="flex w-full flex-col gap-10">
+        <div className="flex w-full flex-col gap-2">
           <Button size="sm" type="submit" className="w-full bg-[#288AF9]">
-            Proceed
+            {translations('buttons.proceed')}
           </Button>
 
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft size={14} />
-            Back
+            {translations('buttons.back')}
           </Button>
         </div>
       </form>

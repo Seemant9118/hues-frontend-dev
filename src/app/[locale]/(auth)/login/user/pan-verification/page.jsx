@@ -13,22 +13,29 @@ import { useQuery } from '@tanstack/react-query';
 import { Info, InfoIcon } from 'lucide-react';
 
 import { userAuth } from '@/api/user_auth/Users';
+import {
+  validatePan,
+  validateTermsAndConditions,
+} from '@/appUtils/ValidationUtils';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthProgress } from '@/context/AuthProgressContext';
 import { useUserData } from '@/context/UserDataContext';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
+  const translations = useTranslations('auth.userPanVerification');
+  const translationsForError = useTranslations();
   const attemptsRemaining = LocalStorageService.get('attemptsRemaining');
 
   const { updateAuthProgress } = useAuthProgress(); // context
   const { userData, setUserData } = useUserData(); // context
   const router = useRouter();
   const [isTandCModalOpen, setIsTandCModalOpen] = useState(false);
-  const [errorMsg, setErrorMsg] = useState({});
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const onCheckedChangeTermsCondition = (checked) => {
     // Update form data
@@ -40,39 +47,24 @@ const PanVerificationPage = () => {
     // Handle error message based on the checkbox state
     setErrorMsg((prev) => ({
       ...prev,
-      isTermsAndConditionApplied: checked
-        ? ''
-        : '*Please accept the terms and conditions',
+      isTermsAndConditionApplied: checked ? '' : translations('tnc.error'),
     }));
   };
 
   // validation fn
-  const validation = (userDataItem) => {
-    const error = {};
-    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const validateForm = (userDataItem) => {
+    const errors = {};
+    errors.panNumber = validatePan(userDataItem.panNumber);
+    errors.isTermsAndConditionApplied = validateTermsAndConditions(
+      userDataItem.isTermsAndConditionApplied,
+    );
 
-    // name validation
-    if (userDataItem.name === '') {
-      error.name = '*Required Full Name';
-    }
-    // pan validation
-    if (userDataItem.panNumber === '') {
-      error.panNumber = '*Required PAN Number';
-    } else if (!panPattern.test(userData.panNumber)) {
-      error.panNumber = '* Please provide valid PAN Number';
-    }
-    // dateOfBirth validation
-    if (userData.dateOfBirth === '') {
-      error.dateOfBirth = '*Required Date of Birth';
-    }
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
 
-    // terms and condition validation
-    if (!userData.isTermsAndConditionApplied) {
-      error.isTermsAndConditionApplied =
-        '*Please accept the terms and conditions';
-    }
-
-    return error;
+    return errors;
   };
 
   // handleChange fn
@@ -81,22 +73,12 @@ const PanVerificationPage = () => {
 
     // pan validation
     if (name === 'panNumber') {
-      const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-      if (!panPattern.test(value) && value.length !== 10) {
-        // Reset error message if PAN is valid
-        setErrorMsg({
-          ...errorMsg,
-          panNumber: '* Please provide valid PAN Number',
-        });
-      } else {
-        // Set error message if PAN is invalid
-        setErrorMsg({
-          ...errorMsg,
-          panNumber: '',
-        });
-      }
-      setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
+      setErrorMsg({
+        ...errorMsg,
+        panNumber: validatePan(value),
+      });
 
+      setUserData((values) => ({ ...values, [name]: value.toUpperCase() }));
       return;
     }
 
@@ -136,7 +118,7 @@ const PanVerificationPage = () => {
         ...prev,
         panNumber:
           errorPanDetails?.response?.data?.message ||
-          'Oops, Something went wrong!',
+          translations('error.generic'),
       }));
     }
   }, [errorPanDetails]);
@@ -157,7 +139,7 @@ const PanVerificationPage = () => {
   // handleProceed fn
   const handleProceed = (e) => {
     e.preventDefault();
-    const isAnyError = validation(userData);
+    const isAnyError = validateForm(userData);
 
     if (Object.keys(isAnyError).length === 0) {
       setErrorMsg({});
@@ -173,7 +155,7 @@ const PanVerificationPage = () => {
 
   return (
     <UserProvider>
-      <div className="flex h-full flex-col items-center justify-center">
+      <div className="flex h-full flex-col items-center pt-20">
         <form
           onSubmit={handleProceed}
           className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
@@ -182,10 +164,10 @@ const PanVerificationPage = () => {
             <AuthProgress isCurrAuthStep={'isPanVerificationStep'} />
 
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              Complete your profile
+              {translations('profile.title')}
             </h1>
             <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-              Enter all the details to unlock Hues completely
+              {translations('profile.subtitle')}
             </p>
           </div>
 
@@ -195,7 +177,8 @@ const PanVerificationPage = () => {
                 htmlFor="mobile-number"
                 className="flex items-center gap-1 font-medium text-[#414656]"
               >
-                PAN <span className="text-red-600">*</span>{' '}
+                {translations('pan.label')}
+                <span className="text-red-600">*</span>{' '}
                 <Tooltips
                   trigger={<Info size={12} />}
                   content="PAN: Your universal legal identifier for all government and financial interactions on Hues."
@@ -206,7 +189,7 @@ const PanVerificationPage = () => {
                   // required={true}
                   className="pr-36 focus:font-bold"
                   type="text"
-                  placeholder="PAN Card Number"
+                  placeholder={translations('pan.placeholder')}
                   name="panNumber"
                   value={userData.panNumber}
                   onChange={handleChange}
@@ -216,14 +199,14 @@ const PanVerificationPage = () => {
                 {(isPanDetailsLoading || isPanDetailsFetching) && (
                   <div className="absolute right-1 top-0 flex h-full items-center justify-between bg-transparent p-1">
                     <span className="text-xs font-semibold text-gray-500">
-                      Fetching details...
+                      {translations('pan.fetching')}
                     </span>
                     {/* <Loading /> */}
                   </div>
                 )}
               </div>
               {!isPanDetailsLoading && errorMsg?.panNumber && (
-                <ErrorBox msg={errorMsg?.panNumber} />
+                <ErrorBox msg={translationsForError(errorMsg?.panNumber)} />
               )}
 
               {!errorMsg?.panNumber && (
@@ -234,12 +217,14 @@ const PanVerificationPage = () => {
                   ) > 0 ? (
                     <div className="flex items-center gap-1 text-primary">
                       <InfoIcon size={14} />
-                      {`You have ${panDetails?.remainingAttempts ?? attemptsRemaining ?? 0} attempts left to verify your PAN`}
+                      {translations('pan.attempts_remaining', {
+                        count: attemptsRemaining,
+                      })}
+                      {/* {`You have ${panDetails?.remainingAttempts ?? attemptsRemaining ?? 0} attempts left to verify your PAN`} */}
                     </div>
                   ) : (
                     <div className="text-red-600">
-                      You have exhausted your daily limit to verify your PAN,
-                      please try again later.
+                      {translations('pan.attempts_exhausted')}
                     </div>
                   )}
                 </div>
@@ -254,12 +239,12 @@ const PanVerificationPage = () => {
                   onCheckedChange={() => setIsTandCModalOpen(true)}
                 />
                 <div className="text-[#121212]">
-                  By selecting this box, I agree to all the{' '}
+                  {translations('tnc.checkbox_label')}{' '}
                   <span
                     className="cursor-pointer text-primary hover:underline"
                     onClick={() => setIsTandCModalOpen(true)}
                   >
-                    Terms and Conditions
+                    {translations('tnc.link')}
                   </span>
                   <TermsAnsConditionModal
                     isOpen={isTandCModalOpen}
@@ -276,7 +261,11 @@ const PanVerificationPage = () => {
                 </div>
               </div>
               {errorMsg?.isTermsAndConditionApplied && (
-                <ErrorBox msg={errorMsg?.isTermsAndConditionApplied} />
+                <ErrorBox
+                  msg={translationsForError(
+                    errorMsg?.isTermsAndConditionApplied,
+                  )}
+                />
               )}
             </div>
 
@@ -288,7 +277,8 @@ const PanVerificationPage = () => {
                     htmlFor="mobile-number"
                     className="flex items-center gap-1 font-medium text-[#414656]"
                   >
-                    Full Name <span className="text-red-600">*</span>{' '}
+                    {translations('name.label')}{' '}
+                    <span className="text-red-600">*</span>{' '}
                     <Tooltips
                       trigger={<Info size={12} />}
                       content="Your full Name"
@@ -300,13 +290,12 @@ const PanVerificationPage = () => {
                       // required={true}
                       className="focus:font-bold"
                       type="text"
-                      placeholder="Full Name"
+                      placeholder={translations('name.tooltip')}
                       name="name"
                       value={userData.name}
                       disabled
                     />
                   </div>
-                  {errorMsg?.name && <ErrorBox msg={errorMsg?.name} />}
                 </div>
 
                 <div className="grid w-full items-center gap-1.5">
@@ -314,10 +303,11 @@ const PanVerificationPage = () => {
                     htmlFor="dob"
                     className="flex items-center gap-1 font-medium text-[#414656]"
                   >
-                    Date of Birth <span className="text-red-600">*</span>{' '}
+                    {translations('dob.label')}{' '}
+                    <span className="text-red-600">*</span>{' '}
                     <Tooltips
                       trigger={<Info size={12} />}
-                      content="Hues requires age verification for secure transactions, ensuring a trustworthy user experience."
+                      content={translations('dob.tooltip')}
                     />
                   </Label>
 
@@ -330,10 +320,6 @@ const PanVerificationPage = () => {
                     value={userData.dateOfBirth}
                     disabled
                   />
-
-                  {errorMsg?.dateOfBirth && (
-                    <ErrorBox msg={errorMsg?.dateOfBirth} />
-                  )}
                 </div>
               </>
             )}
@@ -352,7 +338,7 @@ const PanVerificationPage = () => {
               {isPanDetailsLoading || isPanDetailsFetching ? (
                 <Loading />
               ) : (
-                'Proceed'
+                translations('actions.proceed')
               )}
             </Button>
           </div>

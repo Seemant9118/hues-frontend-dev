@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { validatePan } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,23 +14,24 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const EnterprisePANVerifyPage = () => {
+  const translations = useTranslations('auth.enterprise.panVerify');
+  const translationsForError = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const enterpriseType = searchParams.get('type');
   const userId = LocalStorageService.get('user_profile');
-  // const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
     panNumber: '',
     type: enterpriseType,
-    // enterpriseId,
   });
-  const [errorMsg, setErrorMsg] = useState({});
+  const [errorMsg, setErrorMsg] = useState('');
 
   const { data: userData, isSuccess } = useQuery({
     queryKey: [userAuth.getUserById.endpointKey, userId],
@@ -50,26 +52,12 @@ const EnterprisePANVerifyPage = () => {
     }));
   }, [isSuccess, enterpriseType, userData]);
 
-  // PAN validation function
-  const validatePanNumber = (panNumber) => {
-    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-    const errors = {};
-
-    if (!panNumber.trim()) {
-      errors.panNumber = '* Required PAN Number';
-    } else if (!panPattern.test(panNumber)) {
-      errors.panNumber = '* Please provide a valid PAN Number';
-    }
-
-    return errors;
-  };
-
   // Handle input change
   const handleChangePan = useCallback((e) => {
     const panValue = e.target.value.toUpperCase();
     setEnterpriseOnboardData((prev) => ({ ...prev, panNumber: panValue }));
 
-    const errors = validatePanNumber(panValue);
+    const errors = validatePan(panValue);
     setErrorMsg(errors);
   }, []);
 
@@ -77,7 +65,7 @@ const EnterprisePANVerifyPage = () => {
     mutationKey: [userAuth.getEnterpriseDetailsForPanVerify.endpointKey],
     mutationFn: getEnterpriseDetailsForPanVerify,
     onSuccess: (data) => {
-      toast.success('Pan Verified Successfully');
+      toast.success(translations('toast.success'));
 
       // states
       const { enterpriseId, gstData, companyDetails } = data.data.data;
@@ -95,7 +83,7 @@ const EnterprisePANVerifyPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translations('toast.error'));
     },
   });
 
@@ -103,23 +91,21 @@ const EnterprisePANVerifyPage = () => {
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      const errors = validatePanNumber(enterpriseOnboardData.panNumber);
+      const errors = validatePan(enterpriseOnboardData.panNumber);
 
-      if (Object.keys(errors).length > 0) {
+      if (errors) {
         setErrorMsg(errors);
         return;
       }
-
-      setErrorMsg({});
+      setErrorMsg('');
       getDetailsByPanVerifiedMutation.mutate(enterpriseOnboardData);
     },
     [enterpriseOnboardData.panNumber],
   );
 
   // Navigate back
-  const handleBack = useCallback(() => {
+  const handleBack = () =>
     router.push('/login/enterprise/select_enterprise_type');
-  }, [router]);
 
   return (
     <UserProvider>
@@ -128,10 +114,10 @@ const EnterprisePANVerifyPage = () => {
           {/* Header */}
           <div className="flex flex-col gap-4">
             <h1 className="text-center text-2xl font-bold text-[#121212]">
-              Onboard your Enterprise
+              {translations('title')}
             </h1>
             <p className="text-center text-sm font-semibold text-[#A5ABBD]">
-              Enter all the details to unlock Hues completely
+              {translations('subtitle')}
             </p>
           </div>
 
@@ -145,7 +131,8 @@ const EnterprisePANVerifyPage = () => {
                 htmlFor="pan-number"
                 className="font-medium text-[#121212]"
               >
-                Enterprise PAN <span className="text-red-600">*</span>
+                {translations('pan.label')}{' '}
+                <span className="text-red-600">*</span>
               </Label>
               <div className="flex items-center hover:border-gray-600">
                 <Input
@@ -162,28 +149,30 @@ const EnterprisePANVerifyPage = () => {
                   }
                 />
               </div>
-              {errorMsg.panNumber && (
+              {errorMsg && (
                 <span className="px-1 text-sm font-semibold text-red-600">
-                  {errorMsg.panNumber}
+                  {translationsForError(errorMsg)}
                 </span>
               )}
             </div>
 
-            <Button
-              size="sm"
-              type="submit"
-              disabled={getDetailsByPanVerifiedMutation?.isPending}
-            >
-              {getDetailsByPanVerifiedMutation?.isPending ? (
-                <Loading />
-              ) : (
-                'Proceed'
-              )}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft size={14} />
-              Back
-            </Button>
+            <div className="flex w-full flex-col gap-2">
+              <Button
+                size="sm"
+                type="submit"
+                disabled={getDetailsByPanVerifiedMutation?.isPending}
+              >
+                {getDetailsByPanVerifiedMutation?.isPending ? (
+                  <Loading />
+                ) : (
+                  translations('button.proceed')
+                )}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleBack}>
+                <ArrowLeft size={14} />
+                {translations('button.back')}
+              </Button>
+            </div>
           </form>
         </div>
       </div>

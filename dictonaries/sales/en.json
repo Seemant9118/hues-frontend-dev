@@ -67,13 +67,15 @@
                     "order_details": "Order Details",
                     "negotiation": "Negotiation",
                     "generate_invoice": "Generate Invoice",
-                    "record_payment": "Record Payment"
+                    "record_payment": "Record Payment",
+                    "upload_attachements": "Upload Attachements"
                 },
                 "ctas": {
+                    "upload_attachements": "Upload Attachements",
                     "record_payment": "Record Payment",
                     "generate_invoice": "Generate Invoice",
-                    "download": {
-                        "placeholder": "Download Order Details"
+                    "view": {
+                        "placeholder": "Preview order"
                     },
                     "more": {
                         "placeholder": "More options",
@@ -83,6 +85,17 @@
                         "wait_response": "Waiting for Response",
                         "negotiate": "Negotiate",
                         "accept": "Accept"
+                    }
+                },
+                "fileUploader": {
+                    "instruction": "Drag & Drop or Select a File (Max 10MB, .png / .pdf Formats)",
+                    "note": "Note - Upload attachments only",
+                    "attachedFilesLabel": "Attached files",
+                    "fileAttachedMessage": "Successfully attached",
+                    "buttons": {
+                        "select": "Select",
+                        "cancel": "Cancel",
+                        "upload": "Upload"
                     }
                 },
                 "tabs": {
@@ -147,6 +160,7 @@
                 },
                 "invoice": {
                     "cta": "Invoice",
+                    "b2bCta": "B2B Invoice",
                     "placeholder": "Create a new Sales Invoice"
                 }
             },
@@ -203,10 +217,11 @@
                         "tab2": {
                             "table": {
                                 "header": {
-                                    "payment_id": "Payment ID",
-                                    "amount": "Amount",
-                                    "date": "Date",
-                                    "invoice_no": "Invoice No."
+                                    "payment_id": "PAYMENT ID",
+                                    "amount": "AMOUNT PAID",
+                                    "date": "PAYMENT DATE",
+                                    "status": "STATUS",
+                                    "invoice_no": "INVOICE NO."
                                 }
                             },
                             "emtpyStateComponent": {
@@ -227,6 +242,42 @@
                                 "para": "You haven't any debit notes yet."
                             }
                         }
+                    }
+                }
+            }
+        },
+        "sales-payments": {
+            "title": "Payments",
+            "title2": "Create a new payment record",
+            "emptyStateComponent": {
+                "heading": "No Payments yet",
+                "description": "You don’t have payment yet."
+            },
+            "payment-details": {
+                "title": "Payments Details"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Export Selected Payments",
+                    "successMsg": "Payments exported and download starts automatically",
+                    "errorMsg": "Something went wrong"
+                },
+                "create_payment_record": {
+                    "cta": "Create Payment Record",
+                    "placeholder": "Create Payment Record"
+                }
+            },
+            "section": {
+                "table": {
+                    "header": {
+                        "payment_id": "PAYMENT ID",
+                        "client_name": "CLIENT NAME",
+                        "payment_date": "PAYMENT DATE",
+                        "invoice_id": "INVOICE ID",
+                        "status": "STATUS",
+                        "amount_paid": "AMOUNT PAID",
+                        "total_amount": "TOTAL AMOUNT",
+                        "mode_of_payment": "MODE OF PAYMENT"
                     }
                 }
             }
@@ -295,7 +346,7 @@
                 },
                 "successMsg": {
                     "file_attached_success": "File Attached Successfully",
-                    "comment_success": "Comment Successfully"
+                    "comment_success": "Comment added Successfully"
                 },
                 "errorMsg": {
                     "comment_error_emtpy": "Comment can not be empty",

@@ -44,4 +44,9 @@ export const invoiceApi = {
     endpoint: `/order/invoice/export`,
     endpointKey: 'export_invoice',
   },
+  // 10. preview direct invoice
+  previewDirectInvoice: {
+    endpoint: `/order/invoice/preview-invoice`,
+    endpointKey: 'preview_direct_invoice',
+  },
 };

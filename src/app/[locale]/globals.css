@@ -64,13 +64,37 @@ body {
   font-family: 'Satoshi-Variable' !important;
 }
 
+.navScrollBarStyles::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0.3rem;
+}
+
+/* Track */
+.navScrollBarStyles::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: #f6f9ff;
+}
+
+/* Show scrollbar thumb only when scrolling or hovering */
+body::-webkit-scrollbar-thumb,
+.navScrollBarStyles::-webkit-scrollbar-thumb {
+  background: transparent; /* Initially hidden */
+  border-radius: 4px;
+  transition: background 0.3s ease-in-out;
+}
+
+/* Show scrollbar thumb when hovering or scrolling */
+.navScrollBarStyles:hover::-webkit-scrollbar-thumb,
+.navScrollBarStyles:active::-webkit-scrollbar-thumb {
+  background: #dadce0;
+}
+
 .scrollBarStyles::-webkit-scrollbar,
 body::-webkit-scrollbar {
   width: 0.5rem;
 }
 
 /* Track */
-
 .scrollBarStyles::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track {
   background: white;
@@ -137,4 +161,8 @@ input[type='number'] {
 
 .infinite-datatable-scrollable-body {
   overflow-anchor: none;
+}
+
+.custom-range-atepicker-popper {
+  z-index: 20 !important;
 }

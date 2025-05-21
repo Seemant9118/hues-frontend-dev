@@ -5,8 +5,8 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import InvoicePDFViewModal from '@/components/Modals/InvoicePDFViewModal';
 import Tooltips from '@/components/auth/Tooltips';
+import CommentBox from '@/components/comments/CommentBox';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -22,9 +22,12 @@ import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
-import { getDocument } from '@/services/Template_Services/Template_Services';
+import {
+  getDocument,
+  viewPdfInNewTab,
+} from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, MoveUpRight, Share2 } from 'lucide-react';
+import { Download, Eye, MoveUpRight, Share2 } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -140,9 +143,13 @@ const ViewInvoice = () => {
   const paymentStatus = ConditionalRenderingStatus({
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
-  const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
-  });
+  const debitNoteStatus =
+    invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status ===
+      'RAISED' &&
+    ConditionalRenderingStatus({
+      status:
+        invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
+    });
 
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = useSalesInvoiceColumns();
@@ -151,6 +158,10 @@ const ViewInvoice = () => {
   function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
+
+  const onRowClick = (row) => {
+    router.push(`/sales/sales-payments/${row.paymentId}`);
+  };
 
   return (
     <Wrapper className="h-full py-2">
@@ -195,7 +206,15 @@ const ViewInvoice = () => {
             />
           )}
           {/* View CTA modal */}
-          {!isRecordingPayment && <InvoicePDFViewModal Url={pvtUrl} />}
+          {!isRecordingPayment && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => viewPdfInNewTab(pvtUrl)}
+            >
+              <Eye size={14} />
+            </Button>
+          )}
 
           {/* download CTA */}
           {!isRecordingPayment && (
@@ -249,6 +268,8 @@ const ViewInvoice = () => {
                   amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
                 />
 
+                <CommentBox contextId={params.invoiceId} context={'INVOICE'} />
+
                 <DataTable data={invoiceItems} columns={invoiceItemsColumns} />
               </div>
             )}
@@ -256,7 +277,11 @@ const ViewInvoice = () => {
           <TabsContent value="payment">
             {isPaymentsLoading && <Loading />}
             {!isPaymentsLoading && paymentsListing?.length > 0 && (
-              <DataTable data={paymentsListing} columns={paymentsColumns} />
+              <DataTable
+                onRowClick={onRowClick}
+                data={paymentsListing}
+                columns={paymentsColumns}
+              />
             )}
             {!isPaymentsLoading && paymentsListing?.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
@@ -325,7 +350,7 @@ const ViewInvoice = () => {
                           <div className="flex gap-10">
                             <h1 className="text-sm">
                               <span className="font-bold text-[#ABB0C1]">
-                                {translations('tabs.content.tab3.label.date')}:{' '}
+                                {translations('tabs.content.tab3.label.date')}:
                               </span>
                               <span className="text-[#363940]">
                                 {moment(debitNote?.createdAt).format(
@@ -338,7 +363,7 @@ const ViewInvoice = () => {
                                 {translations(
                                   'tabs.content.tab3.label.total_amount',
                                 )}
-                                :{' '}
+                                :
                               </span>
                               <span className="font-bold text-[#363940]">
                                 {formattedAmount(debitNote?.amount)}
@@ -385,6 +410,7 @@ const ViewInvoice = () => {
           debitNoteStatus={debitNoteStatus}
           invoiceDetails={invoiceDetails?.invoiceDetails}
           setIsRecordingPayment={setIsRecordingPayment}
+          contextType={'PAYMENT'}
         />
       )}
     </Wrapper>

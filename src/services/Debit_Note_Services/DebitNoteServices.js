@@ -46,8 +46,14 @@ export const createComments = (data) => {
   return APIinstance.post(DebitNoteApi.createComments.endpoint, data);
 };
 
-export const getComments = (id) => {
-  return APIinstance.get(`${DebitNoteApi.getComments.endpoint}${id}`);
+export const getComments = (id, type) => {
+  return APIinstance.get(
+    `${DebitNoteApi.getComments.endpoint}?contextId=${id}&contextType=${type}`,
+  );
+};
+
+export const updateComments = (data) => {
+  return APIinstance.put(DebitNoteApi.updateComments.endpoint, data);
 };
 
 export const uploadMediaInComments = (data) => {

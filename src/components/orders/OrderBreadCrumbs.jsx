@@ -7,6 +7,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { usePathname, useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 import React from 'react';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ const OrderBreadCrumbs = ({
 }) => {
   const router = useRouter();
   const pathName = usePathname();
+  const translations = useTranslations();
 
   const handleClick = (page) => {
     if (!page || !page.path) {
@@ -48,9 +50,11 @@ const OrderBreadCrumbs = ({
           .map((page, index, array) => {
             const isLast = index === array.length - 1;
             return isLast ? (
-              <BreadcrumbItem key={page.id}>
+              <BreadcrumbItem key={page.id} className="flex items-center gap-1">
                 <BreadcrumbPage>
-                  <span className="text-lg font-bold">{page.name}</span>
+                  <span className="text-lg font-bold">
+                    {translations(page.name)}
+                  </span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
             ) : (
@@ -60,7 +64,9 @@ const OrderBreadCrumbs = ({
                     onClick={() => handleClick(page)}
                     className="hover:cursor-pointer hover:text-blue-500"
                   >
-                    <span className="text-lg font-bold">{page.name}</span>
+                    <span className="text-lg font-bold">
+                      {translations(page.name)}
+                    </span>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />

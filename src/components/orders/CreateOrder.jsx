@@ -1,7 +1,7 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { userAuth } from '@/api/user_auth/Users';
 import {
@@ -23,23 +23,18 @@ import {
   createClient,
   getClients,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { getCustomers } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 import {
   createVendor,
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import {
-  CreateOrderService,
-  createInvoice,
-} from '@/services/Orders_Services/Orders_Services';
+import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
@@ -51,11 +46,8 @@ import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateOrder = ({
-  isCreatingInvoice,
   isCreatingSales,
   isCreatingPurchase,
-  setSalesListing,
-  setPurchaseListing,
   onCancel,
   name,
   cta,
@@ -66,6 +58,7 @@ const CreateOrder = ({
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const router = useRouter();
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
 
@@ -76,7 +69,7 @@ const CreateOrder = ({
   const [selectedItem, setSelectedItem] = useState({
     productName: '',
     productType: '',
-    productId: '',
+    productId: null,
     quantity: null,
     unitPrice: null,
     gstPerUnit: null,
@@ -94,6 +87,12 @@ const CreateOrder = ({
           orderType: 'SALES',
           invoiceType: '',
           orderItems: [],
+          bankAccountId: null,
+          socialLinks: null,
+          remarks: null,
+          pin: null,
+          billingAddressId: null,
+          shippingAddressId: null,
         }
       : {
           clientType: 'B2B',
@@ -104,6 +103,12 @@ const CreateOrder = ({
           orderType: 'PURCHASE',
           invoiceType: '',
           orderItems: [],
+          bankAccountId: null,
+          socialLinks: null,
+          remarks: null,
+          pin: null,
+          billingAddressId: null,
+          shippingAddressId: null,
         },
   );
 
@@ -113,8 +118,7 @@ const CreateOrder = ({
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
-    enabled:
-      (!!isCreatingInvoice || !!isCreatingSales) && isPurchasePage === false,
+    enabled: !!isCreatingSales && isPurchasePage === false,
   });
   // for sales-order gst/non-gst check
   const isGstApplicableForSalesOrders =
@@ -124,59 +128,6 @@ const CreateOrder = ({
     isGstApplicableForPurchaseOrders,
     setIsGstApplicableForPurchaseOrders,
   ] = useState('');
-
-  // [clientType options]
-  const clientTypeOptions = [
-    {
-      value: 'B2B',
-      label: translations('form.input.clientType.b2b'),
-    },
-    {
-      value: 'B2C',
-      label: translations('form.input.clientType.b2c'),
-    },
-  ];
-
-  // [B2C customers]
-  // customer[B2C] api fetching
-  const { data: customers } = useQuery({
-    queryKey: [customerApis.getCustomers.endpointKey, enterpriseId],
-    queryFn: () => getCustomers(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: order.clientType === 'B2C',
-  });
-  // customer options
-  const [options, setOptions] = useState([]);
-  // Transform customers data into options format
-  useEffect(() => {
-    if (customers) {
-      const transformedOptions = customers.map((customer) => ({
-        value: customer.mobileNumber,
-        label: `${customer.countryCode} ${customer.mobileNumber}`, // Displaying country code with mobile number
-      }));
-      setOptions(transformedOptions);
-    }
-  }, [customers]);
-  // Handle selection of an existing option
-  const handleChange = (selectedOption) => {
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      buyerId: selectedOption ? selectedOption.value : null,
-    }));
-  };
-  // Handle creation of a new option
-  const handleCreate = (inputValue) => {
-    const newOption = { value: inputValue, label: inputValue };
-
-    // Add the new option to the list of options
-    setOptions((prevOptions) => [...prevOptions, newOption]);
-
-    // Update the order state
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      buyerId: newOption.value,
-    }));
-  };
 
   // [clients]
   // clients[B2B] fetching
@@ -196,8 +147,10 @@ const CreateOrder = ({
         customer?.invitation === null || customer?.invitation === undefined
           ? 'ACCEPTED'
           : customer?.invitation?.status;
+      const clientId = customer?.id;
+      const clientEnterpriseId = customer?.client?.id;
 
-      return { value, label, isAccepted };
+      return { value, label, isAccepted, clientId, clientEnterpriseId };
     }) ?? []),
     {
       value: 'add-new-client', // Special value for "Add New Client"
@@ -262,6 +215,11 @@ const CreateOrder = ({
     },
   ];
 
+  // Items fetching
+  // util fn to check it item is already present in orderItems or not?
+  const isItemAlreadyAdded = (itemId) =>
+    order.orderItems?.some((item) => item.productId === itemId);
+
   // [Client's Goods and Services]
   // client's catalogue's goods fetching
   const { data: goodsData } = useQuery({
@@ -274,8 +232,9 @@ const CreateOrder = ({
   const clientsGoodsOptions = goodsData?.map((good) => {
     const value = { ...good, productType: 'GOODS', productName: good.name };
     const label = good.name;
+    const disabled = isItemAlreadyAdded(good.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // client catalogue services fetching
   const { data: servicesData } = useQuery({
@@ -289,11 +248,12 @@ const CreateOrder = ({
     const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.name,
+      serviceName: service.name,
     };
     const label = service.name;
+    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // itemClientListingOptions on the basis of item type
   const itemClientListingOptions =
@@ -319,8 +279,9 @@ const CreateOrder = ({
   const vendorGoodsOptions = vendorGoodsData?.map((good) => {
     const value = { ...good, productType: 'GOODS', productName: good.name };
     const label = good.name;
+    const disabled = isItemAlreadyAdded(good.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // vendor's catalogue services fetching
   const { data: vendorServicesData } = useQuery({
@@ -340,11 +301,12 @@ const CreateOrder = ({
     const value = {
       ...service,
       productType: 'SERVICE',
-      productName: service.name,
+      serviceName: service.name,
     };
     const label = service.name;
+    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label };
+    return { value, label, disabled };
   });
   // itemVendorListingOptions on the basis of item type
   const itemVendorListingOptions =
@@ -359,27 +321,11 @@ const CreateOrder = ({
           ? translations('form.successMsg.offer_created_successfully')
           : translations('form.successMsg.bid_created_successfully'),
       );
-      onCancel();
       if (isPurchasePage) {
-        setPurchaseListing((prev) => [res.data.data, ...prev]);
+        router.push(`/purchases/purchase-orders/${res.data.data.id}`);
       } else {
-        setSalesListing((prev) => [res.data.data, ...prev]);
+        router.push(`/sales/sales-orders/${res.data.data.id}`);
       }
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
-  // mutation - create invoice
-  const invoiceMutation = useMutation({
-    mutationFn: createInvoice,
-    onSuccess: () => {
-      toast.success(
-        translations('form.successMsg.invoice_created_successfully'),
-      );
-      onCancel();
-      // setInvoiceListing((prev) => [res.data.data, ...prev]);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -401,22 +347,27 @@ const CreateOrder = ({
         errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
       if (order?.orderItems?.length === 0) {
-        errorObj.orderItem = translations('form.errorMsg.item');
+        errorObj.orderItem =
+          isOrder === 'invoice'
+            ? translations('form.errorMsg.itemInvoice')
+            : translations('form.errorMsg.itemOrder');
       }
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = translations('form.errorMsg.quantity');
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = translations('form.errorMsg.price');
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = translations('form.errorMsg.gst');
-      }
-      if (selectedItem.totalGstAmount === null) {
-        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = translations('form.errorMsg.amount');
+      if (order?.orderItems?.length < 0) {
+        if (selectedItem.quantity === null) {
+          errorObj.quantity = translations('form.errorMsg.quantity');
+        }
+        if (selectedItem.unitPrice === null) {
+          errorObj.unitPrice = translations('form.errorMsg.price');
+        }
+        if (selectedItem.gstPerUnit === null) {
+          errorObj.gstPerUnit = translations('form.errorMsg.gst');
+        }
+        if (selectedItem.totalGstAmount === null) {
+          errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
+        }
+        if (selectedItem.totalAmount === null) {
+          errorObj.totalAmount = translations('form.errorMsg.amount');
+        }
       }
     } else {
       if (order?.sellerEnterpriseId == null) {
@@ -425,23 +376,25 @@ const CreateOrder = ({
       if (order.invoiceType === '') {
         errorObj.invoiceType = translations('form.errorMsg.item_type');
       }
-      if (order?.orderItem?.length === 0) {
-        errorObj.orderItem = translations('form.errorMsg.item');
+      if (order?.orderItems?.length === 0) {
+        errorObj.orderItem = translations('form.errorMsg.itemBid');
       }
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = translations('form.errorMsg.quantity');
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = translations('form.errorMsg.price');
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = translations('form.errorMsg.gst');
-      }
-      if (selectedItem.totalGstAmount === null) {
-        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = translations('form.errorMsg.amount');
+      if (order?.orderItems?.length < 0) {
+        if (selectedItem.quantity === null) {
+          errorObj.quantity = translations('form.errorMsg.quantity');
+        }
+        if (selectedItem.unitPrice === null) {
+          errorObj.unitPrice = translations('form.errorMsg.price');
+        }
+        if (selectedItem.gstPerUnit === null) {
+          errorObj.gstPerUnit = translations('form.errorMsg.gst');
+        }
+        if (selectedItem.totalGstAmount === null) {
+          errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
+        }
+        if (selectedItem.totalAmount === null) {
+          errorObj.totalAmount = translations('form.errorMsg.amount');
+        }
       }
     }
 
@@ -492,23 +445,13 @@ const CreateOrder = ({
     const isError = validation({ order, selectedItem });
 
     if (Object.keys(isError).length === 0) {
-      if (isOrder === 'invoice') {
-        invoiceMutation.mutate({
-          ...order,
-          buyerId: Number(order.buyerId),
-          amount: parseFloat(totalAmount.toFixed(2)),
-          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-        });
-        setErrorMsg({});
-      } else {
-        orderMutation.mutate({
-          ...order,
-          buyerId: Number(order.buyerId),
-          amount: parseFloat(totalAmount.toFixed(2)),
-          gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-        });
-        setErrorMsg({});
-      }
+      orderMutation.mutate({
+        ...order,
+        buyerId: Number(order.buyerId),
+        amount: parseFloat(totalAmount.toFixed(2)),
+        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+      });
+      setErrorMsg({});
     } else {
       setErrorMsg(isError);
     }
@@ -537,13 +480,7 @@ const CreateOrder = ({
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <SubHeader
-        name={
-          cta === 'offer'
-            ? translations('title.offer')
-            : translations('title.bid')
-        }
-      ></SubHeader>
+      <SubHeader name={name}></SubHeader>
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
@@ -555,60 +492,6 @@ const CreateOrder = ({
       )}
 
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-        {/* client type only showed in sales invoices not in sales/purchase offer */}
-        {cta === 'offer' && isOrder === 'invoice' && (
-          <div className="flex w-1/2 flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.type')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex w-full flex-col gap-1">
-              <Select
-                name="clientType"
-                options={clientTypeOptions}
-                styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
-                classNamePrefix="select"
-                defaultValue={clientTypeOptions[0]} // Provide the full object as the default value
-                onChange={(selectedOption) => {
-                  if (!selectedOption) return; // Guard clause for no selection
-                  setOrder((prev) => ({
-                    ...prev,
-                    clientType: selectedOption.value,
-                  })); // Update state with the selected value
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* customer flow only show in sales */}
-        {cta === 'offer' && order.clientType === 'B2C' && (
-          <div className="flex w-1/2 flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.customer')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex w-full flex-col gap-1">
-              <CreatableSelect
-                value={
-                  options?.find((option) => option.value === order.buyerId) ||
-                  null
-                }
-                onChange={handleChange}
-                onCreateOption={handleCreate}
-                styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
-                isClearable
-                placeholder="+91 1234567890"
-                options={options}
-              />
-
-              {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
-            </div>
-          </div>
-        )}
-
         {cta === 'offer' ? (
           order.clientType === 'B2B' && (
             <div className="flex w-1/2 flex-col gap-2">
@@ -632,33 +515,23 @@ const CreateOrder = ({
                   onChange={(selectedOption) => {
                     if (!selectedOption) return; // Guard clause for no selection
 
-                    const { value: id, isAccepted } = selectedOption; // Extract id and isAccepted from the selected option
+                    const { value: id, isAccepted } = selectedOption;
 
-                    // Check if "Add New Client" is selected
-                    if (selectedOption.value === 'add-new-client') {
-                      setIsModalOpen(true); // Open the modal when "Add New Client" is selected
+                    if (id === 'add-new-client') {
+                      setIsModalOpen(true); // Open modal when "Add New Client" is selected
                     } else {
-                      // Handle other client selections
-                      if (
-                        (id !== undefined &&
-                          isAccepted === 'ACCEPTED' &&
-                          name === 'Offer') ||
-                        name === 'Invoice'
-                      ) {
-                        setRedirectPopUpOnFail(false);
-                        setOrder((prev) => ({
-                          ...prev,
-                          buyerId: id,
-                        }));
-                      } else if (name !== 'Invoice') {
-                        setOrder((prev) => ({
-                          ...prev,
-                          buyerId: id,
-                        }));
-                        setRedirectPopUpOnFail(true);
+                      setOrder((prev) => ({
+                        ...prev,
+                        buyerId: id,
+                      }));
+
+                      if (isOrder === 'invoice') {
+                        setRedirectPopUpOnFail(false); // Never show popup for invoice
+                      } else {
+                        setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED'); // Show popup only if client is uninvited
                       }
 
-                      setSelectedValue(selectedOption); // Update the state with the selected option
+                      setSelectedValue(selectedOption); // Update selected value
                     }
                   }}
                 />
@@ -769,6 +642,15 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Select
                 name="items"
+                value={
+                  cta === 'offer'
+                    ? itemClientListingOptions?.find(
+                        (item) => item.value.id === selectedItem.productId,
+                      ) ?? null
+                    : itemVendorListingOptions?.find(
+                        (item) => item.value.id === selectedItem.productId,
+                      ) ?? null
+                }
                 placeholder={translations('form.input.item.placeholder')}
                 options={
                   cta === 'offer'
@@ -776,7 +658,7 @@ const CreateOrder = ({
                     : itemVendorListingOptions
                 }
                 styles={getStylesForSelectComponent()}
-                isOptionDisabled={(option) => option.disabled} // Disable options conditionally
+                isOptionDisabled={(option) => option.disabled}
                 isDisabled={
                   (cta === 'offer' && order.buyerId == null) ||
                   (cta === 'bid' && order.sellerEnterpriseId == null) ||
@@ -786,30 +668,46 @@ const CreateOrder = ({
                   const selectedItemData =
                     cta === 'offer'
                       ? itemClientListingOptions?.find(
-                          (item) => item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                          (item) => item.value.id === selectedOption?.value?.id,
                         )?.value
                       : itemVendorListingOptions?.find(
-                          (item) => item.value.id === selectedOption?.value?.id, // Match based on the `id`
+                          (item) => item.value.id === selectedOption?.value?.id,
                         )?.value;
 
                   if (selectedItemData) {
-                    setSelectedItem((prev) => ({
-                      ...prev,
-                      productId: selectedItemData.id,
-                      productType: selectedItemData.productType,
-                      productName: selectedItemData.productName,
-                      unitPrice: selectedItemData.rate,
-                      gstPerUnit: isGstApplicable(
-                        isPurchasePage
-                          ? isGstApplicableForPurchaseOrders
-                          : isGstApplicableForSalesOrders,
-                      )
-                        ? selectedItemData.gstPercentage
-                        : 0,
-                    }));
+                    const isGstApplicableForPage = isPurchasePage
+                      ? isGstApplicable(isGstApplicableForPurchaseOrders)
+                      : isGstApplicable(isGstApplicableForSalesOrders);
+
+                    const gstPerUnit = isGstApplicableForPage
+                      ? selectedItemData.gstPercentage
+                      : 0;
+
+                    if (selectedItemData.productType === 'GOODS') {
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        productId: selectedItemData.id,
+                        productType: selectedItemData.productType,
+                        hsnCode: selectedItemData.hsnCode,
+                        productName: selectedItemData.productName,
+                        unitPrice: selectedItemData.rate,
+                        gstPerUnit,
+                      }));
+                    } else {
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        productId: selectedItemData.id,
+                        productType: selectedItemData.productType,
+                        sac: selectedItemData.sacCode,
+                        serviceName: selectedItemData.serviceName,
+                        unitPrice: selectedItemData.rate,
+                        gstPerUnit,
+                      }));
+                    }
                   }
                 }}
               />
+
               {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
             </div>
           </div>
@@ -821,27 +719,54 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Input
                 type="number"
+                min={1}
+                step={1}
                 disabled={
                   (cta === 'offer' && order.buyerId == null) ||
                   order.sellerEnterpriseId == null
                 }
-                value={selectedItem.quantity}
+                value={
+                  selectedItem.quantity == null || selectedItem.quantity === 0
+                    ? ''
+                    : selectedItem.quantity
+                }
                 onChange={(e) => {
+                  const inputValue = e.target.value;
+
+                  // Allow user to clear input
+                  if (inputValue === '') {
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      quantity: 0,
+                      totalAmount: 0,
+                      totalGstAmount: 0,
+                    }));
+                    return;
+                  }
+
+                  // Prevent non-integer or negative input
+                  const value = Number(inputValue);
+
+                  // Reject if not a positive integer
+                  if (!/^\d+$/.test(inputValue) || value < 1) return;
+
                   const totalAmt = parseFloat(
-                    (e.target.value * selectedItem.unitPrice).toFixed(2),
-                  ); // totalAmt excluding gst
+                    (value * selectedItem.unitPrice).toFixed(2),
+                  );
                   const gstAmt = parseFloat(
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                  ); // total gstAmt
+                  );
+
                   setSelectedItem((prev) => ({
                     ...prev,
-                    quantity: Number(e.target.value),
+                    quantity: value,
                     totalAmount: totalAmt,
                     totalGstAmount: gstAmt,
                   }));
                 }}
                 className="max-w-30"
               />
+
               {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           </div>
@@ -853,27 +778,53 @@ const CreateOrder = ({
             </Label>
             <div className="flex flex-col gap-1">
               <Input
+                type="number"
+                min={1}
                 disabled={
                   (cta === 'offer' && order.buyerId == null) ||
                   order.sellerEnterpriseId == null
                 }
-                value={selectedItem.unitPrice}
+                value={
+                  selectedItem.unitPrice == null || selectedItem.unitPrice === 0
+                    ? ''
+                    : selectedItem.unitPrice
+                }
                 className="max-w-30"
                 onChange={(e) => {
+                  const inputValue = e.target.value;
+
+                  // Allow user to clear input
+                  if (inputValue === '') {
+                    setSelectedItem((prevValue) => ({
+                      ...prevValue,
+                      unitPrice: 0,
+                      totalAmount: 0,
+                      totalGstAmount: 0,
+                    }));
+                    return;
+                  }
+
+                  const value = Number(inputValue);
+
+                  // Prevent negative
+                  if (value < 0) return;
+
                   const totalAmt = parseFloat(
-                    (selectedItem.quantity * e.target.value).toFixed(2),
-                  ); // totalAmt excluding gst
+                    (selectedItem.quantity * value).toFixed(2),
+                  );
                   const gstAmt = parseFloat(
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                  ); // total gstAmt
+                  );
+
                   setSelectedItem((prevValue) => ({
                     ...prevValue,
-                    unitPrice: e.target.value,
+                    unitPrice: value,
                     totalAmount: totalAmt,
                     totalGstAmount: gstAmt,
                   }));
                 }}
               />
+
               {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
             </div>
           </div>
@@ -892,7 +843,7 @@ const CreateOrder = ({
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
-                  value={selectedItem.gstPerUnit}
+                  value={selectedItem.gstPerUnit || ''}
                   className="max-w-14"
                 />
                 {errorMsg.gstPerUnit && <ErrorBox msg={errorMsg.gstPerUnit} />}
@@ -910,7 +861,7 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Input
                 disabled
-                value={selectedItem.totalAmount}
+                value={selectedItem.totalAmount || ''}
                 className="max-w-30"
               />
               {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
@@ -930,7 +881,7 @@ const CreateOrder = ({
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
-                  value={selectedItem.totalGstAmount}
+                  value={selectedItem.totalGstAmount || ''}
                   className="max-w-30"
                 />
                 {errorMsg.totalGstAmount && (
@@ -953,10 +904,12 @@ const CreateOrder = ({
               <div className="flex flex-col gap-1">
                 <Input
                   disabled
-                  value={(
-                    (Number(selectedItem.totalAmount) || 0) +
-                    (Number(selectedItem.totalGstAmount) || 0)
-                  ).toFixed(2)}
+                  value={
+                    (
+                      (Number(selectedItem.totalAmount) || 0) +
+                      (Number(selectedItem.totalGstAmount) || 0)
+                    ).toFixed(2) || ''
+                  }
                   className="max-w-30"
                 />
                 {errorMsg.totalAmount && (
@@ -973,11 +926,14 @@ const CreateOrder = ({
             onClick={() => {
               setSelectedItem((prev) => ({
                 ...prev,
-                productId: '',
-                productType: '',
                 productName: '',
-                unitPrice: '',
-                gstPerUnit: '',
+                productType: '',
+                productId: null,
+                quantity: null,
+                unitPrice: null,
+                gstPerUnit: null,
+                totalAmount: null,
+                totalGstAmount: null,
               }));
             }}
           >
@@ -985,23 +941,33 @@ const CreateOrder = ({
           </Button>
           <Button
             size="sm"
-            disabled={Object.values(selectedItem).some(
-              (value) => value === '' || value === null || value === undefined,
-            )} // if any item of selectedItem is empty then button must be disabled
+            disabled={
+              !selectedItem.productId ||
+              !selectedItem.quantity ||
+              selectedItem.quantity <= 0 ||
+              !selectedItem.unitPrice ||
+              selectedItem.unitPrice <= 0
+            }
             onClick={() => {
               setOrder((prev) => ({
                 ...prev,
-                orderItems: [...prev.orderItems, selectedItem],
+                orderItems: [
+                  ...prev.orderItems,
+                  {
+                    gstPercentage: selectedItem.gstPerUnit,
+                    ...selectedItem,
+                  },
+                ],
               }));
               setSelectedItem({
                 productName: '',
                 productType: '',
-                productId: '',
-                quantity: '',
-                unitPrice: '',
-                gstPerUnit: '',
-                totalAmount: '',
-                totalGstAmount: '',
+                productId: null,
+                quantity: null,
+                unitPrice: null,
+                gstPerUnit: null,
+                totalAmount: null,
+                totalGstAmount: null,
               });
               setErrorMsg({});
             }}
@@ -1017,7 +983,7 @@ const CreateOrder = ({
 
       <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
-      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4">
+      <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
         <div className="flex items-center gap-2">
           {isGstApplicable(
             isPurchasePage
@@ -1059,12 +1025,10 @@ const CreateOrder = ({
           </Button>
           <Button
             size="sm"
-            onClick={
-              handleSubmit // invoke handle submit fn
-            }
-            disabled={orderMutation.isPending || invoiceMutation.isPending}
+            onClick={handleSubmit}
+            disabled={orderMutation.isPending}
           >
-            {orderMutation.isPending || invoiceMutation.isPending ? (
+            {orderMutation.isPending ? (
               <Loading />
             ) : (
               translations('form.ctas.create')

@@ -2,8 +2,8 @@
 
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invitation } from '@/api/invitation/Invitation';
-import { debounce } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
+import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
 import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import { DataTable } from '@/components/table/data-table';
@@ -21,6 +21,7 @@ import {
   createVendor,
   getVendors,
   searchedVendors,
+  updateVendor,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   generateLink,
@@ -30,7 +31,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useVendorsColumns } from './useVendorsColumns';
 
@@ -62,6 +63,8 @@ const VendorsPage = () => {
 
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingVendor, setEditingVendor] = useState();
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
@@ -70,7 +73,7 @@ const VendorsPage = () => {
   const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
     useState(null);
 
-  // api fetching for clients
+  // Base vendors query
   const {
     isLoading,
     data: vendorsData,
@@ -82,30 +85,32 @@ const VendorsPage = () => {
     enabled: searchTerm?.length === 0,
   });
 
-  // Fetch searched catalogues
+  // Searched vendors query
   const { data: searchedVendorsData, isLoading: isSearchedVendorsLoading } =
     useQuery({
-      queryKey: [vendorEnterprise.searchedVendors.endpointKey, searchTerm],
+      queryKey: [
+        vendorEnterprise.searchedVendors.endpointKey,
+        debouncedSearchTerm,
+      ],
       queryFn: () =>
         searchedVendors({
-          searchString: debouncedSearchTerm, // Ensure debouncedSearchTerm is used
+          searchString: debouncedSearchTerm,
         }),
       select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && vendorsData?.length > 0, // Use debounced value here
+      enabled: !!debouncedSearchTerm && vendorsData?.length > 0,
     });
 
-  // Debounce logic with useCallback
-  const updateDebouncedSearchTerm = useCallback(
-    debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, DEBOUNCE_DELAY),
-    [],
-  );
   useEffect(() => {
-    updateDebouncedSearchTerm(searchTerm);
-  }, [searchTerm, updateDebouncedSearchTerm]);
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
 
-  // Consolidated state update logic
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  // Format & set vendors data
   useEffect(() => {
     if (debouncedSearchTerm && searchedVendorsData) {
       let formattedData = [];
@@ -114,9 +119,12 @@ const VendorsPage = () => {
         formattedData = searchedVendorsData.flatMap((user) => {
           let userDetails;
           if (user.vendor && user?.vendor?.name !== null) {
-            userDetails = { ...user.vendor };
+            userDetails = { ...user.vendor, address: user?.address };
           } else {
-            userDetails = { ...user?.invitation?.userDetails };
+            userDetails = {
+              ...user?.invitation?.userDetails,
+              address: user?.address,
+            };
           }
 
           return {
@@ -135,9 +143,12 @@ const VendorsPage = () => {
         formattedData = vendorsData.flatMap((user) => {
           let userDetails;
           if (user.vendor && user?.vendor?.name !== null) {
-            userDetails = { ...user.vendor };
+            userDetails = { ...user.vendor, address: user?.address };
           } else {
-            userDetails = { ...user?.invitation?.userDetails };
+            userDetails = {
+              ...user?.invitation?.userDetails,
+              address: user?.address,
+            };
           }
 
           return {
@@ -206,8 +217,13 @@ const VendorsPage = () => {
     setSelectedEnterpriseContent(row);
   };
 
+  const onEditClick = (userData) => {
+    setIsEditing(true);
+    setEditingVendor(userData);
+  };
+
   // columns
-  const VendorsColumns = useVendorsColumns(getLink, sendRemind);
+  const VendorsColumns = useVendorsColumns(getLink, sendRemind, onEditClick);
 
   return (
     <>
@@ -311,6 +327,17 @@ const VendorsPage = () => {
               data={selectedEnterpriseContent}
               isEnterpriseDetailsShow={isEnterpriseDetailsShow}
               setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
+            />
+          )}
+
+          {isEditing && (
+            <EditModal
+              id={editingVendor.id}
+              userData={editingVendor}
+              cta="vendor"
+              mutationFunc={updateVendor}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
           )}
         </div>

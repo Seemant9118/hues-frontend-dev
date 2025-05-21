@@ -64,7 +64,7 @@ const SalesOrder = () => {
   const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
@@ -235,7 +235,7 @@ const SalesOrder = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          {!isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
+          {!isCreatingSales && !isEditingOrder && (
             <Wrapper className="h-full">
               <SubHeader
                 name={translations('title')}
@@ -245,7 +245,10 @@ const SalesOrder = () => {
                   <Tooltips
                     trigger={
                       <Button
-                        disabled={selectedOrders?.length === 0}
+                        disabled={
+                          selectedOrders?.length === 0 ||
+                          exportOrderMutation.isPending
+                        }
                         onClick={handleExportOrder}
                         variant="outline"
                         className="border border-[#A5ABBD] hover:bg-neutral-600/10"
@@ -395,7 +398,7 @@ const SalesOrder = () => {
           )}
 
           {/* create order component */}
-          {isCreatingSales && !isCreatingInvoice && !isEditingOrder && (
+          {isCreatingSales && !isEditingOrder && (
             <CreateOrder
               type="sales"
               name="Offer"
@@ -408,7 +411,7 @@ const SalesOrder = () => {
             />
           )}
 
-          {/* create invoice component */}
+          {/* create invoice component
           {isCreatingInvoice && !isCreatingSales && !isEditingOrder && (
             <CreateOrder
               type="sales"
@@ -418,10 +421,10 @@ const SalesOrder = () => {
               isCreatingInvoice={isCreatingInvoice}
               onCancel={() => setIsCreatingInvoice(false)}
             />
-          )}
+          )} */}
 
           {/* editOrder Component */}
-          {isEditingOrder && !isCreatingSales && !isCreatingInvoice && (
+          {isEditingOrder && !isCreatingSales && (
             <EditOrder
               type="sales"
               name="Edit"

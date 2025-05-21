@@ -122,8 +122,10 @@ export function SalesTable({
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
               const row = rows[virtualRow.index];
               let isRead;
-              if (row.original?.readTracker) {
-                isRead = row.original?.readTracker?.sellerIsRead;
+              if (row.original?.readTracker || row.original.sellerIsRead) {
+                isRead =
+                  row.original?.readTracker?.sellerIsRead ||
+                  row.original.sellerIsRead;
               }
               return (
                 <TableRow

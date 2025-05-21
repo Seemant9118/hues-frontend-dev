@@ -60,12 +60,16 @@
                             "pan": {
                                 "required": "Required PAN",
                                 "valid": "Please provide valid PAN Number"
+                            },
+                            "pincode": {
+                                "required": "Required Pincode",
+                                "valid": "Please provide valid Pincode"
                             }
                         }
                     },
                     "infoMsg": {
                         "toSearch": "Type an identifier to search",
-                        "enterprise_not_available": "Enterprise not available."
+                        "enterprise_not_available": "Enterprise not active on HUES."
                     },
                     "ctas": {
                         "identifiers": {
@@ -220,7 +224,9 @@
                     "client": "*Please select a client",
                     "vendor": "*Please select a vendor",
                     "item_type": "*Please select Item Type",
-                    "item": "*Please add atleast one item to create order",
+                    "itemInvoice": "*Please add atleast one item to create invoice",
+                    "itemOrder": "*Please add atleast one item to create order",
+                    "itemBid": "*Please add atleast one item to create bid",
                     "quantity": "*Required Quantity",
                     "price": "*Required Price",
                     "gst": "*Required (GST%)",
@@ -232,7 +238,7 @@
                     "order_updated_successfully": "Order Updates Successfully",
                     "offer_created_successfully": "Sales Order Created Successfully",
                     "bid_created_successfully": "Purchase Order Created Successfully",
-                    "invoice_created_successfully": "Invoice created! Please refresh to view the latest Invoice"
+                    "invoice_created_successfully": "Invoice created Successfully"
                 },
                 "input": {
                     "clientType": {
@@ -262,7 +268,7 @@
                         "quantity": "QUANTITY",
                         "price": "PRICE",
                         "gst": "GST (%)",
-                        "invoice_value": "Invoice Value",
+                        "invoice_value": "INVOICE VALUE",
                         "value": "VALUE",
                         "tax_amount": "TAX AMOUNT",
                         "amount": "AMOUNT"
@@ -272,7 +278,87 @@
                     "cancel": "Cancel",
                     "add": "Add",
                     "create": "Create",
-                    "edit": "Edit"
+                    "edit": "Edit",
+                    "next": "Next"
+                },
+                "footer": {
+                    "gross_amount": "Gross Amount",
+                    "tax_amount": "Tax Amount",
+                    "total_amount": "Total Amount"
+                }
+            }
+        },
+        "create_B2C_Invoice": {
+            "title": {
+                "b2cInvoice": "B2C Invoice"
+            },
+            "form": {
+                "label": {
+                    "customer": "Customer Number",
+                    "customer_name": "Customer Name",
+                    "customer_address": "Customer Address",
+                    "address_type": "Select Address Type",
+                    "item_type": "Item Type",
+                    "item": "Item",
+                    "quantity": "Quantity",
+                    "price": "Price",
+                    "invoice_value": "Invoice Value",
+                    "value": "Value",
+                    "gst": "GST",
+                    "tax_amount": "Tax Amount",
+                    "amount": "Amount"
+                },
+                "errorMsg": {
+                    "customer": "*Please add or select a Customer",
+                    "customer_name": "*Please write Customer name",
+                    "customer_address": "*Please write Customer address",
+                    "address_type": "*Please Select Address Type",
+                    "item_type": "*Please select Item Type",
+                    "itemInvoice": "*Please add atleast one item to create invoice",
+                    "quantity": "*Required Quantity",
+                    "price": "*Required Price",
+                    "gst": "*Required (GST%)",
+                    "value": "*Required Value",
+                    "tax_amount": "*Required Tax Amount",
+                    "amount": "*Required Amount"
+                },
+                "successMsg": {
+                    "order_updated_successfully": "Order Updates Successfully",
+                    "offer_created_successfully": "Sales Order Created Successfully",
+                    "bid_created_successfully": "Purchase Order Created Successfully",
+                    "invoice_created_successfully": "Invoice Created Successfully"
+                },
+                "input": {
+                    "customer": {
+                        "placeholder": "Enter a number to search or add new one"
+                    },
+                    "item_type": {
+                        "goods": "Goods",
+                        "services": "Services",
+                        "placeholder": "Select..."
+                    },
+                    "item": {
+                        "placeholder": "Select Items"
+                    }
+                },
+                "table": {
+                    "header": {
+                        "item": "ITEM",
+                        "quantity": "QUANTITY",
+                        "price": "PRICE",
+                        "gst": "GST (%)",
+                        "invoice_value": "INVOICE VALUE",
+                        "value": "VALUE",
+                        "tax_amount": "TAX AMOUNT",
+                        "amount": "AMOUNT"
+                    }
+                },
+                "ctas": {
+                    "cancel": "Cancel",
+                    "add": "Add",
+                    "create": "Create",
+                    "edit": "Edit",
+                    "next": "Next"
                 },
                 "footer": {
                     "gross_amount": "Gross Amount",
@@ -368,26 +454,33 @@
                 "common": "Something went wrong"
             },
             "successMsg": {
-                "otp_sent": "OTP Sent"
+                "otp_sent": "OTP Sent",
+                "invoice_generate_success": "Invoice Generated Successfully"
+            },
+            "ctas": {
+                "next": "Next",
+                "cancel": "Cancel"
             }
         },
         "generate_invoice_modal_otp": {
             "title": "Invoice",
             "ctas": {
                 "generate": "Generate",
-                "resend": "Resend",
-                "verify": "Verify To Generate",
-                "view": "View"
+                "view": "View",
+                "verify": "Verify"
             },
             "infoText": {
-                "info": "A one time password has been sent to",
-                "resend_info": "Resend OTP in"
+                "title": "Enter PIN",
+                "pin_exist_info": "Enter a User PIN to Generate Invoice",
+                "pin_not_exist_info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
+                "info2": "click here"
             },
             "successMsg": {
                 "invoice_generate_success": " Invoice Generated Successfully"
             },
             "errorMsg": {
-                "common": "Something went wrong"
+                "common": "Something went wrong",
+                "pin_error": "Forgot PIN?"
             }
         },
         "preview_invoice_modal": {
@@ -437,7 +530,7 @@
                 "negotiation_submitted": "Negotiation submitted successfully"
             }
         },
-        "record_payment_order": {
+        "make_payment": {
             "form": {
                 "label": {
                     "payment_mode": "Payment Mode",
@@ -449,7 +542,10 @@
                         "cheque": "Cheque",
                         "cash": "Cash"
                     },
+                    "invoice_id": "Invoice ID",
                     "tran_id": "Transaction ID",
+                    "bank_acc_details": "Bank Account details",
+                    "payment_date": "Payment Date",
                     "amount_paid": "Amount Paid",
                     "balance": "Balance"
                 },
@@ -483,10 +579,12 @@
             },
             "successMsg": {
                 "payment_recorded_sucessfully": "Payment Recorded Successfully",
-                "upload_success": "Upload Successfully"
+                "attached_success": "Attached Successfully"
             },
             "errorMsg": {
+                "invoices": "*Required! Please select invoice",
                 "payment_mode": "*Required! Please select payment mode",
+                "payment_date": "*Required! Please select payment date",
                 "amount_paid_required": "*Required!, Amount should not be empty",
                 "amount_paid_empty": "Amount should not be empty",
                 "amount_paid_exceed": "Amount exceeds balance amount",
@@ -503,6 +601,214 @@
             },
             "ctas": {
                 "record_payment": "Record Payment"
+            }
+        },
+        "invoice_type_modal": {
+            "title": "Choose Invoice Type",
+            "cta": {
+                "invoice": "Invoice"
+            },
+            "types": {
+                "type1": "B2C (Business to Consumer)",
+                "type1_desc": "For direct sales to individual consumers,usually without GST registration.",
+                "type2": "B2B (Business to Business)",
+                "type2_desc": "For transactions between two registered businesses with GST details."
+            }
+        },
+        "generate_pin_modal": {
+            "update_pin": "Update PIN",
+            "create_pin": "Create PIN",
+            "pin_description": "You can use this PIN to verify Invoices",
+            "success_messages": {
+                "pin_created": "PIN successfully created!",
+                "pin_updated": "PIN successfully updated!",
+                "otp_sent": "OTP sent successfully!",
+                "otp_verified": "OTP verified successfully!"
+            },
+            "error_messages": {
+                "common": "Something went wrong!"
+            },
+            "buttons": {
+                "update": "Update PIN",
+                "create": "Create PIN"
+            },
+            "helper_components": {
+                "titles": {
+                    "create_pin": "Create a New PIN",
+                    "confirm_pin": "Confirm PIN",
+                    "enter_current_pin": "Enter Current PIN",
+                    "enter_otp": "OTP Sent to your Registered Number"
+                },
+                "descriptions": {
+                    "create_pin": "Set a PIN to add more security",
+                    "confirm_pin": "Confirm PIN to proceed safely",
+                    "enter_current_pin": "Enter your current PIN to proceed",
+                    "enter_otp": "Verify OTP to change your PIN",
+                    "success_message": "You can now use it to authorize actions securely"
+                },
+                "buttons": {
+                    "next": "Next",
+                    "confirm": "Confirm",
+                    "verify": "Verify"
+                },
+                "messages": {
+                    "pin_mismatch": "PINs do not match!",
+                    "forgot_pin": "Forgot PIN?"
+                },
+                "steps": {
+                    "enter_pin": "Enter PIN",
+                    "enter_otp": "Enter OTP",
+                    "confirm_pin": "Confirm PIN"
+                }
+            },
+            "audit_logs": {
+                "title": "PIN Audit Logs",
+                "table": {
+                    "header": {
+                        "label": {
+                            "pin_id": "PIN ID",
+                            "updated_by": "UPDATED BY",
+                            "update_on": "UPDATED ON",
+                            "action_type": "ACTION TYPE",
+                            "ip_address": "IP ADDRESS",
+                            "status": "STATUS"
+                        }
+                    }
+                }
+            }
+        },
+        "paymentOverview": {
+            "paymentId": "Payment ID",
+            "invoiceId": "Invoice ID",
+            "status": "Status",
+            "clientName": "Client Name",
+            "vendorName": "Vendor Name",
+            "transactionId": "Transaction ID",
+            "modeOfPayment": "Mode of Payment",
+            "amountPaid": "Amount Paid",
+            "totalAmount": "Total Amount",
+            "paymentDate": "Payment Date",
+            "additionalProof": "Additional Proof",
+            "fallback": "-"
+        },
+        "raise_debit_note_modal": {
+            "trigger": {
+                "button": "Raise Debit Note",
+                "tooltip": "Raise a debit note"
+            },
+            "content": {
+                "title": "Debit Note",
+                "form": {
+                    "amount": {
+                        "label": "Amount",
+                        "required": "*",
+                        "error": "Amount should not be greater than total amount of invoice"
+                    },
+                    "remark": {
+                        "label": "Remark",
+                        "required": "*"
+                    },
+                    "actions": {
+                        "discard": "Discard",
+                        "submit": "Submit"
+                    }
+                }
+            },
+            "toast": {
+                "success": "Debit Note Raised",
+                "error": "Something went wrong"
+            }
+        },
+        "invoiceType": {
+            "title": "Select Invoice Type",
+            "set_as_default": "Set as Default",
+            "proceed_button": "Proceed",
+            "toast_success": "Default Invoice Type set successfully",
+            "toast_error": "Something went wrong",
+            "change_default_prefix": "You can change your default from",
+            "change_default_link": "here",
+            "types": {
+                "b2c": {
+                    "name": "B2C Invoice",
+                    "description": "For direct sales to individual consumers, usually without GST registration."
+                },
+                "b2b": {
+                    "name": "B2B Invoice",
+                    "description": "For transactions between two registered businesses with GST details."
+                }
+            }
+        },
+        "invoice_settings": {
+            "default_invoice_type": "Default Invoice Type",
+            "default_skin": "Default Skin",
+            "preview_button": "Preview",
+            "custom_remarks_label": "Custom Remarks",
+            "discard_button": "Discard",
+            "save_button": "Save",
+            "social_links_label": "Add Social links",
+            "social_links_placeholder": "Add link here",
+            "invoice_types": {
+                "b2c": {
+                    "name": "B2C (Business to Consumer)",
+                    "description": "For direct sales to individual consumers, usually without GST registration."
+                },
+                "b2b": {
+                    "name": "B2B (Business to Business)",
+                    "description": "For transactions between two registered businesses with GST details."
+                }
+            },
+            "template": {
+                "default_description": "Clean, professional design with blue accents"
+            }
+        },
+        "authProgress": {
+            "step1": "PAN Verification",
+            "step2": "Aadhar Verification",
+            "step3": "Confirmation"
+        },
+        "validationUtils": {
+            "phone": {
+                "required": "*Phone Number is required to proceed",
+                "invalid": "*Please enter a 10 - digit phone number"
+            },
+            "pan": {
+                "required": "*Required PAN Number",
+                "invalid": "*Please provide a valid PAN Number"
+            },
+            "aadhaar": {
+                "required": "*Required Aadhaar Number",
+                "invalid": "*Please provide a valid Aadhaar Number"
+            },
+            "name": {
+                "required": "*Required Full Name"
+            },
+            "dob": {
+                "required": "*Required Date of Birth"
+            },
+            "terms": {
+                "required": "*Please accept the terms and conditions"
+            },
+            "enterprise": {
+                "type": {
+                    "required": "*Required Enterprise Type"
+                },
+                "name": {
+                    "required": "*Required Enterprise Name"
+                },
+                "pincode": {
+                    "required": "*Required Enterprise Pincode",
+                    "invalid": "*Please provide a valid Pincode"
+                },
+                "address": {
+                    "required": "*Required Enterprise Address"
+                },
+                "dateOfIncorporation": {
+                    "required": "*Required Date of Incorporation"
+                }
+            },
+            "email": {
+                "required": "*Required Email",
+                "invalid": "*Please provide a valid email"
             }
         }
     }

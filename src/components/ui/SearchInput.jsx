@@ -7,11 +7,13 @@ const SearchInput = ({
   setToSearchTerm,
   className,
   searchPlaceholder,
+  disabled,
 }) => {
   return (
     <div className="relative">
       <Input
         type="text"
+        disabled={disabled}
         placeholder={searchPlaceholder}
         className={cn('p-2', className)}
         name="customer-name"

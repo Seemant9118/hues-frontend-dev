@@ -67,13 +67,15 @@
                     "order_details": "ऑर्डर विवरण",
                     "negotiation": "मोलभाव",
                     "generate_invoice": "चालान उत्पन्न करें",
-                    "record_payment": "भुगतान रिकॉर्ड करें"
+                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "upload_attachements": "अटैचमेंट अपलोड करें"
                 },
                 "ctas": {
+                    "upload_attachements": "अटैचमेंट अपलोड करें",
                     "record_payment": "भुगतान रिकॉर्ड करें",
                     "generate_invoice": "चालान उत्पन्न करें",
-                    "download": {
-                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                    "view": {
+                        "placeholder": "ऑर्डर विवरण करें"
                     },
                     "more": {
                         "placeholder": "अधिक विकल्प",
@@ -83,6 +85,17 @@
                         "wait_response": "प्रतिक्रिया की प्रतीक्षा",
                         "negotiate": "मोलभाव करें",
                         "accept": "स्वीकार करें"
+                    }
+                },
+                "fileUploader": {
+                    "instruction": "फ़ाइल खींचें और छोड़ें या चुनें (अधिकतम 10MB, .png / .pdf फ़ॉर्मेट)",
+                    "note": "नोट - केवल अटैचमेंट अपलोड करें",
+                    "attachedFilesLabel": "संलग्न फ़ाइलें",
+                    "fileAttachedMessage": "सफलतापूर्वक संलग्न किया गया",
+                    "buttons": {
+                        "select": "चुनें",
+                        "cancel": "रद्द करें",
+                        "upload": "अपलोड करें"
                     }
                 },
                 "tabs": {
@@ -147,6 +160,7 @@
                 },
                 "invoice": {
                     "cta": "चालान",
+                    "b2bCta": "बी2बी इनवॉइस",
                     "placeholder": "नया बिक्री चालान बनाएं"
                 }
             },
@@ -204,8 +218,9 @@
                             "table": {
                                 "header": {
                                     "payment_id": "भुगतान आईडी",
-                                    "amount": "राशि",
-                                    "date": "तारीख",
+                                    "amount": "भुगतान की राशि",
+                                    "date": "भुगतान तिथि",
+                                    "status": "स्थिति",
                                     "invoice_no": "चालान संख्या"
                                 }
                             },
@@ -227,6 +242,42 @@
                                 "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "sales-payments": {
+            "title": "भुगतान",
+            "title2": "नया भुगतान रिकॉर्ड बनाएँ",
+            "emptyStateComponent": {
+                "heading": "अभी तक कोई भुगतान नहीं",
+                "description": "आपके पास अभी कोई भुगतान नहीं है। नया भुगतान रिकॉर्ड बनाने के लिए नीचे दिए गए बटन पर क्लिक करें।"
+            },
+            "payment-details": {
+                "title": "भुगतान विवरण"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "चयनित भुगतानों का निर्यात करें",
+                    "successMsg": "भुगतान निर्यात हो गया है और डाउनलोड स्वचालित रूप से शुरू हो गया है",
+                    "errorMsg": "कुछ गलत हो गया"
+                },
+                "create_payment_record": {
+                    "cta": "भुगतान रिकॉर्ड बनाएँ",
+                    "placeholder": "भुगतान रिकॉर्ड बनाएँ"
+                }
+            },
+            "section": {
+                "table": {
+                    "header": {
+                        "payment_id": "भुगतान आईडी",
+                        "client_name": "क्लाइंट नाम",
+                        "payment_date": "भुगतान तिथि",
+                        "invoice_id": "चालान आईडी",
+                        "status": "स्थिति",
+                        "amount_paid": "भुगतान की गई राशि",
+                        "total_amount": "कुल राशि",
+                        "mode_of_payment": "भुगतान का तरीका"
                     }
                 }
             }

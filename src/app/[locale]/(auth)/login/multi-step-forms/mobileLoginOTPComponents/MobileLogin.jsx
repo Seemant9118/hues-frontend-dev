@@ -1,4 +1,5 @@
 import { invitation } from '@/api/invitation/Invitation';
+import { validatePhoneNumber } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { validationBase64 } from '@/services/Invitation_Service/Invitation_Servi
 import { loginWithInvitation } from '@/services/User_Auth_Service/UserAuthServices';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -19,7 +21,9 @@ const MobileLogin = ({
   errorMsg,
   setErrorMsg,
   generateOTPMutation,
+  translations,
 }) => {
+  const translationForErrorMessages = useTranslations();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get('invitationToken');
 
@@ -48,16 +52,6 @@ const MobileLogin = ({
     }
   }, [isSuccess, inviteData]);
 
-  const validation = (formData) => {
-    const error = {};
-    if (formData.mobileNumber.length === 0) {
-      error.mobileNumber = '*Phone Number is required to proceed';
-    } else if (formData.mobileNumber.length !== 10) {
-      error.mobileNumber = '*Please enter a 10 - digit phone number';
-    }
-    return error;
-  };
-
   // login with invitation
   const loginInvitation = useMutation({
     mutationFn: loginWithInvitation,
@@ -66,50 +60,51 @@ const MobileLogin = ({
       LocalStorageService.set('user_mobile_number', inviteData.mobile_number);
       LocalStorageService.set('operation_type', data.data.data.operation_type);
       LocalStorageService.set('invitationData', data.data.data.invitationData);
-      toast.success(data.data.message);
+      toast.success(translations('toast.otpSent'));
       setMobileLoginStep(2); // verify mobile OTP
     },
     onError: () => {
-      setErrorMsg('Failed to send OTP');
+      setErrorMsg(translations('toast.failedToSendOtp'));
     },
   });
 
   const handleChangeMobLogin = (e) => {
     const { name, value } = e.target;
 
-    // Handle validation for 10-digit mobile number
-    setErrorMsg((prev) => ({
-      ...prev,
-      mobileNumber:
-        value.length === 10 ? '' : '*Please enter a 10-digit mobile number',
-    }));
+    // Validate mobile number and update error message
+    const errorMessage = validatePhoneNumber(value);
+    setErrorMsg(errorMessage);
 
     // Update form data
-    setFormDataWithMob((values) => ({
-      ...values,
+    setFormDataWithMob((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
   const handleSubmitFormWithMob = (e) => {
     e.preventDefault();
-    const isAnyError = validation(formDataWithMob);
 
-    if (Object.keys(isAnyError).length === 0) {
+    const errorMsg = validatePhoneNumber(formDataWithMob.mobileNumber);
+
+    if (!errorMsg) {
       setErrorMsg('');
+
       if (!invitationToken) {
-        generateOTPMutation.mutate(formDataWithMob); // normal flow
+        // Normal flow
+        generateOTPMutation.mutate(formDataWithMob);
       } else {
+        // Invitation flow
         loginInvitation.mutate({
-          countryCode: inviteData.country_code,
-          invitationPasscode: inviteData.invitation_passcode,
-          invitationReferenceId: inviteData.invitation_reference_id,
+          countryCode: inviteData?.country_code,
+          invitationPasscode: inviteData?.invitation_passcode,
+          invitationReferenceId: inviteData?.invitation_reference_id,
           mobileNumber: formDataWithMob.mobileNumber,
           invitationType: inviteData?.invitationData?.invitationType,
-        }); // invitation flow
+        });
       }
     } else {
-      setErrorMsg(isAnyError);
+      setErrorMsg(errorMsg);
     }
   };
 
@@ -117,16 +112,16 @@ const MobileLogin = ({
     <div className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10">
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-          Welcome to Hues
+          {translations('header.title')}
         </h1>
         <p className="w-full text-center text-sm text-[#A5ABBD]">
-          One account for all things{' '}
-          <span className="font-bold">Paraphernalia</span>
+          {translations('header.subtitle')}{' '}
+          <span className="font-bold">{translations('header.brandName')}</span>
         </p>
 
         {isLoading && (
           <div className="flex flex-col">
-            <span>Validating Invitation ...</span>
+            <span>{translations('validation.invitationLoading')}</span>
             <Loading />
           </div>
         )}
@@ -138,33 +133,34 @@ const MobileLogin = ({
       >
         <div className="flex flex-col gap-2">
           <Label htmlFor="mobile-number" className="font-medium text-[#121212]">
-            Phone number <span className="text-red-600">*</span>
+            {translations('form.phoneLabel')}{' '}
+            <span className="text-red-600">*</span>
           </Label>
           <div className="relative flex items-center hover:border-gray-600">
             <span className="absolute left-1.5 text-sm text-gray-600">+91</span>
             <Input
-              type="text"
+              type="number"
               name="mobileNumber"
-              placeholder="Enter a Aadhar linked phone number"
+              placeholder={translations('form.phonePlaceholder')}
               className="px-8 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobileNumber}
             />
           </div>
-          {errorMsg.mobileNumber && <ErrorBox msg={errorMsg.mobileNumber} />}
+          {errorMsg && <ErrorBox msg={translationForErrorMessages(errorMsg)} />}
         </div>
 
         <Button
-          disabled={generateOTPMutation.isPending}
+          disabled={generateOTPMutation.isPending || loginInvitation.isPending}
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"
         >
-          {generateOTPMutation.isPending ? (
+          {generateOTPMutation.isPending || loginInvitation.isPending ? (
             <Loading />
           ) : (
             <div className="flex items-center gap-4">
-              <p>Send OTP</p>
+              <p>{translations('button.sendOtp')}</p>
             </div>
           )}
         </Button>

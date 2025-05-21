@@ -9,11 +9,13 @@ import { LocalStorageService } from '@/lib/utils';
 import { cinVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const CINVerificationPage = () => {
+  const translations = useTranslations('auth.enterprise.cinVerify');
   const router = useRouter();
   const userId = LocalStorageService.get('user_profile');
   const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
@@ -42,7 +44,7 @@ const CINVerificationPage = () => {
     mutationKey: [userAuth.cinVerify.mutationKey],
     mutationFn: cinVerify,
     onSuccess: (data) => {
-      toast.success('CIN Verified Successfully');
+      toast.success(translations('toast.success'));
       const { enterpriseId, isDirector } = data.data.data;
       LocalStorageService.set('enterprise_Id', enterpriseId);
       // LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
@@ -55,7 +57,7 @@ const CINVerificationPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.messages || 'Something went wrong');
+      toast.error(error.response.data.messages || translations('toast.error'));
     },
   });
 
@@ -73,10 +75,10 @@ const CINVerificationPage = () => {
       <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            We found a CIN for this enterpise
+            {translations('title')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Verify the CIN Number and continue
+            {translations('subtitle')}
           </p>
         </div>
 
@@ -86,13 +88,13 @@ const CINVerificationPage = () => {
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="cin" className="font-medium text-[#121212]">
-              CIN
+              {translations('label')}
             </Label>
             <div className="flex items-center hover:border-gray-600">
               <Input
                 type="text"
                 name="cin"
-                placeholder="Enter your CIN number"
+                placeholder={translations('placeholder')}
                 className="uppercase focus:font-bold"
                 value={enterpriseData.cinOrLlpin}
                 disabled
@@ -105,11 +107,15 @@ const CINVerificationPage = () => {
             type="submit"
             disabled={verifyCINMutation.isPending}
           >
-            {verifyCINMutation.isPending ? <Loading /> : 'Verify'}
+            {verifyCINMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('button.verify')
+            )}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft size={14} />
-            Back
+            {translations('button.back')}
           </Button>
         </form>
       </div>

@@ -2,27 +2,47 @@
 
 import React from 'react';
 
+import { useRBAC } from '@/context/RBACcontext';
+import { Link } from '@/i18n/routing';
 import {
   Bell,
-  BookOpenText,
   Boxes,
   ClipboardList,
   FileSymlink,
   Gauge,
   HandPlatter,
+  IndianRupee,
+  NotebookTabs,
   Package,
   ReceiptText,
   ScrollText,
+  Settings,
+  ShoppingCart,
+  SquareKanban,
   Store,
   UserRound,
 } from 'lucide-react';
 import Image from 'next/image';
-
-import { Link } from '@/i18n/routing';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
+  const { hasPageAccess } = useRBAC();
+
+  const adminLinks = hasPageAccess('adminReports')
+    ? [
+        {
+          name: 'Reports',
+          icon: <SquareKanban size={16} />,
+          path: `/admin/reports`,
+        },
+        // {
+        //   name: 'Enterprise List',
+        //   icon: <List size={16} />,
+        //   path: `/admin/enterprises`,
+        // },
+      ]
+    : [];
   const links = [
     {
       name: 'sidebar.dashboard',
@@ -51,11 +71,11 @@ const Sidebar = () => {
         },
       ],
     },
-    {
-      name: 'sidebar.catalogue',
-      icon: <BookOpenText size={16} />,
-      path: '/catalogue',
-    },
+    // {
+    //   name: 'sidebar.catalogue',
+    //   icon: <BookOpenText size={16} />,
+    //   path: '/catalogue',
+    // },
     {
       name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
@@ -70,6 +90,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.invoices',
           icon: <ReceiptText size={16} />,
           path: '/sales/sales-invoices',
+        },
+        {
+          name: 'sidebar.subTabs.payments',
+          icon: <IndianRupee size={14} />,
+          path: '/sales/sales-payments',
         },
         {
           name: 'sidebar.subTabs.debitNotes',
@@ -94,6 +119,11 @@ const Sidebar = () => {
           path: '/purchases/purchase-invoices',
         },
         {
+          name: 'sidebar.subTabs.payments',
+          icon: <IndianRupee size={14} />,
+          path: '/purchases/purchase-payments',
+        },
+        {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/purchases/purchase-debitNotes',
@@ -101,15 +131,28 @@ const Sidebar = () => {
       ],
     },
     {
-      name: 'sidebar.clients',
-      icon: <UserRound size={16} />,
+      name: 'sidebar.contacts',
+      icon: <NotebookTabs size={16} />,
       path: '/clients',
+      subTab: [
+        {
+          name: 'sidebar.subTabs.clients',
+          icon: <UserRound size={16} />,
+          path: '/clients',
+        },
+        {
+          name: 'sidebar.subTabs.vendors',
+          icon: <Store size={16} />,
+          path: '/vendors',
+        },
+        {
+          name: 'sidebar.subTabs.customers',
+          icon: <ShoppingCart size={16} />,
+          path: '/customers',
+        },
+      ],
     },
-    {
-      name: 'sidebar.vendors',
-      icon: <Store size={16} />,
-      path: '/vendors',
-    },
+
     // {
     //   name: 'Members',
     //   icon: <Users size={16} />,
@@ -129,43 +172,65 @@ const Sidebar = () => {
       icon: <Bell size={16} />,
       path: '/notification',
     },
+    {
+      name: 'sidebar.settings',
+      icon: <Settings size={16} />,
+      path: '/settings',
+    },
   ];
 
   return (
-    <div className="flex flex-col justify-between bg-[#F6F9FF] p-3">
-      <div className="flex w-full flex-col gap-10 py-2">
-        <Link href={'/'}>
-          <Image
-            src={'/hues_logo.png'}
-            height={25}
-            width={100}
-            placeholder="blur"
-            alt="Logo"
-            blurDataURL="/hues_logo.png"
-          />
-        </Link>
+    <aside className="flex flex-col gap-10 overflow-hidden bg-[#F6F9FF] pb-3 pl-3 pt-3">
+      <Link href="/">
+        <Image
+          src="/hues_logo.png"
+          height={25}
+          width={100}
+          placeholder="blur"
+          alt="Logo"
+          blurDataURL="/hues_logo.png"
+        />
+      </Link>
 
+      {/* <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1"> */}
+
+      <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
         <div className="flex flex-col gap-2">
-          {links.map((link) => (
+          {/* admin Navigation Links */}
+          {adminLinks?.length > 0 && (
+            <nav className="flex flex-col gap-2 border-b py-1">
+              <span className="text-sm font-semibold">Admin</span>
+              {adminLinks.map((link) => (
+                <StyledLinks key={link.name} link={link} />
+              ))}
+            </nav>
+          )}
+
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-2">
+            {links.map((link) => (
+              <StyledLinks key={link.name} link={link} />
+            ))}
+          </nav>
+        </div>
+
+        {/* Action Links & Profile */}
+        <div className="flex flex-col gap-2">
+          {actionLinks.map((link) => (
             <StyledLinks key={link.name} link={link} />
           ))}
+
+          <ProfileInfoPopUp
+            ctaName="sidebar.profile"
+            viewProfileCta="components.profilePopUpInfo.viewProfileCta"
+            enterprises="components.profilePopUpInfo.enterprises"
+            addAnotherCta="components.profilePopUpInfo.addAnotherCta"
+            logoutCta="components.profilePopUpInfo.logoutCta"
+            accessDeniedCta="components.profilePopUpInfo.accessDeniedCta"
+          />
         </div>
       </div>
-
-      <div className="flex flex-col gap-2">
-        {actionLinks.map((link) => (
-          <StyledLinks key={link.name} link={link} />
-        ))}
-        <ProfileInfoPopUp
-          ctaName={'sidebar.profile'}
-          viewProfileCta={'components.profilePopUpInfo.viewProfileCta'}
-          enterprises={'components.profilePopUpInfo.enterprises'}
-          addAnotherCta={'components.profilePopUpInfo.addAnotherCta'}
-          logoutCta={'components.profilePopUpInfo.logoutCta'}
-          accessDeniedCta={'components.profilePopUpInfo.accessDeniedCta'}
-        />
-      </div>
-    </div>
+    </aside>
   );
 };
 

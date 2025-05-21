@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import { acknowledgeApi } from '@/api/acknowledgements/acknowledgeApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
@@ -6,12 +7,11 @@ import {
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import Tooltips from '../auth/Tooltips';
 import InvitationActionModal from '../Modals/InvitationActionModal';
 import { Button } from '../ui/button';
 import {
@@ -43,6 +43,20 @@ const OrdersOverview = ({
   const isPurchaseDetailPage = pathName.includes('/purchase-orders');
 
   const paymentProgressPercent = (amtPaid / totalAmount) * 100;
+
+  // const [showAll, setShowAll] = useState(false);
+
+  // const attachmentsToShow = showAll
+  //   ? orderDetails.attachments
+  //   : orderDetails.attachments.slice(0, 3);
+
+  // const handleClick = (attachment) => {
+  //   const isPdf = attachment?.documenturl?.toLowerCase().endsWith('.pdf');
+  //   if (isPdf) {
+  //     viewPdfInNewTab(attachment?.documenturl);
+  //   }
+  //   // else you can handle modal inside InvoicePDFViewModal
+  // };
 
   // update acknowledge status : yes or no
   const updateAcknowlegeMutation = useMutation({
@@ -130,7 +144,7 @@ const OrdersOverview = ({
                     ? translations('label.client_name')
                     : translations('label.vendor_name')}
                 </p>
-                <p className="text-lg font-bold">
+                <p className="h-8 w-10/12 truncate text-lg font-bold">
                   {Name ?? 'Name not available'}
                 </p>
                 <p className="flex items-center text-xs font-bold text-[#A5ABBD]">
@@ -179,22 +193,62 @@ const OrdersOverview = ({
                 </section>
               )}
             </div>
-            {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
-              orderDetails?.negotiationStatus === 'INVOICED') && (
-              <div className="flex w-1/2 flex-col items-end gap-4">
+            {/* attachments - only show when attachements present */}
+            {/* {orderDetails?.attachments?.length > 0 && (
+              <div className="flex h-full w-1/2 flex-col gap-4">
                 <section className="flex flex-col gap-4">
-                  <Tooltips
-                    trigger={
-                      <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
-                        {translations('label.view_negotiation')}
-                        <MoveUpRight size={12} />
-                      </p>
-                    }
-                    content={'View Negotiation history'}
-                  />
+                  <p className="text-xs font-bold">{'Attachments'}</p>
+
+                  <div className="scrollBarStyles flex max-h-32 flex-wrap gap-2 overflow-y-auto pr-2">
+                    {attachmentsToShow.map((attachment) => {
+                      const isPdf = attachment?.documenturl
+                        ?.toLowerCase()
+                        .endsWith('.pdf');
+
+                      return isPdf ? (
+                        <div
+                          key={attachment.attachmentid}
+                          onClick={() => handleClick(attachment)}
+                          className="cursor-pointer overflow-hidden rounded-full border px-2 hover:bg-muted hover:text-primary"
+                        >
+                          <div className="flex w-full items-center gap-2 p-1">
+                            <FileText size={16} className="text-red-600" />
+                            <span className="truncate text-xs">
+                              {attachment?.attachmentfilename}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <InvoicePDFViewModal
+                          key={attachment.attachmentid}
+                          cta={
+                            <div className="cursor-pointer overflow-hidden rounded-full border px-2 hover:bg-muted hover:text-primary">
+                              <div className="flex items-center gap-2 p-1">
+                                <ImageIcon size={16} className="text-primary" />
+                                <span className="truncate text-xs">
+                                  {attachment?.attachmentfilename}
+                                </span>
+                              </div>
+                            </div>
+                          }
+                          Url={attachment?.documenturl}
+                          name={attachment?.attachmentfilename}
+                        />
+                      );
+                    })}
+
+                    {!showAll && orderDetails.attachments.length > 3 && (
+                      <div
+                        className="cursor-pointer rounded-full border px-2 py-1 text-xs hover:bg-muted hover:text-primary"
+                        onClick={() => setShowAll(true)}
+                      >
+                        +{orderDetails.attachments.length - 3} more
+                      </div>
+                    )}
+                  </div>
                 </section>
               </div>
-            )}
+            )} */}
           </section>
           {isPurchaseDetailPage && orderDetails?.isAcknowledgeMentNeeded && (
             <section className="flex items-center justify-between rounded-md bg-[#288AF90A] px-3 py-1.5">
@@ -210,6 +264,7 @@ const OrdersOverview = ({
                     size="sm"
                     variant="outline"
                     className="h-8 rounded-md text-xs"
+                    disabled={undoAcknowlegeMutation.isPending}
                   >
                     {translations('acknowledge_message.ctas.undo')}
                   </Button>
@@ -222,6 +277,7 @@ const OrdersOverview = ({
                       size="sm"
                       variant="outline"
                       className="h-8 rounded-md text-xs"
+                      disabled={updateAcknowlegeMutation.isPending}
                     >
                       {translations('acknowledge_message.ctas.no')}
                     </Button>
@@ -229,6 +285,7 @@ const OrdersOverview = ({
                       onClick={() => handleAcknowledgeAcceptReject(true)}
                       size="sm"
                       className="h-8 rounded-md bg-[#288AF9] text-xs text-white"
+                      disabled={updateAcknowlegeMutation.isPending}
                     >
                       {translations('acknowledge_message.ctas.yes')}
                     </Button>
@@ -337,17 +394,6 @@ const OrdersOverview = ({
                   <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amtPaid)} of ${formattedAmount(totalAmount)}`}</p>
                 </section>
               </div>
-              {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
-                orderDetails?.negotiationStatus === 'INVOICED') && (
-                <div className="flex w-1/2 flex-col items-end gap-4">
-                  <section className="flex flex-col gap-4">
-                    <p className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline">
-                      {translations('label.view_negotiation')}
-                      <MoveUpRight size={12} />
-                    </p>
-                  </section>
-                </div>
-              )}
             </section>
           </CollapsibleContent>
         </Collapsible>

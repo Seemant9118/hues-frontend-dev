@@ -1,7 +1,14 @@
 'use client';
 
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { tokenApi } from '@/api/tokenApi/tokenApi';
+import {
+  validateDateOfIncorporation,
+  validateEnterpriseAddress,
+  validateEnterpriseName,
+  validatePinCode,
+} from '@/appUtils/ValidationUtils';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import DatePickers from '@/components/ui/DatePickers';
@@ -10,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
+import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
 import {
   getEnterpriseById,
   UpdateEnterprise,
@@ -17,11 +25,16 @@ import {
 import { refreshToken } from '@/services/Token_Services/TokenServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const EnterpriseVerificationDetailsPage = () => {
+  const translations = useTranslations(
+    'auth.enterprise.enterpriseVerification',
+  );
+  const translationForError = useTranslations();
   const queryClient = useQueryClient();
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -29,14 +42,17 @@ const EnterpriseVerificationDetailsPage = () => {
   const [enterpriseOnboardData, setEnterpriseOnboardData] = React.useState({
     name: '',
     email: '',
-    roa: '',
+    pincode: '',
+    city: '',
+    state: '',
+    address: '',
     roc: '',
     doi: '',
     type: '',
     panNumber: '',
     CIN: '',
   });
-  const [errorMsg, setErrorMsg] = React.useState({});
+  const [errorMsg, setErrorMsg] = React.useState(null);
 
   // fetch details
   const { data: enterpriseData } = useQuery({
@@ -52,11 +68,18 @@ const EnterpriseVerificationDetailsPage = () => {
   // setDetails
   useEffect(() => {
     if (enterpriseData) {
+      const cleanedAddress = enterpriseData?.address?.address?.replace(
+        /,\s[^,]+,\s[^-]+-\s*\d+$/,
+        '',
+      );
       setEnterpriseOnboardData((prev) => ({
         ...prev,
         name: enterpriseData?.name || '',
         email: enterpriseData?.email || '',
-        roa: enterpriseData?.address || '',
+        pincode: enterpriseData?.address?.pincode || '',
+        city: enterpriseData?.address?.city || '',
+        state: enterpriseData?.state || '',
+        address: cleanedAddress || '',
         roc: enterpriseData?.roc || '',
         doi: enterpriseData?.doi || '',
         type: enterpriseData?.type || '',
@@ -68,28 +91,107 @@ const EnterpriseVerificationDetailsPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEnterpriseOnboardData((values) => ({ ...values, [name]: value }));
-  };
 
-  const handleDateChange = (date) => {
-    setEnterpriseOnboardData((prev) => ({
+    if (name === 'pincode') {
+      if (enterpriseOnboardData?.pincode?.length !== 5) {
+        setEnterpriseOnboardData((prev) => ({
+          ...prev,
+          city: '',
+          state: '',
+        }));
+      }
+    }
+    setEnterpriseOnboardData((values) => ({ ...values, [name]: value }));
+
+    setErrorMsg((prev) => ({
       ...prev,
-      doi: date ? date.toISOString().split('T')[0] : '',
+      [name]: '',
     }));
   };
 
+  const handleDateChange = (date) => {
+    if (!date) {
+      setEnterpriseOnboardData((prev) => ({
+        ...prev,
+        doi: '',
+      }));
+      return;
+    }
+
+    // Convert to local date string (YYYY-MM-DD)
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000)
+      .toISOString()
+      .split('T')[0];
+
+    setEnterpriseOnboardData((prev) => ({
+      ...prev,
+      doi: localDate,
+    }));
+
+    setErrorMsg((prev) => ({
+      ...prev,
+      doi: '',
+    }));
+  };
+
+  const {
+    data: addressData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [
+      addressAPIs.getAddressFromPincode.endpointKey,
+      enterpriseOnboardData?.pincode,
+    ],
+    enabled: enterpriseOnboardData?.pincode?.length === 6,
+    queryFn: async () => {
+      try {
+        const res = await getDataFromPinCode(enterpriseOnboardData?.pincode);
+        return res?.data?.data;
+      } catch (err) {
+        if (err?.response?.status === 400) {
+          setErrorMsg((prev) => ({
+            ...prev,
+            pincode: translations('errors.pincodeInvalid'),
+          }));
+          setEnterpriseOnboardData((prev) => ({
+            ...prev,
+            city: '',
+            state: '',
+          }));
+        } else {
+          toast.error('Failed to fetch address details');
+        }
+        throw err; // rethrow so React Query knows it failed
+      }
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (addressData) {
+      setEnterpriseOnboardData((prev) => ({
+        ...prev,
+        city: addressData.district || '',
+        state: addressData.state || '',
+      }));
+    }
+  }, [addressData]);
+
   const validation = (enterpriseOnboardD) => {
-    const error = {};
-    if (enterpriseOnboardD.name === '') {
-      error.name = '*Required Enterprise Name';
-    }
-    if (enterpriseOnboardD.roa === '') {
-      error.roa = '*Required Registered Office Address';
-    }
-    if (enterpriseOnboardD.doi === '') {
-      error.doi = '*Required Date of Incorporation';
-    }
-    return error;
+    const errors = {};
+    errors.name = validateEnterpriseName(enterpriseOnboardD.name);
+    errors.pincode = validatePinCode(enterpriseOnboardD.pincode);
+    errors.address = validateEnterpriseAddress(enterpriseOnboardD.address);
+    errors.doi = validateDateOfIncorporation(enterpriseOnboardD.doi);
+
+    // Remove empty error messages
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
+
+    return errors;
   };
 
   // mutation fn : update enterprise
@@ -104,23 +206,26 @@ const EnterpriseVerificationDetailsPage = () => {
       // set new access token
       const newAccessToken = refreshTokenValue?.data?.data?.access_token;
       LocalStorageService.set('token', newAccessToken);
-      const { id, isOnboardingCompleted } = data.data.data;
+      const { id, isOnboardingCompleted, isEnterpriseOnboardingComplete } =
+        data.data.data;
+
+      LocalStorageService.set('isOnboardingComplete', isOnboardingCompleted);
       LocalStorageService.set('enterprise_Id', id);
       LocalStorageService.set(
         'isEnterpriseOnboardingComplete',
-        isOnboardingCompleted,
+        isEnterpriseOnboardingComplete,
       );
 
       // clear original data which was used in onboarding
       LocalStorageService.remove('companyData');
       LocalStorageService.remove('gst');
 
-      toast.success('Enterprise Successfully Verified');
+      toast.success(translations('toast.success'));
 
       router.push('/login/enterprise/enterprise-onboarded-success');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Oops, Something went wrong!');
+      toast.error(error.response.data.message || translations('toast.error'));
     },
   });
 
@@ -147,27 +252,28 @@ const EnterpriseVerificationDetailsPage = () => {
     <div className="flex h-full items-start justify-center">
       <form
         onSubmit={handleSubmit}
-        className="flex w-[450px] flex-col items-center gap-10 py-2"
+        className="flex w-[500px] flex-col items-center gap-5"
       >
         <div className="flex flex-col gap-2">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            Verify your Enterprise Details
+            {translations('heading')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Verify your enterprise and proceed further
+            {translations('subheading')}
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-5">
-          <div className="grid w-full items-center gap-1">
+        <div className="navScrollBarStyles flex max-h-[400px] w-full flex-col gap-5 overflow-y-auto">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="enterpriseName"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Enterprise Name <span className="text-red-600">*</span>{' '}
+              {translations('labels.enterpriseName')}{' '}
+              <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Your Enterprise Name"
+                content={translations('labels.enterpriseName')}
               />
             </Label>
 
@@ -175,21 +281,26 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder="Enterprise Name"
+                placeholder={translations('placeholders.enterpriseName')}
                 name="name"
                 value={enterpriseOnboardData.name}
                 onChange={handleChange}
               />
             </div>
-            {errorMsg?.name && <ErrorBox msg={errorMsg.name} />}
+            {errorMsg?.name && (
+              <ErrorBox msg={translationForError(errorMsg.name)} />
+            )}
           </div>
-          <div className="grid w-full items-center gap-1">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="email"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Email
-              <Tooltips trigger={<Info size={12} />} content="Your Email" />
+              {translations('labels.email')}
+              <Tooltips
+                trigger={<Info size={12} />}
+                content={translations('labels.email')}
+              />
             </Label>
 
             <div className="relative">
@@ -204,15 +315,66 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1">
+          <div className="grid grid-cols-2 gap-4 px-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="pincode">
+                {translations('labels.pincode')}{' '}
+                <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  id="pincode"
+                  name="pincode"
+                  className="pr-10"
+                  value={enterpriseOnboardData?.pincode}
+                  onChange={handleChange}
+                  placeholder={translations('placeholders.pincode')}
+                />
+                {(isLoading || isFetching) && (
+                  <div className="absolute right-1 top-2 text-gray-500">
+                    <Loading />
+                  </div>
+                )}
+              </div>
+              {errorMsg?.pincode && (
+                <ErrorBox msg={translationForError(errorMsg?.pincode)} />
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="city">{translations('labels.city')}</Label>
+              <Input
+                id="city"
+                name="city"
+                disabled
+                value={enterpriseOnboardData?.city}
+                placeholder={translations('placeholders.city')}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1 px-2">
+            <Label htmlFor="state">{translations('labels.state')}</Label>
+            <Input
+              id="state"
+              name="state"
+              value={enterpriseOnboardData?.state}
+              disabled
+              placeholder={translations('placeholders.state')}
+            />
+          </div>
+
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
-              htmlFor="roa"
+              htmlFor="address"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Registered Office Address <span className="text-red-600">*</span>{' '}
+              {translations('labels.address')}{' '}
+              <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Registered Office Address"
+                content={translations('labels.address')}
               />
             </Label>
 
@@ -220,24 +382,26 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder="Registered Office Address"
-                name="roa"
-                value={enterpriseOnboardData.roa}
+                placeholder={translations('placeholders.address')}
+                name="address"
+                value={enterpriseOnboardData.address}
                 onChange={handleChange}
               />
-              {errorMsg?.roa && <ErrorBox msg={errorMsg.roa} />}
+              {errorMsg?.address && (
+                <ErrorBox msg={translationForError(errorMsg.address)} />
+              )}
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="roc"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              ROC
+              {translations('labels.roc')}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Registrar of Companies"
+                content={translations('placeholders.roc')}
               />
             </Label>
 
@@ -245,7 +409,7 @@ const EnterpriseVerificationDetailsPage = () => {
               <Input
                 className="focus:font-bold"
                 type="text"
-                placeholder="ROC"
+                placeholder={translations('labels.roc')}
                 name="roc"
                 value={enterpriseOnboardData.roc}
                 onChange={handleChange}
@@ -253,15 +417,16 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1">
+          <div className="grid w-full items-center gap-1 px-2">
             <Label
               htmlFor="doi"
               className="flex items-center gap-1 font-medium text-[#414656]"
             >
-              Date of Incorporation <span className="text-red-600">*</span>{' '}
+              {translations('labels.doi')}{' '}
+              <span className="text-red-600">*</span>{' '}
               <Tooltips
                 trigger={<Info size={12} />}
-                content="Date of Incorporation"
+                content={translations('placeholders.doi')}
               />
             </Label>
 
@@ -270,7 +435,7 @@ const EnterpriseVerificationDetailsPage = () => {
                 <Input
                   className="focus:font-bold"
                   type="text"
-                  placeholder="Registration Date"
+                  placeholder={translations('placeholders.doi')}
                   name="doi"
                   value={enterpriseOnboardData.doi}
                   disabled
@@ -291,23 +456,29 @@ const EnterpriseVerificationDetailsPage = () => {
                 </div>
               )}
             </div>
-            {errorMsg?.doi && <ErrorBox msg={errorMsg.doi} />}
+            {errorMsg?.doi && (
+              <ErrorBox msg={translationForError(errorMsg.doi)} />
+            )}
           </div>
+        </div>
+        <div className="flex w-full flex-col gap-4">
+          <Button
+            size="sm"
+            type="submit"
+            className="w-full"
+            disabled={enterpriseOnboardUpdateMutation.isPending}
+          >
+            {enterpriseOnboardUpdateMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('buttons.proceed')
+            )}
+          </Button>
 
-          <div className="flex w-full flex-col gap-4">
-            <Button size="sm" type="submit" className="w-full">
-              {enterpriseOnboardUpdateMutation.isPending ? (
-                <Loading />
-              ) : (
-                'Proceed'
-              )}
-            </Button>
-
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft size={14} />
-              Back
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={handleBack}>
+            <ArrowLeft size={14} />
+            {translations('buttons.back')}
+          </Button>
         </div>
       </form>
     </div>

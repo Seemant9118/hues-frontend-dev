@@ -1,79 +1,81 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 // for hiding redundant text
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 
-// Set the worker source for pdfjs
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-const ViewPdf = ({ url }) => {
+const ViewPdf = ({ url, isPDF }) => {
   const [pageNo, setPageNo] = useState(1);
   const [pages, setPages] = useState(1);
-  const [pageWidth, setPageWidth] = useState(0);
-  const containerRef = useRef(null);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setPages(numPages);
   };
 
-  useEffect(() => {
-    // Set the width dynamically based on the parent container size
-    const resizeObserver = new ResizeObserver(() => {
-      if (containerRef.current) {
-        setPageWidth(containerRef.current.offsetWidth);
-      }
-    });
-
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-
-    // Clean up observer on component unmount
-    return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
-      }
-    };
-  }, []);
-
   return (
-    <section className="flex w-full flex-col items-center gap-2 bg-[#F4F4F4] py-4">
-      <div className="flex items-center gap-4">
-        <Button
-          size="sm"
-          className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
-          variant="outline"
-          disabled={pageNo === 1}
-          onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
-        >
-          <ArrowLeft size={18} />
-        </Button>
-        <div
-          ref={containerRef}
-          className="scrollBarStyles h-[400px] w-[650px] overflow-y-auto overflow-x-hidden border shadow-2xl"
-        >
-          <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page width={pageWidth} pageNumber={pageNo} />
-          </Document>
+    <section className="flex h-full w-full flex-col items-center justify-center gap-10 py-2">
+      <div className="flex w-full items-center justify-between gap-2 px-24">
+        {isPDF && (
+          <ChevronLeft
+            disabled={pageNo === 1}
+            onClick={() => setPageNo((prev) => (prev > 1 ? prev - 1 : 1))}
+            size={24}
+            className={cn(
+              'cursor-pointer disabled:cursor-not-allowed disabled:text-[#A5ABBD]',
+              isPDF ? 'text-black' : 'text-white',
+              pages > 1 ? 'cursor-pointer' : 'cursor-not-allowed',
+            )}
+          />
+        )}
+        <div className="scrollBarStyles flex h-[480px] w-full items-center justify-center overflow-auto">
+          {isPDF ? (
+            <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+              <Page
+                pageNumber={pageNo}
+                height={470} // use height instead of fixed width for better fit
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+              />
+            </Document>
+          ) : (
+            <Image
+              src={url}
+              alt="Preview"
+              className="rounded-md"
+              width={300}
+              height={300}
+            />
+          )}
         </div>
 
-        <Button
-          size="sm"
-          className="rounded-full bg-[#A5ABBD] text-[#F4F4F4]"
-          variant="outline"
-          disabled={pageNo === pages}
-          onClick={() => setPageNo((prev) => (prev < pages ? prev + 1 : pages))}
-        >
-          <ArrowRight size={18} />
-        </Button>
+        {isPDF && (
+          <ChevronRight
+            disabled={pageNo === pages}
+            onClick={() =>
+              setPageNo((prev) => (prev < pages ? prev + 1 : pages))
+            }
+            size={24}
+            className={cn(
+              'cursor-pointer disabled:cursor-not-allowed disabled:text-[#A5ABBD]',
+              isPDF ? 'text-black' : 'text-white',
+              pages > 1 ? 'cursor-pointer' : 'cursor-not-allowed',
+            )}
+          />
+        )}
       </div>
 
-      <div className="p-2 text-sm font-bold">{`${pageNo} of ${pages} page`}</div>
+      {isPDF && (
+        <div className="rounded-full bg-white p-2 text-sm font-bold text-black">{`${pageNo} of ${pages} page${
+          pages > 1 ? 's' : ''
+        }`}</div>
+      )}
     </section>
   );
 };

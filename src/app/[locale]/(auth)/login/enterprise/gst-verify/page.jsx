@@ -17,11 +17,13 @@ import { LocalStorageService } from '@/lib/utils';
 import { gstVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const GstVerificationPage = () => {
+  const translations = useTranslations('auth.enterprise.aadharVerify');
   const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const router = useRouter();
@@ -80,13 +82,13 @@ const GstVerificationPage = () => {
     mutationKey: [userAuth.gstVerify.endpointKey],
     mutationFn: gstVerify,
     onSuccess: (data) => {
-      toast.success('GST Verified Successfully');
+      toast.success(translations('toast.success'));
       const { enterpriseId } = data.data.data;
       LocalStorageService.set('enterprise_Id', enterpriseId);
       router.push('/login/enterprise/udyam-verify');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(error.response?.data?.message || translations('toast.errpr'));
     },
   });
 
@@ -117,17 +119,16 @@ const GstVerificationPage = () => {
         <div className="flex flex-col gap-4">
           {gstData.length === 0 ? (
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              No GST Number found against this PAN
+              {translations('title.noGstFound')}
             </h1>
           ) : (
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-              We found some GST Numbers against this PAN
+              {translations('title.gstFound')}
             </h1>
           )}
 
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
-            Choose your principle place of business from the list below or add
-            one
+            {translations('subtitle')}
           </p>
         </div>
 
@@ -137,14 +138,16 @@ const GstVerificationPage = () => {
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="gst-number" className="font-medium text-[#121212]">
-              Fetched GST numbers
+              {translations('label.fetchedGst')}
             </Label>
             <Select
               onValueChange={handleSelectGst}
               value={isManualEntry ? '' : enterpriseOnboardData.gstNumber}
             >
               <SelectTrigger disabled={gstData.length === 0}>
-                <SelectValue placeholder="Choose your preferred GST number" />
+                <SelectValue
+                  placeholder={translations('placeholder.selectGst')}
+                />
               </SelectTrigger>
               <SelectContent>
                 {gstData.map((gst) => (
@@ -157,18 +160,18 @@ const GstVerificationPage = () => {
           </div>
 
           <div className="flex w-full items-center justify-center p-2 text-sm font-semibold text-[#A5ABBD]">
-            --- OR ---
+            {translations('orText')}
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="gst-number" className="font-medium text-[#121212]">
-              Enter your GST number
+              {translations('label.enterGst')}
             </Label>
             <div className="flex items-center hover:border-gray-600">
               <Input
                 type="text"
                 name="gst"
-                placeholder="Enter your GST number"
+                placeholder={translations('placeholder.enterGst')}
                 className="uppercase focus:font-bold"
                 onChange={handleChangeGst}
                 value={isManualEntry ? enterpriseOnboardData.gstNumber : ''}
@@ -183,7 +186,7 @@ const GstVerificationPage = () => {
               }}
             />
             <span className="cursor-pointer text-sm font-semibold">
-              I do not have GST number
+              {translations('checkbox.noGst')}
             </span>
           </div>
 
@@ -196,11 +199,15 @@ const GstVerificationPage = () => {
                 enterpriseOnboardData.gstNumber.trim() === '')
             }
           >
-            {gstVerifyMutation.isPending ? <Loading /> : 'Proceed'}
+            {gstVerifyMutation.isPending ? (
+              <Loading />
+            ) : (
+              translations('button.proceed')
+            )}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft size={14} />
-            Back
+            {translations('button.back')}
           </Button>
         </form>
       </div>

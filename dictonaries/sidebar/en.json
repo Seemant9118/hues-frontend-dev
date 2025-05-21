@@ -5,16 +5,20 @@
         "catalogue": "Catalogue",
         "sales": "Sales",
         "purchases": "Purchases",
-        "clients": "Clients",
-        "vendors": "Vendors",
+        "contacts": "Contacts",
         "notifications": "Notifications",
+        "settings": "Settings",
         "profile": "Profile",
         "subTabs": {
             "goods": "Goods",
             "services": "Services",
             "orders": "Orders",
             "invoices": "Invoices",
-            "debitNotes": "Debit Notes"
+            "payments": "Payments",
+            "debitNotes": "Debit Notes",
+            "clients": "Clients",
+            "vendors": "Vendors",
+            "customers": "Customers"
         }
     }
 }

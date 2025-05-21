@@ -32,6 +32,7 @@ const ResendInvitation = ({
       size="sm"
       className="w-full"
       onClick={handleClick}
+      disabled={resendInvitaionMutaion.isPending}
       // className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
     >
       <UserRoundPlus size={14} />
