@@ -114,7 +114,7 @@ const TermsAnsConditionModal = ({ isOpen, onClose, onDecline, onAgree }) => {
 
           {/* acceptable use */}
           <div className="flex flex-col gap-2">
-            <h2 className="font-bold">5. АССЕРТАBLE USE</h2>
+            <h2 className="font-sans font-semibold">5. АССЕРТАBLE USE</h2>
             <p className="flex flex-col gap-2 pl-4">
               <span>{`5.1. You agree not to use Hues or Services for any unlawful purpose or any purpose prohibited under this clause. You agree not to use Hues or Services in any way that could damage Hues, Services or general business of the Provider.`}</span>
               <span>{`5.2. You further agree not to use Hues or Services:`}</span>
