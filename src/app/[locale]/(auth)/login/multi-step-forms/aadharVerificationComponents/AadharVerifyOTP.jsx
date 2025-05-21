@@ -160,7 +160,7 @@ const AadharVerifyOTP = ({
             <p className="flex items-center gap-1">
               <Clock5 size={15} />
               {translations('steps.verifyAadharNum.timer', {
-                timer: startFrom,
+                seconds: startFrom,
               })}
             </p>
           ) : (
