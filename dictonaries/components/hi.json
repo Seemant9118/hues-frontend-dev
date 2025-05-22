@@ -500,6 +500,7 @@
                 "child_table": {
                     "header": {
                         "label": {
+                            "itemName": "आइटम का नाम",
                             "ask": "प्रस्ताव",
                             "counter": "प्रतिप्रस्ताव"
                         }

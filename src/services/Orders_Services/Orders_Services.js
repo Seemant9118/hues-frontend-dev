@@ -27,9 +27,15 @@ export const CreateNegotiation = (data) => {
 };
 
 export const GetNegotiationDetails = ({ orderId, itemId }) => {
-  return APIinstance.get(
-    `${orderApi.getNegotiationDetails.endpoint}?order_id=${orderId}&item_id=${itemId}`,
-  );
+  if (itemId) {
+    return APIinstance.get(
+      `${orderApi.getNegotiationDetails.endpoint}?order_id=${orderId}&item_id=${itemId}`,
+    );
+  } else {
+    return APIinstance.get(
+      `${orderApi.getNegotiationDetails.endpoint}?order_id=${orderId}`,
+    );
+  }
 };
 
 export const AccpetRejectNegotiation = (data) => {

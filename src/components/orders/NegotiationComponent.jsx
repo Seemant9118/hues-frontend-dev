@@ -193,19 +193,19 @@ const NegotiationComponent = ({
             </TableHead>
             <TableHead
               colSpan={2}
-              className="shrink-0 text-center text-xs font-bold text-black"
+              className="shrink-0 text-xs font-bold text-black"
             >
               {translations('table.header.label.quantity')}
             </TableHead>
             <TableHead
               colSpan={2}
-              className="shrink-0 text-center text-xs font-bold text-black"
+              className="shrink-0 text-xs font-bold text-black"
             >
               {translations('table.header.label.rate')}
             </TableHead>
             <TableHead
               colSpan={2}
-              className="shrink-0 text-center text-xs font-bold text-black"
+              className="shrink-0 text-xs font-bold text-black"
             >
               {translations('table.header.label.total')}
             </TableHead>
@@ -213,28 +213,32 @@ const NegotiationComponent = ({
           </TableRow>
 
           {/* Sub Header Row */}
-          <TableRow>
-            <TableHead></TableHead>
-            <TableHead></TableHead>
-            <TableHead className="text-center text-xs font-semibold text-blue-900">
+          <TableRow className="border-none">
+            <TableHead
+              className="bg-white text-xs font-semibold text-black"
+              colSpan={2}
+            >
+              {translations('table.child_table.header.label.itemName')}
+            </TableHead>
+            <TableHead className="bg-white text-xs font-semibold text-black">
               {translations('table.child_table.header.label.ask')}
             </TableHead>
-            <TableHead className="text-center text-xs font-semibold text-blue-900">
+            <TableHead className="bg-white text-xs font-semibold text-black">
               {translations('table.child_table.header.label.counter')}
             </TableHead>
-            <TableHead className="text-center text-xs font-semibold text-blue-900">
+            <TableHead className="bg-white text-xs font-semibold text-black">
               {translations('table.child_table.header.label.ask')}
             </TableHead>
-            <TableHead className="text-center text-xs font-semibold text-blue-900">
+            <TableHead className="bg-white text-xs font-semibold text-black">
               {translations('table.child_table.header.label.counter')}
             </TableHead>
-            <TableHead className="text-center text-xs font-semibold text-blue-900">
+            <TableHead className="bg-white text-xs font-semibold text-black">
               {translations('table.child_table.header.label.ask')}
             </TableHead>
-            <TableHead className="text-center text-xs font-semibold text-blue-900">
+            <TableHead className="bg-white text-xs font-semibold text-black">
               {translations('table.child_table.header.label.counter')}
             </TableHead>
-            <TableHead></TableHead>
+            <TableHead className="bg-white text-xs font-semibold text-black"></TableHead>
           </TableRow>
         </TableHeader>
 
@@ -242,15 +246,18 @@ const NegotiationComponent = ({
           {orderDetails?.orderItems?.map((item, index) => (
             <React.Fragment key={item?.id}>
               <TableRow>
+                <TableCell colSpan={2}>
+                  <div className="rounded-md border bg-[#F5F6F8] p-2">
+                    {item?.productDetails?.productName ||
+                      item?.productDetails?.serviceName}
+                  </div>
+                </TableCell>
                 <TableCell colSpan={1}>
-                  {item?.productDetails?.productName ??
-                    item?.productDetails?.serviceName}
+                  <div className="rounded-md border bg-[#F5F6F8] p-2">
+                    {item?.negotiation?.quantity || item?.quantity}
+                  </div>
                 </TableCell>
-                <TableCell colSpan={1}></TableCell>
-                <TableCell colSpan={1} className="text-center">
-                  {item?.negotiation?.quantity ?? item?.quantity}
-                </TableCell>
-                <TableCell colSpan={1} className="flex justify-center">
+                <TableCell colSpan={1}>
                   <Input
                     className="w-24"
                     type="number"
@@ -262,13 +269,15 @@ const NegotiationComponent = ({
                         handleChange(e, index, 'quantity');
                       }
                     }}
-                    min="0" // Prevents user from entering values less than 0
+                    min="0"
                   />
                 </TableCell>
-                <TableCell colSpan={1} className="text-center">
-                  {item?.negotiation?.unitPrice ?? item?.unitPrice}
+                <TableCell colSpan={1}>
+                  <div className="rounded-md border bg-[#F5F6F8] p-2">
+                    {item?.negotiation?.unitPrice || item?.unitPrice}
+                  </div>
                 </TableCell>
-                <TableCell colSpan={1} className="flex justify-center">
+                <TableCell colSpan={1}>
                   <Input
                     className="w-24"
                     type="number"
@@ -280,14 +289,16 @@ const NegotiationComponent = ({
                         handleChange(e, index, 'unitPrice');
                       }
                     }}
-                    min="0" // Restricting user from typing a value less than 0
+                    min="0"
                   />
                 </TableCell>
-                <TableCell colSpan={1} className="text-center">
-                  {item?.negotiation?.price?.toFixed(2) ??
-                    item?.totalAmount.toFixed(2)}
+                <TableCell colSpan={1}>
+                  <div className="rounded-md border bg-[#F5F6F8] p-2">
+                    {item?.negotiation?.price?.toFixed(2) ||
+                      item?.totalAmount.toFixed(2)}
+                  </div>
                 </TableCell>
-                <TableCell colSpan={1} className="flex justify-center">
+                <TableCell colSpan={1}>
                   <Input
                     className="w-24"
                     type="number"
@@ -303,8 +314,8 @@ const NegotiationComponent = ({
                       <History
                         className={
                           historyVisible[index]
-                            ? 'cursor-pointer text-blue-900'
-                            : 'cursor-pointer text-gray-500 hover:text-blue-900'
+                            ? 'cursor-pointer text-primary'
+                            : 'cursor-pointer text-gray-500 hover:text-primary'
                         }
                         onClick={() => toggleHistory(index, item)}
                       />
@@ -316,7 +327,7 @@ const NegotiationComponent = ({
                 </TableCell>
               </TableRow>
 
-              {/* Loading state */}
+              {/* Loading State */}
               {historyVisible[index] &&
                 getNegotiationDetailsMutation.isPending && (
                   <TableRow>
@@ -326,7 +337,7 @@ const NegotiationComponent = ({
                   </TableRow>
                 )}
 
-              {/* DATA: Conditionally show history below each row */}
+              {/* History Rows */}
               {historyVisible[index] &&
                 !getNegotiationDetailsMutation.isPending &&
                 negotiationDetails.length > 0 &&
@@ -339,30 +350,32 @@ const NegotiationComponent = ({
                       key={negoData.id}
                       className="animate-fadeInUp text-xs font-semibold"
                     >
-                      <TableCell colSpan={1}>
+                      <TableCell
+                        colSpan={2}
+                        className="flex items-center justify-between gap-2"
+                      >
                         {pageIsSales &&
                           (negoData?.status === 'OFFER_SUBMITTED' ? (
-                            <div className="flex w-32 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
+                            <div className="flex w-28 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
                               {translations('table.column_actions.who.you')}
                             </div>
                           ) : (
-                            <div className="w-32 rounded-md bg-yellow-500 p-2 text-center text-white">
+                            <div className="w-28 rounded-md bg-yellow-500 p-2 text-center text-white">
                               {translations('table.column_actions.who.buyer')}
                             </div>
                           ))}
 
                         {!pageIsSales &&
                           (negoData?.status === 'BID_SUBMITTED' ? (
-                            <div className="flex w-32 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
+                            <div className="flex w-28 items-center justify-center rounded-md bg-green-600 p-2 text-center text-white">
                               {translations('table.column_actions.who.you')}
                             </div>
                           ) : (
-                            <div className="w-32 rounded-md bg-yellow-500 p-2 text-center text-white">
+                            <div className="w-28 rounded-md bg-yellow-500 p-2 text-center text-white">
                               {translations('table.column_actions.who.seller')}
                             </div>
                           ))}
-                      </TableCell>
-                      <TableCell colSpan={2}>
+
                         <div className="flex items-center justify-center gap-1 text-blue-400">
                           <Clock size={14} />
                           {moment(negoData?.createdAt).format(
@@ -370,15 +383,15 @@ const NegotiationComponent = ({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell colSpan={2}>{negoData?.quantity}</TableCell>
+                      <TableCell colSpan={3}>{negoData?.quantity}</TableCell>
                       <TableCell colSpan={2}>{negoData?.unitPrice}</TableCell>
-                      <TableCell
-                        colSpan={2}
-                      >{`₹ ${negoData?.price.toFixed(2)}`}</TableCell>
+                      <TableCell colSpan={2}>
+                        ₹ {negoData?.price.toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
 
-              {/* PLaceholder Text: If no history is available, show a text */}
+              {/* No History Placeholder */}
               {historyVisible[index] &&
                 !getNegotiationDetailsMutation.isPending &&
                 negotiationDetails.length === 0 && (

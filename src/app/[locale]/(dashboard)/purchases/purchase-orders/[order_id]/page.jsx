@@ -5,6 +5,7 @@ import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
+import NegotiationHistory from '@/components/orders/NegotiationHistory';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import PaymentDetails from '@/components/payments/PaymentDetails';
@@ -34,6 +35,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
+
 // dynamic imports
 const OrdersOverview = dynamic(
   () => import('@/components/orders/OrdersOverview'),
@@ -72,6 +74,7 @@ const ViewOrder = () => {
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
+  const [viewNegotiationHistory, setViewNegotiationHistory] = useState(false);
   // const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   // const [files, setFiles] = useState([]);
 
@@ -112,12 +115,12 @@ const ViewOrder = () => {
       path: `/purchases/purchase-orders/${params.order_id}`,
       show: isPaymentAdvicing, // Show only if isPaymentAdvicing is true
     },
-    // {
-    //   id: 6,
-    //   name: translations('title.upload_attachements'),
-    //   path: `/purchases/purchase-orders/${params.order_id}`,
-    //   show: isUploadingAttachements, // Show only if isUploadingAttachements is true
-    // },
+    {
+      id: 6,
+      name: 'Negotiation History',
+      path: `/purchases/purchase-orders/${params.order_id}`,
+      show: viewNegotiationHistory, // Show only if isUploadingAttachements is true
+    },
   ];
 
   useEffect(() => {
@@ -126,7 +129,7 @@ const ViewOrder = () => {
     setIsNegotiation(state === 'negotiation');
     setIsPastInvoices(state === 'showInvoice');
     setIsPaymentAdvicing(state === 'payment_advice');
-    // setIsUploadingAttachements(state === 'uploadingAttachements');
+    setViewNegotiationHistory(state === 'negotiationHistory');
   }, [searchParams]);
 
   useEffect(() => {
@@ -139,6 +142,8 @@ const ViewOrder = () => {
       newPath += '?state=showInvoice';
     } else if (isPaymentAdvicing) {
       newPath += '?state=payment_advice';
+    } else if (viewNegotiationHistory) {
+      newPath += '?state=negotiationHistory';
     } else {
       newPath += '';
     }
@@ -148,7 +153,7 @@ const ViewOrder = () => {
     isNegotiation,
     isPastInvoices,
     isPaymentAdvicing,
-    // isUploadingAttachements,
+    viewNegotiationHistory,
     params.order_id,
     router,
   ]);
@@ -356,9 +361,8 @@ const ViewOrder = () => {
                 )}
             </div>
           </section>
-
           {/* switch tabs */}
-          {!isNegotiation && !isPaymentAdvicing && (
+          {!isNegotiation && !isPaymentAdvicing && !viewNegotiationHistory && (
             <section>
               <Tabs
                 value={tab}
@@ -403,6 +407,7 @@ const ViewOrder = () => {
                     mobileNumber={orderDetails?.vendorMobileNumber}
                     amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
+                    setViewNegotiationHistory={setViewNegotiationHistory}
                   />
 
                   <CommentBox contextId={params.order_id} context={'ORDER'} />
@@ -427,20 +432,19 @@ const ViewOrder = () => {
               </Tabs>
             </section>
           )}
-
           {/* Negotiation Component */}
-          {isNegotiation && !isPastInvoices && (
+          {isNegotiation && !isPastInvoices && !viewNegotiationHistory && (
             <NegotiationComponent
               orderDetails={orderDetails}
               isNegotiation={isNegotiation}
               setIsNegotiation={setIsNegotiation}
             />
           )}
-
           {/* Invoices Component */}
-          {isPastInvoices && !isNegotiation && <PastInvoices />}
-
-          {isPaymentAdvicing && !isNegotiation && (
+          {isPastInvoices && !isNegotiation && !viewNegotiationHistory && (
+            <PastInvoices />
+          )}
+          {isPaymentAdvicing && !isNegotiation && !viewNegotiationHistory && (
             <MakePaymentNew
               orderId={params.order_id}
               orderDetails={orderDetails}
@@ -448,9 +452,8 @@ const ViewOrder = () => {
               contextType="PAYMENT_ADVICE"
             />
           )}
-
           {/* upload attachements */}
-          {/* {isUploadingAttachements && !isNegotiation && !isPaymentAdvicing && (
+          {/* {isUploadingAttachements && !isNegotiation && !isPaymentAdvicing &&  !viewNegotiationHistory && (
             <div className="mt-4 flex h-full flex-col justify-between gap-4">
               <div>
                 <FileUploader
@@ -544,14 +547,12 @@ const ViewOrder = () => {
               </div>
             </div>
           )} */}
-
           {/* seprator */}
-          {!isNegotiation && (
+          {!isNegotiation && !viewNegotiationHistory && (
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
           )}
-
           {/* Footer ctas */}
-          {!isNegotiation && (
+          {!isNegotiation && !viewNegotiationHistory && (
             <div className="sticky bottom-0 z-10 flex justify-end">
               <section className="flex gap-2">
                 {/* status NEW */}
@@ -636,6 +637,16 @@ const ViewOrder = () => {
               </section>
             </div>
           )}
+          {
+            // negotiation history
+            viewNegotiationHistory &&
+              !isNegotiation &&
+              !isPastInvoices &&
+              !isEditingOrder &&
+              !isPaymentAdvicing && (
+                <NegotiationHistory orderId={params.order_id} />
+              )
+          }
         </>
       )}
     </Wrapper>

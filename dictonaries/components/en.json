@@ -500,8 +500,9 @@
                 "child_table": {
                     "header": {
                         "label": {
-                            "ask": "ASK",
-                            "counter": "COUNTER"
+                            "itemName": "Item Name",
+                            "ask": "Ask",
+                            "counter": "Counter"
                         }
                     }
                 },
