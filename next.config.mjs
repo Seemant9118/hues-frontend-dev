@@ -13,7 +13,10 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['hues-dev.s3.ap-south-1.amazonaws.com'],
+    domains: [
+      'hues-dev.s3.ap-south-1.amazonaws.com',
+      'hues-prod.s3.ap-south-1.amazonaws.com',
+    ],
   },
   output: 'standalone',
 };
