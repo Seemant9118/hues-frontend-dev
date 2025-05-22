@@ -14,8 +14,7 @@ const nextConfig = {
   },
   images: {
     domains: [
-      'hues-dev.s3.ap-south-1.amazonaws.com',
-      'hues-prod.s3.ap-south-1.amazonaws.com',
+      `hues-${process.env.NEXT_PUBLIC_NODE_ENV}.s3.ap-south-1.amazonaws.com`,
     ],
   },
   output: 'standalone',
