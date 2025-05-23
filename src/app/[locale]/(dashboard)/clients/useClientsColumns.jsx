@@ -24,6 +24,12 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
           title={translations('table.header.name')}
         />
       ),
+      cell: ({ row }) => {
+        const clientName =
+          row.original?.client?.name ||
+          row.original?.invitation?.userDetails?.name;
+        return <p className="flex-shrink-0">{clientName}</p>;
+      },
     },
     {
       accessorKey: 'mobileNumber',
@@ -34,7 +40,9 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
         />
       ),
       cell: ({ row }) => {
-        const { mobileNumber } = row.original;
+        const mobileNumber =
+          row.original?.client?.mobileNumber ||
+          row.original?.invitation?.userDetails?.mobileNumber;
         return <p className="flex-shrink-0">{`+91 ${mobileNumber}`}</p>;
       },
     },
@@ -47,7 +55,9 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
         />
       ),
       cell: ({ row }) => {
-        const { email } = row.original;
+        const email =
+          row.original?.client?.email ||
+          row.original?.invitation?.userDetails?.email;
         return <p className="flex-shrink-0">{email || '-'}</p>;
       },
     },
@@ -59,6 +69,12 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
           title={translations('table.header.pan')}
         />
       ),
+      cell: ({ row }) => {
+        const panNumber =
+          row.original?.client?.panNumber ||
+          row.original?.invitation?.userDetails?.panNumber;
+        return <p className="flex-shrink-0">{panNumber || '-'}</p>;
+      },
     },
     {
       accessorKey: 'invitation',
@@ -69,7 +85,7 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
         />
       ),
       cell: ({ row }) => {
-        const { invitationStatus } = row.original;
+        const invitationStatus = row.original?.invitation?.status;
 
         switch (invitationStatus) {
           case 'PENDING':
@@ -104,7 +120,8 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const { invitationId, invitationStatus } = row.original;
+        const invitationId = row.original?.invitation?.id;
+        const invitationStatus = row.original?.invitation?.status;
 
         return (
           (invitationStatus === 'REJECTED' ||

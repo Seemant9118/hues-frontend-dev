@@ -35,16 +35,44 @@ const EditModal = ({
   );
   const [enterpriseData, setEnterPriseData] = useState({
     enterpriseId,
-    name: userData?.name || '',
+    name:
+      cta === 'client'
+        ? userData?.client?.name ||
+          userData?.invitation?.userDetails?.name ||
+          ''
+        : userData?.vendor?.name ||
+          userData?.invitation?.userDetails?.name ||
+          '',
     pincode: userData?.address?.pincode || '',
     city: userData?.address?.district || '',
     state: userData?.address?.state || '',
     address: cleanedAddress || '',
     countryCode: '+91',
-    mobileNumber: userData?.mobileNumber || '',
+    mobileNumber:
+      cta === 'client'
+        ? userData?.client?.mobileNumber ||
+          userData?.invitation?.userDetails?.mobileNumber ||
+          ''
+        : userData?.vendor?.mobileNumber ||
+          userData?.invitation?.userDetails?.mobileNumber ||
+          '',
     email: userData?.email || '',
-    panNumber: userData?.panNumber || '',
-    gstNumber: userData?.gstNumber || '',
+    panNumber:
+      cta === 'client'
+        ? userData?.client?.panNumber ||
+          userData?.invitation?.userDetails?.panNumber ||
+          ''
+        : userData?.vendor?.panNumber ||
+          userData?.invitation?.userDetails?.panNumber ||
+          '',
+    gstNumber:
+      cta === 'client'
+        ? userData?.client?.gstNumber ||
+          userData?.invitation?.userDetails?.gstNumber ||
+          ''
+        : userData?.vendor?.gstNumber ||
+          userData?.invitation?.userDetails?.gstNumber ||
+          '',
     userType: cta,
     addressId: userData?.address?.id || '',
   });

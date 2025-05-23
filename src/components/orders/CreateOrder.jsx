@@ -133,10 +133,11 @@ const CreateOrder = ({
   // clients[B2B] fetching
   const { data: customerData } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId, 'ORDER'),
-    select: (res) => res.data.data,
+    queryFn: () => getClients({ id: enterpriseId, context: 'ORDER' }),
+    select: (res) => res.data.data.users,
     enabled: cta === 'offer' && isCreatingSales && order.clientType === 'B2B',
   });
+
   // client options
   const clientOptions = [
     ...(customerData?.map((customer) => {
@@ -167,8 +168,8 @@ const CreateOrder = ({
   // vendors fetching
   const { data: vendorData } = useQuery({
     queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId, 'ORDER'),
-    select: (res) => res.data.data,
+    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }),
+    select: (res) => res.data.data.users,
     enabled: cta === 'bid' && isCreatingPurchase && order.clientType === 'B2B',
   });
   // vendors options

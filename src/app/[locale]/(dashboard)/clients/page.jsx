@@ -6,7 +6,6 @@ import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
 import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
-import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -27,12 +26,18 @@ import {
   generateLink,
   remindInvitation,
 } from '@/services/Invitation_Service/Invitation_Service';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ClientTable } from './ClientTable';
 import { useClientsColumns } from './useClientsColumns';
 
 // dynamic imports
@@ -42,6 +47,7 @@ const UploadItems = dynamic(
 );
 
 // MACROS
+const PAGE_LIMIT = 10;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
 
@@ -73,95 +79,69 @@ const ClientPage = () => {
   const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
   const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
     useState(null);
+  const [paginationData, setPaginationData] = useState({});
 
-  // api fetching for clients
-  const {
-    isLoading,
-    data: clientsData,
-    isSuccess,
-  } = useQuery({
+  const clientsQuery = useInfiniteQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: searchTerm?.length === 0,
+    queryFn: async ({ pageParam = 1 }) => {
+      return getClients({
+        id: enterpriseId,
+        page: pageParam,
+        limit: PAGE_LIMIT,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: searchTerm.length === 0,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
-  const { data: searchedClientsData, isLoading: isSearchedClientsLoading } =
-    useQuery({
-      queryKey: [
-        clientEnterprise.searchClients.endpointKey,
-        debouncedSearchTerm,
-      ],
-      queryFn: () =>
-        searchedClients({
-          searchString: debouncedSearchTerm,
-        }),
-      select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && clientsData?.length > 0,
-    });
+  const searchQuery = useInfiniteQuery({
+    queryKey: [clientEnterprise.searchClients.endpointKey, debouncedSearchTerm],
+    queryFn: async ({ pageParam = 1 }) => {
+      return searchedClients({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        data: { searchString: debouncedSearchTerm },
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: !!debouncedSearchTerm,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, DEBOUNCE_DELAY);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Consolidated state update logic
   useEffect(() => {
-    if (debouncedSearchTerm && searchedClientsData) {
-      let formattedData = [];
-      // formatting data
-      if (searchedClientsData) {
-        formattedData = searchedClientsData.flatMap((user) => {
-          let userDetails;
-          if (user.client && user?.client?.name !== null) {
-            userDetails = { ...user.client, address: user?.address };
-          } else {
-            userDetails = {
-              ...user?.invitation?.userDetails,
-              address: user?.address,
-            };
-          }
-
-          return {
-            ...userDetails,
-            id: user.id,
-            invitationId: user.invitation?.id,
-            invitationStatus: user.invitation?.status,
-          };
-        });
-        setClients(formattedData); // set clients from search api
-      }
-    } else if (!debouncedSearchTerm && isSuccess) {
-      let formattedData = [];
-      // formatting data
-      if (clientsData) {
-        formattedData = clientsData.flatMap((user) => {
-          let userDetails;
-          if (user.client && user?.client?.name !== null) {
-            userDetails = { ...user.client, address: user?.address };
-          } else {
-            userDetails = {
-              ...user?.invitation?.userDetails,
-              address: user?.address,
-            };
-          }
-
-          return {
-            ...userDetails,
-            id: user.id,
-            invitationId: user.invitation?.id,
-            invitationStatus: user.invitation?.status,
-          };
-        });
-        setClients(formattedData); // set clients from get api
-      }
-    }
-  }, [debouncedSearchTerm, searchedClientsData, clientsData, isSuccess]);
+    const source = debouncedSearchTerm ? searchQuery.data : clientsQuery.data;
+    if (!source) return;
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.users || [],
+    );
+    const uniqueClientsData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+    setClients(uniqueClientsData);
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: Number(lastPage?.currentPage),
+    });
+  }, [debouncedSearchTerm, clientsQuery.data, searchQuery.data]);
 
   // handleFile fn
   const uploadFile = async (file) => {
@@ -247,13 +227,13 @@ const ClientPage = () => {
                   <Tooltips
                     trigger={
                       <Button
-                        variant={clientsData?.length > 0 ? 'outline' : 'export'}
+                        variant={clients?.length > 0 ? 'outline' : 'export'}
                         size="sm"
                         onClick={() =>
-                          exportTableToExcel('client table', 'clients_list')
+                          exportTableToExcel('clients-table', 'clients_list')
                         }
                         className={
-                          clientsData?.length === 0
+                          clients?.length === 0
                             ? 'cursor-not-allowed'
                             : 'cursor-pointer'
                         }
@@ -292,23 +272,39 @@ const ClientPage = () => {
               </SubHeader>
             )}
 
-            {(isLoading || isSearchedClientsLoading) && <Loading />}
-
-            {!isUploading &&
-              (!isLoading || !isSearchedClientsLoading) &&
-              (clientsData?.length > 0 ? (
-                <DataTable
-                  id={'client table'}
-                  onRowClick={onRowClick}
-                  columns={ClientsColumns}
-                  data={clients ?? []}
-                />
-              ) : (
-                <EmptyStageComponent
-                  heading={translations('emptyStateComponent.heading')}
-                  subItems={keys}
-                />
-              ))}
+            {clientsQuery.isLoading || searchQuery.isLoading ? (
+              <Loading />
+            ) : (
+              <>
+                {/* Case 1: No search term, and no data → Empty stage */}
+                {!debouncedSearchTerm && clients?.length === 0 ? (
+                  <EmptyStageComponent
+                    heading={translations('emptyStateComponent.heading')}
+                    subItems={keys}
+                  />
+                ) : (
+                  // Case 2: Either searchTerm is present, or data is available → Show Table
+                  <ClientTable
+                    id="clients-table"
+                    columns={ClientsColumns}
+                    data={clients}
+                    fetchNextPage={
+                      debouncedSearchTerm
+                        ? searchQuery.fetchNextPage
+                        : clientsQuery.fetchNextPage
+                    }
+                    isFetching={
+                      debouncedSearchTerm
+                        ? searchQuery.isFetching
+                        : clientsQuery.isFetching
+                    }
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
+              </>
+            )}
           </Wrapper>
           {isUploading && (
             <UploadItems
@@ -325,6 +321,7 @@ const ClientPage = () => {
               data={selectedEnterpriseContent}
               isEnterpriseDetailsShow={isEnterpriseDetailsShow}
               setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
+              isClient={true}
             />
           )}
 
