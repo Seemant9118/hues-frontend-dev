@@ -180,7 +180,7 @@ const FilterModal = ({
   // get clients
   const { data: clientData } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId),
+    queryFn: () => getClients({ id: enterpriseId, context: 'ORDER' }),
     select: (res) => res.data.data.users,
     enabled: isOpen && isSalesFilter,
   });
@@ -228,7 +228,7 @@ const FilterModal = ({
   // get vendors
   const { data: vendorData } = useQuery({
     queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
+    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }),
     select: (res) => res.data.data.users,
     enabled: isOpen && !isSalesFilter,
   });
