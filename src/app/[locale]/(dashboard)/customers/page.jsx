@@ -2,7 +2,6 @@
 
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import Tooltips from '@/components/auth/Tooltips';
-import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -16,10 +15,11 @@ import {
   getCustomers,
   getSearchedCustomers,
 } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { Download, PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { CustomersTable } from './CustomersTable';
 import { useCustomersColumns } from './useCustomersColumns';
 
 // dynamic imports
@@ -29,6 +29,7 @@ import { useCustomersColumns } from './useCustomersColumns';
 // );
 
 // MACROS
+const PAGE_LIMIT = 10;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
 
@@ -55,56 +56,73 @@ const CustomerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [customers, setCustomers] = useState([]);
+  const [paginationData, setPaginationData] = useState({});
 
-  // api fetching for clients
-  const {
-    isLoading,
-    data: customersData,
-    isSuccess,
-  } = useQuery({
+  // get customers data
+  const customersQuery = useInfiniteQuery({
     queryKey: [customerApis.getCustomers.endpointKey],
-    queryFn: () => getCustomers(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: searchTerm?.length === 0,
+    queryFn: async ({ pageParam = 1 }) => {
+      return getCustomers({
+        id: enterpriseId,
+        page: pageParam,
+        limit: PAGE_LIMIT,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: searchTerm.length === 0,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
-  const { data: searchedCustomersData, isLoading: issearchedCustomersLoading } =
-    useQuery({
-      queryKey: [
-        customerApis.getSearchedCustomers.endpointKey,
-        debouncedSearchTerm,
-      ],
-      queryFn: () =>
-        getSearchedCustomers({
-          searchString: debouncedSearchTerm,
-        }),
-      select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && customersData?.length > 0,
-    });
+  const searchQuery = useInfiniteQuery({
+    queryKey: [
+      customerApis.getSearchedCustomers.endpointKey,
+      debouncedSearchTerm,
+    ],
+    queryFn: async ({ pageParam = 1 }) => {
+      return getSearchedCustomers({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        data: { searchString: debouncedSearchTerm },
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: !!debouncedSearchTerm,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, DEBOUNCE_DELAY);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [searchTerm]);
 
   useEffect(() => {
-    if (debouncedSearchTerm && searchedCustomersData) {
-      // formatting data
-      if (searchedCustomersData) {
-        setCustomers(searchedCustomersData); // set clients from search api
-      }
-    } else if (!debouncedSearchTerm && isSuccess) {
-      // formatting data
-      if (customersData) {
-        setCustomers(customersData); // set clients from get api
-      }
-    }
-  }, [debouncedSearchTerm, searchedCustomersData, customersData, isSuccess]);
+    const source = debouncedSearchTerm ? searchQuery.data : customersQuery.data;
+    if (!source) return;
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.customers || [],
+    );
+    const uniqueCustomersData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+    setCustomers(uniqueCustomersData);
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: Number(lastPage?.currentPage),
+    });
+  }, [debouncedSearchTerm, customersQuery.data, searchQuery.data]);
 
   // handleFile fn
   //   const uploadFile = async (file) => {
@@ -146,13 +164,13 @@ const CustomerPage = () => {
                 <Tooltips
                   trigger={
                     <Button
-                      variant={customersData?.length > 0 ? 'outline' : 'export'}
+                      variant={customers?.length > 0 ? 'outline' : 'export'}
                       size="sm"
                       onClick={() =>
-                        exportTableToExcel('customers table', 'customer_lists')
+                        exportTableToExcel('customers-table', 'customer_lists')
                       }
                       className={
-                        customersData?.length === 0
+                        customers?.length === 0
                           ? 'cursor-not-allowed'
                           : 'cursor-pointer'
                       }
@@ -192,21 +210,38 @@ const CustomerPage = () => {
               </div>
             </SubHeader>
 
-            {(isLoading || issearchedCustomersLoading) && <Loading />}
-
-            {(!isLoading || !issearchedCustomersLoading) &&
-              (customersData?.length > 0 ? (
-                <DataTable
-                  id={'customers table'}
-                  columns={CustomersColumns}
-                  data={customers ?? []}
-                />
-              ) : (
-                <EmptyStageComponent
-                  heading={translations('emptyStateComponent.heading')}
-                  subItems={keys}
-                />
-              ))}
+            {customersQuery.isLoading || searchQuery.isLoading ? (
+              <Loading />
+            ) : (
+              <>
+                {/* Case 1: No search term, and no data → Empty stage */}
+                {!debouncedSearchTerm && customers?.length === 0 ? (
+                  <EmptyStageComponent
+                    heading={translations('emptyStateComponent.heading')}
+                    subItems={keys}
+                  />
+                ) : (
+                  // Case 2: Either searchTerm is present, or data is available → Show Table
+                  <CustomersTable
+                    id="customers-table"
+                    columns={CustomersColumns}
+                    data={customers}
+                    fetchNextPage={
+                      debouncedSearchTerm
+                        ? searchQuery.fetchNextPage
+                        : customersQuery.fetchNextPage
+                    }
+                    isFetching={
+                      debouncedSearchTerm
+                        ? searchQuery.isFetching
+                        : customersQuery.isFetching
+                    }
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                  />
+                )}
+              </>
+            )}
           </Wrapper>
         </div>
       )}

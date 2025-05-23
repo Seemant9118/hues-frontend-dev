@@ -1,12 +1,17 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { APIinstance } from '@/services';
 
-export const GetSearchedProductGoods = (data) => {
-  return APIinstance.post(goodsApi.getSearchedProductGoods.endpoint, data);
+export const GetSearchedProductGoods = ({ page, limit, data }) => {
+  return APIinstance.post(
+    `${goodsApi.getSearchedProductGoods.endpoint}?page=${page}&limit=${limit}`,
+    data,
+  );
 };
 
-export const GetAllProductGoods = (id) => {
-  return APIinstance.get(`${goodsApi.getAllProductGoods.endpoint}${id}`);
+export const GetAllProductGoods = ({ id, page, limit }) => {
+  return APIinstance.get(
+    `${goodsApi.getAllProductGoods.endpoint}${id}?page=${page}&limit=${limit}`,
+  );
 };
 
 export const GetProductGoods = (id) => {

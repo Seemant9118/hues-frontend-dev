@@ -112,8 +112,8 @@ const CreateB2BInvoice = ({
   // clients[B2B] fetching
   const { data: customerData } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
-    queryFn: () => getClients(enterpriseId, 'ORDER'),
-    select: (res) => res.data.data,
+    queryFn: () => getClients({ id: enterpriseId, context: 'ORDER' }),
+    select: (res) => res.data.data.users,
     enabled: order.clientType === 'B2B',
   });
   // client options

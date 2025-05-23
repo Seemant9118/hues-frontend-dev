@@ -6,6 +6,7 @@ const EnterpriseDetails = ({
   data,
   isEnterpriseDetailsShow,
   setIsEnterpriseDetailsShow,
+  isClient,
 }) => {
   return (
     <Dialog
@@ -24,22 +25,48 @@ const EnterpriseDetails = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-500">Enterprise name</p>
-                <p className="font-medium">{formatValue(data?.name)}</p>
+                <p className="font-medium">
+                  {formatValue(
+                    isClient
+                      ? data?.client?.name ||
+                          data?.invitation?.userDetails?.name
+                      : data?.vendor?.name ||
+                          data?.invitation?.userDetails?.name,
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Enterprise type</p>
                 <p className="font-medium">
-                  {formatValue(capitalize(data?.type))}
+                  {formatValue(
+                    capitalize(
+                      isClient
+                        ? data?.client?.type ||
+                            data?.invitation?.userDetails?.type
+                        : data?.vendor?.type ||
+                            data?.invitation?.userDetails?.type,
+                    ),
+                  )}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Email</p>
-                <p className="font-medium">{formatValue(data?.email)}</p>
+                <p className="font-medium">
+                  {formatValue(
+                    isClient
+                      ? data?.client?.email ||
+                          data?.invitation?.userDetails?.email
+                      : data?.vendor?.email ||
+                          data?.invitation?.userDetails?.email,
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Phone</p>
                 <p className="font-medium">
-                  {formatValue(`+91 ${data?.mobileNumber}`)}
+                  {formatValue(
+                    `+91 ${isClient ? data?.client?.mobileNumber || data?.invitation?.userDetails?.mobileNumber : data?.vendor?.mobileNumber || data?.invitation?.userDetails?.mobileNumber}`,
+                  )}
                 </p>
               </div>
               <div className="col-span-2">
@@ -61,19 +88,49 @@ const EnterpriseDetails = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-500">GST</p>
-                <p className="font-medium">{formatValue(data?.gstNumber)}</p>
+                <p className="font-medium">
+                  {formatValue(
+                    isClient
+                      ? data?.client?.gstNumber ||
+                          data?.invitation?.userDetails?.gstNumber
+                      : data?.vendor?.gstNumber ||
+                          data?.invitation?.userDetails?.gstNumber,
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">CIN</p>
-                <p className="font-medium">{formatValue(data?.cin)}</p>
+                <p className="font-medium">
+                  {formatValue(
+                    isClient
+                      ? data?.client?.cin || data?.invitation?.userDetails?.cin
+                      : data?.vendor?.cin || data?.invitation?.userDetails?.cin,
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">UDYAM</p>
-                <p className="font-medium">{formatValue(data?.udyam)}</p>
+                <p className="font-medium">
+                  {formatValue(
+                    isClient
+                      ? data?.client?.udyam ||
+                          data?.invitation?.userDetails?.udyam
+                      : data?.vendor?.udyam ||
+                          data?.invitation?.userDetails?.udyam,
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">PAN</p>
-                <p className="font-medium">{formatValue(data?.panNumber)}</p>
+                <p className="font-medium">
+                  {formatValue(
+                    isClient
+                      ? data?.client?.panNumber ||
+                          data?.invitation?.userDetails?.panNumber
+                      : data?.vendor?.panNumber ||
+                          data?.invitation?.userDetails?.panNumber,
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -90,9 +147,15 @@ const EnterpriseDetails = ({
                 <p className="text-xs text-gray-500">Director Name</p>
                 <p className="font-medium">
                   {formatValue(
-                    data?.type === 'proprietorship'
-                      ? data?.name
-                      : data?.director?.name,
+                    isClient
+                      ? data?.client?.type === 'proprietorship'
+                        ? data?.client?.name ||
+                          data?.invitation?.userDetails?.name
+                        : data?.client?.director?.name
+                      : data?.vendor?.type === 'proprietorship'
+                        ? data?.vendor?.name ||
+                          data?.invitation?.userDetails?.name
+                        : data?.vendor?.director?.name,
                   )}
                 </p>
               </div>
@@ -100,9 +163,15 @@ const EnterpriseDetails = ({
                 <p className="text-xs text-gray-500">Phone</p>
                 <p className="font-medium">
                   {formatValue(
-                    data?.type === 'proprietorship'
-                      ? data?.mobileNumber
-                      : data?.director?.mobileNumber,
+                    isClient
+                      ? data?.client?.type === 'proprietorship'
+                        ? data?.client?.mobileNumber ||
+                          data?.invitation?.userDetails?.mobileNumber
+                        : data?.client?.director?.mobileNumber
+                      : data?.vendor?.type === 'proprietorship'
+                        ? data?.vendor?.mobileNumber ||
+                          data?.invitation?.userDetails?.mobileNumber
+                        : data?.vendor?.director?.mobileNumber,
                   )}
                 </p>
               </div>

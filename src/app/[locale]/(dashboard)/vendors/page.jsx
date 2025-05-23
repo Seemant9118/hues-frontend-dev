@@ -6,7 +6,6 @@ import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
 import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
-import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -27,12 +26,18 @@ import {
   generateLink,
   remindInvitation,
 } from '@/services/Invitation_Service/Invitation_Service';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { VendorsTable } from './VendorsTable';
 import { useVendorsColumns } from './useVendorsColumns';
 
 const UploadItems = dynamic(
@@ -41,6 +46,7 @@ const UploadItems = dynamic(
 );
 
 // MACROS
+const PAGE_LIMIT = 10;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
 
@@ -72,96 +78,72 @@ const VendorsPage = () => {
   const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
   const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
     useState(null);
+  const [paginationData, setPaginationData] = useState({});
 
-  // Base vendors query
-  const {
-    isLoading,
-    data: vendorsData,
-    isSuccess,
-  } = useQuery({
+  const vendorsQuery = useInfiniteQuery({
     queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: searchTerm?.length === 0,
+    queryFn: async ({ pageParam = 1 }) => {
+      return getVendors({
+        id: enterpriseId,
+        page: pageParam,
+        limit: PAGE_LIMIT,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: searchTerm.length === 0,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
-  // Searched vendors query
-  const { data: searchedVendorsData, isLoading: isSearchedVendorsLoading } =
-    useQuery({
-      queryKey: [
-        vendorEnterprise.searchedVendors.endpointKey,
-        debouncedSearchTerm,
-      ],
-      queryFn: () =>
-        searchedVendors({
-          searchString: debouncedSearchTerm,
-        }),
-      select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && vendorsData?.length > 0,
-    });
+  const searchQuery = useInfiniteQuery({
+    queryKey: [
+      vendorEnterprise.searchedVendors.endpointKey,
+      debouncedSearchTerm,
+    ],
+    queryFn: async ({ pageParam = 1 }) => {
+      return searchedVendors({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        data: { searchString: debouncedSearchTerm },
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: !!debouncedSearchTerm,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, DEBOUNCE_DELAY);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Format & set vendors data
   useEffect(() => {
-    if (debouncedSearchTerm && searchedVendorsData) {
-      let formattedData = [];
-      // formatting data
-      if (searchedVendorsData) {
-        formattedData = searchedVendorsData.flatMap((user) => {
-          let userDetails;
-          if (user.vendor && user?.vendor?.name !== null) {
-            userDetails = { ...user.vendor, address: user?.address };
-          } else {
-            userDetails = {
-              ...user?.invitation?.userDetails,
-              address: user?.address,
-            };
-          }
-
-          return {
-            ...userDetails,
-            id: user.id,
-            invitationId: user.invitation?.id,
-            invitationStatus: user.invitation?.status,
-          };
-        });
-        setVendors(formattedData); // set vendors from search api
-      }
-    } else if (!debouncedSearchTerm && isSuccess) {
-      let formattedData = [];
-      // formatting data
-      if (vendorsData) {
-        formattedData = vendorsData.flatMap((user) => {
-          let userDetails;
-          if (user.vendor && user?.vendor?.name !== null) {
-            userDetails = { ...user.vendor, address: user?.address };
-          } else {
-            userDetails = {
-              ...user?.invitation?.userDetails,
-              address: user?.address,
-            };
-          }
-
-          return {
-            ...userDetails,
-            id: user.id,
-            invitationId: user.invitation?.id,
-            invitationStatus: user.invitation?.status,
-          };
-        });
-        setVendors(formattedData); // set vendors from get api
-      }
-    }
-  }, [debouncedSearchTerm, searchedVendorsData, vendorsData, isSuccess]);
+    const source = debouncedSearchTerm ? searchQuery.data : vendorsQuery.data;
+    if (!source) return;
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.users || [],
+    );
+    const uniqueVendorsData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+    setVendors(uniqueVendorsData);
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: Number(lastPage?.currentPage),
+    });
+  }, [debouncedSearchTerm, vendorsQuery.data, searchQuery.data]);
 
   // handle upload file fn
   const uploadFile = async (file) => {
@@ -248,13 +230,13 @@ const VendorsPage = () => {
                   <Tooltips
                     trigger={
                       <Button
-                        variant={vendorsData?.length > 0 ? 'outline' : 'export'}
+                        variant={vendors?.length > 0 ? 'outline' : 'export'}
                         size="sm"
                         onClick={() =>
-                          exportTableToExcel('vendor table', 'vendors_list')
+                          exportTableToExcel('vendor-table', 'vendors_list')
                         }
                         className={
-                          vendorsData?.length === 0
+                          vendors?.length === 0
                             ? 'cursor-not-allowed'
                             : 'cursor-pointer'
                         }
@@ -294,23 +276,39 @@ const VendorsPage = () => {
               </SubHeader>
             )}
 
-            {(isLoading || isSearchedVendorsLoading) && <Loading />}
-
-            {!isUploading &&
-              (!isLoading || !isSearchedVendorsLoading) &&
-              (vendorsData?.length > 0 ? (
-                <DataTable
-                  id={'vendor table'}
-                  onRowClick={onRowClick}
-                  columns={VendorsColumns}
-                  data={vendors}
-                />
-              ) : (
-                <EmptyStageComponent
-                  heading={translations('emptyStateComponent.heading')}
-                  subItems={keys}
-                />
-              ))}
+            {vendorsQuery.isLoading || searchQuery.isLoading ? (
+              <Loading />
+            ) : (
+              <>
+                {/* Case 1: No search term, and no data → Empty stage */}
+                {!debouncedSearchTerm && vendors?.length === 0 ? (
+                  <EmptyStageComponent
+                    heading={translations('emptyStateComponent.heading')}
+                    subItems={keys}
+                  />
+                ) : (
+                  // Case 2: Either searchTerm is present, or data is available → Show Table
+                  <VendorsTable
+                    id="vendor-table"
+                    columns={VendorsColumns}
+                    data={vendors}
+                    fetchNextPage={
+                      debouncedSearchTerm
+                        ? searchQuery.fetchNextPage
+                        : vendorsQuery.fetchNextPage
+                    }
+                    isFetching={
+                      debouncedSearchTerm
+                        ? searchQuery.isFetching
+                        : vendorsQuery.isFetching
+                    }
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
+              </>
+            )}
           </Wrapper>
           {isUploading && (
             <UploadItems
@@ -327,6 +325,7 @@ const VendorsPage = () => {
               data={selectedEnterpriseContent}
               isEnterpriseDetailsShow={isEnterpriseDetailsShow}
               setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
+              isClient={false}
             />
           )}
 
