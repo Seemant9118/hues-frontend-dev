@@ -305,21 +305,23 @@ const ViewOrder = () => {
                 )}
               {/* ctas - share invoice create */}
               {/* download CTA */}
-              {!isNegotiation && !isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      onClick={() => viewOrderinNewTab(params.order_id)}
-                      size="sm"
-                      variant="outline"
-                      className="font-bold"
-                    >
-                      <Eye size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.view.placeholder')}
-                />
-              )}
+              {!isNegotiation &&
+                !isPaymentAdvicing &&
+                !viewNegotiationHistory && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => viewOrderinNewTab(params.order_id)}
+                        size="sm"
+                        variant="outline"
+                        className="font-bold"
+                      >
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.view.placeholder')}
+                  />
+                )}
 
               {/* share CTA */}
               {/* {!isUploadingAttachements && !isNegotiation && (

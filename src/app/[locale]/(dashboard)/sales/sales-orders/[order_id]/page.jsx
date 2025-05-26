@@ -355,6 +355,7 @@ const ViewOrder = () => {
               {!isGenerateInvoice &&
                 !isRecordingPayment &&
                 !isNegotiation &&
+                !viewNegotiationHistory &&
                 orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
                   <Tooltips
                     trigger={
