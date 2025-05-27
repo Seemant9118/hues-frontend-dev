@@ -12,7 +12,7 @@ import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumn
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getProductCatalogue,
   getServiceCatalogue,
@@ -33,7 +33,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -57,58 +57,73 @@ const CreateOrder = ({
 
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const orderDraft = isCreatingSales && SessionStorageService.get('orderDraft');
+  const bidDraft = isCreatingPurchase && SessionStorageService.get('bidDraft');
 
   const router = useRouter();
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
   const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(''); // Manage selected value
-  const [selectedItem, setSelectedItem] = useState({
-    productName: '',
-    productType: '',
-    productId: null,
-    quantity: null,
-    unitPrice: null,
-    gstPerUnit: null,
-    totalAmount: null,
-    totalGstAmount: null,
-  });
+  const [selectedItem, setSelectedItem] = useState(
+    cta === 'offer'
+      ? {
+          productName: orderDraft?.itemDraft?.productName || '',
+          productType: orderDraft?.itemDraft?.productType || '',
+          productId: orderDraft?.itemDraft?.productId || null,
+          quantity: orderDraft?.itemDraft?.quantity || null,
+          unitPrice: orderDraft?.itemDraft?.unitPrice || null,
+          gstPerUnit: orderDraft?.itemDraft?.gstPerUnit || null,
+          totalAmount: orderDraft?.itemDraft?.totalAmount || null,
+          totalGstAmount: orderDraft?.itemDraft?.totalGstAmount || null,
+        }
+      : {
+          productName: bidDraft?.itemDraft?.productName || '',
+          productType: bidDraft?.itemDraft?.productType || '',
+          productId: bidDraft?.itemDraft?.productId || null,
+          quantity: bidDraft?.itemDraft?.quantity || null,
+          unitPrice: bidDraft?.itemDraft?.unitPrice || null,
+          gstPerUnit: bidDraft?.itemDraft?.gstPerUnit || null,
+          totalAmount: bidDraft?.itemDraft?.totalAmount || null,
+          totalGstAmount: bidDraft?.itemDraft?.totalGstAmount || null,
+        },
+  );
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
           clientType: 'B2B',
           sellerEnterpriseId: enterpriseId,
-          buyerId: null,
-          gstAmount: null,
-          amount: null,
+          buyerId: orderDraft?.buyerId || null,
+          selectedValue: orderDraft?.selectedValue || null,
+          gstAmount: orderDraft?.gstAmount || null,
+          amount: orderDraft?.amount || null,
           orderType: 'SALES',
-          invoiceType: '',
-          orderItems: [],
-          bankAccountId: null,
-          socialLinks: null,
-          remarks: null,
-          pin: null,
-          billingAddressId: null,
-          shippingAddressId: null,
+          invoiceType: orderDraft?.invoiceType || '',
+          orderItems: orderDraft?.orderItems || [],
+          bankAccountId: orderDraft?.bankAccountId || null,
+          socialLinks: orderDraft?.socialLinks || null,
+          remarks: orderDraft?.remarks || null,
+          pin: orderDraft?.pin || null,
+          billingAddressId: orderDraft?.billingAddressId || null,
+          shippingAddressId: orderDraft?.shippingAddressId || null,
         }
       : {
           clientType: 'B2B',
-          sellerEnterpriseId: null,
+          sellerEnterpriseId: bidDraft?.sellerEnterpriseId || null,
           buyerId: enterpriseId,
-          gstAmount: null,
-          amount: null,
+          selectedValue: bidDraft?.selectedValue || null,
+          gstAmount: bidDraft?.gstAmount || null,
+          amount: bidDraft?.amount || null,
           orderType: 'PURCHASE',
-          invoiceType: '',
-          orderItems: [],
-          bankAccountId: null,
-          socialLinks: null,
-          remarks: null,
-          pin: null,
-          billingAddressId: null,
-          shippingAddressId: null,
+          invoiceType: bidDraft?.invoiceType || '',
+          orderItems: bidDraft?.orderItems || [],
+          bankAccountId: bidDraft?.bankAccountId || null,
+          socialLinks: bidDraft?.socialLinks || null,
+          remarks: bidDraft?.remarks || null,
+          pin: bidDraft?.pin || null,
+          billingAddressId: bidDraft?.billingAddressId || null,
+          shippingAddressId: bidDraft?.shippingAddressId || null,
         },
   );
 
@@ -127,7 +142,14 @@ const CreateOrder = ({
   const [
     isGstApplicableForPurchaseOrders,
     setIsGstApplicableForPurchaseOrders,
-  ] = useState('');
+  ] = useState(false);
+
+  useEffect(() => {
+    if (!isCreatingPurchase || !order?.selectedValue) return;
+    // Check if GST is applicable for purchase orders
+    const gstNumber = order?.selectedValue?.gstNumber;
+    setIsGstApplicableForPurchaseOrders(!!gstNumber);
+  }, [isCreatingPurchase, order?.selectedValue]);
 
   // [clients]
   // clients[B2B] fetching
@@ -137,7 +159,6 @@ const CreateOrder = ({
     select: (res) => res.data.data.users,
     enabled: cta === 'offer' && isCreatingSales && order.clientType === 'B2B',
   });
-
   // client options
   const clientOptions = [
     ...(customerData?.map((customer) => {
@@ -313,6 +334,16 @@ const CreateOrder = ({
   const itemVendorListingOptions =
     order.invoiceType === 'GOODS' ? vendorGoodsOptions : vendorServiceOptions;
 
+  function saveDraftToSession({ cta, data }) {
+    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+    SessionStorageService.set(key, data);
+  }
+
+  function removeDraftFromSession({ cta }) {
+    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+    SessionStorageService.clear(key);
+  }
+
   // mutation - create order
   const orderMutation = useMutation({
     mutationFn: CreateOrderService,
@@ -324,8 +355,44 @@ const CreateOrder = ({
       );
       if (isPurchasePage) {
         router.push(`/purchases/purchase-orders/${res.data.data.id}`);
+        setOrder({
+          clientType: 'B2B',
+          sellerEnterpriseId: bidDraft?.sellerEnterpriseId || null,
+          buyerId: enterpriseId,
+          selectedValue: null,
+          gstAmount: null,
+          amount: null,
+          orderType: 'PURCHASE',
+          invoiceType: '',
+          orderItems: [],
+          bankAccountId: null,
+          socialLinks: null,
+          remarks: null,
+          pin: null,
+          billingAddressId: null,
+          shippingAddressId: null,
+        }); // Reset order state
+        removeDraftFromSession(cta); // Clear bid draft from session storage
       } else {
         router.push(`/sales/sales-orders/${res.data.data.id}`);
+        setOrder({
+          clientType: 'B2B',
+          sellerEnterpriseId: enterpriseId,
+          buyerId: null,
+          selectedValue: null,
+          gstAmount: null,
+          amount: null,
+          orderType: 'SALES',
+          invoiceType: '',
+          orderItems: [],
+          bankAccountId: null,
+          socialLinks: null,
+          remarks: null,
+          pin: null,
+          billingAddressId: null,
+          shippingAddressId: null,
+        }); // Reset order state
+        removeDraftFromSession(cta); // Clear order draft from session storage
       }
     },
     onError: (error) => {
@@ -403,11 +470,11 @@ const CreateOrder = ({
   };
 
   const handleSetTotalAmt = () => {
-    const totalAmount = order.orderItems.reduce((totalAmt, orderItem) => {
+    const totalAmount = order?.orderItems?.reduce((totalAmt, orderItem) => {
       return totalAmt + orderItem.totalAmount;
     }, 0);
 
-    const totalGstAmt = order.orderItems.reduce((totalGst, orderItem) => {
+    const totalGstAmt = order?.orderItems?.reduce((totalGst, orderItem) => {
       return (
         totalGst +
         (isGstApplicable(
@@ -424,7 +491,7 @@ const CreateOrder = ({
   };
 
   const handleCalculateGrossAmt = () => {
-    const grossAmount = order.orderItems.reduce((acc, orderItem) => {
+    const grossAmount = order?.orderItems?.reduce((acc, orderItem) => {
       return acc + orderItem.totalAmount;
     }, 0);
     return grossAmount;
@@ -445,7 +512,7 @@ const CreateOrder = ({
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
     const isError = validation({ order, selectedItem });
 
-    if (Object.keys(isError).length === 0) {
+    if (Object.keys(isError)?.length === 0) {
       orderMutation.mutate({
         ...order,
         buyerId: Number(order.buyerId),
@@ -487,7 +554,7 @@ const CreateOrder = ({
         <RedirectionToInvoiceModal
           redirectPopupOnFail={redirectPopupOnFail}
           setRedirectPopUpOnFail={setRedirectPopUpOnFail}
-          setSelectedValue={setSelectedValue}
+          setSelectedValue={setOrder}
           setOrder={setOrder}
         />
       )}
@@ -510,29 +577,52 @@ const CreateOrder = ({
                   classNamePrefix="select"
                   value={
                     clientOptions?.find(
-                      (option) => option.value === selectedValue?.value,
+                      (option) => option.value === order?.selectedValue?.value,
                     ) || null
                   } // Match selected value
                   onChange={(selectedOption) => {
                     if (!selectedOption) return; // Guard clause for no selection
+
+                    setSelectedItem({
+                      productName: '',
+                      productType: '',
+                      productId: null,
+                      quantity: null,
+                      unitPrice: null,
+                      gstPerUnit: null,
+                      totalAmount: null,
+                      totalGstAmount: null,
+                    }); // Reset selected item
 
                     const { value: id, isAccepted } = selectedOption;
 
                     if (id === 'add-new-client') {
                       setIsModalOpen(true); // Open modal when "Add New Client" is selected
                     } else {
-                      setOrder((prev) => ({
-                        ...prev,
+                      const updatedOrder = {
+                        ...order,
                         buyerId: id,
-                      }));
+                        orderItems: [], // ❗ Clear existing order items
+                      };
+
+                      setOrder({
+                        ...updatedOrder,
+                        selectedValue: selectedOption,
+                      }); // Update selected value
+
+                      saveDraftToSession({
+                        cta,
+                        data: {
+                          ...updatedOrder,
+                          selectedValue: selectedOption,
+                        },
+                      });
 
                       if (isOrder === 'invoice') {
                         setRedirectPopUpOnFail(false); // Never show popup for invoice
                       } else {
                         setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED'); // Show popup only if client is uninvited
                       }
-
-                      setSelectedValue(selectedOption); // Update selected value
                     }
                   }}
                 />
@@ -568,26 +658,49 @@ const CreateOrder = ({
                 classNamePrefix="select"
                 value={
                   vendorOptions?.find(
-                    (option) => option.value === selectedValue?.value,
+                    (option) => option.value === order?.selectedValue?.value,
                   ) || null
                 } // Match selected value
                 onChange={(selectedOption) => {
                   if (!selectedOption) return; // Guard clause for no selection
 
+                  setSelectedItem({
+                    productName: '',
+                    productType: '',
+                    productId: null,
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
+                  }); // Reset selected item
+
                   const { value: id, gstNumber } = selectedOption; // Extract id and isAccepted from the selected option
 
-                  // Check if "Add New Client" is selected
+                  // Check if "Add New vendor" is selected
                   if (selectedOption.value === 'add-new-vendor') {
                     setIsModalOpen(true); // Open the modal when "Add New Vendor" is selected
                   } else {
                     setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
 
-                    setOrder((prev) => ({
-                      ...prev,
+                    const updatedOrder = {
+                      ...order,
                       sellerEnterpriseId: id,
-                    }));
+                      orderItems: [], // ❗ Clear existing order items
+                    };
 
-                    setSelectedValue(selectedOption); // Update the state with the selected option
+                    setOrder({
+                      ...updatedOrder,
+                      selectedValue: selectedOption,
+                    }); // Update selected value
+
+                    saveDraftToSession({
+                      cta,
+                      data: {
+                        ...updatedOrder,
+                        selectedValue: selectedOption,
+                      },
+                    });
                   }
                 }}
               />
@@ -622,12 +735,39 @@ const CreateOrder = ({
             styles={getStylesForSelectComponent()}
             className="max-w-xs text-sm"
             classNamePrefix="select"
+            value={
+              itemTypeOptions.find(
+                (option) => option.value === order.invoiceType,
+              ) || null
+            }
             onChange={(selectedOption) => {
               if (!selectedOption) return; // Guard clause for no selection
-              setOrder((prev) => ({
-                ...prev,
+
+              // Reset selected item when item type changes
+              setSelectedItem({
+                productName: '',
+                productType: '',
+                productId: null,
+                quantity: null,
+                unitPrice: null,
+                gstPerUnit: null,
+                totalAmount: null,
+                totalGstAmount: null,
+              });
+
+              const updatedOrder = {
+                ...order,
                 invoiceType: selectedOption.value,
-              })); // Update state with the selected value
+              };
+
+              setOrder(updatedOrder);
+
+              saveDraftToSession({
+                cta,
+                data: {
+                  ...updatedOrder,
+                },
+              });
             }}
           />
           {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
@@ -685,25 +825,43 @@ const CreateOrder = ({
                       : 0;
 
                     if (selectedItemData.productType === 'GOODS') {
-                      setSelectedItem((prev) => ({
-                        ...prev,
+                      const updatedItem = {
+                        ...selectedItem,
                         productId: selectedItemData.id,
                         productType: selectedItemData.productType,
                         hsnCode: selectedItemData.hsnCode,
-                        productName: selectedItemData.productName,
+                        productName: selectedItemData.name,
                         unitPrice: selectedItemData.rate,
                         gstPerUnit,
-                      }));
+                      };
+                      setSelectedItem(updatedItem);
+
+                      saveDraftToSession({
+                        cta,
+                        data: {
+                          ...order,
+                          itemDraft: updatedItem,
+                        },
+                      });
                     } else {
-                      setSelectedItem((prev) => ({
-                        ...prev,
+                      const updatedItem = {
+                        ...selectedItem,
                         productId: selectedItemData.id,
                         productType: selectedItemData.productType,
                         sac: selectedItemData.sacCode,
                         serviceName: selectedItemData.serviceName,
                         unitPrice: selectedItemData.rate,
                         gstPerUnit,
-                      }));
+                      };
+                      setSelectedItem(updatedItem);
+
+                      saveDraftToSession({
+                        cta,
+                        data: {
+                          ...order,
+                          itemDraft: updatedItem,
+                        },
+                      });
                     }
                   }
                 }}
@@ -758,12 +916,21 @@ const CreateOrder = ({
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                   );
 
-                  setSelectedItem((prev) => ({
-                    ...prev,
+                  const updatedItem = {
+                    ...selectedItem,
                     quantity: value,
                     totalAmount: totalAmt,
                     totalGstAmount: gstAmt,
-                  }));
+                  };
+                  setSelectedItem(updatedItem);
+
+                  saveDraftToSession({
+                    cta,
+                    data: {
+                      ...order,
+                      itemDraft: updatedItem,
+                    },
+                  });
                 }}
                 className="max-w-30"
               />
@@ -817,12 +984,22 @@ const CreateOrder = ({
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                   );
 
-                  setSelectedItem((prevValue) => ({
-                    ...prevValue,
+                  const updatedItem = {
+                    ...selectedItem,
                     unitPrice: value,
                     totalAmount: totalAmt,
                     totalGstAmount: gstAmt,
-                  }));
+                  };
+
+                  setSelectedItem(updatedItem);
+
+                  saveDraftToSession({
+                    cta,
+                    data: {
+                      ...order,
+                      itemDraft: updatedItem,
+                    },
+                  });
                 }}
               />
 
@@ -925,8 +1102,8 @@ const CreateOrder = ({
             size="sm"
             variant="outline"
             onClick={() => {
-              setSelectedItem((prev) => ({
-                ...prev,
+              // Reset selected item
+              const updatedItem = {
                 productName: '',
                 productType: '',
                 productId: null,
@@ -935,7 +1112,16 @@ const CreateOrder = ({
                 gstPerUnit: null,
                 totalAmount: null,
                 totalGstAmount: null,
-              }));
+              };
+              setSelectedItem(updatedItem);
+
+              saveDraftToSession({
+                cta,
+                data: {
+                  ...order,
+                  itemDraft: updatedItem,
+                },
+              });
             }}
           >
             {translations('form.ctas.cancel')}
@@ -950,26 +1136,47 @@ const CreateOrder = ({
               selectedItem.unitPrice <= 0
             }
             onClick={() => {
-              setOrder((prev) => ({
-                ...prev,
-                orderItems: [
-                  ...prev.orderItems,
-                  {
-                    gstPercentage: selectedItem.gstPerUnit,
-                    ...selectedItem,
-                  },
-                ],
-              }));
-              setSelectedItem({
+              const updatedOrderItems = [
+                ...(order?.orderItems || []),
+                {
+                  ...selectedItem,
+                  gstPercentage: selectedItem.gstPerUnit ?? 0,
+                  gstPerUnit: selectedItem.gstPerUnit ?? 0,
+                },
+              ];
+
+              const updatedOrder = {
+                ...order,
+                orderItems: updatedOrderItems,
+              };
+
+              setOrder(updatedOrder);
+
+              // Clear the selected item (itemDraft in UI)
+              const clearedItem = {
                 productName: '',
                 productType: '',
                 productId: null,
                 quantity: null,
                 unitPrice: null,
-                gstPerUnit: null,
+                gstPerUnit: 0,
                 totalAmount: null,
                 totalGstAmount: null,
+              };
+              setSelectedItem(clearedItem);
+
+              // Maintain updated session storage without itemDraft
+              const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+              const { itemDraft, ...rest } =
+                SessionStorageService.get(key) || {};
+              saveDraftToSession({
+                cta,
+                data: {
+                  ...rest,
+                  ...updatedOrder,
+                },
               });
+
               setErrorMsg({});
             }}
             variant="blue_outline"

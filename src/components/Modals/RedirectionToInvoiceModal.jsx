@@ -20,7 +20,7 @@ const RedirectionToInvoiceModal = ({
       onOpenChange={() => {
         setIsOpen((prev) => !prev);
         setRedirectPopUpOnFail(false);
-        setSelectedValue(''); // Clear the selected value
+        setSelectedValue(null); // Clear the selected value
         setOrder((prev) => ({
           ...prev,
           buyerId: '',
@@ -46,7 +46,7 @@ const RedirectionToInvoiceModal = ({
               onClick={() => {
                 setIsOpen(false); // Close the dialog
                 setRedirectPopUpOnFail(false); // Reset the popup state
-                setSelectedValue(''); // Clear the selected value
+                setSelectedValue(null); // Clear the selected value
                 setOrder((prev) => ({
                   ...prev,
                   buyerId: '',
