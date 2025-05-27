@@ -127,21 +127,21 @@ const ClientPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery.data : clientsQuery.data;
+    const source = debouncedSearchTerm ? searchQuery?.data : clientsQuery?.data;
     if (!source) return;
-    const flattened = source.pages.flatMap(
+    const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.users || [],
     );
     const uniqueClientsData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
+      new Map(flattened?.map((item) => [item.id, item])).values(),
     );
     setClients(uniqueClientsData);
-    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
     setPaginationData({
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, clientsQuery.data, searchQuery.data]);
+  }, [debouncedSearchTerm, clientsQuery?.data, searchQuery?.data]);
 
   // handleFile fn
   const uploadFile = async (file) => {

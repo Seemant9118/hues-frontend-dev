@@ -108,21 +108,23 @@ const CustomerPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery.data : customersQuery.data;
+    const source = debouncedSearchTerm
+      ? searchQuery?.data
+      : customersQuery?.data;
     if (!source) return;
-    const flattened = source.pages.flatMap(
+    const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.customers || [],
     );
     const uniqueCustomersData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
+      new Map(flattened?.map((item) => [item.id, item])).values(),
     );
     setCustomers(uniqueCustomersData);
-    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
     setPaginationData({
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, customersQuery.data, searchQuery.data]);
+  }, [debouncedSearchTerm, customersQuery?.data, searchQuery?.data]);
 
   // handleFile fn
   //   const uploadFile = async (file) => {
