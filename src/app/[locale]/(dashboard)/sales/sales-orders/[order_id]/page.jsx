@@ -411,7 +411,7 @@ const ViewOrder = () => {
                         onClick={() => setIsEditingOrder(true)}
                         className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
                       >
-                        <Pencil size={14} /> {translations('ctas.more.edit')}
+                        <Pencil size={14} /> {translations('ctas.more.revise')}
                       </span>
                     </DropdownMenuContent>
                   </DropdownMenu>

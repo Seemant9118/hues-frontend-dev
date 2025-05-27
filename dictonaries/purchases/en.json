@@ -49,9 +49,9 @@
                     "total_amount": "TOTAL AMOUNT"
                 },
                 "column_actions": {
-                    "edit": {
-                        "cta": "Edit",
-                        "successMsg": "Edited Successfully"
+                    "revise": {
+                        "cta": "Revise",
+                        "successMsg": "Revised Successfully"
                     },
                     "delete": {
                         "cta": "Delete",
@@ -79,7 +79,7 @@
                     },
                     "more": {
                         "placeholder": "More options",
-                        "edit": "Edit"
+                        "revise": "Revise"
                     },
                     "footer_ctas": {
                         "wait_response": "Waiting for Response",

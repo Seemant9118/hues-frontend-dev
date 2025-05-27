@@ -196,7 +196,7 @@ export const usePurchaseColumns = (
                     className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
                   >
                     <Pencil size={14} />{' '}
-                    {translations('column_actions.edit.cta')}
+                    {translations('column_actions.revise.cta')}
                   </span>
                 )}
               <ConfirmAction

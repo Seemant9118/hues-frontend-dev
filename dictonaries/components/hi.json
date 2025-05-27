@@ -197,7 +197,7 @@
             "title": {
                 "offer": "प्रस्ताव",
                 "bid": "बोली",
-                "edit": "संपादित करें",
+                "revise": "संशोधित करें",
                 "sub_titles": {
                     "add_item": "आइटम जोड़ें",
                     "edit_item": "आइटम संपादित करें"
@@ -235,7 +235,7 @@
                     "amount": "*आवश्यक राशि"
                 },
                 "successMsg": {
-                    "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
+                    "order_revised_successfully": "ऑर्डर सफलतापूर्वक संशोधित किया गया",
                     "offer_created_successfully": "विक्रय आदेश सफलतापूर्वक बनाया गया",
                     "bid_created_successfully": "क्रय आदेश सफलतापूर्वक बनाया गया",
                     "invoice_created_successfully": "चालान सफलतापूर्वक बनाया गया"
@@ -278,7 +278,7 @@
                     "cancel": "रद्द करें",
                     "add": "जोड़ें",
                     "create": "बनाएँ",
-                    "edit": "संपादित करें",
+                    "revise": "संशोधित करें",
                     "next": "अगला"
                 },
                 "footer": {

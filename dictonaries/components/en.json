@@ -197,7 +197,7 @@
             "title": {
                 "offer": "Offer",
                 "bid": "Bid",
-                "edit": "Edit",
+                "revise": "Revise",
                 "sub_titles": {
                     "add_item": "Add Items",
                     "edit_item": "Edit Items"
@@ -235,7 +235,7 @@
                     "amount": "*Required Amount"
                 },
                 "successMsg": {
-                    "order_updated_successfully": "Order Updates Successfully",
+                    "order_revised_successfully": "Order Revised Successfully",
                     "offer_created_successfully": "Sales Order Created Successfully",
                     "bid_created_successfully": "Purchase Order Created Successfully",
                     "invoice_created_successfully": "Invoice created Successfully"
@@ -279,7 +279,8 @@
                     "add": "Add",
                     "create": "Create",
                     "edit": "Edit",
-                    "next": "Next"
+                    "next": "Next",
+                    "revise": "Revise"
                 },
                 "footer": {
                     "gross_amount": "Gross Amount",
