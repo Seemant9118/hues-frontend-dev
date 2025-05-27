@@ -70,8 +70,10 @@ const CustomerPage = () => {
     },
     initialPageParam: 1,
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = groups.length + 1;
-      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+      const nextPage = (groups?.length ?? 0) + 1;
+      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+
+      return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled: searchTerm.length === 0,
     refetchOnWindowFocus: false,
@@ -92,8 +94,10 @@ const CustomerPage = () => {
     },
     initialPageParam: 1,
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = groups.length + 1;
-      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+      const nextPage = (groups?.length ?? 0) + 1;
+      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+
+      return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled: !!debouncedSearchTerm,
     refetchOnWindowFocus: false,
