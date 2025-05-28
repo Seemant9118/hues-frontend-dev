@@ -552,10 +552,12 @@ const CreateOrder = ({
       {/* redirection to invoice modal */}
       {redirectPopupOnFail && (
         <RedirectionToInvoiceModal
+          cta={cta}
           redirectPopupOnFail={redirectPopupOnFail}
           setRedirectPopUpOnFail={setRedirectPopUpOnFail}
-          setSelectedValue={setOrder}
+          order={order}
           setOrder={setOrder}
+          removeDraftFromSession={removeDraftFromSession}
         />
       )}
 
