@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LocalStorageService, cn } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService, cn } from '@/lib/utils';
 import { CreateProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { CreateProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -31,11 +31,13 @@ import Loading from '../ui/Loading';
 const AddItem = ({ onCancel, cta }) => {
   const translations = useTranslations();
 
-  const queryClient = useQueryClient();
-  const router = useRouter();
   const redirectURL = LocalStorageService.get('redirectFromCatalogue');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const userId = LocalStorageService.get('user_profile');
+  const itemDraft = SessionStorageService.get('itemDraft');
+
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const pathname = usePathname();
   const isGoods = pathname.includes('goods');
 
@@ -44,26 +46,36 @@ const AddItem = ({ onCancel, cta }) => {
   const [item, setItem] = useState({
     enterpriseId,
     templateId: userId,
-    productName: '',
-    manufacturerName: '',
-    serviceName: '',
-    description: '',
-    hsnCode: '',
-    SAC: '',
-    rate: '',
-    gstPercentage: '',
-    quantity: '',
-    type: isGoods ? 'goods' : 'services',
-    batch: '',
-    expiry: '',
-    weight: '',
-    length: '',
-    breadth: '',
-    height: '',
-    applications: '',
-    manufacturerGstId: '',
-    units: '',
+    productName: itemDraft?.productName || '',
+    manufacturerName: itemDraft?.manufacturerName || '',
+    serviceName: itemDraft?.serviceName || '',
+    description: itemDraft?.description || '',
+    hsnCode: itemDraft?.hsnCode || '',
+    SAC: itemDraft?.SAC || '',
+    rate: itemDraft?.rate || '',
+    gstPercentage: itemDraft?.gstPercentage || '',
+    quantity: itemDraft?.quantity || '',
+    type: itemDraft?.type || (isGoods ? 'goods' : 'services'),
+    batch: itemDraft?.batch || '',
+    expiry: itemDraft?.expiry || '',
+    weight: itemDraft?.weight || '',
+    length: itemDraft?.length || '',
+    breadth: itemDraft?.breadth || '',
+    height: itemDraft?.height || '',
+    applications: itemDraft?.applications || '',
+    manufacturerGstId: itemDraft?.manufacturerGstId || '',
+    units: itemDraft?.units || '',
   });
+
+  // save draft to session storage
+  function saveDraftToSession({ key, data }) {
+    SessionStorageService.set(key, data);
+  }
+
+  // remove draft from session storage
+  function removeDraftFromSession({ key }) {
+    SessionStorageService.clear(key);
+  }
 
   // set date into expiry field of item
   useEffect(() => {
@@ -71,35 +83,14 @@ const AddItem = ({ onCancel, cta }) => {
       ...prevUserData,
       expiry: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '', // Update dynamically
     }));
-  }, [selectedDate]);
-
-  // clear errorMsg if item type changes
-  useEffect(() => {
-    setErrorMsg({});
-    setItem({
-      enterpriseId,
-      templateId: userId,
-      productName: '',
-      manufacturerName: '',
-      serviceName: '',
-      description: '',
-      hsnCode: '',
-      SAC: '',
-      rate: '',
-      gstPercentage: '',
-      quantity: '',
-      type: item.type,
-      batch: '',
-      expiry: '',
-      weight: '',
-      length: '',
-      breadth: '',
-      height: '',
-      productDimension: '',
-      applications: '',
-      units: '',
+    saveDraftToSession({
+      key: 'itemDraft',
+      data: {
+        ...item,
+        expiry: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '',
+      },
     });
-  }, [item.type]);
+  }, [selectedDate]);
 
   const validation = (itemData) => {
     const error = {};
@@ -189,11 +180,19 @@ const AddItem = ({ onCancel, cta }) => {
     ) {
       if (!Number.isNaN(value)) {
         setItem((values) => ({ ...values, [id]: value }));
+        saveDraftToSession({
+          key: 'itemDraft',
+          data: { ...item, [id]: value },
+        });
       }
       return;
     }
 
     setItem((values) => ({ ...values, [id]: value }));
+    saveDraftToSession({
+      key: 'itemDraft',
+      data: { ...item, [id]: value },
+    });
   };
 
   // goods mutation
@@ -202,6 +201,7 @@ const AddItem = ({ onCancel, cta }) => {
     onSuccess: (res) => {
       const message = communicationInventory(res, 'en-IN');
       toast.success(message.successMessage || 'Added Successfully');
+      removeDraftFromSession({ key: 'itemDraft' }); // Clear the draft after successful submission
       queryClient.invalidateQueries({
         queryKey: [goodsApi.getAllProductGoods.endpointKey],
       });
@@ -222,6 +222,7 @@ const AddItem = ({ onCancel, cta }) => {
     mutationFn: CreateProductServices,
     onSuccess: () => {
       toast.success('Services Added Successfully');
+      removeDraftFromSession({ key: 'itemDraft' }); // Clear the draft after successful submission
       queryClient.invalidateQueries({
         queryKey: [servicesApi.getAllProductServices.endpointKey],
       });
@@ -333,9 +334,38 @@ const AddItem = ({ onCancel, cta }) => {
               <Select
                 required
                 value={item.type}
-                onValueChange={(value) =>
-                  setItem((prev) => ({ ...prev, type: value }))
-                }
+                onValueChange={(value) => {
+                  setErrorMsg({});
+                  setSelectedDate(null); // Reset selected date when type changes
+                  const updatedItem = {
+                    ...item,
+                    type: value,
+                    productName: '',
+                    manufacturerName: '',
+                    serviceName: '',
+                    description: '',
+                    hsnCode: '',
+                    SAC: '',
+                    rate: '',
+                    gstPercentage: '',
+                    quantity: '',
+                    batch: '',
+                    expiry: '',
+                    weight: '',
+                    length: '',
+                    breadth: '',
+                    height: '',
+                    productDimension: '',
+                    applications: '',
+                    units: '',
+                  };
+                  setItem(updatedItem);
+
+                  saveDraftToSession({
+                    key: 'itemDraft',
+                    data: updatedItem,
+                  });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Item Type" />

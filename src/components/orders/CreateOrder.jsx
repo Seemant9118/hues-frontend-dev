@@ -127,6 +127,18 @@ const CreateOrder = ({
         },
   );
 
+  // save draft to session storage
+  function saveDraftToSession({ cta, data }) {
+    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+    SessionStorageService.set(key, data);
+  }
+
+  // remove draft from session storage
+  function removeDraftFromSession({ cta }) {
+    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+    SessionStorageService.clear(key);
+  }
+
   // [GST/NON-GST Checking]
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -333,16 +345,6 @@ const CreateOrder = ({
   // itemVendorListingOptions on the basis of item type
   const itemVendorListingOptions =
     order.invoiceType === 'GOODS' ? vendorGoodsOptions : vendorServiceOptions;
-
-  function saveDraftToSession({ cta, data }) {
-    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
-    SessionStorageService.set(key, data);
-  }
-
-  function removeDraftFromSession({ cta }) {
-    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
-    SessionStorageService.clear(key);
-  }
 
   // mutation - create order
   const orderMutation = useMutation({

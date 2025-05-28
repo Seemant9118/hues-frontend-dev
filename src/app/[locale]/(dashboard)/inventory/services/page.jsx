@@ -254,11 +254,7 @@ function Services() {
                     <Upload size={14} />
                     {translations('ctas.upload')}
                   </Button>
-                  <Button
-                    onClick={() => setIsAdding(true)}
-                    variant={'blue_outline'}
-                    size="sm"
-                  >
+                  <Button onClick={() => setIsAdding(true)} size="sm">
                     <CircleFadingPlus size={14} />
                     {translations('ctas.add')}
                   </Button>
