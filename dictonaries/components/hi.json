@@ -399,6 +399,10 @@
             },
             "errorMsg": {
                 "common": "कुछ गलत हो गया"
+            },
+            "placeholder": {
+                "view_negotiation": "मोलभाव इतिहास देखें",
+                "preview_order": "ऑर्डर पूर्वावलोकन"
             }
         },
         "invoice_overview": {

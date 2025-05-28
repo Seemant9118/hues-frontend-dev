@@ -6,8 +6,9 @@ import {
   undoAcknowledgeStatus,
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
+import { viewOrderinNewTab } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Info, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
@@ -137,7 +138,20 @@ const OrdersOverview = ({
                 <p className="text-xs font-bold">
                   {translations('label.order_id')}
                 </p>
-                <p className="text-sm font-bold">{orderId}</p>
+                <p className="flex items-center gap-2 text-sm font-bold">
+                  {orderId}
+                  <Tooltips
+                    trigger={
+                      <button
+                        onClick={() => viewOrderinNewTab(params.order_id)}
+                        className="font-bold hover:text-primary"
+                      >
+                        <Eye size={14} />
+                      </button>
+                    }
+                    content={translations('placeholder.preview_order')}
+                  />
+                </p>
               </section>
 
               <section className="flex flex-col gap-2">
@@ -212,11 +226,12 @@ const OrdersOverview = ({
                         <MoveUpRight size={12} />
                       </p>
                     }
-                    content={'View Negotiation history'}
+                    content={translations('placeholder.view_negotiation')}
                   />
                 </section>
               </div>
             )}
+
             {/* attachments - only show when attachements present */}
             {/* {orderDetails?.attachments?.length > 0 && (
               <div className="flex h-full w-1/2 flex-col gap-4">

@@ -384,7 +384,7 @@
                 "order_status": "Order Status",
                 "payment_status": "Payment Status",
                 "total_amount": "Total Amount",
-                "view_negotiation": "View Negotiation"
+                "view_negotiation": "View Negotiations"
             },
             "acknowledge_message": {
                 "infoText": "This order is directly recorded by our client/vendor. Acknowledge to add it to your order list",
@@ -400,6 +400,10 @@
             },
             "errorMsg": {
                 "common": "Something went wrong"
+            },
+            "placeholder": {
+                "view_negotiation": "View Negotiation History",
+                "preview_order": "Preview Order"
             }
         },
         "invoice_overview": {
