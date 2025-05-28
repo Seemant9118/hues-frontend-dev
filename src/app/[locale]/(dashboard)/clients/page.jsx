@@ -81,7 +81,12 @@ const ClientPage = () => {
     useState(null);
   const [paginationData, setPaginationData] = useState({});
 
-  const clientsQuery = useInfiniteQuery({
+  const {
+    data: clientsQuery,
+    isLoading: isClientQueryLoading,
+    fetchNextPage: clientFetchNextPage,
+    isFetching: isClientQueryFetching,
+  } = useInfiniteQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: async ({ pageParam = 1 }) => {
       return getClients({
@@ -102,7 +107,12 @@ const ClientPage = () => {
     placeholderData: keepPreviousData,
   });
 
-  const searchQuery = useInfiniteQuery({
+  const {
+    data: searchQuery,
+    isLoading: isSearchQueryLoading,
+    fetchNextPage: searchFetchNextPage,
+    isFetching: isSearchQueryFetching,
+  } = useInfiniteQuery({
     queryKey: [clientEnterprise.searchClients.endpointKey, debouncedSearchTerm],
     queryFn: async ({ pageParam = 1 }) => {
       return searchedClients({
@@ -131,7 +141,7 @@ const ClientPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery?.data : clientsQuery?.data;
+    const source = debouncedSearchTerm ? searchQuery : clientsQuery;
     if (!source) return;
     const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.users || [],
@@ -145,7 +155,7 @@ const ClientPage = () => {
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, clientsQuery?.data, searchQuery?.data]);
+  }, [debouncedSearchTerm, clientsQuery, searchQuery]);
 
   // handleFile fn
   const uploadFile = async (file) => {
@@ -276,7 +286,7 @@ const ClientPage = () => {
               </SubHeader>
             )}
 
-            {clientsQuery.isLoading || searchQuery.isLoading ? (
+            {isClientQueryLoading || isSearchQueryLoading ? (
               <Loading />
             ) : (
               <>
@@ -294,13 +304,13 @@ const ClientPage = () => {
                     data={clients}
                     fetchNextPage={
                       debouncedSearchTerm
-                        ? searchQuery.fetchNextPage
-                        : clientsQuery.fetchNextPage
+                        ? searchFetchNextPage
+                        : clientFetchNextPage
                     }
                     isFetching={
                       debouncedSearchTerm
-                        ? searchQuery.isFetching
-                        : clientsQuery.isFetching
+                        ? isSearchQueryFetching
+                        : isClientQueryFetching
                     }
                     totalPages={paginationData?.totalPages}
                     currFetchedPage={paginationData?.currFetchedPage}

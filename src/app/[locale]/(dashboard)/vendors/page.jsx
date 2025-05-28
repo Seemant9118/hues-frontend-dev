@@ -80,7 +80,12 @@ const VendorsPage = () => {
     useState(null);
   const [paginationData, setPaginationData] = useState({});
 
-  const vendorsQuery = useInfiniteQuery({
+  const {
+    data: vendorsQuery,
+    isLoading: isVendorsQueryLoading,
+    fetchNextPage: vendorFetchNextPage,
+    isFetching: isVendorsQueryFetching,
+  } = useInfiniteQuery({
     queryKey: [vendorEnterprise.getVendors.endpointKey],
     queryFn: async ({ pageParam = 1 }) => {
       return getVendors({
@@ -96,12 +101,17 @@ const VendorsPage = () => {
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm.length === 0,
+    enabled: searchTerm?.length === 0,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
-  const searchQuery = useInfiniteQuery({
+  const {
+    data: searchQuery,
+    isLoading: isSearchQueryLoading,
+    fetchNextPage: searchFetchNextPage,
+    isFetching: isSearchQueryFetching,
+  } = useInfiniteQuery({
     queryKey: [
       vendorEnterprise.searchedVendors.endpointKey,
       debouncedSearchTerm,
@@ -133,7 +143,7 @@ const VendorsPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery?.data : vendorsQuery?.data;
+    const source = debouncedSearchTerm ? searchQuery : vendorsQuery;
     if (!source) return;
     const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.users || [],
@@ -147,7 +157,7 @@ const VendorsPage = () => {
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, vendorsQuery?.data, searchQuery?.data]);
+  }, [debouncedSearchTerm, vendorsQuery, searchQuery]);
 
   // handle upload file fn
   const uploadFile = async (file) => {
@@ -280,7 +290,7 @@ const VendorsPage = () => {
               </SubHeader>
             )}
 
-            {vendorsQuery.isLoading || searchQuery.isLoading ? (
+            {isVendorsQueryLoading || isSearchQueryLoading ? (
               <Loading />
             ) : (
               <>
@@ -298,13 +308,13 @@ const VendorsPage = () => {
                     data={vendors}
                     fetchNextPage={
                       debouncedSearchTerm
-                        ? searchQuery.fetchNextPage
-                        : vendorsQuery.fetchNextPage
+                        ? searchFetchNextPage
+                        : vendorFetchNextPage
                     }
                     isFetching={
                       debouncedSearchTerm
-                        ? searchQuery.isFetching
-                        : vendorsQuery.isFetching
+                        ? isSearchQueryFetching
+                        : isVendorsQueryFetching
                     }
                     totalPages={paginationData?.totalPages}
                     currFetchedPage={paginationData?.currFetchedPage}

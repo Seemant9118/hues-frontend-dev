@@ -59,7 +59,12 @@ const CustomerPage = () => {
   const [paginationData, setPaginationData] = useState({});
 
   // get customers data
-  const customersQuery = useInfiniteQuery({
+  const {
+    data: customersQuery,
+    isLoading: isCustomerQueryLoading,
+    fetchNextPage: customerFetchNextPage,
+    isFetching: isCustomerQueryFetching,
+  } = useInfiniteQuery({
     queryKey: [customerApis.getCustomers.endpointKey],
     queryFn: async ({ pageParam = 1 }) => {
       return getCustomers({
@@ -75,12 +80,17 @@ const CustomerPage = () => {
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm.length === 0,
+    enabled: searchTerm?.length === 0,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
-  const searchQuery = useInfiniteQuery({
+  const {
+    data: searchQuery,
+    isLoading: isSearchQueryLoading,
+    fetchNextPage: searchFetchNextPage,
+    isFetching: isSearchQueryFetching,
+  } = useInfiniteQuery({
     queryKey: [
       customerApis.getSearchedCustomers.endpointKey,
       debouncedSearchTerm,
@@ -112,9 +122,7 @@ const CustomerPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm
-      ? searchQuery?.data
-      : customersQuery?.data;
+    const source = debouncedSearchTerm ? searchQuery : customersQuery;
     if (!source) return;
     const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.customers || [],
@@ -128,7 +136,7 @@ const CustomerPage = () => {
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, customersQuery?.data, searchQuery?.data]);
+  }, [debouncedSearchTerm, customersQuery, searchQuery]);
 
   // handleFile fn
   //   const uploadFile = async (file) => {
@@ -216,7 +224,7 @@ const CustomerPage = () => {
               </div>
             </SubHeader>
 
-            {customersQuery.isLoading || searchQuery.isLoading ? (
+            {isCustomerQueryLoading || isSearchQueryLoading ? (
               <Loading />
             ) : (
               <>
@@ -234,13 +242,13 @@ const CustomerPage = () => {
                     data={customers}
                     fetchNextPage={
                       debouncedSearchTerm
-                        ? searchQuery.fetchNextPage
-                        : customersQuery.fetchNextPage
+                        ? searchFetchNextPage
+                        : customerFetchNextPage
                     }
                     isFetching={
                       debouncedSearchTerm
-                        ? searchQuery.isFetching
-                        : customersQuery.isFetching
+                        ? isSearchQueryFetching
+                        : isCustomerQueryFetching
                     }
                     totalPages={paginationData?.totalPages}
                     currFetchedPage={paginationData?.currFetchedPage}
