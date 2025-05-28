@@ -6,10 +6,12 @@ import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 const RedirectionToInvoiceModal = ({
+  cta,
   redirectPopupOnFail,
   setRedirectPopUpOnFail,
-  setSelectedValue,
+  order,
   setOrder,
+  removeDraftFromSession,
 }) => {
   const translations = useTranslations('components.redirection_pop_up');
   const [isOpen, setIsOpen] = useState(redirectPopupOnFail);
@@ -20,11 +22,12 @@ const RedirectionToInvoiceModal = ({
       onOpenChange={() => {
         setIsOpen((prev) => !prev);
         setRedirectPopUpOnFail(false);
-        setSelectedValue(''); // Clear the selected value
-        setOrder((prev) => ({
-          ...prev,
+        setOrder({
+          ...order,
+          selectedValue: null,
           buyerId: '',
-        }));
+        }); // Reset the buyerId, selectedValue in the order
+        removeDraftFromSession(cta);
       }}
     >
       <DialogContent className="flex flex-col gap-2">
@@ -46,11 +49,12 @@ const RedirectionToInvoiceModal = ({
               onClick={() => {
                 setIsOpen(false); // Close the dialog
                 setRedirectPopUpOnFail(false); // Reset the popup state
-                setSelectedValue(''); // Clear the selected value
-                setOrder((prev) => ({
-                  ...prev,
+                setOrder({
+                  ...order,
+                  selectedValue: null,
                   buyerId: '',
-                }));
+                }); // Reset the buyerId, selectedValue in the order
+                removeDraftFromSession(cta);
               }}
             >
               {translations('ctas.no')}

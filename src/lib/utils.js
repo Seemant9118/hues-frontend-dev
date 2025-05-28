@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
@@ -10,39 +12,61 @@ export const isBrowser = typeof window !== 'undefined';
 
 // LocalStorageService.js
 export class LocalStorageService {
-  // Get a value from local storage by key
   static get(key) {
     if (!isBrowser) return null;
     const value = localStorage.getItem(key);
-    if (value) {
-      try {
-        return JSON.parse(value);
-      } catch (err) {
-        return null;
-      }
+    try {
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
     }
-    return null;
   }
 
-  // Set a value in local storage by key
   static set(key, value) {
     if (!isBrowser) return;
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  // Remove a value from local storage by key
   static remove(key) {
     if (!isBrowser) return;
     localStorage.removeItem(key);
   }
 
-  // Clear all items from local storage
   static clear() {
     if (!isBrowser) return;
     localStorage.clear();
   }
 }
 
+// SessionStorageService.js
+export class SessionStorageService {
+  static get(key) {
+    if (!isBrowser) return null;
+    const value = sessionStorage.getItem(key);
+    try {
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  static set(key, value) {
+    if (!isBrowser) return;
+    sessionStorage.setItem(key, JSON.stringify(value));
+  }
+
+  static remove(key) {
+    if (!isBrowser) return;
+    sessionStorage.removeItem(key);
+  }
+
+  static clear() {
+    if (!isBrowser) return;
+    sessionStorage.clear();
+  }
+}
+
+// Export HTML Table to CSV
 export function exportTableToExcel(
   tableID,
   filename = 'exported_table',
@@ -50,14 +74,16 @@ export function exportTableToExcel(
 ) {
   const table = document.getElementById(tableID);
   if (!table) return;
+
   const rows = table.getElementsByTagName('tr');
   const csvData = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = [];
     const cols = rows[i].querySelectorAll('td, th');
-    for (let j = 0; j < cols.length - excludeLast ? 1 : 0; j++) {
-      row.push(cols[j].innerText);
+    const length = excludeLast ? cols.length - 1 : cols.length;
+    for (let j = 0; j < length; j++) {
+      row.push(cols[j].innerText.trim());
     }
     csvData.push(row.join(','));
   }
@@ -72,26 +98,18 @@ export function exportTableToExcel(
   document.body.removeChild(link);
 }
 
-// export const copyHandler = (text) => {
-//   if (!text) return toast.error('Please write question before copying.');
-//   if (!navigator.clipboard) return;
-//   if (text === '') return toast.error('No question to copy');
-//   navigator.clipboard.writeText(text);
-//   toast.success('Question copied To clipboard');
-// };
-
+// Clipboard Copy Handler
 export const copyHandler = (text) => {
   if (!text) {
-    toast.error('Please write question before copying.');
+    toast.error('Please write something before copying.');
     return;
   }
+
   if (!navigator.clipboard) {
+    toast.error('Clipboard not supported');
     return;
   }
-  if (text === '') {
-    toast.error('No question to copy');
-    return;
-  }
+
   navigator.clipboard.writeText(text);
-  toast.success('Question copied to clipboard');
+  toast.success('Copied to clipboard');
 };

@@ -2,6 +2,7 @@
 
 import { formattedAmount, isGstApplicable } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { SessionStorageService } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
@@ -122,7 +123,6 @@ export const useCreateSalesColumns = (
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const id = row.original.productId;
         return (
           <div className="flex min-w-[50px] items-center gap-2">
             <Button
@@ -130,13 +130,41 @@ export const useCreateSalesColumns = (
               variant="ghost"
               size="icon"
               onClick={() => {
+                // Move item back to selectedItem
                 setSelectedItem(row.original);
-                setOrder((prev) => ({
-                  ...prev,
-                  orderItems: prev.orderItems.filter(
-                    (item) => item.productId !== id,
-                  ),
-                }));
+
+                // Update order state (remove item)
+                setOrder((prev) => {
+                  const updatedItems = prev.orderItems.filter(
+                    (item) => item.productId !== row.original.productId,
+                  );
+
+                  const updatedOrder = {
+                    ...prev,
+                    orderItems: updatedItems,
+                  };
+
+                  // Update session storage with updatedOrder and restored itemDraft
+                  if (isPurchasePage) {
+                    const prevDraft =
+                      SessionStorageService.get('bidDraft') || {};
+                    SessionStorageService.set('bidDraft', {
+                      ...prevDraft,
+                      ...updatedOrder,
+                      itemDraft: row.original,
+                    });
+                  } else {
+                    const prevDraft =
+                      SessionStorageService.get('orderDraft') || {};
+                    SessionStorageService.set('orderDraft', {
+                      ...prevDraft,
+                      ...updatedOrder,
+                      itemDraft: row.original,
+                    });
+                  }
+
+                  return updatedOrder;
+                });
               }}
             >
               <Trash2 size={14} />

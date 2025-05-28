@@ -15,6 +15,7 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
   GetSearchedProductGoods,
+  UpdateProductGoods,
   UploadProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import {
@@ -238,11 +239,7 @@ function Goods() {
                     <Upload size={14} />
                     {translations('ctas.upload')}
                   </Button>
-                  <Button
-                    onClick={() => setIsAdding(true)}
-                    variant="blue_outline"
-                    size="sm"
-                  >
+                  <Button onClick={() => setIsAdding(true)} size="sm">
                     <CircleFadingPlus size={14} />
                     {translations('ctas.add')}
                   </Button>
@@ -282,19 +279,31 @@ function Goods() {
               )}
             </Wrapper>
           )}
-          {isAdding && <AddItem closeModal={() => setIsAdding(false)} />}
+          {isAdding && (
+            <AddItem
+              setIsAdding={setIsAdding}
+              name={'Item'}
+              cta={'Item'}
+              onCancel={() => setIsAdding(false)}
+            />
+          )}
+
           {isEditing && (
             <EditItem
-              data={goodsToEdit}
-              closeModal={() => setIsEditing(false)}
+              setIsEditing={setIsEditing}
+              goodsToEdit={goodsToEdit}
+              setGoodsToEdit={setGoodsToEdit}
+              mutationFunc={UpdateProductGoods}
+              queryKey={[goodsApi.getAllProductGoods.endpointKey]}
             />
           )}
           {isUploading && (
             <UploadItems
-              onUpload={uploadFile}
+              type="goods"
+              uploadFile={uploadFile}
               files={files}
+              setisUploading={setIsUploading}
               setFiles={setFiles}
-              closeModal={() => setIsUploading(false)}
             />
           )}
         </div>
