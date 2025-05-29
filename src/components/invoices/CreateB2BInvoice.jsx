@@ -8,11 +8,10 @@ import {
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
-import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getProductCatalogue,
   getServiceCatalogue,
@@ -32,6 +31,7 @@ import { useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
+import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import InvoicePreview from '../ui/InvoicePreview';
@@ -54,6 +54,7 @@ const CreateB2BInvoice = ({
 
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const b2bInvoiceDraft = SessionStorageService.get('b2bInvoiceDraft');
 
   const router = useRouter();
   const pathName = usePathname();
@@ -64,37 +65,46 @@ const CreateB2BInvoice = ({
   const [isInvoicePreview, setIsInvoicePreview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
-  const [selectedValue, setSelectedValue] = useState(''); // Manage selected value
   const [selectedItem, setSelectedItem] = useState({
-    productName: '',
-    productType: '',
-    productId: null,
-    quantity: null,
-    unitPrice: null,
-    gstPerUnit: null,
-    totalAmount: null,
-    totalGstAmount: null,
+    productName: b2bInvoiceDraft?.itemDraft?.productName || '',
+    productType: b2bInvoiceDraft?.itemDraft?.productType || '',
+    sac: b2bInvoiceDraft?.itemDraft?.sacCode || '',
+    serviceName: b2bInvoiceDraft?.itemDraft?.serviceName || '',
+    productId: b2bInvoiceDraft?.itemDraft?.productId || null,
+    quantity: b2bInvoiceDraft?.itemDraft?.quantity || null,
+    unitPrice: b2bInvoiceDraft?.itemDraft?.unitPrice || null,
+    gstPerUnit: b2bInvoiceDraft?.itemDraft?.gstPerUnit || null,
+    totalAmount: b2bInvoiceDraft?.itemDraft?.totalAmount || null,
+    totalGstAmount: b2bInvoiceDraft?.itemDraft?.totalGstAmount || null,
   });
   const [order, setOrder] = useState({
     clientType: 'B2B',
     sellerEnterpriseId: enterpriseId,
-    buyerId: null,
-    gstAmount: null,
-    amount: null,
+    buyerId: b2bInvoiceDraft?.buyerId || null,
+    gstAmount: b2bInvoiceDraft?.gstAmount || null,
+    amount: b2bInvoiceDraft?.amount || null,
     orderType: 'SALES',
-    invoiceType: '',
-    orderItems: [],
-    bankAccountId: null,
-    socialLinks: null,
-    remarks: null,
-    pin: null,
-    billingAddressId: null,
-    shippingAddressId: null,
+    invoiceType: b2bInvoiceDraft?.invoiceType || '',
+    orderItems: b2bInvoiceDraft?.orderItems || [],
+    bankAccountId: b2bInvoiceDraft?.bankAccountId || null,
+    socialLinks: b2bInvoiceDraft?.socialLinks || null,
+    remarks: b2bInvoiceDraft?.remarks || null,
+    pin: b2bInvoiceDraft?.pin || null,
+    billingAddressId: b2bInvoiceDraft?.billingAddressId || null,
+    shippingAddressId: b2bInvoiceDraft?.shippingAddressId || null,
+    selectedValue: b2bInvoiceDraft?.selectedValue || null,
+    getAddressRelatedData: b2bInvoiceDraft?.getAddressRelatedData || null,
   });
-  const [getAddressRelatedData, setGetAddressRelatedData] = useState({
-    clientId: null,
-    clientEnterpriseId: null,
-  });
+
+  // save draft to session storage
+  function saveDraftToSession({ key, data }) {
+    SessionStorageService.set(key, data);
+  }
+
+  // remove draft from session storage
+  function removeDraftFromSession({ key }) {
+    SessionStorageService.clear(key);
+  }
 
   // [GST/NON-GST Checking]
   // fetch profileDetails API
@@ -207,6 +217,7 @@ const CreateB2BInvoice = ({
       toast.success(
         translations('form.successMsg.invoice_created_successfully'),
       );
+      removeDraftFromSession('b2bInvoiceDraft');
       router.push(`/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
@@ -346,11 +357,11 @@ const CreateB2BInvoice = ({
   };
 
   // columns
-  const createSalesColumns = useCreateSalesColumns(
+  const createSalesInvoiceColumns = useCreateSalesInvoiceColumns(
     isOrder,
     setOrder,
     setSelectedItem,
-    isPurchasePage,
+    true,
     isGstApplicableForSalesOrders,
   );
 
@@ -400,7 +411,7 @@ const CreateB2BInvoice = ({
                   classNamePrefix="select"
                   value={
                     clientOptions?.find(
-                      (option) => option.value === selectedValue?.value,
+                      (option) => option.value === order?.selectedValue?.value,
                     ) || null
                   } // Match selected value
                   onChange={(selectedOption) => {
@@ -418,14 +429,26 @@ const CreateB2BInvoice = ({
                       setOrder((prev) => ({
                         ...prev,
                         buyerId: id,
-                      }));
-                      setGetAddressRelatedData((prev) => ({
-                        ...prev,
-                        clientId,
-                        clientEnterpriseId,
+                        selectedValue: selectedOption,
+                        getAddressRelatedData: {
+                          clientId,
+                          clientEnterpriseId,
+                        },
                       }));
 
-                      setSelectedValue(selectedOption); // Update selected value
+                      // Save the selected client to session storage
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          buyerId: id,
+                          selectedValue: selectedOption,
+                          getAddressRelatedData: {
+                            clientId,
+                            clientEnterpriseId,
+                          },
+                        },
+                      });
                     }
                   }}
                 />
@@ -457,12 +480,44 @@ const CreateB2BInvoice = ({
                 styles={getStylesForSelectComponent()}
                 className="max-w-xs text-sm"
                 classNamePrefix="select"
+                value={
+                  itemTypeOptions?.find(
+                    (option) => option.value === order.invoiceType,
+                  ) || null
+                } // Match selected value
                 onChange={(selectedOption) => {
                   if (!selectedOption) return; // Guard clause for no selection
+
+                  // Set the selected item type in the order state
+                  setSelectedItem((prev) => ({
+                    ...prev,
+                    productName: '',
+                    productType: '',
+                    sac: '',
+                    serviceName: '',
+                    productId: null,
+                    quantity: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
+                  })); // Reset selected item
+
                   setOrder((prev) => ({
                     ...prev,
                     invoiceType: selectedOption.value,
                   })); // Update state with the selected value
+
+                  // Save the selected item type to session storage
+                  saveDraftToSession({
+                    key: 'b2bInvoiceDraft',
+                    data: {
+                      ...order,
+                      invoiceType: selectedOption.value,
+                      itemDraft: null,
+                      orderItems: [],
+                    },
+                  });
                 }}
               />
               {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
@@ -516,6 +571,22 @@ const CreateB2BInvoice = ({
                             unitPrice: selectedItemData.rate,
                             gstPerUnit,
                           }));
+
+                          // Save the selected item to session storage
+                          saveDraftToSession({
+                            key: 'b2bInvoiceDraft',
+                            data: {
+                              ...order,
+                              itemDraft: {
+                                productId: selectedItemData.id,
+                                productType: selectedItemData.productType,
+                                hsnCode: selectedItemData.hsnCode,
+                                productName: selectedItemData.productName,
+                                unitPrice: selectedItemData.rate,
+                                gstPerUnit,
+                              },
+                            },
+                          });
                         } else {
                           setSelectedItem((prev) => ({
                             ...prev,
@@ -526,6 +597,22 @@ const CreateB2BInvoice = ({
                             unitPrice: selectedItemData.rate,
                             gstPerUnit,
                           }));
+
+                          // Save the selected item to session storage
+                          saveDraftToSession({
+                            key: 'b2bInvoiceDraft',
+                            data: {
+                              ...order,
+                              itemDraft: {
+                                productId: selectedItemData.id,
+                                productType: selectedItemData.productType,
+                                sac: selectedItemData.sacCode,
+                                serviceName: selectedItemData.serviceName,
+                                unitPrice: selectedItemData.rate,
+                                gstPerUnit,
+                              },
+                            },
+                          });
                         }
                       }
                     }}
@@ -588,6 +675,20 @@ const CreateB2BInvoice = ({
                         totalAmount: totalAmt,
                         totalGstAmount: gstAmt,
                       }));
+
+                      // Save the selected item to session storage
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: {
+                            ...selectedItem,
+                            quantity: value,
+                            totalAmount: totalAmt,
+                            totalGstAmount: gstAmt,
+                          },
+                        },
+                      });
                     }}
                     className="max-w-30"
                   />
@@ -646,6 +747,20 @@ const CreateB2BInvoice = ({
                         totalAmount: totalAmt,
                         totalGstAmount: gstAmt,
                       }));
+
+                      // Save the selected item to session storage
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: {
+                            ...selectedItem,
+                            unitPrice: value,
+                            totalAmount: totalAmt,
+                            totalGstAmount: gstAmt,
+                          },
+                        },
+                      });
                     }}
                   />
                   {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
@@ -750,6 +865,24 @@ const CreateB2BInvoice = ({
                     totalAmount: null,
                     totalGstAmount: null,
                   }));
+
+                  // Clear the selected item in session storage
+                  saveDraftToSession({
+                    key: 'b2bInvoiceDraft',
+                    data: {
+                      ...order,
+                      itemDraft: {
+                        productName: '',
+                        productType: '',
+                        productId: null,
+                        quantity: null,
+                        unitPrice: null,
+                        gstPerUnit: null,
+                        totalAmount: null,
+                        totalGstAmount: null,
+                      },
+                    },
+                  });
                 }}
               >
                 {translations('form.ctas.cancel')}
@@ -764,26 +897,40 @@ const CreateB2BInvoice = ({
                   selectedItem.unitPrice <= 0
                 }
                 onClick={() => {
-                  setOrder((prev) => ({
-                    ...prev,
-                    orderItems: [
-                      ...prev.orderItems,
-                      {
-                        gstPercentage: selectedItem.gstPerUnit,
-                        ...selectedItem,
-                      },
-                    ],
-                  }));
-                  setSelectedItem({
+                  const updatedOrderItems = [
+                    ...(order?.orderItems || []),
+                    {
+                      ...selectedItem,
+                      gstPercentage: selectedItem.gstPerUnit ?? 0,
+                    },
+                  ];
+
+                  const updatedOrder = {
+                    ...order,
+                    orderItems: updatedOrderItems,
+                  };
+                  setOrder(updatedOrder);
+                  // Clear the selected item (itemDraft in UI)
+                  const clearedItem = {
                     productName: '',
                     productType: '',
                     productId: null,
                     quantity: null,
                     unitPrice: null,
-                    gstPerUnit: null,
+                    gstPerUnit: 0,
                     totalAmount: null,
                     totalGstAmount: null,
+                  };
+                  setSelectedItem(clearedItem);
+                  // Save the updated order to session storage
+                  saveDraftToSession({
+                    key: 'b2bInvoiceDraft',
+                    data: {
+                      ...updatedOrder,
+                      itemDraft: clearedItem,
+                    },
                   });
+
                   setErrorMsg({});
                 }}
                 variant="blue_outline"
@@ -794,7 +941,10 @@ const CreateB2BInvoice = ({
           </div>
 
           {/* selected item table */}
-          <DataTable data={order.orderItems} columns={createSalesColumns} />
+          <DataTable
+            data={order.orderItems}
+            columns={createSalesInvoiceColumns}
+          />
 
           <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
@@ -860,7 +1010,7 @@ const CreateB2BInvoice = ({
         <InvoicePreview
           order={order}
           setOrder={setOrder}
-          getAddressRelatedData={getAddressRelatedData}
+          getAddressRelatedData={order?.getAddressRelatedData}
           setIsPreviewOpen={setIsInvoicePreview}
           url={url}
           isPDFProp={true}
