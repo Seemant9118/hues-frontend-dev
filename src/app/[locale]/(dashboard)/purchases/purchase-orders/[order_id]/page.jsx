@@ -1,5 +1,6 @@
 'use client';
 
+import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
@@ -11,6 +12,7 @@ import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
+import TimelineItem from '@/components/ui/TimelineItem';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,6 +24,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
@@ -156,6 +159,14 @@ const ViewOrder = () => {
     params.order_id,
     router,
   ]);
+
+  // api calling for order timeline
+  const { isLoading: isTimeLinesDataLoading, data: timeLineData } = useQuery({
+    queryKey: [auditLogsAPIs.getOrderAudits.endpointKey],
+    queryFn: () => getOrderAudits(params.order_id),
+    select: (data) => data.data.data,
+    enabled: tab === 'timeline',
+  });
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -506,7 +517,23 @@ const ViewOrder = () => {
                   />
                 </TabsContent>
                 <TabsContent value="timeline">
-                  {translations('tabs.content.tab4.coming_soon')}
+                  <div className="h-full w-full animate-fadeInUp overflow-auto p-2">
+                    {isTimeLinesDataLoading && <Loading />}
+                    {!isTimeLinesDataLoading &&
+                      timeLineData?.length > 0 &&
+                      timeLineData?.map((timeLinetItem, index) => (
+                        <TimelineItem
+                          key={timeLinetItem?.id}
+                          title={timeLinetItem?.action}
+                          dateTime={timeLinetItem?.createdAt}
+                          isLast={index === timeLineData.length - 1}
+                        />
+                      ))}
+
+                    {!isTimeLinesDataLoading && timeLineData?.length === 0 && (
+                      <div>No Timeline recorded yet</div>
+                    )}
+                  </div>
                 </TabsContent>
               </Tabs>
             </section>
