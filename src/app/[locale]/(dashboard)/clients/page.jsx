@@ -217,7 +217,12 @@ const ClientPage = () => {
   };
 
   // columns
-  const ClientsColumns = useClientsColumns(getLink, sendReminder, onEditClick);
+  const ClientsColumns = useClientsColumns(
+    getLink,
+    sendReminder,
+    onEditClick,
+    enterpriseId,
+  );
 
   return (
     <>

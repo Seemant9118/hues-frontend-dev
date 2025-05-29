@@ -219,7 +219,12 @@ const VendorsPage = () => {
   };
 
   // columns
-  const VendorsColumns = useVendorsColumns(getLink, sendRemind, onEditClick);
+  const VendorsColumns = useVendorsColumns(
+    getLink,
+    sendRemind,
+    onEditClick,
+    enterpriseId,
+  );
 
   return (
     <>

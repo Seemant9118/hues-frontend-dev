@@ -9,12 +9,62 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { resendInvitation } from '@/services/Invitation_Service/Invitation_Service';
+import {
+  acceptInvitation,
+  rejectInvitation,
+  resendInvitation,
+} from '@/services/Invitation_Service/Invitation_Service';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
-export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
+export const useClientsColumns = (
+  getLink,
+  sendReminder,
+  onEditClick,
+  enterpriseId,
+) => {
+  const queryClient = useQueryClient();
   const translations = useTranslations('client');
+
+  const acceptInvitationMutation = useMutation({
+    mutationFn: (data) => acceptInvitation(data),
+    onSuccess: () => {
+      toast.success('Invitation Accepted Successfully');
+
+      queryClient.invalidateQueries([clientEnterprise.getClients.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const rejectInvitationMutation = useMutation({
+    mutationFn: (data) => rejectInvitation(data),
+    onSuccess: () => {
+      toast.success('Invitation Rejected Successfully');
+
+      queryClient.invalidateQueries([clientEnterprise.getClients.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handleAccept = (id) => {
+    acceptInvitationMutation.mutate({
+      enterpriseId,
+      invitationId: id,
+    });
+  };
+
+  const handleReject = (id) => {
+    rejectInvitationMutation.mutate({
+      enterpriseId,
+      invitationId: id,
+    });
+  };
   return [
     {
       accessorKey: 'name',
@@ -85,34 +135,58 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
         />
       ),
       cell: ({ row }) => {
+        const invitationId = row.original?.invitation?.id;
         const invitationStatus = row.original?.invitation?.status;
 
-        switch (invitationStatus) {
-          case 'PENDING':
-            return (
-              <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-700 bg-blue-100 p-1 text-blue-700">
-                {translations('table.column.status.pending')}
-              </div>
-            );
-          case 'REJECTED':
-            return (
-              <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
-                {translations('table.column.status.rejected')}
-              </div>
-            );
+        const enterpriseId = row.original?.enterpriseId;
+        const inviterEnterpriseId = row.original?.invitation?.fromEnterpriseId;
 
-          case 'ACCEPTED':
-            return (
-              <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
-                {translations('table.column.status.acceptedByClient')}
-              </div>
-            );
-          default:
-            return (
-              <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
-                {translations('table.column.status.acceptedByYou')}
-              </div>
-            );
+        if (
+          invitationStatus === 'PENDING' &&
+          enterpriseId === inviterEnterpriseId
+        ) {
+          return (
+            <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-700 bg-blue-100 p-1 text-blue-700">
+              {translations('table.column.status.pending')}
+            </div>
+          );
+        } else if (
+          invitationStatus === 'PENDING' &&
+          enterpriseId !== inviterEnterpriseId
+        ) {
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="border border-red-500 font-semibold text-red-500 hover:bg-red-500 hover:text-white"
+                onClick={() => handleReject(invitationId)}
+              >
+                Reject
+              </Button>
+              <Button onClick={() => handleAccept(invitationId)} size="sm">
+                Accept
+              </Button>
+            </div>
+          );
+        } else if (invitationStatus === 'REJECTED') {
+          return (
+            <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
+              {translations('table.column.status.rejected')}
+            </div>
+          );
+        } else if (invitationStatus === 'ACCEPTED') {
+          return (
+            <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+              {translations('table.column.status.acceptedByClient')}
+            </div>
+          );
+        } else {
+          return (
+            <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+              {translations('table.column.status.acceptedByYou')}
+            </div>
+          );
         }
       },
     },
@@ -123,9 +197,12 @@ export const useClientsColumns = (getLink, sendReminder, onEditClick) => {
         const invitationId = row.original?.invitation?.id;
         const invitationStatus = row.original?.invitation?.status;
 
+        const enterpriseId = row.original?.enterpriseId;
+        const inviterEnterpriseId = row.original?.invitation?.fromEnterpriseId;
+
         return (
-          (invitationStatus === 'REJECTED' ||
-            invitationStatus === 'PENDING') && (
+          (invitationStatus === 'REJECTED' || invitationStatus === 'PENDING') &&
+          enterpriseId === inviterEnterpriseId && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
