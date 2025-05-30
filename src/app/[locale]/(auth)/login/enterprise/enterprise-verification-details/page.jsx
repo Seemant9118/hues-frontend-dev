@@ -68,10 +68,6 @@ const EnterpriseVerificationDetailsPage = () => {
   // setDetails
   useEffect(() => {
     if (enterpriseData) {
-      const cleanedAddress = enterpriseData?.address?.address?.replace(
-        /,\s[^,]+,\s[^-]+-\s*\d+$/,
-        '',
-      );
       setEnterpriseOnboardData((prev) => ({
         ...prev,
         name: enterpriseData?.name || '',
@@ -79,7 +75,7 @@ const EnterpriseVerificationDetailsPage = () => {
         pincode: enterpriseData?.address?.pincode || '',
         city: enterpriseData?.address?.city || '',
         state: enterpriseData?.state || '',
-        address: cleanedAddress || '',
+        address: enterpriseData?.address?.address || '',
         roc: enterpriseData?.roc || '',
         doi: enterpriseData?.doi || '',
         type: enterpriseData?.type || '',
