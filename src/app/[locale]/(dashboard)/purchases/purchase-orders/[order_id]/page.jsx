@@ -527,6 +527,9 @@ const ViewOrder = () => {
                           title={timeLinetItem?.action}
                           dateTime={timeLinetItem?.createdAt}
                           isLast={index === timeLineData.length - 1}
+                          action={timeLinetItem?.action}
+                          module={timeLinetItem?.module}
+                          details={timeLinetItem?.details}
                         />
                       ))}
 
