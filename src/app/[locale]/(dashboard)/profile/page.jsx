@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getProfileDetails,
   LoggingOut,
@@ -41,6 +41,7 @@ function Profile() {
     mutationFn: LoggingOut,
     onSuccess: (res) => {
       LocalStorageService.clear();
+      SessionStorageService.clear();
       router.push('/login');
       toast.success(
         res.data.message || translations('toasts.logout.successMsg'),

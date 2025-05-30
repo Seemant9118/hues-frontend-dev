@@ -72,11 +72,6 @@ const AddItem = ({ onCancel, cta }) => {
     SessionStorageService.set(key, data);
   }
 
-  // remove draft from session storage
-  function removeDraftFromSession({ key }) {
-    SessionStorageService.clear(key);
-  }
-
   // set date into expiry field of item
   useEffect(() => {
     setItem((prevUserData) => ({
@@ -201,7 +196,7 @@ const AddItem = ({ onCancel, cta }) => {
     onSuccess: (res) => {
       const message = communicationInventory(res, 'en-IN');
       toast.success(message.successMessage || 'Added Successfully');
-      removeDraftFromSession({ key: 'itemDraft' }); // Clear the draft after successful submission
+      SessionStorageService.remove('itemDraft');
       queryClient.invalidateQueries({
         queryKey: [goodsApi.getAllProductGoods.endpointKey],
       });
@@ -222,7 +217,7 @@ const AddItem = ({ onCancel, cta }) => {
     mutationFn: CreateProductServices,
     onSuccess: () => {
       toast.success('Services Added Successfully');
-      removeDraftFromSession({ key: 'itemDraft' }); // Clear the draft after successful submission
+      SessionStorageService.remove('itemDraft');
       queryClient.invalidateQueries({
         queryKey: [servicesApi.getAllProductServices.endpointKey],
       });

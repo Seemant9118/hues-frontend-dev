@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { SessionStorageService } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
@@ -11,7 +12,6 @@ const RedirectionToInvoiceModal = ({
   setRedirectPopUpOnFail,
   order,
   setOrder,
-  removeDraftFromSession,
 }) => {
   const translations = useTranslations('components.redirection_pop_up');
   const [isOpen, setIsOpen] = useState(redirectPopupOnFail);
@@ -27,7 +27,11 @@ const RedirectionToInvoiceModal = ({
           selectedValue: null,
           buyerId: '',
         }); // Reset the buyerId, selectedValue in the order
-        removeDraftFromSession(cta);
+        if (cta === 'offer') {
+          SessionStorageService.remove('orderDraft');
+        } else {
+          SessionStorageService.remove('bidDraft');
+        }
       }}
     >
       <DialogContent className="flex flex-col gap-2">
@@ -54,7 +58,11 @@ const RedirectionToInvoiceModal = ({
                   selectedValue: null,
                   buyerId: '',
                 }); // Reset the buyerId, selectedValue in the order
-                removeDraftFromSession(cta);
+                if (cta === 'offer') {
+                  SessionStorageService.remove('orderDraft');
+                } else {
+                  SessionStorageService.remove('bidDraft');
+                }
               }}
             >
               {translations('ctas.no')}

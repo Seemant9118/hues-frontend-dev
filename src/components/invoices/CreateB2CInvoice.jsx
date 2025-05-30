@@ -96,11 +96,6 @@ const CreateB2CInvoice = ({
     SessionStorageService.set(key, data);
   }
 
-  // remove draft from session storage
-  function removeDraftFromSession({ key }) {
-    SessionStorageService.clear(key);
-  }
-
   // [GST/NON-GST Checking]
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -368,7 +363,7 @@ const CreateB2CInvoice = ({
       toast.success(
         translations('form.successMsg.invoice_created_successfully'),
       );
-      removeDraftFromSession('b2CInvoiceDraft');
+      SessionStorageService.remove('b2CInvoiceDraft');
       router.push(`/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
