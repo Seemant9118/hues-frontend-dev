@@ -1,4 +1,4 @@
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { refreshToken } from './Token_Services/TokenServices';
@@ -50,6 +50,7 @@ APIinstance.interceptors.response.use(
       } catch (refreshError) {
         toast.error('Session expired. Please log in again.');
         LocalStorageService.clear();
+        SessionStorageService.clear();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

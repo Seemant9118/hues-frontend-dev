@@ -133,12 +133,6 @@ const CreateOrder = ({
     SessionStorageService.set(key, data);
   }
 
-  // remove draft from session storage
-  function removeDraftFromSession({ cta }) {
-    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
-    SessionStorageService.clear(key);
-  }
-
   // [GST/NON-GST Checking]
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -374,7 +368,7 @@ const CreateOrder = ({
           billingAddressId: null,
           shippingAddressId: null,
         }); // Reset order state
-        removeDraftFromSession(cta); // Clear bid draft from session storage
+        SessionStorageService.remove('bidDraft');
       } else {
         router.push(`/sales/sales-orders/${res.data.data.id}`);
         setOrder({
@@ -394,7 +388,7 @@ const CreateOrder = ({
           billingAddressId: null,
           shippingAddressId: null,
         }); // Reset order state
-        removeDraftFromSession(cta); // Clear order draft from session storage
+        SessionStorageService.remove('orderDraft');
       }
     },
     onError: (error) => {
@@ -559,7 +553,6 @@ const CreateOrder = ({
           setRedirectPopUpOnFail={setRedirectPopUpOnFail}
           order={order}
           setOrder={setOrder}
-          removeDraftFromSession={removeDraftFromSession}
         />
       )}
 
