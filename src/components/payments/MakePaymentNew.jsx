@@ -56,6 +56,8 @@ const MakePaymentNew = ({
   const [errorMsg, setErrorMsg] = useState({});
   const [files, setFiles] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [selectedInvoiceBalanceAmount, setSelectedInvoiceBalanceAmount] =
+    useState(0);
   const [paymentData, setPaymentData] = useState({
     amount: '',
     paymentMode: '',
@@ -93,9 +95,7 @@ const MakePaymentNew = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const balanceAmount = parseFloat(
-      invoicesForPayments?.invoicedTotalDueAmount,
-    );
+    const balanceAmount = parseFloat(selectedInvoiceBalanceAmount || 0);
     if (name === 'amount') {
       // Allow only numbers & decimals, treating "0" as valid text input
       if (/^\d*\.?\d*$/.test(value)) {
@@ -297,15 +297,14 @@ const MakePaymentNew = ({
               </div>
 
               <Select
-                defaultValue={
+                value={
                   paymentData.invoices.length > 0
-                    ? paymentData.invoices[0].invoicereceivableinvoiceid
+                    ? paymentData.invoices[0].invoiceId
                     : undefined
                 }
                 onValueChange={(value) => {
                   const selectedInvoice = invoices.find(
-                    (inv) =>
-                      inv.invoicereceivableinvoiceid || inv.invoiceId === value,
+                    (inv) => inv.invoiceId === value,
                   );
 
                   if (selectedInvoice) {
@@ -318,6 +317,9 @@ const MakePaymentNew = ({
                     ...prevData,
                     invoices: [selectedInvoice], // Store as array
                   }));
+                  setSelectedInvoiceBalanceAmount(
+                    selectedInvoice?.invoicereceivabledueamount || 0,
+                  );
                 }}
               >
                 <SelectTrigger className="max-w-md">
@@ -328,9 +330,13 @@ const MakePaymentNew = ({
                     <SelectItem
                       key={invoice.invoicereceivableinvoiceid}
                       value={invoice.invoiceId}
+                      className="flex items-center gap-2"
                     >
                       {invoice.invoicereferencenumber ||
-                        invoice.invoiceReferenceNumber}
+                        invoice.invoiceReferenceNumber}{' '}
+                      {invoice.invoicereceivabledueamount === 0 && (
+                        <span className="text-xs text-green-500">{`(Paid)`}</span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -518,9 +524,7 @@ const MakePaymentNew = ({
                 <Input
                   disabled
                   className="max-w-md"
-                  value={formattedAmount(
-                    invoicesForPayments?.invoicedTotalDueAmount,
-                  )}
+                  value={formattedAmount(selectedInvoiceBalanceAmount || 0)}
                 />
               </div>
             </div>
