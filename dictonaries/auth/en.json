@@ -98,6 +98,7 @@
                     "timer": "00:{seconds}s",
                     "resend_button": "Resend",
                     "verify_button": "Verify",
+                    "back": "Back",
                     "errors": {
                         "otp_failed": "OTP verification failed. Please try again.",
                         "something_went_wrong": "Something went wrong"

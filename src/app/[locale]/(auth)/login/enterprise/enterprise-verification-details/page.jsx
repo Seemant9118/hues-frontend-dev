@@ -256,7 +256,7 @@ const EnterpriseVerificationDetailsPage = () => {
   };
 
   return (
-    <div className="flex h-full items-start justify-center">
+    <div className="flex h-full items-center justify-center">
       <form
         onSubmit={handleSubmit}
         className="flex w-[500px] flex-col items-center gap-5"

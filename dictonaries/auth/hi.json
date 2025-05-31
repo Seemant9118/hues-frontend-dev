@@ -98,6 +98,7 @@
                     "timer": "00:{seconds} सेकंड",
                     "resend_button": "पुनः भेजें",
                     "verify_button": "सत्यापित करें",
+                    "back": "वापस",
                     "errors": {
                         "otp_failed": "ओटीपी सत्यापन विफल रहा। कृपया पुनः प्रयास करें।",
                         "something_went_wrong": "कुछ गलत हो गया"
