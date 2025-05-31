@@ -27,7 +27,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 const EnterpriseVerificationDetailsPage = () => {
@@ -35,10 +35,10 @@ const EnterpriseVerificationDetailsPage = () => {
     'auth.enterprise.enterpriseVerification',
   );
   const translationForError = useTranslations();
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-
+  const inputRefs = useRef({});
   const [enterpriseOnboardData, setEnterpriseOnboardData] = React.useState({
     name: '',
     email: '',
@@ -237,6 +237,17 @@ const EnterpriseVerificationDetailsPage = () => {
       });
     } else {
       setErrorMsg(isError);
+
+      // Scroll to first error field
+      const firstErrorKey = Object.keys(isError)[0];
+      const firstErrorElement = inputRefs.current[firstErrorKey];
+      if (firstErrorElement?.scrollIntoView) {
+        firstErrorElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+        firstErrorElement.focus?.();
+      }
     }
   };
 
@@ -260,7 +271,12 @@ const EnterpriseVerificationDetailsPage = () => {
         </div>
 
         <div className="navScrollBarStyles flex max-h-[400px] w-full flex-col gap-5 overflow-y-auto">
-          <div className="grid w-full items-center gap-1 px-2">
+          <div
+            ref={(el) => {
+              inputRefs.current.name = el;
+            }}
+            className="grid w-full items-center gap-1 px-2"
+          >
             <Label
               htmlFor="enterpriseName"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -312,7 +328,12 @@ const EnterpriseVerificationDetailsPage = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4 px-2">
-            <div className="flex flex-col gap-1">
+            <div
+              ref={(el) => {
+                inputRefs.current.pincode = el;
+              }}
+              className="flex flex-col gap-1"
+            >
               <Label htmlFor="pincode">
                 {translations('labels.pincode')}{' '}
                 <span className="text-red-500">*</span>
@@ -361,7 +382,12 @@ const EnterpriseVerificationDetailsPage = () => {
             />
           </div>
 
-          <div className="grid w-full items-center gap-1 px-2">
+          <div
+            ref={(el) => {
+              inputRefs.current.address = el;
+            }}
+            className="grid w-full items-center gap-1 px-2"
+          >
             <Label
               htmlFor="address"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -413,7 +439,12 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1 px-2">
+          <div
+            ref={(el) => {
+              inputRefs.current.doi = el;
+            }}
+            className="grid w-full items-center gap-1 px-2"
+          >
             <Label
               htmlFor="doi"
               className="flex items-center gap-1 font-medium text-[#414656]"
