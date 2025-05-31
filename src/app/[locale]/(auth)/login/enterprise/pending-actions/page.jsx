@@ -151,10 +151,10 @@ const ConfirmationPage = () => {
   };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center">
+    <div className="flex h-full items-center justify-center">
       <form
         onSubmit={handleResumeOnboardEnterprise}
-        className="flex min-h-[400px] w-[450px] flex-col items-center justify-start gap-10 rounded-md"
+        className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
       >
         <div className="flex flex-col items-center gap-6">
           <h1 className="max-w-sm text-center text-2xl font-bold text-[#121212]">

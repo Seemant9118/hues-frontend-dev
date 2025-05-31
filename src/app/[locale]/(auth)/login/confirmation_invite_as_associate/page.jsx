@@ -76,7 +76,7 @@ const ConfirmationInviteAsAssocitePage = () => {
   return (
     <UserProvider>
       <div className="flex h-full items-center justify-center">
-        <div className="flex h-[350px] w-[450px] flex-col items-center justify-center gap-14">
+        <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
           <div className="flex flex-col gap-4">
             <h1 className="w-full text-center text-xl font-bold text-[#121212]">
               {translations('invitedHeading', {

@@ -109,24 +109,26 @@ const MobileLogin = ({
   };
 
   return (
-    <div className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10">
-      <div className="flex flex-col gap-4">
-        <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
+    <div className="flex w-full max-w-md flex-col items-center justify-start gap-8 sm:gap-10">
+      {/* Title and Subtitle */}
+      <div className="flex w-full flex-col gap-4">
+        <h1 className="text-center text-2xl font-bold text-[#121212]">
           {translations('header.title')}
         </h1>
-        <p className="w-full text-center text-sm text-[#A5ABBD]">
+        <p className="text-center text-sm text-[#A5ABBD]">
           {translations('header.subtitle')}{' '}
           <span className="font-bold">{translations('header.brandName')}</span>
         </p>
 
         {isLoading && (
-          <div className="flex flex-col">
+          <div className="flex flex-col items-center gap-2">
             <span>{translations('validation.invitationLoading')}</span>
             <Loading />
           </div>
         )}
       </div>
-      {/* login with mobile */}
+
+      {/* Login Form */}
       <form
         onSubmit={handleSubmitFormWithMob}
         className="grid w-full items-center gap-5"
@@ -137,12 +139,12 @@ const MobileLogin = ({
             <span className="text-red-600">*</span>
           </Label>
           <div className="relative flex items-center hover:border-gray-600">
-            <span className="absolute left-1.5 text-sm text-gray-600">+91</span>
+            <span className="absolute left-2 text-sm text-gray-600">+91</span>
             <Input
               type="number"
               name="mobileNumber"
               placeholder={translations('form.phonePlaceholder')}
-              className="px-8 focus:font-bold"
+              className="w-full py-2 pl-10 pr-3 focus:font-bold"
               onChange={handleChangeMobLogin}
               value={formDataWithMob.mobileNumber}
             />
@@ -159,7 +161,7 @@ const MobileLogin = ({
           {generateOTPMutation.isPending || loginInvitation.isPending ? (
             <Loading />
           ) : (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center gap-2">
               <p>{translations('button.sendOtp')}</p>
             </div>
           )}

@@ -72,7 +72,7 @@ const CINVerificationPage = () => {
 
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
+      <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
             {translations('title')}
