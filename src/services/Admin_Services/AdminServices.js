@@ -9,3 +9,9 @@ export const getAdminData = (dateRange) => {
     endDate,
   });
 };
+
+export const getEnterprisesData = ({ page, limit }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getEnterpriseData.endpoint}?page=${page}&limit=${limit}`,
+  );
+};
