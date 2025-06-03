@@ -96,9 +96,9 @@ export function ClientTable({
   });
 
   return (
-    <div>
+    <div className="flex h-full flex-col overflow-hidden">
       <div
-        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[565px] overflow-y-scroll rounded-[6px]" // Always visible scrollbar
+        className="infinite-datatable-scrollable-body scrollBarStyles flex-grow overflow-auto rounded-[6px]"
         ref={tableContainerRef}
       >
         <Table id={id}>
