@@ -33,6 +33,10 @@
                             "upload": "Upload",
                             "delete": "Delete"
                         }
+                    },
+                    "ctas": {
+                        "cancel": "Cancel",
+                        "update": "Update"
                     }
                 },
                 "tab2": {
@@ -45,6 +49,10 @@
         "toasts": {
             "logout": {
                 "successMsg": "User Logged Out",
+                "errorMsg": "Something went wrong"
+            },
+            "userUpdateFileds": {
+                "successMsg": "User Updated Successfully",
                 "errorMsg": "Something went wrong"
             }
         }

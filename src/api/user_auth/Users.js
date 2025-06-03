@@ -1,4 +1,8 @@
 export const userAuth = {
+  userUpdateFields: {
+    endpoint: `/iam/user/update-fields`,
+    endpointKey: 'user_update',
+  },
   // 1. generate OTP
   loginGenerateOtp: {
     endpoint: `/iam/auth/login/mobile/generate_otp`,

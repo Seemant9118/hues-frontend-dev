@@ -57,4 +57,10 @@ export const enterpriseUser = {
     endpoint: `/enterprise/validate-and-update-identifiers/`,
     endpointKey: 'update_enterprise',
   },
+
+  // update enterprise fields
+  updateEnterpriseFields: {
+    endpoint: `/enterprise/update-fields`,
+    endpointKey: 'update_enterprise_fields',
+  },
 };
