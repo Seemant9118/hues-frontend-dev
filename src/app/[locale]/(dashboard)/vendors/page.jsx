@@ -236,7 +236,7 @@ const VendorsPage = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
-          <Wrapper>
+          <Wrapper className="h-screen">
             {!isUploading && (
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
@@ -295,39 +295,41 @@ const VendorsPage = () => {
               </SubHeader>
             )}
 
-            {isVendorsQueryLoading || isSearchQueryLoading ? (
-              <Loading />
-            ) : (
-              <>
-                {/* Case 1: No search term, and no data → Empty stage */}
-                {!debouncedSearchTerm && vendors?.length === 0 ? (
-                  <EmptyStageComponent
-                    heading={translations('emptyStateComponent.heading')}
-                    subItems={keys}
-                  />
-                ) : (
-                  // Case 2: Either searchTerm is present, or data is available → Show Table
-                  <VendorsTable
-                    id="vendor-table"
-                    columns={VendorsColumns}
-                    data={vendors}
-                    fetchNextPage={
-                      debouncedSearchTerm
-                        ? searchFetchNextPage
-                        : vendorFetchNextPage
-                    }
-                    isFetching={
-                      debouncedSearchTerm
-                        ? isSearchQueryFetching
-                        : isVendorsQueryFetching
-                    }
-                    totalPages={paginationData?.totalPages}
-                    currFetchedPage={paginationData?.currFetchedPage}
-                    onRowClick={onRowClick}
-                  />
-                )}
-              </>
-            )}
+            <div className="flex-grow overflow-hidden">
+              {isVendorsQueryLoading || isSearchQueryLoading ? (
+                <Loading />
+              ) : (
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!debouncedSearchTerm && vendors?.length === 0 ? (
+                    <EmptyStageComponent
+                      heading={translations('emptyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: Either searchTerm is present, or data is available → Show Table
+                    <VendorsTable
+                      id="vendor-table"
+                      columns={VendorsColumns}
+                      data={vendors}
+                      fetchNextPage={
+                        debouncedSearchTerm
+                          ? searchFetchNextPage
+                          : vendorFetchNextPage
+                      }
+                      isFetching={
+                        debouncedSearchTerm
+                          ? isSearchQueryFetching
+                          : isVendorsQueryFetching
+                      }
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </Wrapper>
           {isUploading && (
             <UploadItems
