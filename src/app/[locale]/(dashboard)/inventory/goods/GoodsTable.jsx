@@ -95,9 +95,11 @@ export function GoodsTable({
   });
 
   return (
-    <div>
+    <div className="flex h-full flex-col overflow-hidden">
+      {' '}
+      {/* Makes it grow vertically */}
       <div
-        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[565px] overflow-y-scroll rounded-[6px]" // Always visible scrollbar
+        className="infinite-datatable-scrollable-body scrollBarStyles flex-grow overflow-scroll rounded-[6px]"
         ref={tableContainerRef}
       >
         <Table id={id}>
@@ -160,7 +162,6 @@ export function GoodsTable({
         </Table>
       </div>
       {isFetching && <div className="p-1 text-center">Fetching More...</div>}
-
       {/* Render Pagination only if there's data */}
       {!isFetching && data?.length > 0 && <DataTablePagination table={table} />}
     </div>

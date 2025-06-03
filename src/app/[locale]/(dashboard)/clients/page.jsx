@@ -234,7 +234,7 @@ const ClientPage = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
-          <Wrapper>
+          <Wrapper className="h-screen">
             {!isUploading && (
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
@@ -291,39 +291,41 @@ const ClientPage = () => {
               </SubHeader>
             )}
 
-            {isClientQueryLoading || isSearchQueryLoading ? (
-              <Loading />
-            ) : (
-              <>
-                {/* Case 1: No search term, and no data → Empty stage */}
-                {!debouncedSearchTerm && clients?.length === 0 ? (
-                  <EmptyStageComponent
-                    heading={translations('emptyStateComponent.heading')}
-                    subItems={keys}
-                  />
-                ) : (
-                  // Case 2: Either searchTerm is present, or data is available → Show Table
-                  <ClientTable
-                    id="clients-table"
-                    columns={ClientsColumns}
-                    data={clients}
-                    fetchNextPage={
-                      debouncedSearchTerm
-                        ? searchFetchNextPage
-                        : clientFetchNextPage
-                    }
-                    isFetching={
-                      debouncedSearchTerm
-                        ? isSearchQueryFetching
-                        : isClientQueryFetching
-                    }
-                    totalPages={paginationData?.totalPages}
-                    currFetchedPage={paginationData?.currFetchedPage}
-                    onRowClick={onRowClick}
-                  />
-                )}
-              </>
-            )}
+            <div className="flex-grow overflow-hidden">
+              {isClientQueryLoading || isSearchQueryLoading ? (
+                <Loading />
+              ) : (
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!debouncedSearchTerm && clients?.length === 0 ? (
+                    <EmptyStageComponent
+                      heading={translations('emptyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: Either searchTerm is present, or data is available → Show Table
+                    <ClientTable
+                      id="clients-table"
+                      columns={ClientsColumns}
+                      data={clients}
+                      fetchNextPage={
+                        debouncedSearchTerm
+                          ? searchFetchNextPage
+                          : clientFetchNextPage
+                      }
+                      isFetching={
+                        debouncedSearchTerm
+                          ? isSearchQueryFetching
+                          : isClientQueryFetching
+                      }
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </Wrapper>
           {isUploading && (
             <UploadItems

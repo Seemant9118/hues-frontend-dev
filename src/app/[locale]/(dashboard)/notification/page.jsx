@@ -187,7 +187,7 @@ const Notification = () => {
         </>
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
-        <Wrapper>
+        <Wrapper className="h-screen">
           <SubHeader
             name={translations('title')}
             className="z-10 flex justify-between bg-white"
@@ -197,34 +197,35 @@ const Notification = () => {
             />
           </SubHeader>
 
-          {/* alertbox for rejected invite */}
-          <AlertBox
-            isAlertShow={alertData.isShow}
-            infoText={alertData.infoText}
-            onClose={() => {
-              setAlertData({ isShow: false, infoText: '' });
-              // after closing modal refetch notifications
-              queryClient.invalidateQueries([
-                notificationApi.getNotifications.endpointKey,
-              ]);
-            }}
-          />
-
-          {isLoading && notifications?.length === 0 && <Loading />}
-
-          {!isLoading && notifications?.length > 0 && (
-            <InfiniteNotificationTable
-              id="notification-table"
-              columns={NotificationColumns}
-              data={notifications}
-              fetchNextPage={fetchNextPage}
-              isFetching={isFetching}
-              totalPages={totalPages}
-              currFetchedPage={currFetchedPage}
-              onRowClick={onRowClick}
-              lastNotificationRef={lastNotificationRef}
+          <div className="flex-grow overflow-hidden">
+            {/* alertbox for rejected invite */}
+            <AlertBox
+              isAlertShow={alertData.isShow}
+              infoText={alertData.infoText}
+              onClose={() => {
+                setAlertData({ isShow: false, infoText: '' });
+                // after closing modal refetch notifications
+                queryClient.invalidateQueries([
+                  notificationApi.getNotifications.endpointKey,
+                ]);
+              }}
             />
-          )}
+            {isLoading && notifications?.length === 0 && <Loading />}
+
+            {!isLoading && notifications?.length > 0 && (
+              <InfiniteNotificationTable
+                id="notification-table"
+                columns={NotificationColumns}
+                data={notifications}
+                fetchNextPage={fetchNextPage}
+                isFetching={isFetching}
+                totalPages={totalPages}
+                currFetchedPage={currFetchedPage}
+                onRowClick={onRowClick}
+                lastNotificationRef={lastNotificationRef}
+              />
+            )}
+          </div>
         </Wrapper>
       )}
     </>

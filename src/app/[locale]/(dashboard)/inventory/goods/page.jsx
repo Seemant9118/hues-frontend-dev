@@ -186,7 +186,7 @@ function Goods() {
       ) : (
         <div>
           {!isAdding && !isUploading && !isEditing && (
-            <Wrapper>
+            <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center gap-4">
                   <SearchInput
@@ -245,38 +245,40 @@ function Goods() {
                   </Button>
                 </div>
               </SubHeader>
-              {goodsQuery.isLoading || searchQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!debouncedSearchTerm && productGoods?.length === 0 ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
-                  ) : (
-                    // Case 2: Either searchTerm is present, or data is available → Show Table
-                    <GoodsTable
-                      id="goods-table"
-                      columns={GoodsColumns}
-                      data={productGoods}
-                      fetchNextPage={
-                        debouncedSearchTerm
-                          ? searchQuery.fetchNextPage
-                          : goodsQuery.fetchNextPage
-                      }
-                      isFetching={
-                        debouncedSearchTerm
-                          ? searchQuery.isFetching
-                          : goodsQuery.isFetching
-                      }
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                    />
-                  )}
-                </>
-              )}
+              <div className="flex-grow overflow-hidden">
+                {goodsQuery.isLoading || searchQuery.isLoading ? (
+                  <Loading />
+                ) : (
+                  <>
+                    {/* Case 1: No search term, and no data → Empty stage */}
+                    {!debouncedSearchTerm && productGoods?.length === 0 ? (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ) : (
+                      // Case 2: Either searchTerm is present, or data is available → Show Table
+                      <GoodsTable
+                        id="goods-table"
+                        columns={GoodsColumns}
+                        data={productGoods}
+                        fetchNextPage={
+                          debouncedSearchTerm
+                            ? searchQuery.fetchNextPage
+                            : goodsQuery.fetchNextPage
+                        }
+                        isFetching={
+                          debouncedSearchTerm
+                            ? searchQuery.isFetching
+                            : goodsQuery.isFetching
+                        }
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
             </Wrapper>
           )}
           {isAdding && (
