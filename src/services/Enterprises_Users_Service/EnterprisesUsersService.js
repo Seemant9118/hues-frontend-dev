@@ -72,3 +72,10 @@ export function updateEnterpriseIdentificationDetails(
     `${enterpriseUser.updateEnterpriseIdentificationDetails.endpoint}${id}?identifierType=${identifierType}&identifier=${identifierNum}`,
   );
 }
+
+export function updateEnterpriseFields(data) {
+  return APIinstance.patch(
+    enterpriseUser.updateEnterpriseFields.endpoint,
+    data,
+  );
+}

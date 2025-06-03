@@ -27,7 +27,10 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
-import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import {
+  updateEnterpriseFields,
+  updateEnterpriseIdentificationDetails,
+} from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getPINLogs } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import {
   createSettings,
@@ -59,11 +62,14 @@ function Settings() {
   const [isEditing, setIsEditing] = useState({
     gst: false,
     udyam: false,
+    mobile: false,
+    email: false,
   });
   const [updateEnterpriseDetails, setUpdateEnterpriseDetails] = useState({
     identifierType: '',
     identifierNum: '',
   });
+  const [enterpriseDataUpdate, setEnterpriseDataUpdate] = useState(null);
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
 
   // update enterprise mutation
@@ -87,6 +93,8 @@ function Settings() {
       setIsEditing({
         gst: false,
         udyam: false,
+        mobile: false,
+        email: false,
       }); // reset bool state
       queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
     },
@@ -95,6 +103,28 @@ function Settings() {
         translations('toasts.update.errorMsg', {
           type: updateEnterpriseDetails?.identifierType,
         }),
+      );
+    },
+  });
+
+  // update enterprise fields mutation
+  const updateEnterpriseFieldsMutation = useMutation({
+    mutationKey: [enterpriseUser.updateEnterpriseFields.endpointKey],
+    mutationFn: updateEnterpriseFields,
+    onSuccess: () => {
+      toast.success(translations('toasts.update.successMsg'));
+      setEnterpriseDataUpdate(null); // reset input field
+      setIsEditing({
+        gst: false,
+        udyam: false,
+        mobile: false,
+        email: false,
+      }); // reset bool state
+      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        translations(error.response.data.message || 'toasts.update.errorMsg'),
       );
     },
   });
@@ -341,23 +371,115 @@ function Settings() {
                       {profileDetails?.enterpriseDetails?.type || '-'}
                     </span>
                   </div>
+
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">
-                      {translations('tabs.content.tab1.label.mobile')}
-                    </Label>
-                    <span className="text-lg font-bold">
-                      +91{' '}
-                      {profileDetails?.enterpriseDetails?.mobileNumber || '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab1.label.mobile')}
+                      </Label>
+                      {isEditing.mobile ? (
+                        <X
+                          className="cursor-pointer"
+                          size={14}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              mobile: false,
+                            }));
+                            setEnterpriseDataUpdate(null);
+                          }}
+                        />
+                      ) : (
+                        <Pencil
+                          className="cursor-pointer"
+                          size={12}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              mobile: true,
+                            }));
+                            setEnterpriseDataUpdate(() => ({
+                              mobile:
+                                profileDetails?.enterpriseDetails?.mobileNumber,
+                            }));
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    {isEditing.mobile ? (
+                      <Input
+                        type="text"
+                        placeholder="+91 XXXXXXXXXX"
+                        value={enterpriseDataUpdate.mobile}
+                        onChange={(e) =>
+                          setEnterpriseDataUpdate((prev) => ({
+                            ...prev,
+                            mobile: e.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <span className="text-lg font-bold">
+                        +91{' '}
+                        {profileDetails?.enterpriseDetails?.mobileNumber || '-'}
+                      </span>
+                    )}
                   </div>
+
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">
-                      {translations('tabs.content.tab1.label.email')}
-                    </Label>
-                    <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.email || '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab1.label.email')}
+                      </Label>
+                      {isEditing.email ? (
+                        <X
+                          className="cursor-pointer"
+                          size={14}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              email: false,
+                            }));
+                            setEnterpriseDataUpdate(null);
+                          }}
+                        />
+                      ) : (
+                        <Pencil
+                          className="cursor-pointer"
+                          size={12}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              email: true,
+                            }));
+                            setEnterpriseDataUpdate(() => ({
+                              email: profileDetails?.enterpriseDetails?.email,
+                            }));
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    {isEditing.email ? (
+                      <Input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={enterpriseDataUpdate.email}
+                        onChange={(e) =>
+                          setEnterpriseDataUpdate((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <span className="text-lg font-bold">
+                        {profileDetails?.enterpriseDetails?.email || '-'}
+                      </span>
+                    )}
                   </div>
+
                   <div className="flex flex-col gap-1">
                     <Label className="text-xs">
                       {translations('tabs.content.tab1.label.address')}
@@ -506,33 +628,53 @@ function Settings() {
                     </span>
                   </div>
                 </div>
-                {(isEditing.gst || isEditing.udyam) && (
+                {(isEditing.gst ||
+                  isEditing.udyam ||
+                  isEditing.mobile ||
+                  isEditing.email) && (
                   <div className="flex w-full justify-end gap-2">
                     <Button
+                      disabled={
+                        updateEnterpriseMutation.isPending ||
+                        updateEnterpriseFieldsMutation.isPending
+                      }
                       variant="outline"
                       size="sm"
                       onClick={() => {
                         setIsEditing({
                           gst: false,
                           udyam: false,
+                          mobile: false,
+                          email: false,
                         });
                         setUpdateEnterpriseDetails({
                           identifierType: '',
                           identifierNum: '',
-                        }); // input data cleared
+                        }); // input data cleared\
+
+                        setEnterpriseDataUpdate(null);
                       }}
                     >
                       {translations('tabs.content.tab1.ctas.cancel')}
                     </Button>
                     <Button
-                      disabled={updateEnterpriseMutation.isPending}
+                      disabled={
+                        updateEnterpriseMutation.isPending ||
+                        updateEnterpriseFieldsMutation.isPending
+                      }
                       size="sm"
                       onClick={() => {
-                        updateEnterpriseMutation.mutate();
+                        if (isEditing.email || isEditing.mobile) {
+                          updateEnterpriseFieldsMutation.mutate(
+                            enterpriseDataUpdate,
+                          );
+                        } else {
+                          updateEnterpriseMutation.mutate();
+                        }
                       }}
                     >
-                      {' '}
-                      {updateEnterpriseMutation.isPending ? (
+                      {updateEnterpriseMutation.isPending ||
+                      updateEnterpriseFieldsMutation.isPending ? (
                         <Loading />
                       ) : (
                         translations('tabs.content.tab1.ctas.update')
