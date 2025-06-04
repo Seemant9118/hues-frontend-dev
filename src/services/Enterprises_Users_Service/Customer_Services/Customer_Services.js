@@ -8,9 +8,13 @@ export const getCustomers = ({ id, page, limit }) => {
 };
 
 export const getCustomersByNumber = (identifier) => {
-  return APIinstance.get(
-    `${customerApis.getCustomersByNumber.endpoint}?indentifier=${identifier}`,
-  );
+  if (identifier) {
+    return APIinstance.get(
+      `${customerApis.getCustomersByNumber.endpoint}?indentifier=${identifier}`,
+    );
+  } else {
+    return APIinstance.get(customerApis.getCustomersByNumber.endpoint);
+  }
 };
 
 export const getSearchedCustomers = ({ page, limit, data }) => {
