@@ -15,3 +15,9 @@ export const getEnterprisesData = ({ page, limit }) => {
     `${AdminAPIs.getEnterpriseData.endpoint}?page=${page}&limit=${limit}`,
   );
 };
+
+export const getOnboardingData = ({ page, limit }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getOnboardingData.endpoint}?page=${page}&limit=${limit}`,
+  );
+};

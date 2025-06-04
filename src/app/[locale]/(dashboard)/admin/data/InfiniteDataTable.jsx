@@ -1,3 +1,5 @@
+'use client';
+
 import { DataTablePagination } from '@/components/table/DataTablePagination';
 import {
   Table,
@@ -38,13 +40,13 @@ export function InfiniteDataTable({
 
       const bottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
       if (
-        bottom && // Check if scrolled to the bottom
+        bottom &&
         !isFetching &&
-        !isFetchingNextPage && // Prevent repeated calls
+        !isFetchingNextPage &&
         currFetchedPage < totalPages
       ) {
-        setIsFetchingNextPage(true); // Set fetching flag
-        fetchNextPage().finally(() => setIsFetchingNextPage(false)); // Reset flag after fetching
+        setIsFetchingNextPage(true);
+        fetchNextPage().finally(() => setIsFetchingNextPage(false));
       }
     }
   }, [
@@ -60,13 +62,10 @@ export function InfiniteDataTable({
     if (!container) return;
 
     const handleScroll = () => fetchMoreOnBottomReached();
-
     container.addEventListener('scroll', handleScroll);
 
     // eslint-disable-next-line consistent-return
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-    };
+    return () => container.removeEventListener('scroll', handleScroll);
   }, [fetchMoreOnBottomReached]);
 
   const table = useReactTable({
@@ -87,7 +86,7 @@ export function InfiniteDataTable({
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 40, // Adjusted height estimate
+    estimateSize: () => 40,
     getScrollElement: () => tableContainerRef.current,
     measureElement: (element) =>
       element?.offsetHeight || element?.getBoundingClientRect().height,
@@ -96,17 +95,22 @@ export function InfiniteDataTable({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
+      {/* Scrollable container for both axes */}
       <div
-        className="infinite-datatable-scrollable-body scrollBarStyles flex-grow overflow-auto rounded-[6px]"
         ref={tableContainerRef}
+        className="infinite-datatable-scrollable-body scrollBarStyles flex-grow overflow-auto rounded-[6px]"
       >
-        <Table id={id}>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="shrink-0">
+        {/* Table wrapper to allow horizontal scroll only when needed */}
+        <div className="inline-block min-w-full align-middle">
+          <Table id={id} className="min-w-full">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="shrink-0 whitespace-nowrap"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -114,54 +118,52 @@ export function InfiniteDataTable({
                             header.getContext(),
                           )}
                     </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {data?.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="py-4 text-center text-gray-500"
-                >
-                  No results found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index];
-
-                return (
-                  <TableRow
-                    data-index={virtualRow.index}
-                    ref={(node) => rowVirtualizer.measureElement(node)}
-                    key={row.id}
-                    className={
-                      'h-16 border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
-                    }
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {data?.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="py-4 text-center text-gray-500"
                   >
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <TableCell key={cell.id} className="max-w-xl shrink-0">
+                    No results found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const row = rows[virtualRow.index];
+
+                  return (
+                    <TableRow
+                      data-index={virtualRow.index}
+                      ref={(node) => rowVirtualizer.measureElement(node)}
+                      key={row.id}
+                      className="h-16 border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className="shrink-0 whitespace-nowrap"
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext(),
                           )}
                         </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                      ))}
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       {isFetching && <div className="p-1 text-center">Fetching More...</div>}
 
-      {/* Render Pagination only if there's data */}
       {!isFetching && data?.length > 0 && <DataTablePagination table={table} />}
     </div>
   );

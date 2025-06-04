@@ -5,7 +5,12 @@ export const AdminAPIs = {
   },
 
   getEnterpriseData: {
-    endpoint: `/admin-panel/dashboard/get-enterprise-data`,
+    endpoint: `/admin-panel/dashboard/enterprise-data`,
     endpointKey: 'get_enterprise_data',
+  },
+
+  getOnboardingData: {
+    endpoint: `/admin-panel/dashboard/enterprise-onboarding-stats`,
+    endpointKey: 'get_onboarding_data',
   },
 };
