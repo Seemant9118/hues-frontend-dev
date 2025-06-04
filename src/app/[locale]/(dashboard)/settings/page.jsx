@@ -399,7 +399,7 @@ function Settings() {
                               mobile: true,
                             }));
                             setEnterpriseDataUpdate(() => ({
-                              mobile:
+                              mobileNumber:
                                 profileDetails?.enterpriseDetails?.mobileNumber,
                             }));
                           }}
@@ -411,11 +411,11 @@ function Settings() {
                       <Input
                         type="text"
                         placeholder="+91 XXXXXXXXXX"
-                        value={enterpriseDataUpdate.mobile}
+                        value={enterpriseDataUpdate.mobileNumber}
                         onChange={(e) =>
                           setEnterpriseDataUpdate((prev) => ({
                             ...prev,
-                            mobile: e.target.value,
+                            mobileNumber: e.target.value,
                           }))
                         }
                       />

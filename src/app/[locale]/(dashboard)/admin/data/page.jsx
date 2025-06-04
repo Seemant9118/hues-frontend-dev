@@ -2,14 +2,17 @@
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import Loading from '@/components/ui/Loading';
+import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { useRBAC } from '@/context/RBACcontext';
 import { getEnterprisesData } from '@/services/Admin_Services/AdminServices';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { ServerOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { ServerOff } from 'lucide-react';
 import { InfiniteDataTable } from './InfiniteDataTable';
 import { useEnterpriseDataColumns } from './useEnterpriseDataColumns';
 
@@ -21,6 +24,11 @@ const DataPage = () => {
   const { hasPageAccess } = useRBAC();
   const [enterprisesData, setEnterprisesData] = useState([]);
   const [paginationData, setPaginationData] = useState({});
+  const [tab, setTab] = useState('enterprise');
+
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   const {
     data: dataQuery,
@@ -72,32 +80,69 @@ const DataPage = () => {
   const enterpriseDataColumns = useEnterpriseDataColumns();
 
   return (
-    <Wrapper className="h-screen">
+    <Wrapper className="flex h-screen flex-col overflow-hidden">
       {/* headers */}
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
         <SubHeader name="Data" />
+        <SearchInput searchPlaceholder="Search..." disabled={true} />
       </div>
 
-      <div className="flex-grow overflow-hidden">
-        {isDataQueryLoading && <Loading />}
+      <Tabs
+        value={tab}
+        onValueChange={onTabChange}
+        defaultValue="overview"
+        className="flex flex-grow flex-col overflow-hidden"
+      >
+        {/* TabsHeader */}
+        <section className="sticky top-[0px] z-10 flex w-full justify-between bg-white py-2">
+          <TabsList className="border">
+            {[
+              { value: 'enterprise', label: 'Enterprise' },
+              { value: 'sales', label: 'Sales' },
+              { value: 'purchase', label: 'Purchase' },
+              { value: 'inventory', label: 'Inventory' },
+              { value: 'vendors', label: 'Vendors' },
+            ].map(({ value, label }) => (
+              <TabsTrigger
+                key={value}
+                className={`w-24 ${tab === value ? 'shadow-customShadow' : ''}`}
+                value={value}
+              >
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </section>
 
-        {!isDataQueryLoading && enterprisesData?.length > 0 ? (
-          <InfiniteDataTable
-            id="enterprises-table"
-            columns={enterpriseDataColumns}
-            data={enterprisesData}
-            fetchNextPage={dataQueryFetchNextPage}
-            isFetching={isDataQueryFetching}
-            totalPages={paginationData?.totalPages}
-            currFetchedPage={paginationData?.currFetchedPage}
-          />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
-            <ServerOff size={24} />
-            No Data Available
+        <TabsContent value="enterprise" className="flex-grow overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            {isDataQueryLoading && <Loading />}
+
+            {!isDataQueryLoading && enterprisesData?.length > 0 ? (
+              <InfiniteDataTable
+                id="enterprises-table"
+                columns={enterpriseDataColumns}
+                data={enterprisesData}
+                fetchNextPage={dataQueryFetchNextPage}
+                isFetching={isDataQueryFetching}
+                totalPages={paginationData?.totalPages}
+                currFetchedPage={paginationData?.currFetchedPage}
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
+                <ServerOff size={24} />
+                No Data Available
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </TabsContent>
+
+        {/* Other tabs */}
+        <TabsContent value="sales">Coming Soon...</TabsContent>
+        <TabsContent value="purchase">Coming Soon...</TabsContent>
+        <TabsContent value="inventory">Coming Soon...</TabsContent>
+        <TabsContent value="vendors">Coming Soon...</TabsContent>
+      </Tabs>
     </Wrapper>
   );
 };
