@@ -17,6 +17,7 @@ import {
   validatePan,
   validateTermsAndConditions,
 } from '@/appUtils/ValidationUtils';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthProgress } from '@/context/AuthProgressContext';
@@ -171,7 +172,7 @@ const PanVerificationPage = () => {
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-6">
+          <div className="flex w-full flex-col gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label
                 htmlFor="mobile-number"
@@ -231,6 +232,8 @@ const PanVerificationPage = () => {
               )}
             </div>
 
+            {/* Explanatory Information */}
+            <ExplantoryText text={translations('information')} />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm">
                 <Checkbox

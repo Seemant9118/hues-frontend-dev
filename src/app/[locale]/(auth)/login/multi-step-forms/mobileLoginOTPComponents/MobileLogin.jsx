@@ -1,5 +1,6 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { validatePhoneNumber } from '@/appUtils/ValidationUtils';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
@@ -131,7 +132,7 @@ const MobileLogin = ({
       {/* Login Form */}
       <form
         onSubmit={handleSubmitFormWithMob}
-        className="grid w-full items-center gap-5"
+        className="grid w-full items-center gap-3"
       >
         <div className="flex flex-col gap-2">
           <Label htmlFor="mobile-number" className="font-medium text-[#121212]">
@@ -151,6 +152,9 @@ const MobileLogin = ({
           </div>
           {errorMsg && <ErrorBox msg={translationForErrorMessages(errorMsg)} />}
         </div>
+
+        {/* Informational Text */}
+        <ExplantoryText text={translations('information')} />
 
         <Button
           disabled={generateOTPMutation.isPending || loginInvitation.isPending}

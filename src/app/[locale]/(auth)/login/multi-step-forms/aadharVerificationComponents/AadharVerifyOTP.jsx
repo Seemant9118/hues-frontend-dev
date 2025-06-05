@@ -1,3 +1,4 @@
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
@@ -127,7 +128,7 @@ const AadharVerifyOTP = ({
   return (
     <form
       onSubmit={handleVerifyOTP}
-      className="flex w-full max-w-md flex-col items-center justify-start gap-8 px-4 py-6 sm:gap-10"
+      className="flex w-full max-w-md flex-col items-center justify-start gap-4 px-4 py-6 sm:gap-6"
     >
       <div className="flex flex-col gap-4">
         <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
@@ -182,6 +183,11 @@ const AadharVerifyOTP = ({
           )}
         </span>
       </p>
+
+      {/* Explanatory Information */}
+      <ExplantoryText
+        text={translations('steps.verifyAadharNum.information')}
+      />
 
       <div className="flex w-full flex-col gap-2">
         <Button

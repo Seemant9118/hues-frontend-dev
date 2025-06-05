@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -101,6 +102,9 @@ const CINVerificationPage = () => {
               />
             </div>
           </div>
+
+          {/* Explanatory Information */}
+          <ExplantoryText text={translations('information')} />
 
           <Button
             size="sm"

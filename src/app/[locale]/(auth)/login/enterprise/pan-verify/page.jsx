@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { validatePan } from '@/appUtils/ValidationUtils';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -157,6 +158,8 @@ const EnterprisePANVerifyPage = () => {
             </div>
 
             <div className="flex w-full flex-col gap-2">
+              {/* Explanatory Information */}
+              <ExplantoryText text={translations('information')} />
               <Button
                 size="sm"
                 type="submit"

@@ -1,4 +1,5 @@
 import { validateAadhaar } from '@/appUtils/ValidationUtils';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -69,7 +70,7 @@ const AadharNumberDetail = ({
         </p>
       </div>
 
-      <div className="flex w-full flex-col gap-6">
+      <div className="flex w-full flex-col gap-4">
         <div className="grid w-full items-center gap-1.5">
           <Label
             htmlFor="mobile-number"
@@ -97,6 +98,9 @@ const AadharNumberDetail = ({
             <ErrorBox msg={translationsForError(errorMsg?.aadharNumber)} />
           )}
         </div>
+
+        {/* Explanatory Information */}
+        <ExplantoryText text={translations('steps.aadharNum.information')} />
 
         <Button
           type="submit"
