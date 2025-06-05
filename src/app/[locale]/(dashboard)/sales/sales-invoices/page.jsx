@@ -33,7 +33,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
@@ -75,7 +75,6 @@ const SalesInvoices = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('all');
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
@@ -167,7 +166,6 @@ const SalesInvoices = () => {
   const {
     data,
     fetchNextPage,
-    hasNextPage,
     isFetching,
     isLoading: isInvoiceLoading,
   } = useInfiniteQuery({
@@ -221,24 +219,6 @@ const SalesInvoices = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [data]);
-
-  // Infinite scroll observer
-  const lastSalesInvoiceRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -306,7 +286,8 @@ const SalesInvoices = () => {
         <>
           {/* Show invoice list if no invoice type selected */}
           {!invoiceType && (
-            <Wrapper className="h-full">
+            <Wrapper className="h-screen overflow-hidden">
+              {/* Headers */}
               <SubHeader
                 name={translations('title')}
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
@@ -353,93 +334,95 @@ const SalesInvoices = () => {
                 </div>
               </SubHeader>
 
-              <section>
-                <Tabs
-                  value={tab}
-                  onValueChange={onTabChange}
-                  defaultValue={'all'}
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'all'}
+                className="flex flex-grow flex-col overflow-hidden"
+              >
+                <section className="flex w-full justify-between py-2">
+                  <TabsList className="border">
+                    <TabsTrigger value="all">
+                      {translations('tabs.label.tab1')}
+                    </TabsTrigger>
+                    <TabsTrigger value="outstanding">
+                      {translations('tabs.label.tab2')}
+                    </TabsTrigger>
+                    <TabsTrigger value="disputed">
+                      {translations('tabs.label.tab3')}
+                    </TabsTrigger>
+                  </TabsList>
+                </section>
+
+                <TabsContent value="all" className="flex-grow overflow-hidden">
+                  {isInvoiceLoading && <Loading />}
+                  {!isInvoiceLoading && invoiceListing?.length > 0 ? (
+                    <SalesTable
+                      id="sale-invoices"
+                      columns={invoiceColumns}
+                      data={invoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  )}
+                </TabsContent>
+
+                <TabsContent
+                  value="outstanding"
+                  className="flex-grow overflow-hidden"
                 >
-                  <section className="sticky top-14 bg-white">
-                    <TabsList className="border">
-                      <TabsTrigger value="all">
-                        {translations('tabs.label.tab1')}
-                      </TabsTrigger>
-                      <TabsTrigger value="outstanding">
-                        {translations('tabs.label.tab2')}
-                      </TabsTrigger>
-                      <TabsTrigger value="disputed">
-                        {translations('tabs.label.tab3')}
-                      </TabsTrigger>
-                    </TabsList>
-                  </section>
+                  {isInvoiceLoading && <Loading />}
+                  {!isInvoiceLoading && invoiceListing?.length > 0 ? (
+                    <SalesTable
+                      id="sale-invoices"
+                      columns={invoiceColumns}
+                      data={invoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  ) : (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  )}
+                </TabsContent>
 
-                  <TabsContent value="all">
-                    {isInvoiceLoading && <Loading />}
-                    {!isInvoiceLoading && invoiceListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-invoices"
-                        columns={invoiceColumns}
-                        data={invoiceListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                        lastSalesRef={lastSalesInvoiceRef}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emtpyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="outstanding">
-                    {isInvoiceLoading && <Loading />}
-                    {!isInvoiceLoading && invoiceListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-invoices"
-                        columns={invoiceColumns}
-                        data={invoiceListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                        lastSalesRef={lastSalesInvoiceRef}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emtpyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="disputed">
-                    {isInvoiceLoading && <Loading />}
-                    {!isInvoiceLoading && invoiceListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-invoices-disputed"
-                        columns={invoiceColumns}
-                        data={invoiceListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                        lastSalesRef={lastSalesInvoiceRef}
-                      />
-                    ) : (
-                      <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                        <Image src={emptyImg} alt="emptyIcon" />
-                        <p>{translations('emtpyStateComponent2.heading')}</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </section>
+                <TabsContent
+                  value="disputed"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isInvoiceLoading && <Loading />}
+                  {!isInvoiceLoading && invoiceListing?.length > 0 ? (
+                    <SalesTable
+                      id="sale-invoices-disputed"
+                      columns={invoiceColumns}
+                      data={invoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  ) : (
+                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p>{translations('emtpyStateComponent2.heading')}</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </Wrapper>
           )}
 

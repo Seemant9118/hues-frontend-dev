@@ -28,7 +28,7 @@ import {
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseColumns } from './usePurchaseColumns';
@@ -63,7 +63,6 @@ const PurchaseOrders = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
@@ -101,26 +100,23 @@ const PurchaseOrders = () => {
   }, [tab]);
 
   // Fetch purchases data with infinite scroll
-  const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
-    useInfiniteQuery({
-      queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
-      queryFn: async ({ pageParam = 1 }) => {
-        const response = await GetPurchases({
-          id: enterpriseId,
-          data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
-        });
-        return response;
-      },
-      initialPageParam: 1,
-      getNextPageParam: (_lastGroup, groups) => {
-        const nextPage = groups.length + 1;
-        return nextPage <= _lastGroup.data.data.totalPages
-          ? nextPage
-          : undefined;
-      },
-      refetchOnWindowFocus: false,
-      placeholderData: keepPreviousData,
-    });
+  const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
+    queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await GetPurchases({
+        id: enterpriseId,
+        data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
   // data flattening - formatting
   useEffect(() => {
@@ -152,31 +148,12 @@ const PurchaseOrders = () => {
     });
   }, [data]);
 
-  // Infinite scroll observer
-  const lastPurchaseRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
-
   // fetch unconfirmed sales with infinite scroll
   const {
     data: unconfirmedPurchaseLists,
     fetchNextPage: unconfirmedPurchaseFetchNextPage,
     isFetching: unconfirmedPurchaseListsIsFetching,
     isLoading: unconfirmedPurchaseListsIsLoading,
-    hasNextPage: unconfirmedPuchaseHasNextPage,
   } = useInfiniteQuery({
     queryKey: [
       orderApi.getUnconfirmedPurchases.endpointKey,
@@ -230,28 +207,6 @@ const PurchaseOrders = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [unconfirmedPurchaseLists]);
-
-  // Infinite scroll observer
-  const lastUnconfirmedRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && unconfirmedPuchaseHasNextPage) {
-          unconfirmedPurchaseFetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [
-      unconfirmedPurchaseListsIsFetching,
-      unconfirmedPurchaseFetchNextPage,
-      unconfirmedPuchaseHasNextPage,
-    ],
-  );
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -322,7 +277,8 @@ const PurchaseOrders = () => {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
           {!isCreatingPurchase && !isEditingOrder && (
-            <Wrapper>
+            <Wrapper className="h-screen overflow-hidden">
+              {/* headers */}
               <SubHeader name={translations('title')} className="z-10 bg-white">
                 <div className="flex items-center justify-center gap-3">
                   <Tooltips
@@ -359,160 +315,166 @@ const PurchaseOrders = () => {
                 </div>
               </SubHeader>
 
-              <section>
-                <Tabs
-                  value={tab}
-                  onValueChange={onTabChange}
-                  defaultValue={'all'}
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'all'}
+                className="flex flex-grow flex-col overflow-hidden"
+              >
+                <section className="flex w-full justify-between py-2">
+                  <TabsList className="border">
+                    <TabsTrigger value="all">
+                      {translations('tabs.label.tab1')}
+                    </TabsTrigger>
+                    <TabsTrigger value="underReview">
+                      {translations('tabs.label.tab2')}
+                    </TabsTrigger>
+                    <TabsTrigger value="confirmed">
+                      {translations('tabs.label.tab3')}
+                    </TabsTrigger>
+                    <TabsTrigger value="payables">
+                      {translations('tabs.label.tab4')}
+                    </TabsTrigger>
+                    <TabsTrigger value="unconfirmed">
+                      {translations('tabs.label.tab5')}
+                    </TabsTrigger>
+                  </TabsList>
+                  <FilterModal
+                    isSalesFilter={false}
+                    tab={tab}
+                    setFilterData={setFilterData}
+                    setPaginationData={setPaginationData}
+                  />
+                </section>
+
+                <TabsContent value="all" className="flex-grow overflow-hidden">
+                  {isLoading && <Loading />}
+
+                  {!isLoading &&
+                    (purchaseListing?.length > 0 ? (
+                      <PurchaseTable
+                        id="purchase-orders"
+                        columns={PurchaseColumns}
+                        data={purchaseListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+                <TabsContent
+                  value="underReview"
+                  className="flex-grow overflow-hidden"
                 >
-                  <section className="sticky top-14 flex justify-between bg-white">
-                    <TabsList className="border">
-                      <TabsTrigger value="all">
-                        {translations('tabs.label.tab1')}
-                      </TabsTrigger>
-                      <TabsTrigger value="underReview">
-                        {translations('tabs.label.tab2')}
-                      </TabsTrigger>
-                      <TabsTrigger value="confirmed">
-                        {translations('tabs.label.tab3')}
-                      </TabsTrigger>
-                      <TabsTrigger value="payables">
-                        {translations('tabs.label.tab4')}
-                      </TabsTrigger>
-                      <TabsTrigger value="unconfirmed">
-                        {translations('tabs.label.tab5')}
-                      </TabsTrigger>
-                    </TabsList>
-                    <FilterModal
-                      isSalesFilter={false}
-                      tab={tab}
-                      setFilterData={setFilterData}
-                      setPaginationData={setPaginationData}
-                    />
-                  </section>
+                  {isLoading && <Loading />}
 
-                  <TabsContent value="all">
-                    {isLoading && <Loading />}
+                  {!isLoading &&
+                    (purchaseListing?.length > 0 ? (
+                      <PurchaseTable
+                        id="purchase-orders"
+                        columns={PurchaseColumns}
+                        data={purchaseListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+                <TabsContent
+                  value="confirmed"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isLoading && <Loading />}
 
-                    {!isLoading &&
-                      (purchaseListing?.length > 0 ? (
-                        <PurchaseTable
-                          id="purchase-orders"
-                          columns={PurchaseColumns}
-                          data={purchaseListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastPurhaseRef={lastPurchaseRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emptyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                  <TabsContent value="underReview">
-                    {isLoading && <Loading />}
+                  {!isLoading &&
+                    (purchaseListing?.length > 0 ? (
+                      <PurchaseTable
+                        id="purchase-orders"
+                        columns={PurchaseColumns}
+                        data={purchaseListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+                <TabsContent
+                  value="payables"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isLoading && <Loading />}
 
-                    {!isLoading &&
-                      (purchaseListing?.length > 0 ? (
-                        <PurchaseTable
-                          id="purchase-orders"
-                          columns={PurchaseColumns}
-                          data={purchaseListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastPurhaseRef={lastPurchaseRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emptyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                  <TabsContent value="confirmed">
-                    {isLoading && <Loading />}
+                  {!isLoading &&
+                    (purchaseListing?.length > 0 ? (
+                      <PurchaseTable
+                        id="purchase-orders"
+                        columns={PurchaseColumns}
+                        data={purchaseListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
 
-                    {!isLoading &&
-                      (purchaseListing?.length > 0 ? (
-                        <PurchaseTable
-                          id="purchase-orders"
-                          columns={PurchaseColumns}
-                          data={purchaseListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastPurhaseRef={lastPurchaseRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emptyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                  <TabsContent value="payables">
-                    {isLoading && <Loading />}
+                <TabsContent
+                  value="unconfirmed"
+                  className="flex-grow overflow-hidden"
+                >
+                  {unconfirmedPurchaseListsIsLoading && <Loading />}
 
-                    {!isLoading &&
-                      (purchaseListing?.length > 0 ? (
-                        <PurchaseTable
-                          id="purchase-orders"
-                          columns={PurchaseColumns}
-                          data={purchaseListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastPurhaseRef={lastPurchaseRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emptyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-
-                  <TabsContent value="unconfirmed">
-                    {unconfirmedPurchaseListsIsLoading && <Loading />}
-
-                    {!unconfirmedPurchaseListsIsLoading &&
-                      (unconfirmedPurchaseListing?.length > 0 ? (
-                        <PurchaseTable
-                          id="purchase-uncofirmed-orders"
-                          columns={PurchaseColumns}
-                          data={unconfirmedPurchaseListing}
-                          fetchNextPage={unconfirmedPurchaseFetchNextPage}
-                          isFetching={unconfirmedPurchaseListsIsFetching}
-                          totalPages={
-                            unconfimedPaginationData?.totalPagesUnconfirmed
-                          }
-                          currFetchedPage={
-                            unconfimedPaginationData?.currFetchedPageUnconfirmed
-                          }
-                          onRowClick={onRowClick}
-                          lastUnconfirmedRef={lastUnconfirmedRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emptyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                </Tabs>
-              </section>
+                  {!unconfirmedPurchaseListsIsLoading &&
+                    (unconfirmedPurchaseListing?.length > 0 ? (
+                      <PurchaseTable
+                        id="purchase-uncofirmed-orders"
+                        columns={PurchaseColumns}
+                        data={unconfirmedPurchaseListing}
+                        fetchNextPage={unconfirmedPurchaseFetchNextPage}
+                        isFetching={unconfirmedPurchaseListsIsFetching}
+                        totalPages={
+                          unconfimedPaginationData?.totalPagesUnconfirmed
+                        }
+                        currFetchedPage={
+                          unconfimedPaginationData?.currFetchedPageUnconfirmed
+                        }
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+              </Tabs>
             </Wrapper>
           )}
           {isCreatingPurchase && !isEditingOrder && (
