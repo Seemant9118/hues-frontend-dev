@@ -27,7 +27,7 @@ import {
 import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
@@ -54,7 +54,6 @@ const PurchaseInvoices = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [purchaseinvoiceListing, setPurchaseInvoiceListing] = useState([]); // invoices
   const [selectedInvoices, setSelectedInvoices] = useState([]);
@@ -97,7 +96,6 @@ const PurchaseInvoices = () => {
     fetchNextPage,
     isFetching,
     isLoading: isInvoiceLoading,
-    hasNextPage,
   } = useInfiniteQuery({
     queryKey: [
       invoiceApi.getAllPurchaseInvoices.endpointKey,
@@ -150,24 +148,6 @@ const PurchaseInvoices = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [invoicesData]);
-
-  // Infinite scroll observer
-  const lastPurchaseInvoiceRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -232,7 +212,8 @@ const PurchaseInvoices = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          <Wrapper>
+          <Wrapper className="h-screen overflow-hidden">
+            {/* headers */}
             <SubHeader
               name={translations('title')}
               className="sticky top-0 z-10 flex items-center justify-between bg-white"
@@ -258,99 +239,98 @@ const PurchaseInvoices = () => {
               </div>
             </SubHeader>
 
-            <section>
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'all'}
+            <Tabs
+              value={tab}
+              onValueChange={onTabChange}
+              defaultValue={'all'}
+              className="flex flex-grow flex-col overflow-hidden"
+            >
+              <section className="flex w-full justify-between py-2">
+                <TabsList className="border">
+                  <TabsTrigger value="all">
+                    {translations('tabs.label.tab1')}
+                  </TabsTrigger>
+                  <TabsTrigger value="outstanding">
+                    {translations('tabs.label.tab2')}
+                  </TabsTrigger>
+                  <TabsTrigger value="disputed">
+                    {translations('tabs.label.tab3')}
+                  </TabsTrigger>
+                </TabsList>
+              </section>
+
+              <TabsContent value="all" className="flex-grow overflow-hidden">
+                {isInvoiceLoading && <Loading />}
+                {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-orders"
+                    columns={invoiceColumns}
+                    data={purchaseinvoiceListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
+                {!isInvoiceLoading && purchaseinvoiceListing?.length === 0 && (
+                  <EmptyStageComponent
+                    heading={translations('emptyStateComponent.heading')}
+                    subItems={keys}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent
+                value="outstanding"
+                className="flex-grow overflow-hidden"
               >
-                <section className="sticky top-14 bg-white">
-                  <TabsList className="border">
-                    <TabsTrigger value="all">
-                      {translations('tabs.label.tab1')}
-                    </TabsTrigger>
-                    <TabsTrigger value="outstanding">
-                      {translations('tabs.label.tab2')}
-                    </TabsTrigger>
-                    <TabsTrigger value="disputed">
-                      {translations('tabs.label.tab3')}
-                    </TabsTrigger>
-                  </TabsList>
-                </section>
+                {isInvoiceLoading && <Loading />}
+                {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-outstanding-orders"
+                    columns={invoiceColumns}
+                    data={purchaseinvoiceListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-                <TabsContent value="all">
-                  {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-orders"
-                      columns={invoiceColumns}
-                      data={purchaseinvoiceListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
-                    />
-                  )}
-                  {!isInvoiceLoading &&
-                    purchaseinvoiceListing?.length === 0 && (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    )}
-                </TabsContent>
-                <TabsContent value="outstanding">
-                  {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-outstanding-orders"
-                      columns={invoiceColumns}
-                      data={purchaseinvoiceListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
-                    />
-                  )}
+                {!isInvoiceLoading && purchaseinvoiceListing?.length === 0 && (
+                  <EmptyStageComponent
+                    heading={translations('emptyStateComponent.heading')}
+                    subItems={keys}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent
+                value="disputed"
+                className="flex-grow overflow-hidden"
+              >
+                {isInvoiceLoading && <Loading />}
+                {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-invoices-disputed"
+                    columns={invoiceColumns}
+                    data={purchaseinvoiceListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-                  {!isInvoiceLoading &&
-                    purchaseinvoiceListing?.length === 0 && (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    )}
-                </TabsContent>
-                <TabsContent value="disputed">
-                  {isInvoiceLoading && <Loading />}
-                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-invoices-disputed"
-                      columns={invoiceColumns}
-                      data={purchaseinvoiceListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseInvoiceRef={lastPurchaseInvoiceRef}
-                    />
-                  )}
-
-                  {!isInvoiceLoading &&
-                    purchaseinvoiceListing?.length === 0 && (
-                      <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                        <Image src={emptyImg} alt="emptyIcon" />
-                        <p>{translations('emptyStateComponent2.heading')}</p>
-                      </div>
-                    )}
-                </TabsContent>
-              </Tabs>
-            </section>
+                {!isInvoiceLoading && purchaseinvoiceListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emptyStateComponent2.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </Wrapper>
         </>
       )}

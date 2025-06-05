@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
+import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllPurchaseDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { exportInvoice } from '@/services/Invoice_Services/Invoice_Services';
@@ -22,10 +23,9 @@ import {
   useMutation,
 } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
@@ -45,7 +45,6 @@ const PurchaseDebitNotes = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
   const [selectedDebit, setSelectedDebit] = useState([]);
@@ -75,7 +74,6 @@ const PurchaseDebitNotes = () => {
     data: debitNotesData,
     fetchNextPage,
     isFetching,
-    hasNextPage,
     isLoading: isDebitNotesLoading,
   } = useInfiniteQuery({
     queryKey: [
@@ -129,24 +127,6 @@ const PurchaseDebitNotes = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [debitNotesData]);
-
-  // Infinite scroll observer
-  const lastPurchaseDebitNotesRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -211,7 +191,7 @@ const PurchaseDebitNotes = () => {
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          <Wrapper>
+          <Wrapper className="h-screen overflow-hidden">
             <SubHeader
               name={translations('title')}
               className="sticky top-0 z-10 flex items-center justify-between bg-white"
@@ -237,99 +217,101 @@ const PurchaseDebitNotes = () => {
               </div>
             </SubHeader>
 
-            <section>
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'all'}
+            <Tabs
+              value={tab}
+              onValueChange={onTabChange}
+              defaultValue={'all'}
+              className="flex flex-grow flex-col overflow-hidden"
+            >
+              <section className="flex w-full justify-between py-2">
+                <TabsList className="border">
+                  <TabsTrigger value="all">
+                    {translations('tabs.label.tab1')}
+                  </TabsTrigger>
+                  <TabsTrigger value="accepted">
+                    {translations('tabs.label.tab2')}
+                  </TabsTrigger>
+                  <TabsTrigger value="rejected">
+                    {translations('tabs.label.tab3')}
+                  </TabsTrigger>
+                </TabsList>
+              </section>
+
+              <TabsContent value="all" className="flex-grow overflow-hidden">
+                {isDebitNotesLoading && <Loading />}
+                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-debit-notes"
+                    columns={debitNotesColumns}
+                    data={debitNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
+
+                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emptyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent
+                value="accepted"
+                className="flex-grow overflow-hidden"
               >
-                <section className="sticky top-14 bg-white">
-                  <TabsList className="border">
-                    <TabsTrigger value="all">
-                      {translations('tabs.label.tab1')}
-                    </TabsTrigger>
-                    <TabsTrigger value="accepted">
-                      {translations('tabs.label.tab2')}
-                    </TabsTrigger>
-                    <TabsTrigger value="rejected">
-                      {translations('tabs.label.tab3')}
-                    </TabsTrigger>
-                  </TabsList>
-                </section>
+                {isDebitNotesLoading && <Loading />}
+                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-debit-note-accepted"
+                    columns={debitNotesColumns}
+                    data={debitNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-                <TabsContent value="all">
-                  {isDebitNotesLoading && <Loading />}
-                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-debit-notes"
-                      columns={debitNotesColumns}
-                      data={debitNotesListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
-                    />
-                  )}
+                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emptyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
 
-                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>{translations('emptyStateComponent.heading')}</p>
-                    </div>
-                  )}
-                </TabsContent>
+              <TabsContent
+                value="rejected"
+                className="flex-grow overflow-hidden"
+              >
+                {isDebitNotesLoading && <Loading />}
+                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-debit-note-rejected"
+                    columns={debitNotesColumns}
+                    data={debitNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-                <TabsContent value="accepted">
-                  {isDebitNotesLoading && <Loading />}
-                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-debit-note-accepted"
-                      columns={debitNotesColumns}
-                      data={debitNotesListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
-                    />
-                  )}
-
-                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>{translations('emptyStateComponent.heading')}</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="rejected">
-                  {isDebitNotesLoading && <Loading />}
-                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <PurchaseTable
-                      id="purchase-debit-note-rejected"
-                      columns={debitNotesColumns}
-                      data={debitNotesListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastPurchaseDebitNotesRef={lastPurchaseDebitNotesRef}
-                    />
-                  )}
-
-                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>{translations('emptyStateComponent.heading')}</p>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </section>
+                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emptyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </Wrapper>
         </>
       )}

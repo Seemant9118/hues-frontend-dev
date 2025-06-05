@@ -261,7 +261,7 @@ const SalesOrder = () => {
                 defaultValue={'all'}
                 className="flex flex-grow flex-col overflow-hidden"
               >
-                <section className="sticky top-[0px] z-10 flex w-full justify-between bg-white py-2">
+                <section className="flex w-full justify-between py-2">
                   <TabsList className="border">
                     <TabsTrigger value="all">
                       {translations('tabs.label.tab1')}
