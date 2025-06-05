@@ -28,54 +28,11 @@ const DataPage = () => {
   const [enterprisesData, setEnterprisesData] = useState([]);
   const [onboardingData, setOnboardingData] = useState([]);
   const [paginationData, setPaginationData] = useState({});
-  const [tab, setTab] = useState('enterprise');
+  const [tab, setTab] = useState('onboarding');
 
   const onTabChange = (value) => {
     setTab(value);
   };
-
-  // fetch enterprises data
-  const {
-    data: dataQuery,
-    isLoading: isDataQueryLoading,
-    fetchNextPage: dataQueryFetchNextPage,
-    isFetching: isDataQueryFetching,
-  } = useInfiniteQuery({
-    queryKey: [AdminAPIs.getEnterpriseData.endpointKey],
-    queryFn: async ({ pageParam = 1 }) => {
-      return getEnterprisesData({
-        page: pageParam,
-        limit: PAGE_LIMIT,
-      });
-    },
-    initialPageParam: 1,
-    getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = (groups?.length ?? 0) + 1;
-      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
-
-      return nextPage <= totalPages ? nextPage : undefined;
-    },
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
-    enabled: tab === 'enterprise',
-  });
-
-  useEffect(() => {
-    const source = dataQuery;
-    if (!source) return;
-    const flattened = source?.pages?.flatMap(
-      (page) => page?.data?.data?.data || [],
-    );
-    const uniqueData = Array.from(
-      new Map(flattened?.map((item) => [item.enterprise_id, item])).values(),
-    );
-    setEnterprisesData(uniqueData);
-    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
-    setPaginationData({
-      totalPages: lastPage?.totalPages,
-      currFetchedPage: Number(lastPage?.currentPage),
-    });
-  }, [dataQuery]);
 
   // fetch onboarding data
   const {
@@ -120,6 +77,49 @@ const DataPage = () => {
     });
   }, [onboardingQuery]);
 
+  // fetch enterprises data
+  const {
+    data: dataQuery,
+    isLoading: isDataQueryLoading,
+    fetchNextPage: dataQueryFetchNextPage,
+    isFetching: isDataQueryFetching,
+  } = useInfiniteQuery({
+    queryKey: [AdminAPIs.getEnterpriseData.endpointKey],
+    queryFn: async ({ pageParam = 1 }) => {
+      return getEnterprisesData({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = (groups?.length ?? 0) + 1;
+      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+
+      return nextPage <= totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled: tab === 'sales',
+  });
+
+  useEffect(() => {
+    const source = dataQuery;
+    if (!source) return;
+    const flattened = source?.pages?.flatMap(
+      (page) => page?.data?.data?.data || [],
+    );
+    const uniqueData = Array.from(
+      new Map(flattened?.map((item) => [item.enterprise_id, item])).values(),
+    );
+    setEnterprisesData(uniqueData);
+    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: Number(lastPage?.currentPage),
+    });
+  }, [dataQuery]);
+
   useEffect(() => {
     if (!hasPageAccess('adminReports')) {
       router.replace('/unauthorized');
@@ -147,8 +147,8 @@ const DataPage = () => {
         <section className="sticky top-[0px] z-10 flex w-full justify-between bg-white py-2">
           <TabsList className="border">
             {[
-              { value: 'enterprise', label: 'Enterprise' },
               { value: 'onboarding', label: 'Onboarding' },
+              { value: 'sales', label: 'Sales' },
               { value: 'purchase', label: 'Purchase' },
               { value: 'inventory', label: 'Inventory' },
               { value: 'vendors', label: 'Vendors' },
@@ -164,7 +164,29 @@ const DataPage = () => {
           </TabsList>
         </section>
 
-        <TabsContent value="enterprise" className="flex-grow overflow-hidden">
+        <TabsContent value="onboarding" className="flex-grow overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            {isOnboardingQueryLoading && <Loading />}
+
+            {!isOnboardingQueryLoading && onboardingData?.length > 0 ? (
+              <InfiniteDataTable
+                id="enterprises-table"
+                columns={onboardingDataColumns}
+                data={onboardingData}
+                fetchNextPage={onboardingQueryFetchNextPage}
+                isFetching={isOnboardingQueryFetching}
+                totalPages={paginationData?.totalPages}
+                currFetchedPage={paginationData?.currFetchedPage}
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
+                <ServerOff size={24} />
+                No Data Available
+              </div>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="sales" className="flex-grow overflow-hidden">
           <div className="h-full overflow-y-auto">
             {isDataQueryLoading && <Loading />}
 
@@ -182,29 +204,6 @@ const DataPage = () => {
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
                 <ServerOff size={24} />
                 No Data Available··
-              </div>
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="onboarding" className="flex-grow overflow-hidden">
-          <div className="h-full overflow-y-auto">
-            {isOnboardingQueryLoading && <Loading />}
-
-            {!isOnboardingQueryLoading && enterprisesData?.length > 0 ? (
-              <InfiniteDataTable
-                id="enterprises-table"
-                columns={onboardingDataColumns}
-                data={onboardingData}
-                fetchNextPage={onboardingQueryFetchNextPage}
-                isFetching={isOnboardingQueryFetching}
-                totalPages={paginationData?.totalPages}
-                currFetchedPage={paginationData?.currFetchedPage}
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
-                <ServerOff size={24} />
-                No Data Available
               </div>
             )}
           </div>
