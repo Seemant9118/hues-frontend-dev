@@ -1,6 +1,10 @@
 import { userAuth } from '@/api/user_auth/Users';
 import { APIinstance } from '@/services';
 
+export function userUpdateFields(data) {
+  return APIinstance.patch(userAuth.userUpdateFields.endpoint, data);
+}
+
 // 1. generate otp
 export function userGenerateOtp(data) {
   return APIinstance.post(userAuth.loginGenerateOtp.endpoint, data);

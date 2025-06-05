@@ -1,6 +1,7 @@
 'use client';
 
 import { validateEnterpriseType } from '@/appUtils/ValidationUtils';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import RadioSelect from '@/components/ui/RadioSelect';
@@ -54,7 +55,7 @@ const SelectEnterprisePage = () => {
     <div className="flex h-full items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="flex w-[450px] flex-col items-center gap-10"
+        className="flex w-[450px] flex-col items-center gap-8"
       >
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
@@ -81,6 +82,8 @@ const SelectEnterprisePage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2">
+          {/* Explanatory Information */}
+          <ExplantoryText text={translations('information')} />
           <Button size="sm" type="submit" className="w-full bg-[#288AF9]">
             {translations('buttons.proceed')}
           </Button>

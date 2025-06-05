@@ -8,6 +8,7 @@ import {
   Bell,
   Boxes,
   ClipboardList,
+  Database,
   FileSymlink,
   Gauge,
   HandPlatter,
@@ -35,6 +36,11 @@ const Sidebar = () => {
           name: 'Reports',
           icon: <SquareKanban size={16} />,
           path: `/admin/reports`,
+        },
+        {
+          name: 'Data',
+          icon: <Database size={16} />,
+          path: `/admin/data`,
         },
         // {
         //   name: 'Enterprise List',

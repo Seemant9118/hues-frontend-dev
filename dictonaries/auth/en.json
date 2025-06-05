@@ -38,7 +38,8 @@
                 "failedToSendOtp": "Failed to send OTP",
                 "otpVerifiedSuccess": "OTP verified successfully",
                 "otpInvalid": "OTP Invalid or Expired"
-            }
+            },
+            "information": "This is the mobile number linked to your Aadhaar - the one the Government of India trusts to reach you. We use it to securely confirm that you, and only you, are accessing your identity."
         },
         "userPanVerification": {
             "profile": {
@@ -73,7 +74,9 @@
             },
             "error": {
                 "generic": "Oops, Something went wrong!"
-            }
+            },
+            "information":"Your PAN helps us confirm who you are in the eyes of the Income Tax Department. It’s how we ensure the platform is safe, compliant, and free of fraud."
+
         },
         "aadharVerification": {
             "toast": {
@@ -88,7 +91,8 @@
                     "label": "Aadhar",
                     "tooltip": "Aadhar: Your universal legal identifier for all government and financial interactions on Hues.",
                     "placeholder": "Aadhar Card Number",
-                    "button": "Proceed"
+                    "button": "Proceed",
+                    "information":"Aadhaar is your most authoritative ID in India. With your consent, it helps us tie your digital identity back to the government’s most trusted source."
                 },
                 "verifyAadharNum": {
                     "title": "Verify your Aadhaar",
@@ -99,6 +103,7 @@
                     "resend_button": "Resend",
                     "verify_button": "Verify",
                     "back": "Back",
+                    "information":"This second layer of confirmation is part of Aadhaar’s official eKYC process. It ensures your Aadhaar isn’t just valid — it’s in your hands.",
                     "errors": {
                         "otp_failed": "OTP verification failed. Please try again.",
                         "something_went_wrong": "Something went wrong"
@@ -141,7 +146,8 @@
                 },
                 "errors": {
                     "selectType": "Please select an enterprise type"
-                }
+                },
+                "information":" Enterprises come in many forms — and so do the rules. Knowing your type helps us tailor the right compliance checks and unlock the correct verification path."
             },
             "panVerify": {
                 "title": "Onboard your Enterprise",
@@ -162,7 +168,8 @@
                     "gst_verify": "/login/enterprise/gst-verify",
                     "cin_verify": "/login/enterprise/cin-verify",
                     "back": "/login/enterprise/select_enterprise_type"
-                }
+                },
+                "information":"This confirms your business is registered with the Income Tax Department. It’s how we verify your enterprise exists — and that you’re connected to it."
             },
             "aadharVerify": {
                 "title": {
@@ -189,7 +196,8 @@
                 "toast": {
                     "success": "GST Verified Successfully",
                     "error": "Something went wrong"
-                }
+                },
+                "information":"Your GST info tells us if your business is tax-registered and compliant. It also helps us validate who manages your GST filings."
             },
             "cinVerify": {
                 "title": "We found a CIN for this enterpise",
@@ -203,7 +211,8 @@
                 "toast": {
                     "success": "CIN Verified Successfully",
                     "error": "Something went wrong"
-                }
+                },
+                "information":"Your CIN or LLPIN is like your business’s passport number — issued by the Ministry of Corporate Affairs. It uniquely identifies your enterprise in the corporate registry. Confirming it helps ensure we’re fetching data for the correct legal entity, especially when there are similar or identical names."
             },
             "udyamVerify": {
                 "title": "Verify your UDYAM ID",
@@ -220,7 +229,8 @@
                 "toast": {
                     "success": "UDYAM ID Verified Successfully",
                     "error": "Something went wrong"
-                }
+                },
+                "information":" If you're an MSME, your UDYAM number gives us access to your verified small-business identity, issued by the Government of India."
             },
             "enterpriseVerification": {
                 "heading": "Verify your Enterprise Details",
@@ -269,7 +279,8 @@
                 "toast": {
                     "success": "Enterprise Verified Successfully",
                     "error": "Something went wrong"
-                }
+                },
+                "information":"This data provides complete visibility into your enterprise’s corporate status. It also confirms that the person onboarded — you — can legally represent the entity."
             },
             "enterpriseConfirmation": {
                 "heading": "Your Enterprise has been successfully verified and onboarded",

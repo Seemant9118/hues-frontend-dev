@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -99,6 +100,9 @@ const UdyamVerify = () => {
               />
             </div>
           </div>
+
+          {/* Explanatory Information */}
+          <ExplantoryText text={translations('information')} />
 
           <div className="flex items-center gap-2 text-sm">
             <Checkbox

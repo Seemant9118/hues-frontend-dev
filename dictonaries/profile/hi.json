@@ -33,6 +33,10 @@
                             "upload": "अपलोड करें",
                             "delete": "हटाएं"
                         }
+                    },
+                    "ctas": {
+                        "cancel": "रद्द करें",
+                        "update": "अपडेट करें"
                     }
                 },
                 "tab2": {
@@ -45,6 +49,10 @@
         "toasts": {
             "logout": {
                 "successMsg": "यूज़र लॉग आउट हो गया",
+                "errorMsg": "कुछ गलत हो गया"
+            },
+            "userUpdateFileds": {
+                "successMsg": "उपयोगकर्ता सफलतापूर्वक अपडेट किया गया",
                 "errorMsg": "कुछ गलत हो गया"
             }
         }
