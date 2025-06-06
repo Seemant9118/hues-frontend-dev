@@ -50,6 +50,7 @@ const PINVerifyModal = ({
   const [pin, setPin] = useState(''); // for verify, current pin
   const [newPin, setNewPin] = useState(''); // new pin
   const [confirmNewPin, setConfirmNewPin] = useState(''); // confir new pin
+  const [PINErrors, setPINErrors] = useState(null);
   const [steps, setSteps] = useState({
     forgot_pin: 1,
   });
@@ -67,6 +68,7 @@ const PINVerifyModal = ({
       setIsActivateUpdatePinMode(false);
       setIsPINError(false);
       setUpdateSuccessMessage('');
+      setPINErrors(null);
     }
   }, [open]);
 
@@ -128,10 +130,15 @@ const PINVerifyModal = ({
       );
     },
     onError: (error) => {
-      toast.error(
-        error?.response?.data?.message ||
-          translationsUpdatePIN('error_messages.common'),
-      );
+      if (error?.response?.data?.error === 'REUSED_PIN') {
+        setPINErrors(error?.response?.data?.error);
+        toast.error('Try a new PIN — this one’s already in use.');
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            translationsUpdatePIN('error_messages.common'),
+        );
+      }
     },
   });
 
@@ -181,9 +188,13 @@ const PINVerifyModal = ({
         <StepConfirmPIN
           pin={pin}
           newPin={newPin}
+          setNewPin={setNewPin}
           confirmPin={confirmNewPin}
           setConfirmPin={setConfirmNewPin}
+          updatePINErrors={PINErrors}
+          setUpdatePINErrors={setPINErrors}
           mode={mode}
+          setSteps={setSteps}
           isPINAvailable={pinStatus?.pinExists}
           resetPinMutation={resetPinMutation}
           translations={translationsUpdatePIN}
@@ -230,8 +241,8 @@ const PINVerifyModal = ({
               containerClassName="group flex items-center has-[:disabled]:opacity-30"
               render={({ slots }) => (
                 <div className="flex gap-4">
-                  {slots.map((slot) => (
-                    <Slot key={uuidv4()} {...slot} />
+                  {slots.map((slot, idx) => (
+                    <Slot key={uuidv4()} {...slot} autoFocus={idx === 0} />
                   ))}
                 </div>
               )}
@@ -241,6 +252,7 @@ const PINVerifyModal = ({
               type="submit"
               className="w-full"
               disabled={isPendingInvoice}
+              tabIndex={0}
             >
               {isPendingInvoice ? <Loading /> : translations('ctas.verify')}
             </Button>

@@ -1,6 +1,10 @@
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { APIinstance } from '@/services';
 
+export const verifyPIN = (data) => {
+  return APIinstance.post(pinSettings.verifyPIN.endpoint, data);
+};
+
 export const createPIN = (data) => {
   return APIinstance.post(pinSettings.createPIN.endpoint, data);
 };

@@ -629,10 +629,12 @@
                 "pin_created": "PIN successfully created!",
                 "pin_updated": "PIN successfully updated!",
                 "otp_sent": "OTP sent successfully!",
-                "otp_verified": "OTP verified successfully!"
+                "otp_verified": "OTP verified successfully!",
+                "pin_verified": "PIN Verified successfully!"
             },
             "error_messages": {
-                "common": "Something went wrong!"
+                "common": "Something went wrong!",
+                "try_new_pin":"Try a new PIN — this one’s already in use."
             },
             "buttons": {
                 "update": "Update PIN",
@@ -655,11 +657,13 @@
                 "buttons": {
                     "next": "Next",
                     "confirm": "Confirm",
-                    "verify": "Verify"
+                    "verify": "Verify",
+                    "proceed": "Proceed"
                 },
                 "messages": {
                     "pin_mismatch": "PINs do not match!",
-                    "forgot_pin": "Forgot PIN?"
+                    "forgot_pin": "Invalid PIN, Forgot PIN?",
+                    "try_new_pin": "Try a new PIN — this one’s already in use."
                 },
                 "steps": {
                     "enter_pin": "Enter PIN",

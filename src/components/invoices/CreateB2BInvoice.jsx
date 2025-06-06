@@ -216,7 +216,10 @@ const CreateB2BInvoice = ({
       router.push(`/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
-      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+      if (
+        error.response.data.error === 'USER_PIN_NOT_FOUND' ||
+        error.response.data.error === 'INVALID_PIN'
+      ) {
         setIsPINError(true);
       }
       toast.error(error.response.data.message || 'Something went wrong');

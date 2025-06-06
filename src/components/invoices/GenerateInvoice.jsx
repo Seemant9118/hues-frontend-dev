@@ -263,7 +263,10 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
     },
     onError: (error) => {
-      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+      if (
+        error.response.data.error === 'USER_PIN_NOT_FOUND' ||
+        error.response.data.error === 'INVALID_PIN'
+      ) {
         setIsPINError(true);
       }
       toast.error(
@@ -282,7 +285,10 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
     },
     onError: (error) => {
-      if (error.response.data.error === 'USER_PIN_NOT_FOUND') {
+      if (
+        error.response.data.error === 'USER_PIN_NOT_FOUND' ||
+        error.response.data.error === 'INVALID_PIN'
+      ) {
         setIsPINError(true);
       }
       toast.error(

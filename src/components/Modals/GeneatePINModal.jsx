@@ -5,6 +5,7 @@ import {
   resetPIN,
   updatePIN,
   verifyOTP,
+  verifyPIN,
 } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoveLeft } from 'lucide-react';
@@ -35,6 +36,7 @@ const GeneratePINModal = ({ isPINAvailable }) => {
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [otp, setOtp] = useState('');
+  const [PINErrors, setPINErrors] = useState(null);
   const [steps, setSteps] = useState({
     create_pin: 1,
     update_pin: 1,
@@ -49,8 +51,25 @@ const GeneratePINModal = ({ isPINAvailable }) => {
       setNewPin('');
       setConfirmPin('');
       setOtp('');
+      setPINErrors(null);
     }
   }, [isOpen]);
+
+  const verifyPinMutation = useMutation({
+    mutationKey: [pinSettings.verifyPIN.endpointKey],
+    mutationFn: verifyPIN,
+    onSuccess: () => {
+      toast.success(translations('success_messages.pin_verified'));
+      setSteps((prev) => ({ ...prev, update_pin: 2 }));
+    },
+    onError: (error) => {
+      setPINErrors(error?.response?.data?.error);
+
+      toast.error(
+        error?.response?.data?.message || translations('error_messages.common'),
+      );
+    },
+  });
 
   const createPinMutation = useMutation({
     mutationKey: [pinSettings.createPIN.endpointKey],
@@ -76,9 +95,15 @@ const GeneratePINModal = ({ isPINAvailable }) => {
       queryClient.invalidateQueries(pinSettings.checkPINStatus.endpointKey);
     },
     onError: (error) => {
-      toast.error(
-        error?.response?.data?.message || translations('error_messages.common'),
-      );
+      if (error?.response?.data?.error === 'REUSED_PIN') {
+        setPINErrors(error?.response?.data?.error);
+        toast.error(translations('error_messages.try_new_pin'));
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            translations('error_messages.common'),
+        );
+      }
     },
   });
 
@@ -119,9 +144,15 @@ const GeneratePINModal = ({ isPINAvailable }) => {
       queryClient.invalidateQueries(pinSettings.checkPINStatus.endpointKey);
     },
     onError: (error) => {
-      toast.error(
-        error?.response?.data?.message || translations('error_messages.common'),
-      );
+      if (error?.response?.data?.error === 'REUSED_PIN') {
+        setPINErrors(error?.response?.data?.error);
+        toast.error(translations('error_messages.try_new_pin'));
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            translations('error_messages.common'),
+        );
+      }
     },
   });
 
@@ -163,6 +194,8 @@ const GeneratePINModal = ({ isPINAvailable }) => {
           pin={pin}
           setPin={setPin}
           setSteps={setSteps}
+          verifyPINErrors={PINErrors}
+          verifyPinMutation={verifyPinMutation}
           generateOtpMutation={generateOtpMutation}
           translations={translations}
         />
@@ -180,10 +213,14 @@ const GeneratePINModal = ({ isPINAvailable }) => {
         <StepConfirmPIN
           pin={pin}
           newPin={newPin}
+          setNewPin={setNewPin}
           confirmPin={confirmPin}
           setConfirmPin={setConfirmPin}
           mode={mode}
+          setSteps={setSteps}
           isPINAvailable={isPINAvailable}
+          updatePINErrors={PINErrors}
+          setUpdatePINErrors={setPINErrors}
           createPinMutation={createPinMutation}
           updatePinMutation={updatePinMutation}
           resetPinMutation={resetPinMutation}
@@ -219,10 +256,14 @@ const GeneratePINModal = ({ isPINAvailable }) => {
         <StepConfirmPIN
           pin={pin}
           newPin={newPin}
+          setNewPin={setNewPin}
           confirmPin={confirmPin}
           setConfirmPin={setConfirmPin}
           mode={mode}
+          setSteps={setSteps}
           isPINAvailable={isPINAvailable}
+          updatePINErrors={PINErrors}
+          setUpdatePINErrors={setPINErrors}
           createPinMutation={createPinMutation}
           updatePinMutation={updatePinMutation}
           resetPinMutation={resetPinMutation}
@@ -264,18 +305,20 @@ const GeneratePINModal = ({ isPINAvailable }) => {
 
       <DialogContent>
         <DialogTitle>
-          {mode && steps[`${mode}_pin`] > 1 && (
-            <MoveLeft
-              size={18}
-              className="cursor-pointer"
-              onClick={() =>
-                setSteps((prev) => ({
-                  ...prev,
-                  [`${mode}_pin`]: prev[`${mode}_pin`] - 1,
-                }))
-              }
-            />
-          )}
+          {mode &&
+            steps[`${mode}_pin`] > 1 &&
+            steps[`${mode}_pin`] < Object.keys(stepComponents[mode]).length && (
+              <MoveLeft
+                size={18}
+                className="cursor-pointer"
+                onClick={() =>
+                  setSteps((prev) => ({
+                    ...prev,
+                    [`${mode}_pin`]: prev[`${mode}_pin`] - 1,
+                  }))
+                }
+              />
+            )}
         </DialogTitle>
         {mode && stepComponents[mode][steps[`${mode}_pin`]]}
       </DialogContent>
