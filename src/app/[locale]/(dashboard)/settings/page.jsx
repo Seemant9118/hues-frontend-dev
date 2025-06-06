@@ -187,8 +187,6 @@ function Settings() {
       toast.success(
         translations('tabs.content.tab3.settingsUpdate.successMsg'),
       );
-
-      queryClient.invalidateQueries([settingsAPI.getSettingByKey.endpointKey]);
     },
     onError: (error) => {
       toast.error(
