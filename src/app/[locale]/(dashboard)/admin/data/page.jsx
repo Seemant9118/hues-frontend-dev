@@ -1,9 +1,11 @@
 'use client';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import EnterpriseDetailsComponent from '@/components/enterprise/EnterpriseDetailsComponent';
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import SearchInput from '@/components/ui/SearchInput';
-import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { useRBAC } from '@/context/RBACcontext';
@@ -12,8 +14,8 @@ import {
   getOnboardingData,
 } from '@/services/Admin_Services/AdminServices';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { ServerOff } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { CheckCheck, ServerOff } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { InfiniteDataTable } from './InfiniteDataTable';
 import { useEnterpriseDataColumns } from './useEnterpriseDataColumns';
@@ -24,15 +26,54 @@ const PAGE_LIMIT = 10;
 
 const DataPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { hasPageAccess } = useRBAC();
   const [enterprisesData, setEnterprisesData] = useState([]);
   const [onboardingData, setOnboardingData] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [tab, setTab] = useState('onboarding');
+  const [enterpriseDetails, setEnterpriseDetails] = useState(null);
+  const [isEnterpriseDetailsOpen, setIsEnterpriseDetailsOpen] = useState(false);
 
   const onTabChange = (value) => {
     setTab(value);
   };
+
+  const dataBreadCrumbs = [
+    {
+      id: 1,
+      name: 'Data',
+      path: '/admin/data',
+      show: true, // Always show
+    },
+    {
+      id: 1,
+      name: 'Enterprise Details',
+      path: '/admin/data',
+      show: isEnterpriseDetailsOpen, // Always show
+    },
+  ];
+
+  useEffect(() => {
+    // Read the state from the query parameters
+    const state = searchParams.get('state');
+
+    setIsEnterpriseDetailsOpen(state === 'enterprise-details');
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Update URL based on the state (avoid shallow navigation for full update)
+    let newPath = `/admin/data`;
+
+    if (isEnterpriseDetailsOpen) {
+      newPath += '?state=enterprise-details';
+    } else {
+      newPath += '';
+    }
+
+    // Use router.replace instead of push to avoid adding a new history entry
+    router.push(newPath);
+  }, [isEnterpriseDetailsOpen, router]);
 
   // fetch onboarding data
   const {
@@ -126,92 +167,125 @@ const DataPage = () => {
     }
   }, []);
 
+  const onRowClick = (row) => {
+    // data set as props
+    setEnterpriseDetails(row);
+    setIsEnterpriseDetailsOpen(true);
+  };
+
   const enterpriseDataColumns = useEnterpriseDataColumns();
   const onboardingDataColumns = useOnboardingDataColumns();
 
   return (
     <Wrapper className="flex h-screen flex-col overflow-hidden">
       {/* headers */}
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
-        <SubHeader name="Data" />
-        <SearchInput searchPlaceholder="Search..." disabled={true} />
-      </div>
+      <section className="flex w-full items-center justify-between bg-white py-2">
+        <div className="flex gap-2">
+          {/* breadcrumbs */}
+          <OrderBreadCrumbs possiblePagesBreadcrumbs={dataBreadCrumbs} />
+        </div>
+        <div className="flex gap-2">
+          {isEnterpriseDetailsOpen ? (
+            <Button size="sm">
+              <CheckCheck size={14} />
+              Mark Onboarding as complete
+            </Button>
+          ) : (
+            <SearchInput searchPlaceholder="Search..." disabled={true} />
+          )}
+        </div>
+      </section>
+      {!isEnterpriseDetailsOpen && (
+        <>
+          {/* headers */}
+          {/* <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
+            <SubHeader name="Data" />
+          </div> */}
+          <Tabs
+            value={tab}
+            onValueChange={onTabChange}
+            defaultValue="overview"
+            className="flex flex-grow flex-col overflow-hidden"
+          >
+            {/* TabsHeader */}
+            <section className="sticky top-[0px] z-10 flex w-full justify-between bg-white py-2">
+              <TabsList className="border">
+                {[
+                  { value: 'onboarding', label: 'Onboarding' },
+                  { value: 'sales', label: 'Sales' },
+                  { value: 'purchase', label: 'Purchase' },
+                  { value: 'inventory', label: 'Inventory' },
+                  { value: 'vendors', label: 'Vendors' },
+                ].map(({ value, label }) => (
+                  <TabsTrigger
+                    key={value}
+                    className={`w-24 ${tab === value ? 'shadow-customShadow' : ''}`}
+                    value={value}
+                  >
+                    {label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </section>
 
-      <Tabs
-        value={tab}
-        onValueChange={onTabChange}
-        defaultValue="overview"
-        className="flex flex-grow flex-col overflow-hidden"
-      >
-        {/* TabsHeader */}
-        <section className="sticky top-[0px] z-10 flex w-full justify-between bg-white py-2">
-          <TabsList className="border">
-            {[
-              { value: 'onboarding', label: 'Onboarding' },
-              { value: 'sales', label: 'Sales' },
-              { value: 'purchase', label: 'Purchase' },
-              { value: 'inventory', label: 'Inventory' },
-              { value: 'vendors', label: 'Vendors' },
-            ].map(({ value, label }) => (
-              <TabsTrigger
-                key={value}
-                className={`w-24 ${tab === value ? 'shadow-customShadow' : ''}`}
-                value={value}
-              >
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </section>
+            <TabsContent
+              value="onboarding"
+              className="flex-grow overflow-hidden"
+            >
+              <div className="h-full overflow-y-auto">
+                {isOnboardingQueryLoading && <Loading />}
 
-        <TabsContent value="onboarding" className="flex-grow overflow-hidden">
-          <div className="h-full overflow-y-auto">
-            {isOnboardingQueryLoading && <Loading />}
-
-            {!isOnboardingQueryLoading && onboardingData?.length > 0 ? (
-              <InfiniteDataTable
-                id="enterprises-table"
-                columns={onboardingDataColumns}
-                data={onboardingData}
-                fetchNextPage={onboardingQueryFetchNextPage}
-                isFetching={isOnboardingQueryFetching}
-                totalPages={paginationData?.totalPages}
-                currFetchedPage={paginationData?.currFetchedPage}
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
-                <ServerOff size={24} />
-                No Data Available
+                {!isOnboardingQueryLoading && onboardingData?.length > 0 ? (
+                  <InfiniteDataTable
+                    id="enterprises-table"
+                    columns={onboardingDataColumns}
+                    data={onboardingData}
+                    fetchNextPage={onboardingQueryFetchNextPage}
+                    isFetching={isOnboardingQueryFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
+                    <ServerOff size={24} />
+                    No Data Available
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        <TabsContent value="sales" className="flex-grow overflow-hidden">
-          <div className="h-full overflow-y-auto">
-            {isDataQueryLoading && <Loading />}
+            </TabsContent>
+            <TabsContent value="sales" className="flex-grow overflow-hidden">
+              <div className="h-full overflow-y-auto">
+                {isDataQueryLoading && <Loading />}
 
-            {!isDataQueryLoading && enterprisesData?.length > 0 ? (
-              <InfiniteDataTable
-                id="enterprises-table"
-                columns={enterpriseDataColumns}
-                data={enterprisesData}
-                fetchNextPage={dataQueryFetchNextPage}
-                isFetching={isDataQueryFetching}
-                totalPages={paginationData?.totalPages}
-                currFetchedPage={paginationData?.currFetchedPage}
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
-                <ServerOff size={24} />
-                No Data Available··
+                {!isDataQueryLoading && enterprisesData?.length > 0 ? (
+                  <InfiniteDataTable
+                    id="enterprises-table"
+                    columns={enterpriseDataColumns}
+                    data={enterprisesData}
+                    fetchNextPage={dataQueryFetchNextPage}
+                    isFetching={isDataQueryFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
+                    <ServerOff size={24} />
+                    No Data Available··
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        <TabsContent value="purchase">Coming Soon...</TabsContent>
-        <TabsContent value="inventory">Coming Soon...</TabsContent>
-        <TabsContent value="vendors">Coming Soon...</TabsContent>
-      </Tabs>
+            </TabsContent>
+            <TabsContent value="purchase">Coming Soon...</TabsContent>
+            <TabsContent value="inventory">Coming Soon...</TabsContent>
+            <TabsContent value="vendors">Coming Soon...</TabsContent>
+          </Tabs>
+        </>
+      )}
+      {isEnterpriseDetailsOpen && (
+        <EnterpriseDetailsComponent enterpriseDetails={enterpriseDetails} />
+      )}
     </Wrapper>
   );
 };
