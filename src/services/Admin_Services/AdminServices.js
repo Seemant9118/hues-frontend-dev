@@ -29,3 +29,37 @@ export const getEnterpriseDetails = (id) => {
 export const getEnterpriseResData = (id) => {
   return APIinstance.get(`${AdminAPIs.getJsonResponseData.endpoint}${id}`);
 };
+
+export const updateEnterpriseDetails = ({ id, data }) => {
+  return APIinstance.post(
+    `${AdminAPIs.updateEnterpriseDetails.endpoint}${id}`,
+    data,
+  );
+};
+
+export const updateAddressesForEnterprise = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.updateAddresses.endpoint}${id}`, data);
+};
+
+export const updateGst = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.updateGST.endpoint}${id}`, data);
+};
+
+export const updateCIN = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.updateCIN.endpoint}${id}`, data);
+};
+
+export const updateUdyam = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.updateUdyam.endpoint}${id}`, data);
+};
+
+export const updatePAN = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.updatePAN.endpoint}${id}`, data);
+};
+
+export const addBankAccountForEnterprise = ({ id, data }) => {
+  return APIinstance.post(
+    `${AdminAPIs.addBankAccountOfEnterprise.endpoint}${id}`,
+    data,
+  );
+};

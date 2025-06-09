@@ -15,7 +15,13 @@ import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 import Tooltips from '../auth/Tooltips';
 
-const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
+const AddBankAccount = ({
+  isModalOpen,
+  setIsModalOpen,
+  mutationFn,
+  userId,
+  enterpriseId,
+}) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     accountHolderName: '',
@@ -41,14 +47,16 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
       setErrors({});
       setAttemptsUsed(null);
 
-      fetchRemainingAttempts()
-        .then((res) => {
-          const used = res.data?.data?.data?.remainingAttempts;
-          setAttemptsUsed(typeof used === 'number' ? 3 - used : null);
-        })
-        .catch(() => {
-          setAttemptsUsed(null);
-        });
+      if (!userId) {
+        fetchRemainingAttempts()
+          .then((res) => {
+            const used = res.data?.data?.data?.remainingAttempts;
+            setAttemptsUsed(typeof used === 'number' ? 3 - used : null);
+          })
+          .catch(() => {
+            setAttemptsUsed(null);
+          });
+      }
     }
   }, [isModalOpen]);
 
@@ -107,12 +115,18 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    addBankAccountMutation.mutate(formData);
+    if (mutationFn) {
+      const payload = { ...formData, userAccountId: userId };
+      mutationFn.mutate({ id: enterpriseId, data: payload });
+    } else {
+      addBankAccountMutation.mutate(formData);
+    }
   };
 
   const renderAttemptMessage = () => {

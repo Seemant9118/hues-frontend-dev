@@ -9,12 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { LocalStorageService } from '@/lib/utils';
 import {
+  addBankAccountForEnterprise,
   getEnterpriseDetails,
   getEnterpriseResData,
+  updateAddressesForEnterprise,
+  updateCIN,
+  updateEnterpriseDetails,
+  updateGst,
+  updatePAN,
+  updateUdyam,
 } from '@/services/Admin_Services/AdminServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { CheckCheck, Eye } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCheck, Eye, MapPin, PencilIcon } from 'lucide-react';
 import moment from 'moment';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -22,6 +30,8 @@ import { toast } from 'sonner';
 
 // eslint-disable-next-line no-unused-vars
 export default function EnterpriseDetails() {
+  const userId = LocalStorageService.get('user_profile');
+  const queryClient = useQueryClient();
   const params = useParams();
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewModalOf, setPreviewModalOf] = useState('');
@@ -31,11 +41,17 @@ export default function EnterpriseDetails() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    address: '',
     type: '',
-    phone: '',
+    mobileNumber: '',
   });
   // document state
+  const [originalValues, setOriginalValues] = useState({
+    gst: '',
+    cin: '',
+    udyam: '',
+    pan: '',
+  });
+
   const [values, setValues] = useState({
     gst: '',
     cin: '',
@@ -48,6 +64,9 @@ export default function EnterpriseDetails() {
     udyam: false,
     pan: false,
   });
+
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [editedAddress, setEditedAddress] = useState('');
 
   const dataOrdersBreadCrumbs = [
     {
@@ -75,9 +94,8 @@ export default function EnterpriseDetails() {
       setFormData({
         name: enterpriseDetails.name || '',
         email: enterpriseDetails.email || '',
-        address: enterpriseDetails.address || '',
         type: enterpriseDetails.type || '',
-        phone: enterpriseDetails.mobileNumber || '',
+        mobileNumber: enterpriseDetails.mobileNumber || '',
       });
 
       setValues({
@@ -91,10 +109,6 @@ export default function EnterpriseDetails() {
 
   // bankaccount state
   const [isAddingBankAccount, setIsAddingBankAccount] = useState(false);
-  const bankAccounts = [
-    { accNo: '1344595959590', ifsc: 'ISHS8283', isEditing: false },
-    { accNo: '8899776644331', ifsc: 'HDFC0001234', isEditing: false },
-  ];
 
   // handle change of overview
   const handleOverviewChange = (field) => (e) => {
@@ -103,7 +117,16 @@ export default function EnterpriseDetails() {
 
   // handle toggle of document
   const toggleEditDocuments = (key) => {
-    setEditStates((prev) => ({ ...prev, [key]: !prev[key] }));
+    setEditStates((prev) => {
+      const isEditing = prev[key];
+
+      if (!isEditing) {
+        // just entered edit mode, store current value as original
+        setOriginalValues((orig) => ({ ...orig, [key]: values[key] }));
+      }
+
+      return { ...prev, [key]: !isEditing };
+    });
   };
   // handle change of document
   const handleDocumentChange = (key) => (e) => {
@@ -117,20 +140,19 @@ export default function EnterpriseDetails() {
     { key: 'pan', label: 'PAN' },
   ];
 
+  const keyToPayloadField = {
+    pan: 'panNumber',
+    gst: 'gstNumber',
+    cin: 'cinOrLlpin', // updated key here
+    udyam: 'udyamNumber',
+  };
+
+  // preview modal for api response
   const previewVerificatioDocumentMutation = useMutation({
     mutationKey: [AdminAPIs.getJsonResponseData.endpointKey],
     mutationFn: getEnterpriseResData,
     onSuccess: (res) => {
       const { data } = res.data;
-
-      const gstData = data.verification_details?.gstData || {};
-
-      const formattedDetails = [
-        { label: 'GST URL', value: gstData.url || 'N/A' },
-        { label: 'GST Message', value: gstData.message || 'N/A' },
-        { label: 'GST Error Code', value: gstData.errorCode || 'N/A' },
-      ];
-
       setPreviewField({
         givenDetails: [
           { label: data.identifier_type, value: data.identifier },
@@ -143,7 +165,6 @@ export default function EnterpriseDetails() {
         label: data.identifier_type,
         value: data.identifier,
         verification_details: data.verification_details,
-        formattedDetails, // 👈 add this for modal display
       });
 
       setPreviewModalOf(data.identifier_type);
@@ -155,6 +176,114 @@ export default function EnterpriseDetails() {
     select: (data) => data.data.data,
   });
 
+  // update enterprise
+  const updateEnterpriseDetailsMutation = useMutation({
+    mutationKey: [AdminAPIs.updateEnterpriseDetails.endpointKey],
+    mutationFn: updateEnterpriseDetails,
+    onSuccess: () => {
+      toast.success('Enterprise details updated Successfully');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  // edit address
+  const updateAddressesMutation = useMutation({
+    mutationKey: [AdminAPIs.updateAddresses.endpointKey],
+    mutationFn: updateAddressesForEnterprise,
+    onSuccess: () => {
+      toast.success('Address updated Successfully');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+      setEditedAddress('');
+      setEditingAddressId(null);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  // update GST
+  const updateGSTMutation = useMutation({
+    mutationKey: [AdminAPIs.updateGST.endpointKey],
+    mutationFn: updateGst,
+    onSuccess: () => {
+      toast.success('GST updated Successfully');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  // update CIN
+  const updateCINMutation = useMutation({
+    mutationKey: [AdminAPIs.updateCIN.endpointKey],
+    mutationFn: updateCIN,
+    onSuccess: () => {
+      toast.success('CIN updated Successfully');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  // update UDYAM
+  const updateUDYAMMutation = useMutation({
+    mutationKey: [AdminAPIs.updateUdyam.endpointKey],
+    mutationFn: updateUdyam,
+    onSuccess: () => {
+      toast.success('UDYAM updated Successfully');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  // update PAN
+  const updatePANMutation = useMutation({
+    mutationKey: [AdminAPIs.updatePAN.endpointKey],
+    mutationFn: updatePAN,
+    onSuccess: () => {
+      toast.success('PAN updated Successfully');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  // add bank account mutation
+  const addBankAccountMutation = useMutation({
+    mutationKey: [AdminAPIs.addBankAccountOfEnterprise.endpointKey],
+    mutationFn: addBankAccountForEnterprise,
+    onSuccess: () => {
+      toast.success('Bank account added successfully for enterprise');
+      queryClient.invalidateQueries([
+        AdminAPIs.getEnterpriseDetails.endpointKey,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
   return (
     <Wrapper className="scrollBarStyles">
       {/* Headers */}
@@ -164,9 +293,30 @@ export default function EnterpriseDetails() {
           <OrderBreadCrumbs possiblePagesBreadcrumbs={dataOrdersBreadCrumbs} />
         </div>
         <div className="flex gap-2">
-          <Button size="sm">
+          <Button
+            size="sm"
+            variant={
+              enterpriseDetails?.isOnboardingComplete ? 'outline' : 'default'
+            }
+            disabled={enterpriseDetails?.isOnboardingComplete}
+            onClick={() => {
+              if (!enterpriseDetails?.isOnboardingComplete) {
+                updateEnterpriseDetailsMutation.mutate({
+                  id: params?.data_id,
+                  data: { isOnboardingCompleted: true },
+                });
+              }
+            }}
+            className={
+              enterpriseDetails?.isOnboardingComplete
+                ? 'border-green-600 text-green-600'
+                : ''
+            }
+          >
             <CheckCheck size={16} />
-            Mark onboarding as complete
+            {enterpriseDetails?.isOnboardingComplete
+              ? 'Onboarding Completed'
+              : 'Mark onboarding as complete'}
           </Button>
         </div>
       </section>
@@ -187,7 +337,18 @@ export default function EnterpriseDetails() {
             <Button
               size="sm"
               variant="blue_outline"
-              onClick={() => setIsEditing(!isEditing)}
+              onClick={() => {
+                if (!isEditing) {
+                  setIsEditing(true); // Enter edit mode
+                } else {
+                  // Save changes
+                  updateEnterpriseDetailsMutation.mutate({
+                    id: params.data_id,
+                    data: formData,
+                  });
+                  setIsEditing(false); // Exit edit mode after saving
+                }
+              }}
             >
               {isEditing ? 'Save' : 'Edit Details'}
             </Button>
@@ -224,18 +385,78 @@ export default function EnterpriseDetails() {
           {/* Address (spans 2 rows) */}
           <div className="row-span-2">
             <Label>Address</Label>
-            {isEditing ? (
-              <textarea
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                rows={4}
-                value={formData.address}
-                onChange={handleOverviewChange('address')}
-              />
-            ) : (
-              <p className="whitespace-pre-line font-medium">
-                {formData.address || '-'}
-              </p>
-            )}
+            <div className="flex flex-col gap-2">
+              {enterpriseDetails?.addresses?.length > 0 ? (
+                enterpriseDetails.addresses.map((addr) => {
+                  const isEditing = editingAddressId === addr.id;
+
+                  return (
+                    <div
+                      key={addr.id}
+                      className="flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2"
+                    >
+                      <div className="flex w-full items-center gap-2">
+                        <MapPin size={14} className="shrink-0 text-primary" />
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editedAddress}
+                            onChange={(e) => setEditedAddress(e.target.value)}
+                            className="w-full rounded border px-2 py-1 text-sm"
+                          />
+                        ) : (
+                          <p
+                            className="truncate text-sm font-medium"
+                            title={addr.address}
+                          >
+                            {addr.address || '-'}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="relative flex gap-1">
+                        {isEditing ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                updateAddressesMutation.mutate({
+                                  id: params.data_id,
+                                  data: {
+                                    addressId: editingAddressId,
+                                    address: editedAddress,
+                                  },
+                                });
+                              }}
+                              className="text-sm text-blue-600 hover:underline"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingAddressId(null)}
+                              className="text-sm text-gray-500 hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingAddressId(addr.id);
+                              setEditedAddress(addr.address || '');
+                            }}
+                            className="absolute right-[-2px] top-[-30px] rounded-full border bg-gray-100 p-2 text-sm text-blue-600 hover:underline"
+                          >
+                            <PencilIcon size={12} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm font-medium text-gray-500">-</p>
+              )}
+            </div>
           </div>
 
           {/* Enterprise Type */}
@@ -256,11 +477,13 @@ export default function EnterpriseDetails() {
             <Label>Phone</Label>
             {isEditing ? (
               <Input
-                value={formData.phone}
-                onChange={handleOverviewChange('phone')}
+                value={formData.mobileNumber}
+                onChange={handleOverviewChange('mobileNumber')}
               />
             ) : (
-              <p className="font-medium">{`+91 ${formData.phone}` || '-'}</p>
+              <p className="font-medium">
+                {`+91 ${formData.mobileNumber}` || '-'}
+              </p>
             )}
           </div>
         </div>
@@ -272,51 +495,110 @@ export default function EnterpriseDetails() {
           Document Details
         </h3>
         <div className="grid grid-cols-2 items-end gap-6">
-          {fields.map(({ key, label }) => (
-            <div
-              key={key}
-              className="flex items-end justify-between gap-2 rounded-md border p-4"
-            >
-              <div className="flex w-full flex-col gap-2">
-                <Label>{label}</Label>
-                {editStates[key] ? (
-                  <Input
-                    value={values[key]}
-                    onChange={handleDocumentChange(key)}
-                  />
-                ) : (
-                  <p className="font-semibold">{values[key] || '-'}</p>
-                )}
-              </div>
+          {fields.map(({ key, label }) => {
+            const isEditing = editStates[key];
 
-              <div className="flex justify-end gap-2">
-                {editStates[key] && (
-                  <Button
-                    variant="outline"
-                    onClick={() => toggleEditDocuments(key)}
-                  >
-                    Cancel
-                  </Button>
-                )}
-                {!editStates[key] && values[key] && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      previewVerificatioDocumentMutation.mutate(values[key]);
-                    }}
-                  >
-                    <Eye size={14} />
-                  </Button>
-                )}
-                <Button
-                  variant="blue_outline"
-                  onClick={() => toggleEditDocuments(key)}
-                >
-                  {editStates[key] ? 'Save' : 'Edit'}
-                </Button>
+            // mutation to call based on key
+            const mutationMap = {
+              gst: updateGSTMutation,
+              cin: updateCINMutation,
+              udyam: updateUDYAMMutation,
+              pan: updatePANMutation,
+            };
+            const mutation = mutationMap[key];
+
+            // handle Save click
+            const handleSave = () => {
+              if (!mutation) return;
+
+              const payloadKey = keyToPayloadField[key] || 'value';
+              const payload = {
+                [payloadKey]: values[key],
+                type: enterpriseDetails?.type,
+                userId: enterpriseDetails?.directorId,
+              };
+
+              mutation.mutate(
+                {
+                  id: params.data_id,
+                  data: payload,
+                },
+                {
+                  onSuccess: () => {
+                    toast.success(`${label} updated successfully`);
+                    setEditStates((prev) => ({ ...prev, [key]: false }));
+                  },
+                  onError: (error) => {
+                    toast.error(
+                      error?.response?.data?.message || 'Something went wrong',
+                    );
+                  },
+                },
+              );
+            };
+
+            // handle cancel click
+            const handleCancel = (key) => {
+              if (values[key] !== originalValues[key]) {
+                // revert to original value if changed
+                setValues((prev) => ({ ...prev, [key]: originalValues[key] }));
+              }
+              setEditStates((prev) => ({ ...prev, [key]: false }));
+            };
+
+            return (
+              <div
+                key={key}
+                className="flex items-end justify-between gap-2 rounded-md border p-4"
+              >
+                <div className="flex w-full flex-col gap-2">
+                  <Label>{label}</Label>
+                  {isEditing ? (
+                    <Input
+                      value={values[key]}
+                      onChange={handleDocumentChange(key)}
+                    />
+                  ) : (
+                    <p className="font-semibold">{values[key] || '-'}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  {isEditing && (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleCancel(key)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button variant="blue_outline" onClick={handleSave}>
+                        Save
+                      </Button>
+                    </>
+                  )}
+                  {!isEditing && values[key] && (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        previewVerificatioDocumentMutation.mutate(values[key])
+                      }
+                    >
+                      <Eye size={14} />
+                    </Button>
+                  )}
+                  {!isEditing && (
+                    <Button
+                      variant="blue_outline"
+                      onClick={() => toggleEditDocuments(key)}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -334,26 +616,43 @@ export default function EnterpriseDetails() {
           <AddBankAccount
             isModalOpen={isAddingBankAccount}
             setIsModalOpen={setIsAddingBankAccount}
+            mutationFn={addBankAccountMutation}
+            userId={userId}
+            enterpriseId={params.data_id}
           />
         </div>
         <div className="space-y-4">
-          {bankAccounts.map((account, index) => (
+          {enterpriseDetails?.bankAccounts.map((account, index) => (
             <div
               // eslint-disable-next-line react/no-array-index-key
               key={index}
               className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-4"
             >
               <p className="text-sm font-semibold">
-                Acc. No: {account.accNo} | IFSC: {account.ifsc}
+                Acc. No: {account.accountNumber} | IFSC: {account.ifscCode}
               </p>
 
               <div className="flex justify-end gap-2">
-                <Button size="sm" variant="outline" onClick={() => {}}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    previewVerificatioDocumentMutation.mutate(
+                      account.accountNumber,
+                    )
+                  }
+                >
                   <Eye size={14} />
                 </Button>
               </div>
             </div>
           ))}
+
+          {enterpriseDetails?.bankAccounts?.length === 0 && (
+            <div className="rounded-md bg-gray-100 py-10 text-center text-sm">
+              No Bank Account added yet
+            </div>
+          )}
         </div>
       </div>
 
