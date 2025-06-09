@@ -24,7 +24,7 @@ const PAGE_LIMIT = 10;
 
 const DataPage = () => {
   const router = useRouter();
-  const { hasPageAccess } = useRBAC();
+  const { hasPageAccess, canPerformAction } = useRBAC();
   const [enterprisesData, setEnterprisesData] = useState([]);
   const [onboardingData, setOnboardingData] = useState([]);
   const [paginationData, setPaginationData] = useState({});
@@ -57,7 +57,9 @@ const DataPage = () => {
     },
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
-    enabled: tab === 'onboarding',
+    enabled:
+      canPerformAction('adminReports', 'fetchedAdminData') &&
+      tab === 'onboarding',
   });
 
   useEffect(() => {
@@ -100,7 +102,8 @@ const DataPage = () => {
     },
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
-    enabled: tab === 'sales',
+    enabled:
+      canPerformAction('adminReports', 'fetchedAdminData') && tab === 'sales',
   });
 
   useEffect(() => {
@@ -120,18 +123,18 @@ const DataPage = () => {
     });
   }, [dataQuery]);
 
-  useEffect(() => {
-    if (!hasPageAccess('adminReports')) {
-      router.replace('/unauthorized');
-    }
-  }, []);
-
   const onRowClick = (row) => {
     router.push(`/admin/data/${row.id}`);
   };
 
   const enterpriseDataColumns = useEnterpriseDataColumns();
   const onboardingDataColumns = useOnboardingDataColumns();
+
+  useEffect(() => {
+    if (!hasPageAccess('adminReports')) {
+      router.replace('/unauthorized');
+    }
+  }, []);
 
   return (
     <Wrapper className="flex h-screen flex-col overflow-hidden">

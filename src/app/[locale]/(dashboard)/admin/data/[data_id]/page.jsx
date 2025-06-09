@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useRBAC } from '@/context/RBACcontext';
 import { LocalStorageService } from '@/lib/utils';
 import {
   addBankAccountForEnterprise,
@@ -24,14 +25,16 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCheck, Eye, MapPin, PencilIcon } from 'lucide-react';
 import moment from 'moment';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 // eslint-disable-next-line no-unused-vars
 export default function EnterpriseDetails() {
   const userId = LocalStorageService.get('user_profile');
+  const { hasPageAccess, canPerformAction } = useRBAC();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const params = useParams();
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewModalOf, setPreviewModalOf] = useState('');
@@ -87,6 +90,7 @@ export default function EnterpriseDetails() {
     queryKey: [AdminAPIs.getEnterpriseDetails.endpointKey],
     queryFn: () => getEnterpriseDetails(params.data_id),
     select: (data) => data?.data?.data,
+    enabled: canPerformAction('adminReports', 'fetchedAdminData'),
   });
 
   useEffect(() => {
@@ -283,6 +287,12 @@ export default function EnterpriseDetails() {
       toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
+
+  useEffect(() => {
+    if (!hasPageAccess('adminReports')) {
+      router.replace('/unauthorized');
+    }
+  }, []);
 
   return (
     <Wrapper className="scrollBarStyles">
