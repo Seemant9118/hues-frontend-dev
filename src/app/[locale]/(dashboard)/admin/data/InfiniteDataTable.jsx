@@ -27,6 +27,7 @@ export function InfiniteDataTable({
   isFetching,
   totalPages,
   currFetchedPage,
+  onRowClick,
 }) {
   const tableContainerRef = React.useRef(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = React.useState(false);
@@ -141,6 +142,9 @@ export function InfiniteDataTable({
                       data-index={virtualRow.index}
                       ref={(node) => rowVirtualizer.measureElement(node)}
                       key={row.id}
+                      onClick={
+                        onRowClick ? () => onRowClick(row.original) : () => {}
+                      }
                       className="h-16 border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700"
                     >
                       {row.getVisibleCells().map((cell) => (
