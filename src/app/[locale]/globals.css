@@ -107,10 +107,28 @@ body::-webkit-scrollbar-thumb,
   background: #dadce0;
 }
 
-/* Handle on hover */
+/* Dark Scroller */
 body::-webkit-scrollbar-thumb:hover,
-.scrollBarStyles::-webkit-scrollbar-thumb:hover {
+.darkScrollBarStyles::-webkit-scrollbar-thumb:hover {
   background: #c6c7c9;
+}
+
+.darkScrollBarStyles::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.darkScrollBarStyles::-webkit-scrollbar-track {
+  background: #1a1a1a; /* dark track background */
+}
+
+.darkScrollBarStyles::-webkit-scrollbar-thumb {
+  border-radius: 0.5rem;
+  background: #555; /* default thumb color */
+}
+
+.darkScrollBarStyles::-webkit-scrollbar-thumb:hover {
+  background: #777; /* hover effect */
 }
 
 /* Style the label when the radio input is checked */

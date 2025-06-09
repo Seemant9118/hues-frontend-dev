@@ -13,4 +13,14 @@ export const AdminAPIs = {
     endpoint: `/admin-panel/dashboard/enterprise-onboarding-stats`,
     endpointKey: 'get_onboarding_data',
   },
+
+  getEnterpriseDetails: {
+    endpoint: `/admin-panel/dashboard/enterprises/`,
+    endpointKey: 'get_enterprise_details',
+  },
+
+  getJsonResponseData: {
+    endpoint: `/admin-panel/dashboard/verification-data/`,
+    endpointKey: 'get_json_res_data',
+  },
 };

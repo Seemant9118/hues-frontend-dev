@@ -21,3 +21,11 @@ export const getOnboardingData = ({ page, limit }) => {
     `${AdminAPIs.getOnboardingData.endpoint}?page=${page}&limit=${limit}`,
   );
 };
+
+export const getEnterpriseDetails = (id) => {
+  return APIinstance.get(`${AdminAPIs.getEnterpriseDetails.endpoint}${id}`);
+};
+
+export const getEnterpriseResData = (id) => {
+  return APIinstance.get(`${AdminAPIs.getJsonResponseData.endpoint}${id}`);
+};

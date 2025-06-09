@@ -1,48 +1,100 @@
 'use client';
 
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { capitalize } from '@/appUtils/helperFunctions';
+import { VerifyDetailsModal } from '@/components/enterprise/VerifyDetailsModal';
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import AddBankAccount from '@/components/settings/AddBankAccount';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { Eye } from 'lucide-react';
-import { Input } from '../ui/input';
-import Wrapper from '../wrappers/Wrapper';
-import AddBankAccount from '../settings/AddBankAccount';
-import { VerifyDetailsModal } from './VerifyDetailsModal';
+import Wrapper from '@/components/wrappers/Wrapper';
+import {
+  getEnterpriseDetails,
+  getEnterpriseResData,
+} from '@/services/Admin_Services/AdminServices';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { CheckCheck, Eye } from 'lucide-react';
+import moment from 'moment';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 // eslint-disable-next-line no-unused-vars
-export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
+export default function EnterpriseDetails() {
+  const params = useParams();
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [previewField, setPreviewField] = useState({ label: '', value: '' });
-
+  const [previewModalOf, setPreviewModalOf] = useState('');
+  const [previewField, setPreviewField] = useState(null);
   // overview state
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: 'Parth Enterprise (B2B)',
-    email: 'parth@gmail.com',
-    address: '123 Main Street, Mumbai, Maharashtra, India - 400001',
-    type: 'Public',
-    phone: '+91 923-484-3292',
+    name: '',
+    email: '',
+    address: '',
+    type: '',
+    phone: '',
   });
   // document state
-  const initialValues = {
-    gst: '123445',
-    cin: '123',
-    udyam: '00000',
-    pan: 'PANB23445',
-  };
-  const [values, setValues] = useState(initialValues);
+  const [values, setValues] = useState({
+    gst: '',
+    cin: '',
+    udyam: '',
+    pan: '',
+  });
   const [editStates, setEditStates] = useState({
     gst: false,
     cin: false,
     udyam: false,
     pan: false,
   });
+
+  const dataOrdersBreadCrumbs = [
+    {
+      id: 1,
+      name: 'Data',
+      path: '/admin/data/',
+      show: true, // Always show
+    },
+    {
+      id: 2,
+      name: 'Enterprise Details',
+      path: `/admin/data//${params.data_id}`,
+      show: true, // Always show
+    },
+  ];
+
+  const { data: enterpriseDetails } = useQuery({
+    queryKey: [AdminAPIs.getEnterpriseDetails.endpointKey],
+    queryFn: () => getEnterpriseDetails(params.data_id),
+    select: (data) => data?.data?.data,
+  });
+
+  useEffect(() => {
+    if (enterpriseDetails) {
+      setFormData({
+        name: enterpriseDetails.name || '',
+        email: enterpriseDetails.email || '',
+        address: enterpriseDetails.address || '',
+        type: enterpriseDetails.type || '',
+        phone: enterpriseDetails.mobileNumber || '',
+      });
+
+      setValues({
+        gst: enterpriseDetails.gstNumber || '',
+        cin: enterpriseDetails.cin || '',
+        udyam: enterpriseDetails.udyam || '',
+        pan: enterpriseDetails.panNumber || '',
+      });
+    }
+  }, [enterpriseDetails]);
+
   // bankaccount state
   const [isAddingBankAccount, setIsAddingBankAccount] = useState(false);
-  const [bankAccounts, setBankAccounts] = useState([
+  const bankAccounts = [
     { accNo: '1344595959590', ifsc: 'ISHS8283', isEditing: false },
     { accNo: '8899776644331', ifsc: 'HDFC0001234', isEditing: false },
-  ]);
+  ];
 
   // handle change of overview
   const handleOverviewChange = (field) => (e) => {
@@ -65,27 +117,61 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
     { key: 'pan', label: 'PAN' },
   ];
 
-  // handle toggle of bank accounts
-  const toggleEditBankAccount = (index) => {
-    setBankAccounts((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, isEditing: !item.isEditing } : item,
-      ),
-    );
-  };
+  const previewVerificatioDocumentMutation = useMutation({
+    mutationKey: [AdminAPIs.getJsonResponseData.endpointKey],
+    mutationFn: getEnterpriseResData,
+    onSuccess: (res) => {
+      const { data } = res.data;
 
-  // handle change of bank accounts
-  const handleChangeBankAccount = (index, field) => (e) => {
-    const { value } = e.target;
-    setBankAccounts((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
-    );
-  };
+      const gstData = data.verification_details?.gstData || {};
+
+      const formattedDetails = [
+        { label: 'GST URL', value: gstData.url || 'N/A' },
+        { label: 'GST Message', value: gstData.message || 'N/A' },
+        { label: 'GST Error Code', value: gstData.errorCode || 'N/A' },
+      ];
+
+      setPreviewField({
+        givenDetails: [
+          { label: data.identifier_type, value: data.identifier },
+          { label: 'Name', value: formData.name },
+          {
+            label: 'Date',
+            value: moment(data.created_at).format('DD/MM/YYYY'),
+          },
+        ],
+        label: data.identifier_type,
+        value: data.identifier,
+        verification_details: data.verification_details,
+        formattedDetails, // 👈 add this for modal display
+      });
+
+      setPreviewModalOf(data.identifier_type);
+      setPreviewModalOpen(true);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+    select: (data) => data.data.data,
+  });
 
   return (
-    <Wrapper className="scrollBarStyles overflow-auto">
+    <Wrapper className="scrollBarStyles">
+      {/* Headers */}
+      <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+        <div className="flex gap-2">
+          {/* breadcrumbs */}
+          <OrderBreadCrumbs possiblePagesBreadcrumbs={dataOrdersBreadCrumbs} />
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm">
+            <CheckCheck size={16} />
+            Mark onboarding as complete
+          </Button>
+        </div>
+      </section>
       {/* overview */}
-      <div className="space-y-2 border-b px-2 py-4">
+      <div className="space-y-2 border-b px-2 py-2">
         <div className="flex w-full items-center justify-between gap-2">
           <h3 className="text-medium font-semibold text-gray-400">Overview</h3>
           <div className="flex justify-end gap-2">
@@ -118,7 +204,7 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
                 onChange={handleOverviewChange('name')}
               />
             ) : (
-              <p className="font-medium">{formData.name}</p>
+              <p className="font-medium">{formData.name || '-'}</p>
             )}
           </div>
 
@@ -131,7 +217,7 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
                 onChange={handleOverviewChange('email')}
               />
             ) : (
-              <p className="font-medium">{formData.email}</p>
+              <p className="font-medium">{formData.email || '-'}</p>
             )}
           </div>
 
@@ -147,7 +233,7 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
               />
             ) : (
               <p className="whitespace-pre-line font-medium">
-                {formData.address}
+                {formData.address || '-'}
               </p>
             )}
           </div>
@@ -161,7 +247,7 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
                 onChange={handleOverviewChange('type')}
               />
             ) : (
-              <p className="font-medium">{formData.type}</p>
+              <p className="font-medium">{capitalize(formData.type) || '-'}</p>
             )}
           </div>
 
@@ -174,7 +260,7 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
                 onChange={handleOverviewChange('phone')}
               />
             ) : (
-              <p className="font-medium">{formData.phone}</p>
+              <p className="font-medium">{`+91 ${formData.phone}` || '-'}</p>
             )}
           </div>
         </div>
@@ -199,7 +285,7 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
                     onChange={handleDocumentChange(key)}
                   />
                 ) : (
-                  <p className="font-semibold">{values[key]}</p>
+                  <p className="font-semibold">{values[key] || '-'}</p>
                 )}
               </div>
 
@@ -212,12 +298,11 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
                     Cancel
                   </Button>
                 )}
-                {!editStates[key] && (
+                {!editStates[key] && values[key] && (
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setPreviewField({ label, value: values[key] });
-                      setPreviewModalOpen(true);
+                      previewVerificatioDocumentMutation.mutate(values[key]);
                     }}
                   >
                     <Eye size={14} />
@@ -258,58 +343,13 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
               key={index}
               className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-4"
             >
-              {account.isEditing ? (
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
-                  <Input
-                    placeholder="Account No"
-                    value={account.accNo}
-                    onChange={handleChangeBankAccount(index, 'accNo')}
-                    className="w-full sm:w-[200px]"
-                  />
-                  <Input
-                    placeholder="IFSC"
-                    value={account.ifsc}
-                    onChange={handleChangeBankAccount(index, 'ifsc')}
-                    className="w-full sm:w-[200px]"
-                  />
-                </div>
-              ) : (
-                <p className="text-sm font-semibold">
-                  Acc. No: {account.accNo} | IFSC: {account.ifsc}
-                </p>
-              )}
+              <p className="text-sm font-semibold">
+                Acc. No: {account.accNo} | IFSC: {account.ifsc}
+              </p>
 
               <div className="flex justify-end gap-2">
-                {account.isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toggleEditBankAccount(index)}
-                  >
-                    Cancel
-                  </Button>
-                )}
-                {!account.isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setPreviewField({
-                        label: `Bank Account #${index + 1}`,
-                        value: `Acc. No: ${account.accNo} | IFSC: ${account.ifsc}`,
-                      });
-                      setPreviewModalOpen(true);
-                    }}
-                  >
-                    <Eye size={14} />
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="blue_outline"
-                  onClick={() => toggleEditBankAccount(index)}
-                >
-                  {account.isEditing ? 'Save' : 'Edit'}
+                <Button size="sm" variant="outline" onClick={() => {}}>
+                  <Eye size={14} />
                 </Button>
               </div>
             </div>
@@ -374,7 +414,9 @@ export default function EnterpriseDetailsComponent({ enterpriseDetails }) {
       <VerifyDetailsModal
         open={previewModalOpen}
         onOpenChange={setPreviewModalOpen}
-        field={previewField}
+        title={previewModalOf}
+        givenDetails={previewField?.givenDetails || []}
+        apiResponse={previewField?.verification_details}
       />
     </Wrapper>
   );
