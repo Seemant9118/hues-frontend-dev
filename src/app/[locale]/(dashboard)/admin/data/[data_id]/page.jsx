@@ -2,9 +2,12 @@
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { capitalize } from '@/appUtils/helperFunctions';
+import AddUsers from '@/components/admin/AddUsers';
+import { useUserColumns } from '@/components/admin/useUserColumns';
 import { VerifyDetailsModal } from '@/components/enterprise/VerifyDetailsModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AddBankAccount from '@/components/settings/AddBankAccount';
+import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,18 +19,24 @@ import {
   getEnterpriseDetails,
   getEnterpriseResData,
   updateAddressesForEnterprise,
-  updateCIN,
   updateEnterpriseDetails,
-  updateGst,
-  updatePAN,
-  updateUdyam,
 } from '@/services/Admin_Services/AdminServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCheck, Eye, MapPin, PencilIcon } from 'lucide-react';
+import { CheckCheck, Eye, MapPin, PencilIcon, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const users = [
+  {
+    id: 1,
+    name: 'Lokesh User',
+    pan: 'ABCDE1234J',
+    email: 'abcd@hgmail.com1',
+    mobileNumber: '+91 1234567889',
+  },
+];
 
 // eslint-disable-next-line no-unused-vars
 export default function EnterpriseDetails() {
@@ -36,6 +45,8 @@ export default function EnterpriseDetails() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
+  const [isUserAdding, setIsUserAdding] = useState(false);
+  const [edditedData, setEdditedData] = useState(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewModalOf, setPreviewModalOf] = useState('');
   const [previewField, setPreviewField] = useState(null);
@@ -81,7 +92,7 @@ export default function EnterpriseDetails() {
     {
       id: 2,
       name: 'Enterprise Details',
-      path: `/admin/data//${params.data_id}`,
+      path: `/admin/data/${params.data_id}`,
       show: true, // Always show
     },
   ];
@@ -213,66 +224,6 @@ export default function EnterpriseDetails() {
     },
   });
 
-  // update GST
-  const updateGSTMutation = useMutation({
-    mutationKey: [AdminAPIs.updateGST.endpointKey],
-    mutationFn: updateGst,
-    onSuccess: () => {
-      toast.success('GST updated Successfully');
-      queryClient.invalidateQueries([
-        AdminAPIs.getEnterpriseDetails.endpointKey,
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
-  // update CIN
-  const updateCINMutation = useMutation({
-    mutationKey: [AdminAPIs.updateCIN.endpointKey],
-    mutationFn: updateCIN,
-    onSuccess: () => {
-      toast.success('CIN updated Successfully');
-      queryClient.invalidateQueries([
-        AdminAPIs.getEnterpriseDetails.endpointKey,
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
-  // update UDYAM
-  const updateUDYAMMutation = useMutation({
-    mutationKey: [AdminAPIs.updateUdyam.endpointKey],
-    mutationFn: updateUdyam,
-    onSuccess: () => {
-      toast.success('UDYAM updated Successfully');
-      queryClient.invalidateQueries([
-        AdminAPIs.getEnterpriseDetails.endpointKey,
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
-  // update PAN
-  const updatePANMutation = useMutation({
-    mutationKey: [AdminAPIs.updatePAN.endpointKey],
-    mutationFn: updatePAN,
-    onSuccess: () => {
-      toast.success('PAN updated Successfully');
-      queryClient.invalidateQueries([
-        AdminAPIs.getEnterpriseDetails.endpointKey,
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
   // add bank account mutation
   const addBankAccountMutation = useMutation({
     mutationKey: [AdminAPIs.addBankAccountOfEnterprise.endpointKey],
@@ -293,6 +244,13 @@ export default function EnterpriseDetails() {
       router.replace('/unauthorized');
     }
   }, []);
+
+  const onEditClick = (row) => {
+    setEdditedData(row);
+    setIsUserAdding(true);
+  };
+
+  const userColumns = useUserColumns({ onEditClick });
 
   return (
     <Wrapper className="scrollBarStyles">
@@ -319,7 +277,7 @@ export default function EnterpriseDetails() {
             }}
             className={
               enterpriseDetails?.isOnboardingComplete
-                ? 'border-green-600 text-green-600'
+                ? 'bg-green-600 text-white'
                 : ''
             }
           >
@@ -333,7 +291,7 @@ export default function EnterpriseDetails() {
       {/* overview */}
       <div className="space-y-2 border-b px-2 py-2">
         <div className="flex w-full items-center justify-between gap-2">
-          <h3 className="text-medium font-semibold text-gray-400">Overview</h3>
+          <h3 className="text-medium font-semibold">Overview</h3>
           <div className="flex justify-end gap-2">
             {isEditing && (
               <Button
@@ -501,26 +459,13 @@ export default function EnterpriseDetails() {
 
       {/* document details */}
       <div className="space-y-2 px-2 py-4">
-        <h3 className="text-medium font-semibold text-gray-400">
-          Document Details
-        </h3>
+        <h3 className="text-medium font-semibold">Document Details</h3>
         <div className="grid grid-cols-2 items-end gap-6">
           {fields.map(({ key, label }) => {
             const isEditing = editStates[key];
 
-            // mutation to call based on key
-            const mutationMap = {
-              gst: updateGSTMutation,
-              cin: updateCINMutation,
-              udyam: updateUDYAMMutation,
-              pan: updatePANMutation,
-            };
-            const mutation = mutationMap[key];
-
             // handle Save click
             const handleSave = () => {
-              if (!mutation) return;
-
               const payloadKey = keyToPayloadField[key] || 'value';
               const payload = {
                 [payloadKey]: values[key],
@@ -528,7 +473,7 @@ export default function EnterpriseDetails() {
                 userId: enterpriseDetails?.directorId,
               };
 
-              mutation.mutate(
+              updateEnterpriseDetailsMutation.mutate(
                 {
                   id: params.data_id,
                   data: payload,
@@ -615,12 +560,13 @@ export default function EnterpriseDetails() {
       {/* Bank Account details */}
       <div className="space-y-2 border-b px-2 py-4">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">Bank Account Details</h3>
+          <h3 className="text-medium font-semibold">Bank Account Details</h3>
           <Button
             size="sm"
             variant="blue_outline"
             onClick={() => setIsAddingBankAccount(true)}
           >
+            <Plus className="h-4 w-4" />
             Add Bank Account
           </Button>
           <AddBankAccount
@@ -661,6 +607,42 @@ export default function EnterpriseDetails() {
           {enterpriseDetails?.bankAccounts?.length === 0 && (
             <div className="rounded-md bg-gray-100 py-10 text-center text-sm">
               No Bank Account added yet
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Users */}
+      <div className="space-y-2 px-1 py-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-medium font-semibold">Users Details</h3>
+          <Button
+            size="sm"
+            variant="blue_outline"
+            onClick={() => {
+              setIsUserAdding(true);
+              setEdditedData(null);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add User
+          </Button>
+          <AddUsers
+            isModalOpen={isUserAdding}
+            setIsModalOpen={setIsUserAdding}
+            edittedData={edditedData}
+            setEdditedData={setEdditedData}
+            enterpriseId={params?.data_id}
+          />
+        </div>
+        <div className="space-y-4">
+          {enterpriseDetails?.users?.length > 0 && (
+            <DataTable columns={userColumns} data={enterpriseDetails?.users} />
+          )}
+          {users?.length === 0 && (
+            <div className="rounded-md bg-gray-100 py-10 text-center text-sm">
+              No User added yet
             </div>
           )}
         </div>

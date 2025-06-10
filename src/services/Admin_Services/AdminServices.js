@@ -22,6 +22,18 @@ export const getOnboardingData = ({ page, limit }) => {
   );
 };
 
+export const addUser = (data) => {
+  return APIinstance.post(AdminAPIs.addUser.endpoint, data);
+};
+
+export const updateUser = (data) => {
+  return APIinstance.post(AdminAPIs.updateUser.endpoint, data);
+};
+
+export const addEnterprise = (data) => {
+  return APIinstance.post(AdminAPIs.addEnterprise.endpoint, data);
+};
+
 export const getEnterpriseDetails = (id) => {
   return APIinstance.get(`${AdminAPIs.getEnterpriseDetails.endpoint}${id}`);
 };

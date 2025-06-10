@@ -1,0 +1,278 @@
+import { addressAPIs } from '@/api/addressApi/addressApis';
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
+import { addEnterprise } from '@/services/Admin_Services/AdminServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import ErrorBox from '../ui/ErrorBox';
+import Loading from '../ui/Loading';
+import SubHeader from '../ui/Sub-header';
+import Wrapper from '../wrappers/Wrapper';
+
+const AddEnterprise = ({ setIsAddingEnterprise }) => {
+  const queryClient = useQueryClient();
+  const [errorMsg, setErrorMsg] = useState({});
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    mobileNumber: '',
+    type: '',
+    gst: '',
+    cin: '',
+    udyam: '',
+    pan: '',
+    address: '',
+    pincode: '',
+    city: '',
+    state: '',
+  });
+
+  const handleChange = (field) => (e) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  //   address fetching via pincode
+  const {
+    data: addressData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [addressAPIs.getAddressFromPincode.endpointKey, formData.pincode],
+    enabled: formData?.pincode?.length === 6,
+    queryFn: async () => {
+      try {
+        const res = await getDataFromPinCode(formData.pincode);
+        return res?.data?.data;
+      } catch (err) {
+        if (err?.response?.status === 400) {
+          setErrorMsg((prev) => ({
+            ...prev,
+            pincode: 'Invalid pincode. Please try valid pincode',
+          }));
+          setFormData((prev) => ({
+            ...prev,
+            city: '',
+            state: '',
+          }));
+        } else {
+          toast.error('Failed to fetch address details');
+        }
+        throw err; // rethrow so React Query knows it failed
+      }
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (addressData) {
+      setFormData((prev) => ({
+        ...prev,
+        city: addressData.district || '',
+        state: addressData.state || '',
+      }));
+    }
+  }, [addressData]);
+
+  const addEnterpriseMutation = useMutation({
+    mutationKey: [AdminAPIs.addEnterprise.endpointKey],
+    mutationFn: (data) => addEnterprise(data), // Call the function with passed data
+    onSuccess: () => {
+      toast.success('Enterprise Added Successfully');
+      queryClient.invalidateQueries([AdminAPIs.getOnboardingData.endpointKey]);
+      setIsAddingEnterprise(false);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+
+  const handleSubmit = () => {
+    // Basic validation
+    if (!formData.name || !formData.email) {
+      toast.error('Enterprise name and email are required.');
+      return;
+    }
+
+    addEnterpriseMutation.mutate(formData);
+  };
+
+  const handleCloseEnterpriseForm = () => {
+    setFormData({});
+    setIsAddingEnterprise(false);
+  };
+
+  return (
+    <Wrapper className="scrollBarStyles">
+      {/* Headers */}
+      <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+        <SubHeader name={'Add Enterprise'} />
+      </section>
+
+      {/* basic info */}
+      <section className="space-y-2 px-1 py-2">
+        <h3 className="text-sm font-semibold text-gray-700">Basic Info</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Enterprise Name</Label>
+            <Input
+              type="text"
+              value={formData.name}
+              onChange={handleChange('name')}
+            />
+          </div>
+          <div>
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={handleChange('email')}
+            />
+          </div>
+          <div>
+            <Label>Phone Number</Label>
+            <Input
+              type="number"
+              value={formData.mobileNumber}
+              onChange={handleChange('mobileNumber')}
+            />
+          </div>
+          <div>
+            <Label>Enterprise Type</Label>
+            <Input value={formData.type} onChange={handleChange('type')} />
+          </div>
+        </div>
+      </section>
+
+      {/* address info */}
+      <section className="space-y-2 px-1 py-2">
+        <h3 className="text-sm font-semibold text-gray-700">Address Info</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="pincode">Pincode</Label>
+            <div className="relative">
+              <Input
+                type="number"
+                id="pincode"
+                name="pincode"
+                className="pr-10"
+                value={formData.pincode}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  if (formData?.pincode?.length !== 5) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      city: '',
+                      state: '',
+                    }));
+                  }
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+
+                  setErrorMsg((prev) => ({
+                    ...prev,
+                    [name]: '',
+                  }));
+                }}
+                placeholder="Enter Pincode"
+              />
+              {(isLoading || isFetching) && (
+                <div className="absolute right-1 top-2 text-gray-500">
+                  <Loading />
+                </div>
+              )}
+
+              {errorMsg.pincode && <ErrorBox msg={errorMsg.pincode} />}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              disabled
+              value={formData.city}
+              placeholder="Auto-filled via pincode"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="state">State</Label>
+          <Input
+            id="state"
+            name="state"
+            value={formData.state}
+            disabled
+            placeholder="Auto-filled via pincode"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-1">
+            <Label>Address</Label>
+            {/* <span className="text-red-600">*</span> */}
+          </div>
+          <Input
+            name="Address"
+            type="text"
+            id="address"
+            // required={true}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                address: e.target.value,
+              }))
+            }
+            value={formData.address}
+          />
+        </div>
+      </section>
+
+      {/* document details */}
+      <section className="space-y-2 px-1 py-2">
+        <h3 className="text-sm font-semibold text-gray-700">
+          Document Details
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>GST</Label>
+            <Input
+              type="number"
+              value={formData.gst}
+              onChange={handleChange('gst')}
+            />
+          </div>
+          <div>
+            <Label>CIN</Label>
+            <Input value={formData.cin} onChange={handleChange('cin')} />
+          </div>
+          <div>
+            <Label>Udyam</Label>
+            <Input value={formData.udyam} onChange={handleChange('udyam')} />
+          </div>
+          <div>
+            <Label>PAN</Label>
+            <Input value={formData.pan} onChange={handleChange('pan')} />
+          </div>
+        </div>
+      </section>
+
+      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 border-t bg-white py-2 shadow-xl">
+        <Button size="sm" variant="outline" onClick={handleCloseEnterpriseForm}>
+          Cancel
+        </Button>
+        <Button size="sm" onClick={handleSubmit}>
+          Create
+        </Button>
+      </div>
+    </Wrapper>
+  );
+};
+
+export default AddEnterprise;
