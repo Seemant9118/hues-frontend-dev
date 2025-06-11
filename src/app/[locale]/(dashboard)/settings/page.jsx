@@ -682,11 +682,15 @@ function Settings() {
         </TabsContent>
 
         <TabsContent value="bankAccount" className="flex flex-col gap-4">
-          <div className="flex w-full items-center justify-between gap-2 rounded-md border p-4">
+          <div className="mt-5 flex w-full items-center justify-between gap-2 rounded-md border p-4">
             <div className="flex flex-col items-start gap-1 text-sm">
-              <p className="font-bold">Add a bank account</p>
+              <p className="font-bold">
+                {translations('tabs.content.tab2.bankAccount.add_bank_heading')}
+              </p>
               <p className="text-gray-400">
-                Add a bank account to your Hues account
+                {translations(
+                  'tabs.content.tab2.bankAccount.add_bank_subtitle',
+                )}
               </p>
             </div>
             <Button
@@ -694,7 +698,7 @@ function Settings() {
               variant="blue_outline"
               onClick={() => setIsBankAccountAdding(true)}
             >
-              Add Bank Account
+              {translations('tabs.content.tab2.bankAccount.add_bank_button')}
             </Button>
           </div>
           <AddBankAccount
@@ -704,7 +708,9 @@ function Settings() {
 
           {bankAccounts?.length > 0 && (
             <>
-              <h1 className="text-xl font-semibold">Bank Accounts</h1>
+              <h1 className="text-xl font-semibold">
+                {translations('tabs.content.tab2.bankAccount.list_heading')}
+              </h1>
               <div className="flex w-full flex-wrap gap-3">
                 {bankAccounts?.map((account) => (
                   <AccountDetails key={account.id} account={account} />

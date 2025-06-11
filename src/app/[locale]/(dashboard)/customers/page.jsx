@@ -216,7 +216,7 @@ const CustomerPage = () => {
                       className="flex cursor-not-allowed items-center"
                     >
                       <PlusCircle size={14} />
-                      Add
+                      {translations('ctas.add')}
                     </Button>
                   }
                   content={translations('ctas.tooltips.coming_soon')}

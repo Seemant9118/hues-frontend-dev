@@ -7,6 +7,7 @@ import { Building2, Dot, File, X } from 'lucide-react';
 import moment from 'moment';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
@@ -15,6 +16,7 @@ const Comment = ({ comment, invalidateId }) => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const translations = useTranslations('components.comment');
   const [isEditing, setIsEditing] = useState(false);
   const [editedComments, setEditedComments] = useState({
     text: '',
@@ -51,7 +53,7 @@ const Comment = ({ comment, invalidateId }) => {
     mutationKey: [DebitNoteApi.updateComments.endpointKey],
     mutationFn: updateComments,
     onSuccess: () => {
-      toast.success('Comment updated');
+      toast.success(translations('toast_update_success'));
       queryClient.invalidateQueries([
         DebitNoteApi.getComments.endpointKey,
         invalidateId,
@@ -64,7 +66,9 @@ const Comment = ({ comment, invalidateId }) => {
       }));
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error.response?.data?.message || translations('toast_update_error'),
+      );
     },
   });
 
@@ -92,7 +96,7 @@ const Comment = ({ comment, invalidateId }) => {
 
   const handleSave = () => {
     if (!editedComments.text.trim()) {
-      toast.error('Comment cannot be empty!');
+      toast.error(translations('toast_empty_comment_error'));
       return;
     }
 
@@ -137,7 +141,7 @@ const Comment = ({ comment, invalidateId }) => {
         <div className="flex justify-between">
           <div className="flex flex-col gap-0.5">
             <h1 className="flex items-center text-sm font-bold">
-              {comment?.enterprisename ?? 'Name not available'}
+              {comment?.enterprisename ?? translations('fallback_name')}
               <Dot size={24} className="text-[#A5ABBD]" />
               <p className="text-xs font-semibold text-[#A5ABBD]">
                 {formatDateTime(comment?.commentedat)}
@@ -160,7 +164,7 @@ const Comment = ({ comment, invalidateId }) => {
                         });
                       }}
                     >
-                      Edit
+                      {translations('edit')}
                     </span>
                   </>
                 )}
@@ -224,7 +228,9 @@ const Comment = ({ comment, invalidateId }) => {
                   className="relative w-56 overflow-hidden rounded-md border p-2 text-sm text-gray-700"
                 >
                   <div className="flex w-full items-center gap-2">
-                    <span className="text-xs text-green-600">(new)</span>
+                    <span className="text-xs text-green-600">
+                      {translations('file_new')}
+                    </span>
                     <span className="truncate">{file.name}</span>
                   </div>
                   <X
@@ -245,10 +251,10 @@ const Comment = ({ comment, invalidateId }) => {
 
             <div className="mt-2 flex gap-2">
               <Button size="sm" onClick={handleSave}>
-                Save
+                {translations('save')}
               </Button>
               <Button size="sm" variant="outline" onClick={handleCancel}>
-                Cancel
+                {translations('cancel')}
               </Button>
             </div>
           </>
@@ -258,7 +264,7 @@ const Comment = ({ comment, invalidateId }) => {
               {comment.text}{' '}
               {isCommentEdited(comment) && (
                 <span className="font-semibold italic text-gray-400">
-                  {`(Edited)`}
+                  {translations('edited')}
                 </span>
               )}
             </p>

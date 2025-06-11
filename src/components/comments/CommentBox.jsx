@@ -17,6 +17,7 @@ import {
   Paperclip,
   X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
@@ -31,6 +32,7 @@ import { Textarea } from '../ui/textarea';
 import Comment from './Comment';
 
 const CommentBox = ({ contextId, context }) => {
+  const translations = useTranslations('components.commentBox');
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [files, setFiles] = useState([]);
@@ -52,7 +54,7 @@ const CommentBox = ({ contextId, context }) => {
     mutationKey: [DebitNoteApi.createComments.endpointKey],
     mutationFn: createComments,
     onSuccess: () => {
-      toast.success('Commented Successfully');
+      toast.success(translations('toast_comment_success'));
       queryClient.invalidateQueries([DebitNoteApi.getComments.endpointKey]);
       setComment({
         files: [],
@@ -64,13 +66,15 @@ const CommentBox = ({ contextId, context }) => {
       setIsOpen(true);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something Went Wrong');
+      toast.error(
+        error.response.data.message || translations('toast_general_error'),
+      );
     },
   });
 
   const uploadMedia = async (file) => {
     setFiles((prev) => [...prev, file]);
-    toast.success('File attached successfully!');
+    toast.success(translations('label_file_attached'));
   };
 
   const handleFileRemove = (file) => {
@@ -79,7 +83,7 @@ const CommentBox = ({ contextId, context }) => {
 
   const handleSubmitComment = () => {
     if (!comment.text.trim()) {
-      toast.error('Comment cannot be empty!');
+      toast.error(translations('toast_comment_error'));
       return;
     }
 
@@ -118,7 +122,7 @@ const CommentBox = ({ contextId, context }) => {
               setComment((prev) => ({ ...prev, text: e.target.value }))
             }
             className="px-20 pt-[20px]"
-            placeholder="Type your comment here..."
+            placeholder={translations('placeholder_comment')}
           />
 
           {/* Action buttons */}
@@ -132,7 +136,7 @@ const CommentBox = ({ contextId, context }) => {
                   />
                 </label>
               }
-              content="attach file"
+              content={translations('tooltip_attach_file')}
             />
             <input
               type="file"
@@ -150,11 +154,11 @@ const CommentBox = ({ contextId, context }) => {
                   <Loading />
                 ) : (
                   <Button size="sm" onClick={handleSubmitComment}>
-                    Send
+                    {translations('btn_send')}
                   </Button>
                 )
               }
-              content="send"
+              content={translations('tooltip_send')}
             />
           </div>
         </div>
@@ -162,7 +166,9 @@ const CommentBox = ({ contextId, context }) => {
         {/* File previews */}
         {files.length > 0 && (
           <div className="mt-2 flex flex-col">
-            <span className="text-xs font-bold">Attached Proofs</span>
+            <span className="text-xs font-bold">
+              {translations('label_attached_proofs')}
+            </span>
             <div className="flex flex-wrap gap-4">
               {files.map((file) => (
                 <div
@@ -189,7 +195,7 @@ const CommentBox = ({ contextId, context }) => {
                       <Check size={12} />
                     </div>
                     <p className="text-xs font-medium text-green-600">
-                      File attached
+                      {translations('label_file_attached')}
                     </p>
                   </div>
                 </div>
@@ -213,16 +219,24 @@ const CommentBox = ({ contextId, context }) => {
         {!isOpen && (
           <section className="flex w-full animate-fadeInUp items-center gap-2">
             <MessageCircle size={16} />
-            <h1 className="text-sm font-bold">Comments</h1>
+            <h1 className="text-sm font-bold">
+              {translations('comments_heading')}
+            </h1>
             {comments?.length > 0 && (
-              <span className="text-xs">{`( ${comments.length} comments )`}</span>
+              <span className="text-xs">
+                {translations('comments_count', {
+                  count: comments?.length,
+                })}
+              </span>
             )}
           </section>
         )}
         {isOpen && (
           <section className="flex w-full animate-fadeInUp items-center gap-2">
             <MessageCircle size={16} />
-            <h1 className="text-sm font-bold">Comments</h1>
+            <h1 className="text-sm font-bold">
+              {translations('comments_heading')}
+            </h1>
           </section>
         )}
 
@@ -249,7 +263,7 @@ const CommentBox = ({ contextId, context }) => {
               setComment((prev) => ({ ...prev, text: e.target.value }));
             }}
             className="px-20 pt-[20px]"
-            placeholder={'Type your comment here...'}
+            placeholder={translations('placeholder_comment')}
           />
 
           {/* 3 */}
@@ -263,7 +277,7 @@ const CommentBox = ({ contextId, context }) => {
                   />
                 </label>
               }
-              content={'attach file'}
+              content={translations('tooltip_attach_file')}
             />
 
             <input
@@ -283,11 +297,11 @@ const CommentBox = ({ contextId, context }) => {
                   <Loading />
                 ) : (
                   <Button size="sm" onClick={handleSubmitComment}>
-                    Send
+                    {translations('btn_send')}
                   </Button>
                 )
               }
-              content={'send'}
+              content={translations('tooltip_send')}
             />
           </div>
         </div>
@@ -296,7 +310,9 @@ const CommentBox = ({ contextId, context }) => {
         <div className="flex flex-col">
           {/* attached files */}
           {files?.length > 0 && (
-            <span className="text-xs font-bold">{'Attched Proofs'}</span>
+            <span className="text-xs font-bold">
+              {translations('label_attached_proofs')}
+            </span>
           )}
           <div className="flex flex-wrap gap-4">
             {files?.map((file) => (
@@ -332,7 +348,7 @@ const CommentBox = ({ contextId, context }) => {
                     <Check size={12} />
                   </div>
                   <p className="text-xs font-medium text-green-600">
-                    {'File attached'}
+                    {translations('label_file_attached')}
                   </p>
                 </div>
               </div>
@@ -355,8 +371,8 @@ const CommentBox = ({ contextId, context }) => {
 
           {!isCommentLoading && comments?.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
-              <h1>{'No Comments Yet'}</h1>
-              <p>{'Something say to comment'}</p>
+              <h1>{translations('no_comments_title')}</h1>
+              <p>{translations('no_comments_subtitle')}</p>
             </div>
           )}
         </section>

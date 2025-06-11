@@ -314,7 +314,9 @@ const AddItem = ({ onCancel, cta }) => {
 
       {/* ITEM OVERVIEW */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-bold text-primary">ITEM OVERVIEW</h2>
+        <h2 className="text-sm font-bold text-primary">
+          {translations('goods.components.add.section1')}
+        </h2>
         <div className="grid grid-cols-3 grid-rows-2 items-center gap-4">
           {/* Item type */}
           {cta === 'Item' && (
@@ -473,7 +475,9 @@ const AddItem = ({ onCancel, cta }) => {
 
       {/* PRICING */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-bold text-primary">PRICING</h2>
+        <h2 className="text-sm font-bold text-primary">
+          {translations('goods.components.add.section2')}
+        </h2>
 
         <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
           <div className="flex flex-col">
@@ -520,7 +524,7 @@ const AddItem = ({ onCancel, cta }) => {
       {item.type === 'goods' && (
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-bold text-primary">
-            ADDITIONAL INFORMATION
+            {translations('goods.components.add.section3')}
           </h2>
 
           <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">

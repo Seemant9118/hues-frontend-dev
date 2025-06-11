@@ -30,6 +30,9 @@
         },
         "components": {
             "add": {
+                "section1":"ITEM OVERVIEW",
+                "section2":"PRICING",
+                "section3":"ADDITIONAL INFORMATION",
                 "title1": "Add Item",
                 "title2": "Edit Item",
                 "label": {

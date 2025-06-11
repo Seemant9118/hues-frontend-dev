@@ -634,7 +634,7 @@
             },
             "error_messages": {
                 "common": "Something went wrong!",
-                "try_new_pin":"Try a new PIN — this one’s already in use."
+                "try_new_pin": "Try a new PIN — this one’s already in use."
             },
             "buttons": {
                 "update": "Update PIN",
@@ -683,6 +683,13 @@
                             "ip_address": "IP ADDRESS",
                             "status": "STATUS"
                         }
+                    },
+                    "data": {
+                        "status_success": "Success",
+                        "status_failed": "Failed",
+                        "action_reset_pin": "Reset PIN",
+                        "action_create_pin": "Create PIN",
+                        "action_update_pin": "Update PIN"
                     }
                 }
             }
@@ -820,6 +827,99 @@
                 "required": "*Required Email",
                 "invalid": "*Please provide a valid email"
             }
+        },
+        "addBankAccount": {
+            "dialog_title": "Add a Bank Account",
+            "label_account_holder": "Account Holder Name",
+            "label_ifsc": "IFSC Code",
+            "label_account_number": "Bank Account Number",
+            "placeholder_account_holder": "Enter Account holder name",
+            "placeholder_ifsc": "Enter IFSC code",
+            "placeholder_account_number": "Enter account number",
+            "btn_cancel": "Cancel",
+            "btn_submit": "Submit",
+            "error_account_holder_required": "Account holder name is required",
+            "error_ifsc_required": "IFSC code is required",
+            "error_ifsc_invalid": "Invalid IFSC code format",
+            "error_account_number_required": "Account number is required",
+            "error_account_number_short": "Account number must be at least 9 digits",
+            "toast_success": "Bank account added successfully!",
+            "toast_error": "Something went wrong",
+            "attempt_msg_3": "You have only three attempts available for today.",
+            "attempt_msg_2": "You have only two attempts left for today.",
+            "attempt_msg_1": "You have only one attempt left for today.",
+            "attempt_msg_0": "You have exhausted all your attempts for today.",
+            "tooltip_info": "You can try adding a bank account up to three times each day. If you reach the limit, please wait until tomorrow to try again."
+        },
+        "paymentSettings": {
+            "label_terms": "Payment Terms",
+            "placeholder_terms": "Enter your custom Payment terms...",
+            "label_due_date": "Payment Due Date",
+            "placeholder_due_date": "Enter your due date in days.. eg. 15, 20, 30 ... etc.",
+            "btn_discard": "Discard",
+            "btn_save": "Save"
+        },
+        "commentBox": {
+            "placeholder_comment": "Type your comment here...",
+            "tooltip_attach_file": "attach file",
+            "tooltip_send": "send",
+            "btn_send": "Send",
+            "label_attached_proofs": "Attached Proofs",
+            "label_file_attached": "File attached",
+            "comments_heading": "Comments",
+            "comments_count": "( {count} comments )",
+            "no_comments_title": "No Comments Yet",
+            "no_comments_subtitle": "Something say to comment",
+            "toast_comment_success": "Commented Successfully",
+            "toast_comment_error": "Comment cannot be empty!",
+            "toast_file_attached": "File attached successfully!",
+            "toast_general_error": "Something Went Wrong"
+        },
+        "comment": {
+            "edit": "Edit",
+            "edited": "(Edited)",
+            "save": "Save",
+            "cancel": "Cancel",
+            "file_new": "(new)",
+            "btn_file_upload": "Upload File",
+            "toast_update_success": "Comment updated",
+            "toast_update_error": "Something went wrong",
+            "toast_empty_comment_error": "Comment cannot be empty!",
+            "fallback_name": "Name not available",
+            "time_format_today": "hh:mm A",
+            "time_format_other": "D MMMM, YYYY",
+            "tooltip_remove_attachment": "Remove attachment",
+            "tooltip_remove_new_file": "Remove new file",
+            "tooltip_open_pdf": "View PDF",
+            "label_attachments": "Attachments",
+            "label_comment": "Comment",
+            "label_enterprise_icon": "Enterprise icon"
+        },
+        "conditionalRenderingStatus": {
+            "ACCEPTED": {
+                "default": "Accepted",
+                "isPayment": "Acknowledged"
+            },
+            "PENDING": {
+                "default": "Pending",
+                "isPayment_seller": "Not Acknowledged Yet",
+                "isPayment_buyer": "Not acknowledged by seller"
+            },
+            "NEW": "New",
+            "OFFER_SENT": "Offer sent",
+            "OFFER_RECEIVED": "Offer received",
+            "BID_SENT": "Bid sent",
+            "BID_RECEIVED": "Bid received",
+            "NEGOTIATION": "Negotiation",
+            "INVOICED": "Invoiced",
+            "PARTIAL_INVOICED": "Partial Invoiced",
+            "WITHDRAWN": "Withdrawn",
+            "REJECTED": "Rejected",
+            "PAID": "Paid",
+            "PARTIAL_PAID": "Partial Paid",
+            "NOT_PAID": "Payment pending",
+            "NOT_RAISED": "-",
+            "RAISED": "Debit Note Raised"
         }
     }
 }

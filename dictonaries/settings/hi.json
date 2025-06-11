@@ -49,7 +49,14 @@
                     "heading1": "एंटरप्राइज जानकारी",
                     "heading2": "व्यवसाय पहचान"
                 },
-                "tab2": {},
+                "tab2": {
+                    "bankAccount": {
+                        "add_bank_heading": "बैंक खाता जोड़ें",
+                        "add_bank_subtitle": "अपने Hues खाते में एक बैंक खाता जोड़ें",
+                        "add_bank_button": "बैंक खाता जोड़ें",
+                        "list_heading": "बैंक खाते"
+                    }
+                },
                 "tab3": {
                     "coming_soon": "जल्द आ रहा है...",
                     "settingsUpdate": {
