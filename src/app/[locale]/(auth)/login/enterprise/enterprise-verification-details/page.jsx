@@ -9,6 +9,7 @@ import {
   validateEnterpriseName,
   validatePinCode,
 } from '@/appUtils/ValidationUtils';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import DatePickers from '@/components/ui/DatePickers';
@@ -256,7 +257,7 @@ const EnterpriseVerificationDetailsPage = () => {
   };
 
   return (
-    <div className="flex h-full items-start justify-center">
+    <div className="flex h-full items-center justify-center">
       <form
         onSubmit={handleSubmit}
         className="flex w-[500px] flex-col items-center gap-5"
@@ -489,6 +490,9 @@ const EnterpriseVerificationDetailsPage = () => {
           </div>
         </div>
         <div className="flex w-full flex-col gap-4">
+          {/* Explanatory Information */}
+          <ExplantoryText text={translations('information')} />
+
           <Button
             size="sm"
             type="submit"

@@ -1,3 +1,4 @@
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Slot from '@/components/ui/Slot';
@@ -10,7 +11,7 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
-import { Clock5 } from 'lucide-react';
+import { ArrowLeft, Clock5 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ const AadharVerifyOTP = ({
   startFrom,
   setStartFrom,
   translations,
+  setAadharVerificationSteps,
 }) => {
   const router = useRouter();
   const { updateAuthProgress } = useAuthProgress();
@@ -126,7 +128,7 @@ const AadharVerifyOTP = ({
   return (
     <form
       onSubmit={handleVerifyOTP}
-      className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10"
+      className="flex w-full max-w-md flex-col items-center justify-start gap-4 px-4 py-6 sm:gap-6"
     >
       <div className="flex flex-col gap-4">
         <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
@@ -181,18 +183,36 @@ const AadharVerifyOTP = ({
           )}
         </span>
       </p>
-      <Button
-        size="sm"
-        type="submit"
-        className="w-full bg-[#288AF9] p-2"
-        disabled={loading} // Disable button during loading
-      >
-        {loading ? (
-          <Loading />
-        ) : (
-          translations('steps.verifyAadharNum.verify_button')
-        )}
-      </Button>
+
+      {/* Explanatory Information */}
+      <ExplantoryText
+        text={translations('steps.verifyAadharNum.information')}
+      />
+
+      <div className="flex w-full flex-col gap-2">
+        <Button
+          size="sm"
+          type="submit"
+          className="w-full bg-[#288AF9] p-2"
+          disabled={loading} // Disable button during loading
+        >
+          {loading ? (
+            <Loading />
+          ) : (
+            translations('steps.verifyAadharNum.verify_button')
+          )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full p-2"
+          onClick={() => setAadharVerificationSteps(1)}
+        >
+          <ArrowLeft size={14} />
+          {translations('steps.verifyAadharNum.back')}
+        </Button>
+      </div>
     </form>
   );
 };

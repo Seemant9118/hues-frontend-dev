@@ -73,6 +73,7 @@ const AadharVerificationPage = () => {
             startFrom={startFrom}
             setStartFrom={setStartFrom}
             translations={translations}
+            setAadharVerificationSteps={setAadharVerificationSteps}
           />
         )}
       </div>

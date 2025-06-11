@@ -2,7 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
-import { cn, LocalStorageService } from '@/lib/utils';
+import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   addAnotherEnterprise,
   getUserAccounts,
@@ -117,6 +117,7 @@ const ProfileInfoPopUp = ({
     onSuccess: (res) => {
       setOpen(false);
       LocalStorageService.clear();
+      SessionStorageService.clear();
       router.push('/login');
       toast.success(res.data.message || 'User Logged Out');
     },

@@ -20,3 +20,7 @@ export const getTemplateForSettings = () => {
 export const getInvoicePreviewConfig = (data) => {
   return APIinstance.post(settingsAPI.invoicePreviewConfig.endpoint, data);
 };
+
+export const addUpdateAddress = ({ data }) => {
+  return APIinstance.post(`${settingsAPI.addUpdateAddress.endpoint}`, data);
+};

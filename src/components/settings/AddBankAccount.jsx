@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import ErrorBox from '../ui/ErrorBox';
@@ -15,7 +16,14 @@ import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 import Tooltips from '../auth/Tooltips';
 
-const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
+const AddBankAccount = ({
+  isModalOpen,
+  setIsModalOpen,
+  mutationFn,
+  userId,
+  enterpriseId,
+}) => {
+  const translations = useTranslations('components.addBankAccount');
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     accountHolderName: '',
@@ -41,14 +49,16 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
       setErrors({});
       setAttemptsUsed(null);
 
-      fetchRemainingAttempts()
-        .then((res) => {
-          const used = res.data?.data?.data?.remainingAttempts;
-          setAttemptsUsed(typeof used === 'number' ? 3 - used : null);
-        })
-        .catch(() => {
-          setAttemptsUsed(null);
-        });
+      if (!userId) {
+        fetchRemainingAttempts()
+          .then((res) => {
+            const used = res.data?.data?.data?.remainingAttempts;
+            setAttemptsUsed(typeof used === 'number' ? 3 - used : null);
+          })
+          .catch(() => {
+            setAttemptsUsed(null);
+          });
+      }
     }
   }, [isModalOpen]);
 
@@ -59,17 +69,19 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.accountHolderName.trim()) {
-      newErrors.accountHolderName = 'Account holder name is required';
+      newErrors.accountHolderName = translations(
+        'error_account_holder_required',
+      );
     }
     if (!formData.ifscCode.trim()) {
-      newErrors.ifscCode = 'IFSC code is required';
+      newErrors.ifscCode = translations('error_ifsc_required');
     } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(formData.ifscCode.trim())) {
-      newErrors.ifscCode = 'Invalid IFSC code format';
+      newErrors.ifscCode = translations('error_ifsc_invalid');
     }
     if (!formData.accountNumber.trim()) {
-      newErrors.accountNumber = 'Account number is required';
+      newErrors.accountNumber = translations('error_account_number_required');
     } else if (formData.accountNumber.length < 9) {
-      newErrors.accountNumber = 'Account number must be at least 9 digits';
+      newErrors.accountNumber = translations('error_account_number_short');
     }
     return newErrors;
   };
@@ -89,7 +101,7 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
     mutationKey: [bankAccountApis.addBankAccount.endpointKey],
     mutationFn: addBankAccount,
     onSuccess: () => {
-      toast.success('Bank account added successfully!');
+      toast.success(translations('toast_success'));
       queryClient.invalidateQueries([
         bankAccountApis.getBankAccounts.endpointKey,
       ]);
@@ -101,18 +113,26 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
       if (typeof latestAttempts === 'number') {
         setAttemptsUsed(latestAttempts);
       }
-      toast.error(error?.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error?.response?.data?.message || translations('toast_error'),
+      );
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    addBankAccountMutation.mutate(formData);
+    if (mutationFn) {
+      const payload = { ...formData, userAccountId: userId };
+      mutationFn.mutate({ id: enterpriseId, data: payload });
+    } else {
+      addBankAccountMutation.mutate(formData);
+    }
   };
 
   const renderAttemptMessage = () => {
@@ -121,20 +141,20 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
     const remaining = attemptsUsed;
     let message = '';
     if (remaining === 3) {
-      message = 'You have only three attempts available for today.';
+      message = translations('attempt_msg_3');
     } else if (remaining === 2) {
-      message = 'You have only two attempts left for today.';
+      message = translations('attempt_msg_2');
     } else if (remaining === 1) {
-      message = 'You have only one attempt left for today.';
+      message = translations('attempt_msg_1');
     } else {
-      message = 'You have exhausted all your attempts for today.';
+      message = translations('attempt_msg_0');
     }
 
     return (
       <div className="flex gap-2 rounded-sm bg-muted p-2">
         <Tooltips
           trigger={<Info className="text-red-500" size={14} />}
-          content="You can try adding a bank account up to three times each day. If you reach the limit, please wait until tomorrow to try again."
+          content={translations('tooltip_info')}
         />
         <p className="text-xs text-red-500">{message}</p>
       </div>
@@ -144,7 +164,7 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogContent>
-        <DialogTitle>Add a Bank Account</DialogTitle>
+        <DialogTitle>{translations('dialog_title')}</DialogTitle>
 
         {isSuccess && renderAttemptMessage()}
 
@@ -152,14 +172,15 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
           {/* Account Holder Name */}
           <div className="space-y-1">
             <Label htmlFor="accountHolderName">
-              Account Holder Name <span className="text-red-500">*</span>
+              {translations('label_account_holder')}{' '}
+              <span className="text-red-500">*</span>
             </Label>
             <Input
               id="accountHolderName"
               name="accountHolderName"
               value={formData.accountHolderName}
               onChange={handleChange}
-              placeholder="Enter Account holder name"
+              placeholder={translations('placeholder_account_holder')}
             />
             {errors.accountHolderName && (
               <ErrorBox msg={errors.accountHolderName} />
@@ -169,14 +190,15 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
           {/* IFSC Code */}
           <div className="space-y-1">
             <Label htmlFor="ifscCode">
-              IFSC Code <span className="text-red-500">*</span>
+              {translations('label_ifsc')}{' '}
+              <span className="text-red-500">*</span>
             </Label>
             <Input
               id="ifscCode"
               name="ifscCode"
               value={formData.ifscCode}
               onChange={handleChange}
-              placeholder="Enter IFSC code"
+              placeholder={translations('placeholder_ifsc')}
             />
             {errors.ifscCode && <ErrorBox msg={errors.ifscCode} />}
           </div>
@@ -184,7 +206,8 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
           {/* Account Number */}
           <div className="space-y-1">
             <Label htmlFor="accountNumber">
-              Bank Account Number <span className="text-red-500">*</span>
+              {translations('label_account_number')}{' '}
+              <span className="text-red-500">*</span>
             </Label>
             <Input
               id="accountNumber"
@@ -192,7 +215,7 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
               type="text"
               value={formData.accountNumber}
               onChange={handleChange}
-              placeholder="Enter account number"
+              placeholder={translations('placeholder_account_number')}
             />
             {errors.accountNumber && <ErrorBox msg={errors.accountNumber} />}
           </div>
@@ -204,14 +227,18 @@ const AddBankAccount = ({ isModalOpen, setIsModalOpen }) => {
               onClick={handleClose}
               size="sm"
             >
-              Cancel
+              {translations('btn_cancel')}
             </Button>
             <Button
               type="submit"
               size="sm"
               disabled={addBankAccountMutation.isPending}
             >
-              {addBankAccountMutation.isPending ? <Loading /> : 'Submit'}
+              {addBankAccountMutation.isPending ? (
+                <Loading />
+              ) : (
+                translations('btn_cancel')
+              )}
             </Button>
           </div>
         </form>

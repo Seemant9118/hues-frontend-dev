@@ -2,13 +2,15 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { SessionStorageService } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 const RedirectionToInvoiceModal = ({
+  cta,
   redirectPopupOnFail,
   setRedirectPopUpOnFail,
-  setSelectedValue,
+  order,
   setOrder,
 }) => {
   const translations = useTranslations('components.redirection_pop_up');
@@ -20,11 +22,16 @@ const RedirectionToInvoiceModal = ({
       onOpenChange={() => {
         setIsOpen((prev) => !prev);
         setRedirectPopUpOnFail(false);
-        setSelectedValue(''); // Clear the selected value
-        setOrder((prev) => ({
-          ...prev,
+        setOrder({
+          ...order,
+          selectedValue: null,
           buyerId: '',
-        }));
+        }); // Reset the buyerId, selectedValue in the order
+        if (cta === 'offer') {
+          SessionStorageService.remove('orderDraft');
+        } else {
+          SessionStorageService.remove('bidDraft');
+        }
       }}
     >
       <DialogContent className="flex flex-col gap-2">
@@ -46,11 +53,16 @@ const RedirectionToInvoiceModal = ({
               onClick={() => {
                 setIsOpen(false); // Close the dialog
                 setRedirectPopUpOnFail(false); // Reset the popup state
-                setSelectedValue(''); // Clear the selected value
-                setOrder((prev) => ({
-                  ...prev,
+                setOrder({
+                  ...order,
+                  selectedValue: null,
                   buyerId: '',
-                }));
+                }); // Reset the buyerId, selectedValue in the order
+                if (cta === 'offer') {
+                  SessionStorageService.remove('orderDraft');
+                } else {
+                  SessionStorageService.remove('bidDraft');
+                }
               }}
             >
               {translations('ctas.no')}

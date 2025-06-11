@@ -197,7 +197,7 @@
             "title": {
                 "offer": "प्रस्ताव",
                 "bid": "बोली",
-                "edit": "संपादित करें",
+                "revise": "संशोधित करें",
                 "sub_titles": {
                     "add_item": "आइटम जोड़ें",
                     "edit_item": "आइटम संपादित करें"
@@ -235,7 +235,7 @@
                     "amount": "*आवश्यक राशि"
                 },
                 "successMsg": {
-                    "order_updated_successfully": "ऑर्डर सफलतापूर्वक अपडेट किया गया",
+                    "order_revised_successfully": "ऑर्डर सफलतापूर्वक संशोधित किया गया",
                     "offer_created_successfully": "विक्रय आदेश सफलतापूर्वक बनाया गया",
                     "bid_created_successfully": "क्रय आदेश सफलतापूर्वक बनाया गया",
                     "invoice_created_successfully": "चालान सफलतापूर्वक बनाया गया"
@@ -278,7 +278,7 @@
                     "cancel": "रद्द करें",
                     "add": "जोड़ें",
                     "create": "बनाएँ",
-                    "edit": "संपादित करें",
+                    "revise": "संशोधित करें",
                     "next": "अगला"
                 },
                 "footer": {
@@ -399,6 +399,10 @@
             },
             "errorMsg": {
                 "common": "कुछ गलत हो गया"
+            },
+            "placeholder": {
+                "view_negotiation": "मोलभाव इतिहास देखें",
+                "preview_order": "ऑर्डर पूर्वावलोकन"
             }
         },
         "invoice_overview": {
@@ -500,6 +504,7 @@
                 "child_table": {
                     "header": {
                         "label": {
+                            "itemName": "आइटम का नाम",
                             "ask": "प्रस्ताव",
                             "counter": "प्रतिप्रस्ताव"
                         }
@@ -623,10 +628,12 @@
                 "pin_created": "पिन सफलतापूर्वक बनाया गया!",
                 "pin_updated": "पिन सफलतापूर्वक अपडेट किया गया!",
                 "otp_sent": "ओटीपी सफलतापूर्वक भेजा गया!",
-                "otp_verified": "ओटीपी सफलतापूर्वक सत्यापित हुआ!"
+                "otp_verified": "ओटीपी सफलतापूर्वक सत्यापित हुआ!",
+                "pin_verified": "पिन सफलतापूर्वक सत्यापित हो गया!"
             },
             "error_messages": {
-                "common": "कुछ गलत हो गया!"
+                "common": "कुछ गलत हो गया!",
+                "try_new_pin": "नया पिन आज़माएं — यह पहले से उपयोग में है।"
             },
             "buttons": {
                 "update": "पिन अपडेट करें",
@@ -649,11 +656,13 @@
                 "buttons": {
                     "next": "आगे बढ़ें",
                     "confirm": "पुष्टि करें",
-                    "verify": "सत्यापित करें"
+                    "verify": "सत्यापित करें",
+                    "proceed": "आगे बढ़ें"
                 },
                 "messages": {
                     "pin_mismatch": "पिन मेल नहीं खाते!",
-                    "forgot_pin": "पिन भूल गए?"
+                    "forgot_pin": "अमान्य पिन, पिन भूल गए?",
+                    "try_new_pin": "नया पिन आज़माएं — यह पहले से उपयोग में है।"
                 },
                 "steps": {
                     "enter_pin": "पिन दर्ज करें",
@@ -673,6 +682,13 @@
                             "ip_address": "आईपी पता",
                             "status": "स्थिति"
                         }
+                    },
+                    "data": {
+                        "status_success": "सफल",
+                        "status_failed": "असफल",
+                        "action_reset_pin": "पिन रीसेट हुआ",
+                        "action_create_pin": "पिन बना",
+                        "action_update_pin": "पिन अपडेट हुआ"
                     }
                 }
             }
@@ -810,6 +826,99 @@
                 "required": "*ईमेल आवश्यक है",
                 "invalid": "*कृपया एक मान्य ईमेल प्रदान करें"
             }
+        },
+        "addBankAccount": {
+            "dialog_title": "बैंक खाता जोड़ें",
+            "label_account_holder": "खाता धारक का नाम",
+            "label_ifsc": "आईएफएससी कोड",
+            "label_account_number": "बैंक खाता संख्या",
+            "placeholder_account_holder": "खाता धारक का नाम दर्ज करें",
+            "placeholder_ifsc": "आईएफएससी कोड दर्ज करें",
+            "placeholder_account_number": "खाता संख्या दर्ज करें",
+            "btn_cancel": "रद्द करें",
+            "btn_submit": "जमा करें",
+            "error_account_holder_required": "खाता धारक का नाम आवश्यक है",
+            "error_ifsc_required": "आईएफएससी कोड आवश्यक है",
+            "error_ifsc_invalid": "आईएफएससी कोड का प्रारूप गलत है",
+            "error_account_number_required": "खाता संख्या आवश्यक है",
+            "error_account_number_short": "खाता संख्या कम से कम 9 अंकों की होनी चाहिए",
+            "toast_success": "बैंक खाता सफलतापूर्वक जोड़ा गया!",
+            "toast_error": "कुछ गलत हो गया",
+            "attempt_msg_3": "आपके पास आज के लिए केवल तीन प्रयास उपलब्ध हैं।",
+            "attempt_msg_2": "आपके पास आज के लिए केवल दो प्रयास शेष हैं।",
+            "attempt_msg_1": "आपके पास आज के लिए केवल एक प्रयास शेष है।",
+            "attempt_msg_0": "आपने आज के सभी प्रयास समाप्त कर लिए हैं।",
+            "tooltip_info": "आप प्रतिदिन तीन बार बैंक खाता जोड़ने का प्रयास कर सकते हैं। यदि आप सीमा तक पहुँच जाते हैं, तो कृपया अगले दिन पुनः प्रयास करें।"
+        },
+        "paymentSettings": {
+            "label_terms": "भुगतान की शर्तें",
+            "placeholder_terms": "अपनी कस्टम भुगतान शर्तें दर्ज करें...",
+            "label_due_date": "भुगतान की अंतिम तिथि",
+            "placeholder_due_date": "अपनी देय तिथि दिनों में दर्ज करें.. जैसे 15, 20, 30 ... आदि",
+            "btn_discard": "रद्द करें",
+            "btn_save": "सहेजें"
+        },
+        "commentBox": {
+            "placeholder_comment": "अपनी टिप्पणी यहाँ लिखें...",
+            "tooltip_attach_file": "फ़ाइल संलग्न करें",
+            "tooltip_send": "भेजें",
+            "btn_send": "भेजें",
+            "label_attached_proofs": "संलग्न प्रमाण",
+            "label_file_attached": "फ़ाइल संलग्न की गई",
+            "comments_heading": "टिप्पणियाँ",
+            "comments_count": "( {count} टिप्पणियाँ )",
+            "no_comments_title": "अभी तक कोई टिप्पणी नहीं",
+            "no_comments_subtitle": "टिप्पणी करने के लिए कुछ कहें",
+            "toast_comment_success": "टिप्पणी सफलतापूर्वक जोड़ी गई",
+            "toast_comment_error": "टिप्पणी खाली नहीं हो सकती!",
+            "toast_file_attached": "फ़ाइल सफलतापूर्वक संलग्न की गई!",
+            "toast_general_error": "कुछ गलत हो गया"
+        },
+        "comment": {
+            "edit": "संपादित करें",
+            "edited": "(संशोधित)",
+            "save": "सहेजें",
+            "cancel": "रद्द करें",
+            "file_new": "(नया)",
+            "btn_file_upload": "फ़ाइल अपलोड करें",
+            "toast_update_success": "टिप्पणी सफलतापूर्वक अपडेट की गई",
+            "toast_update_error": "कुछ गलत हो गया",
+            "toast_empty_comment_error": "टिप्पणी खाली नहीं हो सकती!",
+            "fallback_name": "नाम उपलब्ध नहीं है",
+            "time_format_today": "hh:mm A",
+            "time_format_other": "D MMMM, YYYY",
+            "tooltip_remove_attachment": "अनुलग्नक हटाएं",
+            "tooltip_remove_new_file": "नई फ़ाइल हटाएं",
+            "tooltip_open_pdf": "PDF देखें",
+            "label_attachments": "अनुलग्नक",
+            "label_comment": "टिप्पणी",
+            "label_enterprise_icon": "उद्यम आइकन"
+        },
+        "conditionalRenderingStatus": {
+            "ACCEPTED": {
+                "default": "स्वीकृत",
+                "isPayment": "स्वीकृति प्राप्त"
+            },
+            "PENDING": {
+                "default": "लंबित",
+                "isPayment_seller": "अभी तक स्वीकृति नहीं मिली",
+                "isPayment_buyer": "विक्रेता द्वारा अभी तक स्वीकृति नहीं मिली"
+            },
+            "NEW": "नया",
+            "OFFER_SENT": "प्रस्ताव भेजा गया",
+            "OFFER_RECEIVED": "प्रस्ताव प्राप्त हुआ",
+            "BID_SENT": "बोली भेजी गई",
+            "BID_RECEIVED": "बोली प्राप्त हुई",
+            "NEGOTIATION": "मोलभाव",
+            "INVOICED": "चालान जारी किया गया",
+            "PARTIAL_INVOICED": "आंशिक चालान",
+            "WITHDRAWN": "वापस लिया गया",
+            "REJECTED": "अस्वीकृत",
+            "PAID": "भुगतान हुआ",
+            "PARTIAL_PAID": "आंशिक भुगतान",
+            "NOT_PAID": "भुगतान लंबित",
+            "NOT_RAISED": "-",
+            "RAISED": "डेबिट नोट जारी किया गया"
         }
     }
 }

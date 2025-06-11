@@ -76,7 +76,7 @@ const InviteDirectorIndexNew = ({
   };
 
   return (
-    <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
+    <div className="flex w-full max-w-md flex-col items-center justify-start gap-8 sm:gap-5">
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
           {translations('heading')}

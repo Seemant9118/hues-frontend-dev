@@ -30,6 +30,9 @@
         },
         "components": {
             "add": {
+                "section1": "आइटम का अवलोकन",
+                "section2": "मूल्य निर्धारण",
+                "section3": "अतिरिक्त जानकारी",
                 "title1": "आइटम जोड़ें",
                 "title2": "आइटम संपादित करें",
                 "label": {
@@ -44,7 +47,7 @@
                     "batch": "बैच",
                     "expiry": "समाप्ति",
                     "application": "अनुप्रयोग",
-                    "manufacturerGST": "निर्माता का GST आईएन",
+                    "manufacturerGST": "GST IN",
                     "weight": "वजन (ग्राम)",
                     "length": "लंबाई (सेमी)",
                     "breadth": "चौड़ाई (सेमी)",

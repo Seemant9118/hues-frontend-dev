@@ -22,10 +22,10 @@ const EnterpriseConfirmationPage = () => {
   };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center">
+    <div className="flex h-full items-center justify-center">
       <form
         onSubmit={handleContinue}
-        className="flex min-h-[500px] w-[450px] flex-col gap-10 rounded-md"
+        className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
       >
         <div className="flex flex-col items-center gap-6">
           <BadgeCheck size={48} className="text-primary" />

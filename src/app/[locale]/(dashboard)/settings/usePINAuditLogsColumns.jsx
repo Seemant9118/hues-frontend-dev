@@ -1,16 +1,12 @@
 'use client';
 
-import {
-  capitalize,
-  convertSnakeToTitleCase,
-} from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
 export const usePINAuditLogsColumns = () => {
   const translations = useTranslations(
-    'components.generate_pin_modal.audit_logs.table.header.label',
+    'components.generate_pin_modal.audit_logs.table',
   );
   return [
     {
@@ -18,20 +14,20 @@ export const usePINAuditLogsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('action_type')}
+          title={translations('header.label.action_type')}
         />
       ),
       cell: ({ row }) => {
         const { actiontype } = row.original;
 
         if (actiontype === 'RESET_PIN') {
-          return <div>{convertSnakeToTitleCase(actiontype)}</div>;
+          return <div>{translations('data.action_reset_pin')}</div>;
         }
         if (actiontype === 'CREATE_PIN') {
-          return <div>{convertSnakeToTitleCase(actiontype)}</div>;
+          return <div>{translations('data.action_create_pin')}</div>;
         }
         if (actiontype === 'UPDATE_PIN') {
-          return <div>{convertSnakeToTitleCase(actiontype)}</div>;
+          return <div>{translations('data.action_update_pin')}</div>;
         }
         return <div>-</div>;
       },
@@ -41,7 +37,7 @@ export const usePINAuditLogsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('update_on')}
+          title={translations('header.label.update_on')}
         />
       ),
       cell: ({ row }) => {
@@ -55,7 +51,7 @@ export const usePINAuditLogsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('ip_address')}
+          title={translations('header.label.ip_address')}
         />
       ),
       cell: ({ row }) => {
@@ -66,21 +62,24 @@ export const usePINAuditLogsColumns = () => {
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('status')} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.label.status')}
+        />
       ),
       cell: ({ row }) => {
         const { status } = row.original;
         if (status === 'SUCCESS') {
           return (
             <div className="w-fit rounded-sm border border-green-600 bg-green-100 px-2 py-1 text-green-600">
-              {capitalize(status)}
+              {translations('data.status_success')}
             </div>
           );
         }
         if (status === 'FAILED') {
           return (
             <div className="w-fit rounded-sm border border-red-600 bg-red-100 p-1 text-red-600">
-              {capitalize(status)}
+              {translations('data.status_success')}
             </div>
           );
         }

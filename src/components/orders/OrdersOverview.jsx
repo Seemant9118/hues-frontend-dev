@@ -6,12 +6,14 @@ import {
   undoAcknowledgeStatus,
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
+import { viewOrderinNewTab } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Info, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import InvitationActionModal from '../Modals/InvitationActionModal';
 import { Button } from '../ui/button';
 import {
@@ -31,6 +33,7 @@ const OrdersOverview = ({
   amtPaid,
   totalAmount,
   invitationData,
+  setViewNegotiationHistory,
 }) => {
   const translations = useTranslations('components.order_overview');
 
@@ -135,7 +138,20 @@ const OrdersOverview = ({
                 <p className="text-xs font-bold">
                   {translations('label.order_id')}
                 </p>
-                <p className="text-sm font-bold">{orderId}</p>
+                <p className="flex items-center gap-2 text-sm font-bold">
+                  {orderId}
+                  <Tooltips
+                    trigger={
+                      <button
+                        onClick={() => viewOrderinNewTab(params.order_id)}
+                        className="font-bold hover:text-primary"
+                      >
+                        <Eye size={14} />
+                      </button>
+                    }
+                    content={translations('placeholder.preview_order')}
+                  />
+                </p>
               </section>
 
               <section className="flex flex-col gap-2">
@@ -193,6 +209,29 @@ const OrdersOverview = ({
                 </section>
               )}
             </div>
+            {(orderDetails?.negotiationStatus === 'ACCEPTED' ||
+              orderDetails?.negotiationStatus === 'INVOICED' ||
+              orderDetails?.negotiationStatus === 'NEGOTIATION') && (
+              <div className="flex w-1/2 flex-col items-end gap-4">
+                <section className="flex flex-col gap-4">
+                  <Tooltips
+                    trigger={
+                      <p
+                        onClick={() => {
+                          setViewNegotiationHistory(true);
+                        }}
+                        className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline"
+                      >
+                        {translations('label.view_negotiation')}
+                        <MoveUpRight size={12} />
+                      </p>
+                    }
+                    content={translations('placeholder.view_negotiation')}
+                  />
+                </section>
+              </div>
+            )}
+
             {/* attachments - only show when attachements present */}
             {/* {orderDetails?.attachments?.length > 0 && (
               <div className="flex h-full w-1/2 flex-col gap-4">

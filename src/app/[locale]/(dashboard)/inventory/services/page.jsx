@@ -2,7 +2,6 @@
 
 import { servicesApi } from '@/api/inventories/services/services';
 import Tooltips from '@/components/auth/Tooltips';
-import { DataTable } from '@/components/table/data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -19,14 +18,19 @@ import {
   UpdateProductServices,
   UploadProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleFadingPlus, Share2, Upload } from 'lucide-react';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { CircleFadingPlus, Download, Share2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useServicesColumns } from './ServicesColumns';
+import { ServicesTable } from './ServicesTable';
 
 // dynamic imports
 const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
@@ -41,6 +45,7 @@ const UploadItems = dynamic(
 );
 
 // MACROS
+const PAGE_LIMIT = 10;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
 
@@ -74,6 +79,7 @@ function Services() {
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [services, setServices] = useState([]);
+  const [paginationData, setPaginationData] = useState({});
 
   useEffect(() => {
     // Read the state from the query parameters
@@ -98,52 +104,70 @@ function Services() {
     router.push(newPath);
   }, [router, isAdding, isEditing, isUploading]);
 
-  // get services
-  const {
-    data: servicesData,
-    isLoading,
-    isSuccess,
-  } = useQuery({
+  const servicesQuery = useInfiniteQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
-    queryFn: () => GetAllProductServices(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: searchTerm?.length === 0, // uses raw searchTerm here for immediate fallback
+    queryFn: async ({ pageParam = 1 }) => {
+      return GetAllProductServices({
+        id: enterpriseId,
+        page: pageParam,
+        limit: PAGE_LIMIT,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: searchTerm.length === 0,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
-  // Fetch searched services
-  const { data: searchedServicesData, isLoading: isSearchServicesLoading } =
-    useQuery({
-      queryKey: [
-        servicesApi.getSearchedServices.endpointKey,
-        debouncedSearchTerm,
-      ],
-      queryFn: () =>
-        GetSearchedServices({
-          searchString: debouncedSearchTerm,
-        }),
-      select: (res) => res.data.data,
-      enabled: !!debouncedSearchTerm && servicesData?.length > 0,
-    });
+  const searchQuery = useInfiniteQuery({
+    queryKey: [
+      servicesApi.getSearchedServices.endpointKey,
+      debouncedSearchTerm,
+    ],
+    queryFn: async ({ pageParam = 1 }) => {
+      return GetSearchedServices({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        data: { searchString: debouncedSearchTerm },
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: !!debouncedSearchTerm,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
-  // Debounce searchTerm
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, DEBOUNCE_DELAY);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Consolidated state update logic
   useEffect(() => {
-    if (debouncedSearchTerm && searchedServicesData) {
-      setServices(searchedServicesData); // set Services from search api
-    } else if (!debouncedSearchTerm && isSuccess) {
-      setServices(servicesData); // set productGoods from get api
-    }
-  }, [debouncedSearchTerm, searchedServicesData, servicesData, isSuccess]);
+    const source = debouncedSearchTerm ? searchQuery.data : servicesQuery.data;
+    if (!source) return;
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.data || [],
+    );
+    const uniqueServicesData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+    setServices(uniqueServicesData);
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: Number(lastPage?.currentPage),
+    });
+  }, [debouncedSearchTerm, servicesQuery.data, searchQuery.data]);
 
   // handleUploadfile
   const uploadFile = async (file) => {
@@ -178,7 +202,7 @@ function Services() {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
           {!isAdding && !isUploading && !isEditing && (
-            <Wrapper>
+            <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
                   <SearchInput
@@ -202,23 +226,21 @@ function Services() {
                   <Tooltips
                     trigger={
                       <Button
-                        variant={
-                          servicesData?.length === 0 ? 'export' : 'outline'
-                        }
+                        variant={services?.length === 0 ? 'export' : 'outline'}
                         size="sm"
                         className={
-                          servicesData?.length === 0
+                          services?.length === 0
                             ? 'cursor-not-allowed'
                             : 'cursor-pointer'
                         }
                         onClick={() =>
                           exportTableToExcel(
-                            'services table',
+                            'services-table',
                             translations('title'),
                           )
                         }
                       >
-                        <Upload size={14} />
+                        <Download size={14} />
                       </Button>
                     }
                     content={translations('ctas.export')}
@@ -232,32 +254,46 @@ function Services() {
                     <Upload size={14} />
                     {translations('ctas.upload')}
                   </Button>
-                  <Button
-                    onClick={() => setIsAdding(true)}
-                    variant={'blue_outline'}
-                    size="sm"
-                  >
+                  <Button onClick={() => setIsAdding(true)} size="sm">
                     <CircleFadingPlus size={14} />
                     {translations('ctas.add')}
                   </Button>
                 </div>
               </SubHeader>
-
-              {(isLoading || isSearchServicesLoading) && <Loading />}
-
-              {(!isLoading || !isSearchServicesLoading) &&
-                (servicesData?.length > 0 ? (
-                  <DataTable
-                    id={'services table'}
-                    columns={ServicesColumns}
-                    data={services}
-                  />
+              <div className="flex-grow overflow-hidden">
+                {servicesQuery.isLoading || searchQuery.isLoading ? (
+                  <Loading />
                 ) : (
-                  <EmptyStageComponent
-                    heading={translations('emptyStateComponent.heading')}
-                    subItems={keys}
-                  />
-                ))}
+                  <>
+                    {/* Case 1: No search term, and no data → Empty stage */}
+                    {!debouncedSearchTerm && services?.length === 0 ? (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ) : (
+                      // Case 2: Either searchTerm is present, or data is available → Show Table
+                      <ServicesTable
+                        id="services-table"
+                        columns={ServicesColumns}
+                        data={services}
+                        fetchNextPage={
+                          debouncedSearchTerm
+                            ? searchQuery.fetchNextPage
+                            : servicesQuery.fetchNextPage
+                        }
+                        isFetching={
+                          debouncedSearchTerm
+                            ? searchQuery.isFetching
+                            : servicesQuery.isFetching
+                        }
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
             </Wrapper>
           )}
           {isAdding && (

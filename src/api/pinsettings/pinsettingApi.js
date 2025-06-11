@@ -1,4 +1,8 @@
 export const pinSettings = {
+  verifyPIN: {
+    endpoint: `/iam/user/verify-pin`,
+    endpointKey: 'verifyPIN',
+  },
   createPIN: {
     endpoint: `/iam/user/createpin`,
     endpointKey: 'createPIN',

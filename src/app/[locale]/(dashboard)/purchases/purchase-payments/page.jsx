@@ -148,14 +148,14 @@ const PurchasePayments = () => {
       )}
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
-        <Wrapper>
+        <Wrapper className="h-screen overflow-hidden">
+          {/* headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex w-full items-center justify-between gap-2">
               <SubHeader name={translations('title')} />
               <Tooltips
                 trigger={
                   <Button
-                    onClick={() => {}}
                     variant="outline"
                     className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                     size="sm"
@@ -168,7 +168,7 @@ const PurchasePayments = () => {
             </div>
           </section>
 
-          <section>
+          <section className="flex flex-grow flex-col overflow-hidden">
             {/* Loading state */}
             {isPaymentsLoading && <Loading />}
 
@@ -189,7 +189,7 @@ const PurchasePayments = () => {
 
             {/* Empty state */}
             {!isPaymentsLoading && paymentsListing?.length === 0 && (
-              <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                 <Image src={emptyImg} alt="emptyIcon" />
                 <p className="text-lg font-bold text-black">
                   {translations('emptyStateComponent.heading')}

@@ -27,7 +27,7 @@ import {
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
@@ -61,7 +61,6 @@ const SalesOrder = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
   // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
@@ -97,26 +96,23 @@ const SalesOrder = () => {
   }, [tab]);
 
   // Fetch sales data with infinite scroll
-  const { data, fetchNextPage, isFetching, isLoading, hasNextPage } =
-    useInfiniteQuery({
-      queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
-      queryFn: async ({ pageParam = 1 }) => {
-        const response = await GetSales({
-          id: enterpriseId,
-          data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
-        });
-        return response;
-      },
-      initialPageParam: 1,
-      getNextPageParam: (_lastGroup, groups) => {
-        const nextPage = groups.length + 1;
-        return nextPage <= _lastGroup.data.data.totalPages
-          ? nextPage
-          : undefined;
-      },
-      refetchOnWindowFocus: false,
-      placeholderData: keepPreviousData,
-    });
+  const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
+    queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await GetSales({
+        id: enterpriseId,
+        data: { page: pageParam, limit: PAGE_LIMIT, ...(filterData || {}) },
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
   // data flattened - formatting
   useEffect(() => {
@@ -147,24 +143,6 @@ const SalesOrder = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [data]);
-
-  // Infinite scroll observer
-  const lastSalesRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -236,7 +214,8 @@ const SalesOrder = () => {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
           {!isCreatingSales && !isEditingOrder && (
-            <Wrapper className="h-full">
+            <Wrapper className="h-screen overflow-hidden">
+              {/* Headers */}
               <SubHeader
                 name={translations('title')}
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
@@ -275,125 +254,134 @@ const SalesOrder = () => {
                   />
                 </div>
               </SubHeader>
-              <section>
-                <Tabs
-                  value={tab}
-                  onValueChange={onTabChange}
-                  defaultValue={'all'}
-                >
-                  <section className="sticky top-14 flex justify-between bg-white">
-                    <TabsList className="border">
-                      <TabsTrigger value="all">
-                        {translations('tabs.label.tab1')}
-                      </TabsTrigger>
-                      <TabsTrigger value="underReview">
-                        {translations('tabs.label.tab2')}
-                      </TabsTrigger>
-                      <TabsTrigger value="confirmedOrders">
-                        {translations('tabs.label.tab3')}
-                      </TabsTrigger>
-                      <TabsTrigger value="receivables">
-                        {translations('tabs.label.tab4')}
-                      </TabsTrigger>
-                    </TabsList>
-                    <FilterModal
-                      isSalesFilter={true}
-                      tab={tab}
-                      setFilterData={setFilterData}
-                      setPaginationData={setPaginationData}
-                    />
-                  </section>
 
-                  <TabsContent value="all">
-                    {isLoading && <Loading />}
-                    {!isLoading &&
-                      (salesListing?.length > 0 ? (
-                        <SalesTable
-                          id="sale-orders"
-                          columns={SalesColumns}
-                          data={salesListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastSalesRef={lastSalesRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emtpyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                  <TabsContent value="underReview">
-                    {isLoading && <Loading />}
-                    {!isLoading &&
-                      (salesListing?.length > 0 ? (
-                        <SalesTable
-                          id="sale-orders"
-                          columns={SalesColumns}
-                          data={salesListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastSalesRef={lastSalesRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emtpyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                  <TabsContent value="confirmedOrders">
-                    {isLoading && <Loading />}
-                    {!isLoading &&
-                      (salesListing?.length > 0 ? (
-                        <SalesTable
-                          id="sale-orders"
-                          columns={SalesColumns}
-                          data={salesListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastSalesRef={lastSalesRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emtpyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                  <TabsContent value="receivables">
-                    {isLoading && <Loading />}
-                    {!isLoading &&
-                      (salesListing?.length > 0 ? (
-                        <SalesTable
-                          id="sale-orders"
-                          columns={SalesColumns}
-                          data={salesListing}
-                          fetchNextPage={fetchNextPage}
-                          isFetching={isFetching}
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                          lastSalesRef={lastSalesRef}
-                        />
-                      ) : (
-                        <EmptyStageComponent
-                          heading={translations('emtpyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ))}
-                  </TabsContent>
-                </Tabs>
-              </section>
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'all'}
+                className="flex flex-grow flex-col overflow-hidden"
+              >
+                <section className="flex w-full justify-between py-2">
+                  <TabsList className="border">
+                    <TabsTrigger value="all">
+                      {translations('tabs.label.tab1')}
+                    </TabsTrigger>
+                    <TabsTrigger value="underReview">
+                      {translations('tabs.label.tab2')}
+                    </TabsTrigger>
+                    <TabsTrigger value="confirmedOrders">
+                      {translations('tabs.label.tab3')}
+                    </TabsTrigger>
+                    <TabsTrigger value="receivables">
+                      {translations('tabs.label.tab4')}
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <FilterModal
+                    isSalesFilter={true}
+                    tab={tab}
+                    setFilterData={setFilterData}
+                    setPaginationData={setPaginationData}
+                  />
+                </section>
+
+                <TabsContent value="all" className="flex-grow overflow-hidden">
+                  {isLoading && <Loading />}
+                  {!isLoading &&
+                    (salesListing?.length > 0 ? (
+                      <SalesTable
+                        id="sale-orders"
+                        columns={SalesColumns}
+                        data={salesListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emtpyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+
+                <TabsContent
+                  value="underReview"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isLoading && <Loading />}
+                  {!isLoading &&
+                    (salesListing?.length > 0 ? (
+                      <SalesTable
+                        id="sale-orders"
+                        columns={SalesColumns}
+                        data={salesListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emtpyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+
+                <TabsContent
+                  value="confirmedOrders"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isLoading && <Loading />}
+                  {!isLoading &&
+                    (salesListing?.length > 0 ? (
+                      <SalesTable
+                        id="sale-orders"
+                        columns={SalesColumns}
+                        data={salesListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emtpyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+
+                <TabsContent
+                  value="receivables"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isLoading && <Loading />}
+                  {!isLoading &&
+                    (salesListing?.length > 0 ? (
+                      <SalesTable
+                        id="sale-orders"
+                        columns={SalesColumns}
+                        data={salesListing}
+                        fetchNextPage={fetchNextPage}
+                        isFetching={isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    ) : (
+                      <EmptyStageComponent
+                        heading={translations('emtpyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ))}
+                </TabsContent>
+              </Tabs>
             </Wrapper>
           )}
 

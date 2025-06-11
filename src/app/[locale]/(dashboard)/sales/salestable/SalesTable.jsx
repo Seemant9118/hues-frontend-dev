@@ -94,18 +94,23 @@ export function SalesTable({
   });
 
   return (
-    <div>
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Scrollable table wrapper */}
       <div
-        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[565px] overflow-y-scroll rounded-[6px]" // Always visible scrollbar
+        className="infinite-datatable-scrollable-body scrollBarStyles flex-grow overflow-auto rounded-[6px]"
         ref={tableContainerRef}
       >
-        <Table id={id}>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="shrink-0">
+        {/* Table wrapper to allow horizontal scroll only when needed */}
+        <div className="inline-block min-w-full align-middle">
+          <Table id={id} className="min-w-full">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="shrink-0 whitespace-nowrap"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -113,53 +118,55 @@ export function SalesTable({
                             header.getContext(),
                           )}
                     </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const row = rows[virtualRow.index];
-              let isRead;
-              if (row.original?.readTracker || row.original.sellerIsRead) {
-                isRead =
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+
+            <TableBody>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const row = rows[virtualRow.index];
+                const isRead =
                   row.original?.readTracker?.sellerIsRead ||
-                  row.original.sellerIsRead;
-              }
-              return (
-                <TableRow
-                  data-index={virtualRow.index}
-                  ref={(node) => rowVirtualizer.measureElement(node)}
-                  key={row.id}
-                  className={
-                    isRead
-                      ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 hover:text-black'
-                      : 'cursor-pointer border-y border-[#A5ABBD33] bg-white font-semibold text-black hover:text-black'
-                  }
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : () => {}
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <TableCell key={cell.id} className="max-w-xl shrink-0">
+                  row.original?.sellerIsRead;
+
+                return (
+                  <TableRow
+                    data-index={virtualRow.index}
+                    ref={(node) => rowVirtualizer.measureElement(node)}
+                    key={row.id}
+                    className={
+                      isRead
+                        ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 hover:text-black'
+                        : 'cursor-pointer border-y border-[#A5ABBD33] bg-white font-semibold text-black hover:text-black'
+                    }
+                    onClick={
+                      onRowClick ? () => onRowClick(row.original) : undefined
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className="max-w-xl shrink-0 whitespace-nowrap px-4"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
                         )}
                       </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    ))}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
+
+      {/* Infinite Scroll loader */}
       {isFetching && <div className="p-1 text-center">Fetching More...</div>}
 
-      {/* Render Pagination only if there's data */}
+      {/* Pagination */}
       {!isFetching && data?.length > 0 && <DataTablePagination table={table} />}
     </div>
   );

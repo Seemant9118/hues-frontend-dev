@@ -326,7 +326,7 @@ const EditOrder = ({
     mutationKey: [orderApi.updateOrder.endpointKey],
     mutationFn: (data) => updateOrder(orderId, data),
     onSuccess: () => {
-      toast.success(translations('form.successMsg.order_updated_successfully'));
+      toast.success(translations('form.successMsg.order_revised_successfully'));
       onCancel();
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
       setIsOrderCreationSuccess((prev) => !prev);
@@ -349,7 +349,7 @@ const EditOrder = ({
 
   return (
     <Wrapper className="flex h-full flex-col py-2">
-      <SubHeader name={translations('title.edit')}></SubHeader>
+      <SubHeader name={translations('title.revise')}></SubHeader>
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         <div className="flex w-1/2 flex-col gap-2">
           <Label>
@@ -773,7 +773,7 @@ const EditOrder = ({
             {updateOrderMutation.isPending ? (
               <Loading />
             ) : (
-              translations('form.ctas.edit')
+              translations('form.ctas.revise')
             )}
           </Button>
         </div>

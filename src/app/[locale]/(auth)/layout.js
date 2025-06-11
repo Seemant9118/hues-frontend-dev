@@ -57,8 +57,9 @@ export default function LoginLayout({ children }) {
     <UserDataProvider>
       <AuthProgressProvider>
         <div className="fixed inset-0 flex">
-          <div className="w-1/2 bg-white">
-            <div className="bg-transparent px-8 py-5">
+          <div className="flex h-screen w-full flex-col bg-white md:w-1/2">
+            {/* Fixed Header with logo */}
+            <div className="shrink-0 px-8 py-5">
               <Link href={'/'}>
                 <Image
                   src={'/hues_logo.png'}
@@ -70,8 +71,13 @@ export default function LoginLayout({ children }) {
                 />
               </Link>
             </div>
-            {children}
+
+            {/* Scrollable content area */}
+            <div className="navScrollBarStyles flex-1 overflow-y-auto px-6 py-4">
+              {children}
+            </div>
           </div>
+
           <div className="relative w-1/2 bg-custom-linear pl-24 pt-20">
             {/* Language switcher */}
             <div className="absolute right-2 top-1 z-10 p-2">

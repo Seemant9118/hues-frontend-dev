@@ -1,8 +1,11 @@
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { APIinstance } from '@/services';
 
-export function searchedVendors(data) {
-  return APIinstance.post(vendorEnterprise.searchedVendors.endpoint, data);
+export function searchedVendors({ data, page, limit }) {
+  return APIinstance.post(
+    `${vendorEnterprise.searchedVendors.endpoint}?page=${page}&limit=${limit}`,
+    data,
+  );
 }
 
 export function createVendor(data) {
@@ -29,9 +32,9 @@ export function getVendor(id) {
   return APIinstance.get(`${vendorEnterprise.getVendor.endpoint}${id}`);
 }
 
-export function getVendors(id, context) {
+export function getVendors({ id, context, page, limit }) {
   return APIinstance.get(
-    `${vendorEnterprise.getVendors.endpoint}${id}?context=${context}`,
+    `${vendorEnterprise.getVendors.endpoint}${id}?context=${context}&page=${page}&limit=${limit}`,
   );
 }
 

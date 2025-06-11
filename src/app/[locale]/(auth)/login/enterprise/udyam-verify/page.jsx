@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -70,7 +71,7 @@ const UdyamVerify = () => {
 
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="flex min-h-[400px] w-[450px] flex-col items-center gap-10">
+      <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
             {translations('title')}
@@ -99,6 +100,9 @@ const UdyamVerify = () => {
               />
             </div>
           </div>
+
+          {/* Explanatory Information */}
+          <ExplantoryText text={translations('information')} />
 
           <div className="flex items-center gap-2 text-sm">
             <Checkbox

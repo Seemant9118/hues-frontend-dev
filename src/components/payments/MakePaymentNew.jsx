@@ -2,6 +2,7 @@
 import { bankAccountApis } from '@/api/bankAccounts/bankAccountsApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
+import { SessionStorageService } from '@/lib/utils';
 import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
 import {
   createPayment,
@@ -50,23 +51,49 @@ const MakePaymentNew = ({
   isDirectCreatePayment,
 }) => {
   const translations = useTranslations('components.make_payment');
+
   const router = useRouter();
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
+
+  const orderPaymentRecordDraft =
+    !isPurchasePage && SessionStorageService.get('orderPaymentRecordDraft');
+  const orderPaymentAdviceDraft =
+    isPurchasePage && SessionStorageService.get('orderPaymentAdviceDraft');
+
   const [errorMsg, setErrorMsg] = useState({});
   const [files, setFiles] = useState([]);
   const [invoices, setInvoices] = useState([]);
-  const [selectedInvoiceBalanceAmount, setSelectedInvoiceBalanceAmount] =
-    useState(0);
-  const [paymentData, setPaymentData] = useState({
-    amount: '',
-    paymentMode: '',
-    transactionId: '',
-    invoices,
-    bankAccountId: [],
-    paymentDate: null,
-  });
+  const [paymentData, setPaymentData] = useState(
+    !isPurchasePage
+      ? {
+          balance: orderPaymentRecordDraft?.balance || '',
+          amount: orderPaymentRecordDraft?.amount || '',
+          paymentMode: orderPaymentRecordDraft?.paymentMode || '',
+          transactionId: orderPaymentRecordDraft?.transactionId || '',
+          invoices: orderPaymentRecordDraft?.invoices || [],
+          bankAccountId: orderPaymentRecordDraft?.bankAccountId || [],
+          paymentDate: orderPaymentRecordDraft?.paymentDate || null,
+        }
+      : {
+          balance: orderPaymentAdviceDraft?.balance || '',
+          amount: orderPaymentAdviceDraft?.amount || '',
+          paymentMode: orderPaymentAdviceDraft?.paymentMode || '',
+          transactionId: orderPaymentAdviceDraft?.transactionId || '',
+          invoices: orderPaymentAdviceDraft?.invoices || [],
+          bankAccountId: orderPaymentAdviceDraft?.bankAccountId || [],
+          paymentDate: orderPaymentAdviceDraft?.paymentDate || null,
+        },
+  );
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
+
+  // save draft to session storage
+  function saveDraftToSession({ isPurchasePage, data }) {
+    const key = isPurchasePage
+      ? 'orderPaymentAdviceDraft'
+      : 'orderPaymentRecordDraft';
+    SessionStorageService.set(key, data);
+  }
 
   const { data: bankAccounts } = useQuery({
     queryKey: [bankAccountApis.getBankAccounts.endpointKey],
@@ -95,20 +122,31 @@ const MakePaymentNew = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const balanceAmount = parseFloat(selectedInvoiceBalanceAmount || 0);
     if (name === 'amount') {
       // Allow only numbers & decimals, treating "0" as valid text input
       if (/^\d*\.?\d*$/.test(value)) {
-        setPaymentData((prevData) => ({
-          ...prevData,
+        const updatedPaymentData = {
+          ...paymentData,
           [name]: value, // Keep as string to preserve leading zeros
-        }));
+        };
+        setPaymentData(updatedPaymentData);
+
+        saveDraftToSession({
+          isPurchasePage,
+          data: updatedPaymentData,
+        });
       }
     } else {
-      setPaymentData((prevData) => ({
-        ...prevData,
+      const updatedPaymentData = {
+        ...paymentData,
         [name]: value, // Keep as string to preserve leading zeros
-      }));
+      };
+      setPaymentData(updatedPaymentData);
+
+      saveDraftToSession({
+        isPurchasePage,
+        data: updatedPaymentData,
+      });
     }
 
     if (name === 'amount') {
@@ -119,7 +157,10 @@ const MakePaymentNew = ({
           ...prevMsg,
           amountPaid: translations('errorMsg.amount_paid_empty'),
         }));
-      } else if (!Number.isNaN(numericValue) && numericValue > balanceAmount) {
+      } else if (
+        !Number.isNaN(numericValue) &&
+        numericValue > paymentData?.balance
+      ) {
         setErrorMsg((prevMsg) => ({
           ...prevMsg,
           amountPaid: translations('errorMsg.amount_paid_exceed'),
@@ -197,8 +238,10 @@ const MakePaymentNew = ({
       setFiles([]);
       if (isPurchasePage) {
         router.push(`/purchases/purchase-payments/${res.data.data.id}`);
+        SessionStorageService.remove('orderPaymentAdviceDraft');
       } else {
         router.push(`/sales/sales-payments/${res.data.data.id}`);
+        SessionStorageService.remove('orderPaymentRecordDraft');
       }
     },
     onError: (error) => {
@@ -313,13 +356,18 @@ const MakePaymentNew = ({
                       invoices: '',
                     }));
                   }
-                  setPaymentData((prevData) => ({
-                    ...prevData,
+
+                  const updatedPaymentData = {
+                    ...paymentData,
+                    balance: selectedInvoice?.invoicereceivabledueamount,
                     invoices: [selectedInvoice], // Store as array
-                  }));
-                  setSelectedInvoiceBalanceAmount(
-                    selectedInvoice?.invoicereceivabledueamount || 0,
-                  );
+                  };
+                  setPaymentData(updatedPaymentData);
+
+                  saveDraftToSession({
+                    isPurchasePage,
+                    data: updatedPaymentData,
+                  });
                 }}
               >
                 <SelectTrigger className="max-w-md">
@@ -354,7 +402,7 @@ const MakePaymentNew = ({
               </div>
 
               <Select
-                defaultValue={paymentData.paymentMode}
+                value={paymentData.paymentMode}
                 onValueChange={(value) => {
                   // Check if a payment mode is selected (non-empty value)
                   if (value) {
@@ -363,10 +411,17 @@ const MakePaymentNew = ({
                       paymentMode: '', // Clear the payment mode error message
                     }));
                   }
-                  setPaymentData((prevData) => ({
-                    ...prevData,
+
+                  const updatedPaymentData = {
+                    ...paymentData,
                     paymentMode: value,
-                  }));
+                  };
+                  setPaymentData(updatedPaymentData);
+
+                  saveDraftToSession({
+                    isPurchasePage,
+                    data: updatedPaymentData,
+                  });
                 }}
               >
                 <SelectTrigger className="max-w-md">
@@ -408,10 +463,17 @@ const MakePaymentNew = ({
                 <DatePickers
                   selected={paymentData.paymentDate}
                   onChange={(date) => {
-                    setPaymentData((prevData) => ({
-                      ...prevData,
+                    const updatedPaymentData = {
+                      ...paymentData,
                       paymentDate: date,
-                    }));
+                    };
+                    setPaymentData(updatedPaymentData);
+
+                    saveDraftToSession({
+                      isPurchasePage,
+                      data: updatedPaymentData,
+                    });
+
                     setErrorMsg((prevMsg) => ({
                       ...prevMsg,
                       paymentDate: '', // Clear any previous error for payment date
@@ -434,6 +496,7 @@ const MakePaymentNew = ({
               </Label>
               <div className="flex flex-col gap-1">
                 <Select
+                  value={paymentData?.bankAccountId || ''}
                   onValueChange={(value) => {
                     // Check if a payment mode is selected (non-empty value)
                     if (value) {
@@ -442,10 +505,17 @@ const MakePaymentNew = ({
                         bankAccountId: [],
                       }));
                     }
-                    setPaymentData((prevData) => ({
-                      ...prevData,
+
+                    const updatedPaymentData = {
+                      ...paymentData,
                       bankAccountId: value,
-                    }));
+                    };
+                    setPaymentData(updatedPaymentData);
+
+                    saveDraftToSession({
+                      isPurchasePage,
+                      data: updatedPaymentData,
+                    });
                   }}
                 >
                   <SelectTrigger
@@ -524,7 +594,7 @@ const MakePaymentNew = ({
                 <Input
                   disabled
                   className="max-w-md"
-                  value={formattedAmount(selectedInvoiceBalanceAmount || 0)}
+                  value={formattedAmount(paymentData?.balance || 0)}
                 />
               </div>
             </div>

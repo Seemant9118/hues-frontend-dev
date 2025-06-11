@@ -64,18 +64,20 @@ const VerifyMobileOTP = ({
   return (
     <form
       onSubmit={handleVerifiyOTP}
-      className="flex h-[400px] w-[450px] flex-col items-center justify-start gap-10"
+      className="flex w-full max-w-md flex-col items-center justify-start gap-8 px-4 py-6 sm:gap-10 sm:px-6 md:px-8"
     >
-      <div className="flex flex-col gap-4">
-        <h2 className="w-full text-center text-2xl font-bold">
+      {/* Title and Instruction */}
+      <div className="flex w-full flex-col gap-4">
+        <h2 className="text-center text-2xl font-bold">
           {translations('verifyOtp.heading')}
         </h2>
-        <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
+        <p className="text-center text-sm font-semibold text-[#A5ABBD]">
           {translations('verifyOtp.instruction')}{' '}
           <span>+91 {userMobileNumber}</span>
         </p>
       </div>
 
+      {/* OTP Input */}
       <OTPInput
         name="otp"
         onChange={handleChangeOtp}
@@ -91,7 +93,8 @@ const VerifyMobileOTP = ({
         )}
       />
 
-      <p className="flex w-full items-center justify-center gap-2 text-sm text-[#A5ABBD]">
+      {/* Resend Section */}
+      <p className="flex w-full items-center justify-center gap-2 text-center text-sm text-[#A5ABBD]">
         {translations('verifyOtp.resendSection.textBeforeTimer')}{' '}
         <span className="flex items-center gap-1 font-semibold">
           {startFrom === 0 ? (
@@ -100,7 +103,7 @@ const VerifyMobileOTP = ({
               variant="outline"
               onClick={() => {
                 setStartFrom(30);
-                handleResendOTP(); // api call for re-generateOTP
+                handleResendOTP();
               }}
             >
               {translations('verifyOtp.resendSection.resendButton')}
@@ -109,17 +112,18 @@ const VerifyMobileOTP = ({
             <p className="flex items-center gap-1">
               <Clock5 size={15} />
               {translations('verifyOtp.resendSection.timer', {
-                seconds: startFrom.toString().padStart(2, '0'), // ensures "09", "08", etc.
+                seconds: startFrom.toString().padStart(2, '0'),
               })}
             </p>
           )}
         </span>
       </p>
 
+      {/* Buttons */}
       <div className="flex w-full flex-col gap-2">
         <Button
           size="sm"
-          type="Submit"
+          type="submit"
           className="w-full bg-[#288AF9] p-2"
           disabled={verifyOTPMutation.isPending}
         >

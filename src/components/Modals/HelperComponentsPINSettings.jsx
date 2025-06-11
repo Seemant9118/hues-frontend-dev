@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../ui/button';
 import Slot from '../ui/Slot';
+import Loading from '../ui/Loading';
 
 /* STEP HELPER COMPONENTS */
 export const StepCreatePIN = ({
@@ -55,10 +56,14 @@ export const StepCreatePIN = ({
 export const StepConfirmPIN = ({
   pin,
   newPin,
+  setNewPin,
   confirmPin,
   setConfirmPin,
   mode,
+  setSteps,
   isPINAvailable,
+  updatePINErrors,
+  setUpdatePINErrors,
   createPinMutation,
   updatePinMutation,
   resetPinMutation,
@@ -111,6 +116,20 @@ export const StepConfirmPIN = ({
       >
         {translations('helper_components.buttons.confirm')}
       </Button>
+
+      {updatePINErrors === 'REUSED_PIN' && (
+        <span
+          className="cursor-pointer text-sm font-bold hover:underline"
+          onClick={() => {
+            setSteps((prev) => ({ ...prev, update_pin: 2, forgot_pin: 2 }));
+            setConfirmPin('');
+            setNewPin('');
+            setUpdatePINErrors(null);
+          }}
+        >
+          {translations('helper_components.messages.try_new_pin')}
+        </span>
+      )}
     </div>
   );
 };
@@ -118,7 +137,8 @@ export const StepConfirmPIN = ({
 export const StepEnterCurrentPIN = ({
   pin,
   setPin,
-  setSteps,
+  verifyPINErrors,
+  verifyPinMutation,
   generateOtpMutation,
   translations,
 }) => {
@@ -147,17 +167,23 @@ export const StepEnterCurrentPIN = ({
       <Button
         size="sm"
         className="w-full"
-        onClick={() => setSteps((prev) => ({ ...prev, update_pin: 2 }))}
-        disabled={pin.length < 4}
+        onClick={() => verifyPinMutation.mutate({ pin })}
+        disabled={pin.length < 4 || verifyPinMutation?.isPending}
       >
-        {translations('helper_components.buttons.next')}
+        {verifyPinMutation?.isPending ? (
+          <Loading />
+        ) : (
+          translations('helper_components.buttons.verify')
+        )}
       </Button>
-      <span
-        className="cursor-pointer text-sm font-bold hover:underline"
-        onClick={() => generateOtpMutation.mutate()}
-      >
-        {translations('helper_components.messages.forgot_pin')}
-      </span>
+      {verifyPINErrors === 'INVALID_PIN' && (
+        <span
+          className="cursor-pointer text-sm font-bold hover:underline"
+          onClick={() => generateOtpMutation.mutate()}
+        >
+          {translations('helper_components.messages.forgot_pin')}
+        </span>
+      )}
     </div>
   );
 };

@@ -5,13 +5,10 @@ import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { userAuth } from '@/api/user_auth/Users';
-import {
-  capitalize,
-  getInitialsNames,
-  getRandomBgColor,
-} from '@/appUtils/helperFunctions';
+import { validateEmail } from '@/appUtils/ValidationUtils';
+import { capitalize } from '@/appUtils/helperFunctions';
 import GeneatePINModal from '@/components/Modals/GeneatePINModal';
-import Tooltips from '@/components/auth/Tooltips';
+import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import AccountDetails from '@/components/settings/AccountDetails';
 import AddBankAccount from '@/components/settings/AddBankAccount';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
@@ -27,16 +24,20 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getBankAccounts } from '@/services/BankAccount_Services/BankAccountServices';
-import { updateEnterpriseIdentificationDetails } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
+import {
+  updateEnterpriseFields,
+  updateEnterpriseIdentificationDetails,
+} from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getPINLogs } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import {
+  addUpdateAddress,
   createSettings,
   getSettingsByKey,
   getTemplateForSettings,
 } from '@/services/Settings_Services/SettingsService';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, X } from 'lucide-react';
+import { MapPin, Pencil, PencilIcon, PlusCircle, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -54,18 +55,23 @@ function Settings() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [bgColor, setBgColor] = useState('');
+  // const [bgColor, setBgColor] = useState('');
   const [tab, setTab] = useState('enterpriseOverview');
   const [isEditing, setIsEditing] = useState({
     gst: false,
     udyam: false,
+    mobile: false,
+    email: false,
   });
   const [updateEnterpriseDetails, setUpdateEnterpriseDetails] = useState({
     identifierType: '',
     identifierNum: '',
   });
+  const [enterpriseDataUpdate, setEnterpriseDataUpdate] = useState(null);
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
-
+  const [isAddressAdding, setIsAddressAdding] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [addressId, setAddressId] = useState(null);
   // update enterprise mutation
   const updateEnterpriseMutation = useMutation({
     mutationKey: [
@@ -87,6 +93,8 @@ function Settings() {
       setIsEditing({
         gst: false,
         udyam: false,
+        mobile: false,
+        email: false,
       }); // reset bool state
       queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
     },
@@ -95,6 +103,28 @@ function Settings() {
         translations('toasts.update.errorMsg', {
           type: updateEnterpriseDetails?.identifierType,
         }),
+      );
+    },
+  });
+
+  // update enterprise fields mutation
+  const updateEnterpriseFieldsMutation = useMutation({
+    mutationKey: [enterpriseUser.updateEnterpriseFields.endpointKey],
+    mutationFn: updateEnterpriseFields,
+    onSuccess: () => {
+      toast.success(translations('toasts.update.successMsg'));
+      setEnterpriseDataUpdate(null); // reset input field
+      setIsEditing({
+        gst: false,
+        udyam: false,
+        mobile: false,
+        email: false,
+      }); // reset bool state
+      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        translations(error.response.data.message || 'toasts.update.errorMsg'),
       );
     },
   });
@@ -122,10 +152,10 @@ function Settings() {
 
   useMetaData(`Settings -  ${capitalize(tab)}`, 'HUES SETTINGS'); // dynamic title
 
-  useEffect(() => {
-    const bgColorClass = getRandomBgColor();
-    setBgColor(bgColorClass);
-  }, []);
+  // useEffect(() => {
+  //   const bgColorClass = getRandomBgColor();
+  //   setBgColor(bgColorClass);
+  // }, []);
 
   // fetch settings - invoice
   const { data: invoiceSettings } = useQuery({
@@ -157,8 +187,6 @@ function Settings() {
       toast.success(
         translations('tabs.content.tab3.settingsUpdate.successMsg'),
       );
-
-      queryClient.invalidateQueries([settingsAPI.getSettingByKey.endpointKey]);
     },
     onError: (error) => {
       toast.error(
@@ -275,7 +303,7 @@ function Settings() {
           {/* if enterpriseOnboardingComplete */}
           {profileDetails?.enterpriseDetails?.id && (
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between gap-2 rounded-sm border p-4">
+              {/* <div className="flex justify-between gap-2 rounded-sm border p-4">
                 <div className="flex w-full items-center justify-start gap-4">
                   <div
                     className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
@@ -318,8 +346,8 @@ function Settings() {
                     content={'This feature Coming Soon...'}
                   />
                 </div>
-              </div>
-              <div className="flex flex-col gap-4">
+              </div> */}
+              <div className="mt-5 flex flex-col gap-4">
                 <h1 className="font-semibold uppercase text-primary">
                   {translations('tabs.content.tab1.heading1')}
                 </h1>
@@ -338,33 +366,187 @@ function Settings() {
                       {translations('tabs.content.tab1.label.type')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.type || '-'}
+                      {capitalize(profileDetails?.enterpriseDetails?.type) ||
+                        '-'}
                     </span>
                   </div>
+
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">
-                      {translations('tabs.content.tab1.label.mobile')}
-                    </Label>
-                    <span className="text-lg font-bold">
-                      +91{' '}
-                      {profileDetails?.enterpriseDetails?.mobileNumber || '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab1.label.mobile')}
+                      </Label>
+                      {isEditing.mobile ? (
+                        <X
+                          className="cursor-pointer"
+                          size={14}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              mobile: false,
+                            }));
+                            setEnterpriseDataUpdate(null);
+                          }}
+                        />
+                      ) : (
+                        <Pencil
+                          className="cursor-pointer"
+                          size={12}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              mobile: true,
+                            }));
+                            setEnterpriseDataUpdate(() => ({
+                              mobileNumber:
+                                profileDetails?.enterpriseDetails?.mobileNumber,
+                            }));
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    {isEditing.mobile ? (
+                      <Input
+                        type="number"
+                        placeholder="+91 XXXXXXXXXX"
+                        value={enterpriseDataUpdate.mobileNumber}
+                        onChange={(e) =>
+                          setEnterpriseDataUpdate((prev) => ({
+                            ...prev,
+                            mobileNumber: e.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <span className="text-lg font-bold">
+                        +91{' '}
+                        {profileDetails?.enterpriseDetails?.mobileNumber || '-'}
+                      </span>
+                    )}
                   </div>
+
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">
-                      {translations('tabs.content.tab1.label.email')}
-                    </Label>
-                    <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.email || '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab1.label.email')}
+                      </Label>
+                      {isEditing.email ? (
+                        <X
+                          className="cursor-pointer"
+                          size={14}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              email: false,
+                            }));
+                            setEnterpriseDataUpdate(null);
+                          }}
+                        />
+                      ) : (
+                        <Pencil
+                          className="cursor-pointer"
+                          size={12}
+                          onClick={() => {
+                            setIsEditing((prev) => ({
+                              ...prev,
+                              email: true,
+                            }));
+                            setEnterpriseDataUpdate(() => ({
+                              email: profileDetails?.enterpriseDetails?.email,
+                            }));
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    {isEditing.email ? (
+                      <Input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={enterpriseDataUpdate.email}
+                        onChange={(e) =>
+                          setEnterpriseDataUpdate((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <span className="text-lg font-bold">
+                        {profileDetails?.enterpriseDetails?.email || '-'}
+                      </span>
+                    )}
                   </div>
+
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">
-                      {translations('tabs.content.tab1.label.address')}
-                    </Label>
-                    <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.address || '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab1.label.address')}
+                      </Label>
+                      <button
+                        onClick={() => setIsAddressAdding(true)}
+                        className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                      >
+                        <PlusCircle size={12} /> add
+                      </button>
+                    </div>
+                    <AddNewAddress
+                      isAddressAdding={isAddressAdding}
+                      setIsAddressAdding={setIsAddressAdding}
+                      mutationKey={settingsAPI.addUpdateAddress.endpointKey}
+                      mutationFn={addUpdateAddress}
+                      invalidateKey={userAuth.getProfileDetails.endpointKey}
+                      editingAddress={editingAddress}
+                      setEditingAddress={setEditingAddress}
+                      editingAddressId={addressId}
+                      setEditingAddressId={setAddressId}
+                    />
+                    <div className="scrollBarStyles mt-1 flex max-h-[100px] flex-col gap-2 overflow-auto">
+                      {profileDetails?.enterpriseDetails?.addressList?.length >
+                      0 ? (
+                        profileDetails?.enterpriseDetails?.addressList.map(
+                          (addr) => {
+                            return (
+                              <div
+                                key={addr.id}
+                                className="flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 pr-6"
+                              >
+                                <div className="flex w-full items-center gap-2">
+                                  <MapPin
+                                    size={14}
+                                    className="shrink-0 text-primary"
+                                  />
+                                  <p
+                                    className="truncate text-sm font-medium"
+                                    title={addr.address}
+                                  >
+                                    {addr.address || '-'}
+                                  </p>
+                                </div>
+
+                                <div className="relative flex gap-1">
+                                  <button
+                                    className={
+                                      isEditing ? 'text-primary' : 'text-black'
+                                    }
+                                    onClick={() => {
+                                      setIsAddressAdding(true);
+                                      setEditingAddress(addr.address);
+                                      setAddressId(addr.id);
+                                    }}
+                                  >
+                                    <PencilIcon size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          },
+                        )
+                      ) : (
+                        <p className="text-sm font-medium text-gray-500">-</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -506,33 +688,60 @@ function Settings() {
                     </span>
                   </div>
                 </div>
-                {(isEditing.gst || isEditing.udyam) && (
+                {(isEditing.gst ||
+                  isEditing.udyam ||
+                  isEditing.mobile ||
+                  isEditing.email) && (
                   <div className="flex w-full justify-end gap-2">
                     <Button
+                      disabled={
+                        updateEnterpriseMutation.isPending ||
+                        updateEnterpriseFieldsMutation.isPending
+                      }
                       variant="outline"
                       size="sm"
                       onClick={() => {
                         setIsEditing({
                           gst: false,
                           udyam: false,
+                          mobile: false,
+                          email: false,
                         });
                         setUpdateEnterpriseDetails({
                           identifierType: '',
                           identifierNum: '',
-                        }); // input data cleared
+                        }); // input data cleared\
+
+                        setEnterpriseDataUpdate(null);
                       }}
                     >
                       {translations('tabs.content.tab1.ctas.cancel')}
                     </Button>
                     <Button
-                      disabled={updateEnterpriseMutation.isPending}
+                      disabled={
+                        updateEnterpriseMutation.isPending ||
+                        updateEnterpriseFieldsMutation.isPending
+                      }
                       size="sm"
                       onClick={() => {
-                        updateEnterpriseMutation.mutate();
+                        if (isEditing.email || isEditing.mobile) {
+                          const isValidEmail = validateEmail(
+                            enterpriseDataUpdate?.email,
+                          );
+                          if (isValidEmail) {
+                            toast.error('Please Enter a valid Email address');
+                          } else {
+                            updateEnterpriseFieldsMutation.mutate(
+                              enterpriseDataUpdate,
+                            );
+                          }
+                        } else {
+                          updateEnterpriseMutation.mutate();
+                        }
                       }}
                     >
-                      {' '}
-                      {updateEnterpriseMutation.isPending ? (
+                      {updateEnterpriseMutation.isPending ||
+                      updateEnterpriseFieldsMutation.isPending ? (
                         <Loading />
                       ) : (
                         translations('tabs.content.tab1.ctas.update')
@@ -546,11 +755,15 @@ function Settings() {
         </TabsContent>
 
         <TabsContent value="bankAccount" className="flex flex-col gap-4">
-          <div className="flex w-full items-center justify-between gap-2 rounded-md border p-4">
+          <div className="mt-5 flex w-full items-center justify-between gap-2 rounded-md border p-4">
             <div className="flex flex-col items-start gap-1 text-sm">
-              <p className="font-bold">Add a bank account</p>
+              <p className="font-bold">
+                {translations('tabs.content.tab2.bankAccount.add_bank_heading')}
+              </p>
               <p className="text-gray-400">
-                Add a bank account to your Hues account
+                {translations(
+                  'tabs.content.tab2.bankAccount.add_bank_subtitle',
+                )}
               </p>
             </div>
             <Button
@@ -558,7 +771,7 @@ function Settings() {
               variant="blue_outline"
               onClick={() => setIsBankAccountAdding(true)}
             >
-              Add Bank Account
+              {translations('tabs.content.tab2.bankAccount.add_bank_button')}
             </Button>
           </div>
           <AddBankAccount
@@ -568,7 +781,9 @@ function Settings() {
 
           {bankAccounts?.length > 0 && (
             <>
-              <h1 className="text-xl font-semibold">Bank Accounts</h1>
+              <h1 className="text-xl font-semibold">
+                {translations('tabs.content.tab2.bankAccount.list_heading')}
+              </h1>
               <div className="flex w-full flex-wrap gap-3">
                 {bankAccounts?.map((account) => (
                   <AccountDetails key={account.id} account={account} />

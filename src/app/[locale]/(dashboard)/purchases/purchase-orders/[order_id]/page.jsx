@@ -1,15 +1,18 @@
 'use client';
 
+import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
 import { orderApi } from '@/api/order_api/order_api';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
+import NegotiationHistory from '@/components/orders/NegotiationHistory';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
+import TimelineItem from '@/components/ui/TimelineItem';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,19 +24,20 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
-  viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, MoreVertical, Pencil } from 'lucide-react';
+import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
+
 // dynamic imports
 const OrdersOverview = dynamic(
   () => import('@/components/orders/OrdersOverview'),
@@ -72,6 +76,7 @@ const ViewOrder = () => {
   const [isPastInvoices, setIsPastInvoices] = useState(showInvoice || false);
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
+  const [viewNegotiationHistory, setViewNegotiationHistory] = useState(false);
   // const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   // const [files, setFiles] = useState([]);
 
@@ -112,12 +117,12 @@ const ViewOrder = () => {
       path: `/purchases/purchase-orders/${params.order_id}`,
       show: isPaymentAdvicing, // Show only if isPaymentAdvicing is true
     },
-    // {
-    //   id: 6,
-    //   name: translations('title.upload_attachements'),
-    //   path: `/purchases/purchase-orders/${params.order_id}`,
-    //   show: isUploadingAttachements, // Show only if isUploadingAttachements is true
-    // },
+    {
+      id: 6,
+      name: 'Negotiation History',
+      path: `/purchases/purchase-orders/${params.order_id}`,
+      show: viewNegotiationHistory, // Show only if isUploadingAttachements is true
+    },
   ];
 
   useEffect(() => {
@@ -126,7 +131,7 @@ const ViewOrder = () => {
     setIsNegotiation(state === 'negotiation');
     setIsPastInvoices(state === 'showInvoice');
     setIsPaymentAdvicing(state === 'payment_advice');
-    // setIsUploadingAttachements(state === 'uploadingAttachements');
+    setViewNegotiationHistory(state === 'negotiationHistory');
   }, [searchParams]);
 
   useEffect(() => {
@@ -139,6 +144,8 @@ const ViewOrder = () => {
       newPath += '?state=showInvoice';
     } else if (isPaymentAdvicing) {
       newPath += '?state=payment_advice';
+    } else if (viewNegotiationHistory) {
+      newPath += '?state=negotiationHistory';
     } else {
       newPath += '';
     }
@@ -148,10 +155,18 @@ const ViewOrder = () => {
     isNegotiation,
     isPastInvoices,
     isPaymentAdvicing,
-    // isUploadingAttachements,
+    viewNegotiationHistory,
     params.order_id,
     router,
   ]);
+
+  // api calling for order timeline
+  const { isLoading: isTimeLinesDataLoading, data: timeLineData } = useQuery({
+    queryKey: [auditLogsAPIs.getOrderAudits.endpointKey],
+    queryFn: () => getOrderAudits(params.order_id),
+    select: (data) => data.data.data,
+    enabled: tab === 'timeline',
+  });
 
   useEffect(() => {
     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
@@ -273,17 +288,83 @@ const ViewOrder = () => {
             </div>
 
             <div className="flex gap-2">
-              {/* upload attachments */}
-              {/* {!isUploadingAttachements && (
-                <Button
-                  variant="blue_outline"
-                  size="sm"
-                  onClick={() => setIsUploadingAttachements(true)}
-                  className="font-bold"
-                >
-                  {translations('ctas.upload_attachements')}
-                </Button>
-              )} */}
+              {/* negotiation ctas */}
+              {!isNegotiation && !viewNegotiationHistory && (
+                <section className="flex gap-2">
+                  {/* status NEW */}
+                  {!isPastInvoices &&
+                    orderDetails?.negotiationStatus === 'NEW' &&
+                    orderDetails?.buyerId === enterpriseId && (
+                      <>
+                        {/* {orderDetails?.orderType === 'PURCHASE' && (
+                        <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
+                          <Clock size={12} />{' '}
+                          {translations('ctas.footer_ctas.wait_response')}
+                        </span>
+                      )} */}
+
+                        {orderDetails?.orderType === 'SALES' && (
+                          <div className="flex w-full justify-end gap-2">
+                            {!isNegotiation && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="blue_outline"
+                                  onClick={() => setIsNegotiation(true)}
+                                >
+                                  {translations('ctas.footer_ctas.negotiate')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={handleAccept}
+                                  disabled={acceptMutation.isPending}
+                                >
+                                  {acceptMutation.isPending ? (
+                                    <Loading size={14} />
+                                  ) : (
+                                    translations('ctas.footer_ctas.accept')
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                  {/* status NEGOTIATION */}
+                  {!isPastInvoices &&
+                    orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+                    orderDetails?.buyerId === enterpriseId && (
+                      <>
+                        {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
+                          <div className="flex w-full justify-end gap-2">
+                            {!isNegotiation && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="blue_outline"
+                                  onClick={() => setIsNegotiation(true)}
+                                >
+                                  {translations('ctas.footer_ctas.negotiate')}
+                                </Button>
+                                <Button size="sm" onClick={handleAccept}>
+                                  {translations('ctas.footer_ctas.accept')}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {/* {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
+                        <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
+                          <Clock size={12} />{' '}
+                          {translations('ctas.footer_ctas.wait_response')}
+                        </span>
+                      )} */}
+                      </>
+                    )}
+                </section>
+              )}
               {/* send payment advice CTA */}
               {!isPaymentAdvicing &&
                 (orderDetails.negotiationStatus === 'INVOICED' ||
@@ -298,32 +379,6 @@ const ViewOrder = () => {
                     {translations('ctas.payment_advice')}
                   </Button>
                 )}
-              {/* ctas - share invoice create */}
-              {/* download CTA */}
-              {!isNegotiation && !isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      onClick={() => viewOrderinNewTab(params.order_id)}
-                      size="sm"
-                      variant="outline"
-                      className="font-bold"
-                    >
-                      <Eye size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.view.placeholder')}
-                />
-              )}
-
-              {/* share CTA */}
-              {/* {!isUploadingAttachements && !isNegotiation && (
-                <ShareOrderInvoice
-                  heading={'Share Order Details'}
-                  queryKey={orderApi.shareOrder.endpointKey}
-                  queryFn={shareOrder}
-                />
-              )} */}
 
               {/* more ctas */}
               {orderDetails.negotiationStatus === 'NEW' &&
@@ -349,16 +404,55 @@ const ViewOrder = () => {
                         onClick={() => setIsEditingOrder(true)}
                         className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
                       >
-                        <Pencil size={14} /> {translations('ctas.more.edit')}
+                        <Pencil size={14} /> {translations('ctas.more.revise')}
                       </span>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
+
+              {/* upload attachments cta */}
+              {/* {!isUploadingAttachements && (
+                <Button
+                  variant="blue_outline"
+                  size="sm"
+                  onClick={() => setIsUploadingAttachements(true)}
+                  className="font-bold"
+                >
+                  {translations('ctas.upload_attachements')}
+                </Button>
+              )} */}
+
+              {/* share CTA */}
+              {/* {!isUploadingAttachements && !isNegotiation && (
+                <ShareOrderInvoice
+                  heading={'Share Order Details'}
+                  queryKey={orderApi.shareOrder.endpointKey}
+                  queryFn={shareOrder}
+                />
+              )} */}
+
+              {/* preview CTA */}
+              {/* {!isNegotiation &&
+                !isPaymentAdvicing &&
+                !viewNegotiationHistory && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => viewOrderinNewTab(params.order_id)}
+                        size="sm"
+                        variant="outline"
+                        className="font-bold"
+                      >
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.view.placeholder')}
+                  />
+                )} */}
             </div>
           </section>
-
           {/* switch tabs */}
-          {!isNegotiation && !isPaymentAdvicing && (
+          {!isNegotiation && !isPaymentAdvicing && !viewNegotiationHistory && (
             <section>
               <Tabs
                 value={tab}
@@ -403,6 +497,7 @@ const ViewOrder = () => {
                     mobileNumber={orderDetails?.vendorMobileNumber}
                     amtPaid={orderDetails?.amountPaid}
                     totalAmount={orderDetails.amount + orderDetails.gstAmount}
+                    setViewNegotiationHistory={setViewNegotiationHistory}
                   />
 
                   <CommentBox contextId={params.order_id} context={'ORDER'} />
@@ -422,25 +517,43 @@ const ViewOrder = () => {
                   />
                 </TabsContent>
                 <TabsContent value="timeline">
-                  {translations('tabs.content.tab4.coming_soon')}
+                  <div className="h-full w-full animate-fadeInUp overflow-auto p-2">
+                    {isTimeLinesDataLoading && <Loading />}
+                    {!isTimeLinesDataLoading &&
+                      timeLineData?.length > 0 &&
+                      timeLineData?.map((timeLinetItem, index) => (
+                        <TimelineItem
+                          key={timeLinetItem?.id}
+                          title={timeLinetItem?.action}
+                          dateTime={timeLinetItem?.createdAt}
+                          isLast={index === timeLineData.length - 1}
+                          action={timeLinetItem?.action}
+                          module={timeLinetItem?.module}
+                          details={timeLinetItem?.details}
+                        />
+                      ))}
+
+                    {!isTimeLinesDataLoading && timeLineData?.length === 0 && (
+                      <div>No Timeline recorded yet</div>
+                    )}
+                  </div>
                 </TabsContent>
               </Tabs>
             </section>
           )}
-
           {/* Negotiation Component */}
-          {isNegotiation && !isPastInvoices && (
+          {isNegotiation && !isPastInvoices && !viewNegotiationHistory && (
             <NegotiationComponent
               orderDetails={orderDetails}
               isNegotiation={isNegotiation}
               setIsNegotiation={setIsNegotiation}
             />
           )}
-
           {/* Invoices Component */}
-          {isPastInvoices && !isNegotiation && <PastInvoices />}
-
-          {isPaymentAdvicing && !isNegotiation && (
+          {isPastInvoices && !isNegotiation && !viewNegotiationHistory && (
+            <PastInvoices />
+          )}
+          {isPaymentAdvicing && !isNegotiation && !viewNegotiationHistory && (
             <MakePaymentNew
               orderId={params.order_id}
               orderDetails={orderDetails}
@@ -448,9 +561,8 @@ const ViewOrder = () => {
               contextType="PAYMENT_ADVICE"
             />
           )}
-
           {/* upload attachements */}
-          {/* {isUploadingAttachements && !isNegotiation && !isPaymentAdvicing && (
+          {/* {isUploadingAttachements && !isNegotiation && !isPaymentAdvicing &&  !viewNegotiationHistory && (
             <div className="mt-4 flex h-full flex-col justify-between gap-4">
               <div>
                 <FileUploader
@@ -545,97 +657,16 @@ const ViewOrder = () => {
             </div>
           )} */}
 
-          {/* seprator */}
-          {!isNegotiation && (
-            <div className="mt-auto h-[1px] bg-neutral-300"></div>
-          )}
-
-          {/* Footer ctas */}
-          {!isNegotiation && (
-            <div className="sticky bottom-0 z-10 flex justify-end">
-              <section className="flex gap-2">
-                {/* status NEW */}
-                {!isPastInvoices &&
-                  orderDetails?.negotiationStatus === 'NEW' &&
-                  orderDetails?.buyerId === enterpriseId && (
-                    <>
-                      {/* {orderDetails?.orderType === 'PURCHASE' && (
-                        <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                          <Clock size={12} />{' '}
-                          {translations('ctas.footer_ctas.wait_response')}
-                        </span>
-                      )} */}
-
-                      {orderDetails?.orderType === 'SALES' && (
-                        <div className="flex w-full justify-end gap-2">
-                          {!isNegotiation && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-32"
-                                onClick={() => setIsNegotiation(true)}
-                              >
-                                {translations('ctas.footer_ctas.negotiate')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                                onClick={handleAccept}
-                                disabled={acceptMutation.isPending}
-                              >
-                                {acceptMutation.isPending ? (
-                                  <Loading size={14} />
-                                ) : (
-                                  translations('ctas.footer_ctas.accept')
-                                )}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                {/* status NEGOTIATION */}
-                {!isPastInvoices &&
-                  orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-                  orderDetails?.buyerId === enterpriseId && (
-                    <>
-                      {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                        <div className="flex w-full justify-end gap-2">
-                          {!isNegotiation && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-32"
-                                onClick={() => setIsNegotiation(true)}
-                              >
-                                {translations('ctas.footer_ctas.negotiate')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="w-32 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                                onClick={handleAccept}
-                              >
-                                {translations('ctas.footer_ctas.accept')}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                      {/* {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
-                        <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                          <Clock size={12} />{' '}
-                          {translations('ctas.footer_ctas.wait_response')}
-                        </span>
-                      )} */}
-                    </>
-                  )}
-              </section>
-            </div>
-          )}
+          {
+            // negotiation history
+            viewNegotiationHistory &&
+              !isNegotiation &&
+              !isPastInvoices &&
+              !isEditingOrder &&
+              !isPaymentAdvicing && (
+                <NegotiationHistory orderId={params.order_id} />
+              )
+          }
         </>
       )}
     </Wrapper>

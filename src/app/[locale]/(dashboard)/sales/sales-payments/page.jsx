@@ -21,7 +21,7 @@ import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { SalesTable } from '../salestable/SalesTable';
 import { usePaymentsColumn } from './usePaymentsColumn';
@@ -38,14 +38,12 @@ const SalesPayments = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const [paymentsListing, setPaymentsListing] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
 
   const {
     data,
     fetchNextPage,
-    hasNextPage,
     isFetching,
     isLoading: isPaymentsLoading,
   } = useInfiniteQuery({
@@ -97,24 +95,6 @@ const SalesPayments = () => {
     });
   }, [data]);
 
-  // Infinite scroll observer
-  const lastSalesPaymentsRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
-
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
     mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
@@ -146,14 +126,14 @@ const SalesPayments = () => {
       )}
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
-        <Wrapper>
+        <Wrapper className="h-screen overflow-hidden">
+          {/* Headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex w-full items-center justify-between gap-2">
               <SubHeader name={translations('title')} />
               <Tooltips
                 trigger={
                   <Button
-                    onClick={() => {}}
                     variant="outline"
                     className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                     size="sm"
@@ -166,7 +146,7 @@ const SalesPayments = () => {
             </div>
           </section>
 
-          <section>
+          <section className="flex-grow overflow-hidden">
             {/* Loading state */}
             {isPaymentsLoading && <Loading />}
 
@@ -180,7 +160,6 @@ const SalesPayments = () => {
                 isFetching={isFetching}
                 totalPages={paginationData?.totalPages}
                 currFetchedPage={paginationData?.currFetchedPage}
-                lastSalesPaymentsRef={lastSalesPaymentsRef}
                 onRowClick={onRowClick}
               />
             )}

@@ -1,39 +1,68 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
-import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
-import Tooltips from '@/components/auth/Tooltips';
+import { validateEmail } from '@/appUtils/ValidationUtils';
+import ErrorBox from '@/components/ui/ErrorBox';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
+import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/custom-hooks/useMetaData';
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getProfileDetails,
   LoggingOut,
+  userUpdateFields,
 } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Info } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Info, Pencil, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 function Profile() {
+  const queryClient = useQueryClient();
   const translations = useTranslations('profile');
+  const translationsForError = useTranslations();
   const userId = LocalStorageService.get('user_profile');
 
   const router = useRouter();
-  const [bgColor, setBgColor] = useState('');
+  // const [bgColor, setBgColor] = useState('');
   const [tab, setTab] = useState('userOverview');
+  const [isEmailUpdating, setIsEmailUpdating] = useState(false);
+  const [userDataUpdate, setUserDataUpdate] = useState({
+    email: '',
+  });
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value);
   };
+
+  // update enterprise mutation
+  const updateUserFieldsMutation = useMutation({
+    mutationKey: [userAuth.userUpdateFields.endpointKey],
+    mutationFn: userUpdateFields,
+    onSuccess: () => {
+      toast.success(translations('toasts.userUpdateFileds.successMsg'));
+      setIsEmailUpdating(false);
+      setUserDataUpdate({ email: '' }); // clear input
+      setErrorMsg('');
+      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message ||
+          translations('toasts.userUpdateFileds.errorMsg'),
+      );
+    },
+  });
 
   // logout mutation fn
   const logoutMutation = useMutation({
@@ -41,6 +70,7 @@ function Profile() {
     mutationFn: LoggingOut,
     onSuccess: (res) => {
       LocalStorageService.clear();
+      SessionStorageService.clear();
       router.push('/login');
       toast.success(
         res.data.message || translations('toasts.logout.successMsg'),
@@ -70,10 +100,10 @@ function Profile() {
     'HUES PROFILE',
   ); // dynamic title
 
-  useEffect(() => {
-    const bgColorClass = getRandomBgColor();
-    setBgColor(bgColorClass);
-  }, []);
+  // useEffect(() => {
+  //   const bgColorClass = getRandomBgColor();
+  //   setBgColor(bgColorClass);
+  // }, []);
 
   return (
     <Wrapper className="h-full gap-8">
@@ -207,7 +237,7 @@ function Profile() {
           {/* if userOnboarding is completed */}
           {profileDetails?.userDetails?.user?.isOnboardingCompleted && (
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between gap-2 rounded-sm border p-4">
+              {/* <div className="flex justify-between gap-2 rounded-sm border p-4">
                 <div className="flex w-full items-center justify-start gap-4">
                   <div
                     className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
@@ -250,16 +280,11 @@ function Profile() {
                     content={'This feature Coming Soon...'}
                   />
                 </div>
-              </div>
+              </div> */}
+              <h1 className="font-semibold uppercase text-primary">
+                {translations('tabs.label.tab1')}
+              </h1>
               <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">
-                    {translations('tabs.content.tab1.label.pan')}
-                  </Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.userDetails?.user?.panNumber}
-                  </span>
-                </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs">
                     {translations('tabs.content.tab1.label.name')}
@@ -270,9 +295,11 @@ function Profile() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs">
-                    {translations('tabs.content.tab1.label.type')}
+                    {translations('tabs.content.tab1.label.pan')}
                   </Label>
-                  <span className="text-lg font-bold">{'Individual'}</span>
+                  <span className="text-lg font-bold">
+                    {profileDetails?.userDetails?.user?.panNumber}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs">
@@ -282,15 +309,100 @@ function Profile() {
                     +91 {profileDetails?.userDetails?.user?.mobileNumber}
                   </span>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">
-                    {translations('tabs.content.tab1.label.email')}
-                  </Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.userDetails?.email ?? '-'}
-                  </span>
+                <div className="flex w-full flex-col gap-1">
+                  <div className="flex w-full items-center gap-1">
+                    <Label className="text-xs">
+                      {translations('tabs.content.tab1.label.email')}
+                    </Label>
+
+                    <span className="text-lg font-bold">
+                      {isEmailUpdating ? (
+                        <X
+                          className="cursor-pointer"
+                          size={14}
+                          onClick={() => {
+                            setIsEmailUpdating(false);
+                            setUserDataUpdate({ email: '' }); // clear input
+                          }}
+                        />
+                      ) : (
+                        <Pencil
+                          size={12}
+                          className="cursor-pointer"
+                          data-testid="edit-gst"
+                          onClick={() => {
+                            setIsEmailUpdating(true);
+                            setUserDataUpdate({
+                              email: profileDetails?.userDetails?.email,
+                            });
+                          }}
+                        />
+                      )}
+                    </span>
+                  </div>
+
+                  {isEmailUpdating ? (
+                    <>
+                      <Input
+                        type="email"
+                        placeholder={'example@gmail.com'}
+                        value={userDataUpdate.email}
+                        onChange={(e) =>
+                          setUserDataUpdate((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                      />
+                      {errorMsg && (
+                        <ErrorBox msg={translationsForError(errorMsg)} />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold">
+                      {profileDetails?.userDetails?.email?.trim() || '-'}
+                    </span>
+                  )}
                 </div>
               </div>
+
+              {isEmailUpdating && (
+                <div className="flex w-full justify-end gap-2">
+                  <Button
+                    disabled={updateUserFieldsMutation?.isPending}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setErrorMsg('');
+                      setIsEmailUpdating(false);
+                      setUserDataUpdate({ email: '' }); // clear input
+                    }}
+                  >
+                    {translations('tabs.content.tab1.ctas.cancel')}
+                  </Button>
+
+                  <Button
+                    disabled={updateUserFieldsMutation?.isPending}
+                    size="sm"
+                    onClick={() => {
+                      const isValidEmail = validateEmail(userDataUpdate?.email);
+
+                      if (isValidEmail) {
+                        setErrorMsg(isValidEmail);
+                        return;
+                      }
+
+                      updateUserFieldsMutation.mutate(userDataUpdate);
+                    }}
+                  >
+                    {updateUserFieldsMutation?.isPending ? (
+                      <Loading />
+                    ) : (
+                      translations('tabs.content.tab1.ctas.update')
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </TabsContent>

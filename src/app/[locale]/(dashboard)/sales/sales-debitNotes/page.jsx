@@ -25,7 +25,7 @@ import {
 import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
@@ -45,7 +45,6 @@ const SalesDebitNotes = () => {
   );
 
   const router = useRouter();
-  const observer = useRef(); // Ref for infinite scrolling observer
   const [tab, setTab] = useState('all');
   const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
   const [selectedDebit, setSelectedDebit] = useState([]);
@@ -74,7 +73,6 @@ const SalesDebitNotes = () => {
     data,
     fetchNextPage,
     isFetching,
-    hasNextPage,
     isLoading: isDebitNotesLoading,
   } = useInfiniteQuery({
     queryKey: [
@@ -127,24 +125,6 @@ const SalesDebitNotes = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [data]);
-
-  // Infinite scroll observer
-  const lastSalesDebitsRef = useCallback(
-    (node) => {
-      if (isFetching) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isFetching, fetchNextPage, hasNextPage],
-  );
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -208,7 +188,8 @@ const SalesDebitNotes = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          <Wrapper className="h-full">
+          <Wrapper className="h-screen overflow-hidden">
+            {/* Headers */}
             <SubHeader
               name={translations('title')}
               className="sticky top-0 z-10 flex items-center justify-between bg-white"
@@ -234,99 +215,101 @@ const SalesDebitNotes = () => {
               </div>
             </SubHeader>
 
-            <section>
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'all'}
+            <Tabs
+              value={tab}
+              onValueChange={onTabChange}
+              defaultValue={'all'}
+              className="flex flex-grow flex-col overflow-hidden"
+            >
+              <section className="flex w-full justify-between py-2">
+                <TabsList className="border">
+                  <TabsTrigger value="all">
+                    {translations('tabs.label.tab1')}
+                  </TabsTrigger>
+                  <TabsTrigger value="accepted">
+                    {translations('tabs.label.tab2')}
+                  </TabsTrigger>
+                  <TabsTrigger value="rejected">
+                    {translations('tabs.label.tab3')}
+                  </TabsTrigger>
+                </TabsList>
+              </section>
+
+              <TabsContent value="all" className="flex-grow overflow-hidden">
+                {isDebitNotesLoading && <Loading />}
+                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                  <SalesTable
+                    id={'sale-debits'}
+                    columns={debitNotesColumns}
+                    data={debitNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
+
+                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emtpyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent
+                value="accepted"
+                className="flex-grow overflow-hidden"
               >
-                <section className="sticky top-14 bg-white">
-                  <TabsList className="border">
-                    <TabsTrigger value="all">
-                      {translations('tabs.label.tab1')}
-                    </TabsTrigger>
-                    <TabsTrigger value="accepted">
-                      {translations('tabs.label.tab2')}
-                    </TabsTrigger>
-                    <TabsTrigger value="rejected">
-                      {translations('tabs.label.tab3')}
-                    </TabsTrigger>
-                  </TabsList>
-                </section>
+                {isDebitNotesLoading && <Loading />}
+                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                  <SalesTable
+                    id={'sale-debits'}
+                    columns={debitNotesColumns}
+                    data={debitNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-                <TabsContent value="all">
-                  {isDebitNotesLoading && <Loading />}
-                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <SalesTable
-                      id={'sale-debits'}
-                      columns={debitNotesColumns}
-                      data={debitNotesListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastSalesRef={lastSalesDebitsRef}
-                    />
-                  )}
+                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emtpyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
 
-                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>{translations('emtpyStateComponent.heading')}</p>
-                    </div>
-                  )}
-                </TabsContent>
+              <TabsContent
+                value="rejected"
+                className="flex-grow overflow-hidden"
+              >
+                {isDebitNotesLoading && <Loading />}
+                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
+                  <SalesTable
+                    id={'sale-debits'}
+                    columns={debitNotesColumns}
+                    data={debitNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-                <TabsContent value="accepted">
-                  {isDebitNotesLoading && <Loading />}
-                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <SalesTable
-                      id={'sale-debits'}
-                      columns={debitNotesColumns}
-                      data={debitNotesListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastSalesRef={lastSalesDebitsRef}
-                    />
-                  )}
-
-                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>{translations('emtpyStateComponent.heading')}</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="rejected">
-                  {isDebitNotesLoading && <Loading />}
-                  {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                    <SalesTable
-                      id={'sale-debits'}
-                      columns={debitNotesColumns}
-                      data={debitNotesListing}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                      lastSalesRef={lastSalesDebitsRef}
-                    />
-                  )}
-
-                  {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                    <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                      <Image src={emptyImg} alt="emptyIcon" />
-                      <p>{translations('emtpyStateComponent.heading')}</p>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </section>
+                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emtpyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </Wrapper>
         </>
       )}

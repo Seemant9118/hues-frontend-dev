@@ -1,4 +1,7 @@
+import { useTranslations } from 'next-intl';
+
 const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
+  const translations = useTranslations('components.conditionalRenderingStatus');
   let statusText;
   let statusColor;
   let statusBG;
@@ -6,7 +9,9 @@ const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
 
   switch (status) {
     case 'ACCEPTED':
-      statusText = isPayment ? 'Acknowledged' : 'Accepted';
+      statusText = isPayment
+        ? translations('ACCEPTED.isPayment')
+        : translations('ACCEPTED.default');
       statusColor = '#39C06F';
       statusBG = '#39C06F1A';
       statusBorder = '#39C06F';
@@ -14,69 +19,69 @@ const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
     case 'PENDING':
       statusText = isPayment
         ? isSellerPage
-          ? 'Not Acknowledged Yet'
-          : 'Not acknowledged by seller'
-        : 'Pending';
+          ? translations('PENDING.isPayment_seller')
+          : translations('PENDING.isPayment_buyer')
+        : translations('PENDING.default');
       statusColor = '#F8BA05';
       statusBG = '#F8BA051A';
       statusBorder = '#F8BA05';
       break;
     case 'NEW':
-      statusText = 'New';
+      statusText = translations('NEW');
       statusColor = '#288AF9';
       statusBG = '#288AF91A';
       statusBorder = '#288AF9';
       break;
     case 'OFFER_SENT':
-      statusText = 'Offer sent';
+      statusText = translations('OFFER_SENT');
       statusColor = '#DD9745';
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';
       break;
     case 'OFFER_RECEIVED':
-      statusText = 'Offer received';
+      statusText = translations('OFFER_RECEIVED');
       statusColor = '#DD9745';
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';
       break;
     case 'BID_SENT':
-      statusText = 'Bid sent';
+      statusText = translations('BID_SENT');
       statusColor = '#DD9745';
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';
       break;
     case 'BID_RECEIVED':
-      statusText = 'Bid received';
+      statusText = translations('BID_RECEIVED');
       statusColor = '#DD9745';
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';
       break;
     case 'NEGOTIATION':
-      statusText = 'Negotiation';
+      statusText = translations('NEGOTIATION');
       statusColor = '#F8BA05';
       statusBG = '#F8BA051A';
       statusBorder = '#F8BA05';
       break;
     case 'INVOICED':
-      statusText = 'Invoiced';
+      statusText = translations('INVOICED');
       statusColor = '#6EAFFC';
       statusBG = '#6EAFFC1A';
       statusBorder = '#6EAFFC';
       break;
     case 'PARTIAL_INVOICED':
-      statusText = 'Partial Invoiced';
+      statusText = translations('PARTIAL_INVOICED');
       statusColor = '#6EAFFC';
       statusBG = '#6EAFFC1A';
       statusBorder = '#6EAFFC';
       break;
     case 'WITHDRAWN':
-      statusText = 'Withdrawn';
+      statusText = translations('WITHDRAWN');
       statusColor = '#F16B6B';
       statusBG = '#F16B6B1A';
       statusBorder = '#F16B6B';
       break;
     case 'REJECTED':
-      statusText = 'Rejected';
+      statusText = translations('REJECTED');
       statusColor = '#F16B6B';
       statusBG = '#F16B6B1A';
       statusBorder = '#F16B6B';
@@ -84,19 +89,19 @@ const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
 
     // paymentStatus
     case 'PAID':
-      statusText = 'Paid';
+      statusText = translations('PAID');
       statusColor = '#39C06F';
       statusBG = '#39C06F1A';
       statusBorder = '#39C06F';
       break;
     case 'PARTIAL_PAID':
-      statusText = 'Partial Paid';
+      statusText = translations('PARTIAL_PAID');
       statusColor = '#288AF9';
       statusBG = '#288AF91A';
       statusBorder = '#288AF9';
       break;
     case 'NOT_PAID':
-      statusText = 'Payment pending';
+      statusText = translations('NOT_PAID');
       statusColor = '#F8BA05';
       statusBG = '#F8BA051A';
       statusBorder = '#F8BA05';
@@ -104,10 +109,10 @@ const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
 
     // debit/credit note status
     case 'NOT_RAISED':
-      statusText = '-';
+      statusText = translations('NOT_RAISED');
       break;
     case 'RAISED':
-      statusText = 'Debit Note Raised';
+      statusText = translations('RAISED');
       statusColor = '#DD9745';
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';

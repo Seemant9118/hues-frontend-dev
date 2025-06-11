@@ -49,9 +49,9 @@
                     "total_amount": "कुल राशि"
                 },
                 "column_actions": {
-                    "edit": {
-                        "cta": "संपादित करें",
-                        "successMsg": "सफलतापूर्वक संपादित किया गया"
+                    "revise": {
+                        "cta": "संशोधित करें",
+                        "successMsg": "सफलतापूर्वक संशोधित किया गया"
                     },
                     "delete": {
                         "cta": "हटाएं",
@@ -79,7 +79,7 @@
                     },
                     "more": {
                         "placeholder": "अधिक विकल्प",
-                        "edit": "संपादित करें"
+                        "revise": "संशोधित करें"
                     },
                     "footer_ctas": {
                         "wait_response": "प्रतिक्रिया की प्रतीक्षा",

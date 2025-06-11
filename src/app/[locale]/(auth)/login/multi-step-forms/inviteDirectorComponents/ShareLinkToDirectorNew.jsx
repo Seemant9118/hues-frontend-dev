@@ -30,7 +30,7 @@ const ShareLinkToDirectorNew = ({
   });
 
   return (
-    <div className="flex w-[450px] flex-col items-center justify-center gap-5">
+    <div className="flex w-full max-w-md flex-col items-center justify-start gap-8 sm:gap-5">
       <BadgeCheck size={48} className="text-primary" />
       <div className="flex flex-col gap-4">
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">

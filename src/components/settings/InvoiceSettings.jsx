@@ -133,6 +133,8 @@ export default function InvoiceSettings({
   };
 
   const handleSelect = (itemType) => {
+    setDefaultInvoiceType(itemType);
+
     if (itemType) {
       const payload = {
         contextKey: 'INVOICE',
