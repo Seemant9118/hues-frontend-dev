@@ -78,4 +78,13 @@ export const AdminAPIs = {
     endpoint: `/admin-panel/dashboard/enterprises/address/`,
     endpointKey: 'add_update_address',
   },
+
+  getEnterprisedataFromPAN: {
+    endpoint: `/admin-panel/dashboard/enterprises/pan`,
+    endpointKey: 'get_enterprisedata_from_pan',
+  },
+  getUserdataFromPAN: {
+    endpoint: `/admin-panel/dashboard/user/pan`,
+    endpointKey: 'get_userdata_from_pan',
+  },
 };

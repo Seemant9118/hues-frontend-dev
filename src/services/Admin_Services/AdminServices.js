@@ -79,3 +79,15 @@ export const updateAddressesForEnterprise = ({ id, data }) => {
 export const addNUpdateAddress = ({ id, data }) => {
   return APIinstance.post(`${AdminAPIs.addUpdateAddress.endpoint}${id}`, data);
 };
+
+export const getEnterprisedataFromPAN = ({ type, panNumber }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getEnterprisedataFromPAN.endpoint}?panNumber=${panNumber}&type=${type}`,
+  );
+};
+
+export const getUserdataFromPAN = ({ panNumber }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getUserdataFromPAN.endpoint}?panNumber=${panNumber}`,
+  );
+};

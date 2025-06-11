@@ -4,27 +4,31 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
-import { addEnterprise } from '@/services/Admin_Services/AdminServices';
+import {
+  addEnterprise,
+  getEnterprisedataFromPAN,
+} from '@/services/Admin_Services/AdminServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import moment from 'moment';
+import DatePickers from '../ui/DatePickers';
+import ErrorBox from '../ui/ErrorBox';
+import Loading from '../ui/Loading';
 import {
+  Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Select,
 } from '../ui/select';
-import ErrorBox from '../ui/ErrorBox';
-import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import Wrapper from '../wrappers/Wrapper';
-import DatePickers from '../ui/DatePickers';
 
 const AddEnterprise = ({ setIsAddingEnterprise }) => {
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState({});
+  const [gstNumberList, setGstNumberList] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -45,6 +49,46 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
   const handleChange = (field) => (e) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
   };
+
+  // API call to fetch data from PAN
+  const { data: enterpriseData } = useQuery({
+    queryKey: [
+      AdminAPIs.getEnterprisedataFromPAN.endpointKey,
+      formData?.panNumber,
+    ],
+    enabled: !!formData?.type && formData?.panNumber?.length === 10,
+    queryFn: () =>
+      getEnterprisedataFromPAN({
+        type: formData?.type,
+        panNumber: formData?.panNumber,
+      }),
+    select: (res) => res.data.data,
+  });
+
+  // Update formData when enterpriseData changes
+  useEffect(() => {
+    if (enterpriseData) {
+      setFormData((prev) => ({
+        ...prev,
+        name: enterpriseData?.name || '',
+        email: enterpriseData?.email || '',
+        mobileNumber: enterpriseData?.mobileNumber || '',
+        type: enterpriseData?.type || '',
+        gstNumber: '',
+        cinOrLlpin: enterpriseData?.cin || '',
+        udyam: enterpriseData?.udyam || '',
+        panNumber: enterpriseData?.panNumber || '',
+        roc: enterpriseData?.roc || '',
+        doi: enterpriseData?.doi || '',
+        address: enterpriseData?.address || '',
+        pincode: enterpriseData?.pinCode || '',
+        city: enterpriseData?.city || '',
+        state: enterpriseData?.state || '',
+      }));
+      // set all possible gstNumbers fetched
+      setGstNumberList(enterpriseData?.gstData?.gstinResList);
+    }
+  }, [enterpriseData]);
 
   //   address fetching via pincode
   const {
@@ -123,6 +167,102 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
         <SubHeader name={'Add Enterprise'} />
       </section>
 
+      {/* Enterprise type */}
+      <section className="space-y-2 px-1 py-2">
+        <div>
+          <Label>Enterprise Type</Label>
+          <Select
+            value={formData.type}
+            onValueChange={(value) => {
+              setFormData({
+                ...formData,
+                type: value,
+              });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Enterprise Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="proprietorship">Proprietorship</SelectItem>
+              <SelectItem value="partnership">Partnership</SelectItem>
+              <SelectItem value="pvt ltd">Pvt Ltd</SelectItem>
+              <SelectItem value="public ltd">Public Ltd</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
+
+      {/* document details */}
+      <section className="space-y-2 px-1 py-2">
+        <h3 className="text-sm font-semibold text-gray-700">
+          Document Details
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>PAN</Label>
+            <Input
+              placeholder="PAN number"
+              value={formData.panNumber}
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase();
+                setFormData((prev) => ({
+                  ...prev,
+                  panNumber: value,
+                }));
+              }}
+            />
+          </div>
+          <div>
+            <Label>GST</Label>
+            {Array.isArray(gstNumberList) && gstNumberList.length > 0 ? (
+              <Select
+                value={formData.gstNumber}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    gstNumber: value,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select GST Number" />
+                </SelectTrigger>
+                <SelectContent>
+                  {gstNumberList.map((gst) => (
+                    <SelectItem key={gst?.gstin} value={gst?.gstin}>
+                      {gst?.gstin}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                placeholder="GST number"
+                value={formData.gstNumber || ''}
+                onChange={handleChange('gstNumber')}
+              />
+            )}
+          </div>
+          <div>
+            <Label>CIN or LLPIN</Label>
+            <Input
+              placeholder="CIN or LLPIN"
+              value={formData.cinOrLlpin}
+              onChange={handleChange('cinOrLlpin')}
+            />
+          </div>
+          <div>
+            <Label>Udyam</Label>
+            <Input
+              placeholder="UDYAM number"
+              value={formData.udyam}
+              onChange={handleChange('udyam')}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* basic info */}
       <section className="space-y-2 px-1 py-2">
         <h3 className="text-sm font-semibold text-gray-700">Basic Info</h3>
@@ -154,28 +294,6 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
               onChange={handleChange('mobileNumber')}
             />
           </div>
-          <div>
-            <Label>Enterprise Type</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value) => {
-                setFormData({
-                  ...formData,
-                  type: value,
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Enterprise Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="proprietorship">Proprietorship</SelectItem>
-                <SelectItem value="partnership">Partnership</SelectItem>
-                <SelectItem value="pvt ltd">Pvt Ltd</SelectItem>
-                <SelectItem value="public ltd">Public Ltd</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           <div>
             <Label>ROC</Label>
@@ -192,12 +310,12 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
               <DatePickers
                 selected={
                   formData.doi
-                    ? moment(formData.doi, 'DD/MM/YYYY').toDate()
+                    ? moment(formData.doi, 'MM/DD/YYYY').toDate() // ✅ Fix: match format
                     : null
                 }
                 onChange={(date) => {
                   if (date) {
-                    const formattedDate = moment(date).format('DD/MM/YYYY');
+                    const formattedDate = moment(date).format('DD/MM/YYYY'); // or 'MM/DD/YYYY' if you prefer
                     setFormData((prev) => ({ ...prev, doi: formattedDate }));
                   }
                 }}
@@ -299,47 +417,6 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
             }
             value={formData.address}
           />
-        </div>
-      </section>
-
-      {/* document details */}
-      <section className="space-y-2 px-1 py-2">
-        <h3 className="text-sm font-semibold text-gray-700">
-          Document Details
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>GST</Label>
-            <Input
-              placeholder="GST number"
-              value={formData.gstNumber}
-              onChange={handleChange('gstNumber')}
-            />
-          </div>
-          <div>
-            <Label>CIN or LLPIN</Label>
-            <Input
-              placeholder="CIN or LLPIN"
-              value={formData.cinOrLlpin}
-              onChange={handleChange('cinOrLlpin')}
-            />
-          </div>
-          <div>
-            <Label>Udyam</Label>
-            <Input
-              placeholder="UDYAM number"
-              value={formData.udyam}
-              onChange={handleChange('udyam')}
-            />
-          </div>
-          <div>
-            <Label>PAN</Label>
-            <Input
-              placeholder="PAN number"
-              value={formData.panNumber}
-              onChange={handleChange('panNumber')}
-            />
-          </div>
         </div>
       </section>
 
