@@ -19,4 +19,9 @@ export const settingsAPI = {
     endpoint: `/order/invoice/preview-config`,
     endpointKey: 'invoice_preview_condfig',
   },
+  // update address of enterprise
+  addUpdateAddress: {
+    endpoint: `/enterprise/address`,
+    endpointKey: 'add_update_address',
+  },
 };

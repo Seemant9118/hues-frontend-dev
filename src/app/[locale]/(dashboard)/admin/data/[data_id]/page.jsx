@@ -4,6 +4,7 @@ import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { capitalize } from '@/appUtils/helperFunctions';
 import AddUsers from '@/components/admin/AddUsers';
 import { useUserColumns } from '@/components/admin/useUserColumns';
+import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import { VerifyDetailsModal } from '@/components/enterprise/VerifyDetailsModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AddBankAccount from '@/components/settings/AddBankAccount';
@@ -16,27 +17,24 @@ import { useRBAC } from '@/context/RBACcontext';
 import { LocalStorageService } from '@/lib/utils';
 import {
   addBankAccountForEnterprise,
+  addNUpdateAddress,
   getEnterpriseDetails,
   getEnterpriseResData,
-  updateAddressesForEnterprise,
   updateEnterpriseDetails,
 } from '@/services/Admin_Services/AdminServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCheck, Eye, MapPin, PencilIcon, Plus } from 'lucide-react';
+import {
+  CheckCheck,
+  Eye,
+  MapPin,
+  PencilIcon,
+  Plus,
+  PlusCircle,
+} from 'lucide-react';
 import moment from 'moment';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-const users = [
-  {
-    id: 1,
-    name: 'Lokesh User',
-    pan: 'ABCDE1234J',
-    email: 'abcd@hgmail.com1',
-    mobileNumber: '+91 1234567889',
-  },
-];
 
 // eslint-disable-next-line no-unused-vars
 export default function EnterpriseDetails() {
@@ -81,8 +79,9 @@ export default function EnterpriseDetails() {
     pan: false,
   });
 
+  const [isAddressAdding, setIsAddressAdding] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
   const [editingAddressId, setEditingAddressId] = useState(null);
-  const [editedAddress, setEditedAddress] = useState('');
 
   const dataOrdersBreadCrumbs = [
     {
@@ -205,23 +204,6 @@ export default function EnterpriseDetails() {
         AdminAPIs.getEnterpriseDetails.endpointKey,
       ]);
       setIsEditing(false);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
-  // edit address
-  const updateAddressesMutation = useMutation({
-    mutationKey: [AdminAPIs.updateAddresses.endpointKey],
-    mutationFn: updateAddressesForEnterprise,
-    onSuccess: () => {
-      toast.success('Address updated Successfully');
-      queryClient.invalidateQueries([
-        AdminAPIs.getEnterpriseDetails.endpointKey,
-      ]);
-      setEditedAddress('');
-      setEditingAddressId(null);
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
@@ -356,71 +338,56 @@ export default function EnterpriseDetails() {
 
           {/* Address (spans 2 rows) */}
           <div className="row-span-2">
-            <Label>Address</Label>
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full items-center gap-1">
+              <Label>Address</Label>
+              <button
+                onClick={() => setIsAddressAdding(true)}
+                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              >
+                <PlusCircle size={12} /> add
+              </button>
+              <AddNewAddress
+                isAddressAdding={isAddressAdding}
+                setIsAddressAdding={setIsAddressAdding}
+                enterpriseId={params.data_id}
+                mutationKey={AdminAPIs.addUpdateAddress.endpointKey}
+                mutationFn={addNUpdateAddress}
+                invalidateKey={AdminAPIs.getEnterpriseDetails.endpointKey}
+                editingAddress={editingAddress}
+                setEditingAddress={setEditingAddress}
+                editingAddressId={editingAddressId}
+                setEditingAddressId={setEditingAddressId}
+              />
+            </div>
+            <div className="scrollBarStyles mt-2 flex max-h-[150px] flex-col gap-2 overflow-auto">
               {enterpriseDetails?.addresses?.length > 0 ? (
                 enterpriseDetails.addresses.map((addr) => {
-                  const isEditing = editingAddressId === addr.id;
-
                   return (
                     <div
                       key={addr.id}
-                      className="flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2"
+                      className="flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 pr-6"
                     >
                       <div className="flex w-full items-center gap-2">
                         <MapPin size={14} className="shrink-0 text-primary" />
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editedAddress}
-                            onChange={(e) => setEditedAddress(e.target.value)}
-                            className="w-full rounded border px-2 py-1 text-sm"
-                          />
-                        ) : (
-                          <p
-                            className="truncate text-sm font-medium"
-                            title={addr.address}
-                          >
-                            {addr.address || '-'}
-                          </p>
-                        )}
+                        <p
+                          className="truncate text-sm font-medium"
+                          title={addr.address}
+                        >
+                          {addr.address || '-'}
+                        </p>
                       </div>
 
                       <div className="relative flex gap-1">
-                        {isEditing ? (
-                          <>
-                            <button
-                              onClick={() => {
-                                updateAddressesMutation.mutate({
-                                  id: params.data_id,
-                                  data: {
-                                    addressId: editingAddressId,
-                                    address: editedAddress,
-                                  },
-                                });
-                              }}
-                              className="text-sm text-blue-600 hover:underline"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={() => setEditingAddressId(null)}
-                              className="text-sm text-gray-500 hover:underline"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setEditingAddressId(addr.id);
-                              setEditedAddress(addr.address || '');
-                            }}
-                            className="absolute right-[-2px] top-[-30px] rounded-full border bg-gray-100 p-2 text-sm text-blue-600 hover:underline"
-                          >
-                            <PencilIcon size={12} />
-                          </button>
-                        )}
+                        <button
+                          className={isEditing ? 'text-primary' : 'text-black'}
+                          onClick={() => {
+                            setIsAddressAdding(true);
+                            setEditingAddress(addr.address);
+                            setEditingAddressId(addr.id);
+                          }}
+                        >
+                          <PencilIcon size={12} />
+                        </button>
                       </div>
                     </div>
                   );
@@ -670,7 +637,7 @@ export default function EnterpriseDetails() {
           {enterpriseDetails?.users?.length > 0 && (
             <DataTable columns={userColumns} data={enterpriseDetails?.users} />
           )}
-          {users?.length === 0 && (
+          {enterpriseDetails?.users?.length === 0 && (
             <div className="rounded-md bg-gray-100 py-10 text-center text-sm">
               No User added yet
             </div>

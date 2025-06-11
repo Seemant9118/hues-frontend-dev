@@ -49,10 +49,6 @@ export const updateEnterpriseDetails = ({ id, data }) => {
   );
 };
 
-export const updateAddressesForEnterprise = ({ id, data }) => {
-  return APIinstance.post(`${AdminAPIs.updateAddresses.endpoint}${id}`, data);
-};
-
 export const updateGst = ({ id, data }) => {
   return APIinstance.post(`${AdminAPIs.updateGST.endpoint}${id}`, data);
 };
@@ -74,4 +70,12 @@ export const addBankAccountForEnterprise = ({ id, data }) => {
     `${AdminAPIs.addBankAccountOfEnterprise.endpoint}${id}`,
     data,
   );
+};
+
+export const updateAddressesForEnterprise = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.updateAddresses.endpoint}${id}`, data);
+};
+
+export const addNUpdateAddress = ({ id, data }) => {
+  return APIinstance.post(`${AdminAPIs.addUpdateAddress.endpoint}${id}`, data);
 };

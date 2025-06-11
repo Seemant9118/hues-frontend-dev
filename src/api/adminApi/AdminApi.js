@@ -44,11 +44,6 @@ export const AdminAPIs = {
     endpointKey: 'update_enterprise_details',
   },
 
-  updateAddresses: {
-    endpoint: `/admin-panel/dashboard/enterprises/update-address/`,
-    endpointKey: 'update_addresses',
-  },
-
   updateGST: {
     endpoint: `/admin-panel/dashboard/enterprises/verify-gst/`,
     endpointKey: 'updateGst',
@@ -72,5 +67,15 @@ export const AdminAPIs = {
   addBankAccountOfEnterprise: {
     endpoint: `/admin-panel/dashboard/enterprises/add-bank-account/`,
     endpointKey: 'add_bank_account_enterprise',
+  },
+
+  updateAddresses: {
+    endpoint: `/admin-panel/dashboard/enterprises/address/`,
+    endpointKey: 'update_addresses',
+  },
+
+  addUpdateAddress: {
+    endpoint: `/admin-panel/dashboard/enterprises/address/`,
+    endpointKey: 'add_update_address',
   },
 };

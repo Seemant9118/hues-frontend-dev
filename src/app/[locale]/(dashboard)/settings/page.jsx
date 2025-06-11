@@ -5,8 +5,10 @@ import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { userAuth } from '@/api/user_auth/Users';
+import { validateEmail } from '@/appUtils/ValidationUtils';
 import { capitalize } from '@/appUtils/helperFunctions';
 import GeneatePINModal from '@/components/Modals/GeneatePINModal';
+import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import AccountDetails from '@/components/settings/AccountDetails';
 import AddBankAccount from '@/components/settings/AddBankAccount';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
@@ -28,18 +30,18 @@ import {
 } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
 import { getPINLogs } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
 import {
+  addUpdateAddress,
   createSettings,
   getSettingsByKey,
   getTemplateForSettings,
 } from '@/services/Settings_Services/SettingsService';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, X } from 'lucide-react';
+import { MapPin, Pencil, PencilIcon, PlusCircle, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { validateEmail } from '@/appUtils/ValidationUtils';
 import { usePINAuditLogsColumns } from './usePINAuditLogsColumns';
 
 function Settings() {
@@ -67,7 +69,9 @@ function Settings() {
   });
   const [enterpriseDataUpdate, setEnterpriseDataUpdate] = useState(null);
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
-
+  const [isAddressAdding, setIsAddressAdding] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [addressId, setAddressId] = useState(null);
   // update enterprise mutation
   const updateEnterpriseMutation = useMutation({
     mutationKey: [
@@ -476,12 +480,73 @@ function Settings() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs">
-                      {translations('tabs.content.tab1.label.address')}
-                    </Label>
-                    <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.address || '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs">
+                        {translations('tabs.content.tab1.label.address')}
+                      </Label>
+                      <button
+                        onClick={() => setIsAddressAdding(true)}
+                        className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                      >
+                        <PlusCircle size={12} /> add
+                      </button>
+                    </div>
+                    <AddNewAddress
+                      isAddressAdding={isAddressAdding}
+                      setIsAddressAdding={setIsAddressAdding}
+                      mutationKey={settingsAPI.addUpdateAddress.endpointKey}
+                      mutationFn={addUpdateAddress}
+                      invalidateKey={userAuth.getProfileDetails.endpointKey}
+                      editingAddress={editingAddress}
+                      setEditingAddress={setEditingAddress}
+                      editingAddressId={addressId}
+                      setEditingAddressId={setAddressId}
+                    />
+                    <div className="scrollBarStyles mt-1 flex max-h-[100px] flex-col gap-2 overflow-auto">
+                      {profileDetails?.enterpriseDetails?.addressList?.length >
+                      0 ? (
+                        profileDetails?.enterpriseDetails?.addressList.map(
+                          (addr) => {
+                            return (
+                              <div
+                                key={addr.id}
+                                className="flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 pr-6"
+                              >
+                                <div className="flex w-full items-center gap-2">
+                                  <MapPin
+                                    size={14}
+                                    className="shrink-0 text-primary"
+                                  />
+                                  <p
+                                    className="truncate text-sm font-medium"
+                                    title={addr.address}
+                                  >
+                                    {addr.address || '-'}
+                                  </p>
+                                </div>
+
+                                <div className="relative flex gap-1">
+                                  <button
+                                    className={
+                                      isEditing ? 'text-primary' : 'text-black'
+                                    }
+                                    onClick={() => {
+                                      setIsAddressAdding(true);
+                                      setEditingAddress(addr.address);
+                                      setAddressId(addr.id);
+                                    }}
+                                  >
+                                    <PencilIcon size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          },
+                        )
+                      ) : (
+                        <p className="text-sm font-medium text-gray-500">-</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
