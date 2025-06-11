@@ -169,7 +169,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
                 <SelectValue placeholder="Select Enterprise Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="properitorship">Proprietorship</SelectItem>
+                <SelectItem value="proprietorship">Proprietorship</SelectItem>
                 <SelectItem value="partnership">Partnership</SelectItem>
                 <SelectItem value="pvt ltd">Pvt Ltd</SelectItem>
                 <SelectItem value="public ltd">Public Ltd</SelectItem>
