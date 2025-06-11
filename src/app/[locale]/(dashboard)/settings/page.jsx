@@ -5,13 +5,8 @@ import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { userAuth } from '@/api/user_auth/Users';
-import {
-  capitalize,
-  getInitialsNames,
-  getRandomBgColor,
-} from '@/appUtils/helperFunctions';
+import { capitalize } from '@/appUtils/helperFunctions';
 import GeneatePINModal from '@/components/Modals/GeneatePINModal';
-import Tooltips from '@/components/auth/Tooltips';
 import AccountDetails from '@/components/settings/AccountDetails';
 import AddBankAccount from '@/components/settings/AddBankAccount';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
@@ -57,7 +52,7 @@ function Settings() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [bgColor, setBgColor] = useState('');
+  // const [bgColor, setBgColor] = useState('');
   const [tab, setTab] = useState('enterpriseOverview');
   const [isEditing, setIsEditing] = useState({
     gst: false,
@@ -152,10 +147,10 @@ function Settings() {
 
   useMetaData(`Settings -  ${capitalize(tab)}`, 'HUES SETTINGS'); // dynamic title
 
-  useEffect(() => {
-    const bgColorClass = getRandomBgColor();
-    setBgColor(bgColorClass);
-  }, []);
+  // useEffect(() => {
+  //   const bgColorClass = getRandomBgColor();
+  //   setBgColor(bgColorClass);
+  // }, []);
 
   // fetch settings - invoice
   const { data: invoiceSettings } = useQuery({
@@ -303,7 +298,7 @@ function Settings() {
           {/* if enterpriseOnboardingComplete */}
           {profileDetails?.enterpriseDetails?.id && (
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between gap-2 rounded-sm border p-4">
+              {/* <div className="flex justify-between gap-2 rounded-sm border p-4">
                 <div className="flex w-full items-center justify-start gap-4">
                   <div
                     className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
@@ -346,8 +341,8 @@ function Settings() {
                     content={'This feature Coming Soon...'}
                   />
                 </div>
-              </div>
-              <div className="flex flex-col gap-4">
+              </div> */}
+              <div className="mt-5 flex flex-col gap-4">
                 <h1 className="font-semibold uppercase text-primary">
                   {translations('tabs.content.tab1.heading1')}
                 </h1>
@@ -366,7 +361,8 @@ function Settings() {
                       {translations('tabs.content.tab1.label.type')}
                     </Label>
                     <span className="text-lg font-bold">
-                      {profileDetails?.enterpriseDetails?.type || '-'}
+                      {capitalize(profileDetails?.enterpriseDetails?.type) ||
+                        '-'}
                     </span>
                   </div>
 
@@ -407,7 +403,7 @@ function Settings() {
 
                     {isEditing.mobile ? (
                       <Input
-                        type="text"
+                        type="number"
                         placeholder="+91 XXXXXXXXXX"
                         value={enterpriseDataUpdate.mobileNumber}
                         onChange={(e) =>

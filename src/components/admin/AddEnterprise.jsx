@@ -8,10 +8,19 @@ import { addEnterprise } from '@/services/Admin_Services/AdminServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import moment from 'moment';
+import {
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Select,
+} from '../ui/select';
 import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import Wrapper from '../wrappers/Wrapper';
+import DatePickers from '../ui/DatePickers';
 
 const AddEnterprise = ({ setIsAddingEnterprise }) => {
   const queryClient = useQueryClient();
@@ -21,10 +30,12 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
     email: '',
     mobileNumber: '',
     type: '',
-    gst: '',
-    cin: '',
+    gstNumber: '',
+    cinOrLlpin: '',
     udyam: '',
-    pan: '',
+    panNumber: '',
+    roc: '',
+    doi: '',
     address: '',
     pincode: '',
     city: '',
@@ -120,6 +131,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
             <Label>Enterprise Name</Label>
             <Input
               type="text"
+              placeholder="Enterprise name"
               value={formData.name}
               onChange={handleChange('name')}
             />
@@ -128,6 +140,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
             <Label>Email</Label>
             <Input
               type="email"
+              placeholder="Enterprise email"
               value={formData.email}
               onChange={handleChange('email')}
             />
@@ -136,13 +149,67 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
             <Label>Phone Number</Label>
             <Input
               type="number"
+              placeholder="Enterprise number"
               value={formData.mobileNumber}
               onChange={handleChange('mobileNumber')}
             />
           </div>
           <div>
             <Label>Enterprise Type</Label>
-            <Input value={formData.type} onChange={handleChange('type')} />
+            <Select
+              value={formData.type}
+              onValueChange={(value) => {
+                setFormData({
+                  ...formData,
+                  type: value,
+                });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Enterprise Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="properitorship">Proprietorship</SelectItem>
+                <SelectItem value="partnership">Partnership</SelectItem>
+                <SelectItem value="pvt ltd">Pvt Ltd</SelectItem>
+                <SelectItem value="public ltd">Public Ltd</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>ROC</Label>
+            <Input
+              placeholder="Enterprise ROC"
+              value={formData.roc}
+              onChange={handleChange('roc')}
+            />
+          </div>
+
+          <div>
+            <Label>Date of Incorporation</Label>
+            <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <DatePickers
+                selected={
+                  formData.doi
+                    ? moment(formData.doi, 'DD/MM/YYYY').toDate()
+                    : null
+                }
+                onChange={(date) => {
+                  if (date) {
+                    const formattedDate = moment(date).format('DD/MM/YYYY');
+                    setFormData((prev) => ({ ...prev, doi: formattedDate }));
+                  }
+                }}
+                placeholderText="Select DOI"
+                dateFormat="dd/MM/yyyy"
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                maxDate={new Date()}
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -222,6 +289,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
             name="Address"
             type="text"
             id="address"
+            placeholder="Enterprise address"
             // required={true}
             onChange={(e) =>
               setFormData((prev) => ({
@@ -243,22 +311,34 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
           <div>
             <Label>GST</Label>
             <Input
-              type="number"
-              value={formData.gst}
-              onChange={handleChange('gst')}
+              placeholder="GST number"
+              value={formData.gstNumber}
+              onChange={handleChange('gstNumber')}
             />
           </div>
           <div>
-            <Label>CIN</Label>
-            <Input value={formData.cin} onChange={handleChange('cin')} />
+            <Label>CIN or LLPIN</Label>
+            <Input
+              placeholder="CIN or LLPIN"
+              value={formData.cinOrLlpin}
+              onChange={handleChange('cinOrLlpin')}
+            />
           </div>
           <div>
             <Label>Udyam</Label>
-            <Input value={formData.udyam} onChange={handleChange('udyam')} />
+            <Input
+              placeholder="UDYAM number"
+              value={formData.udyam}
+              onChange={handleChange('udyam')}
+            />
           </div>
           <div>
             <Label>PAN</Label>
-            <Input value={formData.pan} onChange={handleChange('pan')} />
+            <Input
+              placeholder="PAN number"
+              value={formData.panNumber}
+              onChange={handleChange('panNumber')}
+            />
           </div>
         </div>
       </section>

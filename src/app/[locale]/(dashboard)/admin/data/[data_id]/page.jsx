@@ -57,6 +57,8 @@ export default function EnterpriseDetails() {
     email: '',
     type: '',
     mobileNumber: '',
+    doi: '',
+    roc: '',
   });
   // document state
   const [originalValues, setOriginalValues] = useState({
@@ -111,6 +113,8 @@ export default function EnterpriseDetails() {
         email: enterpriseDetails.email || '',
         type: enterpriseDetails.type || '',
         mobileNumber: enterpriseDetails.mobileNumber || '',
+        roc: enterpriseDetails.ROC || '',
+        doi: enterpriseDetails.dateOfIncorporation || '',
       });
 
       setValues({
@@ -452,6 +456,32 @@ export default function EnterpriseDetails() {
               <p className="font-medium">
                 {`+91 ${formData.mobileNumber}` || '-'}
               </p>
+            )}
+          </div>
+
+          {/* ROC */}
+          <div>
+            <Label>ROC</Label>
+            {isEditing ? (
+              <Input
+                value={formData.roc}
+                onChange={handleOverviewChange('roc')}
+              />
+            ) : (
+              <p className="font-medium">{formData.roc || '-'}</p>
+            )}
+          </div>
+
+          {/* DOI */}
+          <div>
+            <Label>DOI</Label>
+            {isEditing ? (
+              <Input
+                value={formData.doi}
+                onChange={handleOverviewChange('doi')}
+              />
+            ) : (
+              <p className="font-medium">{formData.doi || '-'}</p>
             )}
           </div>
         </div>

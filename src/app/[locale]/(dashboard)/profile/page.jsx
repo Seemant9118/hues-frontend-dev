@@ -1,8 +1,6 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
-import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
-import Tooltips from '@/components/auth/Tooltips';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -22,7 +20,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Info, Pencil, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 function Profile() {
@@ -31,7 +29,7 @@ function Profile() {
   const userId = LocalStorageService.get('user_profile');
 
   const router = useRouter();
-  const [bgColor, setBgColor] = useState('');
+  // const [bgColor, setBgColor] = useState('');
   const [tab, setTab] = useState('userOverview');
   const [isEmailUpdating, setIsEmailUpdating] = useState(false);
   const [userDataUpdate, setUserDataUpdate] = useState({
@@ -97,10 +95,10 @@ function Profile() {
     'HUES PROFILE',
   ); // dynamic title
 
-  useEffect(() => {
-    const bgColorClass = getRandomBgColor();
-    setBgColor(bgColorClass);
-  }, []);
+  // useEffect(() => {
+  //   const bgColorClass = getRandomBgColor();
+  //   setBgColor(bgColorClass);
+  // }, []);
 
   return (
     <Wrapper className="h-full gap-8">
@@ -234,7 +232,7 @@ function Profile() {
           {/* if userOnboarding is completed */}
           {profileDetails?.userDetails?.user?.isOnboardingCompleted && (
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between gap-2 rounded-sm border p-4">
+              {/* <div className="flex justify-between gap-2 rounded-sm border p-4">
                 <div className="flex w-full items-center justify-start gap-4">
                   <div
                     className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
@@ -277,16 +275,11 @@ function Profile() {
                     content={'This feature Coming Soon...'}
                   />
                 </div>
-              </div>
+              </div> */}
+              <h1 className="font-semibold uppercase text-primary">
+                {translations('tabs.label.tab1')}
+              </h1>
               <div className="grid grid-cols-3 grid-rows-2 gap-8 rounded-sm border p-4">
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">
-                    {translations('tabs.content.tab1.label.pan')}
-                  </Label>
-                  <span className="text-lg font-bold">
-                    {profileDetails?.userDetails?.user?.panNumber}
-                  </span>
-                </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs">
                     {translations('tabs.content.tab1.label.name')}
@@ -297,9 +290,11 @@ function Profile() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs">
-                    {translations('tabs.content.tab1.label.type')}
+                    {translations('tabs.content.tab1.label.pan')}
                   </Label>
-                  <span className="text-lg font-bold">{'Individual'}</span>
+                  <span className="text-lg font-bold">
+                    {profileDetails?.userDetails?.user?.panNumber}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs">
@@ -343,7 +338,7 @@ function Profile() {
 
                   {isEmailUpdating ? (
                     <Input
-                      type="text"
+                      type="email"
                       placeholder={'example@gmail.com'}
                       value={userDataUpdate.email}
                       onChange={(e) =>
