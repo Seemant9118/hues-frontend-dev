@@ -1,6 +1,8 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { validateEmail } from '@/appUtils/ValidationUtils';
+import ErrorBox from '@/components/ui/ErrorBox';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
@@ -26,6 +28,7 @@ import { toast } from 'sonner';
 function Profile() {
   const queryClient = useQueryClient();
   const translations = useTranslations('profile');
+  const translationsForError = useTranslations();
   const userId = LocalStorageService.get('user_profile');
 
   const router = useRouter();
@@ -35,6 +38,7 @@ function Profile() {
   const [userDataUpdate, setUserDataUpdate] = useState({
     email: '',
   });
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -49,6 +53,7 @@ function Profile() {
       toast.success(translations('toasts.userUpdateFileds.successMsg'));
       setIsEmailUpdating(false);
       setUserDataUpdate({ email: '' }); // clear input
+      setErrorMsg('');
       queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
     },
     onError: (error) => {
@@ -337,17 +342,22 @@ function Profile() {
                   </div>
 
                   {isEmailUpdating ? (
-                    <Input
-                      type="email"
-                      placeholder={'example@gmail.com'}
-                      value={userDataUpdate.email}
-                      onChange={(e) =>
-                        setUserDataUpdate((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
-                      }
-                    />
+                    <>
+                      <Input
+                        type="email"
+                        placeholder={'example@gmail.com'}
+                        value={userDataUpdate.email}
+                        onChange={(e) =>
+                          setUserDataUpdate((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                      />
+                      {errorMsg && (
+                        <ErrorBox msg={translationsForError(errorMsg)} />
+                      )}
+                    </>
                   ) : (
                     <span className="text-lg font-bold">
                       {profileDetails?.userDetails?.email?.trim() || '-'}
@@ -363,16 +373,25 @@ function Profile() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      setErrorMsg('');
                       setIsEmailUpdating(false);
                       setUserDataUpdate({ email: '' }); // clear input
                     }}
                   >
                     {translations('tabs.content.tab1.ctas.cancel')}
                   </Button>
+
                   <Button
                     disabled={updateUserFieldsMutation?.isPending}
                     size="sm"
                     onClick={() => {
+                      const isValidEmail = validateEmail(userDataUpdate?.email);
+
+                      if (isValidEmail) {
+                        setErrorMsg(isValidEmail);
+                        return;
+                      }
+
                       updateUserFieldsMutation.mutate(userDataUpdate);
                     }}
                   >
