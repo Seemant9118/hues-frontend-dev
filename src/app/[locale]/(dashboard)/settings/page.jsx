@@ -39,6 +39,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { validateEmail } from '@/appUtils/ValidationUtils';
 import { usePINAuditLogsColumns } from './usePINAuditLogsColumns';
 
 function Settings() {
@@ -659,9 +660,16 @@ function Settings() {
                       size="sm"
                       onClick={() => {
                         if (isEditing.email || isEditing.mobile) {
-                          updateEnterpriseFieldsMutation.mutate(
-                            enterpriseDataUpdate,
+                          const isValidEmail = validateEmail(
+                            enterpriseDataUpdate?.email,
                           );
+                          if (isValidEmail) {
+                            toast.error('Please Enter a valid Email address');
+                          } else {
+                            updateEnterpriseFieldsMutation.mutate(
+                              enterpriseDataUpdate,
+                            );
+                          }
                         } else {
                           updateEnterpriseMutation.mutate();
                         }
