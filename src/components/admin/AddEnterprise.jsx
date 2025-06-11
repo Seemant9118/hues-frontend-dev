@@ -310,19 +310,19 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
               <DatePickers
                 selected={
                   formData.doi
-                    ? moment(formData.doi, 'DD/MM/YYYY').toDate() // ✅ FIX: match the saved format
+                    ? moment(formData.doi, 'MM/DD/YYYY').toDate() // ✅ Fix: match format
                     : null
                 }
                 onChange={(date) => {
                   if (date) {
-                    const formattedDate = moment(date).format('DD/MM/YYYY'); // you’re storing this format
+                    const formattedDate = moment(date).format('DD/MM/YYYY'); // or 'MM/DD/YYYY' if you prefer
                     setFormData((prev) => ({ ...prev, doi: formattedDate }));
                   }
                 }}
                 placeholderText="Select DOI"
-                popperPlacement="top-end"
                 dateFormat="dd/MM/yyyy"
                 className="w-full rounded-md border px-3 py-2 text-sm"
+                maxDate={new Date()}
                 showMonthDropdown
                 showYearDropdown
                 dropdownMode="select"
