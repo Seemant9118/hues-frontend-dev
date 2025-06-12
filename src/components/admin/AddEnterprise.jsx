@@ -14,7 +14,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import DatePickers from '../ui/DatePickers';
 import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
 import {
@@ -81,7 +80,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
         udyam: enterpriseData?.udyam || '',
         panNumber: enterpriseData?.panNumber || '',
         roc: enterpriseData?.roc || '',
-        doi: enterpriseData?.doi || '',
+        doi: moment(enterpriseData?.doi).format('DD/MM/YYYY') || '',
         address: enterpriseData?.address || '',
         pincode: enterpriseData?.pinCode || '',
         city: enterpriseData?.city || '',
@@ -390,26 +389,23 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
           <div>
             <Label>Date of Incorporation</Label>
             <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-              <DatePickers
-                selected={
-                  formData.doi
-                    ? moment(formData.doi, 'DD/MM/YYYY').toDate() // ✅ Fix: match format
-                    : null
+              <input
+                type="date"
+                id="doi"
+                name="doi"
+                value={
+                  formData?.doi &&
+                  moment(formData.doi, 'DD/MM/YYYY', true)?.isValid()
+                    ? moment(formData.doi, 'DD/MM/YYYY')?.format('YYYY-MM-DD')
+                    : ''
                 }
-                onChange={(date) => {
-                  if (date) {
-                    const formattedDate = moment(date).format('DD/MM/YYYY'); // or 'MM/DD/YYYY' if you prefer
-                    setFormData((prev) => ({ ...prev, doi: formattedDate }));
-                  }
+                onChange={(e) => {
+                  const formatted = moment(e.target.value, 'YYYY-MM-DD').format(
+                    'DD/MM/YYYY',
+                  );
+                  setFormData((prev) => ({ ...prev, doi: formatted }));
                 }}
-                placeholderText="Select DOI"
-                dateFormat="dd/MM/yyyy"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                maxDate={new Date()}
-                popperPlacement={'top-end'}
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
+                className="w-full"
               />
             </div>
           </div>
