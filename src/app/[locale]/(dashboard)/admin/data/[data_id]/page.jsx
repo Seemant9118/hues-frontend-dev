@@ -118,7 +118,7 @@ export default function EnterpriseDetails() {
 
       setValues({
         gst: enterpriseDetails.gstNumber || '',
-        cin: enterpriseDetails.cin || '',
+        cin: enterpriseDetails.cin || enterpriseDetails.llpin || '',
         udyam: enterpriseDetails.udyam || '',
         pan: enterpriseDetails.panNumber || '',
       });
@@ -153,7 +153,7 @@ export default function EnterpriseDetails() {
   // static labels of documents
   const fields = [
     { key: 'gst', label: 'GST Number' },
-    { key: 'cin', label: 'CIN' },
+    { key: 'cin', label: 'CIN / LLPIN' },
     { key: 'udyam', label: 'UDYAM' },
     { key: 'pan', label: 'PAN' },
   ];
