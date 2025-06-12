@@ -366,12 +366,16 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
           </div>
           <div>
             <Label>Phone Number</Label>
-            <Input
-              type="number"
-              placeholder="Enterprise number"
-              value={formData.mobileNumber}
-              onChange={handleChange('mobileNumber')}
-            />
+            <div className="relative flex items-center hover:border-gray-600">
+              <span className="absolute left-2 text-sm text-gray-600">+91</span>
+              <Input
+                type="number"
+                placeholder="Enterprise phone number"
+                className="w-full py-2 pl-10 pr-3"
+                value={formData.mobileNumber}
+                onChange={handleChange('mobileNumber')}
+              />
+            </div>
           </div>
 
           <div>
