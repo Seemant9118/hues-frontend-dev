@@ -12,9 +12,9 @@ import {
 export function VerifyDetailsModal({
   open,
   onOpenChange,
-  title = '',
-  givenDetails = [],
-  apiResponse = {},
+  title,
+  givenDetails,
+  apiResponse,
 }) {
   // Parse apiResponse if it's a string
   let parsedApiResponse = apiResponse;
@@ -30,7 +30,9 @@ export function VerifyDetailsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {title || 'Not verified'}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -39,31 +41,38 @@ export function VerifyDetailsModal({
             Given details
           </p>
           <div className="rounded-md border bg-white p-4 shadow-sm">
-            <div className="grid grid-cols-2 gap-1">
-              {givenDetails?.map((detail, idx) => (
-                <div key={idx}>
-                  <p className="text-xs text-muted-foreground">
-                    {detail?.label}
-                  </p>
-                  <p className="text-lg font-semibold">{detail?.value}</p>
-                </div>
-              ))}
-            </div>
+            {givenDetails && (
+              <div className="grid grid-cols-2 gap-1">
+                {givenDetails?.map((detail, idx) => (
+                  <div key={idx}>
+                    <p className="text-xs text-muted-foreground">
+                      {detail?.label}
+                    </p>
+                    <p className="text-lg font-semibold">{detail?.value}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!givenDetails && (
+              <div>Manually added, Verification Data not available</div>
+            )}
           </div>
 
           {/* API Response */}
-          <div className="rounded-md bg-black p-4 font-mono text-sm text-white">
-            <p className="sticky top-0 z-20 mb-2 bg-black text-xs text-muted-foreground">
-              API Verification Response
-            </p>
+          {apiResponse && (
+            <div className="rounded-md bg-black p-4 font-mono text-sm text-white">
+              <p className="sticky top-0 z-20 mb-2 bg-black text-xs text-muted-foreground">
+                API Verification Response
+              </p>
 
-            {/* Scrollable container */}
-            <div className="darkScrollBarStyles max-h-[300px] overflow-auto rounded-md p-2">
-              <pre className="whitespace-pre-wrap break-words">
-                {JSON.stringify(parsedApiResponse, null, 2)}
-              </pre>
+              {/* Scrollable container */}
+              <div className="darkScrollBarStyles max-h-[300px] overflow-auto rounded-md p-2">
+                <pre className="whitespace-pre-wrap break-words">
+                  {JSON.stringify(parsedApiResponse, null, 2)}
+                </pre>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

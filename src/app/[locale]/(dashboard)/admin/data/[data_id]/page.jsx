@@ -171,28 +171,38 @@ export default function EnterpriseDetails() {
     mutationFn: getEnterpriseResData,
     onSuccess: (res) => {
       const { data } = res.data;
-      setPreviewField({
-        givenDetails: [
-          { label: data.identifier_type, value: data.identifier },
-          { label: 'Name', value: formData.name },
-          {
-            label: 'Date',
-            value: moment(data.created_at).format('DD/MM/YYYY'),
-          },
-        ],
-        label: data.identifier_type,
-        value: data.identifier,
-        verification_details: data.verification_details,
-      });
-
-      setPreviewModalOf(data.identifier_type);
-      setPreviewModalOpen(true);
+      if (data) {
+        setPreviewField({
+          givenDetails: [
+            { label: data.identifier_type, value: data.identifier },
+            { label: 'Name', value: formData.name },
+            {
+              label: 'Date',
+              value: moment(data.created_at).format('DD/MM/YYYY'),
+            },
+          ],
+          label: data.identifier_type,
+          value: data.identifier,
+          verification_details: data.verification_details,
+        });
+        setPreviewModalOf(data.identifier_type);
+        setPreviewModalOpen(true);
+      } else {
+        setPreviewModalOpen(true);
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
     },
     select: (data) => data.data.data,
   });
+
+  useEffect(() => {
+    if (!previewModalOpen) {
+      setPreviewField(null);
+      setPreviewModalOf('');
+    }
+  }, [previewModalOpen]);
 
   // update enterprise
   const updateEnterpriseDetailsMutation = useMutation({
@@ -702,9 +712,9 @@ export default function EnterpriseDetails() {
       <VerifyDetailsModal
         open={previewModalOpen}
         onOpenChange={setPreviewModalOpen}
-        title={previewModalOf}
-        givenDetails={previewField?.givenDetails || []}
-        apiResponse={previewField?.verification_details}
+        title={previewModalOf || 'Preview'}
+        givenDetails={previewField?.givenDetails || null}
+        apiResponse={previewField?.verification_details || null}
       />
     </Wrapper>
   );

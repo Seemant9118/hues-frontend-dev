@@ -22,7 +22,7 @@
             },
             "verifyOtp": {
                 "heading": "Verify your number",
-                "instruction": "A one-time OTP has been sent to",
+                "instruction": "A one-time password has been sent to",
                 "resendSection": {
                     "textBeforeTimer": "Resend OTP in",
                     "timer": "00:{seconds}s",
