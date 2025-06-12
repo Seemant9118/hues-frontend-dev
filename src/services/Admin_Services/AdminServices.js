@@ -86,6 +86,18 @@ export const getEnterprisedataFromPAN = ({ type, panNumber }) => {
   );
 };
 
+export const getEnterprisedataFromGST = ({ gstNumber }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getEnterpriseDataFromGST.endpoint}?gstNumber=${gstNumber}`,
+  );
+};
+
+export const getEnterprisedataFromUDYAM = ({ udyam }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getEnterpriseDataFromUDYAM.endpoint}?udyam=${udyam}`,
+  );
+};
+
 export const getUserdataFromPAN = ({ panNumber }) => {
   return APIinstance.get(
     `${AdminAPIs.getUserdataFromPAN.endpoint}?panNumber=${panNumber}`,

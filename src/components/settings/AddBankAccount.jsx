@@ -237,7 +237,7 @@ const AddBankAccount = ({
               {addBankAccountMutation.isPending ? (
                 <Loading />
               ) : (
-                translations('btn_cancel')
+                translations('btn_submit')
               )}
             </Button>
           </div>

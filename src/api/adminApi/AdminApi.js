@@ -83,6 +83,14 @@ export const AdminAPIs = {
     endpoint: `/admin-panel/dashboard/enterprises/pan`,
     endpointKey: 'get_enterprisedata_from_pan',
   },
+  getEnterpriseDataFromGST: {
+    endpoint: `/admin-panel/dashboard/enterprises/gst`,
+    endpointKey: 'get_enterprise_data_from_gst',
+  },
+  getEnterpriseDataFromUDYAM: {
+    endpoint: `/admin-panel/dashboard/enterprises/udyam`,
+    endpointKey: 'get_enterprise_data_from_udyam',
+  },
   getUserdataFromPAN: {
     endpoint: `/admin-panel/dashboard/user/pan`,
     endpointKey: 'get_userdata_from_pan',

@@ -203,7 +203,13 @@ const AddUsers = ({
                 id="panNumber"
                 name="panNumber"
                 value={formData.panNumber}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase();
+                  setFormData((prev) => ({
+                    ...prev,
+                    panNumber: value,
+                  }));
+                }}
                 placeholder="ABCDE1234F"
                 maxLength={10}
                 disabled={isLoading}
