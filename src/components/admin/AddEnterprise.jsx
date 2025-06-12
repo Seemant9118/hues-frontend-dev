@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
 import {
   addEnterprise,
+  getEnterprisedataFromGST,
   getEnterprisedataFromPAN,
+  getEnterprisedataFromUDYAM,
 } from '@/services/Admin_Services/AdminServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
@@ -51,7 +53,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
   };
 
   // API call to fetch data from PAN
-  const { data: enterpriseData } = useQuery({
+  const { data: enterpriseData, isLoading: isPANLoading } = useQuery({
     queryKey: [
       AdminAPIs.getEnterprisedataFromPAN.endpointKey,
       formData?.panNumber,
@@ -89,6 +91,67 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
       setGstNumberList(enterpriseData?.gstData?.gstinResList);
     }
   }, [enterpriseData]);
+
+  // API call to fetch data from GST
+  const { data: enterpriseDataV2, isLoading: isGSTLoading } = useQuery({
+    queryKey: [
+      AdminAPIs.getEnterpriseDataFromGST.endpointKey,
+      formData?.gstNumber,
+    ],
+    enabled: formData?.gstNumber?.length === 15,
+    queryFn: () =>
+      getEnterprisedataFromGST({
+        gstNumber: formData?.gstNumber,
+      }),
+    select: (res) => res.data.data,
+  });
+  // update name and doi fetched from GST
+  useEffect(() => {
+    if (enterpriseDataV2?.name) {
+      setFormData((prev) => ({
+        ...prev,
+        name: enterpriseDataV2?.name,
+      }));
+    }
+  }, [enterpriseDataV2]);
+
+  // API call to fetch data from UDYAM
+  const { data: enterpriseDataV3, isLoading: isUDYAMLoading } = useQuery({
+    queryKey: [
+      AdminAPIs.getEnterpriseDataFromUDYAM.endpointKey,
+      formData?.udyam,
+    ],
+    enabled: !!formData?.udyam,
+    queryFn: () =>
+      getEnterprisedataFromUDYAM({
+        udyam: formData?.udyam,
+      }),
+    select: (res) => res.data.data,
+  });
+
+  // update name, doi and udyam fetched from UDYAM
+  useEffect(() => {
+    if (enterpriseDataV3?.name) {
+      setFormData((prev) => ({
+        ...prev,
+        name: enterpriseDataV3?.name,
+      }));
+    }
+
+    if (enterpriseDataV3?.doi) {
+      setFormData((prev) => ({
+        ...prev,
+        doi: enterpriseDataV3?.doi,
+      }));
+    }
+
+    if (enterpriseDataV3?.email) {
+      setFormData((prev) => ({
+        ...prev,
+        email: enterpriseDataV3?.email,
+      }));
+    }
+  }, [enterpriseDataV3]);
 
   //   address fetching via pincode
   const {
@@ -146,12 +209,6 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
   });
 
   const handleSubmit = () => {
-    // Basic validation
-    if (!formData.name || !formData.email) {
-      toast.error('Enterprise name and email are required.');
-      return;
-    }
-
     addEnterpriseMutation.mutate(formData);
   };
 
@@ -201,48 +258,63 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>PAN</Label>
-            <Input
-              placeholder="PAN number"
-              value={formData.panNumber}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase();
-                setFormData((prev) => ({
-                  ...prev,
-                  panNumber: value,
-                }));
-              }}
-            />
+            <div className="relative w-full">
+              <Input
+                placeholder="PAN number"
+                className="pr-10" // space for the loader
+                value={formData.panNumber}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase();
+                  setFormData((prev) => ({
+                    ...prev,
+                    panNumber: value,
+                  }));
+                }}
+              />
+              {isPANLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loading />
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <Label>GST</Label>
-            {Array.isArray(gstNumberList) && gstNumberList.length > 0 ? (
-              <Select
-                value={formData.gstNumber}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    gstNumber: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select GST Number" />
-                </SelectTrigger>
-                <SelectContent>
-                  {gstNumberList.map((gst) => (
-                    <SelectItem key={gst?.gstin} value={gst?.gstin}>
-                      {gst?.gstin}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                placeholder="GST number"
-                value={formData.gstNumber || ''}
-                onChange={handleChange('gstNumber')}
-              />
-            )}
+            <div className="relative w-full">
+              {Array.isArray(gstNumberList) && gstNumberList.length > 0 ? (
+                <Select
+                  value={formData.gstNumber}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      gstNumber: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select GST Number" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {gstNumberList.map((gst) => (
+                      <SelectItem key={gst?.gstin} value={gst?.gstin}>
+                        {gst?.gstin}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  placeholder="GST number"
+                  value={formData.gstNumber || ''}
+                  onChange={handleChange('gstNumber')}
+                />
+              )}
+              {isGSTLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loading />
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <Label>CIN or LLPIN</Label>
@@ -254,11 +326,18 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
           </div>
           <div>
             <Label>Udyam</Label>
-            <Input
-              placeholder="UDYAM number"
-              value={formData.udyam}
-              onChange={handleChange('udyam')}
-            />
+            <div className="relative w-full">
+              <Input
+                placeholder="UDYAM number"
+                value={formData.udyam}
+                onChange={handleChange('udyam')}
+              />
+              {isUDYAMLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loading />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -287,12 +366,16 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
           </div>
           <div>
             <Label>Phone Number</Label>
-            <Input
-              type="number"
-              placeholder="Enterprise number"
-              value={formData.mobileNumber}
-              onChange={handleChange('mobileNumber')}
-            />
+            <div className="relative flex items-center hover:border-gray-600">
+              <span className="absolute left-2 text-sm text-gray-600">+91</span>
+              <Input
+                type="number"
+                placeholder="Enterprise phone number"
+                className="w-full py-2 pl-10 pr-3"
+                value={formData.mobileNumber}
+                onChange={handleChange('mobileNumber')}
+              />
+            </div>
           </div>
 
           <div>
@@ -310,7 +393,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
               <DatePickers
                 selected={
                   formData.doi
-                    ? moment(formData.doi, 'MM/DD/YYYY').toDate() // ✅ Fix: match format
+                    ? moment(formData.doi, 'DD/MM/YYYY').toDate() // ✅ Fix: match format
                     : null
                 }
                 onChange={(date) => {
@@ -323,6 +406,7 @@ const AddEnterprise = ({ setIsAddingEnterprise }) => {
                 dateFormat="dd/MM/yyyy"
                 className="w-full rounded-md border px-3 py-2 text-sm"
                 maxDate={new Date()}
+                popperPlacement={'top-end'}
                 showMonthDropdown
                 showYearDropdown
                 dropdownMode="select"

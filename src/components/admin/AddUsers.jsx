@@ -186,14 +186,21 @@ const AddUsers = ({
             {/* Mobile Field */}
             <div className="space-y-2">
               <Label htmlFor="mobileNumber">Mobile Number</Label>
-              <Input
-                id="mobileNumber"
-                name="mobileNumber"
-                value={formData.mobileNumber}
-                onChange={handleInputChange}
-                placeholder="+91 9876543210"
-                disabled={isLoading}
-              />
+              <div className="relative flex items-center hover:border-gray-600">
+                <span className="absolute left-2 text-sm text-gray-600">
+                  +91
+                </span>
+                <Input
+                  id="mobileNumber"
+                  name="mobileNumber"
+                  type="number"
+                  className="w-full py-2 pl-10 pr-3"
+                  value={formData.mobileNumber}
+                  onChange={handleInputChange}
+                  placeholder="mobile number"
+                  disabled={isLoading}
+                />
+              </div>
             </div>
 
             {/* PAN Field */}
@@ -203,7 +210,13 @@ const AddUsers = ({
                 id="panNumber"
                 name="panNumber"
                 value={formData.panNumber}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase();
+                  setFormData((prev) => ({
+                    ...prev,
+                    panNumber: value,
+                  }));
+                }}
                 placeholder="ABCDE1234F"
                 maxLength={10}
                 disabled={isLoading}
