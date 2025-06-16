@@ -74,17 +74,17 @@ const AddItem = ({ onCancel, cta }) => {
 
   // set date into expiry field of item
   useEffect(() => {
-    setItem((prevUserData) => ({
-      ...prevUserData,
-      expiry: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '', // Update dynamically
-    }));
-    saveDraftToSession({
-      key: 'itemDraft',
-      data: {
-        ...item,
-        expiry: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '',
-      },
-    });
+    if (selectedDate) {
+      const formattedDate = moment(selectedDate).format('DD/MM/YYYY');
+      setItem((prevItem) => {
+        const updatedItem = { ...prevItem, expiry: formattedDate };
+        saveDraftToSession({
+          key: 'itemDraft',
+          data: updatedItem,
+        });
+        return updatedItem;
+      });
+    }
   }, [selectedDate]);
 
   const validation = (itemData) => {
@@ -211,7 +211,6 @@ const AddItem = ({ onCancel, cta }) => {
       toast.error(error.response.data.message || 'Something went wrong!');
     },
   });
-
   // services mutations
   const mutationServices = useMutation({
     mutationFn: CreateProductServices,
@@ -234,7 +233,6 @@ const AddItem = ({ onCancel, cta }) => {
   });
 
   // combined mutation
-
   const handleSubmitGoods = (e) => {
     e.preventDefault();
 
@@ -329,7 +327,6 @@ const AddItem = ({ onCancel, cta }) => {
               </div>
 
               <Select
-                required
                 value={item.type}
                 onValueChange={(value) => {
                   setErrorMsg({});
@@ -381,7 +378,6 @@ const AddItem = ({ onCancel, cta }) => {
                 className="max-w-xs"
                 name={translations('goods.components.add.label.productName')}
                 id="productName"
-                required={true}
                 onChange={onChange}
                 value={item.productName}
               />
@@ -392,7 +388,6 @@ const AddItem = ({ onCancel, cta }) => {
               <InputWithLabel
                 name={translations('services.components.add.label.serviceName')}
                 id="serviceName"
-                required={true}
                 onChange={onChange}
                 value={item.serviceName}
               />
@@ -406,7 +401,6 @@ const AddItem = ({ onCancel, cta }) => {
               <InputWithLabel
                 name={translations('goods.components.add.label.hsnCode')}
                 id="hsnCode"
-                required={true}
                 onChange={onChange}
                 value={item.hsnCode}
               />
@@ -417,7 +411,6 @@ const AddItem = ({ onCancel, cta }) => {
               <InputWithLabel
                 name={translations('services.components.add.label.sac')}
                 id="SAC"
-                required={true}
                 onChange={onChange}
                 value={item.SAC}
               />
@@ -444,10 +437,15 @@ const AddItem = ({ onCancel, cta }) => {
             </Label>
             <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
               <DatePickers
-                selected={selectedDate}
+                selected={
+                  item?.expiry
+                    ? moment(item?.expiry, 'DD/MM/YYYY').toDate()
+                    : ''
+                }
                 onChange={(date) => setSelectedDate(date)}
                 dateFormat="dd/MM/yyyy"
-                popperPlacement="right"
+                popperPlacement="left"
+                isExpiryField={true}
               />
               <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
             </div>
@@ -465,7 +463,6 @@ const AddItem = ({ onCancel, cta }) => {
           <InputWithLabel
             name={translations('goods.components.add.label.description')}
             id="description"
-            required={true}
             onChange={onChange}
             value={item.description}
           />
@@ -485,7 +482,6 @@ const AddItem = ({ onCancel, cta }) => {
               name={translations('goods.components.add.label.rate')}
               id="rate"
               type="number"
-              required={true}
               onChange={onChange}
               value={item.rate}
             />
@@ -497,7 +493,6 @@ const AddItem = ({ onCancel, cta }) => {
                 type="number"
                 name={translations('goods.components.add.label.quantity')}
                 id="quantity"
-                required={true}
                 onChange={onChange}
                 value={item.quantity}
               />
@@ -509,7 +504,6 @@ const AddItem = ({ onCancel, cta }) => {
               name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
               type="number"
-              required={true}
               onChange={onChange}
               value={item.gstPercentage}
             />
@@ -534,7 +528,6 @@ const AddItem = ({ onCancel, cta }) => {
                   'goods.components.add.label.manufactureName',
                 )}
                 id="manufacturerName"
-                required={true}
                 onChange={onChange}
                 value={item.manufacturerName}
               />
