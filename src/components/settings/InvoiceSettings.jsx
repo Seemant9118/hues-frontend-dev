@@ -215,7 +215,7 @@ export default function InvoiceSettings({
                     onClick={(e) => {
                       e.stopPropagation(); // prevent triggering skin select
                       setIsPreviewOpen(true);
-                      setCurrPreviewSkin(skin.image);
+                      setCurrPreviewSkin(skin);
                     }}
                   >
                     {translations('preview_button')}
@@ -296,10 +296,10 @@ export default function InvoiceSettings({
       )}
       {isPreviewOpen && selectedSkin && (
         <InvoicePreview
-          handleSelectFn={() => handleUpdateSkin(selectedSkin)}
+          handleSelectFn={() => handleUpdateSkin(currPreviewSkin)}
           isSelectable={true}
           setIsPreviewOpen={setIsPreviewOpen}
-          url={currPreviewSkin}
+          url={currPreviewSkin?.image}
           isPDFProp={false}
         />
       )}
