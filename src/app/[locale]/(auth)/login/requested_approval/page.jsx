@@ -51,7 +51,7 @@ const RequestedApprovalPage = () => {
           </div>
 
           <Link
-            href="/"
+            href="/dashboard"
             className="flex w-full items-center justify-center rounded-sm bg-gray-300 p-2 text-sm font-semibold text-[#121212] hover:underline"
           >
             Continue Anyway

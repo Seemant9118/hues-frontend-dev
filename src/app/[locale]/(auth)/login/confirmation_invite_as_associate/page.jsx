@@ -63,7 +63,7 @@ const ConfirmationInviteAsAssocitePage = () => {
         <div className="flex h-full flex-col items-center justify-center gap-2">
           <div className="text-2xl">{translations('noInvitationFound')}</div>
           <Link
-            href="/"
+            href="/dashboard"
             className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
           >
             {translations('skipForNow')}

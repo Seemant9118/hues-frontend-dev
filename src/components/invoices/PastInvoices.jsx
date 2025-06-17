@@ -38,9 +38,9 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   // redirect to invoice details page
   function invoiceDetailsPage(invoiceId) {
     if (isPurchasesPage) {
-      router.push(`/purchases/purchase-invoices/${invoiceId}`);
+      router.push(`/dashboard/purchases/purchase-invoices/${invoiceId}`);
     } else {
-      router.push(`/sales/sales-invoices/${invoiceId}`);
+      router.push(`/dashboard/sales/sales-invoices/${invoiceId}`);
     }
   }
 

@@ -32,7 +32,7 @@ APIinstance.interceptors.response.use(
       // If no refresh token, clear storage and redirect to login
       if (!refreshTokenValue) {
         LocalStorageService.clear();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(error);
       }
 
@@ -51,7 +51,7 @@ APIinstance.interceptors.response.use(
         toast.error('Session expired. Please log in again.');
         LocalStorageService.clear();
         SessionStorageService.clear();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(refreshError);
       }
     }

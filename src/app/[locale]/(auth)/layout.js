@@ -60,7 +60,7 @@ export default function LoginLayout({ children }) {
           <div className="flex h-screen w-full flex-col bg-white md:w-1/2">
             {/* Fixed Header with logo */}
             <div className="shrink-0 px-8 py-5">
-              <Link href={'/'}>
+              <Link href={'/login'}>
                 <Image
                   src={'/hues_logo.png'}
                   height={30}

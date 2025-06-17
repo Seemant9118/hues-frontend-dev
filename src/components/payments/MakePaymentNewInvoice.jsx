@@ -139,10 +139,12 @@ const MakePaymentNewInvoice = ({
       });
       // setIsRecordingPayment(false);
       if (isPurchasePage) {
-        router.push(`/purchases/purchase-payments/${res.data.data.id}`);
+        router.push(
+          `/dashboard/purchases/purchase-payments/${res.data.data.id}`,
+        );
         SessionStorageService.remove('invoicePaymentAdviceDraft');
       } else {
-        router.push(`/sales/sales-payments/${res.data.data.id}`);
+        router.push(`/dashboard/sales/sales-payments/${res.data.data.id}`);
         SessionStorageService.remove('invoicePaymentRecordDraft');
       }
     },

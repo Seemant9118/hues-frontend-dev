@@ -24,6 +24,11 @@ module.exports = {
       backgroundImage: {
         'custom-linear':
           'linear-gradient(161.66deg, rgba(40, 138, 249, 0.1) 1.42%, rgba(147, 24, 94, 0.1) 87.55%)',
+        'gradient-bg':
+          'linear-gradient(180deg, rgba(40, 138, 249, 0.1) 0%, rgba(147, 24, 94, 0.1) 100%)',
+      },
+      fontFamily: {
+        handwriting: ['"Nanum Pen Script"', 'cursive'],
       },
       colors: {
         border: 'hsl(var(--border))',

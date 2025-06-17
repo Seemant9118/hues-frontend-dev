@@ -350,7 +350,7 @@ const CreateOrder = ({
           : translations('form.successMsg.bid_created_successfully'),
       );
       if (isPurchasePage) {
-        router.push(`/purchases/purchase-orders/${res.data.data.id}`);
+        router.push(`/dashboard/purchases/purchase-orders/${res.data.data.id}`);
         setOrder({
           clientType: 'B2B',
           sellerEnterpriseId: bidDraft?.sellerEnterpriseId || null,
@@ -370,7 +370,7 @@ const CreateOrder = ({
         }); // Reset order state
         SessionStorageService.remove('bidDraft');
       } else {
-        router.push(`/sales/sales-orders/${res.data.data.id}`);
+        router.push(`/dashboard/sales/sales-orders/${res.data.data.id}`);
         setOrder({
           clientType: 'B2B',
           sellerEnterpriseId: enterpriseId,
@@ -782,12 +782,12 @@ const CreateOrder = ({
                 name="items"
                 value={
                   cta === 'offer'
-                    ? itemClientListingOptions?.find(
+                    ? (itemClientListingOptions?.find(
                         (item) => item.value.id === selectedItem.productId,
-                      ) ?? null
-                    : itemVendorListingOptions?.find(
+                      ) ?? null)
+                    : (itemVendorListingOptions?.find(
                         (item) => item.value.id === selectedItem.productId,
-                      ) ?? null
+                      ) ?? null)
                 }
                 placeholder={translations('form.input.item.placeholder')}
                 options={

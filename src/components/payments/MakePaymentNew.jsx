@@ -237,10 +237,12 @@ const MakePaymentNew = ({
       });
       setFiles([]);
       if (isPurchasePage) {
-        router.push(`/purchases/purchase-payments/${res.data.data.id}`);
+        router.push(
+          `/dashboard/purchases/purchase-payments/${res.data.data.id}`,
+        );
         SessionStorageService.remove('orderPaymentAdviceDraft');
       } else {
-        router.push(`/sales/sales-payments/${res.data.data.id}`);
+        router.push(`/dashboard/sales/sales-payments/${res.data.data.id}`);
         SessionStorageService.remove('orderPaymentRecordDraft');
       }
     },

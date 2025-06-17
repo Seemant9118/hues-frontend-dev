@@ -280,7 +280,7 @@ function NotificationPopUp() {
                 className="cursor-pointer text-center text-blue-400 underline"
                 onClick={() => {
                   setOpen(!open);
-                  router.push('/notification');
+                  router.push('/dashboard/notification');
                 }}
               >
                 See more

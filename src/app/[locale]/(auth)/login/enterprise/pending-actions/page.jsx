@@ -147,7 +147,7 @@ const ConfirmationPage = () => {
   };
 
   const handleSkip = () => {
-    router.push('/');
+    router.push('/dashboard');
   };
 
   return (
