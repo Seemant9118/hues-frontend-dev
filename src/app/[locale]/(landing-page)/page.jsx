@@ -118,7 +118,7 @@ export default function HeroSection() {
       <div className="sticky top-0 z-20 flex justify-center px-4 py-4">
         <nav className="sticky top-0 z-20 mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-4 rounded-md border bg-white/70 px-4 py-3 backdrop-blur-sm">
           {/* Logo */}
-          <Link href="/portfolio" aria-label="Go to homepage">
+          <Link href="/" aria-label="Go to homepage">
             <Image
               src="/hues_logo.png"
               width={100}
