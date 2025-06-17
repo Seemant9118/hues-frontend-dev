@@ -26,9 +26,9 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
 
   const onRowClick = (row) => {
     if (pathName.includes('sales')) {
-      router.push(`/sales/sales-payments/${row.paymentId}`);
+      router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
     } else {
-      router.push(`/purchases/purchase-payments/${row.paymentId}`);
+      router.push(`/dashboard/purchases/purchase-payments/${row.paymentId}`);
     }
   };
 

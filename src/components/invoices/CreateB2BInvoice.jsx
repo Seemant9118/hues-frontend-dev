@@ -213,7 +213,7 @@ const CreateB2BInvoice = ({
         translations('form.successMsg.invoice_created_successfully'),
       );
       SessionStorageService.remove('b2bInvoiceDraft');
-      router.push(`/sales/sales-invoices/${res.data.data.id}`);
+      router.push(`/dashboard/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
       if (

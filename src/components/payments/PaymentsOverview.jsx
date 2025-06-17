@@ -32,11 +32,11 @@ const PaymentOverview = ({ paymentsDetails }) => {
             onClick={() => {
               if (isPaymentOnSales) {
                 router.push(
-                  `/sales/sales-invoices/${paymentsDetails?.invoiceReferenceNumbers[0]?.id}`,
+                  `/dashboard/sales/sales-invoices/${paymentsDetails?.invoiceReferenceNumbers[0]?.id}`,
                 );
               } else {
                 router.push(
-                  `/purchases/purchase-invoices/${paymentsDetails?.invoiceReferenceNumbers[0]?.id}`,
+                  `/dashboard/purchases/purchase-invoices/${paymentsDetails?.invoiceReferenceNumbers[0]?.id}`,
                 );
               }
             }}

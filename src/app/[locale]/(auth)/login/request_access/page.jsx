@@ -92,7 +92,7 @@ const RequestAccessPage = () => {
 
           <div className="flex w-full flex-col gap-14">
             <Link
-              href="/"
+              href="/dashboard"
               className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
             >
               Skip for Now

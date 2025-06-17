@@ -18,6 +18,7 @@ export default async function RootLayout({ children, params: { locale } }) {
   const currLocale = localeFromCookie || locale;
 
   let messages = {};
+
   try {
     const authMessages = await import(
       `../../../dictonaries/auth/${currLocale}.json`

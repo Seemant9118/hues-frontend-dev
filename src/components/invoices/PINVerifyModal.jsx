@@ -224,7 +224,9 @@ const PINVerifyModal = ({
                     {translations('infoText.pin_not_exist_info')}{' '}
                     <span
                       className="cursor-pointer text-primary underline hover:text-black"
-                      onClick={() => router.push('/settings?tab=pinSettings')}
+                      onClick={() =>
+                        router.push('/dashboard/settings?tab=pinSettings')
+                      }
                     >
                       {translations('infoText.info2')}
                     </span>

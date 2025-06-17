@@ -18,7 +18,7 @@ const EnterpriseConfirmationPage = () => {
     e.preventDefault();
 
     toast.success(translations('toastSuccess'));
-    router.push('/');
+    router.push('/dashboard');
   };
 
   return (

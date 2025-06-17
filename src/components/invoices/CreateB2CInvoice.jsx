@@ -360,7 +360,7 @@ const CreateB2CInvoice = ({
         translations('form.successMsg.invoice_created_successfully'),
       );
       SessionStorageService.remove('b2CInvoiceDraft');
-      router.push(`/sales/sales-invoices/${res.data.data.id}`);
+      router.push(`/dashboard/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');

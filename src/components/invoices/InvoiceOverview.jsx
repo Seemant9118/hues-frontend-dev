@@ -75,9 +75,11 @@ const InvoiceOverview = ({
                 className="flex cursor-pointer items-center gap-0.5 text-sm font-bold hover:text-primary hover:underline"
                 onClick={() => {
                   if (isSalesDetailPage) {
-                    router.push(`/sales/sales-orders/${orderId}`);
+                    router.push(`/dashboard/sales/sales-orders/${orderId}`);
                   } else {
-                    router.push(`/purchases/purchase-orders/${orderId}`);
+                    router.push(
+                      `/dashboard/purchases/purchase-orders/${orderId}`,
+                    );
                   }
                 }}
               >

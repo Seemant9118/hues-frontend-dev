@@ -171,7 +171,7 @@ const ProfileInfoPopUp = ({
 
           <div
             onClick={() => {
-              router.push('/profile');
+              router.push('/dashboard/profile');
               setOpen(false);
             }}
             className="cursor-pointer rounded-sm border border-primary p-1 text-xs font-semibold text-primary hover:bg-blue-500/10"

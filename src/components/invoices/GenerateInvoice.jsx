@@ -260,7 +260,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         invoiceApi.getInvoices.endpointKey,
         orderId,
       ]);
-      router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
+      router.push(`/dashboard/sales/sales-invoices/${data?.data?.data?.id}`);
     },
     onError: (error) => {
       if (
@@ -282,7 +282,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     onSuccess: (data) => {
       toast.success(translations('successMsg.invoice_generate_success'));
 
-      router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
+      router.push(`/dashboard/sales/sales-invoices/${data?.data?.data?.id}`);
     },
     onError: (error) => {
       if (

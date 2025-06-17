@@ -57,6 +57,7 @@ const MobileLoginPage = () => {
     mutationFn: (data) => userVerifyOtp(data),
     // eslint-disable-next-line consistent-return
     onSuccess: async (data) => {
+      const redirectedUrl = LocalStorageService.get('redirectUrl');
       // set refresh token
       LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
       // set access token
@@ -133,7 +134,8 @@ const MobileLoginPage = () => {
         // is not logInWithInviteLink
         else {
           if (isEnterprisestartedOnboarding && isEnterpriseOnboardingComplete) {
-            return router.push('/');
+            router.push(redirectedUrl || '/dashboard');
+            LocalStorageService.remove('redirectUrl');
           } else if (
             isEnterprisestartedOnboarding &&
             !isEnterpriseOnboardingComplete

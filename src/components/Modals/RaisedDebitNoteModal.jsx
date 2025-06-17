@@ -57,7 +57,9 @@ const RaisedDebitNoteModal = ({ orderId, invoiceId, totalAmount }) => {
     onSuccess: (res) => {
       toast.success(translations('toast.success'));
       setIsOpen(false);
-      router.push(`/purchases/purchase-debitNotes/${res.data.data.id}`);
+      router.push(
+        `/dashboard/purchases/purchase-debitNotes/${res.data.data.id}`,
+      );
       setDataToRaisedDebitNote({
         orderId: null,
         amount: null,
