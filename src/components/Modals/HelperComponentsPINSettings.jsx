@@ -1,9 +1,7 @@
-import { OTPInput } from 'input-otp';
 import { BadgeCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../ui/button';
-import Slot from '../ui/Slot';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/input-otp';
 import Loading from '../ui/Loading';
 
 /* STEP HELPER COMPONENTS */
@@ -22,20 +20,19 @@ export const StepCreatePIN = ({
       <p className="w-full text-center text-sm text-[#A5ABBD]">
         {translations('helper_components.descriptions.create_pin')}
       </p>
-      <OTPInput
+      <InputOTP
         name="new_pin"
         onChange={(value) => setNewPin(value)}
         maxLength={4}
         value={newPin}
-        containerClassName="group flex items-center has-[:disabled]:opacity-30"
-        render={({ slots }) => (
-          <div className="flex gap-4">
-            {slots.map((slot) => (
-              <Slot key={uuidv4} {...slot} />
-            ))}
-          </div>
-        )}
-      />
+      >
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+          <InputOTPSlot index={3} />
+        </InputOTPGroup>
+      </InputOTP>
       <Button
         size="sm"
         className="w-full"
@@ -94,20 +91,19 @@ export const StepConfirmPIN = ({
       <p className="w-full text-center text-sm text-[#A5ABBD]">
         {translations('helper_components.descriptions.confirm_pin')}
       </p>
-      <OTPInput
+      <InputOTP
         name="confirm_pin"
         onChange={(value) => setConfirmPin(value)}
         maxLength={4}
         value={confirmPin}
-        containerClassName="group flex items-center has-[:disabled]:opacity-30"
-        render={({ slots }) => (
-          <div className="flex gap-4">
-            {slots.map((slot) => (
-              <Slot key={uuidv4()} {...slot} />
-            ))}
-          </div>
-        )}
-      />
+      >
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+          <InputOTPSlot index={3} />
+        </InputOTPGroup>
+      </InputOTP>
       <Button
         size="sm"
         className="w-full"
@@ -118,7 +114,7 @@ export const StepConfirmPIN = ({
       </Button>
 
       {updatePINErrors === 'REUSED_PIN' && (
-        <span
+        <button
           className="cursor-pointer text-sm font-bold hover:underline"
           onClick={() => {
             setSteps((prev) => ({ ...prev, update_pin: 2, forgot_pin: 2 }));
@@ -128,7 +124,7 @@ export const StepConfirmPIN = ({
           }}
         >
           {translations('helper_components.messages.try_new_pin')}
-        </span>
+        </button>
       )}
     </div>
   );
@@ -150,20 +146,19 @@ export const StepEnterCurrentPIN = ({
       <p className="w-full text-center text-sm text-[#A5ABBD]">
         {translations('helper_components.descriptions.enter_current_pin')}
       </p>
-      <OTPInput
+      <InputOTP
         name="current_pin"
         onChange={(value) => setPin(value)}
         maxLength={4}
         value={pin}
-        containerClassName="group flex items-center has-[:disabled]:opacity-30"
-        render={({ slots }) => (
-          <div className="flex gap-4">
-            {slots.map((slot) => (
-              <Slot key={uuidv4} {...slot} />
-            ))}
-          </div>
-        )}
-      />
+      >
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+          <InputOTPSlot index={3} />
+        </InputOTPGroup>
+      </InputOTP>
       <Button
         size="sm"
         className="w-full"
@@ -177,12 +172,12 @@ export const StepEnterCurrentPIN = ({
         )}
       </Button>
       {verifyPINErrors === 'INVALID_PIN' && (
-        <span
+        <button
           className="cursor-pointer text-sm font-bold hover:underline"
           onClick={() => generateOtpMutation.mutate()}
         >
           {translations('helper_components.messages.forgot_pin')}
-        </span>
+        </button>
       )}
     </div>
   );
@@ -202,20 +197,20 @@ export const StepEnterOTP = ({
       <p className="w-full text-center text-sm text-[#A5ABBD]">
         {translations('helper_components.descriptions.enter_otp')}
       </p>
-      <OTPInput
+
+      <InputOTP
         name="otp"
         onChange={(value) => setOtp(value)}
         maxLength={4}
         value={otp}
-        containerClassName="group flex items-center has-[:disabled]:opacity-30"
-        render={({ slots }) => (
-          <div className="flex gap-4">
-            {slots.map((slot) => (
-              <Slot key={uuidv4} {...slot} />
-            ))}
-          </div>
-        )}
-      />
+      >
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+          <InputOTPSlot index={3} />
+        </InputOTPGroup>
+      </InputOTP>
       <Button
         size="sm"
         className="w-full"
