@@ -1,7 +1,5 @@
 'use client';
 
-import { parseJwt } from '@/appUtils/helperFunctions';
-import SignedInPopUp from '@/components/Popovers/SignedInPopUp';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -16,6 +14,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
+import { parseJwt } from '@/appUtils/helperFunctions';
 
 const features = [
   {
@@ -101,14 +100,13 @@ const features2 = [
 export default function HeroSection() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isUserPopOverOpen, setIsUserPopOverOpen] = useState();
-  const [userProfileData, setUserProfileData] = useState(null);
 
   useEffect(() => {
     const token = LocalStorageService.get('token');
-    if (token) {
-      const data = parseJwt(token);
-      setUserProfileData(data);
+    const userData = parseJwt(token);
+
+    if (userData?.userId) {
+      window.location.href = '/dashboard';
     }
   }, []);
 
@@ -161,17 +159,9 @@ export default function HeroSection() {
               <NavigationMenuItem>
                 <Link href="#contact">Contact</Link>
               </NavigationMenuItem>
-              {userProfileData ? (
-                <SignedInPopUp
-                  open={isUserPopOverOpen}
-                  setOpen={setIsUserPopOverOpen}
-                  userProfileData={userProfileData}
-                />
-              ) : (
-                <Button size="sm" onClick={() => router.push('/login')}>
-                  Sign In
-                </Button>
-              )}
+              <Button size="sm" onClick={() => router.push('/login')}>
+                Sign In
+              </Button>
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -200,23 +190,13 @@ export default function HeroSection() {
                   </Link>
                 </li>
                 <li>
-                  {userProfileData ? (
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={() => router.push('/dashboard')}
-                    >
-                      Go to Dashboard
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={() => router.push('/login')}
-                    >
-                      Open app
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => router.push('/login')}
+                  >
+                    Open app
+                  </Button>
                 </li>
               </ul>
             </div>
@@ -278,15 +258,13 @@ export default function HeroSection() {
             <Button size="sm" variant="blue_outline" className="w-40 bg-white">
               Watch demo
             </Button>
-            {!userProfileData && (
-              <Button
-                size="sm"
-                className="w-40"
-                onClick={() => router.push('/login')}
-              >
-                Start using
-              </Button>
-            )}
+            <Button
+              size="sm"
+              className="w-40"
+              onClick={() => router.push('/login')}
+            >
+              Start using
+            </Button>
           </div>
         </section>
 
@@ -520,11 +498,7 @@ export default function HeroSection() {
               size="sm"
               variant="outline"
               onClick={() => {
-                if (userProfileData) {
-                  router.push('/dashboard');
-                } else {
-                  router.push('/login');
-                }
+                router.push('/login');
               }}
             >
               Start 14 days free trial →
