@@ -4,7 +4,16 @@ import { NextIntlClientProvider } from 'next-intl';
 import { cookies } from 'next/headers';
 import { Toaster } from 'sonner';
 import './globals.css';
+// eslint-disable-next-line camelcase
+import { Nanum_Pen_Script } from 'next/font/google';
 import NotFound from './not-found';
+
+const nanumPen = Nanum_Pen_Script({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-nanum-pen',
+  display: 'swap',
+});
 
 // Font files can be colocated inside of `app`
 export const metadata = {
@@ -97,7 +106,7 @@ export default async function RootLayout({ children, params: { locale } }) {
   }
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${nanumPen.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <div className="absolute">

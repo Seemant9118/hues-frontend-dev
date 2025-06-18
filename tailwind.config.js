@@ -28,7 +28,8 @@ module.exports = {
           'linear-gradient(180deg, rgba(40, 138, 249, 0.1) 0%, rgba(147, 24, 94, 0.1) 100%)',
       },
       fontFamily: {
-        handwriting: ['"Nanum Pen Script"', 'cursive'],
+        handwriting: ['var(--font-nanum-pen)', 'cursive'], // fallback is safe
+        satoshi: ['Satoshi-Variable', 'sans-serif'], // your default
       },
       colors: {
         border: 'hsl(var(--border))',

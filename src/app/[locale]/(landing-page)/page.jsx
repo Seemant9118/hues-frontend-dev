@@ -42,7 +42,7 @@ const features1 = [
     icon: (
       <Image
         src="/vendor-management-image.png"
-        width={800}
+        width={500}
         height={500}
         alt="Chart Icon"
       />
@@ -54,7 +54,7 @@ const features1 = [
     icon: (
       <Image
         src="/sales-purchase-image.png"
-        width={800}
+        width={500}
         height={500}
         alt="Chart Icon"
       />
@@ -64,7 +64,7 @@ const features1 = [
   {
     title: 'Tax & Legal Compliance',
     icon: (
-      <Image src="/tax-image.png" width={800} height={500} alt="Chart Icon" />
+      <Image src="/tax-image.png" width={500} height={500} alt="Chart Icon" />
     ),
     description: 'DPDP, PMLA, GST, MCA — done..',
   },
@@ -73,7 +73,7 @@ const features1 = [
     icon: (
       <Image
         src="/built-in-bi-image.png"
-        width={800}
+        width={500}
         height={500}
         alt="Chart Icon"
       />
@@ -239,7 +239,7 @@ export default function HeroSection() {
           {/* Hero Heading */}
           <h1 className="font-bold leading-tight text-[#1A1A1A] sm:text-5xl md:text-7xl">
             Redefining{' '}
-            <span className="mb-5 inline-block rotate-[-4deg] font-handwriting text-[#EA5868] sm:text-5xl md:text-6xl">
+            <span className="mb-5 inline-block rotate-[-2deg] font-handwriting text-[#EA5868] sm:text-6xl md:text-8xl">
               ERP
             </span>{' '}
             for a <span>Digital Bharat</span>
@@ -282,9 +282,9 @@ export default function HeroSection() {
       {/* why? */}
       <section className="bg-white px-4 py-20 md:px-20">
         <div className="mx-auto max-w-6xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-5xl">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-7xl">
             Why{' '}
-            <span className="inline-block font-handwriting font-normal">
+            <span className="inline-block font-handwriting text-4xl sm:text-6xl md:text-8xl">
               Choose
             </span>{' '}
             Hues?
@@ -321,10 +321,10 @@ export default function HeroSection() {
           {/* Text Content */}
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold text-gray-900 md:text-3xl">
-              <span className="inline-block font-handwriting font-normal">
-                Built Secure
-              </span>
-              . From the Ground Up
+              <span className="inline-block font-handwriting text-2xl md:text-4xl">
+                Built Secure.
+              </span>{' '}
+              From the Ground Up
             </h2>
             <p className="mt-2 text-base text-gray-600">
               Your data isn&apos;t just protected — it&apos;s governed.
@@ -367,9 +367,9 @@ export default function HeroSection() {
       {/* one platform */}
       <section id="features" className="w-full bg-[#EAF3FA] px-4 py-20 md:px-8">
         <div className="mx-auto max-w-7xl text-center">
-          <h2 className="font-semibold text-gray-900 sm:text-5xl md:text-5xl">
+          <h2 className="text-base font-bold text-gray-900 sm:text-5xl md:text-5xl">
             One Platform.{' '}
-            <span className="mb-2 inline-block font-handwriting font-normal">
+            <span className="mb-2 inline-block font-handwriting text-lg sm:text-6xl md:text-6xl">
               All Your Business
             </span>{' '}
             Needs.
@@ -411,10 +411,10 @@ export default function HeroSection() {
 
           {/* Right Side - Content */}
           <div className="flex w-full max-w-xl flex-col justify-center text-left sm:h-[400px]">
-            <h2 className="font-semibold text-gray-900 sm:text-4xl md:text-5xl">
+            <h2 className="text-base font-semibold text-gray-900 sm:text-4xl md:text-5xl">
               Data That Works{' '}
-              <span className="mb-2 inline-block font-handwriting font-normal">
-                for you, and with you
+              <span className="mb-2 inline-block font-handwriting text-lg sm:text-5xl md:text-6xl">
+                for you, with you
               </span>{' '}
             </h2>
             <p className="mt-4 font-semibold text-gray-600">
@@ -433,10 +433,10 @@ export default function HeroSection() {
 
       {/* For Enterprise */}
       <section className="bg-white px-4 py-20 md:px-20">
-        <div className="mx-auto max-w-5xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-5xl">
             For{' '}
-            <span className="mb-2 inline-block font-handwriting font-normal">
+            <span className="inline-block font-handwriting text-2xl sm:text-4xl md:text-6xl">
               Enterprises, MSMEs, Auditors
             </span>{' '}
             and Everyone in Between
@@ -472,7 +472,7 @@ export default function HeroSection() {
         <div className="bg-gradient-bg px-6 pt-20 text-center sm:mx-10">
           <h2 className="text-xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
             Transparent{' '}
-            <span className="inline-block font-handwriting font-normal">
+            <span className="inline-block font-handwriting text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
               Pricing.
             </span>
             <br />
@@ -530,7 +530,7 @@ export default function HeroSection() {
             <span className="text-xl font-semibold md:text-4xl">
               Join the Movement.
             </span>
-            <span className="ml-2 font-handwriting text-xl text-gray-700 md:text-4xl">
+            <span className="ml-2 font-handwriting text-2xl text-gray-700 md:text-5xl">
               Build with Bharat.
             </span>
           </p>
