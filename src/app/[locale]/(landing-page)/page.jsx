@@ -239,10 +239,10 @@ export default function HeroSection() {
           {/* Hero Heading */}
           <h1 className="font-bold leading-tight text-[#1A1A1A] sm:text-5xl md:text-7xl">
             Redefining{' '}
-            <span className="inline-block rotate-[-4deg] font-handwriting sm:text-3xl md:text-5xl">
+            <span className="mb-5 inline-block rotate-[-4deg] font-handwriting text-[#EA5868] sm:text-5xl md:text-6xl">
               ERP
             </span>{' '}
-            for a <span className="text-[#EA5868]">Digital Bharat</span>
+            for a <span>Digital Bharat</span>
           </h1>
 
           {/* Subtext */}
@@ -255,12 +255,11 @@ export default function HeroSection() {
 
           {/* CTA */}
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
-            <Button size="sm" variant="blue_outline" className="w-40 bg-white">
+            <Button variant="blue_outline" className="w-40 rounded-sm bg-white">
               Watch demo
             </Button>
             <Button
-              size="sm"
-              className="w-40"
+              className="w-40 rounded-sm"
               onClick={() => router.push('/login')}
             >
               Start using
@@ -275,7 +274,7 @@ export default function HeroSection() {
             width={800}
             height={500}
             alt="ERP Dashboard Preview"
-            className="w-full max-w-6xl rounded-t-xl bg-white p-2"
+            className="w-full max-w-4xl rounded-t-xl bg-white p-2"
           />
         </figure>
       </section>
@@ -370,7 +369,7 @@ export default function HeroSection() {
         <div className="mx-auto max-w-7xl text-center">
           <h2 className="font-semibold text-gray-900 sm:text-5xl md:text-5xl">
             One Platform.{' '}
-            <span className="inline-block font-handwriting font-normal">
+            <span className="mb-2 inline-block font-handwriting font-normal">
               All Your Business
             </span>{' '}
             Needs.
@@ -380,7 +379,7 @@ export default function HeroSection() {
           </p>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {features1.map((feature) => (
             <div
               key={feature}
@@ -399,23 +398,22 @@ export default function HeroSection() {
       </section>
 
       {/* data works */}
-      <section className="w-full bg-white px-4 py-20 md:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 md:flex-row md:items-start md:justify-between">
+      <section className="w-full bg-white py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-12 md:flex-row md:items-start md:justify-between">
           {/* Left Side - Image Placeholder */}
-
           <Image
             src="/data-image.png"
-            width={500}
-            height={500}
+            width={400}
+            height={400}
             alt="ERP Dashboard Preview"
-            className="w-full max-w-6xl"
+            className="w-full max-w-4xl"
           />
 
           {/* Right Side - Content */}
-          <div className="max-w-xl text-left">
+          <div className="flex w-full max-w-xl flex-col justify-center text-left sm:h-[400px]">
             <h2 className="font-semibold text-gray-900 sm:text-4xl md:text-5xl">
               Data That Works{' '}
-              <span className="inline-block font-handwriting font-normal">
+              <span className="mb-2 inline-block font-handwriting font-normal">
                 for you, and with you
               </span>{' '}
             </h2>
@@ -435,10 +433,10 @@ export default function HeroSection() {
 
       {/* For Enterprise */}
       <section className="bg-white px-4 py-20 md:px-20">
-        <div className="mx-auto max-w-6xl text-center">
+        <div className="mx-auto max-w-5xl text-center">
           <h2 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-5xl">
             For{' '}
-            <span className="inline-block font-handwriting font-normal">
+            <span className="mb-2 inline-block font-handwriting font-normal">
               Enterprises, MSMEs, Auditors
             </span>{' '}
             and Everyone in Between
@@ -496,7 +494,6 @@ export default function HeroSection() {
           <div className="mt-8">
             <Button
               size="sm"
-              variant="outline"
               onClick={() => {
                 router.push('/login');
               }}
@@ -511,9 +508,9 @@ export default function HeroSection() {
               <Image
                 src="/pricing-image.png"
                 alt="Pricing UI"
-                width={1200}
-                height={700}
-                className="w-full object-cover"
+                width={800}
+                height={500}
+                className="w-full max-w-4xl"
               />
             </figure>
             {/* Layered effect for background card shadows */}
