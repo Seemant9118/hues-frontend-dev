@@ -4,6 +4,7 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import Tooltips from '@/components/auth/Tooltips';
+import FilterInvoices from '@/components/invoices/FilterInvoices';
 import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -352,6 +353,13 @@ const SalesInvoices = () => {
                       {translations('tabs.label.tab3')}
                     </TabsTrigger>
                   </TabsList>
+
+                  <FilterInvoices
+                    isSalesFilter={true}
+                    tab={tab}
+                    setFilterData={setFilterData}
+                    setPaginationData={setPaginationData}
+                  />
                 </section>
 
                 <TabsContent value="all" className="flex-grow overflow-hidden">

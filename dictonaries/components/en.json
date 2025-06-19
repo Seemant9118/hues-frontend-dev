@@ -172,6 +172,7 @@
                     "select_status": "Select Status",
                     "select_client": "Select Client",
                     "invoice_generated": "Invoice Generated",
+                    "debit_note_raised": "Debit Note Raised",
                     "clear": "Clear"
                 },
                 "input": {
@@ -183,7 +184,10 @@
                             "option4": "Rejected",
                             "option5": "Withdrawn",
                             "option6": "Bid Sent",
-                            "option7": "Offer Recieved"
+                            "option7": "Offer Recieved",
+                            "option8": "Payment Pending",
+                            "option9": "Partial Paid",
+                            "option10": "Paid"
                         }
                     }
                 },
