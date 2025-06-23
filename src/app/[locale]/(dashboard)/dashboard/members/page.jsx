@@ -52,7 +52,7 @@ const MembersPage = () => {
       )}
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
-        <Wrapper className="h-full py-2">
+        <Wrapper className="h-screen">
           <SubHeader name={'Members'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
               <MemberInviteModal />
@@ -60,9 +60,8 @@ const MembersPage = () => {
               <Tooltips
                 trigger={
                   <Button
-                    disabled
+                    variant="export"
                     onClick={() => {}}
-                    variant="outline"
                     className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                     size="sm"
                   >
