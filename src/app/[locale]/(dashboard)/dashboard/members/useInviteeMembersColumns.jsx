@@ -35,7 +35,7 @@ export const useInviteeMembersColumns = () => {
       ),
       cell: ({ row }) => {
         const { mobileNumber } = row.original.invitation.userDetails;
-        return <div>{mobileNumber}</div>;
+        return <div>+91 {mobileNumber || '-'}</div>;
       },
     },
     {
@@ -45,7 +45,7 @@ export const useInviteeMembersColumns = () => {
       ),
       cell: ({ row }) => {
         const { email } = row.original.invitation.userDetails;
-        return <div>{email}</div>;
+        return <div>{email || '-'}</div>;
       },
     },
     {

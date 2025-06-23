@@ -22,6 +22,7 @@ import {
   SquareKanban,
   Store,
   UserRound,
+  Users,
 } from 'lucide-react';
 import Image from 'next/image';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
@@ -158,12 +159,11 @@ const Sidebar = () => {
         },
       ],
     },
-
-    // {
-    //   name: 'Members',
-    //   icon: <Users size={16} />,
-    //   path: '/members',
-    // },
+    {
+      name: 'Members',
+      icon: <Users size={16} />,
+      path: '/dashboard/members',
+    },
 
     // {
     //   name: "Insights",
