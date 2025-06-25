@@ -70,18 +70,6 @@ const InvoicePreview = ({
   const [isBiilingAddressAdding, setIsBillingAddressAdding] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const validation = (order) => {
-    const errors = {};
-    // address
-    if (!order?.billingAddressId) {
-      errors.billingAddress = '*Required! Please select billing address';
-    }
-    if (!order?.shippingAddressId) {
-      errors.shippingAddress = '*Required! Please select shipping address';
-    }
-    return errors;
-  };
-
   useEffect(() => {
     if (!url) return;
     setIsPDF(isPDFProp);
@@ -121,18 +109,37 @@ const InvoicePreview = ({
   const { data: gstAddressesList, isLoading: isGstAddressLoading } = useQuery({
     queryKey: [
       addressAPIs.getGstAddressesList.endpointKey,
-      selectedGst,
+      selectedGst?.id,
       order?.buyerId || getAddressRelatedData?.clientId,
     ],
     queryFn: () =>
       getGstAddressesList(
-        selectedGst,
+        selectedGst?.id,
         order?.buyerId || getAddressRelatedData?.clientId,
       ),
     select: (data) => data.data.data,
     enabled:
-      (!!order?.buyerId || !!getAddressRelatedData?.clientId) && !!selectedGst,
+      (!!order?.buyerId || !!getAddressRelatedData?.clientId) &&
+      !!selectedGst?.id,
   });
+
+  const validation = (order) => {
+    const errors = {};
+    // address
+    if (
+      invoicePreviewConfig?.gstList?.length > 0 &&
+      !order?.selectedGstNumber
+    ) {
+      errors.selectedGstNumber = '*Required! Please select GST';
+    }
+    if (!order?.billingAddressId) {
+      errors.billingAddress = '*Required! Please select billing address';
+    }
+    if (!order?.shippingAddressId) {
+      errors.shippingAddress = '*Required! Please select shipping address';
+    }
+    return errors;
+  };
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -158,9 +165,12 @@ const InvoicePreview = ({
                     if (value) {
                       setErrorMsg((prev) => ({
                         ...prev,
-                        gst: '',
+                        selectedGstNumber: '',
                       }));
-                      setSelectedGst(value);
+                      setSelectedGst({
+                        id: value.id,
+                        gstNumber: value.gst,
+                      });
                     }
                   }}
                 >
@@ -172,12 +182,16 @@ const InvoicePreview = ({
                     {!isLoading &&
                       invoicePreviewConfig?.gstList &&
                       invoicePreviewConfig?.gstList?.map((gst) => (
-                        <SelectItem key={gst.id} value={gst.id}>
+                        <SelectItem key={gst.id} value={gst}>
                           {gst.gst}
                         </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
+
+                {errorMsg?.selectedGstNumber && (
+                  <ErrorBox msg={errorMsg.selectedGstNumber} />
+                )}
               </div>
             )}
 
@@ -223,14 +237,25 @@ const InvoicePreview = ({
                             <SelectValue placeholder="Select Billing Address" />
                           </SelectTrigger>
                           <SelectContent>
-                            {isGstAddressLoading && <Loading />}
-                            {!isGstAddressLoading &&
-                              gstAddressesList &&
-                              gstAddressesList?.map((address) => (
-                                <SelectItem key={address.id} value={address.id}>
-                                  {address.address}
-                                </SelectItem>
-                              ))}
+                            {!isGstAddressLoading && gstAddressesList
+                              ? gstAddressesList?.map((address) => (
+                                  <SelectItem
+                                    key={address.id}
+                                    value={address.id}
+                                  >
+                                    {address.address}
+                                  </SelectItem>
+                                ))
+                              : invoicePreviewConfig?.addressList?.map(
+                                  (address) => (
+                                    <SelectItem
+                                      key={address.id}
+                                      value={address.id}
+                                    >
+                                      {address.address}
+                                    </SelectItem>
+                                  ),
+                                )}
                             <div
                               onClick={(e) => {
                                 e.stopPropagation(); // prevent closing the dropdown immediately
@@ -278,14 +303,25 @@ const InvoicePreview = ({
                             <SelectValue placeholder="Select Shipping Address" />
                           </SelectTrigger>
                           <SelectContent>
-                            {isGstAddressLoading && <Loading />}
-                            {!isGstAddressLoading &&
-                              gstAddressesList &&
-                              gstAddressesList?.map((address) => (
-                                <SelectItem key={address.id} value={address.id}>
-                                  {address.address}
-                                </SelectItem>
-                              ))}
+                            {!isGstAddressLoading && gstAddressesList
+                              ? gstAddressesList?.map((address) => (
+                                  <SelectItem
+                                    key={address.id}
+                                    value={address.id}
+                                  >
+                                    {address.address}
+                                  </SelectItem>
+                                ))
+                              : invoicePreviewConfig?.addressList?.map(
+                                  (address) => (
+                                    <SelectItem
+                                      key={address.id}
+                                      value={address.id}
+                                    >
+                                      {address.address}
+                                    </SelectItem>
+                                  ),
+                                )}
                             <div
                               onClick={(e) => {
                                 e.stopPropagation(); // prevent closing the dropdown immediately
@@ -421,6 +457,7 @@ const InvoicePreview = ({
                     billingAddressId: billingAddress,
                     shippingAddressId: shippingAddress,
                     dueDate: formatDate,
+                    selectedGstNumber: selectedGst?.gstNumber,
                     paymentTerms,
                   };
 
@@ -489,6 +526,7 @@ const InvoicePreview = ({
                 socialLinks: socialLink,
                 billingAddressId: billingAddress,
                 shippingAddressId: shippingAddress,
+                selectedGstNumber: selectedGst?.gstNumber,
               };
 
               if (order?.clientType === 'B2B') {
@@ -512,7 +550,7 @@ const InvoicePreview = ({
         <PINVerifyModal
           open={open}
           setOpen={setOpen}
-          order={order}
+          order={{ ...order, selectedGstNumber: selectedGst?.gstNumber }}
           customerRemarks={remarks}
           socialLinks={socialLink}
           bankAccountId={bankAccount}
