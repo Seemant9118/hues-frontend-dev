@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
+import { addressAPIs } from '@/api/addressApi/addressApis';
+import { getGstAddressesList } from '@/services/address_Services/AddressServices';
 import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
 import AddAddress from '../settings/AddAddress';
@@ -54,6 +56,7 @@ const InvoicePreview = ({
   const [remarks, setRemarks] = useState('Thank you for your business!');
   // State for selected bank account
   const [bankAccount, setBankAccount] = useState(null);
+  const [selectedGst, setSelectedGst] = useState(null);
   const [billingAddress, setBillingAddress] = useState(order?.billingAddressId);
   const [shippingAddress, setShippingAddress] = useState(
     order?.shippingAddressId,
@@ -99,10 +102,10 @@ const InvoicePreview = ({
     if (!invoicePreviewConfig) return;
 
     // remarks
-    setRemarks(invoicePreviewConfig.defaultRemarks);
+    setRemarks(invoicePreviewConfig?.defaultRemarks);
 
     // due date (number of days)
-    const dueInDays = Number(invoicePreviewConfig.dueDate);
+    const dueInDays = Number(invoicePreviewConfig?.dueDate);
     setPaymentDueDate(dueInDays);
 
     // Calculate selected date as today + dueDate days
@@ -115,6 +118,22 @@ const InvoicePreview = ({
     setPaymentTerms(invoicePreviewConfig.paymentTerms);
   }, [invoicePreviewConfig]);
 
+  const { data: gstAddressesList, isLoading: isGstAddressLoading } = useQuery({
+    queryKey: [
+      addressAPIs.getGstAddressesList.endpointKey,
+      selectedGst,
+      order?.buyerId || getAddressRelatedData?.clientId,
+    ],
+    queryFn: () =>
+      getGstAddressesList(
+        selectedGst,
+        order?.buyerId || getAddressRelatedData?.clientId,
+      ),
+    select: (data) => data.data.data,
+    enabled:
+      (!!order?.buyerId || !!getAddressRelatedData?.clientId) && !!selectedGst,
+  });
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <div
@@ -126,126 +145,167 @@ const InvoicePreview = ({
         {/* Left side: Controls */}
         {isBankAccountDetailsSelectable && isCustomerRemarksAddable && (
           <div className="navScrollBarStyles flex h-full w-1/3 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2">
-            {/* address */}
-            {isBiilingAddressAdding && (
-              <AddAddress
-                clientId={getAddressRelatedData?.clientId}
-                isModalOpen={isBiilingAddressAdding}
-                setIsModalOpen={setIsBillingAddressAdding}
-              />
-            )}
-            {isAddressAddable && (
-              <>
-                <div>
-                  <Label className="text-sm font-medium">
-                    Select Client Billing Address
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  {order.clientType === 'B2C' ? (
-                    <Input
-                      id="address"
-                      name="address"
-                      value={order.buyerAddress || ''}
-                      disabled
-                      placeholder="B2C Address"
-                    />
-                  ) : (
-                    <Select
-                      onValueChange={(value) => {
-                        if (value) {
-                          setErrorMsg((prev) => ({
-                            ...prev,
-                            billingAddress: '',
-                          }));
-                          setBillingAddress(value);
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Billing Address" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {isLoading && <Loading />}
-                        {!isLoading &&
-                          invoicePreviewConfig?.addressList &&
-                          invoicePreviewConfig?.addressList?.map((address) => (
-                            <SelectItem key={address.id} value={address.id}>
-                              {address.address}
-                            </SelectItem>
-                          ))}
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation(); // prevent closing the dropdown immediately
-                            setIsBillingAddressAdding(true);
-                          }}
-                          className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
-                        >
-                          <Plus size={14} />
-                          Add New Address
-                        </div>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {errorMsg?.billingAddress && (
-                    <ErrorBox msg={errorMsg.billingAddress} />
-                  )}
-                </div>
+            {/* gst list */}
+            {invoicePreviewConfig?.gstList?.length > 0 && (
+              <div>
+                <Label className="text-sm font-medium">
+                  Select GST
+                  <span className="text-red-600">*</span>
+                </Label>
 
-                <div>
-                  <Label className="text-sm font-medium">
-                    Select Client Shipping Address
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  {order.clientType === 'B2C' ? (
-                    <Input
-                      id="address"
-                      name="address"
-                      value={order.buyerAddress || ''}
-                      disabled
-                      placeholder="B2C Address"
-                    />
-                  ) : (
-                    <Select
-                      onValueChange={(value) => {
-                        if (value) {
-                          setErrorMsg((prev) => ({
-                            ...prev,
-                            shippingAddress: '',
-                          }));
-                          setShippingAddress(value);
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Shipping Address" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {isLoading && <Loading />}
-                        {!isLoading &&
-                          invoicePreviewConfig?.addressList &&
-                          invoicePreviewConfig?.addressList?.map((address) => (
-                            <SelectItem key={address.id} value={address.id}>
-                              {address.address}
-                            </SelectItem>
-                          ))}
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation(); // prevent closing the dropdown immediately
-                            setIsBillingAddressAdding(true);
+                <Select
+                  onValueChange={(value) => {
+                    if (value) {
+                      setErrorMsg((prev) => ({
+                        ...prev,
+                        gst: '',
+                      }));
+                      setSelectedGst(value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select GST" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      invoicePreviewConfig?.gstList &&
+                      invoicePreviewConfig?.gstList?.map((gst) => (
+                        <SelectItem key={gst.id} value={gst.id}>
+                          {gst.gst}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {(invoicePreviewConfig?.gstList?.length === 0 ||
+              gstAddressesList?.length > 0) && (
+              <div>
+                {/* address */}
+                {isBiilingAddressAdding && (
+                  <AddAddress
+                    clientId={getAddressRelatedData?.clientId}
+                    isModalOpen={isBiilingAddressAdding}
+                    setIsModalOpen={setIsBillingAddressAdding}
+                  />
+                )}
+                {isAddressAddable && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Select Client Billing Address
+                        <span className="text-red-600">*</span>
+                      </Label>
+                      {order.clientType === 'B2C' ? (
+                        <Input
+                          id="address"
+                          name="address"
+                          value={order.buyerAddress || ''}
+                          disabled
+                          placeholder="B2C Address"
+                        />
+                      ) : (
+                        <Select
+                          onValueChange={(value) => {
+                            if (value) {
+                              setErrorMsg((prev) => ({
+                                ...prev,
+                                billingAddress: '',
+                              }));
+                              setBillingAddress(value);
+                            }
                           }}
-                          className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
                         >
-                          <Plus size={14} />
-                          Add New Address
-                        </div>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {errorMsg?.shippingAddress && (
-                    <ErrorBox msg={errorMsg.shippingAddress} />
-                  )}
-                </div>
-              </>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Billing Address" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isGstAddressLoading && <Loading />}
+                            {!isGstAddressLoading &&
+                              gstAddressesList &&
+                              gstAddressesList?.map((address) => (
+                                <SelectItem key={address.id} value={address.id}>
+                                  {address.address}
+                                </SelectItem>
+                              ))}
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation(); // prevent closing the dropdown immediately
+                                setIsBillingAddressAdding(true);
+                              }}
+                              className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                            >
+                              <Plus size={14} />
+                              Add New Address
+                            </div>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {errorMsg?.billingAddress && (
+                        <ErrorBox msg={errorMsg.billingAddress} />
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Select Client Shipping Address
+                        <span className="text-red-600">*</span>
+                      </Label>
+                      {order.clientType === 'B2C' ? (
+                        <Input
+                          id="address"
+                          name="address"
+                          value={order.buyerAddress || ''}
+                          disabled
+                          placeholder="B2C Address"
+                        />
+                      ) : (
+                        <Select
+                          onValueChange={(value) => {
+                            if (value) {
+                              setErrorMsg((prev) => ({
+                                ...prev,
+                                shippingAddress: '',
+                              }));
+                              setShippingAddress(value);
+                            }
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Shipping Address" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isGstAddressLoading && <Loading />}
+                            {!isGstAddressLoading &&
+                              gstAddressesList &&
+                              gstAddressesList?.map((address) => (
+                                <SelectItem key={address.id} value={address.id}>
+                                  {address.address}
+                                </SelectItem>
+                              ))}
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation(); // prevent closing the dropdown immediately
+                                setIsBillingAddressAdding(true);
+                              }}
+                              className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold"
+                            >
+                              <Plus size={14} />
+                              Add New Address
+                            </div>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {errorMsg?.shippingAddress && (
+                        <ErrorBox msg={errorMsg.shippingAddress} />
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             )}
 
             {/* bank accounts */}

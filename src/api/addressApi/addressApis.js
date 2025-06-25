@@ -11,4 +11,8 @@ export const addressAPIs = {
     endpoint: `/enterprise/client/save-address`,
     endpointKey: 'add_address_client',
   },
+  getGstAddressesList: {
+    endpoint: `/enterprise/gst-addresses/`,
+    endpointKey: 'get_gst_addresses_list',
+  },
 };
