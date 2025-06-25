@@ -93,6 +93,7 @@ const CreateB2BInvoice = ({
     billingAddressId: b2bInvoiceDraft?.billingAddressId || null,
     shippingAddressId: b2bInvoiceDraft?.shippingAddressId || null,
     selectedValue: b2bInvoiceDraft?.selectedValue || null,
+    selectedGstNumber: null,
     getAddressRelatedData: b2bInvoiceDraft?.getAddressRelatedData || null,
   });
 

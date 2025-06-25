@@ -22,3 +22,9 @@ export const getDataFromPinCode = (pincode) => {
 export const addClientAddress = (data) => {
   return APIinstance.post(`${addressAPIs.addAddressClient.endpoint}`, data);
 };
+
+export const getGstAddressesList = (enterpriseGstId, clientId) => {
+  return APIinstance.get(
+    `${addressAPIs.getGstAddressesList.endpoint}${enterpriseGstId}/${clientId}`,
+  );
+};
