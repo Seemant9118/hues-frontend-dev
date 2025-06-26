@@ -110,12 +110,14 @@ const InvoicePreview = ({
     queryKey: [
       addressAPIs.getGstAddressesList.endpointKey,
       selectedGst?.id,
-      order?.buyerId || getAddressRelatedData?.clientId,
+      getAddressRelatedData?.clientId,
+      getAddressRelatedData?.clientEnterpriseId,
     ],
     queryFn: () =>
       getGstAddressesList(
         selectedGst?.id,
-        order?.buyerId || getAddressRelatedData?.clientId,
+        getAddressRelatedData?.clientId,
+        getAddressRelatedData?.clientEnterpriseId,
       ),
     select: (data) => data.data.data,
     enabled:
