@@ -123,7 +123,14 @@ const CustomerPage = () => {
 
   useEffect(() => {
     const source = debouncedSearchTerm ? searchQuery : customersQuery;
-    if (!source) return;
+    // guard clause to ensure source is defined and has pages
+    if (
+      !source?.pages ||
+      !Array.isArray(source.pages) ||
+      source.pages.length === 0
+    )
+      return;
+
     const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.customers || [],
     );
