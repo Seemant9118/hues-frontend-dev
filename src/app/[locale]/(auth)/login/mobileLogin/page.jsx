@@ -3,6 +3,7 @@
 'use client';
 
 import { directorApi } from '@/api/director/directorApi';
+import { handleOtpRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { directorInviteList } from '@/services/Director_Services/DirectorServices';
@@ -12,9 +13,9 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import React, { Suspense, useState } from 'react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import MobileLogin from '../multi-step-forms/mobileLoginOTPComponents/MobileLogin';
 import VerifyMobileOTP from '../multi-step-forms/mobileLoginOTPComponents/VerifyMobileOTP';
 
@@ -111,55 +112,17 @@ const MobileLoginPage = () => {
 
       toast.success(translations('toast.otpVerifiedSuccess'));
 
-      // isUserOnboardingComplete
-      if (isOnboardingComplete) {
-        // is logInWithInviteLink
-        if (islogInWithInviteLink) {
-          if (
-            islogInWithInviteLink?.data?.invitation?.invitationType ===
-              'CLIENT' ||
-            islogInWithInviteLink?.data?.invitation?.invitationType === 'VENDOR'
-          ) {
-            router.push('/login/enterprise/select_enterprise_type');
-          } else if (
-            islogInWithInviteLink?.data?.invitation?.invitationType ===
-              'DIRECTOR' &&
-            isUserHaveValidDirectorInvites
-          ) {
-            router.push('/login/confirmation_invite_as_director');
-          } else {
-            router.push('/login/confirmation_invite_as_associate');
-          }
-        }
-        // is not logInWithInviteLink
-        else {
-          if (isEnterprisestartedOnboarding && isEnterpriseOnboardingComplete) {
-            router.push(redirectedUrl || '/dashboard');
-            LocalStorageService.remove('redirectUrl');
-          } else if (
-            isEnterprisestartedOnboarding &&
-            !isEnterpriseOnboardingComplete
-          ) {
-            // enterprise onboarding started and but not completed perform pending actions
-            return router.push('/login/enterprise/pending-actions');
-          } else {
-            return router.push('/login/user/confirmation');
-          }
-        }
-      }
-      // User onboarding is incomplete
-      else {
-        // isPanverified and aaadhar verified then move to confirmation
-        if (isPanVerified && isAadhaarVerified) {
-          return router.push('/login/user/confirmation');
-        }
-        // isPanverified and !aadhar not verified then move to aadhar
-        else if (isPanVerified && !isAadhaarVerified) {
-          return router.push('/login/user/aadhar-verification');
-        } else {
-          return router.push('/login/user/pan-verification');
-        }
-      }
+      await handleOtpRedirection({
+        isOnboardingComplete,
+        isPanVerified,
+        isAadhaarVerified,
+        isEnterprisestartedOnboarding,
+        isEnterpriseOnboardingComplete,
+        islogInWithInviteLink,
+        isUserHaveValidDirectorInvites,
+        redirectedUrl,
+        router,
+      });
     },
     onError: (error) => {
       toast.error(
