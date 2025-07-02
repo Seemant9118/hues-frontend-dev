@@ -44,3 +44,109 @@ export async function handleOtpRedirection({
     return router.push('/login/user/pan-verification');
   }
 }
+
+export async function handlePendingActionsRedirection({
+  isEnterpriseOnboardingComplete,
+  isGstVerified,
+  isEnterprisePanVerified,
+  isUdyamVerified,
+  isCinVerified,
+  isDirector,
+  isDirectorInviteSent,
+  invitationId,
+  companyDetails,
+  gstData,
+  type,
+  router,
+}) {
+  if (!isEnterpriseOnboardingComplete) {
+    LocalStorageService.set('companyData', companyDetails);
+  }
+
+  if (!isGstVerified) {
+    LocalStorageService.set('gst', gstData?.gstinResList);
+  }
+
+  if (!isEnterprisePanVerified) {
+    router.push('/login/enterprise/select_enterprise_type');
+    return;
+  }
+
+  // Proprietorship/Individual flow
+  if (type === 'proprietorship' || type === 'individual') {
+    if (isGstVerified && isUdyamVerified && isEnterpriseOnboardingComplete) {
+      router.push('/login/enterprise/enterprise-onboarded-success');
+      return;
+    }
+
+    if (isGstVerified && isUdyamVerified && !isEnterpriseOnboardingComplete) {
+      router.push('/login/enterprise/enterprise-verification-details');
+      return;
+    }
+
+    if (isGstVerified && !isUdyamVerified && !isEnterpriseOnboardingComplete) {
+      router.push('/login/enterprise/udyam-verify');
+      return;
+    }
+
+    if (!isGstVerified) {
+      router.push('/login/enterprise/gst-verify');
+      return;
+    }
+  }
+
+  // Non-proprietorship / Company flow
+  if (isEnterprisePanVerified && isCinVerified) {
+    if (isDirector && isGstVerified && isUdyamVerified) {
+      if (isEnterpriseOnboardingComplete) {
+        router.push('/login/enterprise/enterprise-onboarded-success');
+      } else {
+        router.push('/login/enterprise/enterprise-verification-details');
+      }
+      return;
+    }
+
+    if (
+      isDirector &&
+      isGstVerified &&
+      !isUdyamVerified &&
+      !isEnterpriseOnboardingComplete
+    ) {
+      router.push('/login/enterprise/udyam-verify');
+      return;
+    }
+
+    if (
+      isDirector &&
+      !isGstVerified &&
+      !isUdyamVerified &&
+      !isEnterpriseOnboardingComplete
+    ) {
+      router.push('/login/enterprise/gst-verify');
+      return;
+    }
+
+    if (
+      !isDirector &&
+      isDirectorInviteSent &&
+      !isEnterpriseOnboardingComplete
+    ) {
+      LocalStorageService.set('invitationId', invitationId);
+      router.push('/login/enterprise/invite-director?step=2');
+      return;
+    }
+
+    if (
+      !isDirector &&
+      !isDirectorInviteSent &&
+      !isEnterpriseOnboardingComplete
+    ) {
+      router.push('/login/enterprise/invite-director?step=1');
+      return;
+    }
+  }
+
+  if (isEnterprisePanVerified && !isCinVerified) {
+    router.push('/login/enterprise/cin-verify');
+  }
+}

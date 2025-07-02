@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { handlePendingActionsRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -20,7 +21,7 @@ const ConfirmationPage = () => {
   const getOnboardingStatusMutation = useMutation({
     mutationKey: [userAuth.getOnboardingStatus.endpointKey, enterpriseId],
     mutationFn: getOnboardingStatus,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(translations('toast.success'));
 
       const {
@@ -40,100 +41,21 @@ const ConfirmationPage = () => {
 
       LocalStorageService.set('enterprise_Id', enterpriseId);
       LocalStorageService.set('type', type);
-      if (!isEnterpriseOnboardingComplete) {
-        LocalStorageService.set('companyData', companyDetails);
-      }
-      if (!isGstVerified) {
-        LocalStorageService.set('gst', gstData?.gstinResList);
-      }
 
-      if (!isEnterprisePanVerified) {
-        router.push(`/login/enterprise/select_enterprise_type`);
-      }
-      // pending actions for properitorship
-      if (
-        isEnterprisePanVerified &&
-        (type === 'proprietorship' || type === 'individual')
-      ) {
-        if (
-          isGstVerified &&
-          isUdyamVerified &&
-          isEnterpriseOnboardingComplete
-        ) {
-          router.push('/login/enterprise/enterprise-onboarded-success');
-        } else if (
-          isGstVerified &&
-          isUdyamVerified &&
-          !isEnterpriseOnboardingComplete
-        ) {
-          router.push('/login/enterprise/enterprise-verification-details');
-        } else if (
-          isGstVerified &&
-          !isUdyamVerified &&
-          !isEnterpriseOnboardingComplete
-        ) {
-          router.push('/login/enterprise/udyam-verify');
-        } else if (!isGstVerified) {
-          router.push('/login/enterprise/gst-verify');
-        }
-      }
-      // pending actions for Non-properitorship/Company
-      else if (
-        isEnterprisePanVerified &&
-        isCinVerified &&
-        isDirector &&
-        isGstVerified &&
-        isUdyamVerified &&
-        isEnterpriseOnboardingComplete
-      ) {
-        router.push('/login/enterprise/enterprise-onboarded-success');
-      } else if (
-        isEnterprisePanVerified &&
-        isCinVerified &&
-        isDirector &&
-        isGstVerified &&
-        isUdyamVerified &&
-        !isEnterpriseOnboardingComplete
-      ) {
-        router.push('/login/enterprise/enterprise-verification-details');
-      } else if (
-        isEnterprisePanVerified &&
-        isCinVerified &&
-        isDirector &&
-        isGstVerified &&
-        !isUdyamVerified &&
-        !isEnterpriseOnboardingComplete
-      ) {
-        router.push('/login/enterprise/udyam-verify');
-      } else if (
-        isEnterprisePanVerified &&
-        isCinVerified &&
-        isDirector &&
-        !isGstVerified &&
-        !isUdyamVerified &&
-        !isEnterpriseOnboardingComplete
-      ) {
-        router.push('/login/enterprise/gst-verify');
-      } else if (
-        isEnterprisePanVerified &&
-        isCinVerified &&
-        !isDirector &&
-        isDirectorInviteSent &&
-        !isEnterpriseOnboardingComplete
-      ) {
-        LocalStorageService.set('invitationId', invitationId);
-        router.push('/login/enterprise/invite-director?step=2');
-      } else if (
-        isEnterprisePanVerified &&
-        isCinVerified &&
-        !isDirector &&
-        !isDirectorInviteSent &&
-        !isEnterpriseOnboardingComplete
-      ) {
-        router.push('/login/enterprise/invite-director?step=1');
-      } else if (isEnterprisePanVerified && !isCinVerified) {
-        router.push('/login/enterprise/cin-verify');
-      }
+      await handlePendingActionsRedirection({
+        isEnterpriseOnboardingComplete,
+        isGstVerified,
+        isEnterprisePanVerified,
+        isUdyamVerified,
+        isCinVerified,
+        isDirector,
+        isDirectorInviteSent,
+        invitationId,
+        companyDetails,
+        gstData,
+        type,
+        router,
+      });
     },
     onError: (error) => {
       toast.error(error.response.data.message || translations('toast.error'));
