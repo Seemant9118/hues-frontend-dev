@@ -1,0 +1,404 @@
+name: Build EC2 Spot and Deploy Playwright E2E Tests
+# Next.js Docker deployment with environment variables
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: true
+
+jobs:
+  setup-ec2-runner:
+    name: Setup EC2 Runner
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # This allows requesting the JWT
+      contents: read
+    outputs:
+      runner-label: ${{ steps.create-ec2-runner.outputs.runner-label }}
+      ec2-instance-id: ${{ steps.create-ec2-runner.outputs.ec2-instance-id }}
+      ec2-instance-ip: ${{ steps.create-ec2-runner.outputs.ec2-instance-ip }}
+      spot-fleet-request-id: ${{ steps.create-ec2-runner.outputs.spot-fleet-request-id }}
+      spot-request-id: ${{ steps.create-ec2-runner.outputs.spot-request-id }}
+      gh-runner-id: ${{ steps.create-ec2-runner.outputs.gh-runner-id }}
+      registration-token: ${{ steps.get-registration-token.outputs.token }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            role-to-assume: arn:aws:iam::730335228585:role/hues-dev-e2e-ci
+            aws-region: ap-south-1
+        continue-on-error: false
+
+      - name: Create EC2 runner
+        id: create-ec2-runner
+        run: |
+          # Generate a unique label for this runner
+          RUNNER_LABEL="ec2-runner-${{ github.run_id }}-${{ github.run_number }}"
+          echo "runner-label=$RUNNER_LABEL" >> $GITHUB_OUTPUT
+
+          LAUNCH_TEMPLATE_EXISTS=$(aws ec2 describe-launch-templates --launch-template-names "${{ vars.E2E_SPOT_CD_LAUNCH_TEMPLATE_NAME }}" --query 'LaunchTemplates[0].LaunchTemplateName' --output text 2>/dev/null || echo "")
+          if [ -z "$LAUNCH_TEMPLATE_EXISTS" ]; then
+            echo "Launch Template ${{ vars.E2E_SPOT_CD_LAUNCH_TEMPLATE_NAME }} Not found. Exiting"
+            exit 1
+          else
+            echo "Using existing launch template: ${{ vars.E2E_SPOT_CD_LAUNCH_TEMPLATE_NAME }}"
+          fi
+
+          VALID_UNTIL=$(date -d '+60 minutes' '+%Y-%m-%dT%H:%M:%S.000Z')
+          cat > spot-fleet-config.json << EOF
+          {
+            "TargetCapacity": 1,
+            "TerminateInstancesWithExpiration": true,
+            "Type": "request",
+            "ValidUntil": "$VALID_UNTIL",
+            "IamFleetRole": "${{secrets.E2E_SPOT_CD_IAM_FLEET_ROLE}}",
+            "LaunchTemplateConfigs": [
+              {
+                "LaunchTemplateSpecification": {
+                  "Version": "\$Default",
+                  "LaunchTemplateName": "${{ vars.E2E_SPOT_CD_LAUNCH_TEMPLATE_NAME }}"
+                },
+                "Overrides": [
+                  {
+                    "InstanceRequirements": {
+                      "VCpuCount": {
+                        "Min": 1,
+                        "Max": 2
+                      },
+                      "MemoryMiB": {
+                        "Min": 1024,
+                        "Max": 2048
+                      }
+                    },
+                    "SubnetId": "${{ vars.E2E_SPOT_INSTANCE_SUBNET_ID }}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          # Request spot fleet
+          SPOT_FLEET_REQUEST_ID=$(aws ec2 request-spot-fleet --spot-fleet-request-config file://spot-fleet-config.json --query 'SpotFleetRequestId' --output text)
+          echo "Created Spot Fleet request: $SPOT_FLEET_REQUEST_ID"
+
+          # Wait for spot fleet to be fulfilled
+          echo "Waiting for spot fleet request to be active and fulfilled..."
+          FLEET_ACTIVE=""
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+
+          while [ -z "$FLEET_ACTIVE" ] && [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT+1))
+            FLEET_STATUS=$(aws ec2 describe-spot-fleet-requests \
+              --spot-fleet-request-ids $SPOT_FLEET_REQUEST_ID \
+              --query 'SpotFleetRequestConfigs[0].SpotFleetRequestState' \
+              --output text)
+              
+            if [ "$FLEET_STATUS" == "active" ]; then
+              # Check if we have at least one active instance
+              ACTIVE_INSTANCES=$(aws ec2 describe-spot-fleet-instances \
+                --spot-fleet-request-id $SPOT_FLEET_REQUEST_ID \
+                --query 'length(ActiveInstances)' \
+                --output text)
+                
+              if [ "$ACTIVE_INSTANCES" -gt 0 ]; then
+                FLEET_ACTIVE="true"
+                echo "Spot fleet is active with $ACTIVE_INSTANCES instances!"
+              else
+                echo "Spot fleet is active but waiting for instances... (attempt $ATTEMPT/$MAX_ATTEMPTS)"
+              fi
+            else
+              echo "Waiting for spot fleet to become active: Status=$FLEET_STATUS (attempt $ATTEMPT/$MAX_ATTEMPTS)"
+            fi
+            
+            if [ -z "$FLEET_ACTIVE" ]; then
+              sleep 10
+            fi
+          done
+
+          if [ -z "$FLEET_ACTIVE" ]; then
+            echo "Failed to fulfill spot fleet request after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
+
+          # Get instance ID from the spot fleet
+          INSTANCE_ID=$(aws ec2 describe-spot-fleet-instances --spot-fleet-request-id $SPOT_FLEET_REQUEST_ID --query 'ActiveInstances[0].InstanceId' --output text)
+          SPOT_REQUEST_ID=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].SpotInstanceRequestId' --output text)
+
+          echo "spot-request-id=$SPOT_REQUEST_ID" >> $GITHUB_OUTPUT
+          echo "spot-fleet-request-id=$SPOT_FLEET_REQUEST_ID" >> $GITHUB_OUTPUT
+          echo "Created Spot fleet request: $SPOT_FLEET_REQUEST_ID"
+
+          echo "ec2-instance-id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+          echo "Spot instance created: $INSTANCE_ID"
+
+          # Tag the instance
+          aws ec2 create-tags \
+            --resources $INSTANCE_ID \
+            --tags "Key=Name,Value=GH-Spot-Runner-${RUNNER_LABEL}"
+
+          # Wait for instance to be running
+          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+          echo "EC2 spot instance is now running"
+
+          # Get the instance details from AWS
+          INSTANCE_INFO=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0]')
+
+          # Get instance IP
+          INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+          echo "ec2-instance-ip=$INSTANCE_IP" >> $GITHUB_OUTPUT
+          echo "EC2 Instance IP: $INSTANCE_IP"
+
+          # Debug instance details
+          echo "=== EC2 INSTANCE DEBUGGING ==="
+          echo "Instance ID: $INSTANCE_ID"
+          echo "Instance IP: $INSTANCE_IP"
+
+          INSTANCE_HOSTNAME=$(echo $INSTANCE_INFO | jq -r '.PrivateDnsName')
+          echo "EC2 Instance hostname: $INSTANCE_HOSTNAME"
+          INSTANCE_SHORTNAME="${INSTANCE_HOSTNAME%%.*}"
+          echo "Short hostname: $INSTANCE_SHORTNAME"
+
+          # Get detailed instance information
+          INSTANCE_DETAILS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0]')
+          echo "Instance State: $(echo $INSTANCE_DETAILS | jq -r '.State.Name')"
+          echo "Instance Type: $(echo $INSTANCE_DETAILS | jq -r '.InstanceType')"
+          echo "Security Groups: $(echo $INSTANCE_DETAILS | jq -r '.SecurityGroups[].GroupId')"
+          echo "Subnet ID: $(echo $INSTANCE_DETAILS | jq -r '.SubnetId')"
+          echo "VPC ID: $(echo $INSTANCE_DETAILS | jq -r '.VpcId')"
+          echo "Private IP: $(echo $INSTANCE_DETAILS | jq -r '.PrivateIpAddress')"
+          echo "Public IP: $(echo $INSTANCE_DETAILS | jq -r '.PublicIpAddress')"
+          echo "Key Name: $(echo $INSTANCE_DETAILS | jq -r '.KeyName')"
+
+          for i in {1..30}; do
+            RUNNERS_JSON=$(curl -s -H "Authorization: token ${{ secrets.E2E_GH_PERSONAL_ACCESS_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/runners")
+            echo "All runner names:"
+            echo "$RUNNERS_JSON" | jq -r '.runners[] | "\(.name) - \(.status) - ID: \(.id)"' 2>/dev/null || echo "Failed to parse JSON"
+            echo "$RUNNERS_JSON" | jq -r '.runners[].name'
+            RUNNER_DATA=$(echo "$RUNNERS_JSON" | \
+              jq -r --arg INSTANCE_SHORTNAME "$INSTANCE_SHORTNAME" '.runners[] | select(.name == $INSTANCE_SHORTNAME) | "\(.status)|\(.id)"')
+            
+            if [ -n "$RUNNER_DATA" ]; then
+              RUNNER_ONLINE=$(echo "$RUNNER_DATA" | cut -d'|' -f1)
+              RUNNER_ID=$(echo "$RUNNER_DATA" | cut -d'|' -f2)
+
+              echo "Found runner '$INSTANCE_SHORTNAME' with status: $RUNNER_ONLINE, ID: $RUNNER_ID"
+              if [ "$RUNNER_ONLINE" == "online" ]; then
+                echo "Runner is online!"
+                echo "gh-runner-id=$RUNNER_ID" >> $GITHUB_OUTPUT
+                break
+              fi
+            fi
+
+            echo "Waiting for runner to come online (attempt $i/30)..."
+            sleep 10
+          done
+
+          if [ "$RUNNER_ONLINE" == "online" ]; then
+            echo "Success. Running build."
+          else
+            echo "Runner is not available. Exiting"
+            exit 1
+          fi
+
+  e2e-test-ci-runner:
+    timeout-minutes: 60
+    runs-on: [self-hosted]
+    needs: [setup-ec2-runner]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        
+      - name: Generate unique ID and timestamp
+        id: generate-id
+        run: |
+            UNIQUE_ID=$(date +%Y%m%d-%H%M%S)-$(echo $GITHUB_SHA | cut -c1-7)
+            echo "unique_id=$UNIQUE_ID" >> $GITHUB_OUTPUT
+            echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+            echo "commit_msg=$(git log -1 --pretty=%B | head -1)" >> $GITHUB_OUTPUT
+            echo "branch_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Prepare test results
+        if: always()
+        run: |
+          mkdir -p temp-reports/${{ steps.generate-id.outputs.unique_id }}
+
+          # Copy Playwright HTML report
+          if [ -d "playwright-report" ]; then
+            cp -r playwright-report/* temp-reports/${{ steps.generate-id.outputs.unique_id }}/
+          fi
+
+          # Create metadata file for the test run
+          cat > temp-reports/${{ steps.generate-id.outputs.unique_id }}/metadata.json << EOF
+          {
+            "id": "${{ steps.generate-id.outputs.unique_id }}",
+            "timestamp": "${{ steps.generate-id.outputs.timestamp }}",
+            "commit": "${{ github.sha }}",
+            "commitMessage": "${{ steps.generate-id.outputs.commit_msg }}",
+            "branch": "${{ steps.generate-id.outputs.branch_name }}",
+            "author": "${{ github.actor }}",
+            "runId": "${{ github.run_id }}",
+            "runNumber": "${{ github.run_number }}",
+            "status": "${{ job.status }}"
+          }
+          EOF
+
+      - name: Checkout gh-pages branch
+        if: always()
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          token: ${{ secrets.E2E_GH_PERSONAL_ACCESS_TOKEN }}
+
+      - name: Setup gh-pages branch
+        if: always()
+        run: |
+          cd gh-pages
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          # Create reports directory if it doesn't exist
+          mkdir -p reports
+
+      - name: Copy test results to gh-pages
+        if: always()
+        run: |
+          # Copy the test results to gh-pages
+          cp -r temp-reports/${{ steps.generate-id.outputs.unique_id }} gh-pages/reports/
+
+          cd gh-pages
+
+          # Create or update the reports index
+          if [ ! -f reports/index.json ]; then
+            echo "[]" > reports/index.json
+          fi
+
+          # Add current test result to index
+          python3 << 'EOF'
+          import json
+          import os
+
+          # Read existing index
+          with open('reports/index.json', 'r') as f:
+              results = json.load(f)
+
+          # Read current test metadata
+          with open('reports/${{ steps.generate-id.outputs.unique_id }}/metadata.json', 'r') as f:
+              metadata = json.load(f)
+
+          # Add to results if not already present
+          if not any(r['id'] == metadata['id'] for r in results):
+              results.append(metadata)
+
+          # Sort by timestamp (newest first)
+          results.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+
+          # Keep only last 50 results to avoid too large files
+          results = results[:50]
+
+          # Save updated index
+          with open('reports/index.json', 'w') as f:
+              json.dump(results, f, indent=2)
+          EOF
+
+          git add .
+          git commit -m "Add test results for ${{ steps.generate-id.outputs.unique_id }}" || exit 0
+          git push
+
+    #   - uses: actions/upload-artifact@v4
+    #     if: always()
+    #     with:
+    #       name: playwright-report-${{ steps.generate-id.outputs.unique_id }}
+    #       path: playwright-report/
+    #       retention-days: 1
+
+  terminate-ec2-runner:
+    name: Terminate EC2 Spot Runner
+    needs: [setup-ec2-runner, e2e-test-ci-runner]
+    runs-on: ubuntu-latest
+    if: always() # This ensures the step runs even if the previous step fails
+    permissions:
+      id-token: write # This allows requesting the JWT
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::730335228585:role/hues-dev-e2e-ci
+          aws-region: ap-south-1
+        continue-on-error: false
+
+      - name: Check instance status before cleanup
+        id: instance-check
+        run: |
+          INSTANCE_STATE=$(aws ec2 describe-instances \
+            --instance-ids ${{ needs.setup-ec2-runner.outputs.ec2-instance-id }} \
+            --query 'Reservations[0].Instances[0].State.Name' \
+            --output text)
+          echo "Instance state: $INSTANCE_STATE"
+          echo "instance-running=$([[ "$INSTANCE_STATE" == "running" ]] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+
+      - name: Cleanup GitHub Actions runner
+        if: steps.instance-check.outputs.instance-running == 'true'
+        uses: appleboy/ssh-action@v0.1.10
+        env:
+          GH_RUNNER_ID: ${{needs.setup-ec2-runner.outputs.gh-runner-id}}
+        with:
+          host: ${{ needs.setup-ec2-runner.outputs.ec2-instance-ip }}
+          username: ${{ secrets.DEV_SERVER_USER }}
+          key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+          timeout: 30s
+          script: |
+            set -e
+            cd actions-runner/ || exit 0
+
+            if systemctl list-units --type=service | grep -q actions.runner; then
+              echo "Uninstalling runner service..."
+              sudo ./svc.sh uninstall
+            fi
+
+            # Stop service if it's running
+            if sudo ./svc.sh status >/dev/null 2>&1; then
+              sudo ./svc.sh stop
+            fi
+
+            echo "GH Runner ID: ${{needs.setup-ec2-runner.outputs.gh-runner-id}}"
+            if [[ -n "${{needs.setup-ec2-runner.outputs.gh-runner-id}}" && "${{needs.setup-ec2-runner.outputs.gh-runner-id}}" != "null" ]]; then
+              echo "Removing offline runner ID: ${{needs.setup-ec2-runner.outputs.gh-runner-id}}"
+              curl -X DELETE \
+                -H "Authorization: token ${{ secrets.E2E_GH_PERSONAL_ACCESS_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/runners/${{needs.setup-ec2-runner.outputs.gh-runner-id}}"
+            fi
+        continue-on-error: true
+
+      - name: Terminate EC2 spot instance
+        run: |
+          # Cancel the spot fleet request
+          aws ec2 cancel-spot-fleet-requests --spot-fleet-request-ids ${{ needs.setup-ec2-runner.outputs.spot-fleet-request-id }} --terminate-instances
+          echo "Cancelled spot fleet request: ${{ needs.setup-ec2-runner.outputs.spot-fleet-request-id }}"
+
+          # Terminate the EC2 instance
+          aws ec2 terminate-instances --instance-ids ${{ needs.setup-ec2-runner.outputs.ec2-instance-id }}
+          echo "Terminated instance: ${{ needs.setup-ec2-runner.outputs.ec2-instance-id }}"
+
+          # Wait for the instance to terminate
+          aws ec2 wait instance-terminated --instance-ids ${{ needs.setup-ec2-runner.outputs.ec2-instance-id }}
+          echo "EC2 spot instance has been terminated"
