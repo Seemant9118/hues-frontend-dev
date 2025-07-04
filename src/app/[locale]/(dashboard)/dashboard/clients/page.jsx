@@ -15,7 +15,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   bulkUploadClients,

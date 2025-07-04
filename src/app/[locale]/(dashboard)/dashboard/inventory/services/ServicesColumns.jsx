@@ -14,11 +14,14 @@ import { DeleteProductServices } from '@/services/Inventories_Services/Services_
 import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { usePermission } from '@/hooks/usePermissions';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   const translations = useTranslations('services');
+  const { hasAnyPermission } = usePermission();
 
-  return [
+  const baseColumns = [
     {
       accessorKey: 'serviceName',
       header: ({ column }) => (
@@ -82,7 +85,16 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
         return <div>{date}</div>;
       },
     },
-    {
+  ];
+
+  // ✅ Conditionally add actions column
+  const canShowActions = hasAnyPermission([
+    'permission:item-masters-edit',
+    'permission:item-masters-delete',
+  ]);
+
+  if (canShowActions) {
+    baseColumns.push({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
@@ -98,31 +110,43 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
-              <DropdownMenuItem
-                className="flex items-center justify-center gap-2"
-                onClick={() => {
-                  setIsEditing((prev) => !prev);
-                  setServicesToEdit(row.original);
-                }}
-              >
-                <Pencil size={12} />
-                {translations('table.columnActions.edit')}
-              </DropdownMenuItem>
+              <ProtectedWrapper permissionCode="permission:item-masters-edit">
+                <DropdownMenuItem
+                  className="flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setIsEditing((prev) => !prev);
+                    setServicesToEdit(row.original);
+                  }}
+                >
+                  <Pencil size={12} />
+                  {translations('table.columnActions.edit')}
+                </DropdownMenuItem>
+              </ProtectedWrapper>
 
-              <ConfirmAction
-                deleteCta={translations('table.columnActions.delete.cta')}
-                infoText={translations('table.columnActions.delete.infoText', {
-                  name,
-                })}
-                cancelCta={translations('table.columnActions.delete.cancel')}
-                id={id}
-                mutationKey={servicesApi.getAllProductServices.endpointKey}
-                mutationFunc={DeleteProductServices}
-              />
+              <ProtectedWrapper permissionCode="permission:item-masters-delete">
+                <ConfirmAction
+                  deleteCta={translations('table.columnActions.delete.cta')}
+                  infoText={translations(
+                    'table.columnActions.delete.infoText',
+                    {
+                      name,
+                    },
+                  )}
+                  cancelCta={translations('table.columnActions.delete.cancel')}
+                  id={id}
+                  mutationKey={servicesApi.getAllProductServices.endpointKey}
+                  mutationFunc={DeleteProductServices}
+                  successMsg={translations(
+                    'table.columnActions.delete.successMsg',
+                  )}
+                />
+              </ProtectedWrapper>
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
-    },
-  ];
+    });
+  }
+
+  return baseColumns;
 };

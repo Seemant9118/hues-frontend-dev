@@ -25,11 +25,13 @@ import {
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
+import { usePermission } from '@/hooks/usePermissions';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
   const { hasPageAccess } = useRBAC();
+  const { hasPermission } = usePermission();
 
   const adminLinks = hasPageAccess('adminReports')
     ? [
@@ -51,7 +53,7 @@ const Sidebar = () => {
       ]
     : [];
   const links = [
-    {
+    hasPermission('permission:view-dashboard') && {
       name: 'sidebar.dashboard',
       icon: <Gauge size={16} />,
       path: `/dashboard`,

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import {
   createComments,
   getComments,

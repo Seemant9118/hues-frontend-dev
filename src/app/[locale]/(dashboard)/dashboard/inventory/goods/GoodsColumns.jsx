@@ -11,6 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { usePermission } from '@/hooks/usePermissions';
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { Info, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
@@ -18,8 +20,9 @@ import { useTranslations } from 'next-intl';
 
 export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   const translations = useTranslations('goods');
+  const { hasAnyPermission } = usePermission();
 
-  return [
+  const baseColumns = [
     {
       accessorKey: 'productName',
       header: ({ column }) => (
@@ -88,7 +91,16 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
         return <div>{date}</div>;
       },
     },
-    {
+  ];
+
+  // ✅ Conditionally add actions column
+  const canShowActions = hasAnyPermission([
+    'permission:item-masters-edit',
+    'permission:item-masters-delete',
+  ]);
+
+  if (canShowActions) {
+    baseColumns.push({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
@@ -103,34 +115,43 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
-              <DropdownMenuItem
-                className="flex items-center justify-center gap-2"
-                onClick={() => {
-                  setIsEditing((prev) => !prev);
-                  setGoodsToEdit(row.original);
-                }}
-              >
-                <Pencil size={12} />
-                {translations('table.columnActions.edit')}
-              </DropdownMenuItem>
+              <ProtectedWrapper permissionCode="permission:item-masters-edit">
+                <DropdownMenuItem
+                  className="flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setIsEditing((prev) => !prev);
+                    setGoodsToEdit(row.original);
+                  }}
+                >
+                  <Pencil size={12} />
+                  {translations('table.columnActions.edit')}
+                </DropdownMenuItem>
+              </ProtectedWrapper>
 
-              <ConfirmAction
-                deleteCta={translations('table.columnActions.delete.cta')}
-                infoText={translations('table.columnActions.delete.infoText', {
-                  name,
-                })}
-                cancelCta={translations('table.columnActions.delete.cancel')}
-                id={id}
-                mutationKey={goodsApi.getAllProductGoods.endpointKey}
-                mutationFunc={DeleteProductGoods}
-                successMsg={translations(
-                  'table.columnActions.delete.successMsg',
-                )}
-              />
+              <ProtectedWrapper permissionCode="permission:item-masters-delete">
+                <ConfirmAction
+                  deleteCta={translations('table.columnActions.delete.cta')}
+                  infoText={translations(
+                    'table.columnActions.delete.infoText',
+                    {
+                      name,
+                    },
+                  )}
+                  cancelCta={translations('table.columnActions.delete.cancel')}
+                  id={id}
+                  mutationKey={goodsApi.getAllProductGoods.endpointKey}
+                  mutationFunc={DeleteProductGoods}
+                  successMsg={translations(
+                    'table.columnActions.delete.successMsg',
+                  )}
+                />
+              </ProtectedWrapper>
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
-    },
-  ];
+    });
+  }
+
+  return baseColumns;
 };

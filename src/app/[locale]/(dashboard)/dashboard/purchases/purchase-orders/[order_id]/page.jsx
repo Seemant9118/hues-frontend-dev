@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';

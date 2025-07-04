@@ -9,7 +9,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
@@ -29,6 +29,7 @@ import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useGoodsColumns } from './GoodsColumns';
 import { GoodsTable } from './GoodsTable';
 
@@ -177,7 +178,7 @@ function Goods() {
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
-    <>
+    <ProtectedWrapper permissionCode="permission:item-masters-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (
         <>
           <SubHeader name={translations('title')} />
@@ -206,43 +207,50 @@ function Goods() {
                     }
                     content={translations('ctas.comingSoon')}
                   />
-                  <Tooltips
-                    trigger={
-                      <Button
-                        variant={
-                          productGoods?.length === 0 ? 'export' : 'outline'
-                        }
-                        size="sm"
-                        className={
-                          productGoods?.length === 0
-                            ? 'cursor-not-allowed'
-                            : 'cursor-pointer'
-                        }
-                        onClick={() =>
-                          productGoods?.length > 0 &&
-                          exportTableToExcel(
-                            'goods-table',
-                            translations('title'),
-                          )
-                        }
-                      >
-                        <Download size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.export')}
-                  />
-                  <Button
-                    onClick={() => setIsUploading(true)}
-                    variant="blue_outline"
-                    size="sm"
-                  >
-                    <Upload size={14} />
-                    {translations('ctas.upload')}
-                  </Button>
-                  <Button onClick={() => setIsAdding(true)} size="sm">
-                    <CircleFadingPlus size={14} />
-                    {translations('ctas.add')}
-                  </Button>
+                  <ProtectedWrapper permissionCode="permission:item-masters-download">
+                    <Tooltips
+                      trigger={
+                        <Button
+                          variant={
+                            productGoods?.length === 0 ? 'export' : 'outline'
+                          }
+                          size="sm"
+                          className={
+                            productGoods?.length === 0
+                              ? 'cursor-not-allowed'
+                              : 'cursor-pointer'
+                          }
+                          onClick={() =>
+                            productGoods?.length > 0 &&
+                            exportTableToExcel(
+                              'goods-table',
+                              translations('title'),
+                            )
+                          }
+                        >
+                          <Download size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.export')}
+                    />
+                  </ProtectedWrapper>
+                  <ProtectedWrapper permissionCode="permission:item-masters-upload">
+                    <Button
+                      onClick={() => setIsUploading(true)}
+                      variant="blue_outline"
+                      size="sm"
+                    >
+                      <Upload size={14} />
+                      {translations('ctas.upload')}
+                    </Button>
+                  </ProtectedWrapper>
+
+                  <ProtectedWrapper permissionCode="permission:item-masters-create">
+                    <Button onClick={() => setIsAdding(true)} size="sm">
+                      <CircleFadingPlus size={14} />
+                      {translations('ctas.add')}
+                    </Button>
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
               <div className="flex-grow overflow-hidden">
@@ -310,7 +318,7 @@ function Goods() {
           )}
         </div>
       )}
-    </>
+    </ProtectedWrapper>
   );
 }
 

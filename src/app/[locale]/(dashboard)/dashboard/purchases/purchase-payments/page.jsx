@@ -8,7 +8,7 @@ import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';

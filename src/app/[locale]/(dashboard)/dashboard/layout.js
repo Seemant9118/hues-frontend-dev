@@ -1,11 +1,14 @@
 'use client';
 
-import { parseJwt } from '@/appUtils/helperFunctions';
-import Sidebar from '@/components/ui/Sidebar';
+import { AuthProvider } from '@/context/AuthContext';
 import { RBACProvider } from '@/context/RBACcontext';
 import { UserProvider } from '@/context/UserContext';
+import Sidebar from '@/components/ui/Sidebar';
+
 import { LocalStorageService } from '@/lib/utils';
+import { parseJwt } from '@/appUtils/helperFunctions';
 import { useEffect, useState } from 'react';
+import AuthInitializer from '@/components/wrappers/AuthInitializer';
 
 export default function DashBoardLayout({ children }) {
   const token = LocalStorageService.get('token');
@@ -17,15 +20,18 @@ export default function DashBoardLayout({ children }) {
   }, [token]);
 
   return (
-    <RBACProvider userRoles={userRoles}>
-      <UserProvider>
-        <section className="scrollBarStyles relative grid h-screen flex-grow grid-cols-[225px,_1fr] overflow-y-auto">
-          <Sidebar />
-          <main className="scrollBarStyles overflow-y-auto bg-white px-4">
-            {children}
-          </main>
-        </section>
-      </UserProvider>
-    </RBACProvider>
+    <AuthProvider>
+      <AuthInitializer />
+      <RBACProvider userRoles={userRoles}>
+        <UserProvider>
+          <section className="scrollBarStyles relative grid h-screen flex-grow grid-cols-[225px,_1fr] overflow-y-auto">
+            <Sidebar />
+            <main className="scrollBarStyles overflow-y-auto bg-white px-4">
+              {children}
+            </main>
+          </section>
+        </UserProvider>
+      </RBACProvider>
+    </AuthProvider>
   );
 }

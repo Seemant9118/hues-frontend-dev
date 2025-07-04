@@ -8,7 +8,7 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { useNotificationsCount } from '@/context/CountNotificationsContext';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import {
   getNotifications,
