@@ -57,6 +57,42 @@ const exampleRolesAndPermissions = {
       isAllowed: true,
       isDeleted: false,
     },
+    // sales permissions
+    {
+      code: 'permission:sales-view',
+      displayName: 'Sales View',
+      description: 'Sales View',
+      isAllowed: true,
+      isDeleted: false,
+    },
+    {
+      code: 'permission:sales-create',
+      displayName: 'Sales Create',
+      description: 'Sales Create',
+      isAllowed: true,
+      isDeleted: false,
+    },
+    {
+      code: 'permission:sales-edit',
+      displayName: 'Sales Edit',
+      description: 'Sales Edit',
+      isAllowed: true,
+      isDeleted: false,
+    },
+    {
+      code: 'permission:sales-delete',
+      displayName: 'Sales Delete',
+      description: 'Sales Delete',
+      isAllowed: true,
+      isDeleted: false,
+    },
+    {
+      code: 'permission:sales-download',
+      displayName: 'Sales Download',
+      description: 'Sales Download',
+      isAllowed: true,
+      isDeleted: false,
+    },
   ],
 };
 

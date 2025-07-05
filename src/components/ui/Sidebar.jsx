@@ -58,12 +58,7 @@ const Sidebar = () => {
       icon: <Gauge size={16} />,
       path: `/dashboard`,
     },
-    // {
-    //   name: 'Templates',
-    //   icon: <LayoutDashboard size={16} />,
-    //   path: '/template',
-    // },
-    {
+    hasPermission('permission:item-masters-view') && {
       name: 'sidebar.itemMaster',
       icon: <Package size={16} />,
       path: '/dashboard/inventory/goods',
@@ -80,12 +75,7 @@ const Sidebar = () => {
         },
       ],
     },
-    // {
-    //   name: 'sidebar.catalogue',
-    //   icon: <BookOpenText size={16} />,
-    //   path: '/catalogue',
-    // },
-    {
+    hasPermission('permission:sales-view') && {
       name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
       path: '/dashboard/sales/sales-orders',
@@ -166,13 +156,7 @@ const Sidebar = () => {
       icon: <Users size={16} />,
       path: '/dashboard/members',
     },
-
-    // {
-    //   name: "Insights",
-    //   icon: <PieChart size={16} />,
-    //   path: "/insights",
-    // },
-  ];
+  ].filter(Boolean); // this removes all falsy values
 
   const actionLinks = [
     {

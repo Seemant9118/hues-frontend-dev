@@ -29,6 +29,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
@@ -221,37 +222,43 @@ const SalesOrder = () => {
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-3">
-                  <Tooltips
-                    trigger={
-                      <Button
-                        disabled={
-                          selectedOrders?.length === 0 ||
-                          exportOrderMutation.isPending
-                        }
-                        onClick={handleExportOrder}
-                        variant="outline"
-                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                        size="sm"
-                      >
-                        <Upload size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.export.placeholder')}
-                  />
+                  <ProtectedWrapper
+                    permissionCode={'permission:sales-download'}
+                  >
+                    <Tooltips
+                      trigger={
+                        <Button
+                          disabled={
+                            selectedOrders?.length === 0 ||
+                            exportOrderMutation.isPending
+                          }
+                          onClick={handleExportOrder}
+                          variant="outline"
+                          className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                          size="sm"
+                        >
+                          <Upload size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.export.placeholder')}
+                    />
+                  </ProtectedWrapper>
 
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => setIsCreatingSales(true)}
-                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                        size="sm"
-                      >
-                        <PlusCircle size={14} />
-                        {translations('ctas.offer.cta')}
-                      </Button>
-                    }
-                    content={translations('ctas.offer.placeholder')}
-                  />
+                  <ProtectedWrapper permissionCode={'permission:sales-create'}>
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => setIsCreatingSales(true)}
+                          className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                          size="sm"
+                        >
+                          <PlusCircle size={14} />
+                          {translations('ctas.offer.cta')}
+                        </Button>
+                      }
+                      content={translations('ctas.offer.placeholder')}
+                    />
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
 
