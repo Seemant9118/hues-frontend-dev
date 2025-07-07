@@ -34,6 +34,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
@@ -175,75 +176,71 @@ const ViewInvoice = () => {
             </div>
             <div className="flex gap-2">
               {/* raised debit note CTA */}
-              {!isPaymentAdvicing && (
-                <RaisedDebitNoteModal
-                  orderId={invoiceDetails?.invoiceDetails?.orderId}
-                  invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
-                  totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
-                />
-              )}
+              <ProtectedWrapper
+                permissionCode={'permission:purchase-debit-note-action'}
+              >
+                {!isPaymentAdvicing && (
+                  <RaisedDebitNoteModal
+                    orderId={invoiceDetails?.invoiceDetails?.orderId}
+                    invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
+                    totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
+                  />
+                )}
+              </ProtectedWrapper>
 
               {!isPaymentAdvicing &&
                 (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                   ?.status === 'NOT_PAID' ||
                   invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                     ?.status === 'PARTIAL_PAID') && (
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsPaymentAdvicing(true)}
-                    className="font-bold"
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-create-payment'}
                   >
-                    {translations('ctas.payment_advice')}
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={() => setIsPaymentAdvicing(true)}
+                      className="font-bold"
+                    >
+                      {translations('ctas.payment_advice')}
+                    </Button>
+                  </ProtectedWrapper>
+                )}
+
+              <ProtectedWrapper permissionCode={'permission:purchase-document'}>
+                {/* View CTA modal */}
+                {!isPaymentAdvicing && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => viewPdfInNewTab(pvtUrl)}
+                  >
+                    <Eye size={14} />
                   </Button>
                 )}
 
-              {/* share CTA */}
-              {/* {!isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      disabled
-                      variant="blue_outline"
-                      size="sm"
-                      className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                    >
-                      <Share2 size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.share.placeholder')}
-                />
-              )} */}
-
-              {/* View CTA modal */}
-              {!isPaymentAdvicing && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => viewPdfInNewTab(pvtUrl)}
-                >
-                  <Eye size={14} />
-                </Button>
-              )}
-
-              {/* download CTA */}
-              {!isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      size="sm"
-                      asChild
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-                        <Download size={14} />
-                      </a>
-                    </Button>
-                  }
-                  content={translations('ctas.download.placeholder')}
-                />
-              )}
+                {/* download CTA */}
+                {!isPaymentAdvicing && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        asChild
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <a
+                          download={pdfDoc?.publicUrl}
+                          href={pdfDoc?.publicUrl}
+                        >
+                          <Download size={14} />
+                        </a>
+                      </Button>
+                    }
+                    content={translations('ctas.download.placeholder')}
+                  />
+                )}
+              </ProtectedWrapper>
             </div>
           </section>
           {!isPaymentAdvicing && (

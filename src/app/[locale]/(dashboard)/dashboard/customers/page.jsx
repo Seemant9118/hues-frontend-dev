@@ -19,6 +19,7 @@ import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { Download, PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { CustomersTable } from './CustomersTable';
 import { useCustomersColumns } from './useCustomersColumns';
 
@@ -127,7 +128,7 @@ const CustomerPage = () => {
     if (
       !source?.pages ||
       !Array.isArray(source.pages) ||
-      source.pages.length === 0
+      source?.pages?.length === 0
     )
       return;
 
@@ -165,7 +166,7 @@ const CustomerPage = () => {
   const CustomersColumns = useCustomersColumns();
 
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:customers-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')}></SubHeader>
@@ -182,52 +183,68 @@ const CustomerPage = () => {
                   toSearchTerm={searchTerm}
                   setToSearchTerm={setSearchTerm}
                 />
-                <Tooltips
-                  trigger={
-                    <Button
-                      variant={customers?.length > 0 ? 'outline' : 'export'}
-                      size="sm"
-                      onClick={() =>
-                        exportTableToExcel('customers-table', 'customer_lists')
-                      }
-                      className={
-                        customers?.length === 0
-                          ? 'cursor-not-allowed'
-                          : 'cursor-pointer'
-                      }
-                    >
-                      <Download size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.tooltips.export')}
-                />
-                <Tooltips
-                  trigger={
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      className="cursor-not-allowed"
-                      // onClick={() => setIsUploading(true)}
-                    >
-                      <Upload size={14} />
-                      {translations('ctas.upload')}
-                    </Button>
-                  }
-                  content={translations('ctas.tooltips.coming_soon')}
-                />
+                <ProtectedWrapper
+                  permissionCode={'permission:customers-download'}
+                >
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant={customers?.length > 0 ? 'outline' : 'export'}
+                        size="sm"
+                        onClick={() =>
+                          exportTableToExcel(
+                            'customers-table',
+                            'customer_lists',
+                          )
+                        }
+                        className={
+                          customers?.length === 0
+                            ? 'cursor-not-allowed'
+                            : 'cursor-pointer'
+                        }
+                      >
+                        <Download size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.tooltips.export')}
+                  />
+                </ProtectedWrapper>
 
-                <Tooltips
-                  trigger={
-                    <Button
-                      size="sm"
-                      className="flex cursor-not-allowed items-center"
-                    >
-                      <PlusCircle size={14} />
-                      {translations('ctas.add')}
-                    </Button>
-                  }
-                  content={translations('ctas.tooltips.coming_soon')}
-                />
+                <ProtectedWrapper
+                  permissionCode={'permission:customers-upload'}
+                >
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        className="cursor-not-allowed"
+                        // onClick={() => setIsUploading(true)}
+                      >
+                        <Upload size={14} />
+                        {translations('ctas.upload')}
+                      </Button>
+                    }
+                    content={translations('ctas.tooltips.coming_soon')}
+                  />
+                </ProtectedWrapper>
+
+                <ProtectedWrapper
+                  permissionCode={'permission:customers-create'}
+                >
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        className="flex cursor-not-allowed items-center"
+                      >
+                        <PlusCircle size={14} />
+                        {translations('ctas.add')}
+                      </Button>
+                    }
+                    content={translations('ctas.tooltips.coming_soon')}
+                  />
+                </ProtectedWrapper>
               </div>
             </SubHeader>
 
@@ -268,7 +285,7 @@ const CustomerPage = () => {
           </Wrapper>
         </div>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Upload, Users } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 
 const MembersPage = () => {
@@ -43,7 +44,7 @@ const MembersPage = () => {
   const inviteeMembersColumns = useInviteeMembersColumns();
 
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:members-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name="Members" />
@@ -55,7 +56,9 @@ const MembersPage = () => {
         <Wrapper className="h-screen">
           <SubHeader name={'Members'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              <MemberInviteModal />
+              <ProtectedWrapper permissionCode={'permission:members-create'}>
+                <MemberInviteModal />
+              </ProtectedWrapper>
 
               <Tooltips
                 trigger={
@@ -88,13 +91,14 @@ const MembersPage = () => {
                   "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
                 }
               </p>
-
-              <MemberInviteModal />
+              <ProtectedWrapper permissionCode={'permission:members-create'}>
+                <MemberInviteModal />
+              </ProtectedWrapper>
             </div>
           )}
         </Wrapper>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

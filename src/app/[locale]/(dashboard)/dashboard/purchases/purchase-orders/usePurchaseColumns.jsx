@@ -12,6 +12,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { DeleteOrder } from '@/services/Orders_Services/Orders_Services';
 import { Dot, MoreVertical, Pencil } from 'lucide-react';
@@ -24,6 +26,7 @@ export const usePurchaseColumns = (
   setSelectedOrders,
 ) => {
   const translations = useTranslations('purchases.purchase-orders.table');
+  const { hasAnyPermission } = usePermission();
   const userId = LocalStorageService.get('user_profile');
 
   // Function to handle row selection
@@ -53,7 +56,7 @@ export const usePurchaseColumns = (
     }
   };
 
-  return [
+  const baseColumns = [
     {
       id: 'select',
       header: ({ table }) => (
@@ -167,7 +170,16 @@ export const usePurchaseColumns = (
         return formattedAmount(totalAmount);
       },
     },
-    {
+  ];
+
+  // ✅ Conditionally add actions column
+  const canShowActions = hasAnyPermission([
+    'permission:purchase-edit',
+    'permission:purchase-delete',
+  ]);
+
+  if (canShowActions) {
+    baseColumns.push({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
@@ -185,35 +197,41 @@ export const usePurchaseColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
-              {status === 'NEW' &&
-                userId.toString() === createdBy.toString() && (
-                  <span
-                    onClick={(e) => {
-                      setIsEditingOrder(true);
-                      e.stopPropagation();
-                      setOrderId(row.original.id);
-                    }}
-                    className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
-                  >
-                    <Pencil size={14} />{' '}
-                    {translations('column_actions.revise.cta')}
-                  </span>
-                )}
-              <ConfirmAction
-                deleteCta={translations('column_actions.delete.cta')}
-                cancelCta={translations('column_actions.delete.cancel')}
-                infoText={translations('column_actions.delete.infoText', {
-                  orderId: referenceNumber,
-                })}
-                id={id}
-                mutationKey={orderApi.getPurchases.endpointKey}
-                mutationFunc={DeleteOrder}
-                successMsg={translations('column_actions.delete.successMsg')}
-              />
+              <ProtectedWrapper permissionCode="permission:purchase-edit">
+                {status === 'NEW' &&
+                  userId.toString() === createdBy.toString() && (
+                    <span
+                      onClick={(e) => {
+                        setIsEditingOrder(true);
+                        e.stopPropagation();
+                        setOrderId(row.original.id);
+                      }}
+                      className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                    >
+                      <Pencil size={14} />{' '}
+                      {translations('column_actions.revise.cta')}
+                    </span>
+                  )}
+              </ProtectedWrapper>
+              <ProtectedWrapper permissionCode="permission:purchase-delete">
+                <ConfirmAction
+                  deleteCta={translations('column_actions.delete.cta')}
+                  cancelCta={translations('column_actions.delete.cancel')}
+                  infoText={translations('column_actions.delete.infoText', {
+                    orderId: referenceNumber,
+                  })}
+                  id={id}
+                  mutationKey={orderApi.getPurchases.endpointKey}
+                  mutationFunc={DeleteOrder}
+                  successMsg={translations('column_actions.delete.successMsg')}
+                />
+              </ProtectedWrapper>
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
-    },
-  ];
+    });
+  }
+
+  return baseColumns;
 };

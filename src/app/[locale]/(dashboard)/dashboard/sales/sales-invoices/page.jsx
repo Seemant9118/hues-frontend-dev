@@ -36,6 +36,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
@@ -275,7 +276,7 @@ const SalesInvoices = () => {
   const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
 
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:sales-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -312,26 +313,30 @@ const SalesInvoices = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  {defaultInvoiceType ? (
-                    <Button
-                      size="sm"
-                      onClick={() => setInvoiceType(defaultInvoiceType)}
-                    >
-                      <PlusCircle size={14} />
-                      {translations('ctas.invoice.cta')}
-                    </Button>
-                  ) : (
-                    // Ask user to select invoice type
-                    <InvoiceTypeModal
-                      triggerInvoiceTypeModal={
-                        <Button size="sm">
-                          <PlusCircle size={14} />
-                          {translations('ctas.invoice.cta')}
-                        </Button>
-                      }
-                      setInvoiceType={setInvoiceType}
-                    />
-                  )}
+                  <ProtectedWrapper
+                    permissionCode={'permission:sales-invoice-create'}
+                  >
+                    {defaultInvoiceType ? (
+                      <Button
+                        size="sm"
+                        onClick={() => setInvoiceType(defaultInvoiceType)}
+                      >
+                        <PlusCircle size={14} />
+                        {translations('ctas.invoice.cta')}
+                      </Button>
+                    ) : (
+                      // Ask user to select invoice type
+                      <InvoiceTypeModal
+                        triggerInvoiceTypeModal={
+                          <Button size="sm">
+                            <PlusCircle size={14} />
+                            {translations('ctas.invoice.cta')}
+                          </Button>
+                        }
+                        setInvoiceType={setInvoiceType}
+                      />
+                    )}
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
 
@@ -461,7 +466,7 @@ const SalesInvoices = () => {
           )}
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

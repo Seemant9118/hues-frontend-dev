@@ -52,6 +52,34 @@ const Sidebar = () => {
         // },
       ]
     : [];
+
+  // Build sub-tabs based on permissions
+  const contactSubTabs = [
+    hasPermission('permission:clients-view') && {
+      name: 'sidebar.subTabs.clients',
+      icon: <UserRound size={16} />,
+      path: '/dashboard/clients',
+    },
+    hasPermission('permission:vendors-view') && {
+      name: 'sidebar.subTabs.vendors',
+      icon: <Store size={16} />,
+      path: '/dashboard/vendors',
+    },
+    hasPermission('permission:customers-view') && {
+      name: 'sidebar.subTabs.customers',
+      icon: <ShoppingCart size={16} />,
+      path: '/dashboard/customers',
+    },
+  ].filter(Boolean);
+
+  // Use first valid sub-tab path as fallback
+  const contactsLink = {
+    name: 'sidebar.contacts',
+    icon: <NotebookTabs size={16} />,
+    path: contactSubTabs[0]?.path || '/dashboard/clients',
+    subTab: contactSubTabs,
+  };
+
   const links = [
     hasPermission('permission:view-dashboard') && {
       name: 'sidebar.dashboard',
@@ -102,7 +130,7 @@ const Sidebar = () => {
         },
       ],
     },
-    {
+    hasPermission('permission:purchase-view') && {
       name: 'sidebar.purchases',
       icon: <ScrollText size={16} />,
       path: '/dashboard/purchases/purchase-orders',
@@ -129,29 +157,8 @@ const Sidebar = () => {
         },
       ],
     },
-    {
-      name: 'sidebar.contacts',
-      icon: <NotebookTabs size={16} />,
-      path: '/dashboard/clients',
-      subTab: [
-        {
-          name: 'sidebar.subTabs.clients',
-          icon: <UserRound size={16} />,
-          path: '/dashboard/clients',
-        },
-        {
-          name: 'sidebar.subTabs.vendors',
-          icon: <Store size={16} />,
-          path: '/dashboard/vendors',
-        },
-        {
-          name: 'sidebar.subTabs.customers',
-          icon: <ShoppingCart size={16} />,
-          path: '/dashboard/customers',
-        },
-      ],
-    },
-    {
+    contactSubTabs.length > 0 && contactsLink,
+    hasPermission('permission:members-view') && {
       name: 'Members',
       icon: <Users size={16} />,
       path: '/dashboard/members',

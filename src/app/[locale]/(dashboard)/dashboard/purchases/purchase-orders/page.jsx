@@ -30,6 +30,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseColumns } from './usePurchaseColumns';
 
@@ -266,7 +267,7 @@ const PurchaseOrders = () => {
   );
 
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -299,19 +300,23 @@ const PurchaseOrders = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => setIsCreatingPurchase(true)}
-                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                        size="sm"
-                      >
-                        <PlusCircle size={14} />
-                        {translations('ctas.bid.cta')}
-                      </Button>
-                    }
-                    content={translations('ctas.bid.placeholder')}
-                  />
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-create'}
+                  >
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => setIsCreatingPurchase(true)}
+                          className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                          size="sm"
+                        >
+                          <PlusCircle size={14} />
+                          {translations('ctas.bid.cta')}
+                        </Button>
+                      }
+                      content={translations('ctas.bid.placeholder')}
+                    />
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
 
@@ -505,7 +510,7 @@ const PurchaseOrders = () => {
           )}
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

@@ -11,6 +11,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import {
@@ -324,13 +325,16 @@ const ViewDebitNote = () => {
           </section>
         </div>
       </section>
-      {/* cta's for accept/reject debit note */}
-      {debitNote?.status === 'PENDING' && (
-        <div className="sticky bottom-0 z-10 flex w-full justify-end gap-2 bg-white">
-          <DebitNoteModal cta="reject" debitNote={debitNote} />
-          <DebitNoteModal cta="accept" debitNote={debitNote} />
-        </div>
-      )}
+
+      <ProtectedWrapper permissionCode={'permission:sales-debit-note-action'}>
+        {/* cta's for accept/reject debit note */}
+        {debitNote?.status === 'PENDING' && (
+          <div className="sticky bottom-0 z-10 flex w-full justify-end gap-2 bg-white">
+            <DebitNoteModal cta="reject" debitNote={debitNote} />
+            <DebitNoteModal cta="accept" debitNote={debitNote} />
+          </div>
+        )}
+      </ProtectedWrapper>
     </Wrapper>
   );
 };

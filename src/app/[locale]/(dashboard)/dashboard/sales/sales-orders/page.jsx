@@ -205,7 +205,7 @@ const SalesOrder = () => {
   );
 
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:sales-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -222,27 +222,23 @@ const SalesOrder = () => {
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-3">
-                  <ProtectedWrapper
-                    permissionCode={'permission:sales-download'}
-                  >
-                    <Tooltips
-                      trigger={
-                        <Button
-                          disabled={
-                            selectedOrders?.length === 0 ||
-                            exportOrderMutation.isPending
-                          }
-                          onClick={handleExportOrder}
-                          variant="outline"
-                          className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                          size="sm"
-                        >
-                          <Upload size={14} />
-                        </Button>
-                      }
-                      content={translations('ctas.export.placeholder')}
-                    />
-                  </ProtectedWrapper>
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled={
+                          selectedOrders?.length === 0 ||
+                          exportOrderMutation.isPending
+                        }
+                        onClick={handleExportOrder}
+                        variant="outline"
+                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                        size="sm"
+                      >
+                        <Upload size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.export.placeholder')}
+                  />
 
                   <ProtectedWrapper permissionCode={'permission:sales-create'}>
                     <Tooltips
@@ -432,7 +428,7 @@ const SalesOrder = () => {
           )}
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

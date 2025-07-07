@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import {
   acceptInvitation,
   rejectInvitation,
@@ -239,16 +240,20 @@ export const useClientsColumns = (
                     >
                       {translations('table.column.actions.copyInviteLink')}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        onEditClick(row.original);
-                      }}
+                    <ProtectedWrapper
+                      permissionCode={'permission:clients-edit'}
                     >
-                      <Pencil size={14} />
-                      {translations('table.column.actions.edit')}
-                    </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          onEditClick(row.original);
+                        }}
+                      >
+                        <Pencil size={14} />
+                        {translations('table.column.actions.edit')}
+                      </Button>
+                    </ProtectedWrapper>
                   </div>
                 )}
               </DropdownMenuContent>

@@ -12,6 +12,7 @@ import PaymentOverview from '@/components/payments/PaymentsOverview';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import {
@@ -342,28 +343,30 @@ const PaymentDetails = () => {
       </div>
 
       {/* footer ctas */}
-      <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white shadow-md">
-        {paymentsDetails?.status === 'PENDING' && (
-          <section className="flex gap-2 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-              onClick={() => {
-                rejectPaymentMutation.mutate(params.payment_id);
-              }}
-            >
-              Deny
-            </Button>
-            <AcknowledgePayment
-              poNumber={paymentsDetails?.paymentReferenceNumber}
-              onAcknowledged={() => {
-                AcknowledgePaymentMutation.mutate(params.payment_id);
-              }}
-            />
-          </section>
-        )}
-      </div>
+      <ProtectedWrapper permissionCode={'permission:sales-payments-action'}>
+        <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white shadow-md">
+          {paymentsDetails?.status === 'PENDING' && (
+            <section className="flex gap-2 py-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                onClick={() => {
+                  rejectPaymentMutation.mutate(params.payment_id);
+                }}
+              >
+                Deny
+              </Button>
+              <AcknowledgePayment
+                poNumber={paymentsDetails?.paymentReferenceNumber}
+                onAcknowledged={() => {
+                  AcknowledgePaymentMutation.mutate(params.payment_id);
+                }}
+              />
+            </section>
+          )}
+        </div>
+      </ProtectedWrapper>
     </Wrapper>
   );
 };

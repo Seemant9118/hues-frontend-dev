@@ -83,11 +83,7 @@ const MemberInviteModal = () => {
       <DialogTrigger>
         <Tooltips
           trigger={
-            <Button
-              onClick={() => setOpen(true)}
-              className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-              size="sm"
-            >
+            <Button onClick={() => setOpen(true)} size="sm">
               <UserPlus size={16} />
               Invite members
             </Button>

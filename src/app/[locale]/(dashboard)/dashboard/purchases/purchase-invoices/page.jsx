@@ -30,6 +30,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseInvoicesColumns } from './usePurchaseInvoicesColumns';
@@ -204,7 +205,7 @@ const PurchaseInvoices = () => {
   const invoiceColumns = usePurchaseInvoicesColumns(setSelectedInvoices);
 
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -342,7 +343,7 @@ const PurchaseInvoices = () => {
           </Wrapper>
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 
