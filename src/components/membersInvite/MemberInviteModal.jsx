@@ -1,13 +1,18 @@
 'use client';
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
+import { rolesApi } from '@/api/rolesApi/rolesApi';
+import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import { LocalStorageService } from '@/lib/utils';
 import { createAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import { getRoles } from '@/services/Roles_Services/Roles_Services';
 import { Label } from '@radix-ui/react-label';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserPlus } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -17,28 +22,40 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import Tooltips from '../auth/Tooltips';
 
 const MemberInviteModal = () => {
   const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const [open, setOpen] = useState(false);
+  const [optionsForRoles, setOptionsForRoles] = useState([]);
   const [member, setMember] = useState({
     name: '',
     countryCode: '+91',
     mobileNumber: '',
     email: '',
     enterpriseId,
-    role: '',
+    rolesIds: [],
   });
+
+  const { data: rolesList } = useQuery({
+    queryKey: [rolesApi.getAllRoles.endpointKey],
+    queryFn: getRoles,
+    select: (data) => data.data.data,
+    enabled: !!open,
+  });
+
+  // api call formatting for roles
+  useEffect(() => {
+    if (!rolesList) return;
+
+    const optionsForRoles = rolesList?.map((role) => ({
+      value: role?.id,
+      label: convertSnakeToTitleCase(role?.name),
+    }));
+
+    setOptionsForRoles(optionsForRoles);
+  }, [rolesList]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,8 +63,11 @@ const MemberInviteModal = () => {
     setMember({ ...member, [name]: value });
   };
 
-  const handleRoleChange = (value) => {
-    setMember({ ...member, role: value });
+  const handleRoleChange = (selectedOptions) => {
+    const selectedRoles = selectedOptions
+      ? selectedOptions.map((option) => option.value)
+      : [];
+    setMember((prev) => ({ ...prev, rolesIds: selectedRoles }));
   };
 
   const createMemberMutation = useMutation({
@@ -61,7 +81,7 @@ const MemberInviteModal = () => {
         mobileNumber: '',
         email: '',
         enterpriseId,
-        role: '',
+        rolesIds: [],
       });
       queryClient.invalidateQueries([
         associateMemberApi.getAllAssociateMembers.endpointKey,
@@ -154,19 +174,18 @@ const MemberInviteModal = () => {
                 <Label className="text-sm font-bold">Role</Label>
                 <span className="text-red-600">*</span>
               </div>
-              <Select onValueChange={handleRoleChange} required>
-                <SelectTrigger className="text-sm font-semibold">
-                  <SelectValue
-                    className="text-sm font-semibold"
-                    placeholder="Select Role"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="COMMENTATOR">Commentator</SelectItem>
-                  <SelectItem value="VIEWER">Viewer</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select
+                isMulti
+                name="roles"
+                placeholder="Select Role"
+                options={optionsForRoles}
+                className="text-sm"
+                classNamePrefix="select"
+                value={optionsForRoles?.filter((option) =>
+                  member?.rolesIds?.includes(option.value),
+                )}
+                onChange={handleRoleChange}
+              />
             </div>
 
             <div className="flex items-center justify-end gap-4">

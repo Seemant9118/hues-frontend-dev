@@ -5,10 +5,7 @@ export const usePermission = () => {
 
   const hasPermission = (code) => {
     return permissions.some(
-      (perm) =>
-        perm.code === code &&
-        perm.isAllowed === true &&
-        perm.isDeleted === false,
+      (perm) => perm.code === code && perm.isDeleted === false,
     );
   };
 

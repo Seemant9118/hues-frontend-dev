@@ -1,5 +1,6 @@
 'use client';
 
+import { capitalize } from '@/appUtils/helperFunctions';
 import GenerateLink from '@/components/enterprise/GenerateLink';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
@@ -55,10 +56,6 @@ export const useInviteeMembersColumns = () => {
       ),
       cell: ({ row }) => {
         const { role } = row.original;
-        // fn for capitalization
-        function capitalize(str) {
-          return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-        }
         return (
           <div className="w-fit rounded-[5px] border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-sm">
             {capitalize(role)}
