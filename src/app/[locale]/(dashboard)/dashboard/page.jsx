@@ -7,11 +7,14 @@ import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { useAuth } from '@/context/AuthContext';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Home() {
@@ -29,6 +32,9 @@ export default function Home() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
@@ -36,7 +42,10 @@ export default function Home() {
       queryKey: [invitation.getReceivedInvitation.endpointKey],
       queryFn: () => getReceivedInvitation(),
       select: (data) => data.data.data,
-      enabled: !!enterpriseId && isEnterpriseOnboardingComplete,
+      enabled:
+        !!enterpriseId &&
+        isEnterpriseOnboardingComplete &&
+        hasPermission('permission:view-dashboard'),
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
@@ -49,6 +58,15 @@ export default function Home() {
   const filteredData = ReceivedformattedData.filter(
     (data) => data.status === 'PENDING',
   );
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:view-dashboard')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">

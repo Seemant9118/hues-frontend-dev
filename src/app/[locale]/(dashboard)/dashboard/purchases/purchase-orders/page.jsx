@@ -10,8 +10,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -30,7 +33,6 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseColumns } from './usePurchaseColumns';
 
@@ -63,6 +65,8 @@ const PurchaseOrders = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
@@ -116,6 +120,7 @@ const PurchaseOrders = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:purchase-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -265,6 +270,15 @@ const PurchaseOrders = () => {
     setOrderId,
     setSelectedOrders,
   );
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:purchase-view'}>

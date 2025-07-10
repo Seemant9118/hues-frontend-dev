@@ -10,8 +10,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -29,7 +32,6 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
@@ -61,6 +63,8 @@ const SalesOrder = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
@@ -112,6 +116,7 @@ const SalesOrder = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:sales-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -203,6 +208,15 @@ const SalesOrder = () => {
     setOrderId,
     setSelectedOrders,
   );
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>

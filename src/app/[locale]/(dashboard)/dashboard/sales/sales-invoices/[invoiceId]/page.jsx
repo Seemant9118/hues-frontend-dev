@@ -34,6 +34,8 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { usePermission } from '@/hooks/usePermissions';
+import { useAuth } from '@/context/AuthContext';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
 
@@ -42,6 +44,8 @@ const ViewInvoice = () => {
 
   const translations = useTranslations('sales.sales-invoices.invoice_details');
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -99,7 +103,7 @@ const ViewInvoice = () => {
     queryKey: [invoiceApi.getInvoice.endpointKey, params.invoiceId],
     queryFn: () => getInvoice(params.invoiceId),
     select: (data) => data.data.data,
-    enabled: tab === 'overview',
+    enabled: tab === 'overview' && hasPermission('permission:sales-view'),
   });
 
   // conversion pvt url to public url to download
@@ -159,6 +163,15 @@ const ViewInvoice = () => {
   const onRowClick = (row) => {
     router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
   };
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="h-full py-2">

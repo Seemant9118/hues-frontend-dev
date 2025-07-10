@@ -20,8 +20,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
@@ -37,7 +40,6 @@ import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
 // dynamic imports
@@ -78,6 +80,8 @@ const ViewOrder = () => {
 
   const translations = useTranslations('sales.sales-orders.order_details');
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
@@ -190,6 +194,7 @@ const ViewOrder = () => {
     queryKey: [orderApi.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
     select: (data) => data.data.data,
+    enabled: hasPermission('permission:sales-view'),
   });
 
   const { data: invitationData } = useQuery({
@@ -284,6 +289,15 @@ const ViewOrder = () => {
       />
     </div>
   );
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="h-full py-2">

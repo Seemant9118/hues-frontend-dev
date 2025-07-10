@@ -13,7 +13,9 @@ import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import {
   createComments,
   getComments,
@@ -31,7 +33,7 @@ import {
 } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -42,6 +44,9 @@ const ViewDebitNote = () => {
     'sales.sales-debit_notes.debit_notes_details',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const params = useParams();
   const debitNoteId = params.debit_id;
@@ -74,6 +79,7 @@ const ViewDebitNote = () => {
     queryKey: [DebitNoteApi.getDebitNote.endpointKey, debitNoteId],
     queryFn: () => getDebitNote(debitNoteId),
     select: (debitNote) => debitNote.data.data,
+    enabled: hasPermission('permission:sales-view'),
   });
 
   // get comments
@@ -136,6 +142,15 @@ const ViewDebitNote = () => {
 
     createCommentMutation.mutate(formData);
   };
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="h-full py-2">

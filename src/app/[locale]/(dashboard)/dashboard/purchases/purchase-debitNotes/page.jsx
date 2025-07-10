@@ -9,8 +9,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllPurchaseDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
@@ -44,6 +47,8 @@ const PurchaseDebitNotes = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
@@ -94,6 +99,7 @@ const PurchaseDebitNotes = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:purchase-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -180,8 +186,17 @@ const PurchaseDebitNotes = () => {
 
   const debitNotesColumns = useDebitNotesColumns(setSelectedDebit);
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -315,7 +330,7 @@ const PurchaseDebitNotes = () => {
           </Wrapper>
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

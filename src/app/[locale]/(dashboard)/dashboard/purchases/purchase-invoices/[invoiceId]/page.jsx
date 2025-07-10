@@ -4,7 +4,7 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
@@ -17,8 +17,11 @@ import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
@@ -34,7 +37,6 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
@@ -44,6 +46,8 @@ const ViewInvoice = () => {
   const translations = useTranslations(
     'purchases.purchase-invoices.invoice_details',
   );
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -100,6 +104,7 @@ const ViewInvoice = () => {
     queryKey: [invoiceApi.getInvoice.endpointKey, params.invoiceId],
     queryFn: () => getInvoice(params.invoiceId),
     select: (data) => data.data.data,
+    enabled: hasPermission('permission:purchase-view'),
   });
 
   // conversion pvt url to public url to download
@@ -151,14 +156,18 @@ const ViewInvoice = () => {
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
 
-  // fn for capitalization
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
-
   const onRowClick = (row) => {
     router.push(`/dashboard/purchases/purchase-payments/${row.paymentId}`);
   };
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="h-full py-2">

@@ -8,8 +8,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
@@ -29,7 +32,6 @@ import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useServicesColumns } from './ServicesColumns';
 import { ServicesTable } from './ServicesTable';
 
@@ -69,6 +71,8 @@ function Services() {
   );
   const templateId = 1;
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -119,7 +123,8 @@ function Services() {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm.length === 0,
+    enabled:
+      searchTerm.length === 0 && hasPermission('permission:item-masters-view'),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -191,6 +196,15 @@ function Services() {
 
   // columns
   const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:item-masters-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
