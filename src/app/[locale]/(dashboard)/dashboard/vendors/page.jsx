@@ -153,29 +153,33 @@ const VendorsPage = () => {
   useEffect(() => {
     const source = debouncedSearchTerm ? searchQuery : vendorsQuery;
 
-    // guard clause to ensure source is defined and has pages
+    // Guard clause: Ensure source is defined and has valid pages
     if (
       !source?.pages ||
       !Array.isArray(source.pages) ||
-      source?.pages?.length === 0
-    )
+      source.pages.length === 0
+    ) {
       return;
+    }
 
-    const flattened = source?.pages?.flatMap(
-      (page) => page?.data?.data?.users || [],
+    // Flatten users from each page, fall back to [] safely
+    const flattened = source.pages.flatMap((page) =>
+      page?.data?.data?.users ? page.data.data.users : [],
     );
 
+    // Deduplicate by ID
     const uniqueVendorsData = Array.from(
       new Map(flattened.map((item) => [item.id, item])).values(),
     );
 
     setVendors(uniqueVendorsData);
 
-    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    // Extract pagination info from the last page safely
+    const lastPageData = source.pages[source.pages.length - 1]?.data?.data;
 
     setPaginationData({
-      totalPages: lastPage?.totalPages ?? 0,
-      currFetchedPage: Number(lastPage?.currentPage ?? 1),
+      totalPages: lastPageData?.totalPages ?? 0,
+      currFetchedPage: Number(lastPageData?.currentPage ?? 1),
     });
   }, [debouncedSearchTerm, vendorsQuery, searchQuery]);
 

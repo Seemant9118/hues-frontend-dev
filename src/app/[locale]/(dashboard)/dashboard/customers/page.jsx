@@ -131,25 +131,34 @@ const CustomerPage = () => {
 
   useEffect(() => {
     const source = debouncedSearchTerm ? searchQuery : customersQuery;
-    // guard clause to ensure source is defined and has pages
+
+    // Guard clause: Ensure source is defined and has valid pages
     if (
       !source?.pages ||
       !Array.isArray(source.pages) ||
-      source?.pages?.length === 0
-    )
+      source.pages.length === 0
+    ) {
       return;
+    }
 
-    const flattened = source?.pages?.flatMap(
-      (page) => page?.data?.data?.customers || [],
+    // Flatten customers array from all pages, fallback to [] if not found
+    const flattened = source.pages.flatMap((page) =>
+      page?.data?.data?.customers ? page.data.data.customers : [],
     );
+
+    // Remove duplicates by customer ID
     const uniqueCustomersData = Array.from(
-      new Map(flattened?.map((item) => [item.id, item])).values(),
+      new Map(flattened.map((item) => [item.id, item])).values(),
     );
+
     setCustomers(uniqueCustomersData);
-    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
+
+    // Safely extract last page data
+    const lastPageData = source.pages[source.pages.length - 1]?.data?.data;
+
     setPaginationData({
-      totalPages: lastPage?.totalPages,
-      currFetchedPage: Number(lastPage?.currentPage),
+      totalPages: lastPageData?.totalPages ?? 0,
+      currFetchedPage: Number(lastPageData?.currentPage ?? 1),
     });
   }, [debouncedSearchTerm, customersQuery, searchQuery]);
 

@@ -152,16 +152,17 @@ const ClientPage = () => {
 
   useEffect(() => {
     const source = debouncedSearchTerm ? searchQuery : clientsQuery;
-    // guard clause to ensure source is defined and has pages
+
+    // Guard clause: ensure source is defined and has valid pages array
     if (
       !source?.pages ||
-      !Array.isArray(source?.pages) ||
-      source?.pages?.length === 0
+      !Array.isArray(source.pages) ||
+      source.pages.length === 0
     )
       return;
 
-    const flattened = source?.pages?.flatMap(
-      (page) => page?.data?.data?.users || [],
+    const flattened = source.pages.flatMap((page) =>
+      page?.data?.data?.users ? page.data.data.users : [],
     );
 
     const uniqueClientsData = Array.from(
@@ -170,10 +171,11 @@ const ClientPage = () => {
 
     setClients(uniqueClientsData);
 
-    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
+    const lastPageData = source.pages[source.pages.length - 1]?.data?.data;
+
     setPaginationData({
-      totalPages: lastPage?.totalPages,
-      currFetchedPage: Number(lastPage?.currentPage),
+      totalPages: lastPageData?.totalPages || 0,
+      currFetchedPage: Number(lastPageData?.currentPage || 1),
     });
   }, [debouncedSearchTerm, clientsQuery, searchQuery]);
 
