@@ -8,8 +8,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
@@ -66,6 +69,8 @@ function Goods() {
   );
   const templateId = 1;
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -108,7 +113,8 @@ function Goods() {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm.length === 0,
+    enabled:
+      searchTerm.length === 0 && hasPermission('permission:item-masters-view'),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -176,8 +182,17 @@ function Goods() {
 
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:item-masters-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode="permission:item-masters-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (
         <>
           <SubHeader name={translations('title')} />
@@ -206,43 +221,50 @@ function Goods() {
                     }
                     content={translations('ctas.comingSoon')}
                   />
-                  <Tooltips
-                    trigger={
-                      <Button
-                        variant={
-                          productGoods?.length === 0 ? 'export' : 'outline'
-                        }
-                        size="sm"
-                        className={
-                          productGoods?.length === 0
-                            ? 'cursor-not-allowed'
-                            : 'cursor-pointer'
-                        }
-                        onClick={() =>
-                          productGoods?.length > 0 &&
-                          exportTableToExcel(
-                            'goods-table',
-                            translations('title'),
-                          )
-                        }
-                      >
-                        <Download size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.export')}
-                  />
-                  <Button
-                    onClick={() => setIsUploading(true)}
-                    variant="blue_outline"
-                    size="sm"
-                  >
-                    <Upload size={14} />
-                    {translations('ctas.upload')}
-                  </Button>
-                  <Button onClick={() => setIsAdding(true)} size="sm">
-                    <CircleFadingPlus size={14} />
-                    {translations('ctas.add')}
-                  </Button>
+                  <ProtectedWrapper permissionCode="permission:item-masters-download">
+                    <Tooltips
+                      trigger={
+                        <Button
+                          variant={
+                            productGoods?.length === 0 ? 'export' : 'outline'
+                          }
+                          size="sm"
+                          className={
+                            productGoods?.length === 0
+                              ? 'cursor-not-allowed'
+                              : 'cursor-pointer'
+                          }
+                          onClick={() =>
+                            productGoods?.length > 0 &&
+                            exportTableToExcel(
+                              'goods-table',
+                              translations('title'),
+                            )
+                          }
+                        >
+                          <Download size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.export')}
+                    />
+                  </ProtectedWrapper>
+                  <ProtectedWrapper permissionCode="permission:item-masters-upload">
+                    <Button
+                      onClick={() => setIsUploading(true)}
+                      variant="blue_outline"
+                      size="sm"
+                    >
+                      <Upload size={14} />
+                      {translations('ctas.upload')}
+                    </Button>
+                  </ProtectedWrapper>
+
+                  <ProtectedWrapper permissionCode="permission:item-masters-create">
+                    <Button onClick={() => setIsAdding(true)} size="sm">
+                      <CircleFadingPlus size={14} />
+                      {translations('ctas.add')}
+                    </Button>
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
               <div className="flex-grow overflow-hidden">
@@ -310,7 +332,7 @@ function Goods() {
           )}
         </div>
       )}
-    </>
+    </ProtectedWrapper>
   );
 }
 

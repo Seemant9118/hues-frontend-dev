@@ -20,8 +20,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
@@ -65,6 +68,8 @@ const ViewOrder = () => {
     'purchases.purchase-orders.order_details',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
@@ -176,6 +181,7 @@ const ViewOrder = () => {
     queryKey: [orderApi.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
     select: (res) => res.data.data,
+    enabled: hasPermission('permission:purchase-view'),
   });
 
   const acceptMutation = useMutation({
@@ -260,6 +266,15 @@ const ViewOrder = () => {
     </div>
   );
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
     <Wrapper className="h-full py-2">
       {isLoading && !orderDetails && <Loading />}
@@ -290,165 +305,136 @@ const ViewOrder = () => {
             <div className="flex gap-2">
               {/* negotiation ctas */}
               {!isNegotiation && !viewNegotiationHistory && (
-                <section className="flex gap-2">
-                  {/* status NEW */}
-                  {!isPastInvoices &&
-                    orderDetails?.negotiationStatus === 'NEW' &&
-                    orderDetails?.buyerId === enterpriseId && (
-                      <>
-                        {/* {orderDetails?.orderType === 'PURCHASE' && (
+                <ProtectedWrapper
+                  permissionCode={'permission:purchase-negotiation'}
+                >
+                  <section className="flex gap-2">
+                    {/* status NEW */}
+                    {!isPastInvoices &&
+                      orderDetails?.negotiationStatus === 'NEW' &&
+                      orderDetails?.buyerId === enterpriseId && (
+                        <>
+                          {/* {orderDetails?.orderType === 'PURCHASE' && (
                         <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
                           <Clock size={12} />{' '}
                           {translations('ctas.footer_ctas.wait_response')}
                         </span>
                       )} */}
 
-                        {orderDetails?.orderType === 'SALES' && (
-                          <div className="flex w-full justify-end gap-2">
-                            {!isNegotiation && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="blue_outline"
-                                  onClick={() => setIsNegotiation(true)}
-                                >
-                                  {translations('ctas.footer_ctas.negotiate')}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={handleAccept}
-                                  disabled={acceptMutation.isPending}
-                                >
-                                  {acceptMutation.isPending ? (
-                                    <Loading size={14} />
-                                  ) : (
-                                    translations('ctas.footer_ctas.accept')
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
+                          {orderDetails?.orderType === 'SALES' && (
+                            <div className="flex w-full justify-end gap-2">
+                              {!isNegotiation && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="blue_outline"
+                                    onClick={() => setIsNegotiation(true)}
+                                  >
+                                    {translations('ctas.footer_ctas.negotiate')}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={handleAccept}
+                                    disabled={acceptMutation.isPending}
+                                  >
+                                    {acceptMutation.isPending ? (
+                                      <Loading size={14} />
+                                    ) : (
+                                      translations('ctas.footer_ctas.accept')
+                                    )}
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
 
-                  {/* status NEGOTIATION */}
-                  {!isPastInvoices &&
-                    orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-                    orderDetails?.buyerId === enterpriseId && (
-                      <>
-                        {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                          <div className="flex w-full justify-end gap-2">
-                            {!isNegotiation && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="blue_outline"
-                                  onClick={() => setIsNegotiation(true)}
-                                >
-                                  {translations('ctas.footer_ctas.negotiate')}
-                                </Button>
-                                <Button size="sm" onClick={handleAccept}>
-                                  {translations('ctas.footer_ctas.accept')}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        )}
-                        {/* {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
+                    {/* status NEGOTIATION */}
+                    {!isPastInvoices &&
+                      orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+                      orderDetails?.buyerId === enterpriseId && (
+                        <>
+                          {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
+                            <div className="flex w-full justify-end gap-2">
+                              {!isNegotiation && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="blue_outline"
+                                    onClick={() => setIsNegotiation(true)}
+                                  >
+                                    {translations('ctas.footer_ctas.negotiate')}
+                                  </Button>
+                                  <Button size="sm" onClick={handleAccept}>
+                                    {translations('ctas.footer_ctas.accept')}
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          {/* {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
                         <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
                           <Clock size={12} />{' '}
                           {translations('ctas.footer_ctas.wait_response')}
                         </span>
                       )} */}
-                      </>
-                    )}
-                </section>
+                        </>
+                      )}
+                  </section>
+                </ProtectedWrapper>
               )}
               {/* send payment advice CTA */}
               {!isPaymentAdvicing &&
                 (orderDetails.negotiationStatus === 'INVOICED' ||
                   orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
                 orderDetails?.metaData?.payment?.status !== 'PAID' && (
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsPaymentAdvicing(true)}
-                    className="font-bold"
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-create-payment'}
                   >
-                    {translations('ctas.payment_advice')}
-                  </Button>
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={() => setIsPaymentAdvicing(true)}
+                      className="font-bold"
+                    >
+                      {translations('ctas.payment_advice')}
+                    </Button>
+                  </ProtectedWrapper>
                 )}
 
               {/* more ctas */}
-              {orderDetails.negotiationStatus === 'NEW' &&
-                userId.toString() === orderDetails.createdBy.toString() && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <Tooltips
-                        trigger={
-                          <Button
-                            variant="blue_outline"
-                            size="sm"
-                            className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                          >
-                            <span className="sr-only">Open menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        }
-                        content={translations('ctas.more.placeholder')}
-                      />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="max-w-fit">
-                      <span
-                        onClick={() => setIsEditingOrder(true)}
-                        className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
-                      >
-                        <Pencil size={14} /> {translations('ctas.more.revise')}
-                      </span>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
-              {/* upload attachments cta */}
-              {/* {!isUploadingAttachements && (
-                <Button
-                  variant="blue_outline"
-                  size="sm"
-                  onClick={() => setIsUploadingAttachements(true)}
-                  className="font-bold"
-                >
-                  {translations('ctas.upload_attachements')}
-                </Button>
-              )} */}
-
-              {/* share CTA */}
-              {/* {!isUploadingAttachements && !isNegotiation && (
-                <ShareOrderInvoice
-                  heading={'Share Order Details'}
-                  queryKey={orderApi.shareOrder.endpointKey}
-                  queryFn={shareOrder}
-                />
-              )} */}
-
-              {/* preview CTA */}
-              {/* {!isNegotiation &&
-                !isPaymentAdvicing &&
-                !viewNegotiationHistory && (
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => viewOrderinNewTab(params.order_id)}
-                        size="sm"
-                        variant="outline"
-                        className="font-bold"
-                      >
-                        <Eye size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.view.placeholder')}
-                  />
-                )} */}
+              <ProtectedWrapper permissionCode={'permission:purchase-edit'}>
+                {orderDetails.negotiationStatus === 'NEW' &&
+                  userId.toString() === orderDetails.createdBy.toString() && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <Tooltips
+                          trigger={
+                            <Button
+                              variant="blue_outline"
+                              size="sm"
+                              className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                            >
+                              <span className="sr-only">Open menu</span>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          }
+                          content={translations('ctas.more.placeholder')}
+                        />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="max-w-fit">
+                        <span
+                          onClick={() => setIsEditingOrder(true)}
+                          className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                        >
+                          <Pencil size={14} />{' '}
+                          {translations('ctas.more.revise')}
+                        </span>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+              </ProtectedWrapper>
             </div>
           </section>
           {/* switch tabs */}

@@ -9,8 +9,10 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllSalesDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
@@ -27,6 +29,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
@@ -44,6 +47,8 @@ const SalesDebitNotes = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
@@ -93,6 +98,7 @@ const SalesDebitNotes = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:sales-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -178,8 +184,17 @@ const SalesDebitNotes = () => {
 
   const debitNotesColumns = useDebitNotesColumns(setSelectedDebit);
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode="permission:sales-view">
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -313,7 +328,7 @@ const SalesDebitNotes = () => {
           </Wrapper>
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

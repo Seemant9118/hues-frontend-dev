@@ -25,11 +25,13 @@ import {
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
+import { usePermission } from '@/hooks/usePermissions';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
   const { hasPageAccess } = useRBAC();
+  const { hasPermission } = usePermission();
 
   const adminLinks = hasPageAccess('adminReports')
     ? [
@@ -50,18 +52,41 @@ const Sidebar = () => {
         // },
       ]
     : [];
+
+  // Build sub-tabs based on permissions
+  const contactSubTabs = [
+    hasPermission('permission:clients-view') && {
+      name: 'sidebar.subTabs.clients',
+      icon: <UserRound size={16} />,
+      path: '/dashboard/clients',
+    },
+    hasPermission('permission:vendors-view') && {
+      name: 'sidebar.subTabs.vendors',
+      icon: <Store size={16} />,
+      path: '/dashboard/vendors',
+    },
+    hasPermission('permission:customers-view') && {
+      name: 'sidebar.subTabs.customers',
+      icon: <ShoppingCart size={16} />,
+      path: '/dashboard/customers',
+    },
+  ].filter(Boolean);
+
+  // Use first valid sub-tab path as fallback
+  const contactsLink = {
+    name: 'sidebar.contacts',
+    icon: <NotebookTabs size={16} />,
+    path: contactSubTabs[0]?.path || '/dashboard/clients',
+    subTab: contactSubTabs,
+  };
+
   const links = [
-    {
+    hasPermission('permission:view-dashboard') && {
       name: 'sidebar.dashboard',
       icon: <Gauge size={16} />,
       path: `/dashboard`,
     },
-    // {
-    //   name: 'Templates',
-    //   icon: <LayoutDashboard size={16} />,
-    //   path: '/template',
-    // },
-    {
+    hasPermission('permission:item-masters-view') && {
       name: 'sidebar.itemMaster',
       icon: <Package size={16} />,
       path: '/dashboard/inventory/goods',
@@ -78,12 +103,7 @@ const Sidebar = () => {
         },
       ],
     },
-    // {
-    //   name: 'sidebar.catalogue',
-    //   icon: <BookOpenText size={16} />,
-    //   path: '/catalogue',
-    // },
-    {
+    hasPermission('permission:sales-view') && {
       name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
       path: '/dashboard/sales/sales-orders',
@@ -110,7 +130,7 @@ const Sidebar = () => {
         },
       ],
     },
-    {
+    hasPermission('permission:purchase-view') && {
       name: 'sidebar.purchases',
       icon: <ScrollText size={16} />,
       path: '/dashboard/purchases/purchase-orders',
@@ -137,40 +157,13 @@ const Sidebar = () => {
         },
       ],
     },
-    {
-      name: 'sidebar.contacts',
-      icon: <NotebookTabs size={16} />,
-      path: '/dashboard/clients',
-      subTab: [
-        {
-          name: 'sidebar.subTabs.clients',
-          icon: <UserRound size={16} />,
-          path: '/dashboard/clients',
-        },
-        {
-          name: 'sidebar.subTabs.vendors',
-          icon: <Store size={16} />,
-          path: '/dashboard/vendors',
-        },
-        {
-          name: 'sidebar.subTabs.customers',
-          icon: <ShoppingCart size={16} />,
-          path: '/dashboard/customers',
-        },
-      ],
-    },
-    {
+    contactSubTabs.length > 0 && contactsLink,
+    hasPermission('permission:members-view') && {
       name: 'Members',
       icon: <Users size={16} />,
       path: '/dashboard/members',
     },
-
-    // {
-    //   name: "Insights",
-    //   icon: <PieChart size={16} />,
-    //   path: "/insights",
-    // },
-  ];
+  ].filter(Boolean); // this removes all falsy values
 
   const actionLinks = [
     {

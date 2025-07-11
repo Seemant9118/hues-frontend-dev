@@ -13,7 +13,7 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -36,6 +36,9 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { usePermission } from '@/hooks/usePermissions';
+import { useAuth } from '@/context/AuthContext';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
@@ -75,6 +78,8 @@ const SalesInvoices = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('all');
@@ -187,6 +192,7 @@ const SalesInvoices = () => {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
+    enabled: hasPermission('permission:sales-view'),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -274,8 +280,17 @@ const SalesInvoices = () => {
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
   const invoiceColumns = useSalesInvoicesColumns(setSelectedInvoices);
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:sales-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -312,26 +327,30 @@ const SalesInvoices = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  {defaultInvoiceType ? (
-                    <Button
-                      size="sm"
-                      onClick={() => setInvoiceType(defaultInvoiceType)}
-                    >
-                      <PlusCircle size={14} />
-                      {translations('ctas.invoice.cta')}
-                    </Button>
-                  ) : (
-                    // Ask user to select invoice type
-                    <InvoiceTypeModal
-                      triggerInvoiceTypeModal={
-                        <Button size="sm">
-                          <PlusCircle size={14} />
-                          {translations('ctas.invoice.cta')}
-                        </Button>
-                      }
-                      setInvoiceType={setInvoiceType}
-                    />
-                  )}
+                  <ProtectedWrapper
+                    permissionCode={'permission:sales-invoice-create'}
+                  >
+                    {defaultInvoiceType ? (
+                      <Button
+                        size="sm"
+                        onClick={() => setInvoiceType(defaultInvoiceType)}
+                      >
+                        <PlusCircle size={14} />
+                        {translations('ctas.invoice.cta')}
+                      </Button>
+                    ) : (
+                      // Ask user to select invoice type
+                      <InvoiceTypeModal
+                        triggerInvoiceTypeModal={
+                          <Button size="sm">
+                            <PlusCircle size={14} />
+                            {translations('ctas.invoice.cta')}
+                          </Button>
+                        }
+                        setInvoiceType={setInvoiceType}
+                      />
+                    )}
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
 
@@ -461,7 +480,7 @@ const SalesInvoices = () => {
           )}
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

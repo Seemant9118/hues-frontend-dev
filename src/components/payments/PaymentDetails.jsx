@@ -10,6 +10,7 @@ import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import { usePaymentColumns } from './paymentColumns';
+import { ProtectedWrapper } from '../wrappers/ProtectedWrapper';
 
 const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
   const translations = useTranslations('components.payment_details');
@@ -48,19 +49,22 @@ const PaymentDetails = ({ orderId, orderDetails, setIsRecordingPayment }) => {
     <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
       <Image src={emptyImg} alt="emptyIcon" />
       <p className="font-bold">{translations('emptyStateComponent.title')}</p>
-      <p className="max-w-96 text-center">
-        {translations('emptyStateComponent.para')}
-      </p>
 
-      {!isPurchasesPage && orderDetails.negotiationStatus === 'INVOICED' && (
-        <Button
-          size="sm"
-          className="bg-[#288AF9]"
-          onClick={() => setIsRecordingPayment(true)}
-        >
-          {translations('ctas.record_payment')}
-        </Button>
-      )}
+      <ProtectedWrapper permissionCode={'permission:sales-create-payment'}>
+        <p className="max-w-96 text-center">
+          {translations('emptyStateComponent.para')}
+        </p>
+
+        {!isPurchasesPage && orderDetails.negotiationStatus === 'INVOICED' && (
+          <Button
+            size="sm"
+            className="bg-[#288AF9]"
+            onClick={() => setIsRecordingPayment(true)}
+          >
+            {translations('ctas.record_payment')}
+          </Button>
+        )}
+      </ProtectedWrapper>
     </div>
   );
 };

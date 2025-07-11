@@ -10,8 +10,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -60,6 +63,8 @@ const SalesOrder = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
@@ -111,6 +116,7 @@ const SalesOrder = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:sales-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -203,8 +209,17 @@ const SalesOrder = () => {
     setSelectedOrders,
   );
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:sales-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -239,19 +254,21 @@ const SalesOrder = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => setIsCreatingSales(true)}
-                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                        size="sm"
-                      >
-                        <PlusCircle size={14} />
-                        {translations('ctas.offer.cta')}
-                      </Button>
-                    }
-                    content={translations('ctas.offer.placeholder')}
-                  />
+                  <ProtectedWrapper permissionCode={'permission:sales-create'}>
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => setIsCreatingSales(true)}
+                          className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                          size="sm"
+                        >
+                          <PlusCircle size={14} />
+                          {translations('ctas.offer.cta')}
+                        </Button>
+                      }
+                      content={translations('ctas.offer.placeholder')}
+                    />
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
 
@@ -425,7 +442,7 @@ const SalesOrder = () => {
           )}
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

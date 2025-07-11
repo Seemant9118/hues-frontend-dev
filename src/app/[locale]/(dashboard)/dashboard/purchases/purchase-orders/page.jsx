@@ -10,8 +10,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -62,6 +65,8 @@ const PurchaseOrders = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
@@ -115,6 +120,7 @@ const PurchaseOrders = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:purchase-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -265,8 +271,17 @@ const PurchaseOrders = () => {
     setSelectedOrders,
   );
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')} />
@@ -299,19 +314,23 @@ const PurchaseOrders = () => {
                     content={translations('ctas.export.placeholder')}
                   />
 
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => setIsCreatingPurchase(true)}
-                        className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-                        size="sm"
-                      >
-                        <PlusCircle size={14} />
-                        {translations('ctas.bid.cta')}
-                      </Button>
-                    }
-                    content={translations('ctas.bid.placeholder')}
-                  />
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-create'}
+                  >
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => setIsCreatingPurchase(true)}
+                          className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                          size="sm"
+                        >
+                          <PlusCircle size={14} />
+                          {translations('ctas.bid.cta')}
+                        </Button>
+                      }
+                      content={translations('ctas.bid.placeholder')}
+                    />
+                  </ProtectedWrapper>
                 </div>
               </SubHeader>
 
@@ -505,7 +524,7 @@ const PurchaseOrders = () => {
           )}
         </>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

@@ -16,8 +16,9 @@ import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
@@ -27,12 +28,14 @@ import {
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Eye, MoveUpRight, Share2 } from 'lucide-react';
+import { Download, Eye, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { usePermission } from '@/hooks/usePermissions';
+import { useAuth } from '@/context/AuthContext';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
 
@@ -41,6 +44,8 @@ const ViewInvoice = () => {
 
   const translations = useTranslations('sales.sales-invoices.invoice_details');
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -98,7 +103,7 @@ const ViewInvoice = () => {
     queryKey: [invoiceApi.getInvoice.endpointKey, params.invoiceId],
     queryFn: () => getInvoice(params.invoiceId),
     select: (data) => data.data.data,
-    enabled: tab === 'overview',
+    enabled: tab === 'overview' && hasPermission('permission:sales-view'),
   });
 
   // conversion pvt url to public url to download
@@ -159,6 +164,15 @@ const ViewInvoice = () => {
     router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
   };
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
     <Wrapper className="h-full py-2">
       {/* headers */}
@@ -175,18 +189,22 @@ const ViewInvoice = () => {
               ?.status === 'NOT_PAID' ||
               invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                 ?.status === 'PARTIAL_PAID') && (
-              <Button
-                variant="blue_outline"
-                size="sm"
-                onClick={() => setIsRecordingPayment(true)}
-                className="font-bold"
+              <ProtectedWrapper
+                permissionCode={'permission:sales-create-payment'}
               >
-                {translations('ctas.record_payment')}
-              </Button>
+                <Button
+                  variant="blue_outline"
+                  size="sm"
+                  onClick={() => setIsRecordingPayment(true)}
+                  className="font-bold"
+                >
+                  {translations('ctas.record_payment')}
+                </Button>
+              </ProtectedWrapper>
             )}
 
           {/* share CTA */}
-          {!isRecordingPayment && (
+          {/* {!isRecordingPayment && (
             <Tooltips
               trigger={
                 <Button
@@ -200,31 +218,38 @@ const ViewInvoice = () => {
               }
               content={translations('ctas.share.placeholder')}
             />
-          )}
+          )} */}
           {/* View CTA modal */}
-          {!isRecordingPayment && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => viewPdfInNewTab(pvtUrl)}
-            >
-              <Eye size={14} />
-            </Button>
-          )}
+          <ProtectedWrapper permissionCode={'permission:sales-document'}>
+            {!isRecordingPayment && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => viewPdfInNewTab(pvtUrl)}
+              >
+                <Eye size={14} />
+              </Button>
+            )}
 
-          {/* download CTA */}
-          {!isRecordingPayment && (
-            <Tooltips
-              trigger={
-                <Button size="sm" asChild variant="outline" className="w-full">
-                  <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-                    <Download size={14} />
-                  </a>
-                </Button>
-              }
-              content={translations('ctas.download.placeholder')}
-            />
-          )}
+            {/* download CTA */}
+            {!isRecordingPayment && (
+              <Tooltips
+                trigger={
+                  <Button
+                    size="sm"
+                    asChild
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
+                      <Download size={14} />
+                    </a>
+                  </Button>
+                }
+                content={translations('ctas.download.placeholder')}
+              />
+            )}
+          </ProtectedWrapper>
         </div>
       </section>
       {!isRecordingPayment && (
@@ -285,23 +310,27 @@ const ViewInvoice = () => {
                 <p className="font-bold">
                   {translations('tabs.content.tab2.emtpyStateComponent.title')}
                 </p>
-                <p className="max-w-96 text-center">
-                  {translations('tabs.content.tab2.emtpyStateComponent.para')}
-                </p>
-                {!isRecordingPayment &&
-                  (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                    ?.status === 'NOT_PAID' ||
-                    invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                      ?.status === 'PARTIAL_PAID') && (
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      onClick={() => setIsRecordingPayment(true)}
-                      className="font-bold"
-                    >
-                      {translations('ctas.record_payment')}
-                    </Button>
-                  )}
+                <ProtectedWrapper
+                  permissionCode={'permission:sales-create-payment'}
+                >
+                  <p className="max-w-96 text-center">
+                    {translations('tabs.content.tab2.emtpyStateComponent.para')}
+                  </p>
+                  {!isRecordingPayment &&
+                    (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
+                      ?.status === 'NOT_PAID' ||
+                      invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
+                        ?.status === 'PARTIAL_PAID') && (
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsRecordingPayment(true)}
+                        className="font-bold"
+                      >
+                        {translations('ctas.record_payment')}
+                      </Button>
+                    )}
+                </ProtectedWrapper>
               </div>
             )}
           </TabsContent>

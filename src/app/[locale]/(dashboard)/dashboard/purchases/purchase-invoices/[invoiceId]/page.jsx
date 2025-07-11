@@ -4,7 +4,7 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
@@ -17,8 +17,11 @@ import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
@@ -43,6 +46,8 @@ const ViewInvoice = () => {
   const translations = useTranslations(
     'purchases.purchase-invoices.invoice_details',
   );
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -99,6 +104,7 @@ const ViewInvoice = () => {
     queryKey: [invoiceApi.getInvoice.endpointKey, params.invoiceId],
     queryFn: () => getInvoice(params.invoiceId),
     select: (data) => data.data.data,
+    enabled: hasPermission('permission:purchase-view'),
   });
 
   // conversion pvt url to public url to download
@@ -150,14 +156,18 @@ const ViewInvoice = () => {
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
 
-  // fn for capitalization
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
-
   const onRowClick = (row) => {
     router.push(`/dashboard/purchases/purchase-payments/${row.paymentId}`);
   };
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="h-full py-2">
@@ -175,75 +185,71 @@ const ViewInvoice = () => {
             </div>
             <div className="flex gap-2">
               {/* raised debit note CTA */}
-              {!isPaymentAdvicing && (
-                <RaisedDebitNoteModal
-                  orderId={invoiceDetails?.invoiceDetails?.orderId}
-                  invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
-                  totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
-                />
-              )}
+              <ProtectedWrapper
+                permissionCode={'permission:purchase-debit-note-action'}
+              >
+                {!isPaymentAdvicing && (
+                  <RaisedDebitNoteModal
+                    orderId={invoiceDetails?.invoiceDetails?.orderId}
+                    invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
+                    totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
+                  />
+                )}
+              </ProtectedWrapper>
 
               {!isPaymentAdvicing &&
                 (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                   ?.status === 'NOT_PAID' ||
                   invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                     ?.status === 'PARTIAL_PAID') && (
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsPaymentAdvicing(true)}
-                    className="font-bold"
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-create-payment'}
                   >
-                    {translations('ctas.payment_advice')}
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={() => setIsPaymentAdvicing(true)}
+                      className="font-bold"
+                    >
+                      {translations('ctas.payment_advice')}
+                    </Button>
+                  </ProtectedWrapper>
+                )}
+
+              <ProtectedWrapper permissionCode={'permission:purchase-document'}>
+                {/* View CTA modal */}
+                {!isPaymentAdvicing && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => viewPdfInNewTab(pvtUrl)}
+                  >
+                    <Eye size={14} />
                   </Button>
                 )}
 
-              {/* share CTA */}
-              {/* {!isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      disabled
-                      variant="blue_outline"
-                      size="sm"
-                      className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                    >
-                      <Share2 size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.share.placeholder')}
-                />
-              )} */}
-
-              {/* View CTA modal */}
-              {!isPaymentAdvicing && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => viewPdfInNewTab(pvtUrl)}
-                >
-                  <Eye size={14} />
-                </Button>
-              )}
-
-              {/* download CTA */}
-              {!isPaymentAdvicing && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      size="sm"
-                      asChild
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-                        <Download size={14} />
-                      </a>
-                    </Button>
-                  }
-                  content={translations('ctas.download.placeholder')}
-                />
-              )}
+                {/* download CTA */}
+                {!isPaymentAdvicing && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        asChild
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <a
+                          download={pdfDoc?.publicUrl}
+                          href={pdfDoc?.publicUrl}
+                        >
+                          <Download size={14} />
+                        </a>
+                      </Button>
+                    }
+                    content={translations('ctas.download.placeholder')}
+                  />
+                )}
+              </ProtectedWrapper>
             </div>
           </section>
           {!isPaymentAdvicing && (

@@ -8,12 +8,16 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { useQuery } from '@tanstack/react-query';
 import { Upload, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
@@ -24,6 +28,10 @@ const MembersPage = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
 
   const { data: membersList, isLoading } = useQuery({
     queryKey: [
@@ -38,12 +46,22 @@ const MembersPage = () => {
       );
     },
     select: (membersList) => membersList.data.data,
+    enabled: hasPermission('permission:members-view'),
   });
 
   const inviteeMembersColumns = useInviteeMembersColumns();
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:members-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:members-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name="Members" />
@@ -55,7 +73,9 @@ const MembersPage = () => {
         <Wrapper className="h-screen">
           <SubHeader name={'Members'} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
-              <MemberInviteModal />
+              <ProtectedWrapper permissionCode={'permission:members-create'}>
+                <MemberInviteModal />
+              </ProtectedWrapper>
 
               <Tooltips
                 trigger={
@@ -88,13 +108,14 @@ const MembersPage = () => {
                   "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
                 }
               </p>
-
-              <MemberInviteModal />
+              <ProtectedWrapper permissionCode={'permission:members-create'}>
+                <MemberInviteModal />
+              </ProtectedWrapper>
             </div>
           )}
         </Wrapper>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

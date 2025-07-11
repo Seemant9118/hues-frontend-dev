@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import {
   createComments,
   getComments,
@@ -30,7 +32,7 @@ import {
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -40,6 +42,9 @@ const PaymentDetails = () => {
   const translationsComments = useTranslations(
     'sales.sales-debit_notes.debit_notes_details',
   );
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const params = useParams();
   const [files, setFiles] = useState([]);
@@ -69,6 +74,7 @@ const PaymentDetails = () => {
     queryKey: [paymentApi.getPaymentDetails.endpointKey],
     queryFn: () => getPaymentsDetails(params.payment_id),
     select: (data) => data?.data?.data,
+    enabled: hasPermission('permission:purchase-view'),
   });
 
   const uploadMedia = async (file) => {
@@ -131,6 +137,15 @@ const PaymentDetails = () => {
 
     createCommentMutation.mutate(formData);
   };
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="flex h-full flex-col py-2">

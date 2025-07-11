@@ -7,8 +7,11 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getPaymentsList } from '@/services/Payment_Services/PaymentServices';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
@@ -37,6 +40,8 @@ const SalesPayments = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const router = useRouter();
   const [paymentsListing, setPaymentsListing] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
@@ -62,6 +67,7 @@ const SalesPayments = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
+    enabled: hasPermission('permission:sales-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -116,8 +122,17 @@ const SalesPayments = () => {
 
   const paymentColumns = usePaymentsColumn();
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode="permission:sales-view">
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <Wrapper>
           <SubHeader name={translations('title')} />
@@ -184,7 +199,7 @@ const SalesPayments = () => {
           </section>
         </Wrapper>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

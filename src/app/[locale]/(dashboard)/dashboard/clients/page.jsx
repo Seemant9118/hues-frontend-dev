@@ -14,8 +14,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   bulkUploadClients,
@@ -37,6 +40,7 @@ import {
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ClientTable } from './ClientTable';
@@ -70,7 +74,10 @@ const ClientPage = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [editingClient, setEditingClient] = useState();
   const [isUploading, setIsUploading] = useState(false);
@@ -104,7 +111,8 @@ const ClientPage = () => {
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm?.length === 0,
+    enabled:
+      searchTerm?.length === 0 && hasPermission('permission:clients-view'),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -147,12 +155,12 @@ const ClientPage = () => {
     // guard clause to ensure source is defined and has pages
     if (
       !source?.pages ||
-      !Array.isArray(source.pages) ||
-      source.pages.length === 0
+      !Array.isArray(source?.pages) ||
+      source?.pages?.length === 0
     )
       return;
 
-    const flattened = source.pages.flatMap(
+    const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.users || [],
     );
 
@@ -162,7 +170,7 @@ const ClientPage = () => {
 
     setClients(uniqueClientsData);
 
-    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    const lastPage = source?.pages[source.pages.length - 1]?.data?.data;
     setPaginationData({
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
@@ -236,8 +244,17 @@ const ClientPage = () => {
     enterpriseId,
   );
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:clients-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:clients-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')}></SubHeader>
@@ -256,50 +273,65 @@ const ClientPage = () => {
                       toSearchTerm={searchTerm}
                       setToSearchTerm={setSearchTerm}
                     />
-                    <Tooltips
-                      trigger={
-                        <Button
-                          variant={clients?.length > 0 ? 'outline' : 'export'}
-                          size="sm"
-                          onClick={() =>
-                            exportTableToExcel('clients-table', 'clients_list')
-                          }
-                          className={
-                            clients?.length === 0
-                              ? 'cursor-not-allowed'
-                              : 'cursor-pointer'
-                          }
-                        >
-                          <Download size={14} />
-                        </Button>
-                      }
-                      content={translations('ctas.tooltips.export')}
-                    />
-                    <Tooltips
-                      trigger={
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => setIsUploading(true)}
-                        >
-                          <Upload size={14} />
-                          {translations('ctas.upload')}
-                        </Button>
-                      }
-                      content={translations('ctas.tooltips.upload')}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:clients-download'}
+                    >
+                      <Tooltips
+                        trigger={
+                          <Button
+                            variant={clients?.length > 0 ? 'outline' : 'export'}
+                            size="sm"
+                            onClick={() =>
+                              exportTableToExcel(
+                                'clients-table',
+                                'clients_list',
+                              )
+                            }
+                            className={
+                              clients?.length === 0
+                                ? 'cursor-not-allowed'
+                                : 'cursor-pointer'
+                            }
+                          >
+                            <Download size={14} />
+                          </Button>
+                        }
+                        content={translations('ctas.tooltips.export')}
+                      />
+                    </ProtectedWrapper>
+                    <ProtectedWrapper
+                      permissionCode={'permission:clients-upload'}
+                    >
+                      <Tooltips
+                        trigger={
+                          <Button
+                            variant="blue_outline"
+                            size="sm"
+                            onClick={() => setIsUploading(true)}
+                          >
+                            <Upload size={14} />
+                            {translations('ctas.upload')}
+                          </Button>
+                        }
+                        content={translations('ctas.tooltips.upload')}
+                      />
+                    </ProtectedWrapper>
 
-                    <Tooltips
-                      trigger={
-                        <AddModal
-                          type={'Add'}
-                          cta="client"
-                          btnName={translations('ctas.add')}
-                          mutationFunc={createClient}
-                        />
-                      }
-                      content={translations('ctas.tooltips.add')}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:clients-create'}
+                    >
+                      <Tooltips
+                        trigger={
+                          <AddModal
+                            type={'Add'}
+                            cta="client"
+                            btnName={translations('ctas.add')}
+                            mutationFunc={createClient}
+                          />
+                        }
+                        content={translations('ctas.tooltips.add')}
+                      />
+                    </ProtectedWrapper>
                   </div>
                 </SubHeader>
                 <div className="flex-grow overflow-hidden">
@@ -371,7 +403,7 @@ const ClientPage = () => {
           </Wrapper>
         </div>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

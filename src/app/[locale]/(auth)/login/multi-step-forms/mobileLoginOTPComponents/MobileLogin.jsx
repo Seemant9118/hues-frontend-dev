@@ -49,6 +49,7 @@ const MobileLogin = ({
         'InvitationFromEnterpriseId',
         inviteData?.invitationData?.fromEnterprise,
       );
+      LocalStorageService.set('invitationData', inviteData?.invitationData);
     }
   }, [isSuccess, inviteData]);
 

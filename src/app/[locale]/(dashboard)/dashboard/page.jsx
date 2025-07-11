@@ -6,11 +6,15 @@ import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { useAuth } from '@/context/AuthContext';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Home() {
@@ -28,6 +32,9 @@ export default function Home() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
@@ -35,7 +42,10 @@ export default function Home() {
       queryKey: [invitation.getReceivedInvitation.endpointKey],
       queryFn: () => getReceivedInvitation(),
       select: (data) => data.data.data,
-      enabled: !!enterpriseId && isEnterpriseOnboardingComplete,
+      enabled:
+        !!enterpriseId &&
+        isEnterpriseOnboardingComplete &&
+        hasPermission('permission:view-dashboard'),
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({
@@ -49,48 +59,59 @@ export default function Home() {
     (data) => data.status === 'PENDING',
   );
 
-  return (
-    <div className="flex h-full flex-col gap-5">
-      <SubHeader name={translations('title')}></SubHeader>
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
 
-      {/* Invitation table */}
-      {enterpriseId &&
-        isEnterpriseOnboardingComplete &&
-        isReceivedInviteLoading && <Loading />}
-      {enterpriseId &&
-        isEnterpriseOnboardingComplete &&
-        !isReceivedInviteLoading &&
-        filteredData?.length > 0 && (
-          <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
-            <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-              <Info size={14} />
-              {`${translations('invites.prompt', { count: filteredData?.length })} ${translations('invites.actionPrompt')}`}
-            </span>
-            <PendingInvitesModal
-              ctaName={'dashboard.invites.viewInvitesText'}
-              invitesTitle={'dashboard.invites.invitesTitle'}
-              invitesDetails={'dashboard.invites.invitesDetails'}
-              acceptCtaName={'dashboard.invites.handleAcceptCta'}
-              rejectCtaName={'dashboard.invites.handleRejectCta'}
-              acceptedMsg={'dashboard.invites.messages.accept'}
-              rejectedMsg={'dashboard.invites.messages.reject'}
-              data={filteredData}
-              isInviteModalOpen={isInviteModalOpen}
-              setIsInviteModalOpen={setIsInviteModalOpen}
-            />
-          </div>
+  if (!hasPermission('permission:view-dashboard')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
+  return (
+    <ProtectedWrapper permissionCode="permission:view-dashboard">
+      <div className="flex h-full flex-col gap-5">
+        <SubHeader name={translations('title')}></SubHeader>
+
+        {/* Invitation table */}
+        {enterpriseId &&
+          isEnterpriseOnboardingComplete &&
+          isReceivedInviteLoading && <Loading />}
+        {enterpriseId &&
+          isEnterpriseOnboardingComplete &&
+          !isReceivedInviteLoading &&
+          filteredData?.length > 0 && (
+            <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+              <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+                <Info size={14} />
+                {`${translations('invites.prompt', { count: filteredData?.length })} ${translations('invites.actionPrompt')}`}
+              </span>
+              <PendingInvitesModal
+                ctaName={'dashboard.invites.viewInvitesText'}
+                invitesTitle={'dashboard.invites.invitesTitle'}
+                invitesDetails={'dashboard.invites.invitesDetails'}
+                acceptCtaName={'dashboard.invites.handleAcceptCta'}
+                rejectCtaName={'dashboard.invites.handleRejectCta'}
+                acceptedMsg={'dashboard.invites.messages.accept'}
+                rejectedMsg={'dashboard.invites.messages.reject'}
+                data={filteredData}
+                isInviteModalOpen={isInviteModalOpen}
+                setIsInviteModalOpen={setIsInviteModalOpen}
+              />
+            </div>
+          )}
+
+        {enterpriseId && isEnterpriseOnboardingComplete && (
+          <EmptyStageComponent
+            heading={translations('emptyStateComponent.heading')}
+            subItems={keys}
+          />
         )}
 
-      {enterpriseId && isEnterpriseOnboardingComplete && (
-        <EmptyStageComponent
-          heading={translations('emptyStateComponent.heading')}
-          subItems={keys}
-        />
-      )}
-
-      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
-        <RestrictedComponent />
-      )}
-    </div>
+        {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+          <RestrictedComponent />
+        )}
+      </div>
+    </ProtectedWrapper>
   );
 }

@@ -12,8 +12,11 @@ import PaymentOverview from '@/components/payments/PaymentsOverview';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { Textarea } from '@/components/ui/textarea';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import {
   createComments,
   getComments,
@@ -35,7 +38,7 @@ import {
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -45,6 +48,9 @@ const PaymentDetails = () => {
     'sales.sales-debit_notes.debit_notes_details',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const params = useParams();
   const [files, setFiles] = useState([]);
@@ -74,6 +80,7 @@ const PaymentDetails = () => {
     queryKey: [paymentApi.getPaymentDetails.endpointKey],
     queryFn: () => getPaymentsDetails(params.payment_id),
     select: (data) => data?.data?.data,
+    enabled: hasPermission('permission:sales-view'),
   });
 
   const uploadMedia = async (file) => {
@@ -164,6 +171,15 @@ const PaymentDetails = () => {
       toast.error(error.response.data.message || 'Something went wrong');
     },
   });
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
 
   return (
     <Wrapper className="flex h-full flex-col py-2">
@@ -342,28 +358,30 @@ const PaymentDetails = () => {
       </div>
 
       {/* footer ctas */}
-      <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white shadow-md">
-        {paymentsDetails?.status === 'PENDING' && (
-          <section className="flex gap-2 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-              onClick={() => {
-                rejectPaymentMutation.mutate(params.payment_id);
-              }}
-            >
-              Deny
-            </Button>
-            <AcknowledgePayment
-              poNumber={paymentsDetails?.paymentReferenceNumber}
-              onAcknowledged={() => {
-                AcknowledgePaymentMutation.mutate(params.payment_id);
-              }}
-            />
-          </section>
-        )}
-      </div>
+      <ProtectedWrapper permissionCode={'permission:sales-payments-action'}>
+        <div className="sticky bottom-0 z-10 flex justify-end border-t bg-white shadow-md">
+          {paymentsDetails?.status === 'PENDING' && (
+            <section className="flex gap-2 py-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                onClick={() => {
+                  rejectPaymentMutation.mutate(params.payment_id);
+                }}
+              >
+                Deny
+              </Button>
+              <AcknowledgePayment
+                poNumber={paymentsDetails?.paymentReferenceNumber}
+                onAcknowledged={() => {
+                  AcknowledgePaymentMutation.mutate(params.payment_id);
+                }}
+              />
+            </section>
+          )}
+        </div>
+      </ProtectedWrapper>
     </Wrapper>
   );
 };

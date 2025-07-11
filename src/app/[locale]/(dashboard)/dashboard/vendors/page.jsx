@@ -12,8 +12,11 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
 import {
   bulkUploadVendors,
@@ -35,6 +38,7 @@ import {
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { VendorsTable } from './VendorsTable';
@@ -67,7 +71,10 @@ const VendorsPage = () => {
     'isEnterpriseOnboardingComplete',
   );
 
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingVendor, setEditingVendor] = useState();
@@ -101,7 +108,8 @@ const VendorsPage = () => {
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm?.length === 0,
+    enabled:
+      searchTerm?.length === 0 && hasPermission('permission:vendors-view'),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -149,11 +157,11 @@ const VendorsPage = () => {
     if (
       !source?.pages ||
       !Array.isArray(source.pages) ||
-      source.pages.length === 0
+      source?.pages?.length === 0
     )
       return;
 
-    const flattened = source.pages.flatMap(
+    const flattened = source?.pages?.flatMap(
       (page) => page?.data?.data?.users || [],
     );
 
@@ -238,8 +246,17 @@ const VendorsPage = () => {
     enterpriseId,
   );
 
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:vendors-view')) {
+    router.replace('/unauthorized');
+    return null;
+  }
+
   return (
-    <>
+    <ProtectedWrapper permissionCode={'permission:vendors-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')}></SubHeader>
@@ -259,51 +276,63 @@ const VendorsPage = () => {
                       setToSearchTerm={setSearchTerm}
                     />
 
-                    <Tooltips
-                      trigger={
-                        <Button
-                          variant={vendors?.length > 0 ? 'outline' : 'export'}
-                          size="sm"
-                          onClick={() =>
-                            exportTableToExcel('vendor-table', 'vendors_list')
-                          }
-                          className={
-                            vendors?.length === 0
-                              ? 'cursor-not-allowed'
-                              : 'cursor-pointer'
-                          }
-                        >
-                          <Download size={14} />
-                        </Button>
-                      }
-                      content={translations('ctas.tooltips.export')}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:vendors-download'}
+                    >
+                      <Tooltips
+                        trigger={
+                          <Button
+                            variant={vendors?.length > 0 ? 'outline' : 'export'}
+                            size="sm"
+                            onClick={() =>
+                              exportTableToExcel('vendor-table', 'vendors_list')
+                            }
+                            className={
+                              vendors?.length === 0
+                                ? 'cursor-not-allowed'
+                                : 'cursor-pointer'
+                            }
+                          >
+                            <Download size={14} />
+                          </Button>
+                        }
+                        content={translations('ctas.tooltips.export')}
+                      />
+                    </ProtectedWrapper>
 
-                    <Tooltips
-                      trigger={
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => setIsUploading(true)}
-                        >
-                          <Upload size={14} />
-                          {translations('ctas.upload')}
-                        </Button>
-                      }
-                      content={translations('ctas.tooltips.upload')}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:vendors-upload'}
+                    >
+                      <Tooltips
+                        trigger={
+                          <Button
+                            variant="blue_outline"
+                            size="sm"
+                            onClick={() => setIsUploading(true)}
+                          >
+                            <Upload size={14} />
+                            {translations('ctas.upload')}
+                          </Button>
+                        }
+                        content={translations('ctas.tooltips.upload')}
+                      />
+                    </ProtectedWrapper>
 
-                    <Tooltips
-                      trigger={
-                        <AddModal
-                          type={'Add'}
-                          cta="vendor"
-                          btnName={translations('ctas.add')}
-                          mutationFunc={createVendor}
-                        />
-                      }
-                      content={translations('ctas.tooltips.add')}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:vendors-create'}
+                    >
+                      <Tooltips
+                        trigger={
+                          <AddModal
+                            type={'Add'}
+                            cta="vendor"
+                            btnName={translations('ctas.add')}
+                            mutationFunc={createVendor}
+                          />
+                        }
+                        content={translations('ctas.tooltips.add')}
+                      />
+                    </ProtectedWrapper>
                   </div>
                 </SubHeader>
                 <div className="flex-grow overflow-hidden">
@@ -376,7 +405,7 @@ const VendorsPage = () => {
           </Wrapper>
         </div>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+
 'use client';
 
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
@@ -6,14 +8,39 @@ import { BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { LocalStorageService } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
+import { directorApi } from '@/api/director/directorApi';
+import { directorInviteList } from '@/services/Director_Services/DirectorServices';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const ConfirmationPage = () => {
   const translations = useTranslations('auth.confirmation');
+  const queryClient = useQueryClient();
   const router = useRouter();
+  const islogInWithInviteLink = LocalStorageService.get('invitationData');
 
-  const handleOnboardEnterprise = (e) => {
+  const handleOnboardEnterprise = async (e) => {
     e.preventDefault();
+    if (islogInWithInviteLink) {
+      // check by calling api : directorInviteList
+      const directorInviteListData = await queryClient.fetchQuery({
+        queryKey: [directorApi.getDirectorInviteList.endpointKey],
+        queryFn: directorInviteList,
+      });
+      const isUserHaveValidDirectorInvites =
+        directorInviteListData?.data?.data?.length > 0;
+
+      const type = islogInWithInviteLink?.data?.invitation?.invitationType;
+
+      if (type === 'CLIENT' || type === 'VENDOR') {
+        return router.push('/login/enterprise/select_enterprise_type');
+      } else if (type === 'DIRECTOR' && isUserHaveValidDirectorInvites) {
+        return router.push('/login/confirmation_invite_as_director');
+      } else {
+        return router.push('/login/confirmation_invite_as_associate');
+      }
+    }
     router.push('/login/enterprise/select_enterprise_type');
   };
 
