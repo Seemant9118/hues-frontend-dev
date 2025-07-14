@@ -1,11 +1,13 @@
 'use client';
 
 import { invitation } from '@/api/invitation/Invitation';
+import Container from '@/components/dashboard/Container';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
-import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import LineCharts from '@/components/ui/LineCharts';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
@@ -17,16 +19,48 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+// data for lines Linechart
+const dataMonthBasis = [
+  { month: 'Jan', sales: 400 },
+  { month: 'Feb', sales: 420 },
+  { month: 'Mar', sales: 450 },
+  { month: 'Apr', sales: 470 },
+  { month: 'May', sales: 500 },
+  { month: 'Jun', sales: 600 },
+  { month: 'Jul', sales: 700 },
+  { month: 'Aug', sales: 300 },
+  { month: 'Sep', sales: 950 },
+  { month: 'Oct', sales: 950 },
+  { month: 'Nov', sales: 950 },
+  { month: 'Dec', sales: 950 },
+];
+// const dataWeekBasis = [
+//   { day: 'Mon', sales: 100 },
+//   { day: 'Tue', sales: 150 },
+//   { day: 'Wed', sales: 250 },
+//   { day: 'Thurs', sales: 350 },
+//   { day: 'Fri', sales: 450 },
+//   { day: 'Sat', sales: 550 },
+//   { day: 'Sun', sales: 650 },
+// ];
+// const dataYearBasis = [
+//   { year: 2020, sales: 200 },
+//   { year: 2021, sales: 350 },
+// ];
+const INVITATION_LINES = [
+  { dataKey: 'sales', name: 'Sales', color: '#007bff' }, // Blue
+];
+
 export default function Home() {
   const translations = useTranslations('dashboard');
 
   // next-intl supports only object keys, not arrays. Use object keys for subItems.
-  const keys = [
-    'dashboard.emptyStateComponent.subItems.subItem1',
-    'dashboard.emptyStateComponent.subItems.subItem2',
-    'dashboard.emptyStateComponent.subItems.subItem3',
-    'dashboard.emptyStateComponent.subItems.subItem4',
-  ];
+  // const keys = [
+  //   'dashboard.emptyStateComponent.subItems.subItem1',
+  //   'dashboard.emptyStateComponent.subItems.subItem2',
+  //   'dashboard.emptyStateComponent.subItems.subItem3',
+  //   'dashboard.emptyStateComponent.subItems.subItem4',
+  // ];
 
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -35,7 +69,13 @@ export default function Home() {
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
+  const [tab, setTab] = useState('receipts');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  const onTabChange = (value) => {
+    setTab(value);
+  };
+
   // get received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
@@ -102,10 +142,79 @@ export default function Home() {
           )}
 
         {enterpriseId && isEnterpriseOnboardingComplete && (
-          <EmptyStageComponent
-            heading={translations('emptyStateComponent.heading')}
-            subItems={keys}
-          />
+          // <EmptyStageComponent
+          //   heading={translations('emptyStateComponent.heading')}
+          //   subItems={keys}
+          // />
+          <div className="grid grid-cols-2 grid-rows-2 gap-4">
+            <Container title="Sales">
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue="receipts"
+              >
+                <TabsList className="border">
+                  {[
+                    { value: 'receipts', label: 'Receipts' },
+                    { value: 'receivables', label: 'Receivables' },
+                    { value: 'overdue', label: 'Overdue' },
+                  ].map(({ value, label }) => (
+                    <TabsTrigger
+                      key={value}
+                      className={`w-24 ${tab === value ? 'shadow-customShadow' : ''}`}
+                      value={value}
+                    >
+                      {label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                <section className="mt-2 flex gap-40 p-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm">Total Receipts</span>
+                    <span className="font-semibold">₹5,276.33</span>
+                    <span className="text-sm text-red-500">-11.3%</span>
+                  </div>
+
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm">Average Receipts</span>
+                    <span className="font-semibold">₹5,276.33</span>
+                    <span className="text-sm">per month</span>
+                  </div>
+                </section>
+
+                <TabsContent value="receipts">
+                  <LineCharts
+                    data={dataMonthBasis}
+                    lines={INVITATION_LINES}
+                    xAxisKey="month"
+                    width={600}
+                    height={300}
+                  />
+                </TabsContent>
+
+                <TabsContent value="receivables">
+                  <LineCharts
+                    data={dataMonthBasis}
+                    lines={INVITATION_LINES}
+                    xAxisKey="month"
+                    width={600}
+                    height={300}
+                  />
+                </TabsContent>
+
+                <TabsContent value="overdue">
+                  <LineCharts
+                    data={dataMonthBasis}
+                    lines={INVITATION_LINES}
+                    xAxisKey="month"
+                    width={600}
+                    height={300}
+                  />
+                </TabsContent>
+              </Tabs>
+            </Container>
+          </div>
         )}
 
         {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
