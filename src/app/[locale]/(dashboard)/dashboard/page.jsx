@@ -8,6 +8,7 @@ import {
   getTotalAndAverage,
 } from '@/appUtils/helperFunctions';
 import Container from '@/components/dashboard/Container';
+import DataGranularity from '@/components/dashboard/DataGranularity';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
 import DateRange from '@/components/ui/DateRange';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -96,6 +97,9 @@ export default function Home() {
     startDate,
     toDate,
   ]);
+  const [salesDataGranularity, setSalesDataGranularity] = useState('weekly');
+  const [purchaseDataGranularity, setPurchaseDataGranularity] =
+    useState('weekly');
 
   const onSalesTabChange = (value) => {
     setSalesTab(value);
@@ -108,11 +112,15 @@ export default function Home() {
   // sales
   const { data: salesAnalyticsData, isLoading: isSalesAnalyticsLoading } =
     useQuery({
-      queryKey: [dashboardApis.getSalesAnalysis.endpointKey],
+      queryKey: [
+        dashboardApis.getSalesAnalysis.endpointKey,
+        salesDataGranularity,
+      ],
       queryFn: () =>
         getSalesAnalytics({
           fromDate: moment(salesDateRange[0]).format('YYYY-MM-DD'),
           toDate: moment(salesDateRange[1]).format('YYYY-MM-DD'),
+          salesDataGranularity,
           filterType: 'DATE_RANGE', // 'DATE_RANGE' | 'MONTHLY' | 'YEARLY'
         }),
       select: (data) => data.data.data,
@@ -132,11 +140,15 @@ export default function Home() {
   // purchase
   const { data: purchaseAnalyticsData, isLoading: isPurchaseAnalyticsLoading } =
     useQuery({
-      queryKey: [dashboardApis.getPurchaseAnalysis.endpointKey],
+      queryKey: [
+        dashboardApis.getPurchaseAnalysis.endpointKey,
+        purchaseDataGranularity,
+      ],
       queryFn: () =>
         getPurchaseAnalytics({
           fromDate: moment(purchaseDateRange[0]).format('YYYY-MM-DD'),
           toDate: moment(purchaseDateRange[1]).format('YYYY-MM-DD'),
+          purchaseDataGranularity,
           filterType: 'DATE_RANGE', // 'DATE_RANGE' | 'MONTHLY' | 'YEARLY'
         }),
       select: (data) => data.data.data,
@@ -232,6 +244,12 @@ export default function Home() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Container
                   title="Sales"
+                  granularityComp={
+                    <DataGranularity
+                      dataGranualarityType={salesDataGranularity}
+                      setDataGranularityType={setSalesDataGranularity}
+                    />
+                  }
                   dateRangeComp={
                     <DateRange
                       dateRange={salesDateRange}
@@ -320,6 +338,12 @@ export default function Home() {
 
                 <Container
                   title="Purchase"
+                  granularityComp={
+                    <DataGranularity
+                      dataGranualarityType={purchaseDataGranularity}
+                      setDataGranularityType={setPurchaseDataGranularity}
+                    />
+                  }
                   dateRangeComp={
                     <DateRange
                       dateRange={purchaseDateRange}
