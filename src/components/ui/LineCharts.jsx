@@ -60,6 +60,13 @@ const LineCharts = ({
             axisLine={false} // ❌ removes the Y-axis stroke line
             tickLine={false} // ❌ removes the small ticks beside numbers
             tick={{ fill: '#000', fontSize: 12 }} // ✅ keeps the label visible
+            tickFormatter={(value) =>
+              new Intl.NumberFormat('en-IN', {
+                notation: 'compact',
+                compactDisplay: 'short',
+                maximumFractionDigits: 1,
+              }).format(value)
+            }
           />
 
           <Tooltip

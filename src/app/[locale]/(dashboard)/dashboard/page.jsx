@@ -1,8 +1,16 @@
 'use client';
 
+import { dashboardApis } from '@/api/dashboard/dashboardApi';
 import { invitation } from '@/api/invitation/Invitation';
+import {
+  aggregateByMonth,
+  formattedAmount,
+  getTotalAndAverage,
+} from '@/appUtils/helperFunctions';
 import Container from '@/components/dashboard/Container';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
+import DateRange from '@/components/ui/DateRange';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import LineCharts from '@/components/ui/LineCharts';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -12,28 +20,32 @@ import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
+import {
+  getPurchaseAnalytics,
+  getSalesAnalytics,
+} from '@/services/Dashboard_Services/DashboardServices';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
 // data for lines Linechart
-const dataMonthBasis = [
-  { month: 'Jan', sales: 400 },
-  { month: 'Feb', sales: 420 },
-  { month: 'Mar', sales: 450 },
-  { month: 'Apr', sales: 470 },
-  { month: 'May', sales: 500 },
-  { month: 'Jun', sales: 600 },
-  { month: 'Jul', sales: 700 },
-  { month: 'Aug', sales: 300 },
-  { month: 'Sep', sales: 950 },
-  { month: 'Oct', sales: 950 },
-  { month: 'Nov', sales: 950 },
-  { month: 'Dec', sales: 950 },
-];
+// const dataMonthBasis = [
+//   { month: 'Jan', sales: 400 },
+//   { month: 'Feb', sales: 420 },
+//   { month: 'Mar', sales: 450 },
+//   { month: 'Apr', sales: 470 },
+//   { month: 'May', sales: 500 },
+//   { month: 'Jun', sales: 600 },
+//   { month: 'Jul', sales: 700 },
+//   { month: 'Aug', sales: 300 },
+//   { month: 'Sep', sales: 950 },
+//   { month: 'Oct', sales: 950 },
+//   { month: 'Nov', sales: 950 },
+//   { month: 'Dec', sales: 950 },
+// ];
 // const dataWeekBasis = [
 //   { day: 'Mon', sales: 100 },
 //   { day: 'Tue', sales: 150 },
@@ -47,20 +59,25 @@ const dataMonthBasis = [
 //   { year: 2020, sales: 200 },
 //   { year: 2021, sales: 350 },
 // ];
-const INVITATION_LINES = [
+
+// macros
+const SalesLines = [
   { dataKey: 'sales', name: 'Sales', color: '#007bff' }, // Blue
+];
+const PurchaseLines = [
+  { dataKey: 'purchase', name: 'Purchase', color: '#F8BA05' }, // Yellow
 ];
 
 export default function Home() {
   const translations = useTranslations('dashboard');
 
   // next-intl supports only object keys, not arrays. Use object keys for subItems.
-  // const keys = [
-  //   'dashboard.emptyStateComponent.subItems.subItem1',
-  //   'dashboard.emptyStateComponent.subItems.subItem2',
-  //   'dashboard.emptyStateComponent.subItems.subItem3',
-  //   'dashboard.emptyStateComponent.subItems.subItem4',
-  // ];
+  const keys = [
+    'dashboard.emptyStateComponent.subItems.subItem1',
+    'dashboard.emptyStateComponent.subItems.subItem2',
+    'dashboard.emptyStateComponent.subItems.subItem3',
+    'dashboard.emptyStateComponent.subItems.subItem4',
+  ];
 
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
@@ -69,14 +86,74 @@ export default function Home() {
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
-  const [tab, setTab] = useState('receipts');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [salestab, setSalesTab] = useState('totalAmount');
+  const [purchaseTab, setPurchaseTab] = useState('totalAmount');
+  const startDate = new Date('2024/03/01');
+  const toDate = new Date();
+  const [salesDateRange, setSalesDateRange] = useState([startDate, toDate]);
+  const [purchaseDateRange, setPurchaseDateRange] = useState([
+    startDate,
+    toDate,
+  ]);
 
-  const onTabChange = (value) => {
-    setTab(value);
+  const onSalesTabChange = (value) => {
+    setSalesTab(value);
+  };
+  const onPurchaseTabChange = (value) => {
+    setPurchaseTab(value);
   };
 
-  // get received invitations
+  // fetch data analytics
+  // sales
+  const { data: salesAnalyticsData, isLoading: isSalesAnalyticsLoading } =
+    useQuery({
+      queryKey: [dashboardApis.getSalesAnalysis.endpointKey],
+      queryFn: () =>
+        getSalesAnalytics({
+          fromDate: moment(salesDateRange[0]).format('YYYY-MM-DD'),
+          toDate: moment(salesDateRange[1]).format('YYYY-MM-DD'),
+          filterType: 'DATE_RANGE', // 'DATE_RANGE' | 'MONTHLY' | 'YEARLY'
+        }),
+      select: (data) => data.data.data,
+      enabled:
+        Array.isArray(salesDateRange) &&
+        salesDateRange[0] !== null &&
+        salesDateRange[1] !== null,
+    });
+  const dataMonthBasis = aggregateByMonth(
+    salesAnalyticsData,
+    salestab,
+    SalesLines[0].dataKey,
+  );
+  const { total: totalSalesAmount, average: averageSalesAmount } =
+    getTotalAndAverage(dataMonthBasis, 'sales');
+
+  // purchase
+  const { data: purchaseAnalyticsData, isLoading: isPurchaseAnalyticsLoading } =
+    useQuery({
+      queryKey: [dashboardApis.getPurchaseAnalysis.endpointKey],
+      queryFn: () =>
+        getPurchaseAnalytics({
+          fromDate: moment(purchaseDateRange[0]).format('YYYY-MM-DD'),
+          toDate: moment(purchaseDateRange[1]).format('YYYY-MM-DD'),
+          filterType: 'DATE_RANGE', // 'DATE_RANGE' | 'MONTHLY' | 'YEARLY'
+        }),
+      select: (data) => data.data.data,
+      enabled:
+        Array.isArray(purchaseDateRange) &&
+        purchaseDateRange[0] !== null &&
+        purchaseDateRange[1] !== null,
+    });
+  const dataMonthBasisPurchase = aggregateByMonth(
+    purchaseAnalyticsData,
+    purchaseTab,
+    PurchaseLines[0].dataKey,
+  );
+  const { total: totalPurchaseAmount, average: averagePurchaseAmount } =
+    getTotalAndAverage(dataMonthBasisPurchase, 'purchase');
+
+  // fetch received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
       queryKey: [invitation.getReceivedInvitation.endpointKey],
@@ -142,79 +219,194 @@ export default function Home() {
           )}
 
         {enterpriseId && isEnterpriseOnboardingComplete && (
-          // <EmptyStageComponent
-          //   heading={translations('emptyStateComponent.heading')}
-          //   subItems={keys}
-          // />
-          <div className="grid grid-cols-2 grid-rows-2 gap-4">
-            <Container title="Sales">
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue="receipts"
-              >
-                <TabsList className="border">
-                  {[
-                    { value: 'receipts', label: 'Receipts' },
-                    { value: 'receivables', label: 'Receivables' },
-                    { value: 'overdue', label: 'Overdue' },
-                  ].map(({ value, label }) => (
-                    <TabsTrigger
-                      key={value}
-                      className={`w-24 ${tab === value ? 'shadow-customShadow' : ''}`}
-                      value={value}
+          <>
+            {isSalesAnalyticsLoading || isPurchaseAnalyticsLoading ? (
+              <Loading />
+            ) : salesAnalyticsData?.length === 0 &&
+              purchaseAnalyticsData?.length === 0 ? (
+              <EmptyStageComponent
+                heading={translations('emptyStateComponent.heading')}
+                subItems={keys}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Container
+                  title="Sales"
+                  dateRangeComp={
+                    <DateRange
+                      dateRange={salesDateRange}
+                      setDateRange={setSalesDateRange}
+                    />
+                  }
+                >
+                  <Tabs
+                    value={salestab}
+                    onValueChange={onSalesTabChange}
+                    defaultValue="totalAmount"
+                  >
+                    <TabsList className="border">
+                      {[
+                        { value: 'totalAmount', label: 'Receipts' },
+                        { value: 'totalDue', label: 'Receivables' },
+                        { value: 'totalOverdue', label: 'Overdue' },
+                      ].map(({ value, label }) => (
+                        <TabsTrigger
+                          key={value}
+                          className={`w-24 ${salestab === value ? 'shadow-customShadow' : ''}`}
+                          value={value}
+                        >
+                          {label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+
+                    <section className="mt-4 flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm">Total Receipts</span>
+                        <span className="font-semibold">
+                          {formattedAmount(totalSalesAmount)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm">Average Receipts</span>
+                        <span className="font-semibold">
+                          {formattedAmount(averageSalesAmount)}
+                        </span>
+                        <span className="text-sm">per month</span>
+                      </div>
+                    </section>
+                    <TabsContent
+                      value="totalAmount"
+                      className="scrollBarStyles overflow-x-auto"
                     >
-                      {label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                      <div className="min-w-[500px] pr-4">
+                        <LineCharts
+                          data={dataMonthBasis}
+                          lines={SalesLines}
+                          xAxisKey="month"
+                          height={300}
+                        />
+                      </div>
+                    </TabsContent>
 
-                <section className="mt-2 flex gap-40 p-2">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm">Total Receipts</span>
-                    <span className="font-semibold">₹5,276.33</span>
-                    <span className="text-sm text-red-500">-11.3%</span>
-                  </div>
+                    <TabsContent
+                      value="totalDue"
+                      className="scrollBarStyles overflow-x-auto"
+                    >
+                      <div className="min-w-[500px] pr-4">
+                        <LineCharts
+                          data={dataMonthBasis}
+                          lines={SalesLines}
+                          xAxisKey="month"
+                          height={300}
+                        />
+                      </div>
+                    </TabsContent>
+                    <TabsContent
+                      value="totalOverdue"
+                      className="scrollBarStyles overflow-x-auto"
+                    >
+                      <div className="min-w-[500px] pr-4">
+                        <LineCharts
+                          data={dataMonthBasis}
+                          lines={SalesLines}
+                          xAxisKey="month"
+                          height={300}
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </Container>
 
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm">Average Receipts</span>
-                    <span className="font-semibold">₹5,276.33</span>
-                    <span className="text-sm">per month</span>
-                  </div>
-                </section>
+                <Container
+                  title="Purchase"
+                  dateRangeComp={
+                    <DateRange
+                      dateRange={purchaseDateRange}
+                      setDateRange={setPurchaseDateRange}
+                    />
+                  }
+                >
+                  <Tabs
+                    value={purchaseTab}
+                    onValueChange={onPurchaseTabChange}
+                    defaultValue="totalAmount"
+                  >
+                    <TabsList className="border">
+                      {[
+                        { value: 'totalAmount', label: 'Receipts' },
+                        { value: 'totalDue', label: 'Receivables' },
+                        { value: 'totalOverdue', label: 'Overdue' },
+                      ].map(({ value, label }) => (
+                        <TabsTrigger
+                          key={value}
+                          className={`w-24 ${purchaseTab === value ? 'shadow-customShadow' : ''}`}
+                          value={value}
+                        >
+                          {label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
 
-                <TabsContent value="receipts">
-                  <LineCharts
-                    data={dataMonthBasis}
-                    lines={INVITATION_LINES}
-                    xAxisKey="month"
-                    width={600}
-                    height={300}
-                  />
-                </TabsContent>
-
-                <TabsContent value="receivables">
-                  <LineCharts
-                    data={dataMonthBasis}
-                    lines={INVITATION_LINES}
-                    xAxisKey="month"
-                    width={600}
-                    height={300}
-                  />
-                </TabsContent>
-
-                <TabsContent value="overdue">
-                  <LineCharts
-                    data={dataMonthBasis}
-                    lines={INVITATION_LINES}
-                    xAxisKey="month"
-                    width={600}
-                    height={300}
-                  />
-                </TabsContent>
-              </Tabs>
-            </Container>
-          </div>
+                    <section className="mt-4 flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm">Total Purchases</span>
+                        <span className="font-semibold">
+                          {formattedAmount(totalPurchaseAmount)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm">Average Purchases</span>
+                        <span className="font-semibold">
+                          {formattedAmount(averagePurchaseAmount)}
+                        </span>
+                        <span className="text-sm">per month</span>
+                      </div>
+                    </section>
+                    <TabsContent
+                      value="totalAmount"
+                      className="scrollBarStyles overflow-x-auto"
+                    >
+                      <div className="min-w-[500px] pr-4">
+                        <LineCharts
+                          data={dataMonthBasisPurchase}
+                          lines={PurchaseLines}
+                          xAxisKey="month"
+                          height={300}
+                        />
+                      </div>
+                    </TabsContent>
+                    <TabsContent
+                      value="totalDue"
+                      className="scrollBarStyles overflow-x-auto"
+                    >
+                      <div className="min-w-[500px] pr-4">
+                        <LineCharts
+                          data={dataMonthBasisPurchase}
+                          lines={PurchaseLines}
+                          xAxisKey="month"
+                          height={300}
+                        />
+                      </div>
+                    </TabsContent>
+                    <TabsContent
+                      value="totalOverdue"
+                      className="scrollBarStyles overflow-x-auto"
+                    >
+                      <div className="min-w-[500px] pr-4">
+                        <LineCharts
+                          data={dataMonthBasisPurchase}
+                          lines={PurchaseLines}
+                          xAxisKey="month"
+                          height={300}
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </Container>
+              </div>
+            )}
+          </>
         )}
 
         {(!enterpriseId || !isEnterpriseOnboardingComplete) && (

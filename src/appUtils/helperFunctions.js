@@ -143,3 +143,61 @@ export const parseJwt = (token) => {
     return null;
   }
 };
+
+// dashboard utils
+export const getTotalAndAverage = (data, key) => {
+  const total = data.reduce((sum, item) => sum + (item[key] || 0), 0);
+
+  const nonZeroCount = data.filter((item) => item[key] > 0).length;
+
+  const average =
+    nonZeroCount > 0 ? parseFloat((total / nonZeroCount).toFixed(2)) : 0;
+
+  return {
+    total: parseFloat(total.toFixed(2)),
+    average,
+  };
+};
+
+export const aggregateByMonth = (data, tabFilter, type) => {
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const monthMap = {};
+
+  data?.forEach((item) => {
+    const d = new Date(item.date);
+    const monthName = MONTHS[d.getMonth()]; // 0-indexed
+
+    if (!monthMap[monthName]) {
+      monthMap[monthName] = 0;
+    }
+
+    // Dynamically access the value based on tabFilter
+    monthMap[monthName] += item[tabFilter] || 0;
+  });
+
+  if (type === 'sales') {
+    // Convert map to array in correct month order
+    return MONTHS.map((month) => ({
+      month,
+      sales: parseFloat((monthMap[month] || 0).toFixed(2)),
+    }));
+  }
+  // Convert map to array in correct month order
+  return MONTHS.map((month) => ({
+    month,
+    purchase: parseFloat((monthMap[month] || 0).toFixed(2)),
+  }));
+};
