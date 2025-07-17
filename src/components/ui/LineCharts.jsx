@@ -54,7 +54,7 @@ const LineCharts = ({
 }) => {
   const { xAxisKey, xAxisFormatter } = useMemo(
     () => getXAxisConfig(viewType),
-    [],
+    [viewType],
   );
 
   const maxYValue = useMemo(() => {

@@ -101,7 +101,7 @@ const DateRange = ({ dateRange, setDateRange }) => {
         onChange={handleChange}
         isClearable
         placeholderText="Eg: 01/03/2024 - 01/03/2025"
-        className="w-[220px] rounded-md px-2 py-1 text-sm font-semibold focus:outline-none"
+        className="w-[220px] rounded-md px-2 py-1.5 text-sm font-semibold focus:outline-none"
         popperClassName="z-20"
         renderCustomHeader={renderCustomHeader}
         calendarContainer={customCalendar}

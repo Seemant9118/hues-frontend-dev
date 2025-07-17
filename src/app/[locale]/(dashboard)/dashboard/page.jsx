@@ -84,6 +84,13 @@ export default function Home() {
   const [salesDataGranularity, setSalesDataGranularity] = useState('DAILY');
   const [purchaseDataGranularity, setPurchaseDataGranularity] =
     useState('DAILY');
+  const fromDate = new Date('2025/04/01');
+  const toDate = new Date();
+  const [salesDateRange, setSalesDateRange] = useState([fromDate, toDate]);
+  const [purchaseDateRange, setPurchaseDateRange] = useState([
+    fromDate,
+    toDate,
+  ]);
 
   const onSalesTabChange = (value) => {
     setSalesTab(value);
@@ -99,8 +106,9 @@ export default function Home() {
       queryKey: [
         dashboardApis.getSalesAnalysis.endpointKey,
         salesDataGranularity,
+        salesDateRange,
       ],
-      queryFn: () => getSalesAnalytics(salesDataGranularity),
+      queryFn: () => getSalesAnalytics(salesDataGranularity, salesDateRange),
       select: (data) => data.data.data,
     });
 
@@ -125,8 +133,10 @@ export default function Home() {
       queryKey: [
         dashboardApis.getPurchaseAnalysis.endpointKey,
         purchaseDataGranularity,
+        purchaseDateRange,
       ],
-      queryFn: () => getPurchaseAnalytics(purchaseDataGranularity),
+      queryFn: () =>
+        getPurchaseAnalytics(purchaseDataGranularity, purchaseDateRange),
       select: (data) => data.data.data,
     });
 
@@ -237,6 +247,8 @@ export default function Home() {
                     totalOverdue: salesTotalOverdueData,
                   }}
                   lines={SalesLines}
+                  dateRange={salesDateRange}
+                  setDateRange={setSalesDateRange}
                 />
                 <AnalyticsCard
                   title="Purchase"
@@ -252,6 +264,8 @@ export default function Home() {
                     totalOverdue: purchaseTotalOverdueData,
                   }}
                   lines={PurchaseLines}
+                  dateRange={purchaseDateRange}
+                  setDateRange={setPurchaseDateRange}
                 />
               </div>
             )}

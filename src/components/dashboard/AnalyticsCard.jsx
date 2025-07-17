@@ -5,6 +5,7 @@ import { formattedAmount } from '@/appUtils/helperFunctions';
 import DataGranularity from './DataGranularity';
 import LineCharts from '../ui/LineCharts';
 import Container from './Container';
+import DateRange from '../ui/DateRange';
 
 const getGranularityLabel = (type) => {
   return (
@@ -25,11 +26,16 @@ export const AnalyticsCard = ({
   tabsConfig,
   chartData,
   lines,
+  dateRange,
+  setDateRange,
 }) => {
   return (
     <div className="w-full">
       <Container
         title={title}
+        dateRangeComp={
+          <DateRange dateRange={dateRange} setDateRange={setDateRange} />
+        }
         granularityComp={
           <DataGranularity
             dataGranualarityType={dataGranularity}

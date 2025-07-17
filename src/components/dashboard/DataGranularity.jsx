@@ -10,7 +10,6 @@ import {
 const DataGranularity = ({ dataGranualarityType, setDataGranularityType }) => {
   return (
     <Select
-      size="sm"
       value={dataGranualarityType}
       onValueChange={(value) => {
         setDataGranularityType(value);
