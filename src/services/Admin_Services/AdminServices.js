@@ -1,12 +1,13 @@
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { APIinstance } from '@/services';
+import moment from 'moment';
 
 export const getAdminData = (dateRange) => {
   const [startDate, endDate] = dateRange;
 
   return APIinstance.post(`${AdminAPIs.getAdminData.endpoint}`, {
-    startDate,
-    endDate,
+    startDate: moment(startDate).format('YYYY-MM-DD'),
+    endDate: moment(endDate).format('YYYY-MM-DD'),
   });
 };
 

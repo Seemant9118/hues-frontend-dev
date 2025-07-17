@@ -1,6 +1,8 @@
 'use client';
 
+import { dashboardApis } from '@/api/dashboard/dashboardApi';
 import { invitation } from '@/api/invitation/Invitation';
+import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -10,12 +12,53 @@ import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
+import {
+  getPurchaseAnalytics,
+  getSalesAnalytics,
+} from '@/services/Dashboard_Services/DashboardServices';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+// macros
+const SalesLines = [
+  { dataKey: 'sales', name: 'Sales', color: '#007bff' }, // Blue
+];
+const PurchaseLines = [
+  { dataKey: 'purchase', name: 'Purchase', color: '#F8BA05' }, // Yellow
+];
+const tabConfigs = {
+  sales: [
+    { value: 'totalAmount', label: 'Receipts' },
+    { value: 'totalDue', label: 'Receivables' },
+    { value: 'totalOverdue', label: 'Overdue' },
+  ],
+  purchase: [
+    { value: 'totalAmount', label: 'Payments' },
+    { value: 'totalDue', label: 'Payable' },
+    { value: 'totalOverdue', label: 'Overdue' },
+  ],
+};
+
+const summaryMapper = (summary) => ({
+  totalAmount: {
+    total: Number(summary?.amountReceived ?? summary?.amountPaid ?? 0),
+    average: Number(
+      summary?.averageAmountReceived ?? summary?.averageAmountPaid ?? 0,
+    ),
+  },
+  totalDue: {
+    total: Number(summary?.totalDue ?? 0),
+    average: Number(summary?.averageDue ?? 0),
+  },
+  totalOverdue: {
+    total: Number(summary?.totalOverdue ?? 0),
+    average: Number(summary?.averageOverdue ?? 0),
+  },
+});
 
 export default function Home() {
   const translations = useTranslations('dashboard');
@@ -36,7 +79,73 @@ export default function Home() {
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  // get received invitations
+  const [salestab, setSalesTab] = useState('totalAmount');
+  const [purchaseTab, setPurchaseTab] = useState('totalAmount');
+  const [salesDataGranularity, setSalesDataGranularity] = useState('DAILY');
+  const [purchaseDataGranularity, setPurchaseDataGranularity] =
+    useState('DAILY');
+
+  const onSalesTabChange = (value) => {
+    setSalesTab(value);
+  };
+  const onPurchaseTabChange = (value) => {
+    setPurchaseTab(value);
+  };
+
+  // fetch data analytics
+  // sales
+  const { data: salesAnalyticsData, isLoading: isSalesAnalyticsLoading } =
+    useQuery({
+      queryKey: [
+        dashboardApis.getSalesAnalysis.endpointKey,
+        salesDataGranularity,
+      ],
+      queryFn: () => getSalesAnalytics(salesDataGranularity),
+      select: (data) => data.data.data,
+    });
+
+  const salesAmountPaidData = salesAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    sales: Number(item?.amountReceived?.toFixed(2)),
+  }));
+
+  const salesTotalDueData = salesAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    sales: Number(item?.totalDue?.toFixed(2)),
+  }));
+
+  const salesTotalOverdueData = salesAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    sales: Number(item?.totalOverdue?.toFixed(2)),
+  }));
+
+  // purchase
+  const { data: purchaseAnalyticsData, isLoading: isPurchaseAnalyticsLoading } =
+    useQuery({
+      queryKey: [
+        dashboardApis.getPurchaseAnalysis.endpointKey,
+        purchaseDataGranularity,
+      ],
+      queryFn: () => getPurchaseAnalytics(purchaseDataGranularity),
+      select: (data) => data.data.data,
+    });
+
+  const purchaseAmountPaidData = purchaseAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    purchase: Number(item?.amountPaid?.toFixed(2)),
+  }));
+
+  const purchaseTotalDueData = purchaseAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    purchase: Number(item?.totalDue?.toFixed(2)),
+  }));
+
+  const purchaseTotalOverdueData = purchaseAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    purchase: Number(item?.totalOverdue?.toFixed(2)),
+  }));
+
+  // fetch received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
     useQuery({
       queryKey: [invitation.getReceivedInvitation.endpointKey],
@@ -73,7 +182,7 @@ export default function Home() {
       <div className="flex h-full flex-col gap-5">
         <SubHeader name={translations('title')}></SubHeader>
 
-        {/* Invitation table */}
+        {/* Invitation modal */}
         {enterpriseId &&
           isEnterpriseOnboardingComplete &&
           isReceivedInviteLoading && <Loading />}
@@ -101,11 +210,52 @@ export default function Home() {
             </div>
           )}
 
+        {/* dashboard analytics */}
         {enterpriseId && isEnterpriseOnboardingComplete && (
-          <EmptyStageComponent
-            heading={translations('emptyStateComponent.heading')}
-            subItems={keys}
-          />
+          <>
+            {isSalesAnalyticsLoading || isPurchaseAnalyticsLoading ? (
+              <Loading />
+            ) : salesAnalyticsData?.length === 0 &&
+              purchaseAnalyticsData?.length === 0 ? (
+              <EmptyStageComponent
+                heading={translations('emptyStateComponent.heading')}
+                subItems={keys}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <AnalyticsCard
+                  title="Sales"
+                  tab={salestab}
+                  onTabChange={onSalesTabChange}
+                  dataGranularity={salesDataGranularity}
+                  setDataGranularity={setSalesDataGranularity}
+                  summary={summaryMapper(salesAnalyticsData?.summary)}
+                  tabsConfig={tabConfigs.sales}
+                  chartData={{
+                    totalAmount: salesAmountPaidData,
+                    totalDue: salesTotalDueData,
+                    totalOverdue: salesTotalOverdueData,
+                  }}
+                  lines={SalesLines}
+                />
+                <AnalyticsCard
+                  title="Purchase"
+                  tab={purchaseTab}
+                  onTabChange={onPurchaseTabChange}
+                  dataGranularity={purchaseDataGranularity}
+                  setDataGranularity={setPurchaseDataGranularity}
+                  summary={summaryMapper(purchaseAnalyticsData?.summary)}
+                  tabsConfig={tabConfigs.purchase}
+                  chartData={{
+                    totalAmount: purchaseAmountPaidData,
+                    totalDue: purchaseTotalDueData,
+                    totalOverdue: purchaseTotalOverdueData,
+                  }}
+                  lines={PurchaseLines}
+                />
+              </div>
+            )}
+          </>
         )}
 
         {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
