@@ -17,11 +17,12 @@ const DataGranularity = ({ dataGranualarityType, setDataGranularityType }) => {
       }}
     >
       <SelectTrigger>
-        <SelectValue defaultValue="weekly" />
+        <SelectValue defaultValue="WEEKLY" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="weekly">Weekly</SelectItem>
-        <SelectItem value="monthly">Monthly</SelectItem>
+        <SelectItem value="DAILY">Daily</SelectItem>
+        <SelectItem value="WEEKLY">Weekly</SelectItem>
+        <SelectItem value="MONTHLY">Monthly</SelectItem>
       </SelectContent>
     </Select>
   );

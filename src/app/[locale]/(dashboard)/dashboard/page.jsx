@@ -2,21 +2,12 @@
 
 import { dashboardApis } from '@/api/dashboard/dashboardApi';
 import { invitation } from '@/api/invitation/Invitation';
-import {
-  aggregateByMonth,
-  formattedAmount,
-  getTotalAndAverage,
-} from '@/appUtils/helperFunctions';
-import Container from '@/components/dashboard/Container';
-import DataGranularity from '@/components/dashboard/DataGranularity';
+import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
-import DateRange from '@/components/ui/DateRange';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
-import LineCharts from '@/components/ui/LineCharts';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
@@ -28,38 +19,9 @@ import {
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
-import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-// data for lines Linechart
-// const dataMonthBasis = [
-//   { month: 'Jan', sales: 400 },
-//   { month: 'Feb', sales: 420 },
-//   { month: 'Mar', sales: 450 },
-//   { month: 'Apr', sales: 470 },
-//   { month: 'May', sales: 500 },
-//   { month: 'Jun', sales: 600 },
-//   { month: 'Jul', sales: 700 },
-//   { month: 'Aug', sales: 300 },
-//   { month: 'Sep', sales: 950 },
-//   { month: 'Oct', sales: 950 },
-//   { month: 'Nov', sales: 950 },
-//   { month: 'Dec', sales: 950 },
-// ];
-// const dataWeekBasis = [
-//   { day: 'Mon', sales: 100 },
-//   { day: 'Tue', sales: 150 },
-//   { day: 'Wed', sales: 250 },
-//   { day: 'Thurs', sales: 350 },
-//   { day: 'Fri', sales: 450 },
-//   { day: 'Sat', sales: 550 },
-//   { day: 'Sun', sales: 650 },
-// ];
-// const dataYearBasis = [
-//   { year: 2020, sales: 200 },
-//   { year: 2021, sales: 350 },
-// ];
 
 // macros
 const SalesLines = [
@@ -68,6 +30,35 @@ const SalesLines = [
 const PurchaseLines = [
   { dataKey: 'purchase', name: 'Purchase', color: '#F8BA05' }, // Yellow
 ];
+const tabConfigs = {
+  sales: [
+    { value: 'totalAmount', label: 'Receipts' },
+    { value: 'totalDue', label: 'Receivables' },
+    { value: 'totalOverdue', label: 'Overdue' },
+  ],
+  purchase: [
+    { value: 'totalAmount', label: 'Payments' },
+    { value: 'totalDue', label: 'Payable' },
+    { value: 'totalOverdue', label: 'Overdue' },
+  ],
+};
+
+const summaryMapper = (summary) => ({
+  totalAmount: {
+    total: Number(summary?.amountReceived ?? summary?.amountPaid ?? 0),
+    average: Number(
+      summary?.averageAmountReceived ?? summary?.averageAmountPaid ?? 0,
+    ),
+  },
+  totalDue: {
+    total: Number(summary?.totalDue ?? 0),
+    average: Number(summary?.averageDue ?? 0),
+  },
+  totalOverdue: {
+    total: Number(summary?.totalOverdue ?? 0),
+    average: Number(summary?.averageOverdue ?? 0),
+  },
+});
 
 export default function Home() {
   const translations = useTranslations('dashboard');
@@ -90,16 +81,9 @@ export default function Home() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [salestab, setSalesTab] = useState('totalAmount');
   const [purchaseTab, setPurchaseTab] = useState('totalAmount');
-  const startDate = new Date('2024/03/01');
-  const toDate = new Date();
-  const [salesDateRange, setSalesDateRange] = useState([startDate, toDate]);
-  const [purchaseDateRange, setPurchaseDateRange] = useState([
-    startDate,
-    toDate,
-  ]);
-  const [salesDataGranularity, setSalesDataGranularity] = useState('weekly');
+  const [salesDataGranularity, setSalesDataGranularity] = useState('DAILY');
   const [purchaseDataGranularity, setPurchaseDataGranularity] =
-    useState('weekly');
+    useState('DAILY');
 
   const onSalesTabChange = (value) => {
     setSalesTab(value);
@@ -116,26 +100,24 @@ export default function Home() {
         dashboardApis.getSalesAnalysis.endpointKey,
         salesDataGranularity,
       ],
-      queryFn: () =>
-        getSalesAnalytics({
-          fromDate: moment(salesDateRange[0]).format('YYYY-MM-DD'),
-          toDate: moment(salesDateRange[1]).format('YYYY-MM-DD'),
-          salesDataGranularity,
-          filterType: 'DATE_RANGE', // 'DATE_RANGE' | 'MONTHLY' | 'YEARLY'
-        }),
+      queryFn: () => getSalesAnalytics(salesDataGranularity),
       select: (data) => data.data.data,
-      enabled:
-        Array.isArray(salesDateRange) &&
-        salesDateRange[0] !== null &&
-        salesDateRange[1] !== null,
     });
-  const dataMonthBasis = aggregateByMonth(
-    salesAnalyticsData,
-    salestab,
-    SalesLines[0].dataKey,
-  );
-  const { total: totalSalesAmount, average: averageSalesAmount } =
-    getTotalAndAverage(dataMonthBasis, 'sales');
+
+  const salesAmountPaidData = salesAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    sales: Number(item?.amountReceived?.toFixed(2)),
+  }));
+
+  const salesTotalDueData = salesAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    sales: Number(item?.totalDue?.toFixed(2)),
+  }));
+
+  const salesTotalOverdueData = salesAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    sales: Number(item?.totalOverdue?.toFixed(2)),
+  }));
 
   // purchase
   const { data: purchaseAnalyticsData, isLoading: isPurchaseAnalyticsLoading } =
@@ -144,26 +126,24 @@ export default function Home() {
         dashboardApis.getPurchaseAnalysis.endpointKey,
         purchaseDataGranularity,
       ],
-      queryFn: () =>
-        getPurchaseAnalytics({
-          fromDate: moment(purchaseDateRange[0]).format('YYYY-MM-DD'),
-          toDate: moment(purchaseDateRange[1]).format('YYYY-MM-DD'),
-          purchaseDataGranularity,
-          filterType: 'DATE_RANGE', // 'DATE_RANGE' | 'MONTHLY' | 'YEARLY'
-        }),
+      queryFn: () => getPurchaseAnalytics(purchaseDataGranularity),
       select: (data) => data.data.data,
-      enabled:
-        Array.isArray(purchaseDateRange) &&
-        purchaseDateRange[0] !== null &&
-        purchaseDateRange[1] !== null,
     });
-  const dataMonthBasisPurchase = aggregateByMonth(
-    purchaseAnalyticsData,
-    purchaseTab,
-    PurchaseLines[0].dataKey,
-  );
-  const { total: totalPurchaseAmount, average: averagePurchaseAmount } =
-    getTotalAndAverage(dataMonthBasisPurchase, 'purchase');
+
+  const purchaseAmountPaidData = purchaseAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    purchase: Number(item?.amountPaid?.toFixed(2)),
+  }));
+
+  const purchaseTotalDueData = purchaseAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    purchase: Number(item?.totalDue?.toFixed(2)),
+  }));
+
+  const purchaseTotalOverdueData = purchaseAnalyticsData?.data?.map((item) => ({
+    label: item?.label,
+    purchase: Number(item?.totalOverdue?.toFixed(2)),
+  }));
 
   // fetch received invitations
   const { data: receivedInviteData = [], isLoading: isReceivedInviteLoading } =
@@ -202,7 +182,7 @@ export default function Home() {
       <div className="flex h-full flex-col gap-5">
         <SubHeader name={translations('title')}></SubHeader>
 
-        {/* Invitation table */}
+        {/* Invitation modal */}
         {enterpriseId &&
           isEnterpriseOnboardingComplete &&
           isReceivedInviteLoading && <Loading />}
@@ -230,6 +210,7 @@ export default function Home() {
             </div>
           )}
 
+        {/* dashboard analytics */}
         {enterpriseId && isEnterpriseOnboardingComplete && (
           <>
             {isSalesAnalyticsLoading || isPurchaseAnalyticsLoading ? (
@@ -242,192 +223,36 @@ export default function Home() {
               />
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Container
+                <AnalyticsCard
                   title="Sales"
-                  granularityComp={
-                    <DataGranularity
-                      dataGranualarityType={salesDataGranularity}
-                      setDataGranularityType={setSalesDataGranularity}
-                    />
-                  }
-                  dateRangeComp={
-                    <DateRange
-                      dateRange={salesDateRange}
-                      setDateRange={setSalesDateRange}
-                    />
-                  }
-                >
-                  <Tabs
-                    value={salestab}
-                    onValueChange={onSalesTabChange}
-                    defaultValue="totalAmount"
-                  >
-                    <TabsList className="border">
-                      {[
-                        { value: 'totalAmount', label: 'Receipts' },
-                        { value: 'totalDue', label: 'Receivables' },
-                        { value: 'totalOverdue', label: 'Overdue' },
-                      ].map(({ value, label }) => (
-                        <TabsTrigger
-                          key={value}
-                          className={`w-24 ${salestab === value ? 'shadow-customShadow' : ''}`}
-                          value={value}
-                        >
-                          {label}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-
-                    <section className="mt-4 flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm">Total Receipts</span>
-                        <span className="font-semibold">
-                          {formattedAmount(totalSalesAmount)}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm">Average Receipts</span>
-                        <span className="font-semibold">
-                          {formattedAmount(averageSalesAmount)}
-                        </span>
-                        <span className="text-sm">per month</span>
-                      </div>
-                    </section>
-                    <TabsContent
-                      value="totalAmount"
-                      className="scrollBarStyles overflow-x-auto"
-                    >
-                      <div className="min-w-[500px] pr-4">
-                        <LineCharts
-                          data={dataMonthBasis}
-                          lines={SalesLines}
-                          xAxisKey="month"
-                          height={300}
-                        />
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent
-                      value="totalDue"
-                      className="scrollBarStyles overflow-x-auto"
-                    >
-                      <div className="min-w-[500px] pr-4">
-                        <LineCharts
-                          data={dataMonthBasis}
-                          lines={SalesLines}
-                          xAxisKey="month"
-                          height={300}
-                        />
-                      </div>
-                    </TabsContent>
-                    <TabsContent
-                      value="totalOverdue"
-                      className="scrollBarStyles overflow-x-auto"
-                    >
-                      <div className="min-w-[500px] pr-4">
-                        <LineCharts
-                          data={dataMonthBasis}
-                          lines={SalesLines}
-                          xAxisKey="month"
-                          height={300}
-                        />
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </Container>
-
-                <Container
+                  tab={salestab}
+                  onTabChange={onSalesTabChange}
+                  dataGranularity={salesDataGranularity}
+                  setDataGranularity={setSalesDataGranularity}
+                  summary={summaryMapper(salesAnalyticsData?.summary)}
+                  tabsConfig={tabConfigs.sales}
+                  chartData={{
+                    totalAmount: salesAmountPaidData,
+                    totalDue: salesTotalDueData,
+                    totalOverdue: salesTotalOverdueData,
+                  }}
+                  lines={SalesLines}
+                />
+                <AnalyticsCard
                   title="Purchase"
-                  granularityComp={
-                    <DataGranularity
-                      dataGranualarityType={purchaseDataGranularity}
-                      setDataGranularityType={setPurchaseDataGranularity}
-                    />
-                  }
-                  dateRangeComp={
-                    <DateRange
-                      dateRange={purchaseDateRange}
-                      setDateRange={setPurchaseDateRange}
-                    />
-                  }
-                >
-                  <Tabs
-                    value={purchaseTab}
-                    onValueChange={onPurchaseTabChange}
-                    defaultValue="totalAmount"
-                  >
-                    <TabsList className="border">
-                      {[
-                        { value: 'totalAmount', label: 'Receipts' },
-                        { value: 'totalDue', label: 'Receivables' },
-                        { value: 'totalOverdue', label: 'Overdue' },
-                      ].map(({ value, label }) => (
-                        <TabsTrigger
-                          key={value}
-                          className={`w-24 ${purchaseTab === value ? 'shadow-customShadow' : ''}`}
-                          value={value}
-                        >
-                          {label}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-
-                    <section className="mt-4 flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm">Total Purchases</span>
-                        <span className="font-semibold">
-                          {formattedAmount(totalPurchaseAmount)}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm">Average Purchases</span>
-                        <span className="font-semibold">
-                          {formattedAmount(averagePurchaseAmount)}
-                        </span>
-                        <span className="text-sm">per month</span>
-                      </div>
-                    </section>
-                    <TabsContent
-                      value="totalAmount"
-                      className="scrollBarStyles overflow-x-auto"
-                    >
-                      <div className="min-w-[500px] pr-4">
-                        <LineCharts
-                          data={dataMonthBasisPurchase}
-                          lines={PurchaseLines}
-                          xAxisKey="month"
-                          height={300}
-                        />
-                      </div>
-                    </TabsContent>
-                    <TabsContent
-                      value="totalDue"
-                      className="scrollBarStyles overflow-x-auto"
-                    >
-                      <div className="min-w-[500px] pr-4">
-                        <LineCharts
-                          data={dataMonthBasisPurchase}
-                          lines={PurchaseLines}
-                          xAxisKey="month"
-                          height={300}
-                        />
-                      </div>
-                    </TabsContent>
-                    <TabsContent
-                      value="totalOverdue"
-                      className="scrollBarStyles overflow-x-auto"
-                    >
-                      <div className="min-w-[500px] pr-4">
-                        <LineCharts
-                          data={dataMonthBasisPurchase}
-                          lines={PurchaseLines}
-                          xAxisKey="month"
-                          height={300}
-                        />
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </Container>
+                  tab={purchaseTab}
+                  onTabChange={onPurchaseTabChange}
+                  dataGranularity={purchaseDataGranularity}
+                  setDataGranularity={setPurchaseDataGranularity}
+                  summary={summaryMapper(purchaseAnalyticsData?.summary)}
+                  tabsConfig={tabConfigs.purchase}
+                  chartData={{
+                    totalAmount: purchaseAmountPaidData,
+                    totalDue: purchaseTotalDueData,
+                    totalOverdue: purchaseTotalOverdueData,
+                  }}
+                  lines={PurchaseLines}
+                />
               </div>
             )}
           </>
