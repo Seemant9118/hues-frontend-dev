@@ -23,26 +23,6 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-// macros
-const SalesLines = [
-  { dataKey: 'sales', name: 'Sales', color: '#007bff' }, // Blue
-];
-const PurchaseLines = [
-  { dataKey: 'purchase', name: 'Purchase', color: '#F8BA05' }, // Yellow
-];
-const tabConfigs = {
-  sales: [
-    { value: 'totalAmount', label: 'Receipts' },
-    { value: 'totalDue', label: 'Receivables' },
-    { value: 'totalOverdue', label: 'Overdue' },
-  ],
-  purchase: [
-    { value: 'totalAmount', label: 'Payments' },
-    { value: 'totalDue', label: 'Payable' },
-    { value: 'totalOverdue', label: 'Overdue' },
-  ],
-};
-
 const summaryMapper = (summary) => ({
   totalAmount: {
     total: Number(summary?.amountReceived ?? summary?.amountPaid ?? 0),
@@ -91,6 +71,51 @@ export default function Home() {
     fromDate,
     toDate,
   ]);
+
+  const SalesLines = [
+    {
+      dataKey: 'sales',
+      name: translations('analytics.bar-lines.sales'),
+      color: '#007bff',
+    }, // Blue
+  ];
+  const PurchaseLines = [
+    {
+      dataKey: 'purchase',
+      name: translations('analytics.bar-lines.purchase'),
+      color: '#F8BA05',
+    }, // Yellow
+  ];
+  const tabConfigs = {
+    sales: [
+      {
+        value: 'totalAmount',
+        label: translations('analytics.tabConfigs.sales.labels.receipts'),
+      },
+      {
+        value: 'totalDue',
+        label: translations('analytics.tabConfigs.sales.labels.receivables'),
+      },
+      {
+        value: 'totalOverdue',
+        label: translations('analytics.tabConfigs.sales.labels.overdue'),
+      },
+    ],
+    purchase: [
+      {
+        value: 'totalAmount',
+        label: translations('analytics.tabConfigs.purchase.labels.payments'),
+      },
+      {
+        value: 'totalDue',
+        label: translations('analytics.tabConfigs.purchase.labels.payable'),
+      },
+      {
+        value: 'totalOverdue',
+        label: translations('analytics.tabConfigs.purchase.labels.overdue'),
+      },
+    ],
+  };
 
   const onSalesTabChange = (value) => {
     setSalesTab(value);
@@ -234,7 +259,7 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <AnalyticsCard
-                  title="Sales"
+                  title={translations('analytics.sales')}
                   tab={salestab}
                   onTabChange={onSalesTabChange}
                   dataGranularity={salesDataGranularity}
@@ -249,9 +274,10 @@ export default function Home() {
                   lines={SalesLines}
                   dateRange={salesDateRange}
                   setDateRange={setSalesDateRange}
+                  translations={translations}
                 />
                 <AnalyticsCard
-                  title="Purchase"
+                  title={translations('analytics.purchase')}
                   tab={purchaseTab}
                   onTabChange={onPurchaseTabChange}
                   dataGranularity={purchaseDataGranularity}
@@ -266,6 +292,7 @@ export default function Home() {
                   lines={PurchaseLines}
                   dateRange={purchaseDateRange}
                   setDateRange={setPurchaseDateRange}
+                  translations={translations}
                 />
               </div>
             )}

@@ -899,6 +899,40 @@
             "label_comment": "Comment",
             "label_enterprise_icon": "Enterprise icon"
         },
+        "memberInviteModal": {
+            "dialogTrigger": {
+                "button": "Invite members",
+                "tooltip": "Invite associate members to your enterprise"
+            },
+            "dialogTitle": "Invite Member",
+            "form": {
+                "name": {
+                    "label": "Name",
+                    "required": "*"
+                },
+                "phone": {
+                    "label": "Phone",
+                    "required": "*"
+                },
+                "email": {
+                    "label": "Email",
+                    "optional": "(optional)"
+                },
+                "role": {
+                    "label": "Role",
+                    "required": "*",
+                    "placeholder": "Select Role"
+                },
+                "actions": {
+                    "discard": "Discard",
+                    "create": "Create"
+                }
+            },
+            "toast": {
+                "success": "Members Added Successfully",
+                "error": "Something went wrong"
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "Accepted",

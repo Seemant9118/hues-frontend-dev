@@ -1,20 +1,11 @@
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import DataGranularity from './DataGranularity';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DateRange from '../ui/DateRange';
 import LineCharts from '../ui/LineCharts';
 import Container from './Container';
-import DateRange from '../ui/DateRange';
-
-const getGranularityLabel = (type) => {
-  return (
-    (type === 'DAILY' && 'per day') ||
-    (type === 'WEEKLY' && 'per week') ||
-    (type === 'MONTHLY' && 'per month') ||
-    ''
-  );
-};
+import DataGranularity from './DataGranularity';
 
 export const AnalyticsCard = ({
   title,
@@ -28,7 +19,17 @@ export const AnalyticsCard = ({
   lines,
   dateRange,
   setDateRange,
+  translations,
 }) => {
+  const getGranularityLabel = (type) => {
+    return (
+      (type === 'DAILY' && translations('analytics.granularity.DAILY')) ||
+      (type === 'WEEKLY' && translations('analytics.granularity.WEEKLY')) ||
+      (type === 'MONTHLY' && translations('analytics.granularity.MONTHLY')) ||
+      ''
+    );
+  };
+
   return (
     <div className="w-full">
       <Container
@@ -40,6 +41,7 @@ export const AnalyticsCard = ({
           <DataGranularity
             dataGranualarityType={dataGranularity}
             setDataGranularityType={setDataGranularity}
+            translations={translations}
           />
         }
       >
@@ -72,7 +74,9 @@ export const AnalyticsCard = ({
                   </span>
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm">Average</span>
+                  <span className="text-sm">
+                    {translations('analytics.average')}
+                  </span>
                   <span className="font-semibold">
                     {formattedAmount(summary[tab].average)}
                   </span>

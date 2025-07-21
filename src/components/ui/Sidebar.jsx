@@ -159,7 +159,7 @@ const Sidebar = () => {
     },
     contactSubTabs.length > 0 && contactsLink,
     hasPermission('permission:members-view') && {
-      name: 'Members',
+      name: 'sidebar.members',
       icon: <Users size={16} />,
       path: '/dashboard/members',
     },

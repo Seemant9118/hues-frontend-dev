@@ -20,15 +20,18 @@ import { Upload, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 
 const MembersPage = () => {
   useMetaData('Hues! - Members', 'HUES MEMBERS'); // dynamic title
+
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
 
+  const translation = useTranslations('members');
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
@@ -42,14 +45,15 @@ const MembersPage = () => {
     onError: (error) => {
       toast.error(
         error.response?.data?.message ||
-          'Something went wrong while fetching data',
+          translation('errors.fetchFailed') ||
+          'Failed to fetch members list',
       );
     },
     select: (membersList) => membersList.data.data,
     enabled: hasPermission('permission:members-view'),
   });
 
-  const inviteeMembersColumns = useInviteeMembersColumns();
+  const inviteeMembersColumns = useInviteeMembersColumns(translation);
 
   if (!permissions || permissions.length === 0) {
     return null; // or <Loading />
@@ -64,14 +68,14 @@ const MembersPage = () => {
     <ProtectedWrapper permissionCode={'permission:members-view'}>
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
-          <SubHeader name="Members" />
+          <SubHeader name={translation('header')} />
           <RestrictedComponent />
         </>
       )}
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-screen">
-          <SubHeader name={'Members'} className="z-10 bg-white">
+          <SubHeader name={translation('header')} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
               <ProtectedWrapper permissionCode={'permission:members-create'}>
                 <MemberInviteModal />
@@ -88,7 +92,7 @@ const MembersPage = () => {
                     <Upload size={16} />
                   </Button>
                 }
-                content={'Export feature coming soon...'}
+                content={translation('exportTooltip')}
               />
             </div>
           </SubHeader>
@@ -102,11 +106,9 @@ const MembersPage = () => {
           {!isLoading && membersList?.length === 0 && (
             <div className="flex h-[50rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
               <Users size={28} />
-              <p className="font-bold">No Members Invited yet</p>
+              <p className="font-bold">{translation('empty.title')}</p>
               <p className="max-w-96 text-center">
-                {
-                  "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
-                }
+                {translation('empty.description')}
               </p>
               <ProtectedWrapper permissionCode={'permission:members-create'}>
                 <MemberInviteModal />

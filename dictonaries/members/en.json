@@ -1,0 +1,22 @@
+{
+  "members": {
+    "pageTitle": "Hues! - Members",
+    "header": "Members",
+    "exportTooltip": "Export feature coming soon...",
+    "empty": {
+      "title": "No Members Invited yet",
+      "description": "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
+    },
+    "tableColumns": {
+      "name": "NAME",
+      "joiningDate": "JOINING DATE",
+      "phoneNumber": "PHONE NUMBER",
+      "emailId": "EMAIL ID",
+      "role": "ROLE",
+      "invitation": "INVITATION"
+    },
+    "errors": {
+      "fetchFailed": "Something went wrong while fetching data"
+    }
+  }
+}

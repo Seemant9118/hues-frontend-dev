@@ -14,6 +14,36 @@
                 "accept": "आमंत्रण स्वीकार किया गया"
             }
         },
+        "analytics": {
+            "sales": "बिक्री",
+            "purchase": "खरीद",
+            "average": "औसत",
+            "bar-lines": {
+                "sales": "बिक्री",
+                "purchase": "खरीद"
+            },
+            "tabConfigs": {
+                "sales": {
+                    "labels": {
+                        "receipts": "प्राप्तियां",
+                        "receivables": "प्राप्ति योग्य",
+                        "overdue": "अतिदेय"
+                    }
+                },
+                "purchase": {
+                    "labels": {
+                        "payments": "भुगतान",
+                        "payable": "देय",
+                        "overdue": "अतिदेय"
+                    }
+                }
+            },
+            "granularity": {
+                "DAILY": "प्रति दिन",
+                "WEEKLY": "प्रति सप्ताह",
+                "MONTHLY": "प्रति माह"
+            }
+        },
         "emptyStateComponent": {
             "heading": "एकीकृत, रीयल-टाइम डैशबोर्ड के साथ वित्तीय स्वास्थ्य और अनुपालन को आसानी से मॉनिटर करें",
             "subItems": {

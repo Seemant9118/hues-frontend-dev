@@ -898,6 +898,40 @@
             "label_comment": "टिप्पणी",
             "label_enterprise_icon": "उद्यम आइकन"
         },
+        "memberInviteModal": {
+            "dialogTrigger": {
+                "button": "सदस्य आमंत्रित करें",
+                "tooltip": "अपने उद्यम में सहयोगी सदस्यों को आमंत्रित करें"
+            },
+            "dialogTitle": "सदस्य को आमंत्रित करें",
+            "form": {
+                "name": {
+                    "label": "नाम",
+                    "required": "*"
+                },
+                "phone": {
+                    "label": "फ़ोन",
+                    "required": "*"
+                },
+                "email": {
+                    "label": "ईमेल",
+                    "optional": "(वैकल्पिक)"
+                },
+                "role": {
+                    "label": "भूमिका",
+                    "required": "*",
+                    "placeholder": "भूमिका चुनें"
+                },
+                "actions": {
+                    "discard": "रद्द करें",
+                    "create": "बनाएं"
+                }
+            },
+            "toast": {
+                "success": "सदस्य सफलतापूर्वक जोड़े गए",
+                "error": "कुछ गलत हो गया"
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "स्वीकृत",

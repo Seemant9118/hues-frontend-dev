@@ -6,12 +6,15 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
 import moment from 'moment';
 
-export const useInviteeMembersColumns = () => {
+export const useInviteeMembersColumns = (translation) => {
   return [
     {
       accessorKey: 'name',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="NAME" />
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.name')}
+        />
       ),
       cell: ({ row }) => {
         const { name } = row.original.invitation.userDetails;
@@ -21,7 +24,10 @@ export const useInviteeMembersColumns = () => {
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="JOINING DATE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.joiningDate')}
+        />
       ),
       cell: ({ row }) => {
         const { createdAt } = row.original;
@@ -32,7 +38,10 @@ export const useInviteeMembersColumns = () => {
     {
       accessorKey: 'mobileNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PHONE NUMBER" />
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.phoneNumber')}
+        />
       ),
       cell: ({ row }) => {
         const { mobileNumber } = row.original.invitation.userDetails;
@@ -42,7 +51,10 @@ export const useInviteeMembersColumns = () => {
     {
       accessorKey: 'email',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="EMAIL ID" />
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.emailId')}
+        />
       ),
       cell: ({ row }) => {
         const { email } = row.original.invitation.userDetails;
@@ -52,7 +64,10 @@ export const useInviteeMembersColumns = () => {
     {
       accessorKey: 'role',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ROLE" />
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.role')}
+        />
       ),
       cell: ({ row }) => {
         const { role } = row.original;
@@ -66,7 +81,10 @@ export const useInviteeMembersColumns = () => {
     {
       accessorKey: 'invitation',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="INVITATION" />
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.invitation')}
+        />
       ),
       cell: ({ row }) => {
         const { id, status } = row.original.invitation;

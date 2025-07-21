@@ -14,6 +14,36 @@
                 "accept": "Invitation Accepted"
             }
         },
+        "analytics": {
+            "sales": "Sales",
+            "purchase": "Purchase",
+            "average": "Average",
+            "bar-lines": {
+                "sales": "Sales",
+                "purchase": "Purchase"
+            },
+            "tabConfigs": {
+                "sales": {
+                    "labels": {
+                        "receipts": "Receipts",
+                        "receivables": "Receivables",
+                        "overdue": "Overdue"
+                    }
+                },
+                "purchase": {
+                    "labels": {
+                        "payments": "Payments",
+                        "payable": "Payable",
+                        "overdue": "Overdue"
+                    }
+                }
+            },
+            "granularity": {
+                "DAILY": "Daily",
+                "WEEKLY": "Weekly",
+                "MONTHLY": "Monthly"
+            }
+        },
         "emptyStateComponent": {
             "heading": "Seamlessly monitor financial health and compliance with an integrated, real-time dashboard",
             "subItems": {

@@ -12,6 +12,7 @@ import { UserPlus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import {
@@ -24,9 +25,10 @@ import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
 
 const MemberInviteModal = () => {
-  const queryClient = useQueryClient();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
+  const translation = useTranslations('components.memberInviteModal');
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [optionsForRoles, setOptionsForRoles] = useState([]);
   const [member, setMember] = useState({
@@ -74,7 +76,7 @@ const MemberInviteModal = () => {
     mutationKey: [associateMemberApi.createAssociateMembers.endpointKey],
     mutationFn: createAssociateMembers,
     onSuccess: () => {
-      toast.success('Members Added Successfully');
+      toast.success(translation('toast.success'));
       setMember({
         name: '',
         countryCode: '+91',
@@ -90,7 +92,7 @@ const MemberInviteModal = () => {
       setOpen(false);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translation('toast.error'));
     },
   });
 
@@ -105,21 +107,23 @@ const MemberInviteModal = () => {
           trigger={
             <Button onClick={() => setOpen(true)} size="sm">
               <UserPlus size={16} />
-              Invite members
+              {translation('dialogTrigger.button')}
             </Button>
           }
-          content={'Invite associate members to your enterprise'}
+          content={translation('dialogTrigger.tooltip')}
         />
       </DialogTrigger>
       <DialogContent className="flex flex-col gap-5">
-        <DialogTitle>Invite Member</DialogTitle>
+        <DialogTitle>{translation('dialogTitle')}</DialogTitle>
 
         <form className="w-full">
           <div className="flex flex-col gap-5">
             {/* name */}
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="text-sm font-bold">Name</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.name.label')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
 
@@ -136,7 +140,9 @@ const MemberInviteModal = () => {
             {/* phone */}
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="text-sm font-bold">Phone</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.phone.label')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
               <Input
@@ -154,9 +160,11 @@ const MemberInviteModal = () => {
             {/* email */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1">
-                <Label className="text-sm font-bold">Email</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.email.label')}
+                </Label>
                 <span className="text-xs font-bold text-[#A5ABBD]">
-                  {'(optional)'}
+                  {translation('form.email.optional')}
                 </span>
               </div>
               <Input
@@ -171,13 +179,15 @@ const MemberInviteModal = () => {
             {/* role */}
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="text-sm font-bold">Role</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.role.label')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
               <Select
                 isMulti
                 name="roles"
-                placeholder="Select Role"
+                placeholder={translation('form.role.placeholder')}
                 options={optionsForRoles}
                 className="text-sm"
                 classNamePrefix="select"
@@ -197,7 +207,7 @@ const MemberInviteModal = () => {
                   setOpen(false);
                 }}
               >
-                Discard
+                {translation('form.actions.discard')}
               </Button>
 
               <Button
@@ -206,7 +216,11 @@ const MemberInviteModal = () => {
                 className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                {createMemberMutation.isPending ? <Loading /> : 'Create'}
+                {createMemberMutation.isPending ? (
+                  <Loading />
+                ) : (
+                  translation('form.actions.create')
+                )}
               </Button>
             </div>
           </div>

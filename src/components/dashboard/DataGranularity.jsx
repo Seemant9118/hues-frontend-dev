@@ -7,7 +7,11 @@ import {
   SelectValue,
 } from '../ui/select';
 
-const DataGranularity = ({ dataGranualarityType, setDataGranularityType }) => {
+const DataGranularity = ({
+  dataGranualarityType,
+  setDataGranularityType,
+  translations,
+}) => {
   return (
     <Select
       value={dataGranualarityType}
@@ -19,9 +23,15 @@ const DataGranularity = ({ dataGranualarityType, setDataGranularityType }) => {
         <SelectValue defaultValue="WEEKLY" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="DAILY">Daily</SelectItem>
-        <SelectItem value="WEEKLY">Weekly</SelectItem>
-        <SelectItem value="MONTHLY">Monthly</SelectItem>
+        <SelectItem value="DAILY">
+          {translations('analytics.granularity.DAILY')}
+        </SelectItem>
+        <SelectItem value="WEEKLY">
+          {translations('analytics.granularity.WEEKLY')}
+        </SelectItem>
+        <SelectItem value="MONTHLY">
+          {translations('analytics.granularity.MONTHLY')}
+        </SelectItem>
       </SelectContent>
     </Select>
   );
