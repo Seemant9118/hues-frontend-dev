@@ -1,5 +1,6 @@
 'use client';
 
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
@@ -12,10 +13,14 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   exportInvoice,
   getAllSalesInvoices,
@@ -35,10 +40,8 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
-import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
-import { usePermission } from '@/hooks/usePermissions';
-import { useAuth } from '@/context/AuthContext';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
@@ -86,7 +89,8 @@ const SalesInvoices = () => {
   const [invoiceListing, setInvoiceListing] = useState([]); // invoices
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
-  const [filterData, setFilterData] = useState({});
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+  const [filterData, setFilterData] = useState({ clientIds: [] });
   const [invoiceType, setInvoiceType] = useState(''); // invoice type
   const [defaultInvoiceType, setDefaultInvoiceType] = useState(''); // default invoice type
 
@@ -126,20 +130,23 @@ const SalesInvoices = () => {
     let newFilterData = {};
     if (tab === 'outstanding') {
       newFilterData = {
-        filterData: {
-          payment: {
-            status: ['NOT_PAID', 'PARTIAL_PAID'],
-          },
-        },
+        paymentStatus: ['NOT_PAID', 'PARTIAL_PAID'],
+        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'disputed') {
       newFilterData = {
-        filterData: {
-          debitNote: {
-            status: 'RAISED',
-          },
-        },
+        debitNoteStatus: true,
+        clientIds: filterData?.clientIds || [],
       };
+    } else if (tab === 'all') {
+      // ✅ Just keep clientIds if present, no extra filters
+      if (filterData?.clientIds?.length > 0) {
+        newFilterData = {
+          clientIds: filterData.clientIds,
+        };
+      } else {
+        newFilterData = null; // no filters applied
+      }
     }
 
     setFilterData(newFilterData);
@@ -226,6 +233,67 @@ const SalesInvoices = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [data]);
+
+  // search by client
+  const {
+    data: clientData,
+    refetch: fetchClients,
+    isFetching: isClientFetching,
+    isLoading: isClientLoading,
+  } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey, enterpriseId],
+    queryFn: () => getClients({ id: enterpriseId, context: 'ORDER' }),
+    enabled: clientDropdownOpen,
+    select: (res) => res.data.data.users,
+    refetchOnWindowFocus: false,
+  });
+  const isClientLoad = isClientFetching || isClientLoading;
+
+  // flatten array to get exact data
+  let formattedClientData = [];
+  if (clientData) {
+    formattedClientData = clientData.flatMap((user) => {
+      let userDetails;
+      if (user.client && user?.client?.name !== null) {
+        userDetails = { ...user.client };
+      } else {
+        userDetails = { ...user };
+      }
+
+      return {
+        ...userDetails,
+        id: user?.client?.id || user?.id,
+        name: user?.client?.name || user?.invitation?.userDetails?.name,
+      };
+    });
+  }
+  // options data : clients
+  const updatedClientData = formattedClientData.map((item) => {
+    return {
+      value: item.id,
+      label: item.name,
+    };
+  });
+
+  // value : client
+  const valueClient = filterData?.clientIds?.map((client) => ({
+    value: client,
+    label: updatedClientData.find((opt) => opt?.value === client)?.label,
+  }));
+
+  // handlerChangeFn : clients
+  const handleChangeForClient = (value) => {
+    const ids = Array.isArray(value)
+      ? value.map((v) => v.value)
+      : value
+        ? [value.value]
+        : [];
+
+    setFilterData((prev) => ({
+      ...prev,
+      clientIds: ids,
+    }));
+  };
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -372,13 +440,30 @@ const SalesInvoices = () => {
                       {translations('tabs.label.tab3')}
                     </TabsTrigger>
                   </TabsList>
-
-                  <FilterInvoices
-                    isSalesFilter={true}
-                    tab={tab}
-                    setFilterData={setFilterData}
-                    setPaginationData={setPaginationData}
-                  />
+                  <div className="flex items-center gap-2">
+                    {/* Search by Customer */}
+                    <Select
+                      name="clientIds"
+                      isClearable
+                      isLoading={isClientLoad}
+                      placeholder={translations('ctas.search.placeholder')}
+                      options={updatedClientData}
+                      className="w-64 min-w-64 text-sm"
+                      classNamePrefix="select"
+                      value={valueClient}
+                      onChange={handleChangeForClient}
+                      onMenuOpen={() => {
+                        setClientDropdownOpen(true);
+                        fetchClients();
+                      }}
+                    />
+                    <FilterInvoices
+                      isSalesFilter={true}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                      setPaginationData={setPaginationData}
+                    />
+                  </div>
                 </section>
 
                 <TabsContent value="all" className="flex-grow overflow-hidden">

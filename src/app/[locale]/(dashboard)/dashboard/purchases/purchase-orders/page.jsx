@@ -1,5 +1,6 @@
 'use client';
 
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
@@ -17,6 +18,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   exportOrder,
   GetPurchases,
@@ -27,11 +29,13 @@ import {
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQuery,
 } from '@tanstack/react-query';
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseColumns } from './usePurchaseColumns';
@@ -80,7 +84,8 @@ const PurchaseOrders = () => {
   const [unconfirmedPurchaseListing, setUnconfirmedPurhchaseListing] = useState(
     [],
   );
-  const [filterData, setFilterData] = useState(null); // Initialize with default filterPayload
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
+  const [filterData, setFilterData] = useState({ clientIds: [] }); // Initialize with default filterPayload
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -92,13 +97,29 @@ const PurchaseOrders = () => {
     let newFilterData = null;
 
     if (tab === 'underReview') {
-      newFilterData = { offerReceived: true };
+      newFilterData = { offerReceived: true, clientIds: filterData?.clientIds };
     } else if (tab === 'confirmed') {
-      newFilterData = { status: ['ACCEPTED'], invoiceStatus: false };
+      newFilterData = {
+        status: ['ACCEPTED'],
+        invoiceStatus: false,
+        clientIds: filterData?.clientIds,
+      };
     } else if (tab === 'payables') {
-      newFilterData = { paymentStatus: ['NOT_PAID'] };
+      newFilterData = {
+        paymentStatus: ['NOT_PAID'],
+        clientIds: filterData?.clientIds,
+      };
     } else if (isOrderCreationSuccess) {
-      newFilterData = {};
+      newFilterData = null;
+    } else if (tab === 'all') {
+      // ✅ Just keep clientIds if present, no extra filters
+      if (filterData?.clientIds?.length > 0) {
+        newFilterData = {
+          clientIds: filterData.clientIds,
+        };
+      } else {
+        newFilterData = null; // no filters applied
+      }
     }
 
     setFilterData(newFilterData);
@@ -213,6 +234,66 @@ const PurchaseOrders = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [unconfirmedPurchaseLists]);
+
+  // search by vendor
+  const {
+    data: vendorData,
+    refetch: fetchVendors,
+    isFetching: isVendorFetching,
+    isLoading: isVendorLoading,
+  } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey, enterpriseId],
+    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }),
+    enabled: vendorDropdownOpen,
+    select: (res) => res.data.data.users,
+    refetchOnWindowFocus: false,
+  });
+  const isVendorLoad = isVendorFetching || isVendorLoading;
+
+  // flatten array to get exact data
+  let formattedVendorData = [];
+  if (vendorData) {
+    formattedVendorData = vendorData.flatMap((user) => {
+      let userDetails;
+      if (user.vendor && user?.vendor?.name !== null) {
+        userDetails = { ...user.vendor };
+      } else {
+        userDetails = { ...user };
+      }
+
+      return {
+        ...userDetails,
+        id: user?.vendor?.id || user?.id,
+        name: user?.vendor?.name || user?.invitation?.userDetails?.name,
+      };
+    });
+  }
+  // options data : vendor
+  const updatedVendorData = formattedVendorData.map((item) => {
+    return {
+      value: item.id,
+      label: item.name,
+    };
+  });
+  // value : vendors
+  const valueVendor = filterData?.clientIds?.map((vendor) => ({
+    value: vendor,
+    label: updatedVendorData?.find((opt) => opt.value === vendor)?.label,
+  }));
+
+  // handlerChangeFn : vendors
+  const handleChangeForVendor = (value) => {
+    const ids = Array.isArray(value)
+      ? value.map((v) => v.value)
+      : value
+        ? [value.value]
+        : [];
+
+    setFilterData((prev) => ({
+      ...prev,
+      clientIds: ids,
+    }));
+  };
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -358,12 +439,32 @@ const PurchaseOrders = () => {
                       {translations('tabs.label.tab5')}
                     </TabsTrigger>
                   </TabsList>
-                  <FilterModal
-                    isSalesFilter={false}
-                    tab={tab}
-                    setFilterData={setFilterData}
-                    setPaginationData={setPaginationData}
-                  />
+
+                  <div className="flex items-center gap-2">
+                    {/* Search by Customer */}
+                    <Select
+                      name="clientIds"
+                      isClearable
+                      isLoading={isVendorLoad}
+                      placeholder={translations('ctas.search.placeholder')}
+                      options={updatedVendorData}
+                      className="w-64 min-w-64 text-sm"
+                      classNamePrefix="select"
+                      value={valueVendor}
+                      onChange={handleChangeForVendor}
+                      onMenuOpen={() => {
+                        setVendorDropdownOpen(true);
+                        fetchVendors();
+                      }}
+                    />
+                    {/* filters */}
+                    <FilterModal
+                      isSalesFilter={false}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                      setPaginationData={setPaginationData}
+                    />
+                  </div>
                 </section>
 
                 <TabsContent value="all" className="flex-grow overflow-hidden">

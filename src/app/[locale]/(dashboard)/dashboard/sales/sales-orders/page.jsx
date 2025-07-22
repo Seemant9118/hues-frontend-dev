@@ -26,12 +26,16 @@ import {
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQuery,
 } from '@tanstack/react-query';
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import Select from 'react-select';
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
@@ -74,27 +78,42 @@ const SalesOrder = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
-  const [filterData, setFilterData] = useState(null);
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+  const [filterData, setFilterData] = useState({ clientIds: [] });
 
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value); // Update the tab state
   };
 
-  // Update filterData dynamically based on the selected tab
   useEffect(() => {
-    let newFilterData = null;
+    let newFilterData = {};
+
     if (tab === 'underReview') {
       newFilterData = {
         status: ['OFFER_SENT', 'BID_RECEIVED'],
+        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'confirmedOrders') {
       newFilterData = {
         status: ['ACCEPTED'],
         invoiceStatus: false,
+        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'receivables') {
-      newFilterData = { invoiceStatus: true };
+      newFilterData = {
+        invoiceStatus: true,
+        clientIds: filterData?.clientIds || [],
+      };
+    } else if (tab === 'all') {
+      // ✅ Just keep clientIds if present, no extra filters
+      if (filterData?.clientIds?.length > 0) {
+        newFilterData = {
+          clientIds: filterData.clientIds,
+        };
+      } else {
+        newFilterData = null; // no filters applied
+      }
     }
 
     setFilterData(newFilterData);
@@ -149,6 +168,67 @@ const SalesOrder = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [data]);
+
+  // search by client
+  const {
+    data: clientData,
+    refetch: fetchClients,
+    isFetching: isClientFetching,
+    isLoading: isClientLoading,
+  } = useQuery({
+    queryKey: [clientEnterprise.getClients.endpointKey, enterpriseId],
+    queryFn: () => getClients({ id: enterpriseId, context: 'ORDER' }),
+    enabled: clientDropdownOpen,
+    select: (res) => res.data.data.users,
+    refetchOnWindowFocus: false,
+  });
+  const isClientLoad = isClientFetching || isClientLoading;
+
+  // flatten array to get exact data
+  let formattedClientData = [];
+  if (clientData) {
+    formattedClientData = clientData.flatMap((user) => {
+      let userDetails;
+      if (user.client && user?.client?.name !== null) {
+        userDetails = { ...user.client };
+      } else {
+        userDetails = { ...user };
+      }
+
+      return {
+        ...userDetails,
+        id: user?.client?.id || user?.id,
+        name: user?.client?.name || user?.invitation?.userDetails?.name,
+      };
+    });
+  }
+  // options data : clients
+  const updatedClientData = formattedClientData.map((item) => {
+    return {
+      value: item.id,
+      label: item.name,
+    };
+  });
+
+  // value : client
+  const valueClient = filterData?.clientIds?.map((client) => ({
+    value: client,
+    label: updatedClientData.find((opt) => opt?.value === client)?.label,
+  }));
+
+  // handlerChangeFn : clients
+  const handleChangeForClient = (value) => {
+    const ids = Array.isArray(value)
+      ? value.map((v) => v.value)
+      : value
+        ? [value.value]
+        : [];
+
+    setFilterData((prev) => ({
+      ...prev,
+      clientIds: ids,
+    }));
+  };
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -294,12 +374,31 @@ const SalesOrder = () => {
                     </TabsTrigger>
                   </TabsList>
 
-                  <FilterModal
-                    isSalesFilter={true}
-                    tab={tab}
-                    setFilterData={setFilterData}
-                    setPaginationData={setPaginationData}
-                  />
+                  <div className="flex items-center gap-2">
+                    {/* Search by Customer */}
+                    <Select
+                      name="clientIds"
+                      isClearable
+                      isLoading={isClientLoad}
+                      placeholder={translations('ctas.search.placeholder')}
+                      options={updatedClientData}
+                      className="w-64 min-w-64 text-sm"
+                      classNamePrefix="select"
+                      value={valueClient}
+                      onChange={handleChangeForClient}
+                      onMenuOpen={() => {
+                        setClientDropdownOpen(true);
+                        fetchClients();
+                      }}
+                    />
+                    {/* filters */}
+                    <FilterModal
+                      isSalesFilter={true}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                      setPaginationData={setPaginationData}
+                    />
+                  </div>
                 </section>
 
                 <TabsContent value="all" className="flex-grow overflow-hidden">

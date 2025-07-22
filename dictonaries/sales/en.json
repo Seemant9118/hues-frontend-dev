@@ -28,6 +28,9 @@
                 "offer": {
                     "cta": "Offer",
                     "placeholder": "Create a new Sales Order"
+                },
+                "search": {
+                    "placeholder": "Search by Customer..."
                 }
             },
             "tabs": {
@@ -166,6 +169,9 @@
                     "cta": "Invoice",
                     "b2bCta": "B2B Invoice",
                     "placeholder": "Create a new Sales Invoice"
+                },
+                "search": {
+                    "placeholder": "Search by Customer..."
                 }
             },
             "tabs": {

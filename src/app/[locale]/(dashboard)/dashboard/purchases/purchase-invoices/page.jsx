@@ -1,5 +1,6 @@
 'use client';
 
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
@@ -17,6 +18,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import {
   exportInvoice,
   getAllPurchaseInvoices,
@@ -27,11 +29,13 @@ import {
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQuery,
 } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
@@ -64,7 +68,8 @@ const PurchaseInvoices = () => {
   const [purchaseinvoiceListing, setPurchaseInvoiceListing] = useState([]); // invoices
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
-  const [filterData, setFilterData] = useState({});
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
+  const [filterData, setFilterData] = useState({ clientIds: [] });
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -76,20 +81,23 @@ const PurchaseInvoices = () => {
     let newFilterData = {};
     if (tab === 'outstanding') {
       newFilterData = {
-        filterData: {
-          payment: {
-            status: ['NOT_PAID', 'PARTIAL_PAID'],
-          },
-        },
+        paymentStatus: ['NOT_PAID', 'PARTIAL_PAID'],
+        clientIds: filterData?.clientIds,
       };
     } else if (tab === 'disputed') {
       newFilterData = {
-        filterData: {
-          debitNote: {
-            status: 'RAISED',
-          },
-        },
+        debitNoteStatus: true,
+        clientIds: filterData?.clientIds,
       };
+    } else if (tab === 'all') {
+      // ✅ Just keep clientIds if present, no extra filters
+      if (filterData?.clientIds?.length > 0) {
+        newFilterData = {
+          clientIds: filterData.clientIds,
+        };
+      } else {
+        newFilterData = null; // no filters applied
+      }
     }
 
     setFilterData(newFilterData);
@@ -155,6 +163,66 @@ const PurchaseInvoices = () => {
       currFetchedPage: lastPage?.currentPage,
     });
   }, [invoicesData]);
+
+  // search by vendor
+  const {
+    data: vendorData,
+    refetch: fetchVendors,
+    isFetching: isVendorFetching,
+    isLoading: isVendorLoading,
+  } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey, enterpriseId],
+    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }),
+    enabled: vendorDropdownOpen,
+    select: (res) => res.data.data.users,
+    refetchOnWindowFocus: false,
+  });
+  const isVendorLoad = isVendorFetching || isVendorLoading;
+
+  // flatten array to get exact data
+  let formattedVendorData = [];
+  if (vendorData) {
+    formattedVendorData = vendorData.flatMap((user) => {
+      let userDetails;
+      if (user.vendor && user?.vendor?.name !== null) {
+        userDetails = { ...user.vendor };
+      } else {
+        userDetails = { ...user };
+      }
+
+      return {
+        ...userDetails,
+        id: user?.vendor?.id || user?.id,
+        name: user?.vendor?.name || user?.invitation?.userDetails?.name,
+      };
+    });
+  }
+  // options data : vendor
+  const updatedVendorData = formattedVendorData.map((item) => {
+    return {
+      value: item.id,
+      label: item.name,
+    };
+  });
+  // value : vendors
+  const valueVendor = filterData?.clientIds?.map((vendor) => ({
+    value: vendor,
+    label: updatedVendorData?.find((opt) => opt.value === vendor)?.label,
+  }));
+
+  // handlerChangeFn : vendors
+  const handleChangeForVendor = (value) => {
+    const ids = Array.isArray(value)
+      ? value.map((v) => v.value)
+      : value
+        ? [value.value]
+        : [];
+
+    setFilterData((prev) => ({
+      ...prev,
+      clientIds: ids,
+    }));
+  };
 
   // [updateReadTracker Mutation : onRowClick] ✅
   const updateReadTrackerMutation = useMutation({
@@ -274,12 +342,32 @@ const PurchaseInvoices = () => {
                   </TabsTrigger>
                 </TabsList>
 
-                <FilterInvoices
-                  isSalesFilter={false}
-                  tab={tab}
-                  setFilterData={setFilterData}
-                  setPaginationData={setPaginationData}
-                />
+                <div className="flex items-center gap-2">
+                  {/* Search by Customer */}
+                  <Select
+                    name="clientIds"
+                    isClearable
+                    isLoading={isVendorLoad}
+                    placeholder={translations('ctas.search.placeholder')}
+                    options={updatedVendorData}
+                    className="w-64 min-w-64 text-sm"
+                    classNamePrefix="select"
+                    value={valueVendor}
+                    onChange={handleChangeForVendor}
+                    onMenuOpen={() => {
+                      setVendorDropdownOpen(true);
+                      fetchVendors();
+                    }}
+                  />
+
+                  {/* filters */}
+                  <FilterInvoices
+                    isSalesFilter={false}
+                    tab={tab}
+                    setFilterData={setFilterData}
+                    setPaginationData={setPaginationData}
+                  />
+                </div>
               </section>
 
               <TabsContent value="all" className="flex-grow overflow-hidden">

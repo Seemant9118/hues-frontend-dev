@@ -28,6 +28,9 @@
                 "bid": {
                     "cta": "Bid",
                     "placeholder": "Create a new Purchase Order"
+                },
+                 "search": {
+                    "placeholder": "Search by Vendor..."
                 }
             },
             "tabs": {
@@ -157,6 +160,9 @@
                     "placeholder": "Export Selected Invoice",
                     "successMsg": "Invoice exported and download starts automatically",
                     "errorMsg": "Something went wrong"
+                },
+                 "search": {
+                    "placeholder": "Search by Vendor..."
                 }
             },
             "tabs": {
