@@ -10,4 +10,10 @@ export const associateMemberApi = {
     endpoint: `/enterprise/user/`,
     endpointKey: 'get_all_associate_members',
   },
+
+  // 3. update associate member
+  updateAssociateMember: {
+    endpoint: `/enterprise/user/update/`,
+    endpointKey: 'update_associate_member',
+  },
 };

@@ -16,11 +16,11 @@ import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { useQuery } from '@tanstack/react-query';
-import { Upload, Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React from 'react';
-import { toast } from 'sonner';
+import { Upload, UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 
 const MembersPage = () => {
@@ -35,6 +35,9 @@ const MembersPage = () => {
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
+  const [isInvitingMembers, setIsInvitingMembers] = useState(false);
+  const [isMemberEditing, setIsMemberEditing] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   const { data: membersList, isLoading } = useQuery({
     queryKey: [
@@ -53,7 +56,12 @@ const MembersPage = () => {
     enabled: hasPermission('permission:members-view'),
   });
 
-  const inviteeMembersColumns = useInviteeMembersColumns(translation);
+  const inviteeMembersColumns = useInviteeMembersColumns(
+    translation,
+    setIsMemberEditing,
+    setSelectedMember,
+    enterpriseId,
+  );
 
   if (!permissions || permissions.length === 0) {
     return null; // or <Loading />
@@ -78,7 +86,22 @@ const MembersPage = () => {
           <SubHeader name={translation('header')} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-4">
               <ProtectedWrapper permissionCode={'permission:members-create'}>
-                <MemberInviteModal />
+                <Button onClick={() => setIsInvitingMembers(true)} size="sm">
+                  <UserPlus size={16} />
+                  {'Invite Members'}
+                </Button>
+                <MemberInviteModal
+                  isModalOpen={isInvitingMembers}
+                  setIsModalOpen={setIsInvitingMembers}
+                />
+                {selectedMember && (
+                  <MemberInviteModal
+                    isModalOpen={isMemberEditing}
+                    setIsModalOpen={setIsMemberEditing}
+                    membersInfo={selectedMember}
+                    isEditMode={true}
+                  />
+                )}
               </ProtectedWrapper>
 
               <Tooltips

@@ -13,3 +13,10 @@ export const getAllAssociateMembers = (id) => {
     `${associateMemberApi.getAllAssociateMembers.endpoint}${id}`,
   );
 };
+
+export const updateAssociateMember = ({ id, data }) => {
+  return APIinstance.put(
+    `${associateMemberApi.updateAssociateMember.endpoint}${id}`,
+    data,
+  );
+};

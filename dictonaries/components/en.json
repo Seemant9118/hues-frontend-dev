@@ -905,6 +905,7 @@
                 "tooltip": "Invite associate members to your enterprise"
             },
             "dialogTitle": "Invite Member",
+            "dialogTitleEdit": "Edit Member",
             "form": {
                 "name": {
                     "label": "Name",
@@ -930,6 +931,7 @@
             },
             "toast": {
                 "success": "Members Added Successfully",
+                "editSuccess": "Member Edited Successfully",
                 "error": "Something went wrong"
             }
         },
