@@ -157,7 +157,9 @@ export const useInviteeMembersColumns = (
       ),
       cell: ({ row }) => {
         const { status } = row.original.invitation;
+        const { isActive } = row.original;
         let content;
+
         switch (status) {
           case 'PENDING':
             content = (
@@ -166,6 +168,7 @@ export const useInviteeMembersColumns = (
               </div>
             );
             break;
+
           case 'REJECTED':
             content = (
               <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
@@ -173,16 +176,27 @@ export const useInviteeMembersColumns = (
               </div>
             );
             break;
+
           case 'ACCEPTED':
-            content = (
-              <div className="flex w-20 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
-                {translation('tableColumns.statuses.accepted')}
-              </div>
-            );
+            if (isActive) {
+              content = (
+                <div className="flex w-20 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+                  {translation('tableColumns.statuses.active')}
+                </div>
+              );
+            } else {
+              content = (
+                <div className="flex w-20 items-center justify-center rounded-[6px] border border-gray-500 bg-gray-100 p-1 text-gray-600">
+                  {translation('tableColumns.statuses.inactive')}
+                </div>
+              );
+            }
             break;
+
           default:
             content = '-';
         }
+
         return content;
       },
     },

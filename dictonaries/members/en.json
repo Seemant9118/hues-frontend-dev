@@ -17,7 +17,8 @@
       "statuses": {
         "pending": "Pending",
         "rejected": "Rejected",
-        "accepted": "Active"
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "actions" : {
         "edit": "Edit",

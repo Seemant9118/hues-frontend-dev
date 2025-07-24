@@ -17,7 +17,8 @@
       "statuses": {
         "pending": "लंबित",
         "rejected": "अस्वीकृत",
-        "accepted": "सक्रिय"
+        "active": "सक्रिय",
+        "inactive": "अक्रिय"
       },
       "actions": {
         "edit": "संपादित करें",
