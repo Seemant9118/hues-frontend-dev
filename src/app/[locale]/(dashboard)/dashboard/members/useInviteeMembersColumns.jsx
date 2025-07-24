@@ -225,19 +225,19 @@ export const useInviteeMembersColumns = (
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-fit">
-                {invitationStatus === 'PENDING' && (
-                  <div className="flex flex-col gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setSelectedMember(row.original);
-                        setIsMemberEditing(true);
-                      }}
-                    >
-                      <Pencil size={14} />
-                      {translation('tableColumns.actions.edit')}
-                    </Button>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedMember(row.original);
+                      setIsMemberEditing(true);
+                    }}
+                  >
+                    <Pencil size={14} />
+                    {translation('tableColumns.actions.edit')}
+                  </Button>
+                  {invitationStatus === 'PENDING' && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -246,59 +246,63 @@ export const useInviteeMembersColumns = (
                       <Share2 size={14} />
                       {translation('tableColumns.actions.share')}
                     </Button>
-                  </div>
-                )}
-                {invitationStatus === 'ACCEPTED' && isActive && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      handleInactive(invitationId, {
-                        enterpriseId,
-                        name: row.original.invitation?.userDetails?.name || '',
-                        mobileNumber:
-                          row.original.invitation?.userDetails?.mobileNumber ||
-                          '',
-                        countryCode:
-                          row.original.invitation?.userDetails?.countryCode ||
-                          '',
-                        rolesIds: row.original.roles
-                          ?.map((role) => role.roleId)
-                          .filter((id) => id != null), // filter out null/undefined
-                        isActive: false,
-                      })
-                    }
-                  >
-                    <UserRoundX size={14} />
-                    {translation('tableColumns.actions.inactive')}
-                  </Button>
-                )}
+                  )}
+                  {invitationStatus === 'ACCEPTED' && isActive && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-600"
+                      onClick={() =>
+                        handleInactive(invitationId, {
+                          enterpriseId,
+                          name:
+                            row.original.invitation?.userDetails?.name || '',
+                          mobileNumber:
+                            row.original.invitation?.userDetails
+                              ?.mobileNumber || '',
+                          countryCode:
+                            row.original.invitation?.userDetails?.countryCode ||
+                            '',
+                          rolesIds: row.original.roles
+                            ?.map((role) => role.roleId)
+                            .filter((id) => id != null), // filter out null/undefined
+                          isActive: false,
+                        })
+                      }
+                    >
+                      <UserRoundX size={14} />
+                      {translation('tableColumns.actions.inactive')}
+                    </Button>
+                  )}
 
-                {invitationStatus === 'ACCEPTED' && !isActive && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      handleInactive(invitationId, {
-                        enterpriseId,
-                        name: row.original.invitation?.userDetails?.name || '',
-                        mobileNumber:
-                          row.original.invitation?.userDetails?.mobileNumber ||
-                          '',
-                        countryCode:
-                          row.original.invitation?.userDetails?.countryCode ||
-                          '',
-                        rolesIds: row.original.roles
-                          ?.map((role) => role.roleId)
-                          .filter((id) => id != null), // filter out null/undefined
-                        isActive: true,
-                      })
-                    }
-                  >
-                    <UserCheck size={14} />
-                    {translation('tableColumns.actions.active')}
-                  </Button>
-                )}
+                  {invitationStatus === 'ACCEPTED' && !isActive && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-green-600"
+                      onClick={() =>
+                        handleInactive(invitationId, {
+                          enterpriseId,
+                          name:
+                            row.original.invitation?.userDetails?.name || '',
+                          mobileNumber:
+                            row.original.invitation?.userDetails
+                              ?.mobileNumber || '',
+                          countryCode:
+                            row.original.invitation?.userDetails?.countryCode ||
+                            '',
+                          rolesIds: row.original.roles
+                            ?.map((role) => role.roleId)
+                            .filter((id) => id != null), // filter out null/undefined
+                          isActive: true,
+                        })
+                      }
+                    >
+                      <UserCheck size={14} />
+                      {translation('tableColumns.actions.active')}
+                    </Button>
+                  )}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           )
