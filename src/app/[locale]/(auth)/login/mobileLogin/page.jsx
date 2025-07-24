@@ -42,7 +42,7 @@ const MobileLoginPage = () => {
         formDataWithMob.mobileNumber,
       );
       LocalStorageService.set('operation_type', data.data.data.operation_type);
-      // LocalStorageService.set('invitationData', data.data.data.invitationData);
+      LocalStorageService.set('invitationData', data.data.data.invitationData);
       toast.success(translations('toast.otpSent'));
 
       if (mobileLoginStep === 1) {

@@ -66,9 +66,9 @@ export const useInviteeMembersColumns = (
     },
   });
 
-  const handleInactive = (invitationId, member) => {
+  const handleInactive = (id, member) => {
     updateMemberMutation.mutate({
-      id: invitationId,
+      id,
       data: member,
     });
   };
@@ -210,9 +210,10 @@ export const useInviteeMembersColumns = (
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const invitationStatus = row.original?.invitation?.status;
-        const invitationId = row.original?.id;
+        const id = row.original?.id;
         const isActive = row.original?.isActive;
+        const invitationStatus = row.original?.invitation?.status;
+        const invitationId = row.original?.invitation?.id;
 
         return (
           (invitationStatus === 'ACCEPTED' ||
@@ -253,7 +254,7 @@ export const useInviteeMembersColumns = (
                       variant="ghost"
                       className="text-red-600"
                       onClick={() =>
-                        handleInactive(invitationId, {
+                        handleInactive(id, {
                           enterpriseId,
                           name:
                             row.original.invitation?.userDetails?.name || '',
@@ -281,7 +282,7 @@ export const useInviteeMembersColumns = (
                       variant="ghost"
                       className="text-green-600"
                       onClick={() =>
-                        handleInactive(invitationId, {
+                        handleInactive(id, {
                           enterpriseId,
                           name:
                             row.original.invitation?.userDetails?.name || '',
