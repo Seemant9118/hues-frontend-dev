@@ -191,7 +191,7 @@ export const useInviteeMembersColumns = (
       enableHiding: false,
       cell: ({ row }) => {
         const invitationStatus = row.original?.invitation?.status;
-        const invitationId = row.original?.invitation?.id;
+        const invitationId = row.original?.id;
 
         return (
           (invitationStatus === 'ACCEPTED' ||

@@ -48,7 +48,7 @@ const MemberInviteModal = ({
         mobileNumber: membersInfo.invitation.userDetails.mobileNumber || '',
         email: membersInfo.invitation.userDetails.email || '',
         enterpriseId,
-        rolesIds: membersInfo.roles || [],
+        rolesIds: membersInfo.roles?.map((role) => role.roleId) || [],
       });
     }
   }, [membersInfo]);
@@ -126,9 +126,9 @@ const MemberInviteModal = ({
   });
 
   const handleSubmit = () => {
-    if (isEditMode && membersInfo?.invitation?.id) {
+    if (isEditMode && membersInfo?.id) {
       updateMemberMutation.mutate({
-        id: membersInfo.invitation.id,
+        id: membersInfo.id,
         data: member,
       });
     } else {
