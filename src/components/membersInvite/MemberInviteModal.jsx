@@ -4,32 +4,32 @@ import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import { rolesApi } from '@/api/rolesApi/rolesApi';
 import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import { LocalStorageService } from '@/lib/utils';
-import { createAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import {
+  createAssociateMembers,
+  updateAssociateMember,
+} from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { getRoles } from '@/services/Roles_Services/Roles_Services';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
-import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
 
-const MemberInviteModal = () => {
+const MemberInviteModal = ({
+  isModalOpen,
+  setIsModalOpen,
+  membersInfo,
+  isEditMode = false,
+}) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   const translation = useTranslations('components.memberInviteModal');
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
   const [optionsForRoles, setOptionsForRoles] = useState([]);
   const [member, setMember] = useState({
     name: '',
@@ -40,11 +40,24 @@ const MemberInviteModal = () => {
     rolesIds: [],
   });
 
+  useEffect(() => {
+    if (membersInfo && isEditMode) {
+      setMember({
+        name: membersInfo.invitation.userDetails.name || '',
+        countryCode: '+91',
+        mobileNumber: membersInfo.invitation.userDetails.mobileNumber || '',
+        email: membersInfo.invitation.userDetails.email || '',
+        enterpriseId,
+        rolesIds: membersInfo.roles?.map((role) => role.roleId) || [],
+      });
+    }
+  }, [membersInfo]);
+
   const { data: rolesList } = useQuery({
     queryKey: [rolesApi.getAllRoles.endpointKey],
     queryFn: getRoles,
     select: (data) => data.data.data,
-    enabled: !!open,
+    enabled: !!isModalOpen,
   });
 
   // api call formatting for roles
@@ -89,7 +102,23 @@ const MemberInviteModal = () => {
         associateMemberApi.getAllAssociateMembers.endpointKey,
         enterpriseId,
       ]);
-      setOpen(false);
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || translation('toast.error'));
+    },
+  });
+
+  const updateMemberMutation = useMutation({
+    mutationKey: [associateMemberApi.updateAssociateMember.endpointKey],
+    mutationFn: updateAssociateMember,
+    onSuccess: () => {
+      toast.success(translation('toast.editSuccess'));
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+      setIsModalOpen(false);
     },
     onError: (error) => {
       toast.error(error.response.data.message || translation('toast.error'));
@@ -97,24 +126,24 @@ const MemberInviteModal = () => {
   });
 
   const handleSubmit = () => {
-    createMemberMutation.mutate(member);
+    if (isEditMode && membersInfo?.id) {
+      updateMemberMutation.mutate({
+        id: membersInfo.id,
+        data: member,
+      });
+    } else {
+      createMemberMutation.mutate(member);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Tooltips
-          trigger={
-            <Button onClick={() => setOpen(true)} size="sm">
-              <UserPlus size={16} />
-              {translation('dialogTrigger.button')}
-            </Button>
-          }
-          content={translation('dialogTrigger.tooltip')}
-        />
-      </DialogTrigger>
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogContent className="flex flex-col gap-5">
-        <DialogTitle>{translation('dialogTitle')}</DialogTitle>
+        <DialogTitle>
+          {isEditMode
+            ? translation('dialogTitleEdit') // Add this to your translation files
+            : translation('dialogTitle')}
+        </DialogTitle>
 
         <form className="w-full">
           <div className="flex flex-col gap-5">
@@ -203,8 +232,15 @@ const MemberInviteModal = () => {
                 size="sm"
                 variant={'outline'}
                 onClick={() => {
-                  setMember({});
-                  setOpen(false);
+                  setMember({
+                    name: '',
+                    countryCode: '+91',
+                    mobileNumber: '',
+                    email: '',
+                    enterpriseId,
+                    rolesIds: [],
+                  });
+                  setIsModalOpen(false);
                 }}
               >
                 {translation('form.actions.discard')}
@@ -216,10 +252,13 @@ const MemberInviteModal = () => {
                 className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                {createMemberMutation.isPending ? (
+                {updateAssociateMember.isPending ||
+                createMemberMutation.isPending ? (
                   <Loading />
+                ) : isEditMode ? (
+                  translation('dialogTitleEdit')
                 ) : (
-                  translation('form.actions.create')
+                  translation('dialogTitle')
                 )}
               </Button>
             </div>

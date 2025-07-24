@@ -1,4 +1,5 @@
 import { invitation } from '@/api/invitation/Invitation';
+import { userAuth } from '@/api/user_auth/Users';
 import { validatePhoneNumber } from '@/appUtils/ValidationUtils';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -49,12 +50,13 @@ const MobileLogin = ({
         'InvitationFromEnterpriseId',
         inviteData?.invitationData?.fromEnterprise,
       );
-      LocalStorageService.set('invitationData', inviteData?.invitationData);
+      // LocalStorageService.set('invitationData', inviteData?.invitationData);
     }
   }, [isSuccess, inviteData]);
 
   // login with invitation
   const loginInvitation = useMutation({
+    mutationKey: [userAuth.loginWithInvitation.endpointKey],
     mutationFn: loginWithInvitation,
     onSuccess: (data) => {
       LocalStorageService.set('user_profile', data.data.data.userId);

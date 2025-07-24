@@ -13,10 +13,28 @@
       "phoneNumber": "PHONE NUMBER",
       "emailId": "EMAIL ID",
       "role": "ROLE",
-      "invitation": "INVITATION"
+      "invitation": "INVITATION STATUS",
+      "statuses": {
+        "pending": "Pending",
+        "rejected": "Rejected",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions" : {
+        "edit": "Edit",
+        "share": "Share Invitation Link",
+        "inactive": "Make Inactive",
+        "active": "Make Active"
+      }
+    },
+    "success": {
+      "linkCopied": "Link copied to clipboard successfully!",
+      "userInactiveSuccess": "User made inactive successfully!"
     },
     "errors": {
-      "fetchFailed": "Something went wrong while fetching data"
+      "fetchFailed": "Something went wrong while fetching data",
+      "generateLinkFailed": "Failed to generate link",
+      "commonError": "Something went wrong"
     }
   }
 }

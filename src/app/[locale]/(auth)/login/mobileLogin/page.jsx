@@ -42,7 +42,7 @@ const MobileLoginPage = () => {
         formDataWithMob.mobileNumber,
       );
       LocalStorageService.set('operation_type', data.data.data.operation_type);
-      // LocalStorageService.set('invitationData', data.data.data.invitationData);
+      LocalStorageService.set('invitationData', data.data.data.invitationData);
       toast.success(translations('toast.otpSent'));
 
       if (mobileLoginStep === 1) {
@@ -56,12 +56,12 @@ const MobileLoginPage = () => {
 
   const verifyOTPMutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
-    // eslint-disable-next-line consistent-return
+
     onSuccess: async (data) => {
       const redirectedUrl = LocalStorageService.get('redirectUrl');
-      // set refresh token
+
+      // set tokens
       LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
-      // set access token
       LocalStorageService.set('token', data?.data?.data?.access_token);
 
       const {
@@ -74,15 +74,16 @@ const MobileLoginPage = () => {
         isEnterpriseOnboardingComplete,
         isAssociateRequestCreated,
         isAssociateRequestAccepted,
+        isDirector,
       } = data.data.data.user;
 
-      // user onboarding related states
+      // user onboarding state
       LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
       LocalStorageService.set('isPanVerified', isPanVerified);
       LocalStorageService.set('isAadhaarVerified', isAadhaarVerified);
       LocalStorageService.set('attemptsRemaining', remainingAttempts);
 
-      // enterprise onboarding related states
+      // enterprise onboarding state
       LocalStorageService.set(
         'isEnterprisestartedOnboarding',
         isEnterprisestartedOnboarding,
@@ -100,15 +101,20 @@ const MobileLoginPage = () => {
         'isAssociateRequestAccepted',
         isAssociateRequestAccepted,
       );
-      LocalStorageService.set('isDirector', data?.data?.data?.user?.isDirector);
+      LocalStorageService.set('isDirector', isDirector);
 
-      // check by calling api : directorInviteList
-      const directorInviteListData = await queryClient.fetchQuery({
-        queryKey: [directorApi.getDirectorInviteList.endpointKey],
-        queryFn: directorInviteList,
-      });
-      const isUserHaveValidDirectorInvites =
-        directorInviteListData?.data?.data?.length > 0;
+      // check directorInviteList with fallback
+      let isUserHaveValidDirectorInvites = false;
+      try {
+        const directorInviteListData = await queryClient.fetchQuery({
+          queryKey: [directorApi.getDirectorInviteList.endpointKey],
+          queryFn: directorInviteList,
+        });
+        isUserHaveValidDirectorInvites =
+          directorInviteListData?.data?.data?.length > 0;
+      } catch (error) {
+        isUserHaveValidDirectorInvites = false;
+      }
 
       toast.success(translations('toast.otpVerifiedSuccess'));
 
@@ -124,9 +130,10 @@ const MobileLoginPage = () => {
         router,
       });
     },
+
     onError: (error) => {
       toast.error(
-        error.response.data.message || translations('toast.otpInvalid'),
+        error.response?.data?.message || translations('toast.otpInvalid'),
       );
     },
   });
