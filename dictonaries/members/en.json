@@ -23,7 +23,8 @@
       "actions" : {
         "edit": "Edit",
         "share": "Share Invitation Link",
-        "inactive": "Make Inactive"
+        "inactive": "Make Inactive",
+        "active": "Make Active"
       }
     },
     "success": {

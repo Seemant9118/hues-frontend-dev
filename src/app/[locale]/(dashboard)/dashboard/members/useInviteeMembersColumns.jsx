@@ -12,7 +12,13 @@ import {
 import { updateAssociateMember } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Pencil, Share2, UserRoundX } from 'lucide-react';
+import {
+  MoreVertical,
+  Pencil,
+  Share2,
+  UserCheck,
+  UserRoundX,
+} from 'lucide-react';
 import moment from 'moment';
 import { toast } from 'sonner';
 
@@ -206,6 +212,7 @@ export const useInviteeMembersColumns = (
       cell: ({ row }) => {
         const invitationStatus = row.original?.invitation?.status;
         const invitationId = row.original?.id;
+        const isActive = row.original?.isActive;
 
         return (
           (invitationStatus === 'ACCEPTED' ||
@@ -241,7 +248,7 @@ export const useInviteeMembersColumns = (
                     </Button>
                   </div>
                 )}
-                {invitationStatus === 'ACCEPTED' && (
+                {invitationStatus === 'ACCEPTED' && isActive && (
                   <Button
                     size="sm"
                     variant="ghost"
@@ -264,6 +271,32 @@ export const useInviteeMembersColumns = (
                   >
                     <UserRoundX size={14} />
                     {translation('tableColumns.actions.inactive')}
+                  </Button>
+                )}
+
+                {invitationStatus === 'ACCEPTED' && !isActive && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      handleInactive(invitationId, {
+                        enterpriseId,
+                        name: row.original.invitation?.userDetails?.name || '',
+                        mobileNumber:
+                          row.original.invitation?.userDetails?.mobileNumber ||
+                          '',
+                        countryCode:
+                          row.original.invitation?.userDetails?.countryCode ||
+                          '',
+                        rolesIds: row.original.roles
+                          ?.map((role) => role.roleId)
+                          .filter((id) => id != null), // filter out null/undefined
+                        isActive: true,
+                      })
+                    }
+                  >
+                    <UserCheck size={14} />
+                    {translation('tableColumns.actions.active')}
                   </Button>
                 )}
               </DropdownMenuContent>
