@@ -1,21 +1,22 @@
 import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import {
   checkPINStatus,
+  createPIN,
   generateOTP,
   resetPIN,
   verifyOTP,
 } from '@/services/Pin_Setting_Services/Pin_Settings_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MoveLeft } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   StepConfirmPIN,
   StepCreatePIN,
   StepEnterOTP,
+  StepSuccess,
 } from '../Modals/HelperComponentsPINSettings';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
@@ -38,11 +39,12 @@ const PINVerifyModal = ({
   isPINError,
   setIsPINError,
 }) => {
+  const queryClient = useQueryClient();
   const translations = useTranslations('components.generate_invoice_modal_otp');
   const translationsUpdatePIN = useTranslations(
     'components.generate_pin_modal',
   );
-  const router = useRouter();
+  // const router = useRouter();
   const [isActiveUpdatePinMode, setIsActivateUpdatePinMode] = useState(false);
   const [mode, setMode] = useState(null);
   const [pin, setPin] = useState(''); // for verify, current pin
@@ -50,6 +52,7 @@ const PINVerifyModal = ({
   const [confirmNewPin, setConfirmNewPin] = useState(''); // confir new pin
   const [PINErrors, setPINErrors] = useState(null);
   const [steps, setSteps] = useState({
+    create_pin: 1,
     forgot_pin: 1,
   });
   const [otp, setOtp] = useState(''); // otp for forgot
@@ -57,7 +60,7 @@ const PINVerifyModal = ({
 
   useEffect(() => {
     if (!open) {
-      setSteps({ forgot_pin: 1 });
+      setSteps({ create_pin: 1, forgot_pin: 1 });
       setMode(null);
       setPin('');
       setNewPin('');
@@ -75,6 +78,34 @@ const PINVerifyModal = ({
     queryFn: () => checkPINStatus(),
     select: (data) => data.data.data,
     enabled: !!open,
+  });
+
+  const createPin = () => {
+    setIsActivateUpdatePinMode(true);
+    setMode('create'); // by default update
+    setPin(''); // clear current written pin
+  };
+
+  const createPinMutation = useMutation({
+    mutationKey: [pinSettings.createPIN.endpointKey],
+    mutationFn: createPIN,
+    onSuccess: () => {
+      setSteps({ create_pin: 1, forgot_pin: 1 });
+      setMode(null);
+      setPin('');
+      setNewPin('');
+      setConfirmNewPin('');
+      setOtp('');
+      setIsActivateUpdatePinMode(false);
+      setIsPINError(false);
+      toast.success(translationsUpdatePIN('success_messages.pin_created'));
+      queryClient.invalidateQueries(pinSettings.checkPINStatus.endpointKey);
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || translations('error_messages.common'),
+      );
+    },
   });
 
   const generateOtpMutation = useMutation({
@@ -114,7 +145,7 @@ const PINVerifyModal = ({
     mutationFn: resetPIN,
     onSuccess: () => {
       toast.success(translationsUpdatePIN('success_messages.pin_updated'));
-      setSteps({ forgot_pin: 1 });
+      setSteps({ create_pin: 1, forgot_pin: 1 });
       setMode(null);
       setPin('');
       setNewPin('');
@@ -167,6 +198,35 @@ const PINVerifyModal = ({
   };
 
   const stepComponents = {
+    create: {
+      1: (
+        <StepCreatePIN
+          newPin={newPin}
+          setNewPin={setNewPin}
+          setSteps={setSteps}
+          mode={mode}
+          translations={translationsUpdatePIN}
+        />
+      ),
+      2: (
+        <StepConfirmPIN
+          pin={pin}
+          newPin={newPin}
+          confirmPin={confirmNewPin}
+          setConfirmPin={setConfirmNewPin}
+          mode={mode}
+          isPINAvailable={false}
+          createPinMutation={createPinMutation}
+          translations={translationsUpdatePIN}
+        />
+      ),
+      3: (
+        <StepSuccess
+          message={translations('success_messages.pin_created')}
+          translations={translationsUpdatePIN}
+        />
+      ),
+    },
     forgot: {
       1: (
         <StepEnterOTP
@@ -225,9 +285,7 @@ const PINVerifyModal = ({
                     {translations('infoText.pin_not_exist_info')}{' '}
                     <span
                       className="cursor-pointer text-primary underline hover:text-black"
-                      onClick={() =>
-                        router.push('/dashboard/settings?tab=pinSettings')
-                      }
+                      onClick={() => createPin()}
                     >
                       {translations('infoText.info2')}
                     </span>
