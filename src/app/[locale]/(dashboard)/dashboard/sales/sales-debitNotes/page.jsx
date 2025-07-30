@@ -11,12 +11,13 @@ import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllSalesDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { exportInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import { exportSelectedInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
 import {
@@ -29,7 +30,6 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@/context/AuthContext';
 import emptyImg from '../../../../../../../public/Empty.png';
 import { SalesTable } from '../salestable/SalesTable';
 import { useDebitNotesColumns } from './useDebitNotesColumns';
@@ -163,9 +163,9 @@ const SalesDebitNotes = () => {
     window.URL.revokeObjectURL(blobFile);
   };
   // export invoice mutation
-  const exportInvoiceMutation = useMutation({
-    mutationKey: [invoiceApi.exportInvoice.endpointKey],
-    mutationFn: exportInvoice,
+  const exportSelectedInvoiceMutation = useMutation({
+    mutationKey: [invoiceApi.exportSelectedInvoice.endpointKey],
+    mutationFn: exportSelectedInvoice,
     onSuccess: (response) => {
       const blobData = response.data;
       downloadBlobFile(blobData, 'sales_invoices.xlsx');
@@ -178,8 +178,9 @@ const SalesDebitNotes = () => {
     },
   });
   // handle export order click
+  // eslint-disable-next-line no-unused-vars
   const handleExportDebitNotes = () => {
-    exportInvoiceMutation.mutate(selectedDebit);
+    exportSelectedInvoiceMutation.mutate(selectedDebit);
   };
 
   const debitNotesColumns = useDebitNotesColumns(setSelectedDebit);
@@ -213,11 +214,12 @@ const SalesDebitNotes = () => {
                 <Tooltips
                   trigger={
                     <Button
-                      disabled={
-                        selectedDebit?.length === 0 ||
-                        exportInvoiceMutation.isPending
-                      }
-                      onClick={handleExportDebitNotes}
+                      // disabled={
+                      //   selectedDebit?.length === 0 ||
+                      //   exportSelectedInvoiceMutation.isPending
+                      // }
+                      // onClick={handleExportDebitNotes}
+                      onClick={() => {}}
                       variant="outline"
                       className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                       size="sm"
@@ -225,7 +227,7 @@ const SalesDebitNotes = () => {
                       <Upload size={14} />
                     </Button>
                   }
-                  content={translations('ctas.export.placeholder')}
+                  content={'coming soon'}
                 />
               </div>
             </SubHeader>

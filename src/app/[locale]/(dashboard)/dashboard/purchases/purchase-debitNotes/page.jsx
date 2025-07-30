@@ -17,7 +17,7 @@ import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getAllPurchaseDebitNotes } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { exportInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import { exportSelectedInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { Tabs } from '@radix-ui/react-tabs';
 import {
@@ -165,9 +165,9 @@ const PurchaseDebitNotes = () => {
     window.URL.revokeObjectURL(blobFile);
   };
   // export invoice mutation
-  const exportInvoiceMutation = useMutation({
-    mutationKey: [invoiceApi.exportInvoice.endpointKey],
-    mutationFn: exportInvoice,
+  const exportSelectedInvoiceMutation = useMutation({
+    mutationKey: [invoiceApi.exportSelectedInvoice.endpointKey],
+    mutationFn: exportSelectedInvoice,
     onSuccess: (response) => {
       const blobData = response.data;
       downloadBlobFile(blobData, 'sales_invoices.xlsx');
@@ -180,8 +180,9 @@ const PurchaseDebitNotes = () => {
     },
   });
   // handle export order click
+  // eslint-disable-next-line no-unused-vars
   const handleExportDebitNotes = () => {
-    exportInvoiceMutation.mutate(selectedDebit);
+    exportSelectedInvoiceMutation.mutate(selectedDebit);
   };
 
   const debitNotesColumns = useDebitNotesColumns(setSelectedDebit);
@@ -215,11 +216,12 @@ const PurchaseDebitNotes = () => {
                 <Tooltips
                   trigger={
                     <Button
-                      disabled={
-                        selectedDebit?.length === 0 ||
-                        exportInvoiceMutation.isPending
-                      }
-                      onClick={handleExportDebitNotes}
+                      // disabled={
+                      //   selectedDebit?.length === 0 ||
+                      //   exportSelectedInvoiceMutation.isPending
+                      // }
+                      // onClick={handleExportDebitNotes}
+                      onClick={() => {}}
                       variant="outline"
                       className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                       size="sm"
@@ -227,7 +229,7 @@ const PurchaseDebitNotes = () => {
                       <Upload size={14} />
                     </Button>
                   }
-                  content={translations('ctas.export.placeholder')}
+                  content={'coming soon'}
                 />
               </div>
             </SubHeader>
