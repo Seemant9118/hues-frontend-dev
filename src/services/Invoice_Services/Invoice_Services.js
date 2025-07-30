@@ -42,10 +42,20 @@ export const getAllPurchaseInvoices = ({ id, data }) => {
   );
 };
 
-export const exportInvoice = (data) => {
-  return APIinstance.post(invoiceApi.exportInvoice.endpoint, data, {
+export const exportSelectedInvoice = (data) => {
+  return APIinstance.post(invoiceApi.exportSelectedInvoice.endpoint, data, {
     responseType: 'blob', // Specify response type here
   });
+};
+
+export const exportAllInvoice = ({ type, body }) => {
+  return APIinstance.post(
+    `${invoiceApi.exportAllInvoices.endpoint}?context=${type}`,
+    body,
+    {
+      responseType: 'blob', // Specify response type here
+    },
+  );
 };
 
 export const previewDirectInvoice = (data) => {

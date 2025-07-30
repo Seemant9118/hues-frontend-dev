@@ -40,11 +40,16 @@ export const invoiceApi = {
     endpointKey: 'get_all_sales_invoices',
   },
   // 9. export invoice
-  exportInvoice: {
+  exportSelectedInvoice: {
     endpoint: `/order/invoice/export`,
     endpointKey: 'export_invoice',
   },
-  // 10. preview direct invoice
+  // 10. export all invoices
+  exportAllInvoices: {
+    endpoint: `/order/invoice/export-all`,
+    endpointKey: 'export_all_invoices',
+  },
+  // 11. preview direct invoice
   previewDirectInvoice: {
     endpoint: `/order/invoice/preview-invoice`,
     endpointKey: 'preview_direct_invoice',

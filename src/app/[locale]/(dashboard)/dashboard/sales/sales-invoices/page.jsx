@@ -22,7 +22,8 @@ import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
-  exportInvoice,
+  exportAllInvoice,
+  exportSelectedInvoice,
   getAllSalesInvoices,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
@@ -34,7 +35,8 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query';
-import { PlusCircle, Upload } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -325,13 +327,34 @@ const SalesInvoices = () => {
     // Clean up the object URL after the download is triggered
     window.URL.revokeObjectURL(blobFile);
   };
-  // export invoice mutation
-  const exportInvoiceMutation = useMutation({
-    mutationKey: [invoiceApi.exportInvoice.endpointKey],
-    mutationFn: exportInvoice,
+  // export all invoices mutation
+  const exportAllInvoicesMutations = useMutation({
+    mutationKey: [invoiceApi.exportAllInvoices.endpointKey],
+    mutationFn: exportAllInvoice,
     onSuccess: (response) => {
       const blobData = response.data;
-      downloadBlobFile(blobData, 'sales_invoices.xlsx');
+      downloadBlobFile(
+        blobData,
+        `Sales_Register_${moment(new Date()).format('YYYYMMDD_HH:mm')}.xlsx`,
+      );
+      toast.success(translations('ctas.export.successMsg'));
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('ctas.export.errorMsg'),
+      );
+    },
+  });
+  // export invoice mutation
+  const selectedInvoiceExportMutation = useMutation({
+    mutationKey: [invoiceApi.exportSelectedInvoice.endpointKey],
+    mutationFn: exportSelectedInvoice,
+    onSuccess: (response) => {
+      const blobData = response.data;
+      downloadBlobFile(
+        blobData,
+        `Sales_Register_${moment(new Date()).format('YYYYMMDD_HH:mm')}.xlsx`,
+      );
       toast.success(translations('ctas.export.successMsg'));
     },
     onError: (error) => {
@@ -342,7 +365,14 @@ const SalesInvoices = () => {
   });
   // handle export order click
   const handleExportInvoice = () => {
-    exportInvoiceMutation.mutate(selectedInvoices);
+    if (selectedInvoices.length === 0) {
+      exportAllInvoicesMutations.mutate({
+        type: 'SALES',
+        body: { orderType: 'SALES' },
+      });
+    } else {
+      selectedInvoiceExportMutation.mutate({ invoiceData: selectedInvoices });
+    }
   };
 
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
@@ -381,18 +411,28 @@ const SalesInvoices = () => {
                     trigger={
                       <Button
                         disabled={
-                          selectedInvoices?.length === 0 ||
-                          exportInvoiceMutation.isPending
+                          selectedInvoiceExportMutation.isPending ||
+                          exportAllInvoicesMutations.isPending
                         }
                         onClick={handleExportInvoice}
                         variant="outline"
                         className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                         size="sm"
                       >
-                        <Upload size={14} />
+                        <Image
+                          src="/xlsx_png.png"
+                          alt="xlsx-icon"
+                          width={16}
+                          height={16}
+                        />
+                        {translations('ctas.export.cta')}
                       </Button>
                     }
-                    content={translations('ctas.export.placeholder')}
+                    content={translations(
+                      selectedInvoices.length > 0
+                        ? 'ctas.export.placeholder2'
+                        : 'ctas.export.placeholder',
+                    )}
                   />
 
                   <ProtectedWrapper
