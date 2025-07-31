@@ -3,6 +3,7 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { orderApi } from '@/api/order_api/order_api';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getStylesForSelectComponent,
@@ -27,13 +28,16 @@ import {
   createVendor,
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
+import {
+  CreateOrderService,
+  OrderDetails,
+} from '@/services/Orders_Services/Orders_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
@@ -52,6 +56,7 @@ const CreateOrder = ({
   name,
   cta,
   isOrder,
+  referenceOrderId,
 }) => {
   const translations = useTranslations('components.create_edit_order');
 
@@ -126,12 +131,61 @@ const CreateOrder = ({
           shippingAddressId: bidDraft?.shippingAddressId || null,
         },
   );
-
   // save draft to session storage
   function saveDraftToSession({ cta, data }) {
     const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
     SessionStorageService.set(key, data);
   }
+
+  // fetched referenced order details
+  const { data: referencedOrderData } = useQuery({
+    queryKey: [orderApi.getOrderDetails.endpointKey, referenceOrderId],
+    queryFn: () => OrderDetails(referenceOrderId),
+    enabled: !!referenceOrderId,
+    select: (data) => data.data.data,
+  });
+
+  useEffect(() => {
+    if (referencedOrderData) {
+      const orderDetails = referencedOrderData;
+
+      // ⬇️ Flatten and transform orderItems
+      const flattenedOrderItems = (orderDetails?.orderItems || []).map(
+        (item) => {
+          const { productDetails } = item;
+
+          return {
+            productId: productDetails.id,
+            productName: productDetails?.productName,
+            productType: item.productType,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            gstPerUnit: item.gstPerUnit,
+            totalAmount: item.totalAmount,
+            totalGstAmount: item.totalGstAmount,
+            hsnCode: productDetails?.hsnCode,
+            serviceName: productDetails?.serviceName,
+            sac:
+              item.productType === 'SERVICES'
+                ? productDetails?.sacCode
+                : undefined,
+            // Add any other fields you want to bring up
+          };
+        },
+      );
+
+      setOrder((prevOrder) => ({
+        ...prevOrder,
+        sellerEnterpriseId: orderDetails?.sellerEnterpriseId,
+        buyerId: orderDetails?.buyerId,
+        invoiceType: orderDetails?.invoiceType,
+        orderItems: flattenedOrderItems, // ⬅️ Use transformed array
+        amount: orderDetails?.amount,
+        gstAmount: orderDetails?.gstAmount,
+        referenceOrderId: Number(referenceOrderId),
+      }));
+    }
+  }, [referencedOrderData]);
 
   // [GST/NON-GST Checking]
   // fetch profileDetails API
@@ -521,6 +575,20 @@ const CreateOrder = ({
     }
   };
 
+  const itemOptions =
+    cta === 'offer' ? itemClientListingOptions : itemVendorListingOptions;
+
+  // ⬇️ Memoized selected option based on selectedItem.productId
+  const selectedOption = useMemo(() => {
+    if (!selectedItem?.productId) return null;
+
+    return (
+      itemOptions?.find(
+        (item) => String(item.value.id) === String(selectedItem.productId),
+      ) ?? null
+    );
+  }, [selectedItem?.productId, itemOptions]);
+
   // columns
   const createSalesColumns = useCreateSalesColumns(
     isOrder,
@@ -574,11 +642,11 @@ const CreateOrder = ({
                   classNamePrefix="select"
                   value={
                     clientOptions?.find(
-                      (option) => option.value === order?.selectedValue?.value,
+                      (option) => option.value === order?.buyerId,
                     ) || null
-                  } // Match selected value
+                  }
                   onChange={(selectedOption) => {
-                    if (!selectedOption) return; // Guard clause for no selection
+                    if (!selectedOption) return; // Guard clause
 
                     setSelectedItem({
                       productName: '',
@@ -589,23 +657,23 @@ const CreateOrder = ({
                       gstPerUnit: null,
                       totalAmount: null,
                       totalGstAmount: null,
-                    }); // Reset selected item
+                    });
 
                     const { value: id, isAccepted } = selectedOption;
 
                     if (id === 'add-new-client') {
-                      setIsModalOpen(true); // Open modal when "Add New Client" is selected
+                      setIsModalOpen(true);
                     } else {
                       const updatedOrder = {
                         ...order,
                         buyerId: id,
-                        orderItems: [], // ❗ Clear existing order items
+                        orderItems: [],
                       };
 
                       setOrder({
                         ...updatedOrder,
                         selectedValue: selectedOption,
-                      }); // Update selected value
+                      });
 
                       saveDraftToSession({
                         cta,
@@ -616,9 +684,9 @@ const CreateOrder = ({
                       });
 
                       if (isOrder === 'invoice') {
-                        setRedirectPopUpOnFail(false); // Never show popup for invoice
+                        setRedirectPopUpOnFail(false);
                       } else {
-                        setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED'); // Show popup only if client is uninvited
+                        setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED');
                       }
                     }
                   }}
@@ -780,21 +848,9 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Select
                 name="items"
-                value={
-                  cta === 'offer'
-                    ? (itemClientListingOptions?.find(
-                        (item) => item.value.id === selectedItem.productId,
-                      ) ?? null)
-                    : (itemVendorListingOptions?.find(
-                        (item) => item.value.id === selectedItem.productId,
-                      ) ?? null)
-                }
+                value={selectedOption}
                 placeholder={translations('form.input.item.placeholder')}
-                options={
-                  cta === 'offer'
-                    ? itemClientListingOptions
-                    : itemVendorListingOptions
-                }
+                options={itemOptions}
                 styles={getStylesForSelectComponent()}
                 isOptionDisabled={(option) => option.disabled}
                 isDisabled={
@@ -803,14 +859,9 @@ const CreateOrder = ({
                   order.invoiceType === ''
                 }
                 onChange={(selectedOption) => {
-                  const selectedItemData =
-                    cta === 'offer'
-                      ? itemClientListingOptions?.find(
-                          (item) => item.value.id === selectedOption?.value?.id,
-                        )?.value
-                      : itemVendorListingOptions?.find(
-                          (item) => item.value.id === selectedOption?.value?.id,
-                        )?.value;
+                  const selectedItemData = itemOptions?.find(
+                    (item) => item.value.id === selectedOption?.value?.id,
+                  )?.value;
 
                   if (selectedItemData) {
                     const isGstApplicableForPage = isPurchasePage
@@ -821,45 +872,32 @@ const CreateOrder = ({
                       ? selectedItemData.gstPercentage
                       : 0;
 
-                    if (selectedItemData.productType === 'GOODS') {
-                      const updatedItem = {
-                        ...selectedItem,
-                        productId: selectedItemData.id,
-                        productType: selectedItemData.productType,
-                        hsnCode: selectedItemData.hsnCode,
-                        productName: selectedItemData.name,
-                        unitPrice: selectedItemData.rate,
-                        gstPerUnit,
-                      };
-                      setSelectedItem(updatedItem);
+                    const updatedItem = {
+                      ...selectedItem,
+                      productId: selectedItemData.id,
+                      productType: selectedItemData.productType,
+                      unitPrice: selectedItemData.rate,
+                      gstPerUnit,
+                      ...(selectedItemData.productType === 'GOODS'
+                        ? {
+                            productName: selectedItemData.name,
+                            hsnCode: selectedItemData.hsnCode,
+                          }
+                        : {
+                            serviceName: selectedItemData.serviceName,
+                            sac: selectedItemData.sacCode,
+                          }),
+                    };
 
-                      saveDraftToSession({
-                        cta,
-                        data: {
-                          ...order,
-                          itemDraft: updatedItem,
-                        },
-                      });
-                    } else {
-                      const updatedItem = {
-                        ...selectedItem,
-                        productId: selectedItemData.id,
-                        productType: selectedItemData.productType,
-                        sac: selectedItemData.sacCode,
-                        serviceName: selectedItemData.serviceName,
-                        unitPrice: selectedItemData.rate,
-                        gstPerUnit,
-                      };
-                      setSelectedItem(updatedItem);
+                    setSelectedItem(updatedItem);
 
-                      saveDraftToSession({
-                        cta,
-                        data: {
-                          ...order,
-                          itemDraft: updatedItem,
-                        },
-                      });
-                    }
+                    saveDraftToSession({
+                      cta,
+                      data: {
+                        ...order,
+                        itemDraft: updatedItem,
+                      },
+                    });
                   }
                 }}
               />

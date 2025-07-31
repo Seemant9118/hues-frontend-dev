@@ -25,9 +25,9 @@ export const invoiceApi = {
     endpointKey: 'invoice_generate_otp',
   },
   // 6.createInvoiceNew : for NEW Order
-  createInvoiceForNewOrder: {
-    endpoint: `/order/invoice/generate`,
-    endpointKey: 'create_invoice_new_order',
+  withDrawOrder: {
+    endpoint: `/order/invoice/withdraw`,
+    endpointKey: 'withdraw_order',
   },
   // 7. getAllSalesInvoices : enterpriseLevel
   getAllSalesInvoices: {

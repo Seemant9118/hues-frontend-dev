@@ -24,8 +24,8 @@ export const invoiceGenerateOTP = () => {
   return APIinstance.post(invoiceApi.generateOTPInvoice.endpoint);
 };
 
-export const createInvoiceForNewOrder = (data) => {
-  return APIinstance.post(invoiceApi.createInvoiceForNewOrder.endpoint, data);
+export const withDrawOrder = (data) => {
+  return APIinstance.put(invoiceApi.withDrawOrder.endpoint, data);
 };
 
 export const getAllSalesInvoices = ({ id, data }) => {
