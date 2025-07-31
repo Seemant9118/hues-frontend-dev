@@ -1,5 +1,6 @@
 'use client';
 
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import Tooltips from '@/components/auth/Tooltips';
@@ -17,6 +18,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   exportOrder,
   GetSales,
@@ -31,11 +33,10 @@ import {
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import Select from 'react-select';
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { toast } from 'sonner';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
@@ -69,6 +70,7 @@ const SalesOrder = () => {
 
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
@@ -80,11 +82,39 @@ const SalesOrder = () => {
   const [salesListing, setSalesListing] = useState([]);
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
   const [filterData, setFilterData] = useState({ clientIds: [] });
+  const [referenceOrderId, setReferenceOrderId] = useState(null);
 
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value); // Update the tab state
   };
+
+  useEffect(() => {
+    if (isCreatingSales && referenceOrderId) {
+      router.push(
+        `/dashboard/sales/sales-orders?action=create_order&referenceId=${referenceOrderId}`,
+      );
+    } else if (isCreatingSales) {
+      router.push(`/dashboard/sales/sales-orders?action=create_order`);
+    } else {
+      router.push(`/dashboard/sales/sales-orders`);
+    }
+  }, [isCreatingSales]);
+  // Set `isCreatingSales` and `referenceOrderId` from URL
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const referenceId = searchParams.get('referenceId');
+
+    if (action === 'create_order') {
+      setIsCreatingSales(true);
+      if (referenceId) {
+        setReferenceOrderId(referenceId);
+      }
+    } else {
+      setIsCreatingSales(false);
+      setReferenceOrderId(null);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let newFilterData = {};
@@ -512,20 +542,9 @@ const SalesOrder = () => {
               setIsCreatingSales={setIsCreatingSales}
               setSalesListing={setSalesListing}
               onCancel={() => setIsCreatingSales(false)}
+              referenceOrderId={referenceOrderId}
             />
           )}
-
-          {/* create invoice component
-          {isCreatingInvoice && !isCreatingSales && !isEditingOrder && (
-            <CreateOrder
-              type="sales"
-              name="Invoice"
-              cta="offer"
-              isOrder="invoice"
-              isCreatingInvoice={isCreatingInvoice}
-              onCancel={() => setIsCreatingInvoice(false)}
-            />
-          )} */}
 
           {/* editOrder Component */}
           {isEditingOrder && !isCreatingSales && (

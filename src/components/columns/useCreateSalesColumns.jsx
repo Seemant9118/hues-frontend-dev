@@ -131,7 +131,10 @@ export const useCreateSalesColumns = (
               size="icon"
               onClick={() => {
                 // Move item back to selectedItem
-                setSelectedItem(row.original);
+                setSelectedItem({
+                  ...row.original,
+                  productId: row.original.id || row.original.productId,
+                });
 
                 // Update order state (remove item)
                 setOrder((prev) => {

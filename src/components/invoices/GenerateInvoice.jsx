@@ -1,8 +1,9 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { orderApi } from '@/api/order_api/order_api';
 import {
   createInvoiceForAcceptedOrder,
-  createInvoiceForNewOrder,
   previewInvoice,
+  withDrawOrder,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import base64ToBlob from 'base64toblob';
@@ -28,6 +29,7 @@ import {
   TableRow,
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
+import PINVerifyModalOfflineOrder from './PinVerifyModalOfflineOrder';
 
 const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const translations = useTranslations('components.generate_invoice');
@@ -38,6 +40,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
   const orderId = params.order_id;
 
+  const [isPINModalOpen, setIsPINModalOpen] = useState(false);
   const [invoicedData, setInvoicedData] = useState({
     pin: null,
     clientType: orderDetails?.clientType,
@@ -276,13 +279,19 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   });
 
   // mutation fn - new generate Invoice : IF NEW
-  const invoiceMutationNew = useMutation({
-    mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
-    mutationFn: createInvoiceForNewOrder,
+  const withDrawOrderMutation = useMutation({
+    mutationKey: [invoiceApi.withDrawOrder.endpointKey],
+    mutationFn: withDrawOrder,
     onSuccess: (data) => {
       toast.success(translations('successMsg.invoice_generate_success'));
 
-      router.push(`/dashboard/sales/sales-invoices/${data?.data?.data?.id}`);
+      // redirected to create order with prefilled data
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      const { orderId } = data?.data?.data;
+      queryClient.invalidateQueries([orderApi.getSales.endpointKey]);
+      router.push(
+        `/dashboard/sales/sales-orders?action=create_order&referenceId=${orderId}`,
+      );
     },
     onError: (error) => {
       if (
@@ -300,9 +309,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   // handling submit fn
   const handleSubmit = (updateInvoice) => {
     if (orderDetails?.negotiationStatus === 'NEW') {
-      const { amount, gstAmount, invoiceItems, orderType, ...newInvoicedData } =
-        updateInvoice;
-      invoiceMutationNew.mutate(newInvoicedData);
+      withDrawOrderMutation.mutate(updateInvoice);
       return;
     }
     invoiceMutation.mutate(updateInvoice);
@@ -600,7 +607,11 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
               <Button
                 size="sm"
-                onClick={() => handlePreview(invoicedData)}
+                onClick={() => {
+                  isAutoSelect
+                    ? setIsPINModalOpen(true)
+                    : handlePreview(invoicedData);
+                }}
                 disabled={previewInvMutation.isPending}
               >
                 {previewInvMutation.isPending ? (
@@ -614,7 +625,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         </>
       )}
 
-      {isPreviewOpen && (
+      {!isAutoSelect && isPreviewOpen && (
         <InvoicePreview
           order={invoicedData}
           setOrder={setInvoicedData}
@@ -622,9 +633,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
           setIsPreviewOpen={setIsPreviewOpen}
           url={url}
           isPDFProp={true}
-          isPendingInvoice={
-            invoiceMutation.isPending || invoiceMutationNew.isPending
-          }
+          isPendingInvoice={invoiceMutation.isPending}
           handleCreateFn={handleSubmit}
           handlePreview={handlePreview}
           isCreatable={true}
@@ -632,6 +641,18 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
           isActionable={true}
+          isPINError={isPINError}
+          setIsPINError={setIsPINError}
+        />
+      )}
+
+      {isAutoSelect && (
+        <PINVerifyModalOfflineOrder
+          open={isPINModalOpen}
+          setOpen={setIsPINModalOpen}
+          order={invoicedData}
+          isPendingInvoice={invoiceMutation.isPending}
+          handleCreateFn={handleSubmit}
           isPINError={isPINError}
           setIsPINError={setIsPINError}
         />
