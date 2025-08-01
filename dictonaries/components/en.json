@@ -468,6 +468,7 @@
             },
             "ctas": {
                 "next": "Next",
+                "verify": "Verify",
                 "cancel": "Cancel"
             }
         },
@@ -481,6 +482,27 @@
             "infoText": {
                 "title": "Enter PIN",
                 "pin_exist_info": "Enter a User PIN to Generate Invoice",
+                "pin_not_exist_info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
+                "info2": "click here"
+            },
+            "successMsg": {
+                "invoice_generate_success": " Invoice Generated Successfully"
+            },
+            "errorMsg": {
+                "common": "Something went wrong",
+                "pin_error": "Forgot PIN?"
+            }
+        },
+        "pin_verify_modal_offline_order": {
+            "title": "Invoice",
+            "ctas": {
+                "generate": "Generate",
+                "view": "View",
+                "verify": "Verify"
+            },
+            "infoText": {
+                "title": "Verify PIN",
+                "pin_exist_info": "This order can’t be invoiced directly. Withdraw it to create a new order where you can raise full or partial invoices.",
                 "pin_not_exist_info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
                 "info2": "click here"
             },

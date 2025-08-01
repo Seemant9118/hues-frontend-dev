@@ -616,6 +616,8 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
               >
                 {previewInvMutation.isPending ? (
                   <Loading />
+                ) : isAutoSelect ? (
+                  translations('ctas.verify')
                 ) : (
                   translations('ctas.next')
                 )}

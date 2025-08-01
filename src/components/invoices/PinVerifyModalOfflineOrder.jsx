@@ -32,7 +32,9 @@ const PINVerifyModalOfflineOrder = ({
   setIsPINError,
 }) => {
   const queryClient = useQueryClient();
-  const translations = useTranslations('components.generate_invoice_modal_otp');
+  const translations = useTranslations(
+    'components.pin_verify_modal_offline_order',
+  );
   const translationsUpdatePIN = useTranslations(
     'components.generate_pin_modal',
   );
@@ -253,7 +255,7 @@ const PINVerifyModalOfflineOrder = ({
     <Dialog open={open} onOpenChange={setOpen}>
       {!isActiveUpdatePinMode && (
         <DialogContent className="max-h-[40rem] overflow-hidden">
-          <DialogTitle>Enter a PIN</DialogTitle>
+          <DialogTitle>{translations('infoText.title')}</DialogTitle>
           <form
             onSubmit={handleVerifiyOTP}
             className="z-20 flex flex-col items-center justify-center gap-5 p-5"
