@@ -16,7 +16,6 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
@@ -40,7 +39,6 @@ import {
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ClientTable } from './ClientTable';
@@ -74,10 +72,8 @@ const ClientPage = () => {
     'isEnterpriseOnboardingComplete',
   );
 
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [editingClient, setEditingClient] = useState();
   const [isUploading, setIsUploading] = useState(false);
@@ -245,15 +241,6 @@ const ClientPage = () => {
     onEditClick,
     enterpriseId,
   );
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:clients-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:clients-view'}>

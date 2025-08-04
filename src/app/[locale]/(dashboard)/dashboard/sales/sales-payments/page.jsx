@@ -9,7 +9,6 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
@@ -39,8 +38,6 @@ const SalesPayments = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [paymentsListing, setPaymentsListing] = useState(null);
@@ -121,15 +118,6 @@ const SalesPayments = () => {
   };
 
   const paymentColumns = usePaymentsColumn();
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:sales-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode="permission:sales-view">

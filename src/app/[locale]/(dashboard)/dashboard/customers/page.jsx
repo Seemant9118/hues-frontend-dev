@@ -10,7 +10,6 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
@@ -21,7 +20,6 @@ import {
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { Download, PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CustomersTable } from './CustomersTable';
 import { useCustomersColumns } from './useCustomersColumns';
@@ -54,12 +52,10 @@ const CustomerPage = () => {
     'isEnterpriseOnboardingComplete',
   );
 
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   //   const queryClient = useQueryClient();
   //   const [isUploading, setIsUploading] = useState(false);
   //   const [files, setFiles] = useState([]);
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [customers, setCustomers] = useState(null);
@@ -180,15 +176,6 @@ const CustomerPage = () => {
 
   // columns
   const CustomersColumns = useCustomersColumns();
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:customers-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:customers-view'}>

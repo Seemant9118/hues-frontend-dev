@@ -9,7 +9,6 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
@@ -42,7 +41,6 @@ const PurchasePayments = () => {
     'isEnterpriseOnboardingComplete',
   );
 
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
   const observer = useRef(); // Ref for infinite scrolling observer
@@ -143,15 +141,6 @@ const PurchasePayments = () => {
   };
 
   const paymentColumns = usePaymentsColumn();
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:purchase-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:purchase-view'}>

@@ -237,7 +237,7 @@ export default function EnterpriseDetails() {
 
   useEffect(() => {
     if (!hasPageAccess('adminReports')) {
-      router.replace('/unauthorized');
+      router.replace('/dashboard/unauthorized');
     }
   }, []);
 

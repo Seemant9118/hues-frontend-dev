@@ -4,6 +4,7 @@ export const usePermission = () => {
   const { permissions } = useAuth();
 
   const hasPermission = (code) => {
+    if (!permissions || permissions.length === 0) return false;
     return permissions.some(
       (perm) => perm.code === code && perm.isDeleted === false,
     );

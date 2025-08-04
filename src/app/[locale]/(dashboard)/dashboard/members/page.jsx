@@ -10,7 +10,6 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
@@ -18,7 +17,6 @@ import { getAllAssociateMembers } from '@/services/Associate_Members_Services/As
 import { useQuery } from '@tanstack/react-query';
 import { Upload, UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useInviteeMembersColumns } from './useInviteeMembersColumns';
@@ -32,9 +30,7 @@ const MembersPage = () => {
   );
 
   const translation = useTranslations('members');
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
-  const router = useRouter();
   const [isInvitingMembers, setIsInvitingMembers] = useState(false);
   const [isMemberEditing, setIsMemberEditing] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
@@ -62,15 +58,6 @@ const MembersPage = () => {
     setSelectedMember,
     enterpriseId,
   );
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:members-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:members-view'}>

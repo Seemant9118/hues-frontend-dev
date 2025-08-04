@@ -1,16 +1,11 @@
 'use client';
 
-import { usePermission } from '@/hooks/usePermissions';
+import { Button } from '@/components/ui/button';
+import { ShieldAlert, ArrowLeftCircle } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowLeftCircle, ShieldAlert } from 'lucide-react';
-import { Button } from '../ui/button';
 
-export const ProtectedWrapper = ({ permissionCode, children }) => {
-  const { hasPermission } = usePermission();
-
-  return hasPermission(permissionCode) ? (
-    children
-  ) : (
+export default function UnauthorizedPage() {
+  return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-center">
       <ShieldAlert className="mb-4 h-14 w-14 text-red-500" />
       <h1 className="mb-2 text-2xl font-bold text-gray-800">Access Denied</h1>
@@ -44,4 +39,4 @@ export const ProtectedWrapper = ({ permissionCode, children }) => {
       </div>
     </div>
   );
-};
+}

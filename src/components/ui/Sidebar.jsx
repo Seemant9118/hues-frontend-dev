@@ -166,12 +166,12 @@ const Sidebar = () => {
   ].filter(Boolean); // this removes all falsy values
 
   const actionLinks = [
-    {
+    hasPermission('permission:view-dashboard') && {
       name: 'sidebar.notifications',
       icon: <Bell size={16} />,
       path: '/dashboard/notification',
     },
-    {
+    hasPermission('permission:view-dashboard') && {
       name: 'sidebar.settings',
       icon: <Settings size={16} />,
       path: '/dashboard/settings',

@@ -14,7 +14,6 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { exportTableToExcel, LocalStorageService } from '@/lib/utils';
@@ -38,7 +37,6 @@ import {
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { VendorsTable } from './VendorsTable';
@@ -71,10 +69,8 @@ const VendorsPage = () => {
     'isEnterpriseOnboardingComplete',
   );
 
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingVendor, setEditingVendor] = useState();
@@ -249,15 +245,6 @@ const VendorsPage = () => {
     onEditClick,
     enterpriseId,
   );
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:vendors-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:vendors-view'}>

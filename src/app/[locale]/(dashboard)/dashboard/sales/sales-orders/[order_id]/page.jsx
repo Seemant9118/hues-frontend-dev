@@ -22,7 +22,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
@@ -79,8 +78,6 @@ const ViewOrder = () => {
   useMetaData('Hues! - Sales Order Details', 'HUES SALES'); // dynamic title
 
   const translations = useTranslations('sales.sales-orders.order_details');
-
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -290,46 +287,38 @@ const ViewOrder = () => {
     </div>
   );
 
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:sales-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
-
   return (
-    <Wrapper className="h-full py-2">
-      {isLoading && !orderDetails && <Loading />}
+    <ProtectedWrapper permissionCode={'permission:sales-view'}>
+      <Wrapper className="h-full py-2">
+        {isLoading && !orderDetails && <Loading />}
 
-      {/* editOrder Component */}
-      {isEditingOrder && (
-        <EditOrder
-          type="sales"
-          name="Edit"
-          cta="offer"
-          isOrder="order"
-          orderId={params.order_id}
-          onCancel={() => setIsEditingOrder(false)}
-        />
-      )}
+        {/* editOrder Component */}
+        {isEditingOrder && (
+          <EditOrder
+            type="sales"
+            name="Edit"
+            cta="offer"
+            isOrder="order"
+            orderId={params.order_id}
+            onCancel={() => setIsEditingOrder(false)}
+          />
+        )}
 
-      {!isEditingOrder && !isLoading && orderDetails && (
-        <>
-          {/* headers */}
-          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-            <div className="flex gap-2">
-              {/* breadcrumbs */}
-              <OrderBreadCrumbs
-                possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
-                setIsNegotiation={setIsNegotiation}
-                setIsGenerateInvoice={setIsGenerateInvoice}
-              />
-            </div>
-            <div className="flex gap-2">
-              {/* view CTA */}
-              {/* {!isGenerateInvoice &&
+        {!isEditingOrder && !isLoading && orderDetails && (
+          <>
+            {/* headers */}
+            <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+              <div className="flex gap-2">
+                {/* breadcrumbs */}
+                <OrderBreadCrumbs
+                  possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
+                  setIsNegotiation={setIsNegotiation}
+                  setIsGenerateInvoice={setIsGenerateInvoice}
+                />
+              </div>
+              <div className="flex gap-2">
+                {/* view CTA */}
+                {/* {!isGenerateInvoice &&
                 !isRecordingPayment &&
                 !isNegotiation &&
                 !viewNegotiationHistory &&
@@ -349,337 +338,351 @@ const ViewOrder = () => {
                   />
                 )} */}
 
-              {/* negotiation ctas */}
-              {!isGenerateInvoice &&
-                !isNegotiation &&
-                !isRecordingPayment &&
-                !viewNegotiationHistory && (
-                  <ProtectedWrapper
-                    permissionCode={'permission:sales-negotiation'}
-                  >
-                    <section className="flex gap-2">
-                      {/* status NEW */}
-                      {tab === 'overview' &&
-                        !isGenerateInvoice &&
-                        !isRecordingPayment &&
-                        orderDetails?.negotiationStatus === 'NEW' &&
-                        orderDetails?.sellerEnterpriseId === enterpriseId && (
-                          <>
-                            {/* {orderDetails?.orderType === 'SALES' && (
+                {/* negotiation ctas */}
+                {!isGenerateInvoice &&
+                  !isNegotiation &&
+                  !isRecordingPayment &&
+                  !viewNegotiationHistory && (
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-negotiation'}
+                    >
+                      <section className="flex gap-2">
+                        {/* status NEW */}
+                        {tab === 'overview' &&
+                          !isGenerateInvoice &&
+                          !isRecordingPayment &&
+                          orderDetails?.negotiationStatus === 'NEW' &&
+                          orderDetails?.sellerEnterpriseId === enterpriseId && (
+                            <>
+                              {/* {orderDetails?.orderType === 'SALES' && (
                         <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
                           <Clock size={12} />
                           {translations('ctas.footer_ctas.wait_response')}
                         </span>
                       )} */}
 
-                            {orderDetails?.orderType === 'PURCHASE' && (
-                              <div className="flex w-full justify-end gap-2">
-                                {!isNegotiation && (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      variant="blue_outline"
-                                      onClick={() => setIsNegotiation(true)}
-                                    >
-                                      {translations(
-                                        'ctas.footer_ctas.negotiate',
-                                      )}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={handleAccept}
-                                      disabled={acceptMutation.isPending}
-                                    >
-                                      {acceptMutation.isPending ? (
-                                        <Loading size={14} />
-                                      ) : (
-                                        translations('ctas.footer_ctas.accept')
-                                      )}
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      {/* status NEGOTIATION */}
-                      {tab === 'overview' &&
-                        !isGenerateInvoice &&
-                        !isRecordingPayment &&
-                        orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-                        orderDetails?.sellerEnterpriseId === enterpriseId && (
-                          <>
-                            {orderDetails?.orderStatus === 'BID_SUBMITTED' && (
-                              <div className="flex w-full justify-end gap-2">
-                                {!isNegotiation && (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      variant="blue_outline"
-                                      onClick={() => setIsNegotiation(true)}
-                                    >
-                                      {translations(
-                                        'ctas.footer_ctas.negotiate',
-                                      )}
-                                    </Button>
-                                    <Button size="sm" onClick={handleAccept}>
-                                      {translations('ctas.footer_ctas.accept')}
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                            {/* {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
+                              {orderDetails?.orderType === 'PURCHASE' && (
+                                <div className="flex w-full justify-end gap-2">
+                                  {!isNegotiation && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="blue_outline"
+                                        onClick={() => setIsNegotiation(true)}
+                                      >
+                                        {translations(
+                                          'ctas.footer_ctas.negotiate',
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        onClick={handleAccept}
+                                        disabled={acceptMutation.isPending}
+                                      >
+                                        {acceptMutation.isPending ? (
+                                          <Loading size={14} />
+                                        ) : (
+                                          translations(
+                                            'ctas.footer_ctas.accept',
+                                          )
+                                        )}
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        {/* status NEGOTIATION */}
+                        {tab === 'overview' &&
+                          !isGenerateInvoice &&
+                          !isRecordingPayment &&
+                          orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+                          orderDetails?.sellerEnterpriseId === enterpriseId && (
+                            <>
+                              {orderDetails?.orderStatus ===
+                                'BID_SUBMITTED' && (
+                                <div className="flex w-full justify-end gap-2">
+                                  {!isNegotiation && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="blue_outline"
+                                        onClick={() => setIsNegotiation(true)}
+                                      >
+                                        {translations(
+                                          'ctas.footer_ctas.negotiate',
+                                        )}
+                                      </Button>
+                                      <Button size="sm" onClick={handleAccept}>
+                                        {translations(
+                                          'ctas.footer_ctas.accept',
+                                        )}
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              {/* {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
                         <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
                           <Clock size={12} />{' '}
                           {translations('ctas.footer_ctas.wait_response')}
                         </span>
                       )} */}
-                          </>
-                        )}
-                    </section>
-                  </ProtectedWrapper>
-                )}
+                            </>
+                          )}
+                      </section>
+                    </ProtectedWrapper>
+                  )}
 
-              {/* record payment CTA */}
-              {!isGenerateInvoice &&
-                !isRecordingPayment &&
-                (orderDetails.negotiationStatus === 'INVOICED' ||
-                  orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
-                orderDetails?.metaData?.payment?.status !== 'PAID' && (
-                  <ProtectedWrapper
-                    permissionCode={'permission:sales-create-payment'}
-                  >
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      onClick={() => setIsRecordingPayment(true)}
-                      className="font-bold"
+                {/* record payment CTA */}
+                {!isGenerateInvoice &&
+                  !isRecordingPayment &&
+                  (orderDetails.negotiationStatus === 'INVOICED' ||
+                    orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
+                  orderDetails?.metaData?.payment?.status !== 'PAID' && (
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create-payment'}
                     >
-                      {translations('ctas.record_payment')}
-                    </Button>
-                  </ProtectedWrapper>
-                )}
-              {/* generateInvoice CTA */}
-              {!isGenerateInvoice &&
-                !isRecordingPayment &&
-                !orderDetails?.invoiceGenerationCompleted &&
-                (orderDetails?.negotiationStatus === 'ACCEPTED' ||
-                  orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
-                  (orderDetails.negotiationStatus === 'NEW' &&
-                    orderDetails?.orderType === 'SALES')) && (
-                  <ProtectedWrapper
-                    permissionCode={'permission:sales-invoice-create'}
-                  >
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      onClick={() => setIsGenerateInvoice(true)}
-                      className="font-bold"
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsRecordingPayment(true)}
+                        className="font-bold"
+                      >
+                        {translations('ctas.record_payment')}
+                      </Button>
+                    </ProtectedWrapper>
+                  )}
+                {/* generateInvoice CTA */}
+                {!isGenerateInvoice &&
+                  !isRecordingPayment &&
+                  !orderDetails?.invoiceGenerationCompleted &&
+                  (orderDetails?.negotiationStatus === 'ACCEPTED' ||
+                    orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
+                    (orderDetails.negotiationStatus === 'NEW' &&
+                      orderDetails?.orderType === 'SALES')) && (
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-invoice-create'}
                     >
-                      {translations('ctas.generate_invoice')}
-                    </Button>
-                  </ProtectedWrapper>
-                )}
-
-              {/* more ctas */}
-              {!isGenerateInvoice &&
-                !isRecordingPayment &&
-                !isNegotiation &&
-                orderDetails.negotiationStatus === 'NEW' &&
-                userId.toString() === orderDetails.createdBy.toString() && (
-                  <ProtectedWrapper permissionCode={'permission:sales-edit'}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <Tooltips
-                          trigger={
-                            <Button
-                              variant="blue_outline"
-                              size="sm"
-                              className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                            >
-                              <span className="sr-only">Open menu</span>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          }
-                          content={translations('ctas.more.placeholder')}
-                        />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="max-w-fit">
-                        <span
-                          onClick={() => setIsEditingOrder(true)}
-                          className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
-                        >
-                          <Pencil size={14} />{' '}
-                          {translations('ctas.more.revise')}
-                        </span>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </ProtectedWrapper>
-                )}
-            </div>
-          </section>
-
-          {/* switch tabs */}
-          {!isGenerateInvoice &&
-            !isNegotiation &&
-            !isRecordingPayment &&
-            !viewNegotiationHistory && (
-              <section>
-                <Tabs
-                  value={tab}
-                  onValueChange={onTabChange}
-                  defaultValue={'overview'}
-                >
-                  <section className="sticky top-12 bg-white py-2">
-                    <TabsList className="border">
-                      <TabsTrigger
-                        className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
-                        value="overview"
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsGenerateInvoice(true)}
+                        className="font-bold"
                       >
-                        {translations('tabs.label.tab1')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
-                        value="invoices"
-                      >
-                        {translations('tabs.label.tab2')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
-                        value="payment"
-                      >
-                        {translations('tabs.label.tab3')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
-                        value="timeline"
-                      >
-                        {translations('tabs.label.tab4')}
-                      </TabsTrigger>
-                    </TabsList>
-                  </section>
+                        {translations('ctas.generate_invoice')}
+                      </Button>
+                    </ProtectedWrapper>
+                  )}
 
-                  <TabsContent value="overview" className="flex flex-col gap-4">
-                    {/* orders overview */}
-                    <OrdersOverview
-                      isCollapsableOverview={false}
-                      orderDetails={orderDetails}
-                      orderId={orderDetails?.referenceNumber}
-                      multiStatus={multiStatus}
-                      Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
-                      mobileNumber={orderDetails?.mobileNumber}
-                      amtPaid={orderDetails?.amountPaid}
-                      totalAmount={orderDetails.amount + orderDetails.gstAmount}
-                      invitationData={invitationData}
-                      setViewNegotiationHistory={setViewNegotiationHistory}
-                    />
-
-                    <CommentBox contextId={params.order_id} context={'ORDER'} />
-
-                    {/* orderDetail Table */}
-                    <DataTable
-                      columns={OrderColumns}
-                      data={orderDetails?.orderItems}
-                    ></DataTable>
-                  </TabsContent>
-                  <TabsContent value="invoices">
-                    <PastInvoices
-                      setIsGenerateInvoice={setIsGenerateInvoice}
-                      orderDetails={orderDetails}
-                    />
-                  </TabsContent>
-                  <TabsContent value="payment">
-                    <PaymentDetails
-                      orderId={params.order_id}
-                      orderDetails={orderDetails}
-                      setIsRecordingPayment={setIsRecordingPayment}
-                    />
-                  </TabsContent>
-                  <TabsContent value="timeline">
-                    <div className="h-full w-full animate-fadeInUp overflow-auto p-2">
-                      {isTimeLinesDataLoading && <Loading />}
-                      {!isTimeLinesDataLoading &&
-                        timeLineData?.length > 0 &&
-                        timeLineData?.map((timeLinetItem, index) => (
-                          <TimelineItem
-                            key={timeLinetItem?.id}
-                            title={timeLinetItem?.action}
-                            dateTime={timeLinetItem?.createdAt}
-                            isLast={index === timeLineData.length - 1}
-                            action={timeLinetItem?.action}
-                            module={timeLinetItem?.module}
-                            details={timeLinetItem?.details}
+                {/* more ctas */}
+                {!isGenerateInvoice &&
+                  !isRecordingPayment &&
+                  !isNegotiation &&
+                  orderDetails.negotiationStatus === 'NEW' &&
+                  userId.toString() === orderDetails.createdBy.toString() && (
+                    <ProtectedWrapper permissionCode={'permission:sales-edit'}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger>
+                          <Tooltips
+                            trigger={
+                              <Button
+                                variant="blue_outline"
+                                size="sm"
+                                className="flex items-center justify-center border border-[#DCDCDC] text-black"
+                              >
+                                <span className="sr-only">Open menu</span>
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            }
+                            content={translations('ctas.more.placeholder')}
                           />
-                        ))}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="max-w-fit">
+                          <span
+                            onClick={() => setIsEditingOrder(true)}
+                            className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
+                          >
+                            <Pencil size={14} />{' '}
+                            {translations('ctas.more.revise')}
+                          </span>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </ProtectedWrapper>
+                  )}
+              </div>
+            </section>
 
-                      {!isTimeLinesDataLoading &&
-                        timeLineData?.length === 0 && (
-                          <div>No Timeline recorded yet</div>
-                        )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </section>
-            )}
+            {/* switch tabs */}
+            {!isGenerateInvoice &&
+              !isNegotiation &&
+              !isRecordingPayment &&
+              !viewNegotiationHistory && (
+                <section>
+                  <Tabs
+                    value={tab}
+                    onValueChange={onTabChange}
+                    defaultValue={'overview'}
+                  >
+                    <section className="sticky top-12 bg-white py-2">
+                      <TabsList className="border">
+                        <TabsTrigger
+                          className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
+                          value="overview"
+                        >
+                          {translations('tabs.label.tab1')}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
+                          value="invoices"
+                        >
+                          {translations('tabs.label.tab2')}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
+                          value="payment"
+                        >
+                          {translations('tabs.label.tab3')}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
+                          value="timeline"
+                        >
+                          {translations('tabs.label.tab4')}
+                        </TabsTrigger>
+                      </TabsList>
+                    </section>
 
-          {/* Negotiation Component */}
-          {isNegotiation &&
-            !isGenerateInvoice &&
-            !isRecordingPayment &&
-            !viewNegotiationHistory && (
-              <NegotiationComponent
-                orderDetails={orderDetails}
-                isNegotiation={isNegotiation}
-                setIsNegotiation={setIsNegotiation}
-              />
-            )}
+                    <TabsContent
+                      value="overview"
+                      className="flex flex-col gap-4"
+                    >
+                      {/* orders overview */}
+                      <OrdersOverview
+                        isCollapsableOverview={false}
+                        orderDetails={orderDetails}
+                        orderId={orderDetails?.referenceNumber}
+                        multiStatus={multiStatus}
+                        Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
+                        mobileNumber={orderDetails?.mobileNumber}
+                        amtPaid={orderDetails?.amountPaid}
+                        totalAmount={
+                          orderDetails.amount + orderDetails.gstAmount
+                        }
+                        invitationData={invitationData}
+                        setViewNegotiationHistory={setViewNegotiationHistory}
+                      />
 
-          {/* seprator */}
-          {!isNegotiation &&
-            !isGenerateInvoice &&
-            !isRecordingPayment &&
-            !viewNegotiationHistory && (
-              <div className="mt-auto h-[1px] bg-neutral-300"></div>
-            )}
+                      <CommentBox
+                        contextId={params.order_id}
+                        context={'ORDER'}
+                      />
 
-          {/* generate Invoice component */}
-          {isGenerateInvoice &&
-            !isNegotiation &&
-            !isRecordingPayment &&
-            !viewNegotiationHistory && (
-              <GenerateInvoice
-                orderDetails={orderDetails}
-                setIsGenerateInvoice={setIsGenerateInvoice}
-              />
-            )}
+                      {/* orderDetail Table */}
+                      <DataTable
+                        columns={OrderColumns}
+                        data={orderDetails?.orderItems}
+                      ></DataTable>
+                    </TabsContent>
+                    <TabsContent value="invoices">
+                      <PastInvoices
+                        setIsGenerateInvoice={setIsGenerateInvoice}
+                        orderDetails={orderDetails}
+                      />
+                    </TabsContent>
+                    <TabsContent value="payment">
+                      <PaymentDetails
+                        orderId={params.order_id}
+                        orderDetails={orderDetails}
+                        setIsRecordingPayment={setIsRecordingPayment}
+                      />
+                    </TabsContent>
+                    <TabsContent value="timeline">
+                      <div className="h-full w-full animate-fadeInUp overflow-auto p-2">
+                        {isTimeLinesDataLoading && <Loading />}
+                        {!isTimeLinesDataLoading &&
+                          timeLineData?.length > 0 &&
+                          timeLineData?.map((timeLinetItem, index) => (
+                            <TimelineItem
+                              key={timeLinetItem?.id}
+                              title={timeLinetItem?.action}
+                              dateTime={timeLinetItem?.createdAt}
+                              isLast={index === timeLineData.length - 1}
+                              action={timeLinetItem?.action}
+                              module={timeLinetItem?.module}
+                              details={timeLinetItem?.details}
+                            />
+                          ))}
 
-          {/* recordPayment component */}
-          {isRecordingPayment &&
-            !isGenerateInvoice &&
-            !isNegotiation &&
-            !viewNegotiationHistory && (
-              <MakePaymentNew
-                orderId={params.order_id}
-                orderDetails={orderDetails}
-                setIsRecordingPayment={setIsRecordingPayment}
-                contextType="PAYMENT"
-              />
-            )}
+                        {!isTimeLinesDataLoading &&
+                          timeLineData?.length === 0 && (
+                            <div>No Timeline recorded yet</div>
+                          )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </section>
+              )}
 
-          {
-            // negotiation history
-            viewNegotiationHistory &&
+            {/* Negotiation Component */}
+            {isNegotiation &&
+              !isGenerateInvoice &&
+              !isRecordingPayment &&
+              !viewNegotiationHistory && (
+                <NegotiationComponent
+                  orderDetails={orderDetails}
+                  isNegotiation={isNegotiation}
+                  setIsNegotiation={setIsNegotiation}
+                />
+              )}
+
+            {/* seprator */}
+            {!isNegotiation &&
+              !isGenerateInvoice &&
+              !isRecordingPayment &&
+              !viewNegotiationHistory && (
+                <div className="mt-auto h-[1px] bg-neutral-300"></div>
+              )}
+
+            {/* generate Invoice component */}
+            {isGenerateInvoice &&
+              !isNegotiation &&
+              !isRecordingPayment &&
+              !viewNegotiationHistory && (
+                <GenerateInvoice
+                  orderDetails={orderDetails}
+                  setIsGenerateInvoice={setIsGenerateInvoice}
+                />
+              )}
+
+            {/* recordPayment component */}
+            {isRecordingPayment &&
               !isGenerateInvoice &&
               !isNegotiation &&
-              !isEditingOrder &&
-              !isRecordingPayment && (
-                <NegotiationHistory orderId={params.order_id} />
-              )
-          }
-        </>
-      )}
-    </Wrapper>
+              !viewNegotiationHistory && (
+                <MakePaymentNew
+                  orderId={params.order_id}
+                  orderDetails={orderDetails}
+                  setIsRecordingPayment={setIsRecordingPayment}
+                  contextType="PAYMENT"
+                />
+              )}
+
+            {
+              // negotiation history
+              viewNegotiationHistory &&
+                !isGenerateInvoice &&
+                !isNegotiation &&
+                !isEditingOrder &&
+                !isRecordingPayment && (
+                  <NegotiationHistory orderId={params.order_id} />
+                )
+            }
+          </>
+        )}
+      </Wrapper>
+    </ProtectedWrapper>
   );
 };
 

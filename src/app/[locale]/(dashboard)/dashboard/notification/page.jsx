@@ -6,9 +6,11 @@ import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPop
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { useNotificationsCount } from '@/context/CountNotificationsContext';
 import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import {
   getNotifications,
@@ -20,10 +22,10 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
 import { InfiniteNotificationTable } from './InfiniteNotificationTable';
 import { useNotificationColumns } from './useNotificationsColumns';
 
@@ -42,6 +44,7 @@ const Notification = () => {
 
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { hasPermission } = usePermission();
   const [filteredNotification, setFilteredNotification] = useState({});
   const [notifications, setNotifications] = useState([]);
   const [alertData, setAlertData] = useState({ isShow: false, infoText: '' });
@@ -120,6 +123,7 @@ const Notification = () => {
       },
       refetchOnWindowFocus: false,
       placeholderData: keepPreviousData,
+      enabled: hasPermission('permission:view-dashboard'),
     });
 
   useEffect(() => {
@@ -179,7 +183,7 @@ const Notification = () => {
   const NotificationColumns = useNotificationColumns();
 
   return (
-    <>
+    <ProtectedWrapper permissionCode="permission:view-dashboard">
       {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
         <>
           <SubHeader name={translations('title')}></SubHeader>
@@ -228,7 +232,7 @@ const Notification = () => {
           </div>
         </Wrapper>
       )}
-    </>
+    </ProtectedWrapper>
   );
 };
 

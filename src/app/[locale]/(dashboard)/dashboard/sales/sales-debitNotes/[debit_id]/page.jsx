@@ -148,209 +148,215 @@ const ViewDebitNote = () => {
   }
 
   if (!hasPermission('permission:sales-view')) {
-    router.replace('/unauthorized');
+    router.replace('/dashboard/unauthorized');
     return null;
   }
 
   return (
-    <Wrapper className="h-full py-2">
-      <div className="sticky top-0 z-10 flex gap-2 bg-white pt-2">
-        {/* breadcrumbs */}
-        <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
-      </div>
+    <ProtectedWrapper permissionCode="permission:sales-view">
+      <Wrapper className="h-full py-2">
+        <div className="sticky top-0 z-10 flex gap-2 bg-white pt-2">
+          {/* breadcrumbs */}
+          <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+        </div>
 
-      {isLoading && <Loading />}
-      <section className="scrollBarStyles relative flex h-full w-full flex-col gap-4 overflow-y-auto">
-        {/* debitNote overview */}
-        {!isLoading && debitNote && (
-          <div className="sticky top-0 z-10 flex flex-col gap-8 rounded-lg border bg-white px-8 py-4 shadow-customShadow">
-            <section className="flex items-center justify-between">
-              <div className="flex flex-col gap-8">
-                <h1 className="flex items-center gap-2 text-sm">
-                  <span className="font-bold">{debitNote.referenceNumber}</span>
-                  <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
-                    {capitalize(debitNote?.status)}
-                  </span>
-                </h1>
-                <div className="flex gap-10">
-                  <h1 className="text-sm">
-                    <span className="font-bold text-[#ABB0C1]">
-                      {translations('label.date')}:{' '}
+        {isLoading && <Loading />}
+        <section className="scrollBarStyles relative flex h-full w-full flex-col gap-4 overflow-y-auto">
+          {/* debitNote overview */}
+          {!isLoading && debitNote && (
+            <div className="sticky top-0 z-10 flex flex-col gap-8 rounded-lg border bg-white px-8 py-4 shadow-customShadow">
+              <section className="flex items-center justify-between">
+                <div className="flex flex-col gap-8">
+                  <h1 className="flex items-center gap-2 text-sm">
+                    <span className="font-bold">
+                      {debitNote.referenceNumber}
                     </span>
-                    <span className="text-[#363940]">
-                      {moment(debitNote.createdAt).format('DD/MM/YYYY')}
+                    <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
+                      {capitalize(debitNote?.status)}
                     </span>
                   </h1>
-                  <h1 className="text-sm">
-                    <span className="font-bold text-[#ABB0C1]">
-                      {translations('label.total_amount')} :{' '}
-                    </span>
-                    <span className="font-bold text-[#363940]">
-                      {formattedAmount(debitNote.amount)}
-                    </span>
-                    <span> (inc. GST)</span>
-                  </h1>
+                  <div className="flex gap-10">
+                    <h1 className="text-sm">
+                      <span className="font-bold text-[#ABB0C1]">
+                        {translations('label.date')}:{' '}
+                      </span>
+                      <span className="text-[#363940]">
+                        {moment(debitNote.createdAt).format('DD/MM/YYYY')}
+                      </span>
+                    </h1>
+                    <h1 className="text-sm">
+                      <span className="font-bold text-[#ABB0C1]">
+                        {translations('label.total_amount')} :{' '}
+                      </span>
+                      <span className="font-bold text-[#363940]">
+                        {formattedAmount(debitNote.amount)}
+                      </span>
+                      <span> (inc. GST)</span>
+                    </h1>
+                  </div>
                 </div>
-              </div>
+              </section>
+
+              <h1 className="text-sm">
+                <span className="font-bold text-[#ABB0C1]">
+                  {translations('label.reason')} :{' '}
+                </span>
+                <span className="text-[#363940]">{debitNote.remark}</span>
+              </h1>
+            </div>
+          )}
+
+          {/* comments  */}
+          <div className="flex h-full flex-col gap-4 p-2">
+            <section className="flex w-full items-center gap-2">
+              <MessageCircle size={16} />
+              <h1 className="text-sm font-bold">
+                {translations('comments.title')}
+              </h1>
             </section>
 
-            <h1 className="text-sm">
-              <span className="font-bold text-[#ABB0C1]">
-                {translations('label.reason')} :{' '}
-              </span>
-              <span className="text-[#363940]">{debitNote.remark}</span>
-            </h1>
-          </div>
-        )}
-
-        {/* comments  */}
-        <div className="flex h-full flex-col gap-4 p-2">
-          <section className="flex w-full items-center gap-2">
-            <MessageCircle size={16} />
-            <h1 className="text-sm font-bold">
-              {translations('comments.title')}
-            </h1>
-          </section>
-
-          <div className="relative">
-            {/* 1 */}
-            <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
-              <Building2 size={20} />
-            </div>
-
-            {/* 2 */}
-            <Textarea
-              name="comment"
-              value={comment.text}
-              onChange={(e) => {
-                setComment((prev) => ({ ...prev, text: e.target.value }));
-              }}
-              className="px-20 pt-[20px]"
-              placeholder={translations('comments.input.placeholder')}
-            />
-
-            {/* 3 */}
-            <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
-              <Tooltips
-                trigger={
-                  <label htmlFor="fileUpload">
-                    <Paperclip
-                      size={20}
-                      className="cursor-pointer hover:text-black"
-                    />
-                  </label>
-                }
-                content={translations('comments.ctas.attach_file.placeholder')}
-              />
-
-              <input
-                type="file"
-                id="fileUpload"
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  if (e.target.files[0]) {
-                    uploadMedia(e.target.files[0]);
-                  }
-                }}
-              />
-
-              <Tooltips
-                trigger={
-                  createCommentMutation.isPending ? (
-                    <Loading />
-                  ) : (
-                    <Button size="sm" onClick={handleSubmitComment}>
-                      Send
-                    </Button>
-                  )
-                }
-                content={translations('comments.ctas.send.placeholder')}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            {/* attached files */}
-            {files?.length > 0 && (
-              <span className="text-xs font-bold">
-                {translations('comments.attached_files_heading')}
-              </span>
-            )}
-            <div className="flex flex-wrap gap-4">
-              {files?.map((file) => (
-                <div
-                  key={file.name}
-                  className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
-                >
-                  {/* Remove Button */}
-                  <X
-                    size={16}
-                    onClick={() => handleFileRemove(file)}
-                    className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
-                  />
-
-                  {/* File icon */}
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
-                    {file.name.split('.').pop() === 'pdf' ? (
-                      <FileText size={16} className="text-red-600" />
-                    ) : (
-                      // eslint-disable-next-line jsx-a11y/alt-text
-                      <Image size={16} className="text-primary" />
-                    )}
-                  </div>
-
-                  {/* File name */}
-                  <p className="truncate text-sm font-medium text-neutral-800">
-                    {file.name}
-                  </p>
-
-                  {/* Success message */}
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
-                      <Check size={12} />
-                    </div>
-                    <p className="text-xs font-medium text-green-600">
-                      {'File attached'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* comments lists */}
-          <section className="flex flex-col gap-2">
-            {isCommentLoading && <Loading />}
-            {!isCommentLoading &&
-              comments?.length > 0 &&
-              comments?.map((comment) => (
-                <Comment
-                  key={comment?.id}
-                  invalidateId={debitNoteId}
-                  comment={comment}
-                />
-              ))}
-
-            {!isCommentLoading && comments?.length === 0 && (
-              <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
-                <h1>{translations('comments.emtpyStateComponent.title')}</h1>
-                <p>{translations('comments.emtpyStateComponent.para')}</p>
+            <div className="relative">
+              {/* 1 */}
+              <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
+                <Building2 size={20} />
               </div>
-            )}
-          </section>
-        </div>
-      </section>
 
-      <ProtectedWrapper permissionCode={'permission:sales-debit-note-action'}>
-        {/* cta's for accept/reject debit note */}
-        {debitNote?.status === 'PENDING' && (
-          <div className="sticky bottom-0 z-10 flex w-full justify-end gap-2 bg-white">
-            <DebitNoteModal cta="reject" debitNote={debitNote} />
-            <DebitNoteModal cta="accept" debitNote={debitNote} />
+              {/* 2 */}
+              <Textarea
+                name="comment"
+                value={comment.text}
+                onChange={(e) => {
+                  setComment((prev) => ({ ...prev, text: e.target.value }));
+                }}
+                className="px-20 pt-[20px]"
+                placeholder={translations('comments.input.placeholder')}
+              />
+
+              {/* 3 */}
+              <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
+                <Tooltips
+                  trigger={
+                    <label htmlFor="fileUpload">
+                      <Paperclip
+                        size={20}
+                        className="cursor-pointer hover:text-black"
+                      />
+                    </label>
+                  }
+                  content={translations(
+                    'comments.ctas.attach_file.placeholder',
+                  )}
+                />
+
+                <input
+                  type="file"
+                  id="fileUpload"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files[0]) {
+                      uploadMedia(e.target.files[0]);
+                    }
+                  }}
+                />
+
+                <Tooltips
+                  trigger={
+                    createCommentMutation.isPending ? (
+                      <Loading />
+                    ) : (
+                      <Button size="sm" onClick={handleSubmitComment}>
+                        Send
+                      </Button>
+                    )
+                  }
+                  content={translations('comments.ctas.send.placeholder')}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              {/* attached files */}
+              {files?.length > 0 && (
+                <span className="text-xs font-bold">
+                  {translations('comments.attached_files_heading')}
+                </span>
+              )}
+              <div className="flex flex-wrap gap-4">
+                {files?.map((file) => (
+                  <div
+                    key={file.name}
+                    className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                  >
+                    {/* Remove Button */}
+                    <X
+                      size={16}
+                      onClick={() => handleFileRemove(file)}
+                      className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                    />
+
+                    {/* File icon */}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                      {file.name.split('.').pop() === 'pdf' ? (
+                        <FileText size={16} className="text-red-600" />
+                      ) : (
+                        // eslint-disable-next-line jsx-a11y/alt-text
+                        <Image size={16} className="text-primary" />
+                      )}
+                    </div>
+
+                    {/* File name */}
+                    <p className="truncate text-sm font-medium text-neutral-800">
+                      {file.name}
+                    </p>
+
+                    {/* Success message */}
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                        <Check size={12} />
+                      </div>
+                      <p className="text-xs font-medium text-green-600">
+                        {'File attached'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* comments lists */}
+            <section className="flex flex-col gap-2">
+              {isCommentLoading && <Loading />}
+              {!isCommentLoading &&
+                comments?.length > 0 &&
+                comments?.map((comment) => (
+                  <Comment
+                    key={comment?.id}
+                    invalidateId={debitNoteId}
+                    comment={comment}
+                  />
+                ))}
+
+              {!isCommentLoading && comments?.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
+                  <h1>{translations('comments.emtpyStateComponent.title')}</h1>
+                  <p>{translations('comments.emtpyStateComponent.para')}</p>
+                </div>
+              )}
+            </section>
           </div>
-        )}
-      </ProtectedWrapper>
-    </Wrapper>
+        </section>
+
+        <ProtectedWrapper permissionCode={'permission:sales-debit-note-action'}>
+          {/* cta's for accept/reject debit note */}
+          {debitNote?.status === 'PENDING' && (
+            <div className="sticky bottom-0 z-10 flex w-full justify-end gap-2 bg-white">
+              <DebitNoteModal cta="reject" debitNote={debitNote} />
+              <DebitNoteModal cta="accept" debitNote={debitNote} />
+            </div>
+          )}
+        </ProtectedWrapper>
+      </Wrapper>
+    </ProtectedWrapper>
   );
 };
 

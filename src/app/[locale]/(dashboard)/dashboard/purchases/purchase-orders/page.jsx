@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
@@ -69,7 +68,6 @@ const PurchaseOrders = () => {
     'isEnterpriseOnboardingComplete',
   );
 
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
@@ -351,15 +349,6 @@ const PurchaseOrders = () => {
     setOrderId,
     setSelectedOrders,
   );
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:purchase-view')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:purchase-view'}>

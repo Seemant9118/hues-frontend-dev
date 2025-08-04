@@ -130,7 +130,7 @@ const AdminReportsPage = () => {
 
   useEffect(() => {
     if (!hasPageAccess('adminReports')) {
-      router.replace('/unauthorized');
+      router.replace('/dashboard/unauthorized');
     }
   }, []);
 

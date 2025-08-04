@@ -9,7 +9,6 @@ import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
-import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -20,7 +19,6 @@ import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const summaryMapper = (summary) => ({
@@ -55,9 +53,7 @@ export default function Home() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const { permissions } = useAuth();
   const { hasPermission } = usePermission();
-  const router = useRouter();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [salestab, setSalesTab] = useState('totalAmount');
   const [purchaseTab, setPurchaseTab] = useState('totalAmount');
@@ -135,6 +131,7 @@ export default function Home() {
       ],
       queryFn: () => getSalesAnalytics(salesDataGranularity, salesDateRange),
       select: (data) => data.data.data,
+      enabled: hasPermission('permission:view-dashboard'),
     });
 
   const salesAmountPaidData = salesAnalyticsData?.data?.map((item) => ({
@@ -163,6 +160,7 @@ export default function Home() {
       queryFn: () =>
         getPurchaseAnalytics(purchaseDataGranularity, purchaseDateRange),
       select: (data) => data.data.data,
+      enabled: hasPermission('permission:view-dashboard'),
     });
 
   const purchaseAmountPaidData = purchaseAnalyticsData?.data?.map((item) => ({
@@ -202,15 +200,6 @@ export default function Home() {
   const filteredData = ReceivedformattedData.filter(
     (data) => data.status === 'PENDING',
   );
-
-  if (!permissions || permissions.length === 0) {
-    return null; // or <Loading />
-  }
-
-  if (!hasPermission('permission:view-dashboard')) {
-    router.replace('/unauthorized');
-    return null;
-  }
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
