@@ -5,10 +5,11 @@ import { cookies } from 'next/headers';
 import { Toaster } from 'sonner';
 import './globals.css';
 // eslint-disable-next-line camelcase
-import { Nanum_Pen_Script } from 'next/font/google';
+import FCMProvider from '@/context/FCMProvider';
+import { Nanum_Pen_Script as nanumPenScript } from 'next/font/google';
 import NotFound from './not-found';
 
-const nanumPen = Nanum_Pen_Script({
+const nanumPen = nanumPenScript({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-nanum-pen',
@@ -117,10 +118,11 @@ export default async function RootLayout({ children, params: { locale } }) {
           <div className="absolute">
             <Toaster richColors position="top-right" duration="2500" />
           </div>
-
-          <CountNotificationsProvider>
-            <QueryWrapper>{children}</QueryWrapper>
-          </CountNotificationsProvider>
+          <FCMProvider>
+            <CountNotificationsProvider>
+              <QueryWrapper>{children}</QueryWrapper>
+            </CountNotificationsProvider>
+          </FCMProvider>
         </NextIntlClientProvider>
       </body>
     </html>
