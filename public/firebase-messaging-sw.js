@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-undef */
 
+// Load Firebase scripts
 importScripts(
   'https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.11.1/firebase-messaging-compat.js',
@@ -15,10 +16,11 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+// Background messages
 messaging.onBackgroundMessage((payload) => {
-  const { title, body, image } = payload.notification;
-  self.registration.showNotification(title, {
+  const { body, image } = payload.data || {};
+  self.registration.showNotification('New notification recieved', {
     body,
-    icon: image,
+    icon: image || '🔔', // fallback icon
   });
 });

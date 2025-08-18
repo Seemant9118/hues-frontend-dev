@@ -13,3 +13,7 @@ export const updateNotification = (id) => {
     `${notificationApi.updateNotifications.endpoint}${id}`,
   );
 };
+
+export const registerFcmToken = (data) => {
+  return APIinstance.post(`${notificationApi.registerFcmToken.endpoint}`, data);
+};
