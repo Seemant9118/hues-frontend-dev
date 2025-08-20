@@ -33,9 +33,9 @@ function getCurrentLocale(locale) {
 function AppProviders({ children }) {
   return (
     <QueryWrapper>
-      <FCMProvider>
-        <CountNotificationsProvider>{children}</CountNotificationsProvider>
-      </FCMProvider>
+      <CountNotificationsProvider>
+        <FCMProvider>{children}</FCMProvider>
+      </CountNotificationsProvider>
     </QueryWrapper>
   );
 }

@@ -19,7 +19,8 @@ const messaging = firebase.messaging();
 // Background messages
 messaging.onBackgroundMessage((payload) => {
   const { body, image } = payload.data || {};
-  self.registration.showNotification('New notification recieved', {
+
+  self.registration.showNotification('New notification received', {
     body,
     icon: image || '🔔', // fallback icon
   });

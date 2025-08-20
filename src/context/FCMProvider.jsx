@@ -5,6 +5,7 @@
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { notificationApi } from '@/api/notifications/notificationApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { LocalStorageService } from '@/lib/utils';
 import { registerFcmToken } from '@/services/Notification_Services/NotificationServices';
@@ -18,23 +19,45 @@ export default function FCMProvider({ children }) {
   const userToken = LocalStorageService.get('token');
 
   const queryMap = {
-    '/dashboard/sales/sales-orders/:order_id':
-      orderApi.getOrderDetails.endpointKey,
-    '/dashboard/purchases/purchase-orders/:order_id':
-      orderApi.getOrderDetails.endpointKey,
-    '/dashboard/purchases/purchase-invoices/:invoice_id':
-      invoiceApi.getInvoice.endpointKey,
-    '/dashboard/vendors': vendorEnterprise.getVendors.endpointKey,
-    '/dashboard/clients': clientEnterprise.getClients.endpointKey,
+    // order creation
+    sales_order_created: orderApi.getSales.endpointKey,
+    purchase_order_created: orderApi.getPurchases.endpointKey,
+
+    // order negotiation
+    offer_received: orderApi.getOrderDetails.endpointKey,
+    bid_received: orderApi.getOrderDetails.endpointKey,
+
+    // order accepted
+    order_accepted: orderApi.getOrderDetails.endpointKey,
+
+    // invoice received
+    invoice_received: invoiceApi.getAllPurchaseInvoices.endpointKey,
+
+    // invitation as client
+    invitation_sent_as_client: vendorEnterprise.getVendors.endpointKey,
+    invitation_accepted_as_client: vendorEnterprise.getVendors.endpointKey,
+    invitation_rejected_as_client: vendorEnterprise.getVendors.endpointKey,
+
+    // invitation as vendor
+    invitation_sent_as_vendor: clientEnterprise.getClients.endpointKey,
+    invitation_accepted_as_vendor: clientEnterprise.getClients.endpointKey,
+    invitation_rejected_as_vendor: clientEnterprise.getClients.endpointKey,
   };
 
-  const refetchAPIForeGroundNotificationPage = (path) => {
-    const matchedPath = Object.keys(queryMap).find((basePath) =>
-      path.startsWith(basePath),
-    );
-    if (matchedPath) {
-      queryClient.invalidateQueries({ queryKey: queryMap[matchedPath] });
+  const refetchAPIForeGroundNotificationPage = (eventKey) => {
+    const endpointKey = queryMap[eventKey];
+
+    console.log('eventKey from props:', eventKey);
+    console.log('endpointKey that matched:', endpointKey);
+
+    if (endpointKey) {
+      queryClient.invalidateQueries({ queryKey: [endpointKey] });
     }
+
+    // Always refetch notifications (unread count etc.)
+    queryClient.invalidateQueries({
+      queryKey: [notificationApi.getNotifications.endpointKey],
+    });
   };
 
   useEffect(() => {
@@ -79,10 +102,12 @@ export default function FCMProvider({ children }) {
 
     // Foreground listener
     const unsubscribe = onMessage(messaging, (payload) => {
-      const { body, image, deepLink } = payload.data || {};
+      const { body, image, endpointKey } = payload.data || {};
+      console.log('foreground message received 2', payload?.data);
 
-      if (deepLink) {
-        refetchAPIForeGroundNotificationPage(deepLink);
+      if (endpointKey) {
+        console.log('endpointKey from payload:', endpointKey);
+        refetchAPIForeGroundNotificationPage(endpointKey);
       }
 
       toast(`${body || ''}`, {
