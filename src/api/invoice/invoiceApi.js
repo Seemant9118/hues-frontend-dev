@@ -37,7 +37,7 @@ export const invoiceApi = {
   // 8. getAllPurchaseInvoices : enterpriseLevel
   getAllPurchaseInvoices: {
     endpoint: `/order/invoice/getallpurchaseinvoicelist/`,
-    endpointKey: 'get_all_sales_invoices',
+    endpointKey: 'get_all_purchase_invoices',
   },
   // 9. export invoice
   exportSelectedInvoice: {
