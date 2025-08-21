@@ -59,7 +59,7 @@ const Catalogue = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    let newPath = '/catalogue';
+    let newPath = '/dashboard/catalogue';
     if (isUpdatingCatalogue) newPath += `?action=update`;
     router.push(newPath);
   }, [isUpdatingCatalogue]);
