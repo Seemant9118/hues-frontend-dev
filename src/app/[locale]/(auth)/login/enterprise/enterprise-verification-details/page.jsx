@@ -260,10 +260,10 @@ const EnterpriseVerificationDetailsPage = () => {
     <div className="flex h-full items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="flex w-[500px] flex-col items-center gap-5"
+        className="flex w-[500px] flex-col items-center gap-2"
       >
-        <div className="flex flex-col gap-2">
-          <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
+        <div className="mb-2 flex flex-col gap-1">
+          <h1 className="w-full text-center text-xl font-bold text-[#121212]">
             {translations('heading')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
