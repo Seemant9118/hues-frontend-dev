@@ -217,7 +217,20 @@ export default function Home() {
             <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
               <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
                 <Info size={14} />
-                {`${translations('invites.prompt', { count: filteredData?.length })} ${translations('invites.actionPrompt')}`}
+                {filteredData?.length === 1 ? (
+                  <>
+                    {translations('invites.prompt.one', {
+                      count: filteredData?.length,
+                    })}
+                  </>
+                ) : (
+                  <>
+                    {translations('invites.prompt.other', {
+                      count: filteredData?.length,
+                    })}
+                  </>
+                )}{' '}
+                {translations('invites.actionPrompt')}
               </span>
               <PendingInvitesModal
                 ctaName={'dashboard.invites.viewInvitesText'}

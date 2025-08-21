@@ -357,7 +357,6 @@ const SalesOrder = () => {
                       trigger={
                         <Button
                           onClick={() => setIsCreatingSales(true)}
-                          className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                           size="sm"
                         >
                           <PlusCircle size={14} />

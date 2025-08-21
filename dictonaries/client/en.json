@@ -2,53 +2,53 @@
     "client": {
         "title": "Clients",
         "emptyStateComponent": {
-            "heading": "Streamline sales with our Clients feature, integrating customer data for direct inventory offers and full catalog visibility",
+            "heading": "Connect with clients. Convert faster. Integrate customer data to power inventory insights and catalog personalization.",
             "subItems": {
                 "subItem1": {
-                    "value": "Easily add client details to your database."
+                    "value": "Add client info in seconds. Keep your records sharp and sales-ready."
                 },
                 "subItem2": {
-                    "value": "Offer inventory directly to clients with full product access."
+                    "value": "Give clients a direct line to your inventory. Total product access. Zero guesswork."
                 },
                 "subItem3": {
-                    "value": "Keep clients updated, fostering transparency and trust."
+                    "value": "Keep clients in the loop. Build trust. Earn loyalty."
                 },
                 "subItem4": {
-                    "value": "Listed clients get automatic catalog access, simplifying sales."
+                    "value": "Listed clients unlock instant catalog access. Less friction. More sales."
                 }
             }
         },
         "ctas": {
-            "searchPlaceHolder": "Search ...",
-            "upload": "Upload",
-            "export": "Export",
-            "add": "Add",
+            "searchPlaceHolder": "Search Clients",
+            "upload": "Upload Client list",
+            "export": "Export Client list",
+            "add": "Add a Client",
             "tooltips": {
-                "upload": "Upload clients data in bulk",
-                "export": "Export clients data",
+                "upload": "Upload all client records together",
+                "export": "Export all client records together",
                 "add": "Add a new client"
             }
         },
         "table": {
             "header": {
-                "name": "NAME",
-                "phone": "PHONE",
-                "email": "EMAIL",
-                "pan": "PAN",
-                "invitation": "INVITATION"
+                "name": "Client Name",
+                "phone": "Client Phone number",
+                "email": "Client Email",
+                "pan": "Client PAN number",
+                "invitation": "Client Invitation"
             },
             "column": {
                 "actions": {
-                    "edit": "Edit",
-                    "resend": "Resend Invite",
-                    "copyInviteLink": "Copy Invite Link",
-                    "sendReminder": "Send Reminder"
+                    "edit": "Modify",
+                    "resend": "Send another invite",
+                    "copyInviteLink": "Copy Invitation link",
+                    "sendReminder": "Send reminder/Follow up"
                 },
                 "status": {
-                    "pending": "Pending",
-                    "acceptedByClient": "Accepted by client",
-                    "acceptedByYou": "Accepted by you",
-                    "rejected": "Rejected"
+                    "pending": "Response due from client",
+                    "acceptedByClient": "Confirmed by client",
+                    "acceptedByYou": "Confirmed by you",
+                    "rejected": "Declined by client"
                 }
             }
         }

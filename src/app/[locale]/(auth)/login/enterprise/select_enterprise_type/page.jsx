@@ -15,10 +15,22 @@ const SelectEnterprisePage = () => {
   const translationsForError = useTranslations();
   const router = useRouter();
   const enterprisesType = [
-    translations('enterpriseTypes.proprietorship'),
-    translations('enterpriseTypes.partnership'),
-    translations('enterpriseTypes.pvtLtd'),
-    translations('enterpriseTypes.publicLtd'),
+    {
+      key: 'proprietorship',
+      text: translations('enterpriseTypes.proprietorship'),
+    },
+    {
+      key: 'partnership',
+      text: translations('enterpriseTypes.partnership'),
+    },
+    {
+      key: 'pvtLtd',
+      text: translations('enterpriseTypes.pvtLtd'),
+    },
+    {
+      key: 'publicLtd',
+      text: translations('enterpriseTypes.publicLtd'),
+    },
   ];
 
   const [enterpriseOnboardData, setEnterpriseOnboardData] = useState({
@@ -69,12 +81,12 @@ const SelectEnterprisePage = () => {
           <div className="flex max-w-full flex-wrap gap-5">
             {enterprisesType.map((type) => (
               <RadioSelect
-                key={type}
+                key={type.key}
                 name="enterpriseType"
-                option={type}
-                value={type?.toLowerCase()}
-                checked={enterpriseOnboardData.type === type.toLowerCase()}
-                handleChange={() => handleEnterpriseType(type.toLowerCase())}
+                option={type.text}
+                value={type.key}
+                checked={enterpriseOnboardData.type === type.key}
+                handleChange={() => handleEnterpriseType(type.key)}
               />
             ))}
           </div>

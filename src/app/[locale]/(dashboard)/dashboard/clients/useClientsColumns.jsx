@@ -147,7 +147,7 @@ export const useClientsColumns = (
           enterpriseId === inviterEnterpriseId
         ) {
           return (
-            <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-700 bg-blue-100 p-1 text-blue-700">
+            <div className="flex w-fit items-center justify-center rounded-[6px] border border-blue-700 bg-blue-100 p-1 text-xs text-blue-700">
               {translations('table.column.status.pending')}
             </div>
           );
@@ -172,19 +172,19 @@ export const useClientsColumns = (
           );
         } else if (invitationStatus === 'REJECTED') {
           return (
-            <div className="flex w-20 items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-red-500">
+            <div className="flex w-fit items-center justify-center rounded-[6px] border border-red-500 bg-red-100 p-1 text-xs text-red-500">
               {translations('table.column.status.rejected')}
             </div>
           );
         } else if (invitationStatus === 'ACCEPTED') {
           return (
-            <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+            <div className="flex w-fit items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-xs text-green-500">
               {translations('table.column.status.acceptedByClient')}
             </div>
           );
         } else {
           return (
-            <div className="flex w-36 items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-green-500">
+            <div className="flex w-fit items-center justify-center rounded-[6px] border border-green-500 bg-green-100 p-1 text-xs text-green-500">
               {translations('table.column.status.acceptedByYou')}
             </div>
           );

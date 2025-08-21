@@ -5,36 +5,36 @@
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
                 "subItem1": {
-                    "value": "Quickly upload and fine-tune detailed product information in bulk."
+                    "value": "Bulk upload and tweak your product info with ease"
                 },
                 "subItem2": {
-                    "value": "Effortlessly add items for fresh, accurate inventory."
+                    "value": "Add fresh items for a squeaky-clean inventory"
                 },
                 "subItem3": {
-                    "value": "Authenticate inventory with digital signatures for integrity and compliance."
+                    "value": "Digitally sign your stock to keep things secure and compliant"
                 },
                 "subItem4": {
-                    "value": "Share digitally signed inventory easily in PDF format."
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
                 }
             }
         },
         "ctas": {
-            "searchPlaceholder": "Search...",
+            "searchPlaceholder": "Search items",
             "export": "Export",
             "upload": "Upload",
             "add": "Add",
-            "comingSoon": "This feature Coming Soon..."
+            "comingSoon": "Hang tight — this feature’s on its way!"
         },
         "messages": {
-            "uploadSuccessMsg": "Upload Successfully"
+            "uploadSuccessMsg": "Upload complete"
         },
         "components": {
             "add": {
-                "section1":"ITEM OVERVIEW",
-                "section2":"PRICING",
-                "section3":"ADDITIONAL INFORMATION",
-                "title1": "Add Item",
-                "title2": "Edit Item",
+                "section1":"Item Overview",
+                "section2":"Pricing",
+                "section3":"Additional Information",
+                "title1": "Add item",
+                "title2": "Edit item",
                 "label": {
                     "type": "Type",
                     "productName": "Product Name",
@@ -63,19 +63,19 @@
         },
         "table": {
             "header": {
-                "product": "PRODUCT",
-                "manufacturer": "MANUFACTURER",
-                "hsnCode": "HSN CODE",
-                "rate": "RATE",
+                "product": "Product",
+                "manufacturer": "Manufacturer",
+                "hsnCode": "HSN Code",
+                "rate": "Rate",
                 "gst": "GST (%)",
-                "addedOn": "ADDED ON"
+                "addedOn": "Added On"
             },
             "columnActions": {
                 "edit": "Edit",
                 "delete": {
                     "cta": "Delete",
                     "cancel": "Cancel",
-                    "infoText": "You are removing {name} from inventory",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
                     "successMsg": "Deleted successfully"
                 }
             }
@@ -87,33 +87,33 @@
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
                 "subItem1": {
-                    "value": "Quickly upload and fine-tune detailed product information in bulk."
+                    "value": "Bulk upload and tweak your product info with ease"
                 },
                 "subItem2": {
-                    "value": "Effortlessly add items for fresh, accurate inventory."
+                    "value": "Add fresh items for a squeaky-clean inventory"
                 },
                 "subItem3": {
-                    "value": "Authenticate inventory with digital signatures for integrity and compliance."
+                    "value": "Digitally sign your stock to keep things secure and compliant"
                 },
                 "subItem4": {
-                    "value": "Share digitally signed inventory easily in PDF format."
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
                 }
             }
         },
         "ctas": {
-            "searchPlaceholder": "Search...",
+            "searchPlaceholder": "Search items",
             "export": "Export",
             "upload": "Upload",
             "add": "Add",
-            "comingSoon": "This feature Coming Soon..."
+            "comingSoon": "Hang tight — this feature’s on its way!"
         },
         "messages": {
-            "uploadSuccessMsg": "Upload Successfully"
+            "uploadSuccessMsg": "Upload complete"
         },
         "components": {
             "add": {
-                "title1": "Add Item",
-                "title2": "Edit Item",
+                "title1": "Add item",
+                "title2": "Edit item",
                 "label": {
                     "type": "Type",
                     "serviceName": "Service Name",
@@ -134,19 +134,19 @@
         },
         "table": {
             "header": {
-                "serviceName": "SERVICE NAME",
+                "serviceName": "Service Name",
                 "sac": "SAC",
-                "description": "DESCRIPTION",
-                "rate": "RATE",
+                "description": "Description",
+                "rate": "Rate",
                 "gst": "GST (%)",
-                "addedOn": "ADDED ON"
+                "addedOn": "Added On"
             },
             "columnActions": {
                 "edit": "Edit",
                 "delete": {
                     "cta": "Delete",
                     "cancel": "Cancel",
-                    "infoText": "You are removing {name} from inventory",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
                     "successMsg": "Deleted successfully"
                 }
             }

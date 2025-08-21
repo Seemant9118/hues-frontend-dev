@@ -1,83 +1,83 @@
 {
     "catalogue": {
-        "title": "Catalogue",
+        "title": "Product Catalogue",
         "emptyStateComponent": {
-            "heading": "No catalogue available",
-            "description": "You haven't make any catalogues. Start by clicking on the Update button"
+            "heading": "Your catalogue is empty",
+            "description": "You haven’t added any catalogue items yet. Click ‘Update’ to begin"
         },
         "ctas": {
-            "comingSoon": "This feature Coming Soon...",
-            "update": "Update",
-            "searchPlaceHolder": "Search...",
+            "comingSoon": "Hang tight — this feature is on the way!",
+            "update": "Update catalogue/Save changes",
+            "searchPlaceHolder": "Search catalogue",
             "tooltips": {
-                "comingSoon": "This feature Coming Soon...",
-                "update": "Update a Catalogue",
-                "remove": "Remove a Selected Catalogue"
+                "comingSoon": "Hang tight — this feature is on the way!",
+                "update": "Update catalogue/Save changes",
+                "remove": "Remove this catalogue/Delete selected catalogue"
             },
             "bulk_remove": {
-                "infoText": "You are removing the selected items from the catalogue",
+                "infoText": "You’re about to remove the selected items from this catalogue",
                 "ctas": {
                     "cancel": "Cancel",
-                    "remove": "Remove"
+                    "remove": "Remove items"
                 },
-                "successMsg": "Removed successfully"
+                "successMsg": "Items removed successfully"
             }
         },
         "toast": {
             "messages": {
                 "export": {
-                    "error": "Please select atleast One Catalogue to export",
-                    "success": "Selected Catalogue exported"
+                    "error": "Select a catalogue to export",
+                    "success": "Selected catalogue exported successfully"
                 },
                 "update": {
-                    "success": "Catalogue Updated Successfully",
-                    "error": "Please select at least one item to add to the catalogue."
+                    "success": "Catalogue updated successfully",
+                    "error": "Select at least one item to update the catalogue"
                 }
             }
         },
         "components": {
             "update": {
-                "title": "Update Catalogue",
+                "title": "Update catalogue/Save changes/Edit catalogue",
                 "ctas": {
-                    "add_new_item": "Add a new item",
-                    "searchPlaceHolder": "Search...",
+                    "add_new_item": "Add item",
+                    "searchPlaceHolder": "Search item/ Search catalogue/ Find an item",
                     "itemType": {
                         "goods": "Goods",
                         "services": "Service"
                     },
-                    "close": "Close",
-                    "add": "Add to Catalogue",
+                    "close": "Done",
+                    "add": "Add to catalogue",
                     "tooltips": {
-                        "add_new_item": "Add items to the catalogue",
-                        "selectItemType": "Select item type to add in the catalogue"
+                        "add_new_item": "Add items to catalogue",
+                        "selectItemType": "Choose the type of item to add to the catalogue"
                     }
                 },
                 "emptyStateComponent": {
                     "emptyItemMaster": {
-                        "title": "No items available in Item Master",
-                        "desc": "You haven't added any item in the inventory. Start by clicking on the add item button"
+                        "title": "No items in Item Master. Add one to get started!",
+                        "desc": "Looks like your inventory is empty. Use the Add Item button to begin"
                     },
                     "emptyItemMasterToAdd": {
-                        "title": "All items are in the catalogue. Create a new one?",
-                        "desc": "All existing items are already listed in the catalogue, Start by clicking on the add item button"
+                        "title": "Looks like your catalogue has everything. Would you like to add more?",
+                        "desc": "You've already added all existing items. Click 'Add Item' to create a new one"
                     }
                 },
                 "table": {
                     "goods": {
                         "header": {
-                            "product": "PRODUCT",
-                            "manufacturer": "MANUFACTURER",
-                            "hsnCode": "HSN CODE",
-                            "rate": "RATE",
+                            "product": "Product",
+                            "manufacturer": "Manufacturer",
+                            "hsnCode": "HSN Code",
+                            "rate": "Rate",
                             "gst": "GST (%)"
                         }
                     },
                     "services": {
                         "header": {
-                            "serviceName": "SERVICE NAME",
-                            "sac": "SAC",
-                            "description": "DESCRIPTION",
-                            "rate": "RATE",
+                            "serviceName": "Service Name",
+                            "sac": "SAC Code",
+                            "description": "Description",
+                            "rate": "Rate",
                             "gst": "GST (%)"
                         }
                     }
@@ -86,19 +86,19 @@
         },
         "table": {
             "header": {
-                "item": "ITEM",
-                "type": "TYPE",
+                "item": "Item",
+                "type": "Type",
                 "sku": "SKU",
-                "manufacturer": "MANUFACTURER",
-                "hsnSac": "HSN/SAC",
-                "price": "PRICE"
+                "manufacturer": "Manufacturer",
+                "hsnSac": "HSN/SAC code",
+                "price": "Rate"
             },
             "columnActions": {
                 "remove": {
-                    "cta": "Remove",
+                    "cta": "Remove items",
                     "cancel": "Cancel",
-                    "infoText": "You are removing {name} from catalogue",
-                    "successMsg": "Removed successfully"
+                    "infoText": "You're about to remove {name} from the catalogue",
+                    "successMsg": "Items removed successfully"
                 }
             }
         }

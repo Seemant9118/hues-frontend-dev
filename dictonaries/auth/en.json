@@ -2,343 +2,342 @@
     "auth": {
         "mobileLogin": {
             "header": {
-                "title": "Welcome to Hues",
-                "subtitle": "One account for all things",
+                "title": "Welcome to Hues!",
+                "subtitle": "Your gateway to all things",
                 "brandName": "Paraphernalia"
             },
             "validation": {
-                "invitationLoading": "Validating Invitation ..."
+                "invitationLoading": "Just a moment — checking your invite"
             },
             "form": {
-                "phoneLabel": "Phone number",
+                "phoneLabel": "Enter your Aadhaar-linked mobile number",
                 "phoneRequiredSymbol": "*",
-                "phonePlaceholder": "Enter a Aadhar linked phone number"
+                "phonePlaceholder": "Enter your Aadhaar-linked mobile number"
             },
             "button": {
-                "sendOtp": "Send OTP"
+                "sendOtp": "Get OTP"
             },
             "errors": {
-                "failedToSendOtp": "Failed to send OTP"
+                "failedToSendOtp": "Oops! Couldn’t send the OTP"
             },
             "verifyOtp": {
-                "heading": "Verify your number",
-                "instruction": "A one-time password has been sent to",
+                "heading": "Let’s verify your number",
+                "instruction": "Hang tight — OTP sent to",
                 "resendSection": {
-                    "textBeforeTimer": "Resend OTP in",
-                    "timer": "00:{seconds}s",
-                    "resendButton": "Resend"
+                    "textBeforeTimer": "Hang on  retry in",
+                    "timer": "00:{seconds}s left",
+                    "resendButton": "Send again"
                 },
                 "buttons": {
-                    "verify": "Verify",
+                    "verify": "Confirm",
                     "back": "Back"
                 }
             },
             "toast": {
-                "otpSent": "OTP Sent",
-                "failedToSendOtp": "Failed to send OTP",
-                "otpVerifiedSuccess": "OTP verified successfully",
-                "otpInvalid": "OTP Invalid or Expired"
+                "otpSent": "OTP on its way!",
+                "failedToSendOtp": "Oops! Couldn’t send the OTP",
+                "otpVerifiedSuccess": "You’re verified!",
+                "otpInvalid": "That OTP didn’t work Try again"
             },
-            "information": "This is the mobile number linked to your Aadhaar - the one the Government of India trusts to reach you. We use it to securely confirm that you, and only you, are accessing your identity."
+            "information": "This is your Aadhaar-linked mobile number—verified by the Government of India We use it to confirm that only you can access your identity"
         },
         "userPanVerification": {
             "profile": {
-                "title": "Complete your profile",
-                "subtitle": "Enter all the details to unlock Hues completely"
+                "title": "Finish setting up your profile",
+                "subtitle": "Unlock everything Hues has to offer — just complete your details"
             },
             "pan": {
-                "label": "PAN",
-                "tooltip": "PAN: Your universal legal identifier for all government and financial interactions on Hues.",
-                "placeholder": "PAN Card Number",
-                "fetching": "Fetching details...",
-                "attempts_exhausted": "You have exhausted your daily limit to verify your PAN, please try again later.",
-                "attempts_remaining": "You have {count} attempts left to verify your PAN"
+                "label": "Permanent Account Number (PAN)",
+                "tooltip": "Your PAN is a trusted identifier for accessing services and completing verified actions on Hues",
+                "placeholder": "Type your PAN to continue",
+                "fetching": "Hold tight — we’re fetching your info!",
+                "attempts_exhausted": "We’ve paused further PAN verifications for today Please check back soon",
+                "attempts_remaining": "You have {count} PAN verification attempt(s) left today"
             },
             "tnc": {
-                "checkbox_label": "I agree to the terms of this agreement.",
-                "link": "(see full agreement)",
-                "error": "*Please accept the terms and conditions"
+                "checkbox_label": "I agree to the terms of this",
+                "link": "Agreement",
+                "error": "Oops! You missed accepting the terms"
             },
             "name": {
-                "label": "Full Name",
-                "tooltip": "Your full Name",
-                "placeholder": "Full Name"
+                "label": "What’s your full name?",
+                "tooltip": "Full name exactly as printed on your PAN card",
+                "placeholder": "Your official full name linked to your PAN record"
             },
             "dob": {
-                "label": "Date of Birth",
-                "tooltip": "Hues requires age verification for secure transactions, ensuring a trustworthy user experience.",
-                "placeholder": "dd/MM/yyyy"
+                "label": "When were you born?",
+                "tooltip": "Verifying your age helps keep transactions secure and your Hues experience trustworthy",
+                "placeholder": "Enter your birth date (DD / MM / YYYY)"
             },
             "actions": {
-                "proceed": "Proceed"
+                "proceed": "Verify & Continue"
             },
             "error": {
-                "generic": "Oops, Something went wrong!"
+                "generic": "We hit a snag Try again?"
             },
-            "information":"Your PAN helps us confirm who you are in the eyes of the Income Tax Department. It’s how we ensure the platform is safe, compliant, and free of fraud."
-
+            "information":"PAN verification is how we validate your identity and ensure the platform stays compliant, secure, and fraud-resistant"
         },
         "aadharVerification": {
             "toast": {
                 "otp_sent_success": "OTP sent successfully",
-                "server_not_responding": "Please try after some time, server is not responding",
-                "generic_error": "Something went wrong"
+                "server_not_responding": "Oops — looks like the server isn't responding Give it another go in a moment",
+                "generic_error": "We hit a snag! Please refresh or retry shortly"
             },
             "steps": {
                 "aadharNum": {
-                    "title": "Verify your Aadhar",
-                    "subtitle": "Enter all the details to unlock Hues completely",
-                    "label": "Aadhar",
-                    "tooltip": "Aadhar: Your universal legal identifier for all government and financial interactions on Hues.",
-                    "placeholder": "Aadhar Card Number",
-                    "button": "Proceed",
-                    "information":"Aadhaar is your most authoritative ID in India. With your consent, it helps us tie your digital identity back to the government’s most trusted source."
+                    "title": "Let’s Verify Your Aadhaar",
+                    "subtitle": "Unlock the complete Hues experience — it starts with your details",
+                    "label": "Aadhaar (UIDAI-issued ID)",
+                    "tooltip": "Aadhaar ensures your identity is verified for government-regulated features on Hues",
+                    "placeholder": "Start with your Aadhaar — it’s your secure ID",
+                    "button": "Verify & Continue",
+                    "information":"Aadhaar confirms who you are, in the eyes of the Government of India With your consent, we use it to anchor your digital identity to its most trusted source"
                 },
                 "verifyAadharNum": {
-                    "title": "Verify your Aadhaar",
-                    "subtitle": "An one time OTP has been sent to your number through which your Aadhaar is registered",
-                    "otp_placeholder": "Enter OTP",
-                    "resend_timer_text": "OTP Sent, Resend OTP in",
+                    "title": "Let’s Verify Your Aadhaar",
+                    "subtitle": "Just a quick check! We’ve sent an OTP to the number registered with your Aadhaar",
+                    "otp_placeholder": "Quick step — enter your Aadhaar OTP",
+                    "resend_timer_text": "Hold on — resend Aadhaar OTP in",
                     "timer": "00:{seconds}s",
-                    "resend_button": "Resend",
-                    "verify_button": "Verify",
+                    "resend_button": "Still waiting? Resend now",
+                    "verify_button": "Verify & Continue",
                     "back": "Back",
-                    "information":"This second layer of confirmation is part of Aadhaar’s official eKYC process. It ensures your Aadhaar isn’t just valid — it’s in your hands.",
+                    "information":"A quick OTP, a lifetime of trust Aadhaar’s eKYC makes sure it’s really you behind the number",
                     "errors": {
-                        "otp_failed": "OTP verification failed. Please try again.",
-                        "something_went_wrong": "Something went wrong"
+                        "otp_failed": "Oops! The OTP didn’t go through Give it another shot",
+                        "something_went_wrong": "We hit a snag! Please refresh or retry shortly"
                     },
                     "success": {
-                        "otp_verified": "OTP Verified successfully"
+                        "otp_verified": "All set — Aadhaar OTP verification complete"
                     }
                 }
             }
         },
         "confirmation": {
-            "title": "You have been successfully verified and onboarded",
-            "subtitle": "Your next step is to onboard your enterprise to start using this platform to its full potential",
-            "onboard_button": "Onboard Enterprise",
-            "skip_link": "Skip for Now"
+            "title": "Welcome aboard! You’ve been successfully verified",
+            "subtitle": "Let’s get your Enterprise up and running — the platform’s full power awaits",
+            "onboard_button": "Onboard Your Enterprise",
+            "skip_link": "Do This Later"
         },
         "enterprise": {
             "pendingActions": {
-                "heading": "Enterprise Onboarding Incomplete",
-                "description": "Complete pending actions to able to access all the features of the platform and start using it",
-                "resumeButton": "Resume Onboarding",
-                "skipText": "Skip for Now",
+                "heading": "You’re Almost There — Let’s Complete Your Enterprise Setup",
+                "description": "You're nearly there — complete the remaining steps to get your Enterprise fully onboarded",
+                "resumeButton": "Enterprise Setup – Continue",
+                "skipText": "Do This Later",
                 "toast": {
-                    "success": "Onboarding Resumes",
-                    "error": "Something went wrong"
+                    "success": "Picking Up Where You Left Off — Enterprise Onboarding",
+                    "error": "Error Resuming Enterprise Setup — We're On It"
                 }
             },
             "selectEnterprise": {
-                "heading": "Enterprise type",
-                "description": "Please select the category your enterprise belongs to",
+                "heading": "Let’s Get to Know Your Enterprise",
+                "description": "Select your Enterprise classification — we’ll handle the rest",
                 "enterpriseTypes": {
-                    "proprietorship": "Proprietorship",
-                    "partnership": "Partnership",
-                    "pvtLtd": "Pvt Ltd",
-                    "publicLtd": "Public Ltd"
+                    "proprietorship": "Sole Proprietorship",
+                    "partnership": "Limited Liability Partnership (LLP)",
+                    "pvtLtd": "Private Limited Company",
+                    "publicLtd": "Public Ltd Company"
                 },
                 "buttons": {
-                    "proceed": "Proceed",
+                    "proceed": "Verify & Continue",
                     "back": "Back"
                 },
                 "errors": {
-                    "selectType": "Please select an enterprise type"
+                    "selectType": "Oops! You missed selecting your Enterprise type"
                 },
-                "information":" Enterprises come in many forms — and so do the rules. Knowing your type helps us tailor the right compliance checks and unlock the correct verification path."
+                "information":"Your Enterprise type shapes the journey ahead — let’s make sure we get it right"
             },
             "panVerify": {
-                "title": "Onboard your Enterprise",
-                "subtitle": "Enter all the details to unlock Hues completely",
+                "title": "Let’s Get Your Enterprise Started",
+                "subtitle": "Help us tailor Hues to your Enterprise — add your details",
                 "pan": {
-                    "label": "Enterprise PAN",
-                    "error": "Invalid PAN number"
+                    "label": "Registered PAN of Enterprise",
+                    "error": "The entered PAN is not valid"
                 },
                 "button": {
-                    "proceed": "Proceed",
+                    "proceed": "Verify & Continue",
                     "back": "Back"
                 },
                 "toast": {
-                    "success": "Pan Verified Successfully",
-                    "error": "Something went wrong"
+                    "success": "Great! Your PAN Is Now Verified",
+                    "error": "Verification error — let’s try that again"
                 },
                 "routes": {
                     "gst_verify": "/login/enterprise/gst-verify",
                     "cin_verify": "/login/enterprise/cin-verify",
                     "back": "/login/enterprise/select_enterprise_type"
                 },
-                "information":"This confirms your business is registered with the Income Tax Department. It’s how we verify your enterprise exists — and that you’re connected to it."
+                "information":"Confirms your Enterprise’s PAN and your role in it"
             },
             "aadharVerify": {
                 "title": {
-                    "noGstFound": "No GST Number found against this PAN",
-                    "gstFound": "We found some GST Numbers against this PAN"
+                    "noGstFound": "PAN found, but no GST info linked",
+                    "gstFound": "GST records found for this PAN"
                 },
-                "subtitle": "Choose your principle place of business from the list below or add one",
+                "subtitle": "Pick your primary business address — or enter a new one",
                 "label": {
-                    "fetchedGst": "Fetched GST numbers",
-                    "enterGst": "Enter your GST number"
+                    "fetchedGst": "GST Records Found",
+                    "enterGst": "Please enter your GST number"
                 },
                 "placeholder": {
-                    "selectGst": "Choose your preferred GST number",
-                    "enterGst": "Enter your GST number"
+                    "selectGst": "Choose the GST number you'd like to proceed with",
+                    "enterGst": "Enter your 15-digit GST number"
                 },
-                "orText": "--- OR ---",
+                "orText": "OR",
                 "checkbox": {
-                    "noGst": "I do not have GST number"
+                    "noGst": "I don’t have a GST number"
                 },
                 "button": {
                     "proceed": "Proceed",
                     "back": "Back"
                 },
                 "toast": {
-                    "success": "GST Verified Successfully",
-                    "error": "Something went wrong"
+                    "success": "GST Verification Successful Welcome aboard!",
+                    "error": "We hit a snag! Please refresh or retry shortly"
                 },
-                "information":"Your GST info tells us if your business is tax-registered and compliant. It also helps us validate who manages your GST filings."
+                "information":"We use your GST info to verify tax compliance and identify the filing authority for your business"
             },
             "cinVerify": {
-                "title": "We found a CIN for this enterpise",
-                "subtitle": "Verify the CIN Number and continue",
-                "label": "CIN",
-                "placeholder": "Enter your CIN number",
+                "title": "We found a CIN registered to this business",
+                "subtitle": "Please confirm the CIN to proceed",
+                "label": "Company Identification Number (CIN)",
+                "placeholder": "Type in your CIN to begin verification",
                 "button": {
-                    "verify": "Verify",
+                    "verify": "Confirm CIN",
                     "back": "Back"
                 },
                 "toast": {
-                    "success": "CIN Verified Successfully",
-                    "error": "Something went wrong"
+                    "success": "CIN check complete",
+                    "error": "We hit a snag! Please refresh or retry shortly"
                 },
-                "information":"Your CIN or LLPIN is like your business’s passport number — issued by the Ministry of Corporate Affairs. It uniquely identifies your enterprise in the corporate registry. Confirming it helps ensure we’re fetching data for the correct legal entity, especially when there are similar or identical names."
+                "information":"Your CIN or LLPIN is like a passport for your business — issued by the Ministry of Corporate Affairs It uniquely identifies your company in the national registry Verifying it ensures we’re fetching records for the correct legal entity, especially if multiple businesses have similar names"
             },
             "udyamVerify": {
-                "title": "Verify your UDYAM ID",
-                "subtitle": "Please enter the details and proceed",
+                "title": "Let’s confirm your UDYAM ID",
+                "subtitle": "Verify & Continue",
                 "label": "UDYAM ID",
-                "placeholder": "Enter UDYAM ID",
+                "placeholder": "Please enter your UDYAM ID",
                 "button": {
-                    "proceed": "Proceed",
+                    "proceed": "Verify & Continue",
                     "back": "Back"
                 },
                 "checkbox": {
-                    "text": "I do not have UDYAM ID"
+                    "text": "I do not have an UDYAM ID"
                 },
                 "toast": {
-                    "success": "UDYAM ID Verified Successfully",
-                    "error": "Something went wrong"
+                    "success": "Congratulations! Your UDYAM ID is verified",
+                    "error": "We hit a snag! Please refresh or retry shortly"
                 },
-                "information":" If you're an MSME, your UDYAM number gives us access to your verified small-business identity, issued by the Government of India."
+                "information":"Your UDYAM number helps us verify your MSME status with the Government of India"
             },
             "enterpriseVerification": {
-                "heading": "Verify your Enterprise Details",
-                "subheading": "Verify your enterprise and proceed further",
+                "heading": "Please confirm your Enterprise details to proceed",
+                "subheading": "Verify & Continue",
                 "labels": {
                     "enterpriseName": "Enterprise Name",
-                    "email": "Email",
-                    "phone": "Phone",
+                    "email": "Enter email id",
+                    "phone": "Enter your Aadhaar-linked mobile number",
                     "pincode": "Pincode",
                     "city": "City",
                     "state": "State",
-                    "address": "Address",
-                    "roc": "ROC",
+                    "address": "Update Enterprise Address",
+                    "roc": "Registrar of Companies",
                     "doi": "Date of Incorporation",
-                    "gstNumber": "GST Number"
+                    "gstNumber": "GST number"
                 },
                 "buttons": {
-                    "proceed": "Proceed",
+                    "proceed": "Verify & Continue",
                     "back": "Back"
                 },
                 "placeholders": {
-                    "enterpriseName": "Enter enterprise name",
-                    "email": "Enter email",
-                    "phone": "Enter phone number",
-                    "pincode": "Enter pincode",
-                    "city": "Auto-filled via pincode",
-                    "state": "Auto-filled via pincode",
+                    "enterpriseName": "Please enter your Enterprise Name",
+                    "email": "Enter email id",
+                    "phone": "Enter your Aadhaar-linked mobile number",
+                    "pincode": "Pincode",
+                    "city": "Auto-filled from pincode",
+                    "state": "Auto-filled from pincode",
                     "address": "Address",
                     "roc": "Registrar of Companies",
                     "doi": "Date of Incorporation",
-                    "gstNumber": "Enter GST number"
+                    "gstNumber": "A valid GST number is required"
                 },
                 "errors": {
-                    "enterpriseName": "Enterprise name is required",
-                    "email": "Email is required",
+                    "enterpriseName": "Please enter your Enterprise Name",
+                    "email": "Enter email id",
                     "emailInvalid": "Invalid email address",
-                    "phone": "Phone number is required",
-                    "country": "Country is required",
-                    "state": "State is required",
+                    "phone": "Enter your Aadhaar-linked mobile number",
+                    "country": "Please enter a country name",
+                    "state": "A Valid State is required",
                     "city": "City is required",
-                    "address": "Address is required",
+                    "address": "A valid address is required",
                     "pincode": "Pincode is required",
-                    "pincodeInvalid": "Invalid pincode. Please try valid pincode",
+                    "pincodeInvalid": "Invalid pincode",
                     "gstNumber": "GST number is required"
                 },
                 "toast": {
-                    "success": "Enterprise Verified Successfully",
-                    "error": "Something went wrong"
+                    "success": "Enterprise verification successful",
+                    "error": "We hit a snag! Please refresh or retry shortly"
                 },
-                "information":"This data provides complete visibility into your enterprise’s corporate status. It also confirms that the person onboarded — you — can legally represent the entity."
+                "information":"This data provides complete visibility into your Enterprise’s corporate status and confirms that the person onboarded is eligible to legally represent the entity"
             },
             "enterpriseConfirmation": {
-                "heading": "Your Enterprise has been successfully verified and onboarded",
-                "description": "You are now able to access all the features of the platform and start using it.",
+                "heading": "Congratulations, your Enterprise is confirmed and onboarded",
+                "description": "Congratulations, you are successfully onboarded",
                 "continueButton": "Continue",
-                "toastSuccess": "Logged In Successfully"
+                "toastSuccess": "You have successfully logged in to your Enterprise"
             },
             "inviteDirector": {
-                "heading": "Invite Company Director",
-                "description": "We need an authorised signatory as per MCA records to verify the details for this enterprise.",
-                "emailLabel": "Email",
-                "emailPlaceholder": "patrick@gmail.com",
+                "heading": "Invite Enterprise Director",
+                "description": "Please provide an authorised signatory as per MCA records",
+                "emailLabel": "Enter email id",
+                "emailPlaceholder": "Please enter email id",
                 "phoneLabel": "Phone Number",
-                "phonePlaceholder": "1234567890",
+                "phonePlaceholder": "+91XXXXXXXXXX",
                 "sendInvite": "Send Invite",
                 "back": "Back",
                 "toast": {
                     "success": "Invite sent Successfully",
-                    "error": "Something went wrong"
+                    "error": "We hit a snag! Please refresh or retry shortly"
                 }
             },
             "shareLinkToDirector": {
                 "heading": {
-                    "manual": "Already, Invitation Sent to director",
+                    "manual": "Invitation sent to Director",
                     "auto": "Invite Sent"
                 },
-                "description": "Once it gets approved you can access the enterprise dashboard",
+                "description": "Verifying Enterprise details Kindly wait for confirmation",
                 "shareLinkLabel": "Share invite link",
                 "copyButton": "Copy",
                 "getLinkButton": "Get Link",
                 "toast": {
-                    "copySuccess": "Link Copied to clipboard",
-                    "error": "Something went wrong"
+                    "copySuccess": "Link copied",
+                    "error": "We hit a snag! Please refresh or retry shortly"
                 }
             }
         },
         "confirmationInviteAsAssociate": {
-            "noInvitationFound": "Oops, No Invitation Found!",
-            "skipForNow": "You can skip for now",
+            "noInvitationFound": "No pending notification found",
+            "skipForNow": "Skip",
             "invitedHeading": "{enterpriseName} has invited you in their team",
             "continueWith": "Continue with {enterpriseName}?",
             "yesButton": "Yes",
             "noButton": "No",
             "toast": {
-                "onboardingSuccess": "Onboarding Completed",
-                "error": "Something went wrong"
+                "onboardingSuccess": "Congratulations! Your onboarding is complete",
+                "error": "We hit a snag! Please refresh or retry shortly"
             }
         },
         "confirmationInviteAsDirector": {
-            "noInvitationFound": "Oops, No Invitation Found!",
-            "skipForNow": "You can skip for now",
+            "noInvitationFound": "No pending notification found",
+            "skipForNow": "Skip",
             "invitedHeading": "{userName} has asked you to verify details for {enterpriseName}.",
             "continueWith": "Continue with {enterpriseName}?",
             "yesButton": "Yes",
             "noButton": "No",
-            "skipButton": "Skip for now",
+            "skipButton": "Skip",
             "toast": {
-                "error": "Something went wrong"
+                "error": "We hit a snag! Please refresh or retry shortly"
             }
         }
     }
