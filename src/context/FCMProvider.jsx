@@ -47,9 +47,6 @@ export default function FCMProvider({ children }) {
   const refetchAPIForeGroundNotificationPage = (eventKey) => {
     const endpointKey = queryMap[eventKey];
 
-    console.log('eventKey from props:', eventKey);
-    console.log('endpointKey that matched:', endpointKey);
-
     if (endpointKey) {
       queryClient.invalidateQueries({ queryKey: [endpointKey] });
     }
@@ -87,7 +84,7 @@ export default function FCMProvider({ children }) {
         });
 
         if (userToken && token) {
-          console.log('📩 FCM Token:', token);
+          // console.log('📩 FCM Token:', token);
           // save token to backend
           await registerFcmToken({ token, deviceType: 'web' });
         } else {
@@ -103,10 +100,8 @@ export default function FCMProvider({ children }) {
     // Foreground listener
     const unsubscribe = onMessage(messaging, (payload) => {
       const { body, image, endpointKey } = payload.data || {};
-      console.log('foreground message received 2', payload?.data);
 
       if (endpointKey) {
-        console.log('endpointKey from payload:', endpointKey);
         refetchAPIForeGroundNotificationPage(endpointKey);
       }
 
@@ -115,8 +110,26 @@ export default function FCMProvider({ children }) {
       });
     });
 
+    // 🔹 Background listener via BroadcastChannel
+    const bc = new BroadcastChannel('fcm_channel');
+    bc.onmessage = (event) => {
+      const { notification, data } = event.data || {};
+
+      if (data?.endpointKey) {
+        refetchAPIForeGroundNotificationPage(data.endpointKey);
+      }
+
+      toast(notification?.title || 'New notification', {
+        description: notification?.body,
+        icon: notification?.image || '🔔',
+      });
+    };
+
     // eslint-disable-next-line consistent-return
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      bc.close();
+    };
   }, []);
 
   return <>{children}</>;
