@@ -115,8 +115,27 @@ export default function FCMProvider({ children }) {
       });
     });
 
+    // 🔹 Background listener via BroadcastChannel
+    const bc = new BroadcastChannel('fcm_channel');
+    bc.onmessage = (event) => {
+      const { notification, data } = event.data || {};
+      console.log('background message via SW:', event.data);
+
+      if (data?.endpointKey) {
+        refetchAPIForeGroundNotificationPage(data.endpointKey);
+      }
+
+      toast(notification?.title || 'New notification', {
+        description: notification?.body,
+        icon: notification?.image || '🔔',
+      });
+    };
+
     // eslint-disable-next-line consistent-return
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      bc.close();
+    };
   }, []);
 
   return <>{children}</>;

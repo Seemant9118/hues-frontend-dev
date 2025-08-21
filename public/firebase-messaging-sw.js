@@ -16,12 +16,29 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+
 // Background messages
 messaging.onBackgroundMessage((payload) => {
-  const { body, image } = payload.data || {};
+  const { title, body, image } = payload.notification || {};
+  const { endpointKey } = payload.data || {}; // ✅ FIXED: safely extract from payload.data
+  const fallbackTitle = 'New notification received';
 
-  self.registration.showNotification('New notification received', {
+  // ✅ Show one system notification
+  self.registration.showNotification(title || fallbackTitle, {
     body,
-    icon: image || '🔔', // fallback icon
+    icon: image || '🔔',
+  });
+
+  // ✅ Broadcast simplified payload to all open tabs
+  const bc = new BroadcastChannel('fcm_channel');
+  bc.postMessage({
+    notification: {
+      title: title || fallbackTitle,
+      body,
+      image,
+    },
+    data: {
+      endpointKey: endpointKey || null,
+    },
   });
 });
