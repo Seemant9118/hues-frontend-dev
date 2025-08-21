@@ -528,13 +528,13 @@ const ViewOrder = () => {
                     <section className="sticky top-12 bg-white py-2">
                       <TabsList className="border">
                         <TabsTrigger
-                          className={`w-24 ${tab === 'overview' ? 'shadow-customShadow' : ''}`}
+                          className={`${tab === 'overview' ? 'shadow-customShadow' : ''}`}
                           value="overview"
                         >
                           {translations('tabs.label.tab1')}
                         </TabsTrigger>
                         <TabsTrigger
-                          className={`w-24 ${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
+                          className={`${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
                           value="invoices"
                         >
                           {translations('tabs.label.tab2')}
@@ -546,7 +546,7 @@ const ViewOrder = () => {
                           {translations('tabs.label.tab3')}
                         </TabsTrigger>
                         <TabsTrigger
-                          className={`w-24 ${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
+                          className={`${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
                           value="timeline"
                         >
                           {translations('tabs.label.tab4')}
