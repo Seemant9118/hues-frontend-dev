@@ -2,53 +2,53 @@
     "customer": {
         "title": "Customers",
         "emptyStateComponent": {
-            "heading": "Streamline sales with our Customer feature, integrating customer data for direct inventory offers and full catalog visibility",
+            "heading": "Make selling easier by linking customer info to show offers and your full catalog right when they need it.",
             "subItems": {
                 "subItem1": {
-                    "value": "Easily add customer details to your database."
+                    "value": "Share your stock with clients—let them browse it all, no filters."
                 },
                 "subItem2": {
-                    "value": "Offer inventory directly to clients with full product access."
+                    "value": "Add customer info in a snap—it’s quick and hassle-free."
                 },
                 "subItem3": {
-                    "value": "Keep customers updated, fostering transparency and trust."
+                    "value": "Keep your customers in the loop—it’s how trust grows."
                 },
                 "subItem4": {
-                    "value": "Listed customers get automatic catalog access, simplifying sales."
+                    "value": "Auto-access for listed customers—less hassle, more sales."
                 }
             }
         },
         "ctas": {
-            "searchPlaceHolder": "Search ...",
-            "upload": "Upload",
-            "export": "Export",
-            "add": "Add",
+            "searchPlaceHolder": "Search Customers",
+            "upload": "Upload Customers list",
+            "export": "Export Customers list",
+            "add": "Add a customer",
             "tooltips": {
-                "upload": "Upload customers data in bulk",
-                "export": "Export customers data",
-                "add": "Add a new customers",
-                "coming_soon": "Coming Soon"
+                "upload": "Batch-upload your customer records",
+                "export": "Export all customer info",
+                "add": "New Customer? Add now",
+                "coming_soon": "Rolling out soon"
             }
         },
         "table": {
             "header": {
-                "name": "NAME",
-                "phone": "PHONE",
-                "email": "EMAIL",
-                "address": "ADDRESS"
+                "name": "Customer Name",
+                "phone": "Customer Phone Number",
+                "email": "Customer email id",
+                "address": "Customer address"
             },
             "column": {
                 "actions": {
-                    "edit": "Edit",
-                    "resend": "Resend Invite",
-                    "copyInviteLink": "Copy Invite Link",
-                    "sendReminder": "Send Reminder"
+                    "edit": "Modify",
+                    "resend": "Send another invite",
+                    "copyInviteLink": "Copy Invitation link",
+                    "sendReminder": "Send reminder/Follow up"
                 },
                 "status": {
-                    "pending": "Pending",
-                    "acceptedByClient": "Accepted by customers",
-                    "acceptedByYou": "Accepted by you",
-                    "rejected": "Rejected"
+                    "pending": "Response due from customer",
+                    "acceptedByClient": "Confirmed by customer",
+                    "acceptedByYou": "Confirmed by you",
+                    "rejected": "Declined by customer"
                 }
             }
         }
