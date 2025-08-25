@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { validatePan } from '@/appUtils/ValidationUtils';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { toast } from 'sonner';
 
 const EnterprisePANVerifyPage = () => {
   const translations = useTranslations('auth.enterprise.panVerify');
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translationsForError = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -84,7 +86,8 @@ const EnterprisePANVerifyPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.message || translations('toast.error'));
+      const customError = apiErrorHandler(error);
+      setErrorMsg(translationsAPIErrors(customError));
     },
   });
 

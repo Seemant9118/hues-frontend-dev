@@ -339,6 +339,30 @@
             "toast": {
                 "error": "We hit a snag! Please refresh or retry shortly"
             }
+        },
+        "apiErrorsOnboarding": {
+            "otpNotSent": "Hang tight! Looks like the OTP didn’t go through. Try resending in a few seconds.",
+            "invalidOtp": "Oops! That OTP didn’t work One more try should do the trick!",
+            "panVerificationRequestFailed": "Looks like we hit a snag while verifying your PAN Please try again in a bit — we’re on it!",
+            "aadhaarVerificationRequestFailed": "Looks like we hit a snag while verifying your AADHAR Please try again in a bit — we’re on it!",
+            "rpacpcServerUnresponsiveError": "We couldn’t connect to the RPACPC server just now Please retry in a few seconds",
+            "surepassServerUnresponsiveError": "Surepass server unresponsive",
+            "invalidUserPan": "We couldn’t verify the PAN you entered Make sure it’s typed exactly as shown on your PAN card, including uppercase letters",
+            "invalidEnterprisePan": "We couldn’t verify this as a valid Enterprise PAN Kindly confirm it’s correct and linked to your registered business",
+            "invalidGst": "We couldn’t verify the GST Number you entered Please make sure it is typed correctly",
+            "rpacacGstVerificationRequestFailed": "RPACAC GST verification request failed",
+            "gstDetailsNotMatching": "The GST number doesn’t seem to match Kindly recheck and confirm",
+            "cinOrLlpInDetailsNotMatching": "The CIN number doesn’t seem to match Kindly recheck and confirm",
+            "udyamDetailsNotMatching": "The UDYAM ID doesn’t seem to match Kindly recheck and confirm",
+            "invalidCinOrLlp": "We couldn’t verify the CIN you entered Please make sure it’s typed correctly",
+            "invalidUdyam": "We couldn’t verify the UDYAM ID you entered Please make sure it’s typed correctly",
+            "invalidAadhaar": "We couldn’t verify the AADHAR Number you entered Make sure it’s typed exactly as shown on your AADHAR card, including uppercase letters",
+            "invalidAadhaarOtp": "Hmm, that OTP didn’t work Please check and try again",
+            "aadhaarMobileMismatch": "Oops! The mobile number you entered doesn't match the one linked to your Aadhaar Please double-check your number or update it on the UIDAI portal",
+            "invalidPin": "Oops! That PIN doesn’t seem right Could you check and try again?",
+            "pincodeNotFound": "We couldn’t find that pincode Want to double-check it?",
+            "userAlreadyExists": "Looks like you've already created an account Just log in to continue!",
+            "genericError": "We hit a snag! Please refresh or retry shortly"
         }
     }
 }

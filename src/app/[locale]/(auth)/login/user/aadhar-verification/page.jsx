@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { UserProvider } from '@/context/UserContext';
 import { sentAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
@@ -11,6 +12,7 @@ import AadharNumberDetail from '../../multi-step-forms/aadharVerificationCompone
 import AadharVerifyOTP from '../../multi-step-forms/aadharVerificationComponents/AadharVerifyOTP';
 
 const AadharVerificationPage = () => {
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translations = useTranslations('auth.aadharVerification');
   const [aadharVerificationSteps, setAadharVerificationSteps] = useState(1);
   const [aadharNumber, setAadharNumber] = useState('');
@@ -46,9 +48,8 @@ const AadharVerificationPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('toast.generic_error'),
-      );
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 

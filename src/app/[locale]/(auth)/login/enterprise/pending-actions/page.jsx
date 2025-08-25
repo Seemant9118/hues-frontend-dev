@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { handlePendingActionsRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { toast } from 'sonner';
 
 const ConfirmationPage = () => {
   const translations = useTranslations('auth.enterprise.pendingActions');
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const router = useRouter();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
@@ -58,7 +60,8 @@ const ConfirmationPage = () => {
       });
     },
     onError: (error) => {
-      toast.error(error.response.data.message || translations('toast.error'));
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 

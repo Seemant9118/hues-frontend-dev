@@ -3,6 +3,7 @@
 import { addressAPIs } from '@/api/addressApi/addressApis';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { tokenApi } from '@/api/tokenApi/tokenApi';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import {
   validateDateOfIncorporation,
   validateEnterpriseAddress,
@@ -35,6 +36,7 @@ const EnterpriseVerificationDetailsPage = () => {
   const translations = useTranslations(
     'auth.enterprise.enterpriseVerification',
   );
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translationForError = useTranslations();
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
@@ -147,10 +149,11 @@ const EnterpriseVerificationDetailsPage = () => {
         const res = await getDataFromPinCode(enterpriseOnboardData?.pincode);
         return res?.data?.data;
       } catch (err) {
+        const customError = apiErrorHandler(err);
         if (err?.response?.status === 400) {
           setErrorMsg((prev) => ({
             ...prev,
-            pincode: translations('errors.pincodeInvalid'),
+            pincode: translationsAPIErrors(customError),
           }));
           setEnterpriseOnboardData((prev) => ({
             ...prev,
@@ -158,7 +161,7 @@ const EnterpriseVerificationDetailsPage = () => {
             state: '',
           }));
         } else {
-          toast.error('Failed to fetch address details');
+          toast.error(translationsAPIErrors(customError));
         }
         throw err; // rethrow so React Query knows it failed
       }
@@ -222,7 +225,8 @@ const EnterpriseVerificationDetailsPage = () => {
       router.push('/login/enterprise/enterprise-onboarded-success');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || translations('toast.error'));
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 

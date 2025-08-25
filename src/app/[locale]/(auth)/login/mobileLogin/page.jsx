@@ -3,6 +3,7 @@
 'use client';
 
 import { directorApi } from '@/api/director/directorApi';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { handleOtpRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
@@ -13,13 +14,14 @@ import {
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import React, { Suspense, useState } from 'react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import MobileLogin from '../multi-step-forms/mobileLoginOTPComponents/MobileLogin';
 import VerifyMobileOTP from '../multi-step-forms/mobileLoginOTPComponents/VerifyMobileOTP';
 
 const MobileLoginPage = () => {
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translations = useTranslations('auth.mobileLogin');
 
   const queryClient = useQueryClient();
@@ -49,8 +51,9 @@ const MobileLoginPage = () => {
         setMobileLoginStep(2);
       }
     },
-    onError: () => {
-      setErrorMsg(translations('toast.failedToSendOtp'));
+    onError: (error) => {
+      const customError = apiErrorHandler(error);
+      setErrorMsg(translationsAPIErrors(customError));
     },
   });
 
@@ -132,9 +135,8 @@ const MobileLoginPage = () => {
     },
 
     onError: (error) => {
-      toast.error(
-        error.response?.data?.message || translations('toast.otpInvalid'),
-      );
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 
