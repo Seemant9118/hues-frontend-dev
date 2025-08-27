@@ -139,9 +139,10 @@ const ProfileInfoPopUp = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          debounceTime={0}
           variant="ghost"
           className={cn(
-            'flex w-full justify-start gap-2.5 rounded-sm border-none p-3 text-sm font-normal',
+            'flex w-full justify-start gap-2.5 rounded-sm border-none px-3 py-5 text-sm font-normal',
             open || pathName.includes('profile')
               ? 'bg-[#288AF91A] text-primary hover:bg-[#288AF91A] hover:text-primary'
               : 'bg-transparent text-gray-600',

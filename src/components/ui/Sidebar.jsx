@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { useRBAC } from '@/context/RBACcontext';
+import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
   Bell,
@@ -25,15 +25,14 @@ import {
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
-import { usePermission } from '@/hooks/usePermissions';
+import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
-  const { hasPageAccess } = useRBAC();
   const { hasPermission } = usePermission();
 
-  const adminLinks = hasPageAccess('adminReports')
+  const adminLinks = hasPermission('permission:admin-dashboard-view')
     ? [
         {
           name: 'Reports',
@@ -202,6 +201,8 @@ const Sidebar = () => {
               {adminLinks.map((link) => (
                 <StyledLinks key={link.name} link={link} />
               ))}
+
+              <EnterpriseSelectorPopUp />
             </nav>
           )}
 

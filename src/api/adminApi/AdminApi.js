@@ -4,9 +4,9 @@ export const AdminAPIs = {
     endpointKey: 'get_admin_data',
   },
 
-  getEnterpriseData: {
-    endpoint: `/admin-panel/dashboard/enterprise-data`,
-    endpointKey: 'get_enterprise_data',
+  getEnterpriseSalesData: {
+    endpoint: `/admin-panel/dashboard/enterprise/sales-data`,
+    endpointKey: 'get_enterprise_sales_data',
   },
 
   getOnboardingData: {
@@ -94,5 +94,17 @@ export const AdminAPIs = {
   getUserdataFromPAN: {
     endpoint: `/admin-panel/dashboard/user/pan`,
     endpointKey: 'get_userdata_from_pan',
+  },
+  getSearchedEnterprise: {
+    endpoint: `/admin-panel/dashboard/enterprises/search`,
+    endpointKey: 'get_searched_enterprise',
+  },
+  switchEnterprise: {
+    endpoint: `/admin-panel/admin/enterprise/switch/`,
+    endpointKey: 'switch_enterprise',
+  },
+  revertSwitchedEnterprise: {
+    endpoint: `/admin-panel/admin/revert-token`,
+    endpointKey: 'revert_enterprise',
   },
 };
