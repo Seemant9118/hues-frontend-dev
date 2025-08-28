@@ -10,7 +10,7 @@ import {
   switchAccount,
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { User } from 'lucide-react';
+import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { usePathname, useRouter } from '@/i18n/routing';
@@ -33,6 +33,7 @@ const ProfileInfoPopUp = ({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [bgColor, setBgColor] = useState('');
+  const switchedEnterpriseId = LocalStorageService.get('switchedEnterpriseId');
 
   const [userEnterprises, setUserEnterprises] = useState([]);
 
@@ -182,11 +183,14 @@ const ProfileInfoPopUp = ({
         </div>
 
         {/* enterprise switch */}
-        <div className="flex flex-col gap-1 p-1">
+        <div className="relative flex flex-col gap-1 p-1">
           <h1 className="text-sm">{translations(enterprises)}</h1>
-
+          {switchedEnterpriseId && (
+            <div className="absolute top-0 z-20 flex h-40 w-full items-center justify-center gap-1 rounded-md border bg-white/70 px-4 py-3 backdrop-blur-sm">
+              <ShieldBan size={14} /> Not allowed to switch
+            </div>
+          )}
           <div className="scrollBarStyles flex max-h-32 flex-col gap-5 overflow-y-auto">
-            {/* availableenterprise lists */}
             {userEnterprises?.map((userAccount) => (
               <div
                 key={userAccount?.userAccountId}
@@ -194,15 +198,21 @@ const ProfileInfoPopUp = ({
                   'flex items-center justify-between rounded-sm p-2 hover:bg-blue-500/10',
                   userAccount?.isActiveEnterprise
                     ? 'border border-primary bg-blue-500/10'
-                    : 'cursor-pointer',
+                    : switchedEnterpriseId // disable clicks when switched
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer',
                 )}
                 onClick={() => {
-                  !userAccount?.isActiveEnterprise &&
+                  if (
+                    !switchedEnterpriseId &&
+                    !userAccount?.isActiveEnterprise
+                  ) {
                     switchAccountMutation.mutate({
                       userId: userAccount?.user?.userId,
                       userAccountId: userAccount?.userAccountId,
                       enterpriseId: userAccount?.enterprise?.enterpriseId,
                     });
+                  }
                 }}
               >
                 <div className="flex w-full items-center gap-2">
@@ -239,14 +249,16 @@ const ProfileInfoPopUp = ({
         <div className="mt-auto border-[1px]"></div>
         {/* other actions cta */}
         <div>
-          <div
-            onClick={() => {
-              addAnotherEnterpriseMutation.mutate();
-            }}
-            className="cursor-pointer rounded-sm p-2 text-sm font-semibold hover:bg-blue-500/10"
-          >
-            {translations(addAnotherCta)}
-          </div>
+          {!switchedEnterpriseId && (
+            <div
+              onClick={() => {
+                addAnotherEnterpriseMutation.mutate();
+              }}
+              className="cursor-pointer rounded-sm p-2 text-sm font-semibold hover:bg-blue-500/10"
+            >
+              {translations(addAnotherCta)}
+            </div>
+          )}
 
           <div
             onClick={logout}

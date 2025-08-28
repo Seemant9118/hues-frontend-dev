@@ -4,6 +4,7 @@ import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
@@ -52,7 +53,7 @@ const EditOrder = ({
 
   const queryClient = useQueryClient();
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
   const [selectedItem, setSelectedItem] = useState({

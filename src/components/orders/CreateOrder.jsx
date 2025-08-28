@@ -6,6 +6,7 @@ import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendo
 import { orderApi } from '@/api/order_api/order_api';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
@@ -61,7 +62,7 @@ const CreateOrder = ({
   const translations = useTranslations('components.create_edit_order');
 
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const orderDraft = isCreatingSales && SessionStorageService.get('orderDraft');
   const bidDraft = isCreatingPurchase && SessionStorageService.get('bidDraft');
 

@@ -6,7 +6,7 @@ import { pinSettings } from '@/api/pinsettings/pinsettingApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { userAuth } from '@/api/user_auth/Users';
 import { validateEmail } from '@/appUtils/ValidationUtils';
-import { capitalize } from '@/appUtils/helperFunctions';
+import { capitalize, getEnterpriseId } from '@/appUtils/helperFunctions';
 import GeneatePINModal from '@/components/Modals/GeneatePINModal';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import AccountDetails from '@/components/settings/AccountDetails';
@@ -48,7 +48,7 @@ import { usePINAuditLogsColumns } from './usePINAuditLogsColumns';
 
 function Settings() {
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const translations = useTranslations('settings');
   const translationsTab4 = useTranslations(

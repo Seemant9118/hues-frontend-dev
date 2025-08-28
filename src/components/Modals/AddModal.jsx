@@ -3,7 +3,7 @@
 import { addressAPIs } from '@/api/addressApi/addressApis';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
-import { debounce } from '@/appUtils/helperFunctions';
+import { debounce, getEnterpriseId } from '@/appUtils/helperFunctions';
 import InputWithLabel from '@/components/ui/InputWithLabel';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,7 +37,7 @@ const AddModal = ({ cta, btnName, mutationFunc, isOpen, setIsOpen }) => {
   const translations = useTranslations('components.addEditModal');
 
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const panNumber = LocalStorageService.get('panClientVendor');
   const gstNumber = LocalStorageService.get('gstClientVendor');
 

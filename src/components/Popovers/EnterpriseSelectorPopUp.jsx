@@ -1,7 +1,7 @@
 'use client';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
-import { capitalize } from '@/appUtils/helperFunctions';
+import { capitalize, parseJwt } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import {
@@ -36,6 +36,7 @@ export default function EnterpriseSelectorPopUp() {
       // token and refreshToken update localStorage
       LocalStorageService.set('token', access_token);
       LocalStorageService.set('refreshtoken', refresh_token);
+      LocalStorageService.remove('switchedEnterpriseId');
       toast.success(`Enterprise reverted to current enterprise`);
     },
     onError: () => {
@@ -59,6 +60,11 @@ export default function EnterpriseSelectorPopUp() {
       LocalStorageService.set('token', access_token);
       LocalStorageService.set('refreshtoken', refresh_token);
 
+      const tokenData = parseJwt(access_token);
+      LocalStorageService.set(
+        'switchedEnterpriseId',
+        Number(tokenData?.enterprise_id),
+      );
       setSelected(variables?.enterpriseName); // UI update
       toast.success(`Now viewing as ${capitalize(variables?.enterpriseName)}`);
 

@@ -1,5 +1,5 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { updateComments } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Building2, Pencil, X } from 'lucide-react';
@@ -13,7 +13,7 @@ import { Textarea } from '../ui/textarea';
 const DebitNoteComment = ({ comment, invalidateId }) => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const [editedComments, setEditedComments] = useState({
     text: comment.text || '',

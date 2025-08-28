@@ -1,7 +1,7 @@
 'use client';
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
-import { debounce } from '@/appUtils/helperFunctions';
+import { debounce, getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import UpdateCatalogue from '@/components/catalogue/UpdateCatalogue';
 import BulkConfirmAction from '@/components/Modals/BulkConfirmAction';
@@ -38,7 +38,7 @@ const Catalogue = () => {
 
   const translations = useTranslations('catalogue');
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

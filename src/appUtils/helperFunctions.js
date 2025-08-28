@@ -1,3 +1,5 @@
+import { LocalStorageService } from '@/lib/utils';
+
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
   if (!name) return 'PR'; // Default initials
@@ -142,4 +144,10 @@ export const parseJwt = (token) => {
   } catch (error) {
     return null;
   }
+};
+
+export const getEnterpriseId = () => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const switchedEnterpriseId = LocalStorageService.get('switchedEnterpriseId');
+  return switchedEnterpriseId || enterpriseId;
 };

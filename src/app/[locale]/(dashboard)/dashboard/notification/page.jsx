@@ -1,6 +1,7 @@
 'use client';
 
 import { notificationApi } from '@/api/notifications/notificationApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import AlertBox from '@/components/Modals/AlertBox';
 import NotificationFilterPopUp from '@/components/Popovers/NotificationFilterPopUp';
 import Loading from '@/components/ui/Loading';
@@ -49,7 +50,7 @@ const Notification = () => {
   const [notifications, setNotifications] = useState([]);
   const [alertData, setAlertData] = useState({ isShow: false, infoText: '' });
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

@@ -3,6 +3,7 @@
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import FilterModal from '@/components/orders/FilterModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -62,7 +63,7 @@ const SalesOrder = () => {
     'sales.sales-orders.emtpyStateComponent.subItems.subItem4',
   ];
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
