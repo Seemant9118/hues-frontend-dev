@@ -35,10 +35,10 @@
             },
             "tabs": {
                 "label": {
-                    "tab1": "All Orders",
-                    "tab2": "Waiting for Review",
-                    "tab3": "Confirmed Deals",
-                    "tab4": "Pending Payments"
+                    "tab1": "All",
+                    "tab2": "Under Review",
+                    "tab3": "Confirmed Orders",
+                    "tab4": "Receivables"
                 },
                 "content": {}
             },
