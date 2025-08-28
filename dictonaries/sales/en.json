@@ -26,8 +26,8 @@
                     "errorMsg": "Oops! Something didn’t go as planned Try again?"
                 },
                 "offer": {
-                    "cta": "Make an Offer",
-                    "placeholder": "Start a new Sales Order"
+                    "cta": "Offer",
+                    "placeholder": "Create a new Sales Order"
                 },
                 "search": {
                     "placeholder": "Search by Customer..."
@@ -46,8 +46,8 @@
                 "header": {
                     "order_id": "Order ID",
                     "date": "Date",
-                    "customers_type": "Customers Type",
-                    "customers": "Customers",
+                    "customers_type": "Type",
+                    "customers": "Name",
                     "status": "Status",
                     "total_amount": "Total Amount"
                 },
@@ -57,8 +57,8 @@
                         "successMsg": "All done — your edits were saved!"
                     },
                     "revise": {
-                        "cta": "Make changes",
-                        "successMsg": "Make changes"
+                        "cta": "Revise",
+                        "successMsg": "Changes saved successfully!"
                     },
                     "delete": {
                         "cta": "Delete",
@@ -72,26 +72,26 @@
                 "title": {
                     "sales": "Sales",
                     "order_details": "Order Details",
-                    "negotiation": "Negotiation",
-                    "generate_invoice": "Create invoice",
+                    "negotiation": "Review",
+                    "generate_invoice": "Invoice",
                     "record_payment": "Log payment",
-                    "upload_attachements": "Add documents"
+                    "upload_attachements": "Upload Document"
                 },
                 "ctas": {
-                    "upload_attachements": "Add documents",
+                    "upload_attachements": "Upload Document",
                     "record_payment": "Log payment",
-                    "generate_invoice": "Create invoice",
+                    "generate_invoice": "Invoice",
                     "view": {
-                        "placeholder": "Preview order"
+                        "placeholder": "Preview Order"
                     },
                     "more": {
-                        "placeholder": "More options",
-                        "revise": "Make changes"
+                        "placeholder": "More Options",
+                        "revise": "Revise"
                     },
                     "footer_ctas": {
-                        "wait_response": "Waiting for a reply",
-                        "negotiate": "Send a counter-offer",
-                        "accept": "Accept offer"
+                        "wait_response": "Awaiting Response",
+                        "negotiate": "Review",
+                        "accept": "Accept"
                     }
                 },
                 "fileUploader": {
@@ -100,27 +100,27 @@
                     "attachedFilesLabel": "Files attached",
                     "fileAttachedMessage": "File attached successfully",
                     "buttons": {
-                        "select": "Choose file",
-                        "cancel": "Cancel upload",
-                        "upload": "Upload file"
+                        "select": "Select",
+                        "cancel": "Cancel",
+                        "upload": "Upload"
                     }
                 },
                 "tabs": {
                     "label": {
-                        "tab1": "Order summary",
-                        "tab2": "Invoice details",
-                        "tab3": "Payments",
-                        "tab4": "Activity timeline"
+                        "tab1": "Overview",
+                        "tab2": "Invoices",
+                        "tab3": "Payment Receipts",
+                        "tab4": "Timeline"
                     },
                     "content": {
                         "tab1": {
                             "table": {
                                 "header": {
-                                    "item": "Product/Service",
-                                    "invoice_quantity": "Invoice / quantity",
+                                    "item": "Item",
+                                    "invoice_quantity": "Invoiced / quantity",
                                     "quantity": "Quantity",
-                                    "ask_rate": "Rate quoted",
-                                    "total_amount": "Total value"
+                                    "ask_rate": "Asking Price",
+                                    "total_amount": "Total Amount"
                                 }
                             }
                         },
@@ -130,7 +130,7 @@
                     }
                 },
                 "successMsg": {
-                    "order_accepted": "Order accepted"
+                    "order_accepted": "Order Accepted"
                 },
                 "errorMsg": {
                     "common": "Oops! Something didn’t go as planned Try again?"
@@ -178,7 +178,7 @@
             },
             "tabs": {
                 "label": {
-                    "tab1": "All invoices",
+                    "tab1": "All",
                     "tab2": "Outstanding",
                     "tab3": "Disputed"
                 }
@@ -187,8 +187,8 @@
                 "header": {
                     "invoice_id": "Invoice ID",
                     "date": "Date",
-                    "customers_type": "Customers Type",
-                    "customers": "Customers",
+                    "customers_type": "Type",
+                    "customers": "Name",
                     "status": "Status",
                     "order_id": "Order ID",
                     "total_amount": "Total Amount"
@@ -212,8 +212,8 @@
                 "tabs": {
                     "label": {
                         "tab1": "Overview",
-                        "tab2": "Payment receipts",
-                        "tab3": "Debit notes"
+                        "tab2": "Payment Receipts",
+                        "tab3": "Debit Notes"
                     },
                     "content": {
                         "tab1": {
@@ -243,7 +243,7 @@
                         },
                         "tab3": {
                             "label": {
-                                "view_debit_notes": "View debit note",
+                                "view_debit_notes": "View debit Note",
                                 "date": "Date",
                                 "total_amount": "Total Amount",
                                 "type": "Type",
@@ -317,7 +317,7 @@
                 "header": {
                     "invoice_id": "Invoice ID",
                     "date": "Date",
-                    "customers": "Customers",
+                    "customers": "Name",
                     "total_amount": "Total Amount",
                     "status": "Status"
                 }

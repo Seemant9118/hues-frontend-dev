@@ -21,7 +21,7 @@
             },
             "ctas": {
                 "export": {
-                    "placeholder": "Download Selected Orders",
+                    "placeholder": "Download Selected Order(s)",
                     "successMsg": "Order exported—your download’s starting now",
                     "errorMsg": "Uh-oh, we hit a snag Retry ?"
                 },
@@ -47,13 +47,13 @@
                 "header": {
                     "purchase_id": "Purchase ID",
                     "date": "Date",
-                    "vendors": "Vendors",
+                    "vendors": "Vendor",
                     "status": "Status",
                     "total_amount": "Total Amount"
                 },
                 "column_actions": {
                     "revise": {
-                        "cta": "Modify",
+                        "cta": "Revise",
                         "successMsg": "Changes saved"
                     },
                     "delete": {
@@ -68,32 +68,32 @@
                 "title": {
                     "purchases": "Purchases",
                     "order_details": "Order details",
-                    "negotiation": "Negotiation",
+                    "negotiation": "Review",
                     "invoices": "Invoices",
                     "payment_advice": "Payment advise",
-                    "upload_attachements": "Add attachements"
+                    "upload_attachements": "Upload Documents"
                 },
                 "ctas": {
-                    "upload_attachements": "Upload attachements",
-                    "payment_advice": "Send payment advise",
-                    "generate_invoice": "Generate invoice",
+                    "upload_attachements": "Upload Documents",
+                    "payment_advice": "Send Payment Advise",
+                    "generate_invoice": "Invoice",
                     "view": {
-                        "placeholder": "Preview order"
+                        "placeholder": "Preview Order"
                     },
                     "more": {
-                        "placeholder": "More options",
-                        "revise": "Modify"
+                        "placeholder": "More Options",
+                        "revise": "Revise"
                     },
                     "footer_ctas": {
                         "wait_response": "Awaiting response",
-                        "negotiate": "Negotiate",
+                        "negotiate": "Review",
                         "accept": "Accept"
                     }
                 },
                 "fileUploader": {
                     "instruction": "Drag & Drop or Select a File (Max 10MB, .png / .pdf Formats)",
                     "note": "Note: Upload files only—no text or extras",
-                    "attachedFilesLabel": "All set – file attached",
+                    "attachedFilesLabel": "Attached Documents",
                     "fileAttachedMessage": "All set – file attached",
                     "buttons": {
                         "select": "Select",
@@ -105,7 +105,7 @@
                     "label": {
                         "tab1": "Overview",
                         "tab2": "Invoices",
-                        "tab3": "Payment advices",
+                        "tab3": "Payment Advices",
                         "tab4": "Timeline"
                     },
                     "content": {
@@ -114,7 +114,7 @@
                                 "header": {
                                     "item": "Item",
                                     "invoice_quantity": "Invoice/Quantity",
-                                    "quantity": "Purchase Quantity",
+                                    "quantity": "Quantity",
                                     "ask_rate": "Asking Rate",
                                     "total_amount": "Total amount"
                                 }
@@ -158,7 +158,7 @@
             "ctas": {
                 "export": {
                     "cta": "Export",
-                    "placeholder": "Download All Invoices",
+                    "placeholder": "Download All Invoice(s)",
                     "placeholder2": "Download selected invoices",
                     "successMsg": "Invoice exported—your download’s starting now",
                     "errorMsg": "Uh-oh, we hit a snag. Retry?"
@@ -178,10 +178,10 @@
                 "header": {
                     "invoice_id": "Invoice ID",
                     "date": "Date",
-                    "vendors": "Vendors",
+                    "vendors": "Vendor",
                     "order_id": "Order ID",
                     "status": "Status",
-                    "total_amount": "Total Amount"
+                    "total_amount": "Total amount"
                 }
             },
             "invoice_details": {
@@ -202,16 +202,16 @@
                 "tabs": {
                     "label": {
                         "tab1": "Overview",
-                        "tab2": "Payment advices",
-                        "tab3": "Debit notes"
+                        "tab2": "Payment Advices",
+                        "tab3": "Debit Notes"
                     },
                     "content": {
                         "tab1": {
                             "table": {
                                 "header": {
-                                    "item": "Purchase Item",
-                                    "quantity": "Purchase Quantity",
-                                    "rate": "Purchase Rate",
+                                    "item": "Item",
+                                    "quantity": "Quantity",
+                                    "rate": "Rate",
                                     "total_amount": "Total amount"
                                 }
                             }
@@ -222,7 +222,7 @@
                                     "payment_id": "Payment ID",
                                     "amount": "Amount",
                                     "date": "Date",
-                                    "invoice_no": "Invoice no."
+                                    "invoice_no": "Invoice No."
                                 }
                             },
                             "emtpyStateComponent": {
@@ -232,9 +232,9 @@
                         },
                         "tab3": {
                             "label": {
-                                "view_debit_notes": "View debit note",
+                                "view_debit_notes": "View Debit Note",
                                 "date": "Date",
-                                "total_amount": "Total amount",
+                                "total_amount": "Total Amount",
                                 "type": "Type",
                                 "reason": "Reason"
                             },
@@ -294,18 +294,18 @@
             },
             "tabs": {
                 "label": {
-                    "tab1": "Purchase All",
-                    "tab2": "Purchase Accepted",
-                    "tab3": "Purchase Rejected"
+                    "tab1": "All",
+                    "tab2": "Accepted",
+                    "tab3": "Rejected"
                 }
             },
             "table": {
                 "header": {
                     "invoice_id": "Invoice ID",
-                    "date": "Purchase Date",
-                    "vendors": "Purchase Vendors",
+                    "date": "Date",
+                    "vendors": "Vendors",
                     "total_amount": "Total Amount",
-                    "status": "Purchase Status"
+                    "status": "Status"
                 }
             },
             "debit_notes_details": {
