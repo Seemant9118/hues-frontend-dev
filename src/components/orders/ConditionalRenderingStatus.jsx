@@ -117,6 +117,21 @@ const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
       statusBG = '#DD97451A';
       statusBorder = '#DD9745';
       break;
+
+    // stock status
+    case 'STOCK_OUT':
+      statusText = translations('STOCK_OUT');
+      statusColor = '#F16B6B';
+      statusBG = '#F16B6B1A';
+      statusBorder = '#F16B6B';
+      break;
+    case 'STOCK_IN':
+      statusText = translations('STOCK_IN');
+      statusColor = '#39C06F';
+      statusBG = '#39C06F1A';
+      statusBorder = '#39C06F';
+      break;
+
     default:
       return null;
   }

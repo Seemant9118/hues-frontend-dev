@@ -77,6 +77,7 @@
                     "upload_attachements": "अटैचमेंट अपलोड करें",
                     "payment_advice": "भुगतान सलाह भेजें",
                     "generate_invoice": "चालान उत्पन्न करें",
+                    "stock-in": "स्टॉक इन",
                     "view": {
                         "placeholder": "ऑर्डर विवरण करें"
                     },
@@ -126,7 +127,8 @@
                     }
                 },
                 "successMsg": {
-                    "order_accepted": "ऑर्डर स्वीकार किया गया"
+                    "order_accepted": "ऑर्डर स्वीकार किया गया",
+                    "stock_in": "स्टॉक इन सफलतापूर्वक हुआ"
                 },
                 "errorMsg": {
                     "common": "कुछ गलत हो गया"

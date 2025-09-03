@@ -77,6 +77,7 @@
                     "upload_attachements": "Upload Documents",
                     "payment_advice": "Send Payment Advise",
                     "generate_invoice": "Invoice",
+                    "stock-in":"Stock in",
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -126,7 +127,8 @@
                     }
                 },
                 "successMsg": {
-                    "order_accepted": "Order accepted"
+                    "order_accepted": "Order accepted",
+                    "stock_in": "Stock in successfully"
                 },
                 "errorMsg": {
                     "common": "Uh-oh, we hit a snag. Retry?"
