@@ -21,7 +21,10 @@ const DEBOUNCE_DELAY = 500;
 
 export default function EnterpriseSelectorPopUp() {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState('');
+  const switchedEnterpriseName = LocalStorageService.get(
+    'switchedEnterpriseName',
+  );
+  const [selected, setSelected] = useState(switchedEnterpriseName || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -30,14 +33,25 @@ export default function EnterpriseSelectorPopUp() {
     mutationKey: [AdminAPIs.revertSwitchedEnterprise.endpointKey],
     mutationFn: revertSwitchedEnterprise,
     onSuccess: (data) => {
-      setSelected('');
       // eslint-disable-next-line camelcase
       const { access_token, refresh_token } = data.data.data;
-      // token and refreshToken update localStorage
+
+      // update tokens
       LocalStorageService.set('token', access_token);
       LocalStorageService.set('refreshtoken', refresh_token);
+
+      // clear switched enterprise
       LocalStorageService.remove('switchedEnterpriseId');
-      toast.success(`Enterprise reverted to current enterprise`);
+      LocalStorageService.remove('switchedEnterpriseName');
+
+      // ✅ store success flag for after reload
+      LocalStorageService.set(
+        'switchSuccessMessage',
+        'Enterprise reverted to current enterprise',
+      );
+
+      // reload immediately
+      window.location.reload();
     },
     onError: () => {
       toast.error('Failed to revert enterprise. Please try again.');
@@ -52,11 +66,11 @@ export default function EnterpriseSelectorPopUp() {
   // mutation fn still only expects enterpriseId
   const switchEnterpriseMutation = useMutation({
     mutationKey: [AdminAPIs.switchEnterprise.endpointKey],
-    mutationFn: ({ enterpriseId }) => switchEnterprise({ enterpriseId }), // ✅ only ID goes to API
+    mutationFn: ({ enterpriseId }) => switchEnterprise({ enterpriseId }),
     onSuccess: (data, variables) => {
+      // store tokens
       // eslint-disable-next-line camelcase
       const { access_token, refresh_token } = data.data.data;
-
       LocalStorageService.set('token', access_token);
       LocalStorageService.set('refreshtoken', refresh_token);
 
@@ -65,10 +79,19 @@ export default function EnterpriseSelectorPopUp() {
         'switchedEnterpriseId',
         Number(tokenData?.enterprise_id),
       );
-      setSelected(variables?.enterpriseName); // UI update
-      toast.success(`Now viewing as ${capitalize(variables?.enterpriseName)}`);
+      LocalStorageService.set(
+        'switchedEnterpriseName',
+        variables?.enterpriseName,
+      );
 
-      setOpen(false);
+      // ✅ store flag for post-reload handling
+      LocalStorageService.set(
+        'switchSuccessMessage',
+        `Now viewing as ${capitalize(variables?.enterpriseName)}`,
+      );
+
+      // reload immediately
+      window.location.reload();
     },
     onError: () => {
       toast.error('Failed to switch enterprise. Please try again.');
@@ -82,6 +105,16 @@ export default function EnterpriseSelectorPopUp() {
       enterpriseName: enterprise?.enterpriseName, // keep name for UI
     });
   };
+
+  // Global handler (runs after reload, same as before)
+  useEffect(() => {
+    const msg = LocalStorageService.get('switchSuccessMessage');
+    if (msg) {
+      toast.success(msg);
+      LocalStorageService.remove('switchSuccessMessage');
+      setSelected(LocalStorageService.get('switchedEnterpriseName'));
+    }
+  }, []);
 
   const { data: searchedEnterpriseData, isLoading: isLoadingSearch } = useQuery(
     {

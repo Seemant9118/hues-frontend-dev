@@ -151,3 +151,15 @@ export const getEnterpriseId = () => {
   const switchedEnterpriseId = LocalStorageService.get('switchedEnterpriseId');
   return switchedEnterpriseId || enterpriseId;
 };
+
+export const goToHomePage = () => {
+  const token = LocalStorageService.get('token');
+
+  const payload = parseJwt(token);
+
+  if (payload?.role === 'admin') {
+    return '/dashboard/admin/reports';
+  } else {
+    return '/dashboard';
+  }
+};
