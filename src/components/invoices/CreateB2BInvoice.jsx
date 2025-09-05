@@ -695,13 +695,15 @@ const CreateB2BInvoice = ({
                       const updated = { ...prev, unitId: Number(val) }; // store ID
                       saveDraftToSession({
                         key: 'b2bInvoiceDraft',
-                        data: updated,
+                        data: {
+                          ...order,
+                          itemDraft: updated,
+                        },
                       });
                       return updated;
                     });
                   }}
                   units={units?.quantity} // pass the full object list
-                  placeholder="Enter quantity"
                   unitPlaceholder="Select unit"
                 />
               </div>

@@ -490,8 +490,6 @@ const EditOrder = ({
                   });
                 }}
                 units={units?.quantity} // pass the full object list
-                placeholder="Enter quantity"
-                unitPlaceholder="Select unit"
               />
             </div>
           </div>

@@ -92,7 +92,7 @@ const CreateOrder = ({
           productType: bidDraft?.itemDraft?.productType || '',
           productId: bidDraft?.itemDraft?.productId || null,
           quantity: bidDraft?.itemDraft?.quantity || null,
-          unitId: orderDraft?.itemDraft?.unitId || null,
+          unitId: bidDraft?.itemDraft?.unitId || null,
           unitPrice: bidDraft?.itemDraft?.unitPrice || null,
           gstPerUnit: bidDraft?.itemDraft?.gstPerUnit || null,
           totalAmount: bidDraft?.itemDraft?.totalAmount || null,
@@ -174,6 +174,7 @@ const CreateOrder = ({
             productName: productDetails?.productName,
             productType: item.productType,
             quantity: item.quantity,
+            unitId: item.unitId,
             unitPrice: item.unitPrice,
             gstPerUnit: item.gstPerUnit,
             totalAmount: item.totalAmount,
@@ -949,11 +950,13 @@ const CreateOrder = ({
                   return;
                 }
 
-                // Prevent non-integer or negative input
+                // Prevent negative or invalid number
+                if (!/^\d*\.?\d*$/.test(inputValue)) return;
+
                 const value = Number(inputValue);
 
-                // Reject if not a positive integer
-                if (!/^\d+$/.test(inputValue) || value < 1) return;
+                // Reject if less than 0
+                if (value < 0) return;
 
                 const totalAmt = parseFloat(
                   (value * selectedItem.unitPrice).toFixed(2),
@@ -971,24 +974,31 @@ const CreateOrder = ({
                 setSelectedItem(updatedItem);
 
                 saveDraftToSession({
-                  key: 'itemDraft',
+                  cta,
                   data: {
                     ...order,
                     itemDraft: updatedItem,
                   },
                 });
               }}
-              unit={selectedItem.unitId} // unitId from state
+              unit={selectedItem.unitId}
               onUnitChange={(val) => {
                 setSelectedItem((prev) => {
-                  const updated = { ...prev, unitId: Number(val) }; // store ID
-                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  const updated = { ...prev, unitId: Number(val) };
+                  saveDraftToSession({
+                    cta,
+                    data: {
+                      ...order,
+                      itemDraft: updated,
+                    },
+                  });
                   return updated;
                 });
               }}
-              units={units?.quantity} // pass the full object list
-              placeholder="Enter quantity"
+              units={units?.quantity}
               unitPlaceholder="Select unit"
+              min={0}
+              step="any" // <-- allows decimals
             />
 
             {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
@@ -1002,6 +1012,7 @@ const CreateOrder = ({
             <div className="flex flex-col gap-1">
               <Input
                 type="number"
+                placeholder="0.00"
                 min={1}
                 disabled={
                   (cta === 'offer' && order.buyerId == null) ||

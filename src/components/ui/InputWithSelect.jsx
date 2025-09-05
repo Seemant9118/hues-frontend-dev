@@ -21,6 +21,7 @@ function InputWithSelect({
   onUnitChange,
   units = [],
   placeholder,
+  selectUnitDisabled = false,
   unitPlaceholder,
   ...props
 }) {
@@ -39,9 +40,11 @@ function InputWithSelect({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>
-        {name} {required && <span className="text-red-600">*</span>}
-      </Label>
+      {name && (
+        <Label htmlFor={id}>
+          {name} {required && <span className="text-red-600">*</span>}
+        </Label>
+      )}
 
       <div className="relative flex w-full max-w-sm items-center">
         {/* Input field */}
@@ -49,16 +52,17 @@ function InputWithSelect({
           id={id}
           name={name}
           type="number"
-          placeholder={placeholder}
+          placeholder={placeholder || '0'}
           value={value}
           onChange={(e) => onValueChange(e)}
-          className={`pr-24 ${inputWidth}`} // add right padding to fit select
+          className={`${inputWidth}`} // add right padding to fit select
           {...props}
         />
 
         {/* Unit select inside input container */}
         <div className="absolute right-1 top-1/2 -translate-y-1/2 rounded-sm border bg-gray-200 font-semibold">
           <Select
+            disabled={selectUnitDisabled}
             value={selectedUnit}
             onValueChange={(val) => {
               setSelectedUnit(val);
@@ -68,7 +72,7 @@ function InputWithSelect({
             <SelectTrigger
               className={`${selectWidth} h-8 border-0 bg-transparent shadow-none focus:ring-0`}
             >
-              <SelectValue placeholder={unitPlaceholder} />
+              <SelectValue placeholder={unitPlaceholder || 'select'} />
             </SelectTrigger>
             <SelectContent className="h-36 overflow-y-auto border">
               {units.map((u) => (

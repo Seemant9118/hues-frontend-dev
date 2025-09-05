@@ -112,12 +112,14 @@ const NegotiationComponent = ({
 
     updatedOrder[index] = {
       ...updatedOrder[index],
-      [field]: Number(value),
+      [field]: value === '' ? '' : Number(value), // allow empty string
     };
 
-    const quantity = updatedOrder[index]?.quantity || 0;
-    const unitPrice = updatedOrder[index]?.unitPrice || 0;
-    updatedOrder[index].totalAmount = (quantity * unitPrice).toFixed(2);
+    const quantity = Number(updatedOrder[index]?.quantity) || 0;
+    const unitPrice = Number(updatedOrder[index]?.unitPrice) || 0;
+
+    updatedOrder[index].totalAmount =
+      value === '' ? '' : (quantity * unitPrice).toFixed(2);
 
     setBulkNegotiateOrder(updatedOrder);
   };
@@ -274,8 +276,8 @@ const NegotiationComponent = ({
                   <InputWithSelect
                     // id="quantity"
                     // name={translations('form.label.quantity')}
-                    inputWidth="w-24"
-                    // selectWidth="w-10"
+                    inputWidth="w-34"
+                    selectWidth="w-14"
                     value={bulkNegotiateOrder?.[index]?.quantity}
                     onValueChange={(e) => {
                       const value = Number(e.target.value);
@@ -294,8 +296,6 @@ const NegotiationComponent = ({
                       }
                     }}
                     units={units?.quantity} // pass the full object list
-                    placeholder="Enter quantity"
-                    unitPlaceholder="Select unit"
                   />
                 </TableCell>
                 <TableCell colSpan={1}>
@@ -305,17 +305,29 @@ const NegotiationComponent = ({
                 </TableCell>
                 <TableCell colSpan={1}>
                   <Input
-                    className="w-24"
                     type="number"
+                    className="w-24"
                     placeholder="0"
-                    value={bulkNegotiateOrder?.[index]?.unitPrice}
+                    value={bulkNegotiateOrder?.[index]?.unitPrice ?? ''} // allow empty
                     onChange={(e) => {
-                      const value = Number(e.target.value);
-                      if (value >= 0) {
+                      let { value } = e.target;
+
+                      // Allow empty string for clear
+                      if (value === '') {
                         handleChange(e, index, 'unitPrice');
+                        return;
                       }
+
+                      // Convert to number
+                      value = Number(value);
+
+                      // Prevent negative
+                      if (value < 0) return;
+
+                      handleChange({ target: { value } }, index, 'unitPrice');
                     }}
-                    min="0"
+                    step="any" // allows decimals
+                    min="0" // ensures no negatives
                   />
                 </TableCell>
                 <TableCell colSpan={1}>

@@ -266,7 +266,6 @@ const EditItem = ({
                   });
                 }}
                 units={units?.quantity} // pass the full object list
-                placeholder="Enter quantity"
                 unitPlaceholder="Select unit"
               />
             </div>
@@ -323,8 +322,6 @@ const EditItem = ({
                 });
               }}
               units={units?.mass} // pass full object list like [{id: 1, name: 'kg'}]
-              placeholder="Enter weight"
-              unitPlaceholder="Select unit"
             />
 
             <InputWithSelect
@@ -340,8 +337,6 @@ const EditItem = ({
                 });
               }}
               units={units?.length}
-              placeholder="Enter height"
-              unitPlaceholder="Select unit"
             />
 
             <InputWithSelect
@@ -357,8 +352,6 @@ const EditItem = ({
                 });
               }}
               units={units?.length}
-              placeholder="Enter length"
-              unitPlaceholder="Select unit"
             />
 
             <InputWithSelect
@@ -374,8 +367,6 @@ const EditItem = ({
                 });
               }}
               units={units?.volume}
-              placeholder="Enter breadth"
-              unitPlaceholder="Select unit"
             />
           </div>
         </div>

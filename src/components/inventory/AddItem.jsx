@@ -392,6 +392,9 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 className="max-w-xs"
+                placeholder={translations(
+                  'goods.components.add.label.productName',
+                )}
                 required={true}
                 name={translations('goods.components.add.label.productName')}
                 id="productName"
@@ -404,6 +407,9 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name={translations('services.components.add.label.serviceName')}
+                placeholder={translations(
+                  'services.components.add.label.serviceName',
+                )}
                 id="serviceName"
                 required={true}
                 onChange={onChange}
@@ -418,6 +424,7 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name={translations('goods.components.add.label.hsnCode')}
+                placeholder={translations('goods.components.add.label.hsnCode')}
                 id="hsnCode"
                 required={true}
                 onChange={onChange}
@@ -429,6 +436,7 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name={translations('services.components.add.label.sac')}
+                placeholder={translations('services.components.add.label.sac')}
                 id="SAC"
                 required={true}
                 onChange={onChange}
@@ -442,6 +450,7 @@ const AddItem = ({ onCancel, cta }) => {
           {item.type === 'goods' && (
             <InputWithLabel
               name={translations('goods.components.add.label.batch')}
+              placeholder={translations('goods.components.add.label.batch')}
               id="batch"
               onChange={onChange}
               value={item.batch}
@@ -473,6 +482,7 @@ const AddItem = ({ onCancel, cta }) => {
           {/* application */}
           <InputWithLabel
             name={translations('goods.components.add.label.application')}
+            placeholder={translations('goods.components.add.label.application')}
             id="applications"
             onChange={onChange}
             value={item.applications}
@@ -482,6 +492,7 @@ const AddItem = ({ onCancel, cta }) => {
         <div className="flex w-full flex-col">
           <InputWithLabel
             name={translations('goods.components.add.label.description')}
+            placeholder={translations('goods.components.add.label.description')}
             id="description"
             required={true}
             onChange={onChange}
@@ -501,6 +512,7 @@ const AddItem = ({ onCancel, cta }) => {
           <div className="flex flex-col">
             <InputWithLabel
               name={translations('goods.components.add.label.rate')}
+              placeholder="0.00"
               id="rate"
               type="number"
               required={true}
@@ -526,8 +538,6 @@ const AddItem = ({ onCancel, cta }) => {
                   });
                 }}
                 units={units?.quantity} // pass the full object list
-                placeholder="Enter quantity"
-                unitPlaceholder="Select unit"
               />
 
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
@@ -537,6 +547,7 @@ const AddItem = ({ onCancel, cta }) => {
             <InputWithLabel
               name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
+              placeholder="00.00 %"
               type="number"
               required={true}
               onChange={onChange}
@@ -562,6 +573,9 @@ const AddItem = ({ onCancel, cta }) => {
                 name={translations(
                   'goods.components.add.label.manufactureName',
                 )}
+                placeholder={translations(
+                  'goods.components.add.label.manufactureName',
+                )}
                 id="manufacturerName"
                 required={true}
                 onChange={onChange}
@@ -574,6 +588,9 @@ const AddItem = ({ onCancel, cta }) => {
 
             <InputWithLabel
               name={translations('goods.components.add.label.manufacturerGST')}
+              placeholder={translations(
+                'goods.components.add.label.manufacturerGST',
+              )}
               id="manufacturerGstId"
               onChange={onChange}
               value={item.manufacturerGstId}
@@ -593,8 +610,6 @@ const AddItem = ({ onCancel, cta }) => {
                 });
               }}
               units={units?.mass} // pass full object list like [{id: 1, name: 'kg'}]
-              placeholder="Enter weight"
-              unitPlaceholder="Select unit"
             />
 
             <InputWithSelect
@@ -611,8 +626,6 @@ const AddItem = ({ onCancel, cta }) => {
                 });
               }}
               units={units?.length}
-              placeholder="Enter height"
-              unitPlaceholder="Select unit"
             />
 
             <InputWithSelect
@@ -629,8 +642,6 @@ const AddItem = ({ onCancel, cta }) => {
                 });
               }}
               units={units?.length}
-              placeholder="Enter length"
-              unitPlaceholder="Select unit"
             />
 
             <InputWithSelect
@@ -649,8 +660,6 @@ const AddItem = ({ onCancel, cta }) => {
                 });
               }}
               units={units?.length}
-              placeholder="Enter breadth"
-              unitPlaceholder="Select unit"
             />
           </div>
         </div>

@@ -1,11 +1,13 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import {
   createInvoiceForAcceptedOrder,
   previewInvoice,
   withDrawOrder,
 } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import base64ToBlob from 'base64toblob';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -17,6 +19,7 @@ import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
+import InputWithSelect from '../ui/InputWithSelect';
 import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import {
@@ -64,6 +67,13 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     clientEnterpriseId: orderDetails?.clientEnterpriseId,
   });
 
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+  });
+
   // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (previewInvoiceBase64) {
@@ -96,7 +106,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
             item.quantity,
             item.invoiceQuantity,
           );
-          const { unitPrice } = item;
+          const { unitPrice, unitId } = item;
           const totalAmount = quantity * unitPrice;
           const totalGstAmount = totalAmount * (item.gstPerUnit / 100);
 
@@ -105,6 +115,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
             productType: item.productType,
             orderItemId: item.id,
             quantity, // Calculated quantity
+            unitId,
             unitPrice, // Unit price
             gstPerUnit: item.gstPerUnit,
             totalAmount, // Calculated total amount
@@ -508,7 +519,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                               -
                             </Button>
 
-                            <Input
+                            {/* <Input
                               min={1}
                               name="quantity"
                               className="w-20 rounded-sm pr-4"
@@ -533,6 +544,51 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                                 }
                               }}
                               disabled={isAutoSelect}
+                            /> */}
+
+                            <InputWithSelect
+                              id="quantity"
+                              disabled={isAutoSelect}
+                              value={product?.quantity}
+                              onValueChange={(e) => {
+                                const newQty = parseInt(e.target.value, 10);
+
+                                // Optional: allow clearing the field
+                                if (e.target.value === '') {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    '',
+                                  );
+                                  return;
+                                }
+
+                                if (!Number.isNaN(newQty)) {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    newQty,
+                                  );
+                                }
+                              }}
+                              unit={product.unitId} // unitId from state
+                              onUnitChange={(val) => {
+                                const updatedItems = productDetailsList.map(
+                                  (item, idx) => {
+                                    if (idx === index) {
+                                      return {
+                                        ...item,
+                                        unitId: val,
+                                      };
+                                    }
+                                    return item;
+                                  },
+                                );
+                                setInvoicedData({
+                                  ...invoicedData,
+                                  invoiceItems: updatedItems,
+                                });
+                              }}
+                              selectUnitDisabled={true}
+                              units={units?.quantity} // pass the full object list
                             />
 
                             <Button

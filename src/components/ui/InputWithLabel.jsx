@@ -8,6 +8,7 @@ const InputWithLabel = ({
   value,
   type,
   required,
+  placeholder,
   disabled,
 }) => {
   return (
@@ -17,6 +18,7 @@ const InputWithLabel = ({
       </Label>
       <Input
         className="rounded-sm"
+        placeholder={placeholder}
         type={type}
         value={value}
         onChange={onChange}
