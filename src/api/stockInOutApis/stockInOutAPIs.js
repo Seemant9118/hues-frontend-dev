@@ -7,4 +7,8 @@ export const stockInOutAPIs = {
     endpoint: `/inventory/:enterpriseId/orders/:orderId/stock-out`,
     endpointKey: 'stock_out',
   },
+  getUnits: {
+    endpoint: `/units`,
+    endpointKey: 'get_units',
+  },
 };

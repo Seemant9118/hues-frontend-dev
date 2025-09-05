@@ -4,6 +4,7 @@ import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getStylesForSelectComponent,
@@ -32,6 +33,7 @@ import {
   CreateOrderService,
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -44,6 +46,7 @@ import AddModal from '../Modals/AddModal';
 import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
+import InputWithSelect from '../ui/InputWithSelect';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
@@ -78,6 +81,7 @@ const CreateOrder = ({
           productType: orderDraft?.itemDraft?.productType || '',
           productId: orderDraft?.itemDraft?.productId || null,
           quantity: orderDraft?.itemDraft?.quantity || null,
+          unitId: orderDraft?.itemDraft?.unitId || null,
           unitPrice: orderDraft?.itemDraft?.unitPrice || null,
           gstPerUnit: orderDraft?.itemDraft?.gstPerUnit || null,
           totalAmount: orderDraft?.itemDraft?.totalAmount || null,
@@ -88,12 +92,14 @@ const CreateOrder = ({
           productType: bidDraft?.itemDraft?.productType || '',
           productId: bidDraft?.itemDraft?.productId || null,
           quantity: bidDraft?.itemDraft?.quantity || null,
+          unitId: orderDraft?.itemDraft?.unitId || null,
           unitPrice: bidDraft?.itemDraft?.unitPrice || null,
           gstPerUnit: bidDraft?.itemDraft?.gstPerUnit || null,
           totalAmount: bidDraft?.itemDraft?.totalAmount || null,
           totalGstAmount: bidDraft?.itemDraft?.totalGstAmount || null,
         },
   );
+
   const [order, setOrder] = useState(
     cta === 'offer'
       ? {
@@ -131,6 +137,15 @@ const CreateOrder = ({
           shippingAddressId: bidDraft?.shippingAddressId || null,
         },
   );
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
+  });
+
   // save draft to session storage
   function saveDraftToSession({ cta, data }) {
     const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
@@ -905,73 +920,78 @@ const CreateOrder = ({
               {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label className="flex gap-1">
-              {translations('form.label.quantity')}
-              <span className="text-red-600">*</span>
-            </Label>
-            <div className="flex flex-col gap-1">
-              <Input
-                type="number"
-                min={1}
-                step={1}
-                disabled={
-                  (cta === 'offer' && order.buyerId == null) ||
-                  order.sellerEnterpriseId == null
+
+          <div className="flex flex-col gap-1">
+            <InputWithSelect
+              id="quantity"
+              name={translations('form.label.quantity')}
+              required={true}
+              disabled={
+                (cta === 'offer' && order.buyerId == null) ||
+                order.sellerEnterpriseId == null
+              }
+              value={
+                selectedItem.quantity == null || selectedItem.quantity === 0
+                  ? ''
+                  : selectedItem.quantity
+              }
+              onValueChange={(e) => {
+                const inputValue = e.target.value;
+
+                // Allow user to clear input
+                if (inputValue === '') {
+                  setSelectedItem((prev) => ({
+                    ...prev,
+                    quantity: 0,
+                    totalAmount: 0,
+                    totalGstAmount: 0,
+                  }));
+                  return;
                 }
-                value={
-                  selectedItem.quantity == null || selectedItem.quantity === 0
-                    ? ''
-                    : selectedItem.quantity
-                }
-                onChange={(e) => {
-                  const inputValue = e.target.value;
 
-                  // Allow user to clear input
-                  if (inputValue === '') {
-                    setSelectedItem((prev) => ({
-                      ...prev,
-                      quantity: 0,
-                      totalAmount: 0,
-                      totalGstAmount: 0,
-                    }));
-                    return;
-                  }
+                // Prevent non-integer or negative input
+                const value = Number(inputValue);
 
-                  // Prevent non-integer or negative input
-                  const value = Number(inputValue);
+                // Reject if not a positive integer
+                if (!/^\d+$/.test(inputValue) || value < 1) return;
 
-                  // Reject if not a positive integer
-                  if (!/^\d+$/.test(inputValue) || value < 1) return;
+                const totalAmt = parseFloat(
+                  (value * selectedItem.unitPrice).toFixed(2),
+                );
+                const gstAmt = parseFloat(
+                  (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                );
 
-                  const totalAmt = parseFloat(
-                    (value * selectedItem.unitPrice).toFixed(2),
-                  );
-                  const gstAmt = parseFloat(
-                    (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                  );
+                const updatedItem = {
+                  ...selectedItem,
+                  quantity: value,
+                  totalAmount: totalAmt,
+                  totalGstAmount: gstAmt,
+                };
+                setSelectedItem(updatedItem);
 
-                  const updatedItem = {
-                    ...selectedItem,
-                    quantity: value,
-                    totalAmount: totalAmt,
-                    totalGstAmount: gstAmt,
-                  };
-                  setSelectedItem(updatedItem);
+                saveDraftToSession({
+                  key: 'itemDraft',
+                  data: {
+                    ...order,
+                    itemDraft: updatedItem,
+                  },
+                });
+              }}
+              unit={selectedItem.unitId} // unitId from state
+              onUnitChange={(val) => {
+                setSelectedItem((prev) => {
+                  const updated = { ...prev, unitId: Number(val) }; // store ID
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.quantity} // pass the full object list
+              placeholder="Enter quantity"
+              unitPlaceholder="Select unit"
+            />
 
-                  saveDraftToSession({
-                    cta,
-                    data: {
-                      ...order,
-                      itemDraft: updatedItem,
-                    },
-                  });
-                }}
-                className="max-w-30"
-              />
-
-              {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
-            </div>
+            {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
           </div>
 
           <div className="flex flex-col gap-2">

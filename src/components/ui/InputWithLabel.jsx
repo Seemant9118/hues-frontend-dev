@@ -21,7 +21,6 @@ const InputWithLabel = ({
         value={value}
         onChange={onChange}
         id={id}
-        required={required}
         disabled={disabled}
       />
     </div>

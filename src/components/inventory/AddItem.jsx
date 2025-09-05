@@ -14,7 +14,7 @@ import {
 import { LocalStorageService, SessionStorageService, cn } from '@/lib/utils';
 import { CreateProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { CreateProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
@@ -22,11 +22,14 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import InputWithLabel from '../ui/InputWithLabel';
 import Loading from '../ui/Loading';
+import InputWithSelect from '../ui/InputWithSelect';
 
 const AddItem = ({ onCancel, cta }) => {
   const translations = useTranslations();
@@ -55,16 +58,29 @@ const AddItem = ({ onCancel, cta }) => {
     rate: itemDraft?.rate || '',
     gstPercentage: itemDraft?.gstPercentage || '',
     quantity: itemDraft?.quantity || '',
+    unitId: itemDraft?.unitId || '',
     type: itemDraft?.type || (isGoods ? 'goods' : 'services'),
     batch: itemDraft?.batch || '',
     expiry: itemDraft?.expiry || '',
     weight: itemDraft?.weight || '',
+    weightUnitId: itemDraft?.weightUnitId || '',
     length: itemDraft?.length || '',
+    lengthUnitId: itemDraft?.lengthUnitId || '',
     breadth: itemDraft?.breadth || '',
+    breadthUnitId: itemDraft?.breadthUnitId || '',
     height: itemDraft?.height || '',
+    heightUnitId: itemDraft?.heightUnitId || '',
     applications: itemDraft?.applications || '',
     manufacturerGstId: itemDraft?.manufacturerGstId || '',
     units: itemDraft?.units || '',
+  });
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
   });
 
   // save draft to session storage
@@ -376,6 +392,7 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 className="max-w-xs"
+                required={true}
                 name={translations('goods.components.add.label.productName')}
                 id="productName"
                 onChange={onChange}
@@ -388,6 +405,7 @@ const AddItem = ({ onCancel, cta }) => {
               <InputWithLabel
                 name={translations('services.components.add.label.serviceName')}
                 id="serviceName"
+                required={true}
                 onChange={onChange}
                 value={item.serviceName}
               />
@@ -401,6 +419,7 @@ const AddItem = ({ onCancel, cta }) => {
               <InputWithLabel
                 name={translations('goods.components.add.label.hsnCode')}
                 id="hsnCode"
+                required={true}
                 onChange={onChange}
                 value={item.hsnCode}
               />
@@ -411,6 +430,7 @@ const AddItem = ({ onCancel, cta }) => {
               <InputWithLabel
                 name={translations('services.components.add.label.sac')}
                 id="SAC"
+                required={true}
                 onChange={onChange}
                 value={item.SAC}
               />
@@ -463,6 +483,7 @@ const AddItem = ({ onCancel, cta }) => {
           <InputWithLabel
             name={translations('goods.components.add.label.description')}
             id="description"
+            required={true}
             onChange={onChange}
             value={item.description}
           />
@@ -482,6 +503,7 @@ const AddItem = ({ onCancel, cta }) => {
               name={translations('goods.components.add.label.rate')}
               id="rate"
               type="number"
+              required={true}
               onChange={onChange}
               value={item.rate}
             />
@@ -489,13 +511,25 @@ const AddItem = ({ onCancel, cta }) => {
           </div>
           {item.type === 'goods' && (
             <div className="flex flex-col">
-              <InputWithLabel
-                type="number"
-                name={translations('goods.components.add.label.quantity')}
+              <InputWithSelect
                 id="quantity"
-                onChange={onChange}
+                name={translations('goods.components.add.label.quantity')}
+                required={true}
                 value={item.quantity}
+                onValueChange={onChange}
+                unit={item?.unitId} // unitId from state
+                onUnitChange={(val) => {
+                  setItem((prev) => {
+                    const updated = { ...prev, unitId: Number(val) }; // store ID
+                    saveDraftToSession({ key: 'itemDraft', data: updated });
+                    return updated;
+                  });
+                }}
+                units={units?.quantity} // pass the full object list
+                placeholder="Enter quantity"
+                unitPlaceholder="Select unit"
               />
+
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
           )}
@@ -504,6 +538,7 @@ const AddItem = ({ onCancel, cta }) => {
               name={translations('goods.components.add.label.gst')}
               id="gstPercentage"
               type="number"
+              required={true}
               onChange={onChange}
               value={item.gstPercentage}
             />
@@ -528,6 +563,7 @@ const AddItem = ({ onCancel, cta }) => {
                   'goods.components.add.label.manufactureName',
                 )}
                 id="manufacturerName"
+                required={true}
                 onChange={onChange}
                 value={item.manufacturerName}
               />
@@ -543,36 +579,78 @@ const AddItem = ({ onCancel, cta }) => {
               value={item.manufacturerGstId}
             />
 
-            <InputWithLabel
-              name={translations('goods.components.add.label.weight')}
+            <InputWithSelect
               id="weight"
-              type="number"
-              onChange={onChange}
+              name={translations('goods.components.add.label.weight')}
               value={item.weight}
+              onValueChange={onChange}
+              unit={item.weightUnitId} // auto-selected from state
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, weightUnitId: Number(val) }; // ensure ID
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.mass} // pass full object list like [{id: 1, name: 'kg'}]
+              placeholder="Enter weight"
+              unitPlaceholder="Select unit"
             />
 
-            <InputWithLabel
-              name={translations('goods.components.add.label.length')}
-              id="length"
-              type="number"
-              onChange={onChange}
-              value={item.length}
-            />
-
-            <InputWithLabel
-              name={translations('goods.components.add.label.breadth')}
-              id="breadth"
-              type="number"
-              onChange={onChange}
-              value={item.breadth}
-            />
-
-            <InputWithLabel
-              name={translations('goods.components.add.label.height')}
+            <InputWithSelect
               id="height"
-              type="number"
-              onChange={onChange}
+              name={translations('goods.components.add.label.height')}
               value={item.height}
+              onValueChange={onChange}
+              unit={item.heightUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, heightUnitId: Number(val) };
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.length}
+              placeholder="Enter height"
+              unitPlaceholder="Select unit"
+            />
+
+            <InputWithSelect
+              id="length"
+              name={translations('goods.components.add.label.length')}
+              value={item.length}
+              onValueChange={onChange}
+              unit={item.lengthUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, lengthUnitId: Number(val) };
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.length}
+              placeholder="Enter length"
+              unitPlaceholder="Select unit"
+            />
+
+            <InputWithSelect
+              id="breadth"
+              name={translations('goods.components.add.label.breadth')}
+              value={item.breadth}
+              onValueChange={(val) =>
+                onChange({ target: { id: 'breadth', value: val } })
+              }
+              unit={item.breadthUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, breadthUnitId: Number(val) };
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.length}
+              placeholder="Enter breadth"
+              unitPlaceholder="Select unit"
             />
           </div>
         </div>

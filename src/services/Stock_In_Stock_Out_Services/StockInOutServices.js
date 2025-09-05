@@ -16,3 +16,7 @@ export const stockOut = ({ enterpriseId, orderId }) => {
 
   return APIinstance.post(url);
 };
+
+export const getUnits = () => {
+  return APIinstance.get(stockInOutAPIs.getUnits.endpoint);
+};

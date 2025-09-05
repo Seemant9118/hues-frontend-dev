@@ -3,6 +3,7 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getStylesForSelectComponent,
@@ -22,6 +23,7 @@ import {
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { previewDirectInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { createInvoice } from '@/services/Orders_Services/Orders_Services';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ChevronDown, Plus } from 'lucide-react';
@@ -34,6 +36,7 @@ import AddModal from '../Modals/AddModal';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
+import InputWithSelect from '../ui/InputWithSelect';
 import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
@@ -72,6 +75,7 @@ const CreateB2BInvoice = ({
     serviceName: b2bInvoiceDraft?.itemDraft?.serviceName || '',
     productId: b2bInvoiceDraft?.itemDraft?.productId || null,
     quantity: b2bInvoiceDraft?.itemDraft?.quantity || null,
+    unitId: b2bInvoiceDraft?.itemDraft?.unitId || null,
     unitPrice: b2bInvoiceDraft?.itemDraft?.unitPrice || null,
     gstPerUnit: b2bInvoiceDraft?.itemDraft?.gstPerUnit || null,
     totalAmount: b2bInvoiceDraft?.itemDraft?.totalAmount || null,
@@ -95,6 +99,14 @@ const CreateB2BInvoice = ({
     selectedValue: b2bInvoiceDraft?.selectedValue || null,
     selectedGstNumber: null,
     getAddressRelatedData: b2bInvoiceDraft?.getAddressRelatedData || null,
+  });
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
   });
 
   // save draft to session storage
@@ -621,78 +633,77 @@ const CreateB2BInvoice = ({
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.quantity')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    type="number"
-                    step={1}
-                    min={1}
-                    disabled={
-                      (cta === 'offer' && order.buyerId == null) ||
-                      order.sellerEnterpriseId == null
-                    }
-                    value={
-                      selectedItem.quantity == null ||
-                      selectedItem.quantity === 0
-                        ? ''
-                        : selectedItem.quantity
-                    }
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
+                <InputWithSelect
+                  id="quantity"
+                  name={translations('form.label.quantity')}
+                  required={true}
+                  disabled={
+                    (cta === 'offer' && order.buyerId == null) ||
+                    order.sellerEnterpriseId == null
+                  }
+                  value={
+                    selectedItem.quantity == null || selectedItem.quantity === 0
+                      ? ''
+                      : selectedItem.quantity
+                  }
+                  onValueChange={(e) => {
+                    const inputValue = e.target.value;
 
-                      // Allow user to clear input
-                      if (inputValue === '') {
-                        setSelectedItem((prev) => ({
-                          ...prev,
-                          quantity: 0,
-                          totalAmount: 0,
-                          totalGstAmount: 0,
-                        }));
-                        return;
-                      }
-
-                      // Reject non-integer or negative values
-                      if (!/^\d+$/.test(inputValue)) return;
-
-                      const value = Number(inputValue);
-
-                      if (value < 1) return;
-
-                      const totalAmt = parseFloat(
-                        (value * selectedItem.unitPrice).toFixed(2),
-                      );
-                      const gstAmt = parseFloat(
-                        (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                      );
-
+                    // Allow user to clear input
+                    if (inputValue === '') {
                       setSelectedItem((prev) => ({
                         ...prev,
-                        quantity: value,
-                        totalAmount: totalAmt,
-                        totalGstAmount: gstAmt,
+                        quantity: 0,
+                        totalAmount: 0,
+                        totalGstAmount: 0,
                       }));
+                      return;
+                    }
 
-                      // Save the selected item to session storage
+                    // Prevent non-integer or negative input
+                    const value = Number(inputValue);
+
+                    // Reject if not a positive integer
+                    if (!/^\d+$/.test(inputValue) || value < 1) return;
+
+                    const totalAmt = parseFloat(
+                      (value * selectedItem.unitPrice).toFixed(2),
+                    );
+                    const gstAmt = parseFloat(
+                      (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                    );
+
+                    const updatedItem = {
+                      ...selectedItem,
+                      quantity: value,
+                      totalAmount: totalAmt,
+                      totalGstAmount: gstAmt,
+                    };
+                    setSelectedItem(updatedItem);
+
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: {
+                        ...order,
+                        itemDraft: updatedItem,
+                      },
+                    });
+                  }}
+                  unit={selectedItem.unitId} // unitId from state
+                  onUnitChange={(val) => {
+                    setSelectedItem((prev) => {
+                      const updated = { ...prev, unitId: Number(val) }; // store ID
                       saveDraftToSession({
                         key: 'b2bInvoiceDraft',
-                        data: {
-                          ...order,
-                          itemDraft: {
-                            ...selectedItem,
-                            quantity: value,
-                            totalAmount: totalAmt,
-                            totalGstAmount: gstAmt,
-                          },
-                        },
+                        data: updated,
                       });
-                    }}
-                    className="max-w-30"
-                  />
-                  {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
-                </div>
+                      return updated;
+                    });
+                  }}
+                  units={units?.quantity} // pass the full object list
+                  placeholder="Enter quantity"
+                  unitPlaceholder="Select unit"
+                />
               </div>
 
               <div className="flex flex-col gap-2">
