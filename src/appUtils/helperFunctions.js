@@ -155,9 +155,9 @@ export const getEnterpriseId = () => {
 export const goToHomePage = () => {
   const token = LocalStorageService.get('token');
 
-  const payload = parseJwt(token);
+  const payload = token ? parseJwt(token) : null;
 
-  if (payload?.role === 'admin') {
+  if (payload?.roles?.includes('ADMIN')) {
     return '/dashboard/admin/reports';
   } else {
     return '/dashboard';

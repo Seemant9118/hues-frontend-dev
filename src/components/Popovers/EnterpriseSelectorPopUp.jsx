@@ -1,7 +1,7 @@
 'use client';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
-import { capitalize, parseJwt } from '@/appUtils/helperFunctions';
+import { capitalize, goToHomePage, parseJwt } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import {
@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import Loading from '../ui/Loading';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import SearchInput from '../ui/SearchInput';
+import Tooltips from '../auth/Tooltips';
 
 const DEBOUNCE_DELAY = 500;
 
@@ -47,14 +48,14 @@ export default function EnterpriseSelectorPopUp() {
       // ✅ store success flag for after reload
       LocalStorageService.set(
         'switchSuccessMessage',
-        'Enterprise reverted to current enterprise',
+        'Enterprise reverted to admin view',
       );
 
       // reload immediately
-      window.location.reload();
+      window.location.href = goToHomePage();
     },
     onError: () => {
-      toast.error('Failed to revert enterprise. Please try again.');
+      toast.error('Failed to revert admin view. Please try again.');
     },
   });
 
@@ -91,7 +92,7 @@ export default function EnterpriseSelectorPopUp() {
       );
 
       // reload immediately
-      window.location.reload();
+      window.location.href = goToHomePage();
     },
     onError: () => {
       toast.error('Failed to switch enterprise. Please try again.');
@@ -146,46 +147,66 @@ export default function EnterpriseSelectorPopUp() {
         )}
       >
         <Box size={16} />
-        <span className="max-w-[100px] truncate text-sm">
-          {capitalize(selected) || 'Select Enterprise'}
+        <span className="max-w-[140px] truncate text-sm">
+          {capitalize(selected) || 'View as Enterprise'}
         </span>
       </span>
 
       {/* Arrow icon triggers the popover */}
       <Popover open={open} onOpenChange={setOpen}>
         {selected ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-0 text-gray-600 hover:text-primary"
-            onClick={handleRevert}
-          >
-            <ListRestart size={16} />
-          </Button>
+          <Tooltips
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 p-0 text-gray-600 hover:text-primary"
+                onClick={handleRevert}
+              >
+                <ListRestart size={16} />
+              </Button>
+            }
+            content="Revert back to admin view"
+          />
         ) : (
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 p-0 text-gray-600 hover:text-primary"
-            >
-              <ArrowRight size={16} />
-            </Button>
-          </PopoverTrigger>
+          <Tooltips
+            trigger={
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={
+                    open
+                      ? 'h-6 w-6 p-0 text-primary'
+                      : 'h-6 w-6 p-0 text-gray-600 hover:text-primary'
+                  }
+                  debounceTime={0}
+                >
+                  <ArrowRight size={16} />
+                </Button>
+              </PopoverTrigger>
+            }
+            content="Search and select an enterprise to view as"
+          />
         )}
 
         {/* Let Radix handle positioning */}
         <PopoverContent
           side="right"
           align="start"
-          className="flex max-h-[300px] w-[350px] flex-col gap-5 border bg-white p-3 shadow-md"
+          className="flex max-h-[300px] w-[350px] flex-col gap-5 border bg-gray-100 p-3 shadow-md"
         >
           <SearchInput
-            searchPlaceholder="Search Enterprise to select"
+            searchPlaceholder="Search and select an enterprise"
             toSearchTerm={searchTerm}
             setToSearchTerm={setSearchTerm}
           />
           <div className="scrollBarStyles flex max-h-[200px] flex-col gap-1 overflow-y-auto">
+            {searchTerm?.length === 0 && (
+              <div className="flex w-full items-center justify-center gap-1 rounded-md border bg-white/70 px-4 py-3 text-xs backdrop-blur-sm">
+                Search and select an enterprise to view as
+              </div>
+            )}
             {isLoadingSearch && <Loading />}
             {!isLoadingSearch && searchedEnterpriseData?.length === 0 && (
               <span className="text-center text-sm">No results found.</span>

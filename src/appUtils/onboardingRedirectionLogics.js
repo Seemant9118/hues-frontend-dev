@@ -1,4 +1,5 @@
 import { LocalStorageService } from '@/lib/utils';
+import { goToHomePage } from './helperFunctions';
 
 export async function handleOtpRedirection({
   isOnboardingComplete,
@@ -27,7 +28,7 @@ export async function handleOtpRedirection({
       isEnterpriseOnboardingComplete
     ) {
       LocalStorageService.remove('redirectUrl');
-      return router.push(redirectedUrl || '/dashboard');
+      return router.push(redirectedUrl || goToHomePage());
     } else if (
       isEnterprisestartedOnboarding &&
       !isEnterpriseOnboardingComplete

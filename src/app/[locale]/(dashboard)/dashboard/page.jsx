@@ -51,6 +51,7 @@ export default function Home() {
   ];
 
   const enterpriseId = getEnterpriseId();
+  const isSwitched = Boolean(LocalStorageService.get('switchedEnterpriseId'));
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
@@ -188,7 +189,8 @@ export default function Home() {
       enabled:
         !!enterpriseId &&
         isEnterpriseOnboardingComplete &&
-        hasPermission('permission:view-dashboard'),
+        hasPermission('permission:view-dashboard') &&
+        !isSwitched, // disable when switched to another enterprise
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({

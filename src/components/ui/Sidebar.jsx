@@ -31,6 +31,9 @@ import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
   const { hasPermission } = usePermission();
+  const isEnterpriseSwitched = Boolean(
+    localStorage.getItem('switchedEnterpriseId'),
+  );
 
   const adminLinks = hasPermission('permission:admin-dashboard-view')
     ? [
@@ -207,19 +210,28 @@ const Sidebar = () => {
           )}
 
           {/* Navigation Links */}
-          <nav className="flex flex-col gap-2">
-            {links.map((link) => (
-              <StyledLinks key={link.name} link={link} />
-            ))}
-          </nav>
+          {((hasPermission('permission:admin-dashboard-view') &&
+            isEnterpriseSwitched) ||
+            !hasPermission('permission:admin-dashboard-view')) && (
+            <nav className="flex flex-col gap-2">
+              {links.map((link) => (
+                <StyledLinks key={link.name} link={link} />
+              ))}
+            </nav>
+          )}
         </div>
 
         {/* Action Links & Profile */}
         <div className="flex flex-col gap-2">
-          {actionLinks.map((link) => (
-            <StyledLinks key={link.name} link={link} />
-          ))}
-
+          {((hasPermission('permission:admin-dashboard-view') &&
+            isEnterpriseSwitched) ||
+            !hasPermission('permission:admin-dashboard-view')) && (
+            <>
+              {actionLinks.map((link) => (
+                <StyledLinks key={link.name} link={link} />
+              ))}
+            </>
+          )}
           <ProfileInfoPopUp
             ctaName="sidebar.profile"
             viewProfileCta="components.profilePopUpInfo.viewProfileCta"

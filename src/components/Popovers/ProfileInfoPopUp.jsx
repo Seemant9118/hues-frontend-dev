@@ -1,7 +1,11 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
-import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import {
+  getInitialsNames,
+  getRandomBgColor,
+  goToHomePage,
+} from '@/appUtils/helperFunctions';
 import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   addAnotherEnterprise,
@@ -79,8 +83,8 @@ const ProfileInfoPopUp = ({
 
       toast.success('Enterprise Switch Successfully');
 
-      // Refresh the page
-      window.location.reload();
+      // reload immediately
+      window.location.href = goToHomePage();
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
