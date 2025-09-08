@@ -48,10 +48,10 @@
                     "expiry": "समाप्ति",
                     "application": "अनुप्रयोग",
                     "manufacturerGST": "GST IN",
-                    "weight": "वजन (ग्राम)",
-                    "length": "लंबाई (सेमी)",
-                    "breadth": "चौड़ाई (सेमी)",
-                    "height": "ऊँचाई (सेमी)"
+                    "weight": "वजन",
+                    "length": "लंबाई",
+                    "breadth": "चौड़ाई",
+                    "height": "ऊँचाई"
                 },
                 "ctas": {
                     "cancel": "रद्द करें",

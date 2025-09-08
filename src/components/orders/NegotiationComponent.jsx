@@ -1,4 +1,5 @@
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import {
   Table,
   TableBody,
@@ -12,7 +13,8 @@ import {
   createBulkNegotiaion,
   GetNegotiationDetails,
 } from '@/services/Orders_Services/Orders_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock, History } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
@@ -22,6 +24,7 @@ import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import InputWithSelect from '../ui/InputWithSelect';
 import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
 import ConditionalRenderingStatus from './ConditionalRenderingStatus';
@@ -42,6 +45,14 @@ const NegotiationComponent = ({
   const [bulkNegotiateOrder, setBulkNegotiateOrder] = useState([]);
   const [historyVisible, setHistoryVisible] = useState({});
   const [negotiationDetails, setNegotiationDetails] = useState([]);
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+  });
+
   // Initialize bulkNegotiateOrder state
   useEffect(() => {
     if (orderDetails?.orderItems) {
@@ -53,6 +64,7 @@ const NegotiationComponent = ({
         date: moment(new Date()).format('DD/MM/YYYY'),
         status: isBid ? 'BID_SUBMITTED' : 'OFFER_SUBMITTED',
         quantity: item?.negotiation?.quantity ?? item?.quantity,
+        unitId: item?.negotiation?.unitId ?? item?.unitId,
         unitPrice: item?.negotiation?.unitPrice ?? item?.unitPrice,
         totalAmount: (
           (item?.negotiation?.quantity ?? item.quantity) *
@@ -100,12 +112,14 @@ const NegotiationComponent = ({
 
     updatedOrder[index] = {
       ...updatedOrder[index],
-      [field]: Number(value),
+      [field]: value === '' ? '' : Number(value), // allow empty string
     };
 
-    const quantity = updatedOrder[index]?.quantity || 0;
-    const unitPrice = updatedOrder[index]?.unitPrice || 0;
-    updatedOrder[index].totalAmount = (quantity * unitPrice).toFixed(2);
+    const quantity = Number(updatedOrder[index]?.quantity) || 0;
+    const unitPrice = Number(updatedOrder[index]?.unitPrice) || 0;
+
+    updatedOrder[index].totalAmount =
+      value === '' ? '' : (quantity * unitPrice).toFixed(2);
 
     setBulkNegotiateOrder(updatedOrder);
   };
@@ -121,6 +135,7 @@ const NegotiationComponent = ({
         status: item.status,
         unitPrice: item.unitPrice,
         quantity: item.quantity,
+        unitId: item.unitId,
         price: (item.quantity * item.unitPrice).toFixed(2),
       })),
     };
@@ -258,18 +273,29 @@ const NegotiationComponent = ({
                   </div>
                 </TableCell>
                 <TableCell colSpan={1}>
-                  <Input
-                    className="w-24"
-                    type="number"
-                    placeholder="0"
+                  <InputWithSelect
+                    // id="quantity"
+                    // name={translations('form.label.quantity')}
+                    inputWidth="w-34"
+                    selectWidth="w-14"
                     value={bulkNegotiateOrder?.[index]?.quantity}
-                    onChange={(e) => {
+                    onValueChange={(e) => {
                       const value = Number(e.target.value);
                       if (value >= 0) {
                         handleChange(e, index, 'quantity');
                       }
                     }}
-                    min="0"
+                    unit={bulkNegotiateOrder?.[index]?.unitId} // unitId from state
+                    onUnitChange={(val) => {
+                      if (val) {
+                        handleChange(
+                          { target: { value: val } },
+                          index,
+                          'unitId',
+                        );
+                      }
+                    }}
+                    units={units?.quantity} // pass the full object list
                   />
                 </TableCell>
                 <TableCell colSpan={1}>
@@ -279,17 +305,29 @@ const NegotiationComponent = ({
                 </TableCell>
                 <TableCell colSpan={1}>
                   <Input
-                    className="w-24"
                     type="number"
+                    className="w-24"
                     placeholder="0"
-                    value={bulkNegotiateOrder?.[index]?.unitPrice}
+                    value={bulkNegotiateOrder?.[index]?.unitPrice ?? ''} // allow empty
                     onChange={(e) => {
-                      const value = Number(e.target.value);
-                      if (value >= 0) {
+                      let { value } = e.target;
+
+                      // Allow empty string for clear
+                      if (value === '') {
                         handleChange(e, index, 'unitPrice');
+                        return;
                       }
+
+                      // Convert to number
+                      value = Number(value);
+
+                      // Prevent negative
+                      if (value < 0) return;
+
+                      handleChange({ target: { value } }, index, 'unitPrice');
                     }}
-                    min="0"
+                    step="any" // allows decimals
+                    min="0" // ensures no negatives
                   />
                 </TableCell>
                 <TableCell colSpan={1}>

@@ -38,6 +38,8 @@ import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { stockIn } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 
 // dynamic imports
@@ -202,6 +204,20 @@ const ViewOrder = () => {
     });
   };
 
+  const stockInMutation = useMutation({
+    mutationKey: [stockInOutAPIs.stockIn.endpointKey],
+    mutationFn: stockIn,
+    onSuccess: () => {
+      toast.success(translations('successMsg.stock_in'));
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
   // handle upload proofs fn
   // const handleAttached = async (file) => {
   //   setFiles((prevFiles) => [...prevFiles, file]);
@@ -258,6 +274,9 @@ const ViewOrder = () => {
     <div className="flex gap-2">
       <ConditionalRenderingStatus status={buyerStatus} />
       <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.buyerData?.stockIn}
+      />
+      <ConditionalRenderingStatus
         status={orderDetails?.metaData?.payment?.status}
       />
     </div>
@@ -276,6 +295,7 @@ const ViewOrder = () => {
             isOrder="order"
             orderId={params.order_id}
             onCancel={() => setIsEditingOrder(false)}
+            isEditingOrder={isEditingOrder}
           />
         )}
         {!isEditingOrder && !isLoading && orderDetails && (
@@ -393,6 +413,30 @@ const ViewOrder = () => {
                         className="font-bold"
                       >
                         {translations('ctas.payment_advice')}
+                      </Button>
+                    </ProtectedWrapper>
+                  )}
+
+                {/* stock-in CTA */}
+                {!isPaymentAdvicing &&
+                  !orderDetails?.invoiceGenerationCompleted &&
+                  orderDetails?.negotiationStatus === 'ACCEPTED' &&
+                  orderDetails?.metaData?.buyerData?.stockIn !== 'STOCK_IN' && (
+                    <ProtectedWrapper
+                      permissionCode={'permission:purchase-stock-in'}
+                    >
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() =>
+                          stockInMutation.mutate({
+                            enterpriseId: Number(enterpriseId),
+                            orderId: params.order_id,
+                          })
+                        }
+                        className="font-bold"
+                      >
+                        {translations('ctas.stock-in')}
                       </Button>
                     </ProtectedWrapper>
                   )}

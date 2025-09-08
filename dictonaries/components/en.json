@@ -981,7 +981,9 @@
             "PARTIAL_PAID": "Partial Paid",
             "NOT_PAID": "Payment pending",
             "NOT_RAISED": "-",
-            "RAISED": "Debit Note Raised"
+            "RAISED": "Debit Note Raised",
+            "STOCK_OUT": "Stock Out",
+            "STOCK_IN": "Stock In"
         }
     }
 }

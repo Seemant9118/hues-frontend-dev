@@ -42,13 +42,17 @@ export const useSalesOrderColumns = (status) => {
         const isNegotiation = row.original?.negotiation;
         const { invoiceQuantity, quantity } = row.original;
         const negotiationQty = row.original?.negotiation?.quantity;
+        const unitType = row.original?.unit?.abbreviation;
 
         return status === 'ACCEPTED' || status === 'PARTIAL_INVOICED' ? (
           <div>
-            {invoiceQuantity} / {isNegotiation ? negotiationQty : quantity}
+            {invoiceQuantity} / {isNegotiation ? negotiationQty : quantity}{' '}
+            {unitType}
           </div>
         ) : (
-          <div>{isNegotiation ? negotiationQty : quantity}</div>
+          <div>
+            {isNegotiation ? negotiationQty : quantity} {unitType}
+          </div>
         );
       },
     },
