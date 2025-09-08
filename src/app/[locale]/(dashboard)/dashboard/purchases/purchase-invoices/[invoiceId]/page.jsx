@@ -121,6 +121,7 @@ const ViewInvoice = () => {
       invoice?.orderItemId?.productDetails?.productName ||
       invoice?.orderItemId?.productDetails?.serviceName,
     quantity: invoice?.quantity,
+    unit: invoice?.unit,
     unitPrice: invoice?.unitPrice,
     totalAmount: invoice?.totalAmount,
   }));

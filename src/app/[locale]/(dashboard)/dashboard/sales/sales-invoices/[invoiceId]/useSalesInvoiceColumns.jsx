@@ -23,6 +23,15 @@ export const useSalesInvoiceColumns = () => {
           title={translations('quantity')}
         />
       ),
+      cell: ({ row }) => {
+        const { quantity } = row.original;
+        const unitType = row.original?.unit?.abbreviation;
+        return (
+          <div>
+            {quantity} {unitType}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'unitPrice',

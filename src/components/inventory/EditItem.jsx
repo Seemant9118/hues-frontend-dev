@@ -3,13 +3,15 @@
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import React, { useState } from 'react';
-
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import InputWithLabel from '../ui/InputWithLabel';
 import Loading from '../ui/Loading';
+import InputWithSelect from '../ui/InputWithSelect';
 
 const EditItem = ({
   setIsEditing,
@@ -41,12 +43,17 @@ const EditItem = ({
           gstPercentage: goodsToEdit.gstPercentage,
           type: 'goods',
           quantity: goodsToEdit.quantity,
+          unitId: goodsToEdit?.unitId || '',
           batch: goodsToEdit.batch,
           expiry: goodsToEdit.expiry,
           weight: goodsToEdit.weight,
+          weightUnitId: goodsToEdit?.weightUnitId || '',
           length: goodsToEdit.length,
+          lengthUnitId: goodsToEdit?.lengthUnitId || '',
           breadth: goodsToEdit.breadth,
+          breadthUnitId: goodsToEdit?.breadthUnitId || '',
           height: goodsToEdit.height,
+          heightUnitId: goodsToEdit?.heightUnitId || '',
           applications: goodsToEdit.applications,
           manufacturerGstId: goodsToEdit.manufacturerGstId,
           units: goodsToEdit.units,
@@ -65,14 +72,18 @@ const EditItem = ({
           type: 'servies',
           batch: '',
           expiry: servicesToEdit.expiry,
-          weight: '',
-          length: '',
-          breadth: '',
-          height: '',
           applications: servicesToEdit.applications,
           units: '',
         },
   );
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
+  });
 
   const updateMutation = useMutation({
     mutationFn: (data) => mutationFunc(data, Id),
@@ -241,12 +252,21 @@ const EditItem = ({
           </div>
           {item.type === 'goods' && (
             <div className="flex flex-col">
-              <InputWithLabel
-                name={translations('goods.components.add.label.quantity')}
+              <InputWithSelect
                 id="quantity"
+                name={translations('goods.components.add.label.quantity')}
                 required={true}
-                onChange={onChange}
                 value={item.quantity}
+                onValueChange={onChange}
+                unit={item?.unitId} // unitId from state
+                onUnitChange={(val) => {
+                  setItem((prev) => {
+                    const updated = { ...prev, unitId: Number(val) }; // store ID
+                    return updated;
+                  });
+                }}
+                units={units?.quantity} // pass the full object list
+                unitPlaceholder="Select unit"
               />
             </div>
           )}
@@ -289,32 +309,64 @@ const EditItem = ({
               value={item.manufacturerGstId}
             />
 
-            <InputWithLabel
-              name={translations('goods.components.add.label.weight')}
+            <InputWithSelect
               id="weight"
-              onChange={onChange}
+              name={translations('goods.components.add.label.weight')}
               value={item.weight}
+              onValueChange={onChange}
+              unit={item.weightUnitId} // auto-selected from state
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, weightUnitId: Number(val) }; // ensure ID
+                  return updated;
+                });
+              }}
+              units={units?.mass} // pass full object list like [{id: 1, name: 'kg'}]
             />
 
-            <InputWithLabel
-              name={translations('goods.components.add.label.length')}
-              id="length"
-              onChange={onChange}
-              value={item.length}
-            />
-
-            <InputWithLabel
-              name={translations('goods.components.add.label.breadth')}
-              id="breadth"
-              onChange={onChange}
-              value={item.breadth}
-            />
-
-            <InputWithLabel
-              name={translations('goods.components.add.label.height')}
+            <InputWithSelect
               id="height"
-              onChange={onChange}
+              name={translations('goods.components.add.label.height')}
               value={item.height}
+              onValueChange={onChange}
+              unit={item.heightUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, heightUnitId: Number(val) };
+                  return updated;
+                });
+              }}
+              units={units?.length}
+            />
+
+            <InputWithSelect
+              id="length"
+              name={translations('goods.components.add.label.length')}
+              value={item.length}
+              onValueChange={onChange}
+              unit={item.lengthUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, lengthUnitId: Number(val) };
+                  return updated;
+                });
+              }}
+              units={units?.length}
+            />
+
+            <InputWithSelect
+              id="breadth"
+              name={translations('goods.components.add.label.breadth')}
+              value={item.breadth}
+              onValueChange={onChange}
+              unit={item.breadthUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, breadthUnitId: Number(val) };
+                  return updated;
+                });
+              }}
+              units={units?.volume}
             />
           </div>
         </div>

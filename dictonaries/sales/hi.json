@@ -81,6 +81,7 @@
                     "upload_attachements": "अटैचमेंट अपलोड करें",
                     "record_payment": "भुगतान रिकॉर्ड करें",
                     "generate_invoice": "चालान उत्पन्न करें",
+                    "stock-out": "स्टॉक आउट",
                     "view": {
                         "placeholder": "ऑर्डर विवरण करें"
                     },
@@ -130,7 +131,8 @@
                     }
                 },
                 "successMsg": {
-                    "order_accepted": "ऑर्डर स्वीकार किया गया"
+                    "order_accepted": "ऑर्डर स्वीकार किया गया",
+                    "stock_out": "स्टॉक आउट सफलतापूर्वक हुआ"
                 },
                 "errorMsg": {
                     "common": "कुछ गलत हो गया"

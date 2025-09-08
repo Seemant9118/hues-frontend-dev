@@ -40,6 +40,8 @@ import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
 // dynamic imports
@@ -228,6 +230,20 @@ const ViewOrder = () => {
     });
   };
 
+  const stockOutMutation = useMutation({
+    mutationKey: [stockInOutAPIs.stockOut.endpointKey],
+    mutationFn: stockOut,
+    onSuccess: () => {
+      toast.success(translations('successMsg.stock_out'));
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
   // [ATTACHMENTS]
   // handle upload proofs fn
   // const handleAttached = async (file) => {
@@ -283,6 +299,9 @@ const ViewOrder = () => {
     <div className="flex gap-2">
       <ConditionalRenderingStatus status={sellerStatus} />
       <ConditionalRenderingStatus
+        status={orderDetails?.metaData?.sellerData?.stockOut}
+      />
+      <ConditionalRenderingStatus
         status={orderDetails?.metaData?.payment?.status}
       />
     </div>
@@ -302,6 +321,7 @@ const ViewOrder = () => {
             isOrder="order"
             orderId={params.order_id}
             onCancel={() => setIsEditingOrder(false)}
+            isEditingOrder={isEditingOrder}
           />
         )}
 
@@ -473,6 +493,32 @@ const ViewOrder = () => {
                         className="font-bold"
                       >
                         {translations('ctas.generate_invoice')}
+                      </Button>
+                    </ProtectedWrapper>
+                  )}
+
+                {/* stock-out CTA */}
+                {!isGenerateInvoice &&
+                  !isRecordingPayment &&
+                  !orderDetails?.invoiceGenerationCompleted &&
+                  orderDetails?.negotiationStatus === 'ACCEPTED' &&
+                  orderDetails?.metaData?.sellerData?.stockOut ===
+                    'STOCK_OUT' && (
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-stock-out'}
+                    >
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() =>
+                          stockOutMutation.mutate({
+                            enterpriseId: Number(enterpriseId),
+                            orderId: Number(params.order_id),
+                          })
+                        }
+                        className="font-bold"
+                      >
+                        {translations('ctas.stock-out')}
                       </Button>
                     </ProtectedWrapper>
                   )}

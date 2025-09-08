@@ -35,10 +35,10 @@
             },
             "tabs": {
                 "label": {
-                    "tab1": "All Orders",
-                    "tab2": "Waiting for Review",
-                    "tab3": "Confirmed Deals",
-                    "tab4": "Pending Payments"
+                    "tab1": "All",
+                    "tab2": "Under Review",
+                    "tab3": "Confirmed Orders",
+                    "tab4": "Receivables"
                 },
                 "content": {}
             },
@@ -81,6 +81,7 @@
                     "upload_attachements": "Upload Document",
                     "record_payment": "Log payment",
                     "generate_invoice": "Invoice",
+                    "stock-out":"Stock out",
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -130,7 +131,8 @@
                     }
                 },
                 "successMsg": {
-                    "order_accepted": "Order Accepted"
+                    "order_accepted": "Order Accepted",
+                    "stock_out" : "Stock out successfully"
                 },
                 "errorMsg": {
                     "common": "Oops! Something didn’t go as planned Try again?"

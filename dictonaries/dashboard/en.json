@@ -19,7 +19,7 @@
         },
         "analytics": {
             "sales": "Sales",
-            "purchase": "Purchase",
+            "purchase": "Purchases",
             "average": "Average",
             "bar-lines": {
                 "sales": "Sales",

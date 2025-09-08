@@ -48,10 +48,10 @@
                     "expiry": "Expiry",
                     "application": "Application",
                     "manufacturerGST": "Manufacturer's GST IN",
-                    "weight": "Weight (grams)",
-                    "length": "Length (cm)",
-                    "breadth": "Breadth (cm)",
-                    "height": "Height (cm)"
+                    "weight": "Weight",
+                    "length": "Length",
+                    "breadth": "Breadth",
+                    "height": "Height"
                 },
                 "ctas": {
                     "cancel": "Cancel",
