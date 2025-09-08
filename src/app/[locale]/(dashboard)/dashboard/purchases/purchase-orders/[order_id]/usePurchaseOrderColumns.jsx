@@ -35,7 +35,12 @@ export const usePurchaseOrderColumns = () => {
         const isNegotiation = row.original?.negotiation;
         const { quantity } = row.original;
         const negotiationQty = row.original?.negotiation?.quantity;
-        return <div>{isNegotiation ? negotiationQty : quantity}</div>;
+        const unitType = row.original?.unit?.abbreviation;
+        return (
+          <div>
+            {isNegotiation ? negotiationQty : quantity} {unitType}
+          </div>
+        );
       },
     },
     {

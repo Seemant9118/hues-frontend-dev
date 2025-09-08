@@ -79,17 +79,17 @@ const EditOrder = ({
     enabled: !!enterpriseId,
   });
 
-  // fetch profileDetails API
+  // fetch profileDetails API only for sales orders
   const { data: profileDetails } = useQuery({
-    queryKey: [userAuth.getProfileDetails.endpointKey],
+    queryKey: [userAuth.getProfileDetails.endpointKey, userId],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
-    enabled: !!isEditingOrder && isPurchasePage === false,
+    enabled: Boolean(isEditingOrder && !isPurchasePage),
   });
 
   // for sales-order gst/non-gst check
   const isGstApplicableForSalesOrders =
-    isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
+    !isPurchasePage && Boolean(profileDetails?.enterpriseDetails?.gstNumber);
 
   // for purchase-orders gst/non-gst check
   const [
@@ -693,13 +693,51 @@ const EditOrder = ({
                     <TableRow key={item.id}>
                       <TableCell>{item.productName}</TableCell>
                       <TableCell>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleInputChange(item, 'quantity', e.target.value)
-                          }
-                          className="w-24 border-2 font-semibold"
+                        <InputWithSelect
+                          required={true}
+                          value={item.quantity === 0 ? '' : item.quantity}
+                          onValueChange={(e) => {
+                            const inputValue = e.target.value;
+
+                            // Allow user to clear input
+                            if (inputValue === '') {
+                              handleInputChange(
+                                { ...item, unitId: item.unitId },
+                                'quantity',
+                                0,
+                              );
+                              return;
+                            }
+
+                            // Allow decimals but reject negatives / invalid numbers
+                            if (
+                              !/^\d*\.?\d*$/.test(inputValue) ||
+                              inputValue < 0
+                            )
+                              return;
+
+                            // Reuse your existing updater logic
+                            handleInputChange(
+                              { ...item, unitId: item.unitId },
+                              'quantity',
+                              inputValue,
+                            );
+                          }}
+                          unit={item.unitId} // bind unitId here
+                          onUnitChange={(val) => {
+                            // Update the order state with new unitId
+                            setOrder((prev) => ({
+                              ...prev,
+                              orderItems: prev.orderItems.map((orderItem) =>
+                                orderItem.productId === item.productId
+                                  ? { ...orderItem, unitId: Number(val) }
+                                  : orderItem,
+                              ),
+                            }));
+                          }}
+                          units={units?.quantity}
+                          min={0}
+                          step="any" // <-- allows decimals
                         />
                       </TableCell>
                       <TableCell>

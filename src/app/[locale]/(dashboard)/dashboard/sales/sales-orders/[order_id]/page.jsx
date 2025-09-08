@@ -320,6 +320,7 @@ const ViewOrder = () => {
             isOrder="order"
             orderId={params.order_id}
             onCancel={() => setIsEditingOrder(false)}
+            isEditingOrder={isEditingOrder}
           />
         )}
 

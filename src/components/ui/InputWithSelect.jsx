@@ -13,7 +13,7 @@ function InputWithSelect({
   id,
   name,
   inputWidth = 'w-full',
-  selectWidth = 'w-20',
+  selectWidth = 'w-15',
   required,
   value,
   onValueChange,
