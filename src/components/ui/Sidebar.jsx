@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
@@ -182,7 +183,7 @@ const Sidebar = () => {
 
   return (
     <aside className="flex flex-col gap-10 overflow-hidden bg-[#F6F9FF] pb-3 pl-3 pt-3">
-      <Link href="/dashboard">
+      <Link href={goToHomePage()}>
         <Image
           src="/hues_logo.png"
           height={25}
