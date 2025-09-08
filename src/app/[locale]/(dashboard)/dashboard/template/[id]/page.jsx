@@ -94,6 +94,7 @@
 'use client';
 
 import { templateApi } from '@/api/templates_api/template_api';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Builder from '@/components/Form/Builder';
 import Loading from '@/components/ui/Loading';
 
@@ -160,7 +161,7 @@ const TemplateInfo = ({ params, searchParams }) => {
 
   const { mutate, isPending: isUpdating } = useMutation({
     mutationFn: ({ signatureData, formData }) => {
-      const enterpriseId = LocalStorageService.get('enterprise_Id');
+      const enterpriseId = getEnterpriseId();
       const userId = LocalStorageService.get('user_profile');
       return updateTemplate(
         {

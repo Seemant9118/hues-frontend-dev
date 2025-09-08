@@ -1,6 +1,7 @@
 'use client';
 
 import { templateApi } from '@/api/templates_api/template_api';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { ResponseColumns } from '@/components/columns/ResponseColumns';
 import { DataTable } from '@/components/table/data-table';
 import TemplateCard from '@/components/templates/TemplateCard';
@@ -9,7 +10,6 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService } from '@/lib/utils';
 import {
   getTemplates,
   uploadTemplate,
@@ -33,7 +33,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function Home() {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const queryClient = useQueryClient();
 
   const [viewForm, setViewForm] = useState(false);

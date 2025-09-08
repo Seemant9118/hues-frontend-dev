@@ -3,6 +3,7 @@
 import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
 import { invitation } from '@/api/invitation/Invitation';
 import { orderApi } from '@/api/order_api/order_api';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
@@ -85,7 +86,7 @@ const ViewOrder = () => {
   const router = useRouter();
   const params = useParams();
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const searchParams = useSearchParams();
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [isNegotiation, setIsNegotiation] = useState(false);

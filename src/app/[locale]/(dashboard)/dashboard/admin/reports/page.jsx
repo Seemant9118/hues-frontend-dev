@@ -9,8 +9,9 @@ import PieCharts from '@/components/ui/PieCharts';
 import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useRBAC } from '@/context/RBACcontext';
+import { usePermission } from '@/hooks/usePermissions';
 import { getAdminData } from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -21,7 +22,6 @@ import {
   TabletSmartphone,
   UserRound,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 // dashcards
@@ -89,8 +89,7 @@ import React, { useEffect, useState } from 'react';
 // ];
 
 const AdminReportsPage = () => {
-  const router = useRouter();
-  const { hasPageAccess, canPerformAction } = useRBAC();
+  const { hasPermission } = usePermission();
   const [tab, setTab] = useState('onboarding');
   const startDate = new Date('2024/03/01');
   const todayDate = new Date();
@@ -106,7 +105,7 @@ const AdminReportsPage = () => {
     queryFn: () => getAdminData(dateRange),
     select: (res) => res?.data?.data,
     enabled:
-      canPerformAction('adminReports', 'fetchedAdminData') &&
+      hasPermission('permission:admin-dashboard-view') &&
       tab === 'onboarding' &&
       Array.isArray(dateRange) &&
       dateRange[0] !== null &&
@@ -128,185 +127,187 @@ const AdminReportsPage = () => {
   }, [adminData]);
   const PIE_COLORS = ['#F8BA05', '#007bff'];
 
-  useEffect(() => {
-    if (!hasPageAccess('adminReports')) {
-      router.replace('/dashboard/unauthorized');
-    }
-  }, []);
-
   return (
-    <Wrapper>
-      {/* headers */}
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
-        <SubHeader name="Reports" />
-        <div className="flex gap-2">
-          <SearchInput searchPlaceholder="Search..." disabled={true} />
-          <Button size="sm" variant="outline">
-            <Download size={14} />
-          </Button>
-        </div>
-      </div>
-
-      {/* tabs */}
-      <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
-        {/* TabsHeader */}
-        <section className="sticky top-12 z-10 flex w-full justify-between bg-white py-2">
-          <TabsList className="border">
-            <TabsTrigger
-              className={`w-24 ${tab === 'onboarding' ? 'shadow-customShadow' : ''}`}
-              value="onboarding"
-            >
-              Onboarding
-            </TabsTrigger>
-            <TabsTrigger
-              className={`w-24 ${tab === 'sales' ? 'shadow-customShadow' : ''}`}
-              value="sales"
-            >
-              Sales
-            </TabsTrigger>
-            <TabsTrigger
-              className={`${tab === 'purchase' ? 'shadow-customShadow' : ''}`}
-              value="purchase"
-            >
-              Purchase
-            </TabsTrigger>
-            <TabsTrigger
-              className={`w-24 ${tab === 'inventory' ? 'shadow-customShadow' : ''}`}
-              value="inventory"
-            >
-              Inventory
-            </TabsTrigger>
-
-            <TabsTrigger
-              className={`w-24 ${tab === 'vendors' ? 'shadow-customShadow' : ''}`}
-              value="vendors"
-            >
-              Vendors
-            </TabsTrigger>
-
-            <TabsTrigger
-              className={`w-24 ${tab === 'catalogues' ? 'shadow-customShadow' : ''}`}
-              value="catalogues"
-            >
-              Catalogues
-            </TabsTrigger>
-
-            <TabsTrigger
-              className={`w-24 ${tab === 'gst' ? 'shadow-customShadow' : ''}`}
-              value="gst"
-            >
-              GST
-            </TabsTrigger>
-          </TabsList>
-        </section>
-
-        {/* CurrentTabHeader */}
-        {tab === 'onboarding' && (
-          <div className="flex items-center justify-between">
-            <section className="bg-white px-2 py-4">
-              <h2 className="text-lg font-semibold">Onboarding Analytics</h2>
-              <p className="text-sm text-gray-500">
-                Track user sign-ups, engagement, and business activity
-              </p>
-            </section>
-            <DateRange dateRange={dateRange} setDateRange={setDateRange} />
+    <ProtectedWrapper permissionCode={'permission:admin-dashboard-view'}>
+      <Wrapper>
+        {/* headers */}
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
+          <SubHeader name="Reports" />
+          <div className="flex gap-2">
+            <SearchInput searchPlaceholder="Search..." disabled={true} />
+            <Button size="sm" variant="outline">
+              <Download size={14} />
+            </Button>
           </div>
-        )}
+        </div>
 
-        <TabsContent value="onboarding" className="flex flex-col gap-4">
-          {/* Onboarding */}
-          {isLoading && <Loading />}
+        {/* tabs */}
+        <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
+          {/* TabsHeader */}
+          <section className="sticky top-12 z-10 flex w-full justify-between bg-white py-2">
+            <TabsList className="border">
+              <TabsTrigger
+                className={`w-24 ${tab === 'onboarding' ? 'shadow-customShadow' : ''}`}
+                value="onboarding"
+              >
+                Onboarding
+              </TabsTrigger>
+              <TabsTrigger
+                className={`w-24 ${tab === 'sales' ? 'shadow-customShadow' : ''}`}
+                value="sales"
+              >
+                Sales
+              </TabsTrigger>
+              <TabsTrigger
+                className={`${tab === 'purchase' ? 'shadow-customShadow' : ''}`}
+                value="purchase"
+              >
+                Purchase
+              </TabsTrigger>
+              <TabsTrigger
+                className={`w-24 ${tab === 'inventory' ? 'shadow-customShadow' : ''}`}
+                value="inventory"
+              >
+                Inventory
+              </TabsTrigger>
 
-          {!isLoading && (
-            <section className="flex flex-col gap-5">
-              {/* Dashboard Metrics */}
-              <div className="grid grid-cols-3 grid-rows-2 gap-2">
-                {/* total no. of signups */}
-                {adminData?.totalSignups && (
-                  <DashCard
-                    title={'Total Sign-ups'}
-                    numbers={adminData?.totalSignups}
-                    // growth={'+12%'}
-                    icon={<UserRound size={16} className="text-green-500" />}
-                  />
-                )}
+              <TabsTrigger
+                className={`w-24 ${tab === 'vendors' ? 'shadow-customShadow' : ''}`}
+                value="vendors"
+              >
+                Vendors
+              </TabsTrigger>
 
-                {/* total no. of users logins */}
-                {adminData?.numberOfPeopleLogedIn && (
-                  <DashCard
-                    title={'Users Logins'}
-                    numbers={adminData?.numberOfPeopleLogedIn}
-                    // growth={'+5%'}
-                    icon={<UserRound size={16} className="text-green-500" />}
-                  />
-                )}
+              <TabsTrigger
+                className={`w-24 ${tab === 'catalogues' ? 'shadow-customShadow' : ''}`}
+                value="catalogues"
+              >
+                Catalogues
+              </TabsTrigger>
 
-                {/* total no. of order created */}
-                {adminData?.numberOfOrderCreated && (
-                  <DashCard
-                    title={'Total Order Created'}
-                    numbers={adminData?.numberOfOrderCreated}
-                    // growth={'+5%'}
-                    icon={<Boxes size={16} className="text-green-500" />}
-                  />
-                )}
+              <TabsTrigger
+                className={`w-24 ${tab === 'gst' ? 'shadow-customShadow' : ''}`}
+                value="gst"
+              >
+                GST
+              </TabsTrigger>
+            </TabsList>
+          </section>
 
-                {/* total no. of mobile verified */}
-                {adminData?.mobileVerified && (
-                  <DashCard
-                    title={'Total Mobile Verified'}
-                    numbers={adminData?.mobileVerified}
-                    // growth={'+5%'}
-                    icon={
-                      <TabletSmartphone size={16} className="text-green-500" />
-                    }
-                  />
-                )}
+          {/* CurrentTabHeader */}
+          {tab === 'onboarding' && (
+            <div className="flex items-center justify-between">
+              <section className="bg-white px-2 py-4">
+                <h2 className="text-lg font-semibold">Onboarding Analytics</h2>
+                <p className="text-sm text-gray-500">
+                  Track user sign-ups, engagement, and business activity
+                </p>
+              </section>
+              <DateRange dateRange={dateRange} setDateRange={setDateRange} />
+            </div>
+          )}
 
-                {/* total no. of pan verified */}
-                {adminData?.panVerified && (
-                  <DashCard
-                    title={'Total PAN Verified'}
-                    numbers={adminData?.panVerified}
-                    // growth={'+5%'}
-                    icon={<CreditCard size={16} className="text-green-500" />}
-                  />
-                )}
+          <TabsContent value="onboarding" className="flex flex-col gap-4">
+            {/* Onboarding */}
+            {isLoading && <Loading />}
 
-                {/* total no. of aadhar verified */}
-                {adminData?.aadharVerified && (
-                  <DashCard
-                    title={'Total Aadhar Verified'}
-                    numbers={adminData?.aadharVerified}
-                    // growth={'+5%'}
-                    icon={<Fingerprint size={16} className="text-green-500" />}
-                  />
-                )}
-                {/* Reports Section */}
-                <div className="flex flex-col justify-between gap-5">
-                  {/* Pie Chart Placeholder */}
-                  <div className="rounded-md border px-6 py-3">
-                    <h3 className="text-sm text-gray-500">Invitation Status</h3>
-                    {/* Add PieChart Component here */}
-                    <PieCharts
-                      data={pieChartData}
-                      totalInvitation={
-                        adminData?.invitationData?.totalInvitations
-                      }
-                      colors={PIE_COLORS}
+            {!isLoading && (
+              <section className="flex flex-col gap-5">
+                {/* Dashboard Metrics */}
+                <div className="grid grid-cols-3 grid-rows-2 gap-2">
+                  {/* total no. of signups */}
+                  {adminData?.totalSignups && (
+                    <DashCard
+                      title={'Total Sign-ups'}
+                      numbers={adminData?.totalSignups}
+                      // growth={'+12%'}
+                      icon={<UserRound size={16} className="text-green-500" />}
                     />
-                  </div>
+                  )}
 
-                  {/* funnel Chart */}
-                  {/* <div className="w-2/3 rounded-md border p-4">
+                  {/* total no. of users logins */}
+                  {adminData?.numberOfPeopleLogedIn && (
+                    <DashCard
+                      title={'Users Logins'}
+                      numbers={adminData?.numberOfPeopleLogedIn}
+                      // growth={'+5%'}
+                      icon={<UserRound size={16} className="text-green-500" />}
+                    />
+                  )}
+
+                  {/* total no. of order created */}
+                  {adminData?.numberOfOrderCreated && (
+                    <DashCard
+                      title={'Total Order Created'}
+                      numbers={adminData?.numberOfOrderCreated}
+                      // growth={'+5%'}
+                      icon={<Boxes size={16} className="text-green-500" />}
+                    />
+                  )}
+
+                  {/* total no. of mobile verified */}
+                  {adminData?.mobileVerified && (
+                    <DashCard
+                      title={'Total Mobile Verified'}
+                      numbers={adminData?.mobileVerified}
+                      // growth={'+5%'}
+                      icon={
+                        <TabletSmartphone
+                          size={16}
+                          className="text-green-500"
+                        />
+                      }
+                    />
+                  )}
+
+                  {/* total no. of pan verified */}
+                  {adminData?.panVerified && (
+                    <DashCard
+                      title={'Total PAN Verified'}
+                      numbers={adminData?.panVerified}
+                      // growth={'+5%'}
+                      icon={<CreditCard size={16} className="text-green-500" />}
+                    />
+                  )}
+
+                  {/* total no. of aadhar verified */}
+                  {adminData?.aadharVerified && (
+                    <DashCard
+                      title={'Total Aadhar Verified'}
+                      numbers={adminData?.aadharVerified}
+                      // growth={'+5%'}
+                      icon={
+                        <Fingerprint size={16} className="text-green-500" />
+                      }
+                    />
+                  )}
+                  {/* Reports Section */}
+                  <div className="flex flex-col justify-between gap-5">
+                    {/* Pie Chart Placeholder */}
+                    <div className="rounded-md border px-6 py-3">
+                      <h3 className="text-sm text-gray-500">
+                        Invitation Status
+                      </h3>
+                      {/* Add PieChart Component here */}
+                      <PieCharts
+                        data={pieChartData}
+                        totalInvitation={
+                          adminData?.invitationData?.totalInvitations
+                        }
+                        colors={PIE_COLORS}
+                      />
+                    </div>
+
+                    {/* funnel Chart */}
+                    {/* <div className="w-2/3 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Onboarding Funnel
                   </h3>
                   <FunnelCharts data={funnelData} />
                 </div> */}
 
-                  {/* Line Chart */}
-                  {/* <div className="w-2/3 rounded-md border p-4">
+                    {/* Line Chart */}
+                    {/* <div className="w-2/3 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Invitation Trend
                   </h3>
@@ -317,11 +318,11 @@ const AdminReportsPage = () => {
                     height={300}
                   />
                 </div> */}
+                  </div>
                 </div>
-              </div>
 
-              {/* Reports Section 2 */}
-              {/* <div className="flex justify-between gap-5">
+                {/* Reports Section 2 */}
+                {/* <div className="flex justify-between gap-5">
                 <div className="w-2/3 rounded-md border p-4">
                   <h3 className="mb-2 text-lg font-semibold">
                     Onboarding Trend
@@ -341,17 +342,18 @@ const AdminReportsPage = () => {
                   <FunnelCharts data={funnelData} />
                 </div>
               </div> */}
-            </section>
-          )}
-        </TabsContent>
-        <TabsContent value="sales">Coming Soon...</TabsContent>
-        <TabsContent value="purchase">Coming Soon...</TabsContent>
-        <TabsContent value="inventory">Coming Soon...</TabsContent>
-        <TabsContent value="vendors">Coming Soon...</TabsContent>
-        <TabsContent value="catalogues">Coming Soon...</TabsContent>
-        <TabsContent value="gst">Coming Soon...</TabsContent>
-      </Tabs>
-    </Wrapper>
+              </section>
+            )}
+          </TabsContent>
+          <TabsContent value="sales">Coming Soon...</TabsContent>
+          <TabsContent value="purchase">Coming Soon...</TabsContent>
+          <TabsContent value="inventory">Coming Soon...</TabsContent>
+          <TabsContent value="vendors">Coming Soon...</TabsContent>
+          <TabsContent value="catalogues">Coming Soon...</TabsContent>
+          <TabsContent value="gst">Coming Soon...</TabsContent>
+        </Tabs>
+      </Wrapper>
+    </ProtectedWrapper>
   );
 };
 

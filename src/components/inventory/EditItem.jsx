@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import React, { useState } from 'react';
-
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ const EditItem = ({
 }) => {
   const translations = useTranslations();
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const userId = LocalStorageService.get('user_profile');
   const Id = goodsToEdit ? goodsToEdit.id : servicesToEdit.id;
 

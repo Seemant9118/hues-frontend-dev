@@ -4,6 +4,7 @@
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invitation } from '@/api/invitation/Invitation';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
@@ -67,7 +68,7 @@ const ClientPage = () => {
     'client.emptyStateComponent.subItems.subItem4',
   ];
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

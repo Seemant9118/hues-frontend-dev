@@ -1,7 +1,11 @@
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { refreshToken } from './Token_Services/TokenServices';
+import { parseJwt } from '@/appUtils/helperFunctions';
+import {
+  adminRefreshToken,
+  refreshToken,
+} from './Token_Services/TokenServices';
 
 export const APIinstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -37,8 +41,17 @@ APIinstance.interceptors.response.use(
       }
 
       try {
+        // if admin then adminRefreshToken, otherwise refreshToken
+        // parse JWT as you already have
+        const payload = parseJwt(refreshTokenValue);
+
+        // check for ADMIN role
+        const isAdmin = payload?.isAdmin || false;
+
         // Attempt to refresh the token
-        const refreshTokenData = await refreshToken();
+        const refreshTokenData = await (isAdmin
+          ? adminRefreshToken()
+          : refreshToken());
         const newAccessToken = refreshTokenData?.data?.data?.access_token;
 
         if (newAccessToken) {

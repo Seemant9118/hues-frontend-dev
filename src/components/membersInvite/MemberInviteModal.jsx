@@ -2,8 +2,10 @@
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import { rolesApi } from '@/api/rolesApi/rolesApi';
-import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
-import { LocalStorageService } from '@/lib/utils';
+import {
+  convertSnakeToTitleCase,
+  getEnterpriseId,
+} from '@/appUtils/helperFunctions';
 import {
   createAssociateMembers,
   updateAssociateMember,
@@ -26,7 +28,7 @@ const MemberInviteModal = ({
   membersInfo,
   isEditMode = false,
 }) => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const translation = useTranslations('components.memberInviteModal');
   const queryClient = useQueryClient();

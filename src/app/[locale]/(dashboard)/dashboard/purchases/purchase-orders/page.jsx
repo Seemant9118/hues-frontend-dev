@@ -3,6 +3,7 @@
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import FilterModal from '@/components/orders/FilterModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -63,7 +64,7 @@ const PurchaseOrders = () => {
     'purchases.purchase-orders.emptyStateComponent.subItems.subItem4',
   ];
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

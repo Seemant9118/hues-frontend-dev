@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { useRBAC } from '@/context/RBACcontext';
+import { goToHomePage } from '@/appUtils/helperFunctions';
+import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
   Bell,
@@ -25,15 +26,17 @@ import {
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
-import { usePermission } from '@/hooks/usePermissions';
+import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import StyledLinks from './StyledLinks';
 
 const Sidebar = () => {
-  const { hasPageAccess } = useRBAC();
   const { hasPermission } = usePermission();
+  const isEnterpriseSwitched = Boolean(
+    localStorage.getItem('switchedEnterpriseId'),
+  );
 
-  const adminLinks = hasPageAccess('adminReports')
+  const adminLinks = hasPermission('permission:admin-dashboard-view')
     ? [
         {
           name: 'Reports',
@@ -180,7 +183,7 @@ const Sidebar = () => {
 
   return (
     <aside className="flex flex-col gap-10 overflow-hidden bg-[#F6F9FF] pb-3 pl-3 pt-3">
-      <Link href="/dashboard">
+      <Link href={goToHomePage()}>
         <Image
           src="/hues_logo.png"
           height={25}
@@ -202,23 +205,34 @@ const Sidebar = () => {
               {adminLinks.map((link) => (
                 <StyledLinks key={link.name} link={link} />
               ))}
+
+              <EnterpriseSelectorPopUp />
             </nav>
           )}
 
           {/* Navigation Links */}
-          <nav className="flex flex-col gap-2">
-            {links.map((link) => (
-              <StyledLinks key={link.name} link={link} />
-            ))}
-          </nav>
+          {((hasPermission('permission:admin-dashboard-view') &&
+            isEnterpriseSwitched) ||
+            !hasPermission('permission:admin-dashboard-view')) && (
+            <nav className="flex flex-col gap-2">
+              {links.map((link) => (
+                <StyledLinks key={link.name} link={link} />
+              ))}
+            </nav>
+          )}
         </div>
 
         {/* Action Links & Profile */}
         <div className="flex flex-col gap-2">
-          {actionLinks.map((link) => (
-            <StyledLinks key={link.name} link={link} />
-          ))}
-
+          {((hasPermission('permission:admin-dashboard-view') &&
+            isEnterpriseSwitched) ||
+            !hasPermission('permission:admin-dashboard-view')) && (
+            <>
+              {actionLinks.map((link) => (
+                <StyledLinks key={link.name} link={link} />
+              ))}
+            </>
+          )}
           <ProfileInfoPopUp
             ctaName="sidebar.profile"
             viewProfileCta="components.profilePopUpInfo.viewProfileCta"

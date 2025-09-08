@@ -1,6 +1,7 @@
 'use client';
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import MemberInviteModal from '@/components/membersInvite/MemberInviteModal';
 import { DataTable } from '@/components/table/data-table';
@@ -24,7 +25,7 @@ import { useInviteeMembersColumns } from './useInviteeMembersColumns';
 const MembersPage = () => {
   useMetaData('Hues! - Members', 'HUES MEMBERS'); // dynamic title
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

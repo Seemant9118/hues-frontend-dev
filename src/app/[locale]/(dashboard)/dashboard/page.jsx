@@ -2,6 +2,7 @@
 
 import { dashboardApis } from '@/api/dashboard/dashboardApi';
 import { invitation } from '@/api/invitation/Invitation';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -49,7 +50,8 @@ export default function Home() {
     'dashboard.emptyStateComponent.subItems.subItem4',
   ];
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
+  const isSwitched = Boolean(LocalStorageService.get('switchedEnterpriseId'));
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
@@ -187,7 +189,8 @@ export default function Home() {
       enabled:
         !!enterpriseId &&
         isEnterpriseOnboardingComplete &&
-        hasPermission('permission:view-dashboard'),
+        hasPermission('permission:view-dashboard') &&
+        !isSwitched, // disable when switched to another enterprise
     });
 
   const ReceivedformattedData = receivedInviteData?.map((user) => ({

@@ -19,6 +19,7 @@ import { CalendarDays } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,7 +36,7 @@ const AddItem = ({ onCancel, cta }) => {
   const translations = useTranslations();
 
   const redirectURL = LocalStorageService.get('redirectFromCatalogue');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const userId = LocalStorageService.get('user_profile');
   const itemDraft = SessionStorageService.get('itemDraft');
 

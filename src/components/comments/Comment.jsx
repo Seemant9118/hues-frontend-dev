@@ -1,20 +1,20 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { updateComments } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Building2, Dot, File, X } from 'lucide-react';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
 import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 const Comment = ({ comment, invalidateId }) => {
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const translations = useTranslations('components.comment');
   const [isEditing, setIsEditing] = useState(false);

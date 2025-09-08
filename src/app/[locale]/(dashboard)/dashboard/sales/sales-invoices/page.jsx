@@ -4,6 +4,7 @@ import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/clien
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import FilterInvoices from '@/components/invoices/FilterInvoices';
 import InvoiceTypeModal from '@/components/invoices/InvoiceTypeModal';
@@ -77,7 +78,7 @@ const SalesInvoices = () => {
     'sales.sales-invoices.emtpyStateComponent.subItems.subItem4',
   ];
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

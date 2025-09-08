@@ -11,9 +11,9 @@ export const getAdminData = (dateRange) => {
   });
 };
 
-export const getEnterprisesData = ({ page, limit }) => {
+export const getEnterprisesSalesData = ({ page, limit }) => {
   return APIinstance.get(
-    `${AdminAPIs.getEnterpriseData.endpoint}?page=${page}&limit=${limit}`,
+    `${AdminAPIs.getEnterpriseSalesData.endpoint}?page=${page}&limit=${limit}`,
   );
 };
 
@@ -103,4 +103,20 @@ export const getUserdataFromPAN = ({ panNumber }) => {
   return APIinstance.get(
     `${AdminAPIs.getUserdataFromPAN.endpoint}?panNumber=${panNumber}`,
   );
+};
+
+export const getSearchedEnterprises = (searchTerm) => {
+  return APIinstance.get(
+    `${AdminAPIs.getSearchedEnterprise.endpoint}?searchString=${searchTerm}`,
+  );
+};
+
+export const switchEnterprise = ({ enterpriseId }) => {
+  return APIinstance.get(
+    `${AdminAPIs.switchEnterprise.endpoint}${enterpriseId}`,
+  );
+};
+
+export const revertSwitchedEnterprise = () => {
+  return APIinstance.get(AdminAPIs.revertSwitchedEnterprise.endpoint);
 };

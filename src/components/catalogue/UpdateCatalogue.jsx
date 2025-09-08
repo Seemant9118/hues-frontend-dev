@@ -3,6 +3,7 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -41,7 +42,7 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
 
   const translations = useTranslations('catalogue');
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const router = useRouter();
   const queryClient = useQueryClient();

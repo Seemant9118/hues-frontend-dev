@@ -6,6 +6,7 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
@@ -56,7 +57,7 @@ const CreateB2BInvoice = ({
   const translations = useTranslations('components.create_edit_order');
 
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const b2bInvoiceDraft = SessionStorageService.get('b2bInvoiceDraft');
 
   const router = useRouter();

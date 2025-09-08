@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import { handlePendingActionsRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
 import { Button } from '@/components/ui/button';
@@ -72,7 +73,7 @@ const ConfirmationPage = () => {
   };
 
   const handleSkip = () => {
-    router.push('/dashboard');
+    router.push(goToHomePage());
   };
 
   return (

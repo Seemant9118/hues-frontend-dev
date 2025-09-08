@@ -2,6 +2,7 @@
 
 import { paymentApi } from '@/api/payments/payment_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -34,7 +35,7 @@ const SalesPayments = () => {
   useMetaData('Hues! - Sales Payments', 'HUES PAYMENTS'); // dynamic title
 
   const translations = useTranslations('sales.sales-payments');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

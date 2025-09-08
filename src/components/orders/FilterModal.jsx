@@ -2,7 +2,7 @@
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
-import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { useQuery } from '@tanstack/react-query';
@@ -31,7 +31,7 @@ const FilterModal = ({
   setPaginationData,
 }) => {
   const translations = useTranslations('components.filter');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isFilteredApplied, setIsFilteredApplied] = useState(false);

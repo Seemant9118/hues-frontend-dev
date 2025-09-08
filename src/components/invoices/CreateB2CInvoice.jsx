@@ -3,6 +3,7 @@ import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
@@ -49,7 +50,7 @@ const CreateB2CInvoice = ({
   const translations = useTranslations('components.create_B2C_Invoice');
 
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const b2CInvoiceDraft = SessionStorageService.get('b2CInvoiceDraft');
 
   const router = useRouter();

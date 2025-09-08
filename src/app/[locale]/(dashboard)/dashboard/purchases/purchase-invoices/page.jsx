@@ -3,6 +3,7 @@
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import FilterInvoices from '@/components/invoices/FilterInvoices';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -56,7 +57,7 @@ const PurchaseInvoices = () => {
     'purchases.purchase-invoices.emptyStateComponent.subItems.subItem4',
   ];
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

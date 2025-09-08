@@ -2,16 +2,17 @@
 
 'use client';
 
+import { directorApi } from '@/api/director/directorApi';
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
 import { Button } from '@/components/ui/button';
+import { LocalStorageService } from '@/lib/utils';
+import { directorInviteList } from '@/services/Director_Services/DirectorServices';
+import { useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { LocalStorageService } from '@/lib/utils';
-import { useQueryClient } from '@tanstack/react-query';
-import { directorApi } from '@/api/director/directorApi';
-import { directorInviteList } from '@/services/Director_Services/DirectorServices';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const ConfirmationPage = () => {
@@ -45,7 +46,7 @@ const ConfirmationPage = () => {
   };
 
   const handleSkip = () => {
-    router.push('/dashboard');
+    router.push(goToHomePage());
   };
 
   return (

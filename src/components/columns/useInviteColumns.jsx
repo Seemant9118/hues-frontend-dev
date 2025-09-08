@@ -1,10 +1,10 @@
 'use client';
 
 import { invitation } from '@/api/invitation/Invitation';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { LocalStorageService } from '@/lib/utils';
 import {
   acceptInvitation,
   rejectInvitation,
@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 export const useInviteColumns = () => {
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const acceptInvitationMutation = useMutation({
     mutationFn: (data) => acceptInvitation(data),

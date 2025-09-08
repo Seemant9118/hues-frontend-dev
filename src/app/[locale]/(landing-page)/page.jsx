@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
-import { parseJwt } from '@/appUtils/helperFunctions';
+import { goToHomePage, parseJwt } from '@/appUtils/helperFunctions';
 
 const features = [
   {
@@ -106,7 +106,7 @@ export default function HeroSection() {
     const userData = parseJwt(token);
 
     if (userData?.userId) {
-      window.location.href = '/dashboard';
+      window.location.href = goToHomePage();
     }
   }, []);
 
