@@ -57,23 +57,21 @@ export default async function RootLayout({ children, params: { locale } }) {
   return (
     <html lang={locale} className={nanumPen.variable}>
       <head>
-        <head>
-          {isValidEnv && (
-            <script
-              type="text/javascript"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
+        {isValidEnv && (
+          <script
+            type="text/javascript"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
         (function(c,l,a,r,i,t,y){
           c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
           t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
           y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
         })(window, document, "clarity", "script", "tqe8tlvrll");
       `,
-              }}
-            />
-          )}
-        </head>
+            }}
+          />
+        )}
       </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
