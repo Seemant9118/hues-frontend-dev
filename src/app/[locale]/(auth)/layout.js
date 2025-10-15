@@ -3,6 +3,7 @@
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
 import { AuthProgressProvider } from '@/context/AuthProgressContext';
 import { UserDataProvider } from '@/context/UserDataContext';
+import useClarityTracking from '@/hooks/useClarityTracking';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,6 +36,8 @@ export default function LoginLayout({ children }) {
     // Force a full page reload to ensure server picks up cookie
     window.location.href = `/${newLocale}${currentPathWithoutLocale}`;
   };
+
+  useClarityTracking();
 
   // if browser loading then show this
   if (isLoading) {

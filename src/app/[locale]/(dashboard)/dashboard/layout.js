@@ -9,6 +9,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { parseJwt } from '@/appUtils/helperFunctions';
 import { useEffect, useState } from 'react';
 import AuthInitializer from '@/components/wrappers/AuthInitializer';
+import useClarityTracking from '@/hooks/useClarityTracking';
 
 export default function DashBoardLayout({ children }) {
   const token = LocalStorageService.get('token');
@@ -18,6 +19,8 @@ export default function DashBoardLayout({ children }) {
     const tokenData = parseJwt(token);
     setUserRoles(tokenData?.roles);
   }, [token]);
+
+  useClarityTracking();
 
   return (
     <AuthProvider>
