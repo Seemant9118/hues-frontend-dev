@@ -14,7 +14,8 @@ import AuthProgress from '../../util-auth-components/AuthProgress';
 const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
-  sendAadharOTPMutation,
+  loading,
+  validateAadharAndUpdateUser,
   translations,
 }) => {
   const translationsForError = useTranslations();
@@ -50,7 +51,8 @@ const AadharNumberDetail = ({
     const iserror = validation(aadharNumber);
 
     if (Object.keys(iserror).length === 0) {
-      sendAadharOTPMutation.mutate({ aadhaar: aadharNumber });
+      validateAadharAndUpdateUser(e);
+      return;
     }
     setErrorMsg(iserror);
   };
@@ -61,7 +63,7 @@ const AadharNumberDetail = ({
       className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
     >
       <div className="flex flex-col gap-3">
-        <AuthProgress isCurrAuthStep={'isAadharVerificationStep'} />
+        <AuthProgress isCurrAuthStep={'isAadhaarVerificationStep'} />
         <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
           {translations('steps.aadharNum.title')}
         </h1>
@@ -102,17 +104,8 @@ const AadharNumberDetail = ({
         {/* Explanatory Information */}
         <ExplantoryText text={translations('steps.aadharNum.information')} />
 
-        <Button
-          type="submit"
-          className="w-full"
-          size="sm"
-          disabled={sendAadharOTPMutation.isPending}
-        >
-          {sendAadharOTPMutation.isPending ? (
-            <Loading />
-          ) : (
-            translations('steps.aadharNum.button')
-          )}
+        <Button type="submit" className="w-full" size="sm" disabled={loading}>
+          {loading ? <Loading /> : translations('steps.aadharNum.button')}
         </Button>
       </div>
     </form>

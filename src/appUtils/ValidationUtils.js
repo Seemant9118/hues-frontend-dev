@@ -13,11 +13,17 @@ export const validatePhoneNumber = (mobileNumber) => {
 };
 
 export const validatePan = (panNumber) => {
-  if (!panNumber || panNumber.trim() === '') {
+  const trimmedPan = panNumber?.trim().toUpperCase();
+
+  if (!trimmedPan) {
     return 'components.validationUtils.pan.required';
-  } else if (!validationPatterns.pan.test(panNumber)) {
+  }
+
+  // Exactly 10 chars and match regex
+  if (trimmedPan.length !== 10 || !validationPatterns.pan.test(trimmedPan)) {
     return 'components.validationUtils.pan.invalid';
   }
+
   return '';
 };
 

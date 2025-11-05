@@ -151,6 +151,7 @@ const PanVerificationPage = () => {
       LocalStorageService.set('enterpriseDetails', userData);
       // marked pan verified in context
       updateAuthProgress('isPanVerified', true);
+      LocalStorageService.set('isPanVerified', true);
     }
     setErrorMsg(isAnyError);
   };
