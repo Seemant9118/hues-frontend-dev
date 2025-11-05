@@ -1,3 +1,5 @@
+// NOT IN USE CURRENTLY BUT MAY BE USED LATER
+
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';

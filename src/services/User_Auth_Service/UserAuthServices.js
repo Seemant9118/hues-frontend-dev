@@ -114,17 +114,22 @@ export function getPanDetails(data) {
   return APIinstance.post(userAuth.getPanDetails.endpoint, data);
 }
 
-// 23. sent Aadhar OTP
+// 23. validate Aadhar Number
+export function validateAadharNumber(data) {
+  return APIinstance.post(userAuth.validateAadharNumber.endpoint, data);
+}
+
+// 24. sent Aadhar OTP
 export function sentAadharOTP(data) {
   return APIinstance.post(userAuth.sendAadharVerificationOTP.endpoint, data);
 }
 
-// 24. verify Aadhar OTP
+// 25. verify Aadhar OTP
 export function verifyAadharOTP(data) {
   return APIinstance.post(userAuth.verifyAadharOTP.endpoint, data);
 }
 // [NEW]
-// 25. getEnterpriseDetailsForPanVerify
+// 26. getEnterpriseDetailsForPanVerify
 export function getEnterpriseDetailsForPanVerify(data) {
   return APIinstance.post(
     userAuth.getEnterpriseDetailsForPanVerify.endpoint,
@@ -132,22 +137,22 @@ export function getEnterpriseDetailsForPanVerify(data) {
   );
 }
 
-// 26. gstVerify
+// 27. gstVerify
 export function gstVerify(data) {
   return APIinstance.post(userAuth.gstVerify.endpoint, data);
 }
 
-// 27. cinVerify
+// 28. cinVerify
 export function cinVerify(data) {
   return APIinstance.post(userAuth.cinVerify.endpoint, data);
 }
 
-// 28. udyamVerify
+// 29. udyamVerify
 export function udyamVerify(data) {
   return APIinstance.post(userAuth.udyamVerify.endpoint, data);
 }
 
-// 29. getEnterpriseDetailsFromEnterpriseId
+// 30. getEnterpriseDetailsFromEnterpriseId
 export function getEnterpriseDetailsFromEnterpriseId(id) {
   return APIinstance.post(
     userAuth.getEnterpriseDetailsFromEnterpriseId.endpoint,
@@ -155,12 +160,12 @@ export function getEnterpriseDetailsFromEnterpriseId(id) {
   );
 }
 
-// 30. getOnboardingStatus
+// 31. getOnboardingStatus
 export function getOnboardingStatus(data) {
   return APIinstance.post(userAuth.getOnboardingStatus.endpoint, data);
 }
 
-// 31. addAnotherEnterprise
+// 32. addAnotherEnterprise
 export function addAnotherEnterprise() {
   return APIinstance.post(userAuth.addAnotherEnterprise.endpoint);
 }

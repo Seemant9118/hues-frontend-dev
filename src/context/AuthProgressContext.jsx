@@ -9,7 +9,7 @@ const AuthProgressContext = createContext();
 export const AuthProgressProvider = ({ children }) => {
   const [authProgress, setAuthProgress] = useState({
     isPanVerified: false,
-    isAadharVerified: false,
+    isAadhaarVerified: false,
     isConfirmation: false,
   });
 
