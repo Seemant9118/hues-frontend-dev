@@ -383,7 +383,7 @@ const AddItem = ({ onCancel, cta }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="goods">Goods</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
+                  {/* <SelectItem value="services">Services</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>

@@ -167,10 +167,10 @@ const CreateB2BInvoice = ({
       value: 'GOODS',
       label: translations('form.input.item_type.goods'),
     },
-    {
-      value: 'SERVICE',
-      label: translations('form.input.item_type.services'),
-    },
+    // {
+    //   value: 'SERVICE',
+    //   label: translations('form.input.item_type.services'),
+    // },
   ];
 
   // Items fetching

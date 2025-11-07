@@ -84,33 +84,52 @@ const VendorsPage = () => {
     useState(null);
   const [paginationData, setPaginationData] = useState({});
 
+  // 🧩 Vendors Query (default list)
   const {
     data: vendorsQuery,
     isLoading: isVendorsQueryLoading,
     fetchNextPage: vendorFetchNextPage,
     isFetching: isVendorsQueryFetching,
   } = useInfiniteQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryKey: [vendorEnterprise.getVendors.endpointKey, enterpriseId],
+
     queryFn: async ({ pageParam = 1 }) => {
-      return getVendors({
+      if (!enterpriseId) {
+        // 🛡️ Prevent accidental call without enterpriseId
+        return { data: { data: { users: [], totalPages: 0 } } };
+      }
+
+      const response = await getVendors({
         id: enterpriseId,
         page: pageParam,
         limit: PAGE_LIMIT,
       });
+
+      // ✅ Always return a consistent object shape
+      return response || { data: { data: { users: [], totalPages: 0 } } };
     },
+
     initialPageParam: 1,
+
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = (groups?.length ?? 0) + 1;
-      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+      if (!_lastGroup?.data?.data) return undefined;
+
+      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
+      const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
+
     enabled:
-      searchTerm?.length === 0 && hasPermission('permission:vendors-view'),
+      Boolean(enterpriseId) &&
+      searchTerm?.length === 0 &&
+      hasPermission('permission:vendors-view'),
+
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
+  // 🔍 Vendors Search Query
   const {
     data: searchQuery,
     isLoading: isSearchQueryLoading,
@@ -120,22 +139,37 @@ const VendorsPage = () => {
     queryKey: [
       vendorEnterprise.searchedVendors.endpointKey,
       debouncedSearchTerm,
+      enterpriseId,
     ],
+
     queryFn: async ({ pageParam = 1 }) => {
-      return searchedVendors({
+      if (!debouncedSearchTerm?.trim()) {
+        // 🧯 Return safe structure for empty term
+        return { data: { data: { users: [], totalPages: 0 } } };
+      }
+
+      const response = await searchedVendors({
         page: pageParam,
         limit: PAGE_LIMIT,
         data: { searchString: debouncedSearchTerm },
       });
+
+      return response || { data: { data: { users: [], totalPages: 0 } } };
     },
+
     initialPageParam: 1,
+
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = (groups?.length ?? 0) + 1;
-      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+      if (!_lastGroup?.data?.data) return undefined;
+
+      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
+      const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: !!debouncedSearchTerm,
+
+    enabled: Boolean(debouncedSearchTerm?.trim()?.length > 0),
+
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });

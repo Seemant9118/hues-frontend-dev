@@ -93,23 +93,33 @@ const ClientPage = () => {
     fetchNextPage: clientFetchNextPage,
     isFetching: isClientQueryFetching,
   } = useInfiniteQuery({
-    queryKey: [clientEnterprise.getClients.endpointKey],
+    queryKey: [clientEnterprise.getClients.endpointKey, enterpriseId],
     queryFn: async ({ pageParam = 1 }) => {
-      return getClients({
+      const response = await getClients({
         id: enterpriseId,
         page: pageParam,
         limit: PAGE_LIMIT,
       });
+
+      // 🛡️ Ensure consistent response shape
+      return response || { data: { data: { users: [], totalPages: 0 } } };
     },
     initialPageParam: 1,
+
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = (groups?.length ?? 0) + 1;
-      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+      if (!_lastGroup?.data?.data) return undefined;
+
+      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
+      const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
+
     enabled:
-      searchTerm?.length === 0 && hasPermission('permission:clients-view'),
+      Boolean(enterpriseId) &&
+      searchTerm?.length === 0 &&
+      hasPermission('permission:clients-view'),
+
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -121,21 +131,37 @@ const ClientPage = () => {
     isFetching: isSearchQueryFetching,
   } = useInfiniteQuery({
     queryKey: [clientEnterprise.searchClients.endpointKey, debouncedSearchTerm],
+
     queryFn: async ({ pageParam = 1 }) => {
-      return searchedClients({
+      // 🧭 Guard: ensure we don't hit API with empty search term
+      if (!debouncedSearchTerm) {
+        return { data: { data: { users: [], totalPages: 0 } } };
+      }
+
+      const response = await searchedClients({
         page: pageParam,
         limit: PAGE_LIMIT,
         data: { searchString: debouncedSearchTerm },
       });
+
+      // 🛡️ Always return a consistent shape
+      return response || { data: { data: { users: [], totalPages: 0 } } };
     },
+
     initialPageParam: 1,
+
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = (groups?.length ?? 0) + 1;
-      const totalPages = _lastGroup?.data?.data?.totalPages ?? 0;
+      // 🧱 Safe guards against undefined or malformed groups
+      if (!_lastGroup?.data?.data) return undefined;
+
+      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
+      const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: !!debouncedSearchTerm,
+
+    enabled: Boolean(debouncedSearchTerm?.trim()?.length > 0),
+
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
