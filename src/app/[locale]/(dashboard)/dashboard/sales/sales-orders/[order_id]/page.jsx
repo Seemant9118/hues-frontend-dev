@@ -3,8 +3,9 @@
 import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
 import { invitation } from '@/api/invitation/Invitation';
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import Tooltips from '@/components/auth/Tooltips';
+import DynamicModal from '@/components/Modals/DynamicModal';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
@@ -15,11 +16,6 @@ import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import TimelineItem from '@/components/ui/TimelineItem';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -32,16 +28,17 @@ import { getInvitationStatus } from '@/services/Invitation_Service/Invitation_Se
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
+  remindOrder,
 } from '@/services/Orders_Services/Orders_Services';
+import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
-import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { acceptOrder } from '@/services/Invoice_Services/Invoice_Services';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
 // dynamic imports
@@ -96,6 +93,12 @@ const ViewOrder = () => {
   // const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   const [tab, setTab] = useState('overview');
   // const [files, setFiles] = useState([]);
+  const [modalData, setModalData] = useState({
+    isOpen: false,
+    title: '',
+    description: '',
+    buttons: [],
+  });
 
   const onTabChange = (value) => {
     setTab(value);
@@ -244,6 +247,40 @@ const ViewOrder = () => {
     },
   });
 
+  const acceptOrderMutation = useMutation({
+    mutationKey: [invoiceApi.acceptOrder.endpointKey],
+    mutationFn: acceptOrder,
+    onSuccess: () => {
+      toast.success(translations('successMsg.order_accepted'));
+      setModalData((prev) => ({
+        ...prev,
+        isOpen: false,
+      }));
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
+  const remindOrderMutation = useMutation({
+    mutationKey: [orderApi.remindOrder.endpointKey],
+    mutationFn: () => remindOrder(Number(params.order_id)),
+    onSuccess: () => {
+      toast.success('Reminder Send Successfully');
+
+      setModalData((prev) => ({
+        ...prev,
+        isOpen: false,
+      }));
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   // [ATTACHMENTS]
   // handle upload proofs fn
   // const handleAttached = async (file) => {
@@ -322,6 +359,21 @@ const ViewOrder = () => {
             orderId={params.order_id}
             onCancel={() => setIsEditingOrder(false)}
             isEditingOrder={isEditingOrder}
+          />
+        )}
+
+        {modalData.isOpen && (
+          <DynamicModal
+            isOpen={modalData.isOpen}
+            onClose={() =>
+              setModalData((prev) => ({
+                ...prev,
+                isOpen: false,
+              }))
+            }
+            title={modalData.title}
+            description={modalData.description}
+            buttons={modalData.buttons}
           />
         )}
 
@@ -475,6 +527,23 @@ const ViewOrder = () => {
                       </Button>
                     </ProtectedWrapper>
                   )}
+                {/* revise CTA */}
+                {!isGenerateInvoice &&
+                  !isRecordingPayment &&
+                  !isNegotiation &&
+                  orderDetails.negotiationStatus === 'NEW' &&
+                  userId.toString() === orderDetails.createdBy.toString() && (
+                    <ProtectedWrapper permissionCode={'permission:sales-edit'}>
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsEditingOrder(true)}
+                        className="font-bold"
+                      >
+                        {translations('ctas.more.revise')}
+                      </Button>
+                    </ProtectedWrapper>
+                  )}
                 {/* generateInvoice CTA */}
                 {!isGenerateInvoice &&
                   !isRecordingPayment &&
@@ -489,7 +558,81 @@ const ViewOrder = () => {
                       <Button
                         variant="blue_outline"
                         size="sm"
-                        onClick={() => setIsGenerateInvoice(true)}
+                        onClick={() => {
+                          // Case 1: Uninvited enterprise
+                          if (
+                            orderDetails?.buyerType ===
+                              'UNINVITED-ENTERPRISE' &&
+                            orderDetails?.metaData?.sellerData?.orderStatus ===
+                              'OFFER_SENT'
+                          ) {
+                            setModalData({
+                              isOpen: true,
+                              title: 'Heads Up! This Client Isn’t Confirmed',
+                              description:
+                                'This client isn’t confirmed yet. By continuing, the order will be accepted, and you’ll be able to create an invoice. Do you still want to proceed?',
+                              buttons: [
+                                {
+                                  label: 'Cancel',
+                                  variant: 'outline',
+                                  className: 'w-36',
+                                  onClick: () =>
+                                    setModalData((prev) => ({
+                                      ...prev,
+                                      isOpen: false,
+                                    })),
+                                },
+                                {
+                                  label: 'Proceed',
+                                  className:
+                                    'w-36 bg-green-600 text-white hover:bg-green-700',
+                                  onClick: () => {
+                                    acceptOrderMutation.mutate({
+                                      orderId: Number(params.order_id),
+                                    });
+                                  },
+                                },
+                              ],
+                            });
+                          }
+
+                          // Case 2: Confirmed enterprise but no reply
+                          else if (
+                            orderDetails?.buyerType === 'ENTERPRISE' &&
+                            orderDetails?.metaData?.sellerData?.orderStatus ===
+                              'OFFER_SENT'
+                          ) {
+                            setModalData({
+                              isOpen: true,
+                              title: 'Enterprise Offer Pending',
+                              description:
+                                'Your client hasn’t replied to this order yet. Proceeding will accept the order and allow you to create an invoice. Would you like to proceed?',
+                              buttons: [
+                                {
+                                  label: 'Remind',
+                                  variant: 'outline',
+                                  className: 'w-36',
+                                  onClick: () => remindOrderMutation.mutate(),
+                                },
+                                {
+                                  label: 'Proceed, anyway',
+                                  className:
+                                    'w-36 bg-blue-600 text-white hover:bg-blue-700',
+                                  onClick: () => {
+                                    acceptOrderMutation.mutate({
+                                      orderId: Number(params.order_id),
+                                    });
+                                  },
+                                },
+                              ],
+                            });
+                          }
+
+                          // Case 3: Direct invoice generation
+                          else {
+                            setIsGenerateInvoice(true);
+                          }
+                        }}
                         className="font-bold"
                       >
                         {translations('ctas.generate_invoice')}
@@ -524,7 +667,7 @@ const ViewOrder = () => {
                   )}
 
                 {/* more ctas */}
-                {!isGenerateInvoice &&
+                {/* {!isGenerateInvoice &&
                   !isRecordingPayment &&
                   !isNegotiation &&
                   orderDetails.negotiationStatus === 'NEW' &&
@@ -557,7 +700,7 @@ const ViewOrder = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </ProtectedWrapper>
-                  )}
+                  )} */}
               </div>
             </section>
 

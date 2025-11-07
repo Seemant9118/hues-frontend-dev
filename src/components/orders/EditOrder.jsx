@@ -2,6 +2,7 @@
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getEnterpriseId,
@@ -28,22 +29,22 @@ import {
 import {
   OrderDetails,
   updateOrder,
+  updateOrderForUnrepliedSales,
 } from '@/services/Orders_Services/Orders_Services';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
-import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
-import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import InputWithSelect from '../ui/InputWithSelect';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
-import InputWithSelect from '../ui/InputWithSelect';
 
 const EditOrder = ({
   onCancel,
@@ -55,6 +56,7 @@ const EditOrder = ({
   const translations = useTranslations('components.create_edit_order');
 
   const queryClient = useQueryClient();
+  const router = useRouter();
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = getEnterpriseId();
   const pathName = usePathname();
@@ -130,6 +132,7 @@ const EditOrder = ({
         unitPrice: item.unitPrice,
         version: item.version,
         negotiationStatus: item?.negotiationStatus || 'NEW',
+        ...item,
       };
     });
   };
@@ -335,7 +338,7 @@ const EditOrder = ({
     return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   }
 
-  // mutation Fn for update order
+  // mutation Fn for update order (purchase || sales && unconfirmed clients)
   const updateOrderMutation = useMutation({
     mutationKey: [orderApi.updateOrder.endpointKey],
     mutationFn: (data) => updateOrder(orderId, data),
@@ -350,15 +353,44 @@ const EditOrder = ({
     },
   });
 
+  // mutation Fn for update order (confirmed clients with no reply recieved)
+  const updateOrderForUnRepliedSalesMutation = useMutation({
+    mutationKey: [orderApi.updateOrderForUnrepliedSales.endpointKey],
+    mutationFn: (data) => updateOrderForUnrepliedSales(data),
+    onSuccess: (res) => {
+      toast.success(translations('form.successMsg.order_revised_successfully'));
+      // onCancel();
+      // queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      // setIsOrderCreationSuccess((prev) => !prev);
+      router.push(`/dashboard/sales/sales-orders/${res.data.data.newOrderId}`);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
 
-    updateOrderMutation.mutate({
-      ...order,
-      amount: parseFloat(totalAmount.toFixed(2)),
-      gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-    });
+    // if purchase page or sales order with unconfirmed clients
+    if (
+      isPurchasePage ||
+      (!isPurchasePage && orderDetails?.buyerType === 'UNINVITED-ENTERPRISE')
+    ) {
+      updateOrderMutation.mutate({
+        ...order,
+        amount: parseFloat(totalAmount.toFixed(2)),
+        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+      });
+    } else {
+      updateOrderForUnRepliedSalesMutation.mutate({
+        ...order,
+        orderId,
+        amount: parseFloat(totalAmount.toFixed(2)),
+        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+      });
+    }
   };
 
   return (

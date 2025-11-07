@@ -61,3 +61,7 @@ export const exportAllInvoice = ({ type, body }) => {
 export const previewDirectInvoice = (data) => {
   return APIinstance.post(invoiceApi.previewDirectInvoice.endpoint, data);
 };
+
+export const acceptOrder = (data) => {
+  return APIinstance.put(invoiceApi.acceptOrder.endpoint, data);
+};

@@ -40,7 +40,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-  const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
+  const isAutoSelect = false;
   const orderId = params.order_id;
 
   const [isPINModalOpen, setIsPINModalOpen] = useState(false);

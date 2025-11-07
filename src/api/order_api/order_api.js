@@ -85,27 +85,39 @@ export const orderApi = {
     endpointKey: 'update_order',
   },
 
-  // 16. export order
+  // 16. updateOrder for unreplied sales
+  updateOrderForUnrepliedSales: {
+    endpoint: `/order/withdraw`,
+    endpointKey: 'update_order_for_unreplied_sales',
+  },
+
+  // 17. export order
   exportOrder: {
     endpoint: `/order/export`,
     endpointKey: 'export_order',
   },
 
-  // 17. get Unconfirmed Sales
+  // 18. get Unconfirmed Sales
   getUnconfirmedSales: {
     endpoint: `/order/getunconfirmedsales/`,
     endpointKey: 'get_Unconfirmed_Sales',
   },
 
-  // 18.get Unconfirmed Purchases
+  // 19.get Unconfirmed Purchases
   getUnconfirmedPurchases: {
     endpoint: `/order/getunconfirmedpurchases/`,
     endpointKey: 'get_Unconfirmed_Purchases',
   },
 
-  // 19. share order
+  // 20. share order
   viewOrderinNewTab: {
     endpoint: `/order/generalink/`,
     endpointKey: 'share_order',
+  },
+
+  // 21. remind order
+  remindOrder: {
+    endpoint: `/order/remind/`,
+    endpointKey: 'remind_order',
   },
 };
