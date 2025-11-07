@@ -127,36 +127,57 @@ const CustomerPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery : customersQuery;
+    try {
+      // 🧭 Determine which query to use safely
+      const source =
+        debouncedSearchTerm && searchQuery?.pages?.length
+          ? searchQuery
+          : customersQuery;
 
-    // Guard clause: Ensure source is defined and has valid pages
-    if (
-      !source?.pages ||
-      !Array.isArray(source.pages) ||
-      source.pages.length === 0
-    ) {
-      return;
+      // 🛡️ Guard clause — invalid, empty, or not yet loaded
+      if (
+        !source ||
+        !Array.isArray(source.pages) ||
+        source.pages.length === 0
+      ) {
+        setCustomers([]);
+        setPaginationData({ totalPages: 0, currFetchedPage: 1 });
+        return;
+      }
+
+      // 🧩 Flatten all customers safely from pages
+      const flattened = source.pages.flatMap((page) =>
+        Array.isArray(page?.data?.data?.customers)
+          ? page.data.data.customers
+          : [],
+      );
+
+      // 🧠 Deduplicate customers by ID and filter out invalid entries
+      const uniqueCustomersData = Array.from(
+        new Map(
+          flattened
+            .filter((item) => item && item.id !== undefined)
+            .map((item) => [item.id, item]),
+        ).values(),
+      );
+
+      // ✅ Safely update customers list
+      setCustomers(uniqueCustomersData || []);
+
+      // 📄 Extract pagination safely
+      const lastPage = source.pages[source.pages.length - 1];
+      const lastPageData = lastPage?.data?.data || {};
+
+      setPaginationData({
+        totalPages: Number(lastPageData.totalPages) || 0,
+        currFetchedPage: Number(lastPageData.currentPage) || 1,
+      });
+    } catch (error) {
+      // console.error('Error processing customers data:', error);
+      // 🧯 Prevent frontend break
+      setCustomers([]);
+      setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }
-
-    // Flatten customers array from all pages, fallback to [] if not found
-    const flattened = source.pages.flatMap((page) =>
-      page?.data?.data?.customers ? page.data.data.customers : [],
-    );
-
-    // Remove duplicates by customer ID
-    const uniqueCustomersData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
-    );
-
-    setCustomers(uniqueCustomersData);
-
-    // Safely extract last page data
-    const lastPageData = source.pages[source.pages.length - 1]?.data?.data;
-
-    setPaginationData({
-      totalPages: lastPageData?.totalPages ?? 0,
-      currFetchedPage: Number(lastPageData?.currentPage ?? 1),
-    });
   }, [debouncedSearchTerm, customersQuery, searchQuery]);
 
   // handleFile fn

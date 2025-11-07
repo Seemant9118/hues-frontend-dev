@@ -148,36 +148,55 @@ const VendorsPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery : vendorsQuery;
+    try {
+      // 🧭 Determine data source safely
+      const source =
+        debouncedSearchTerm && searchQuery?.pages?.length
+          ? searchQuery
+          : vendorsQuery;
 
-    // Guard clause: Ensure source is defined and has valid pages
-    if (
-      !source?.pages ||
-      !Array.isArray(source.pages) ||
-      source.pages.length === 0
-    ) {
-      return;
+      // 🛡️ Guard clause: if source invalid or still loading, skip update
+      if (
+        !source ||
+        !Array.isArray(source.pages) ||
+        source.pages.length === 0
+      ) {
+        setVendors([]);
+        setPaginationData({ totalPages: 0, currFetchedPage: 1 });
+        return;
+      }
+
+      // 🧩 Flatten vendors safely from each page
+      const flattened = source.pages.flatMap((page) =>
+        Array.isArray(page?.data?.data?.users) ? page.data.data.users : [],
+      );
+
+      // 🧠 Deduplicate by ID (filter invalid entries)
+      const uniqueVendorsData = Array.from(
+        new Map(
+          flattened
+            .filter((item) => item && item.id !== undefined)
+            .map((item) => [item.id, item]),
+        ).values(),
+      );
+
+      // ✅ Update vendors safely
+      setVendors(uniqueVendorsData || []);
+
+      // 📄 Safely extract pagination info
+      const lastPage = source.pages[source.pages.length - 1];
+      const lastPageData = lastPage?.data?.data || {};
+
+      setPaginationData({
+        totalPages: Number(lastPageData.totalPages) || 0,
+        currFetchedPage: Number(lastPageData.currentPage) || 1,
+      });
+    } catch (error) {
+      // console.error('Error while processing vendors data:', error);
+      // 🧯 Prevent UI break on unexpected failure
+      setVendors([]);
+      setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }
-
-    // Flatten users from each page, fall back to [] safely
-    const flattened = source.pages.flatMap((page) =>
-      page?.data?.data?.users ? page.data.data.users : [],
-    );
-
-    // Deduplicate by ID
-    const uniqueVendorsData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
-    );
-
-    setVendors(uniqueVendorsData);
-
-    // Extract pagination info from the last page safely
-    const lastPageData = source.pages[source.pages.length - 1]?.data?.data;
-
-    setPaginationData({
-      totalPages: lastPageData?.totalPages ?? 0,
-      currFetchedPage: Number(lastPageData?.currentPage ?? 1),
-    });
   }, [debouncedSearchTerm, vendorsQuery, searchQuery]);
 
   // handle upload file fn

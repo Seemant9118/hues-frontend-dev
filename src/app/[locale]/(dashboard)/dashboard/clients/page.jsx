@@ -148,32 +148,56 @@ const ClientPage = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery : clientsQuery;
+    try {
+      const source =
+        debouncedSearchTerm && searchQuery?.pages?.length
+          ? searchQuery
+          : clientsQuery;
 
-    // Guard clause: ensure source is defined and has valid pages array
-    if (
-      !source?.pages ||
-      !Array.isArray(source.pages) ||
-      source.pages.length === 0
-    )
-      return;
+      // 🛡️ Guard clause: if no valid pages or data, reset gracefully and exit
+      if (
+        !source ||
+        !Array.isArray(source.pages) ||
+        source.pages.length === 0
+      ) {
+        setClients([]);
+        setPaginationData({ totalPages: 0, currFetchedPage: 1 });
+        return;
+      }
 
-    const flattened = source.pages.flatMap((page) =>
-      page?.data?.data?.users ? page.data.data.users : [],
-    );
+      // 🧩 Flatten safely — protect against undefined nesting
+      const flattened = source.pages.flatMap((page) =>
+        page?.data?.data?.users && Array.isArray(page.data.data.users)
+          ? page.data.data.users
+          : [],
+      );
 
-    const uniqueClientsData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
-    );
+      // 🧠 Deduplicate users by ID (avoid crashes on invalid item)
+      const uniqueClientsData = Array.from(
+        new Map(
+          flattened
+            .filter((item) => item && item.id !== undefined)
+            .map((item) => [item.id, item]),
+        ).values(),
+      );
 
-    setClients(uniqueClientsData);
+      // ✅ Update state safely (always defined)
+      setClients(uniqueClientsData || []);
 
-    const lastPageData = source.pages[source.pages.length - 1]?.data?.data;
+      // 📄 Extract pagination safely
+      const lastPage = source.pages[source.pages.length - 1];
+      const lastPageData = lastPage?.data?.data || {};
 
-    setPaginationData({
-      totalPages: lastPageData?.totalPages || 0,
-      currFetchedPage: Number(lastPageData?.currentPage || 1),
-    });
+      setPaginationData({
+        totalPages: Number(lastPageData.totalPages) || 0,
+        currFetchedPage: Number(lastPageData.currentPage) || 1,
+      });
+    } catch (error) {
+      // console.error('Error processing query data:', error);
+      // 🧯 Fail silently to avoid frontend break
+      setClients([]);
+      setPaginationData({ totalPages: 0, currFetchedPage: 1 });
+    }
   }, [debouncedSearchTerm, clientsQuery, searchQuery]);
 
   // handleFile fn
