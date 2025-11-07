@@ -6,8 +6,9 @@ import { Toaster } from 'sonner';
 import './globals.css';
 // eslint-disable-next-line camelcase
 import FCMProvider from '@/context/FCMProvider';
-import { Nanum_Pen_Script as nanumPenScript } from 'next/font/google';
 import { loadDictionaryMessages } from '@/lib/localeUtils';
+import { Nanum_Pen_Script as nanumPenScript } from 'next/font/google';
+import Script from 'next/script';
 import NotFound from './not-found';
 
 // Font configuration
@@ -58,16 +59,16 @@ export default async function RootLayout({ children, params: { locale } }) {
     <html lang={locale} className={nanumPen.variable}>
       <head>
         {isValidEnv && (
-          <script
-            type="text/javascript"
+          <Script
+            id="clarity-script"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
               (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, "clarity", "script", "u1rprq9864");
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "u1rprq9864");
             `,
             }}
           />

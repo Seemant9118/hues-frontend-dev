@@ -1,24 +1,38 @@
 'use client';
 
+import Sidebar from '@/components/ui/Sidebar';
 import { AuthProvider } from '@/context/AuthContext';
 import { RBACProvider } from '@/context/RBACcontext';
 import { UserProvider } from '@/context/UserContext';
-import Sidebar from '@/components/ui/Sidebar';
 
-import { LocalStorageService } from '@/lib/utils';
 import { parseJwt } from '@/appUtils/helperFunctions';
-import { useEffect, useState } from 'react';
 import AuthInitializer from '@/components/wrappers/AuthInitializer';
 import useClarityTracking from '@/hooks/useClarityTracking';
+import { LocalStorageService } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function DashBoardLayout({ children }) {
   const token = LocalStorageService.get('token');
+  const router = useRouter();
   const [userRoles, setUserRoles] = useState(null);
 
   useEffect(() => {
     const tokenData = parseJwt(token);
     setUserRoles(tokenData?.roles);
   }, [token]);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        const { action, url } = event.data || {};
+        if (action === 'navigate' && url) {
+          window.focus();
+          router.push(url); // SPA navigation, no hard reload
+        }
+      });
+    }
+  }, [router]);
 
   useClarityTracking();
 

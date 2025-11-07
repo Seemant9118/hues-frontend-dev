@@ -649,9 +649,7 @@ const AddItem = ({ onCancel, cta }) => {
               id="breadth"
               name={translations('goods.components.add.label.breadth')}
               value={item.breadth}
-              onValueChange={(val) =>
-                onChange({ target: { id: 'breadth', value: val } })
-              }
+              onValueChange={onChange}
               unit={item.breadthUnitId}
               onUnitChange={(val) => {
                 setItem((prev) => {
