@@ -8,8 +8,8 @@ export default function useClarityTracking() {
 
   useEffect(() => {
     if (
-      process.env.NEXT_PUBLIC_NODE_ENV === 'dev' &&
-      process.env.NEXT_PUBLIC_NODE_ENV === 'production' &&
+      (process.env.NEXT_PUBLIC_NODE_ENV === 'dev' ||
+        process.env.NEXT_PUBLIC_NODE_ENV === 'production') &&
       typeof window !== 'undefined' &&
       typeof window.clarity === 'function'
     ) {
