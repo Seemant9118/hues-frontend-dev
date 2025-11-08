@@ -32,21 +32,25 @@ export function ClientTable({
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
 
+  // ✅ Scroll handler with near-bottom check
   const fetchMoreOnBottomReached = React.useCallback(() => {
-    if (tableContainerRef.current) {
-      const { scrollHeight, scrollTop, clientHeight } =
-        tableContainerRef.current;
+    const container = tableContainerRef.current;
+    if (!container) return;
 
-      const bottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-      if (
-        bottom && // Check if scrolled to the bottom
-        !isFetching &&
-        !isFetchingNextPage && // Prevent repeated calls
-        currFetchedPage < totalPages
-      ) {
-        setIsFetchingNextPage(true); // Set fetching flag
-        fetchNextPage().finally(() => setIsFetchingNextPage(false)); // Reset flag after fetching
-      }
+    const { scrollHeight, scrollTop, clientHeight } = container;
+    const nearBottom = scrollHeight - scrollTop - clientHeight < 100; // within 100px
+
+    if (
+      nearBottom &&
+      !isFetching &&
+      !isFetchingNextPage &&
+      currFetchedPage < totalPages
+    ) {
+      setIsFetchingNextPage(true);
+      fetchNextPage()
+        // eslint-disable-next-line no-console
+        .catch((err) => console.error('Fetch next page failed:', err))
+        .finally(() => setIsFetchingNextPage(false));
     }
   }, [
     fetchNextPage,
@@ -56,20 +60,30 @@ export function ClientTable({
     totalPages,
   ]);
 
+  // ✅ Debounce to prevent rapid firing
+  const debouncedFetchMore = React.useMemo(() => {
+    let timeout;
+    return () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(fetchMoreOnBottomReached, 150); // 150ms debounce
+    };
+  }, [fetchMoreOnBottomReached]);
+
+  // ✅ Attach and cleanup scroll listener
   React.useEffect(() => {
     const container = tableContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => fetchMoreOnBottomReached();
-
+    const handleScroll = () => debouncedFetchMore();
     container.addEventListener('scroll', handleScroll);
 
     // eslint-disable-next-line consistent-return
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [fetchMoreOnBottomReached]);
+  }, [debouncedFetchMore]);
 
+  // ✅ React Table setup
   const table = useReactTable({
     data: data || [],
     columns,
@@ -86,12 +100,13 @@ export function ClientTable({
 
   const { rows = [] } = table.getRowModel() || {};
 
+  // ✅ Virtualizer setup
   const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    estimateSize: () => 40, // Adjusted height estimate
-    getScrollElement: () => tableContainerRef.current,
+    count: rows?.length,
+    estimateSize: () => 40,
+    getScrollElement: () => tableContainerRef?.current,
     measureElement: (element) =>
-      element?.offsetHeight || element?.getBoundingClientRect().height,
+      element?.offsetHeight || element?.getBoundingClientRect()?.height,
     overscan: 21,
   });
 
@@ -129,7 +144,7 @@ export function ClientTable({
               {data?.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={columns?.length}
                     className="py-4 text-center text-gray-500"
                   >
                     No results found.

@@ -34,7 +34,7 @@ import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import { SalesTable } from '../salestable/SalesTable';
@@ -79,7 +79,7 @@ const SalesOrder = () => {
   const [paginationData, setPaginationData] = useState({});
   const [salesListing, setSalesListing] = useState([]);
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
-  const [filterData, setFilterData] = useState({ clientIds: [] });
+  const [filterData, setFilterData] = useState(null);
   const [referenceOrderId, setReferenceOrderId] = useState(null);
 
   // Handle tab change
@@ -120,36 +120,45 @@ const SalesOrder = () => {
     if (tab === 'underReview') {
       newFilterData = {
         status: ['OFFER_SENT', 'BID_RECEIVED'],
-        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'confirmedOrders') {
       newFilterData = {
         status: ['ACCEPTED'],
         invoiceStatus: false,
-        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'receivables') {
       newFilterData = {
         invoiceStatus: true,
-        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'all') {
-      // ✅ Just keep clientIds if present, no extra filters
-      if (filterData?.clientIds?.length > 0) {
-        newFilterData = {
-          clientIds: filterData.clientIds,
-        };
-      } else {
-        newFilterData = null; // no filters applied
-      }
+      newFilterData =
+        filterData?.clientIds?.length > 0
+          ? { clientIds: filterData.clientIds }
+          : null;
     }
 
-    setFilterData(newFilterData);
+    // ✅ Conditionally add clientIds only if they exist
+    if (filterData?.clientIds?.length > 0) {
+      newFilterData.clientIds = filterData.clientIds;
+    }
+
+    // ✅ Update only if meaningfully different
+    setFilterData((prev) => {
+      if (JSON.stringify(prev) !== JSON.stringify(newFilterData)) {
+        return newFilterData;
+      }
+      return prev;
+    });
   }, [tab]);
+
+  const stableFilterKey = useMemo(() => {
+    if (!filterData) return null;
+    return JSON.stringify(filterData);
+  }, [filterData]);
 
   // Fetch sales data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
-    queryKey: [orderApi.getSales.endpointKey, enterpriseId, filterData],
+    queryKey: [orderApi.getSales.endpointKey, enterpriseId, stableFilterKey],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await GetSales({
         id: enterpriseId,
@@ -244,7 +253,6 @@ const SalesOrder = () => {
     label: updatedClientData.find((opt) => opt?.value === client)?.label,
   }));
 
-  // handlerChangeFn : clients
   const handleChangeForClient = (value) => {
     const ids = Array.isArray(value)
       ? value.map((v) => v.value)
@@ -252,10 +260,18 @@ const SalesOrder = () => {
         ? [value.value]
         : [];
 
-    setFilterData((prev) => ({
-      ...prev,
-      clientIds: ids,
-    }));
+    setFilterData((prev) => {
+      // Create a copy to modify safely
+      const updated = { ...prev };
+
+      if (ids.length > 0) {
+        updated.clientIds = ids; // add only when non-empty
+      } else {
+        delete updated.clientIds; // remove clientIds if empty
+      }
+
+      return updated;
+    });
   };
 
   // [updateReadTracker Mutation : onRowClick] ✅

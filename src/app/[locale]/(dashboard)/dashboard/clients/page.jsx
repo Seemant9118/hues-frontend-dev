@@ -80,12 +80,15 @@ const ClientPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
-  const [clients, setClients] = useState(null);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [clients, setClients] = useState([]);
   const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
   const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
     useState(null);
-  const [paginationData, setPaginationData] = useState({});
+  const [paginationData, setPaginationData] = useState({
+    totalPages: 0,
+    currFetchedPage: 1,
+  });
 
   const {
     data: clientsQuery,
@@ -100,26 +103,22 @@ const ClientPage = () => {
         page: pageParam,
         limit: PAGE_LIMIT,
       });
-
-      // 🛡️ Ensure consistent response shape
-      return response || { data: { data: { users: [], totalPages: 0 } } };
+      return (
+        response ?? {
+          data: { data: { users: [], totalPages: 0, currentPage: 1 } },
+        }
+      );
     },
     initialPageParam: 1,
-
-    getNextPageParam: (_lastGroup, groups) => {
-      if (!_lastGroup?.data?.data) return undefined;
-
-      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
-      const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
-
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = Number(lastPage?.data?.data?.totalPages ?? 0);
+      const nextPage = (Array.isArray(allPages) ? allPages.length : 0) + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
-
     enabled:
       Boolean(enterpriseId) &&
-      searchTerm?.length === 0 &&
+      searchTerm.trim().length === 0 &&
       hasPermission('permission:clients-view'),
-
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -131,41 +130,33 @@ const ClientPage = () => {
     isFetching: isSearchQueryFetching,
   } = useInfiniteQuery({
     queryKey: [clientEnterprise.searchClients.endpointKey, debouncedSearchTerm],
-
     queryFn: async ({ pageParam = 1 }) => {
-      // 🧭 Guard: ensure we don't hit API with empty search term
-      if (!debouncedSearchTerm) {
-        return { data: { data: { users: [], totalPages: 0 } } };
+      if (!debouncedSearchTerm?.trim()) {
+        return { data: { data: { users: [], totalPages: 0, currentPage: 1 } } };
       }
-
       const response = await searchedClients({
         page: pageParam,
         limit: PAGE_LIMIT,
         data: { searchString: debouncedSearchTerm },
       });
-
-      // 🛡️ Always return a consistent shape
-      return response || { data: { data: { users: [], totalPages: 0 } } };
+      return (
+        response ?? {
+          data: { data: { users: [], totalPages: 0, currentPage: 1 } },
+        }
+      );
     },
-
     initialPageParam: 1,
-
-    getNextPageParam: (_lastGroup, groups) => {
-      // 🧱 Safe guards against undefined or malformed groups
-      if (!_lastGroup?.data?.data) return undefined;
-
-      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
-      const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
-
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = Number(lastPage?.data?.data?.totalPages ?? 0);
+      const nextPage = (Array.isArray(allPages) ? allPages.length : 0) + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
-
     enabled: Boolean(debouncedSearchTerm?.trim()?.length > 0),
-
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
+  // ✅ Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -173,32 +164,25 @@ const ClientPage = () => {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  // ✅ Merge search & normal query data safely
   useEffect(() => {
     try {
-      const source =
-        debouncedSearchTerm && searchQuery?.pages?.length
-          ? searchQuery
-          : clientsQuery;
+      const isSearchMode = Boolean(debouncedSearchTerm?.trim());
+      const source = isSearchMode ? searchQuery : clientsQuery;
 
-      // 🛡️ Guard clause: if no valid pages or data, reset gracefully and exit
-      if (
-        !source ||
-        !Array.isArray(source.pages) ||
-        source.pages.length === 0
-      ) {
-        setClients([]);
-        setPaginationData({ totalPages: 0, currFetchedPage: 1 });
+      if (!source?.pages?.length) {
+        // Reset only when both queries empty
+        if (!clientsQuery?.pages?.length && !searchQuery?.pages?.length) {
+          setClients([]);
+          setPaginationData({ totalPages: 0, currFetchedPage: 1 });
+        }
         return;
       }
 
-      // 🧩 Flatten safely — protect against undefined nesting
       const flattened = source.pages.flatMap((page) =>
-        page?.data?.data?.users && Array.isArray(page.data.data.users)
-          ? page.data.data.users
-          : [],
+        Array.isArray(page?.data?.data?.users) ? page.data.data.users : [],
       );
 
-      // 🧠 Deduplicate users by ID (avoid crashes on invalid item)
       const uniqueClientsData = Array.from(
         new Map(
           flattened
@@ -207,10 +191,8 @@ const ClientPage = () => {
         ).values(),
       );
 
-      // ✅ Update state safely (always defined)
-      setClients(uniqueClientsData || []);
+      setClients(uniqueClientsData);
 
-      // 📄 Extract pagination safely
       const lastPage = source.pages[source.pages.length - 1];
       const lastPageData = lastPage?.data?.data || {};
 
@@ -219,8 +201,6 @@ const ClientPage = () => {
         currFetchedPage: Number(lastPageData.currentPage) || 1,
       });
     } catch (error) {
-      // console.error('Error processing query data:', error);
-      // 🧯 Fail silently to avoid frontend break
       setClients([]);
       setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }

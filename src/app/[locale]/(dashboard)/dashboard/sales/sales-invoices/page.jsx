@@ -41,7 +41,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../../public/Empty.png';
@@ -90,7 +90,7 @@ const SalesInvoices = () => {
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
-  const [filterData, setFilterData] = useState({ clientIds: [] });
+  const [filterData, setFilterData] = useState(null);
   const [invoiceType, setInvoiceType] = useState(''); // invoice type
   const [defaultInvoiceType, setDefaultInvoiceType] = useState(''); // default invoice type
 
@@ -126,31 +126,44 @@ const SalesInvoices = () => {
   };
 
   useEffect(() => {
-    // Apply filters based on the selected tab
     let newFilterData = {};
+
     if (tab === 'outstanding') {
       newFilterData = {
         paymentStatus: ['NOT_PAID', 'PARTIAL_PAID'],
-        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'disputed') {
       newFilterData = {
         debitNoteStatus: true,
-        clientIds: filterData?.clientIds || [],
       };
     } else if (tab === 'all') {
-      // ✅ Just keep clientIds if present, no extra filters
-      if (filterData?.clientIds?.length > 0) {
-        newFilterData = {
-          clientIds: filterData.clientIds,
-        };
-      } else {
-        newFilterData = null; // no filters applied
-      }
+      // If no clientIds, no filters
+      newFilterData =
+        filterData?.clientIds?.length > 0
+          ? { clientIds: filterData.clientIds }
+          : null;
     }
 
-    setFilterData(newFilterData);
+    // Conditionally add clientIds only if non-empty
+    if (filterData?.clientIds?.length > 0 && tab !== 'all') {
+      newFilterData.clientIds = filterData.clientIds;
+    }
+
+    // Only update if value actually changed
+    setFilterData((prev) => {
+      const prevStr = JSON.stringify(prev);
+      const nextStr = JSON.stringify(newFilterData);
+      if (prevStr !== nextStr) {
+        return newFilterData;
+      }
+      return prev;
+    });
   }, [tab]);
+
+  const stableFilterKey = useMemo(() => {
+    if (!filterData) return null;
+    return JSON.stringify(filterData);
+  }, [filterData]);
 
   // fetch invoice settings keys
   const { data: settings } = useQuery({
@@ -185,7 +198,7 @@ const SalesInvoices = () => {
     queryKey: [
       invoiceApi.getAllSalesInvoices.endpointKey,
       enterpriseId,
-      filterData,
+      stableFilterKey,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getAllSalesInvoices({
@@ -289,10 +302,18 @@ const SalesInvoices = () => {
         ? [value.value]
         : [];
 
-    setFilterData((prev) => ({
-      ...prev,
-      clientIds: ids,
-    }));
+    setFilterData((prev) => {
+      // Create a copy to modify safely
+      const updated = { ...prev };
+
+      if (ids.length > 0) {
+        updated.clientIds = ids; // add only when non-empty
+      } else {
+        delete updated.clientIds; // remove clientIds if empty
+      }
+
+      return updated;
+    });
   };
 
   // [updateReadTracker Mutation : onRowClick] ✅

@@ -33,20 +33,25 @@ export function SalesTable({
   const [columnFilters, setColumnFilters] = React.useState([]);
 
   const fetchMoreOnBottomReached = React.useCallback(() => {
-    if (tableContainerRef.current) {
-      const { scrollHeight, scrollTop, clientHeight } =
-        tableContainerRef.current;
+    const container = tableContainerRef.current;
+    if (!container) return;
 
-      const bottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-      if (
-        bottom && // Check if scrolled to the bottom
-        !isFetching &&
-        !isFetchingNextPage && // Prevent repeated calls
-        currFetchedPage < totalPages
-      ) {
-        setIsFetchingNextPage(true); // Set fetching flag
-        fetchNextPage().finally(() => setIsFetchingNextPage(false)); // Reset flag after fetching
-      }
+    const { scrollHeight, scrollTop, clientHeight } = container;
+
+    // Trigger only when scrolled within 100px from bottom
+    const nearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+    if (
+      nearBottom &&
+      !isFetching &&
+      !isFetchingNextPage &&
+      currFetchedPage < totalPages
+    ) {
+      setIsFetchingNextPage(true);
+      fetchNextPage()
+        // eslint-disable-next-line no-console
+        .catch((err) => console.error('Fetch next page failed', err))
+        .finally(() => setIsFetchingNextPage(false));
     }
   }, [
     fetchNextPage,
@@ -56,18 +61,31 @@ export function SalesTable({
     totalPages,
   ]);
 
+  // ✅ Add a tiny debounce to prevent rapid fire
+  const debouncedFetchMore = React.useMemo(() => {
+    let timeout;
+    return () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(fetchMoreOnBottomReached, 150); // 150ms debounce
+    };
+  }, [fetchMoreOnBottomReached]);
+
   React.useEffect(() => {
     const container = tableContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => fetchMoreOnBottomReached();
+    const handleScroll = () => debouncedFetchMore();
 
     container.addEventListener('scroll', handleScroll);
-    () => {
+
+    // ✅ Proper cleanup to avoid multiple listeners
+    // eslint-disable-next-line consistent-return
+    return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [fetchMoreOnBottomReached]);
+  }, [debouncedFetchMore]);
 
+  // ✅ React Table
   const table = useReactTable({
     data: data || [],
     columns,
@@ -86,7 +104,7 @@ export function SalesTable({
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 40, // Adjusted height estimate
+    estimateSize: () => 40,
     getScrollElement: () => tableContainerRef.current,
     measureElement: (element) =>
       element?.offsetHeight || element?.getBoundingClientRect().height,

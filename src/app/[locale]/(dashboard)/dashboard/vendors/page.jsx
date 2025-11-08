@@ -72,12 +72,13 @@ const VendorsPage = () => {
 
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
+
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingVendor, setEditingVendor] = useState();
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [vendors, setVendors] = useState(null);
   const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
   const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
@@ -95,8 +96,7 @@ const VendorsPage = () => {
 
     queryFn: async ({ pageParam = 1 }) => {
       if (!enterpriseId) {
-        // 🛡️ Prevent accidental call without enterpriseId
-        return { data: { data: { users: [], totalPages: 0 } } };
+        return { data: { data: { users: [], totalPages: 0, currentPage: 1 } } };
       }
 
       const response = await getVendors({
@@ -105,18 +105,18 @@ const VendorsPage = () => {
         limit: PAGE_LIMIT,
       });
 
-      // ✅ Always return a consistent object shape
-      return response || { data: { data: { users: [], totalPages: 0 } } };
+      return (
+        response || {
+          data: { data: { users: [], totalPages: 0, currentPage: 1 } },
+        }
+      );
     },
 
     initialPageParam: 1,
 
     getNextPageParam: (_lastGroup, groups) => {
-      if (!_lastGroup?.data?.data) return undefined;
-
-      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
+      const totalPages = Number(_lastGroup?.data?.data?.totalPages ?? 0);
       const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
-
       return nextPage <= totalPages ? nextPage : undefined;
     },
 
@@ -129,7 +129,7 @@ const VendorsPage = () => {
     placeholderData: keepPreviousData,
   });
 
-  // 🔍 Vendors Search Query
+  // 🧩 Vendors Search Query
   const {
     data: searchQuery,
     isLoading: isSearchQueryLoading,
@@ -144,8 +144,7 @@ const VendorsPage = () => {
 
     queryFn: async ({ pageParam = 1 }) => {
       if (!debouncedSearchTerm?.trim()) {
-        // 🧯 Return safe structure for empty term
-        return { data: { data: { users: [], totalPages: 0 } } };
+        return { data: { data: { users: [], totalPages: 0, currentPage: 1 } } };
       }
 
       const response = await searchedVendors({
@@ -154,17 +153,18 @@ const VendorsPage = () => {
         data: { searchString: debouncedSearchTerm },
       });
 
-      return response || { data: { data: { users: [], totalPages: 0 } } };
+      return (
+        response || {
+          data: { data: { users: [], totalPages: 0, currentPage: 1 } },
+        }
+      );
     },
 
     initialPageParam: 1,
 
     getNextPageParam: (_lastGroup, groups) => {
-      if (!_lastGroup?.data?.data) return undefined;
-
-      const totalPages = Number(_lastGroup.data.data.totalPages ?? 0);
+      const totalPages = Number(_lastGroup?.data?.data?.totalPages ?? 0);
       const nextPage = (Array.isArray(groups) ? groups.length : 0) + 1;
-
       return nextPage <= totalPages ? nextPage : undefined;
     },
 
@@ -174,6 +174,7 @@ const VendorsPage = () => {
     placeholderData: keepPreviousData,
   });
 
+  // 🕓 Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -181,53 +182,49 @@ const VendorsPage = () => {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  // 🧩 Handle combined vendor data safely
   useEffect(() => {
     try {
-      // 🧭 Determine data source safely
+      // Pick source depending on search mode
+      const isSearching = Boolean(debouncedSearchTerm?.trim());
       const source =
-        debouncedSearchTerm && searchQuery?.pages?.length
-          ? searchQuery
-          : vendorsQuery;
+        isSearching && searchQuery?.pages?.length ? searchQuery : vendorsQuery;
 
-      // 🛡️ Guard clause: if source invalid or still loading, skip update
-      if (
-        !source ||
-        !Array.isArray(source.pages) ||
-        source.pages.length === 0
-      ) {
+      // If no source or invalid structure, reset
+      if (!source?.pages?.length) {
         setVendors([]);
         setPaginationData({ totalPages: 0, currFetchedPage: 1 });
         return;
       }
 
-      // 🧩 Flatten vendors safely from each page
-      const flattened = source.pages.flatMap((page) =>
-        Array.isArray(page?.data?.data?.users) ? page.data.data.users : [],
-      );
+      // Flatten safely and filter valid vendor items
+      const flattened = source.pages.flatMap((page) => {
+        const users = page?.data?.data?.users;
+        return Array.isArray(users) ? users.filter(Boolean) : [];
+      });
 
-      // 🧠 Deduplicate by ID (filter invalid entries)
-      const uniqueVendorsData = Array.from(
+      // Deduplicate vendors by ID
+      const uniqueVendors = Array.from(
         new Map(
           flattened
-            .filter((item) => item && item.id !== undefined)
+            .filter((item) => item?.id != null)
             .map((item) => [item.id, item]),
         ).values(),
       );
 
-      // ✅ Update vendors safely
-      setVendors(uniqueVendorsData || []);
+      setVendors(uniqueVendors || []);
 
-      // 📄 Safely extract pagination info
+      // Extract pagination safely
       const lastPage = source.pages[source.pages.length - 1];
       const lastPageData = lastPage?.data?.data || {};
 
       setPaginationData({
         totalPages: Number(lastPageData.totalPages) || 0,
-        currFetchedPage: Number(lastPageData.currentPage) || 1,
+        currFetchedPage:
+          Number(lastPageData.currentPage) || Number(source.pages.length) || 1,
       });
     } catch (error) {
-      // console.error('Error while processing vendors data:', error);
-      // 🧯 Prevent UI break on unexpected failure
+      // Prevent UI crash by falling back to safe defaults
       setVendors([]);
       setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }

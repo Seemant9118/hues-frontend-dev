@@ -35,7 +35,7 @@ import {
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../../public/Empty.png';
@@ -69,7 +69,7 @@ const PurchaseInvoices = () => {
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
-  const [filterData, setFilterData] = useState({ clientIds: [] });
+  const [filterData, setFilterData] = useState(null);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -90,18 +90,33 @@ const PurchaseInvoices = () => {
         clientIds: filterData?.clientIds,
       };
     } else if (tab === 'all') {
-      // ✅ Just keep clientIds if present, no extra filters
-      if (filterData?.clientIds?.length > 0) {
-        newFilterData = {
-          clientIds: filterData.clientIds,
-        };
-      } else {
-        newFilterData = null; // no filters applied
-      }
+      // If no clientIds, no filters
+      newFilterData =
+        filterData?.clientIds?.length > 0
+          ? { clientIds: filterData.clientIds }
+          : null;
     }
 
-    setFilterData(newFilterData);
+    // Conditionally add clientIds only if non-empty
+    if (filterData?.clientIds?.length > 0 && tab !== 'all') {
+      newFilterData.clientIds = filterData.clientIds;
+    }
+
+    // Only update if value actually changed
+    setFilterData((prev) => {
+      const prevStr = JSON.stringify(prev);
+      const nextStr = JSON.stringify(newFilterData);
+      if (prevStr !== nextStr) {
+        return newFilterData;
+      }
+      return prev;
+    });
   }, [tab]);
+
+  const stableFilterKey = useMemo(() => {
+    if (!filterData) return null;
+    return JSON.stringify(filterData);
+  }, [filterData]);
 
   // [INVOICES_FETCHING]
   // Fetch invoices data with infinite scroll
@@ -114,7 +129,7 @@ const PurchaseInvoices = () => {
     queryKey: [
       invoiceApi.getAllPurchaseInvoices.endpointKey,
       enterpriseId,
-      filterData,
+      stableFilterKey,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getAllPurchaseInvoices({
@@ -218,10 +233,18 @@ const PurchaseInvoices = () => {
         ? [value.value]
         : [];
 
-    setFilterData((prev) => ({
-      ...prev,
-      clientIds: ids,
-    }));
+    setFilterData((prev) => {
+      // Create a copy to modify safely
+      const updated = { ...prev };
+
+      if (ids.length > 0) {
+        updated.clientIds = ids; // add only when non-empty
+      } else {
+        delete updated.clientIds; // remove clientIds if empty
+      }
+
+      return updated;
+    });
   };
 
   // [updateReadTracker Mutation : onRowClick] ✅

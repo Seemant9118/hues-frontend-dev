@@ -34,7 +34,7 @@ import {
 import { PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
@@ -84,7 +84,7 @@ const PurchaseOrders = () => {
     [],
   );
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
-  const [filterData, setFilterData] = useState({ clientIds: [] }); // Initialize with default filterPayload
+  const [filterData, setFilterData] = useState(null); // Initialize with default filterPayload
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -111,22 +111,38 @@ const PurchaseOrders = () => {
     } else if (isOrderCreationSuccess) {
       newFilterData = null;
     } else if (tab === 'all') {
-      // ✅ Just keep clientIds if present, no extra filters
-      if (filterData?.clientIds?.length > 0) {
-        newFilterData = {
-          clientIds: filterData.clientIds,
-        };
-      } else {
-        newFilterData = null; // no filters applied
-      }
+      newFilterData =
+        filterData?.clientIds?.length > 0
+          ? { clientIds: filterData.clientIds }
+          : null;
     }
 
-    setFilterData(newFilterData);
+    // Conditionally add clientIds only if they exist
+    if (filterData?.clientIds?.length > 0) {
+      newFilterData.clientIds = filterData.clientIds;
+    }
+
+    // Update only if meaningfully different
+    setFilterData((prev) => {
+      if (JSON.stringify(prev) !== JSON.stringify(newFilterData)) {
+        return newFilterData;
+      }
+      return prev;
+    });
   }, [tab]);
+
+  const stableFilterKey = useMemo(() => {
+    if (!filterData) return null;
+    return JSON.stringify(filterData);
+  }, [filterData]);
 
   // Fetch purchases data with infinite scroll
   const { data, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
-    queryKey: [orderApi.getPurchases.endpointKey, enterpriseId, filterData],
+    queryKey: [
+      orderApi.getPurchases.endpointKey,
+      enterpriseId,
+      stableFilterKey,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await GetPurchases({
         id: enterpriseId,
@@ -288,10 +304,18 @@ const PurchaseOrders = () => {
         ? [value.value]
         : [];
 
-    setFilterData((prev) => ({
-      ...prev,
-      clientIds: ids,
-    }));
+    setFilterData((prev) => {
+      // Create a copy to modify safely
+      const updated = { ...prev };
+
+      if (ids.length > 0) {
+        updated.clientIds = ids; // add only when non-empty
+      } else {
+        delete updated.clientIds; // remove clientIds if empty
+      }
+
+      return updated;
+    });
   };
 
   // [updateReadTracker Mutation : onRowClick] ✅
