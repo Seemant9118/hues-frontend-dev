@@ -250,13 +250,16 @@ const ViewOrder = () => {
   const acceptOrderMutation = useMutation({
     mutationKey: [invoiceApi.acceptOrder.endpointKey],
     mutationFn: acceptOrder,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(translations('successMsg.order_accepted'));
       setModalData((prev) => ({
         ...prev,
         isOpen: false,
       }));
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      router.push(
+        `/dashboard/sales/sales-orders/${res?.data?.data?.orderId}?state=generateInvoice`,
+      );
     },
     onError: (error) => {
       toast.error(
