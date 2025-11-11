@@ -43,6 +43,7 @@ const EditItem = ({
           description: goodsToEdit?.description,
           hsnCode: goodsToEdit?.hsnCode,
           SAC: goodsToEdit?.sac,
+          skuId: goodsToEdit?.skuId,
           // rate: goodsToEdit.rate,
           costPrice: goodsToEdit?.costPrice || '',
           salesPrice: goodsToEdit?.salesPrice || '',
@@ -74,6 +75,7 @@ const EditItem = ({
           description: servicesToEdit?.description,
           hsnCode: '',
           SAC: servicesToEdit?.sac,
+          skuId: servicesToEdit?.skuId,
           // rate: servicesToEdit.rate,
           costPrice: servicesToEdit?.costPrice || '',
           salesPrice: servicesToEdit?.salesPrice || '',
@@ -112,6 +114,7 @@ const EditItem = ({
         description: '',
         hsnCode: '',
         SAC: '',
+        skuId: '',
         // rate: '',
         costPrice: '',
         salesPrice: '',
@@ -154,24 +157,16 @@ const EditItem = ({
       'breadth',
     ];
 
-    // Handle numeric fields
     if (numericFields.includes(id)) {
-      if (value === '') {
-        setItem((values) => ({ ...values, [id]: '' }));
-        return;
-      }
-
-      const parsedValue = parseFloat(value);
-      if (!Number.isNaN(parsedValue)) {
-        const formattedValue =
-          id === 'gstPercentage' ? parsedValue.toFixed(2) : parsedValue;
-        setItem((values) => ({ ...values, [id]: formattedValue }));
+      // Allow empty, partial numbers, and decimals while typing
+      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+        setItem((prev) => ({ ...prev, [id]: value }));
       }
       return;
     }
 
     // Handle text fields
-    setItem((values) => ({ ...values, [id]: value }));
+    setItem((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleEditSubmit = (e) => {
@@ -283,6 +278,16 @@ const EditItem = ({
               />
               <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
             </div>
+          </div>
+
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.skuId')}
+              placeholder={translations('goods.components.add.label.skuId')}
+              id="skuId"
+              onChange={onChange}
+              value={item.skuId}
+            />
           </div>
 
           {/* Batch */}

@@ -55,6 +55,7 @@ const AddItem = ({ onCancel, cta }) => {
     serviceName: itemDraft?.serviceName || '',
     description: itemDraft?.description || '',
     hsnCode: itemDraft?.hsnCode || '',
+    skuId: itemDraft?.skuId || '',
     SAC: itemDraft?.SAC || '',
     // rate: itemDraft?.rate || '',
     costPrice: parseFloat(itemDraft?.costPrice) || null,
@@ -138,21 +139,21 @@ const AddItem = ({ onCancel, cta }) => {
     // if (itemData.rate === '') {
     //   error.rate = '*Required Rate';
     // }
-    if (itemData.salesPrice === '') {
+    if (itemData.salesPrice === null) {
       error.salesPrice = '*Required Sales Price';
     }
-    if (itemData.costPrice === '') {
+    if (itemData.costPrice === null) {
       error.costPrice = '*Required Cost Price';
     }
-    if (itemData.mrp === '') {
+    if (itemData.mrp === null) {
       error.mrp = '*Required MRP';
     }
     // gst_percentage
-    if (itemData.gstPercentage === '') {
+    if (itemData.gstPercentage === null) {
       error.gstPercentage = '*Required GST (%)';
     }
     // quantity
-    if (itemData.quantity === '') {
+    if (itemData.quantity === null) {
       error.quantity = '*Required Quantity';
     }
     return error;
@@ -308,6 +309,7 @@ const AddItem = ({ onCancel, cta }) => {
       productName,
       manufacturerName,
       hsnCode,
+      skuId,
       type,
       units,
       weight,
@@ -386,6 +388,7 @@ const AddItem = ({ onCancel, cta }) => {
                     serviceName: '',
                     description: '',
                     hsnCode: '',
+                    skuId: '',
                     SAC: '',
                     // rate: '',
                     salesPrice: '',
@@ -515,6 +518,17 @@ const AddItem = ({ onCancel, cta }) => {
               />
               <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
             </div>
+          </div>
+
+          {/* skuId */}
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.skuId')}
+              placeholder={translations('goods.components.add.label.skuId')}
+              id="skuId"
+              onChange={onChange}
+              value={item.skuId}
+            />
           </div>
 
           {/* Batch */}
