@@ -690,6 +690,10 @@ const CreateOrder = ({
                       setOrder({
                         ...updatedOrder,
                         selectedValue: selectedOption,
+                        buyerType:
+                          isAccepted === 'ACCEPTED'
+                            ? 'ENTERPRISE'
+                            : 'UNCONFIRMED_ENTERPRISE',
                       });
 
                       saveDraftToSession({
