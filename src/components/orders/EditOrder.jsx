@@ -225,16 +225,16 @@ const EditOrder = ({
             ...item,
             [key]: Number(newValue),
           };
-          // Recalculate totalAmount using updated values
-          updatedItem.totalAmount =
-            updatedItem.quantity * updatedItem.unitPrice;
 
-          // Recalculate totalGstAmount based on the updated totalAmount and gstPerUnit
-          updatedItem.totalGstAmount = parseFloat(
-            (updatedItem.totalAmount * (updatedItem.gstPerUnit / 100)).toFixed(
-              2,
-            ),
-          );
+          // ✅ Recalculate totalAmount with two decimal precision
+          const totalAmount =
+            Number(updatedItem.quantity) * Number(updatedItem.unitPrice);
+          updatedItem.totalAmount = Number(totalAmount.toFixed(2));
+
+          // ✅ Recalculate totalGstAmount with two decimal precision
+          const totalGstAmount =
+            updatedItem.totalAmount * (Number(updatedItem.gstPerUnit) / 100);
+          updatedItem.totalGstAmount = Number(totalGstAmount.toFixed(2));
 
           return updatedItem;
         }
@@ -459,7 +459,7 @@ const EditOrder = ({
                       productId: selectedItemData.id,
                       productType: selectedItemData.productType,
                       productName: selectedItemData.productName,
-                      unitPrice: selectedItemData.rate,
+                      unitPrice: selectedItemData.salesPrice,
                       gstPerUnit: isGstApplicable(
                         isPurchasePage
                           ? isGstApplicableForPurchaseOrders
@@ -510,8 +510,8 @@ const EditOrder = ({
                   const updatedItem = {
                     ...selectedItem,
                     quantity: value,
-                    totalAmount: totalAmt,
-                    totalGstAmount: gstAmt,
+                    totalAmount: parseFloat(totalAmt).toFixed(2),
+                    totalGstAmount: parseFloat(gstAmt).toFixed(2),
                   };
                   setSelectedItem(updatedItem);
                 }}
@@ -542,8 +542,8 @@ const EditOrder = ({
                   setSelectedItem((prevValue) => ({
                     ...prevValue,
                     unitPrice: e.target.value,
-                    totalAmount: totalAmt,
-                    totalGstAmount: gstAmt,
+                    totalAmount: parseFloat(totalAmt).toFixed(2),
+                    totalGstAmount: parseFloat(gstAmt).toFixed(2),
                   }));
                 }}
                 className="max-w-30"
@@ -756,18 +756,19 @@ const EditOrder = ({
                               inputValue,
                             );
                           }}
+                          selectUnitDisabled={true}
                           unit={item.unitId} // bind unitId here
-                          onUnitChange={(val) => {
-                            // Update the order state with new unitId
-                            setOrder((prev) => ({
-                              ...prev,
-                              orderItems: prev.orderItems.map((orderItem) =>
-                                orderItem.productId === item.productId
-                                  ? { ...orderItem, unitId: Number(val) }
-                                  : orderItem,
-                              ),
-                            }));
-                          }}
+                          // onUnitChange={(val) => {
+                          //   // Update the order state with new unitId
+                          //   setOrder((prev) => ({
+                          //     ...prev,
+                          //     orderItems: prev.orderItems.map((orderItem) =>
+                          //       orderItem.productId === item.productId
+                          //         ? { ...orderItem, unitId: Number(val) }
+                          //         : orderItem,
+                          //     ),
+                          //   }));
+                          // }}
                           units={units?.quantity}
                           min={0}
                           step="any" // <-- allows decimals

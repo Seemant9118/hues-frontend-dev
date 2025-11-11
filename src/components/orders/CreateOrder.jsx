@@ -893,7 +893,7 @@ const CreateOrder = ({
                       ...selectedItem,
                       productId: selectedItemData.id,
                       productType: selectedItemData.productType,
-                      unitPrice: selectedItemData.rate,
+                      unitPrice: selectedItemData.salesPrice,
                       gstPerUnit,
                       ...(selectedItemData.productType === 'GOODS'
                         ? {

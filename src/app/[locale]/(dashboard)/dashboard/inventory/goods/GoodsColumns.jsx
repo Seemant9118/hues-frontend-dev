@@ -1,6 +1,7 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -59,15 +60,55 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
         />
       ),
     },
+    // {
+    //   accessorKey: 'rate',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader
+    //       column={column}
+    //       title={translations('table.header.rate')}
+    //     />
+    //   ),
+    // },
     {
-      accessorKey: 'rate',
+      accessorKey: 'costPrice',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('table.header.rate')}
+          title={translations('table.header.costPrice')}
         />
       ),
+      cell: ({ row }) => {
+        const value = row.getValue('costPrice');
+        return formattedAmount(value);
+      },
     },
+    {
+      accessorKey: 'salesPrice',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.salesPrice')}
+        />
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('salesPrice');
+        return formattedAmount(value);
+      },
+    },
+    {
+      accessorKey: 'mrp',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.mrp')}
+        />
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('mrp');
+        return formattedAmount(value);
+      },
+    },
+
     {
       accessorKey: 'gstPercentage',
       header: ({ column }) => (
@@ -76,6 +117,10 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
           title={translations('table.header.gst')}
         />
       ),
+      cell: ({ row }) => {
+        const value = row.getValue('gstPercentage');
+        return `${value} %`;
+      },
     },
     {
       accessorKey: 'createdAt',

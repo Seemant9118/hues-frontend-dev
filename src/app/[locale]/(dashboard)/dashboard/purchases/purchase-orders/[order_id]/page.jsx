@@ -2,6 +2,7 @@
 
 import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
@@ -26,12 +27,12 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
-import { LocalStorageService } from '@/lib/utils';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
 } from '@/services/Orders_Services/Orders_Services';
+import { stockIn } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -39,8 +40,6 @@ import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
-import { stockIn } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { usePurchaseOrderColumns } from './usePurchaseOrderColumns';
 
 // dynamic imports
@@ -73,7 +72,6 @@ const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = getEnterpriseId();
   const searchParams = useSearchParams();
   const showInvoice = searchParams.get('showInvoice');
@@ -445,7 +443,9 @@ const ViewOrder = () => {
                 {/* more ctas */}
                 <ProtectedWrapper permissionCode={'permission:purchase-edit'}>
                   {orderDetails.negotiationStatus === 'NEW' &&
-                    userId.toString() === orderDetails.createdBy.toString() && (
+                    orderDetails.orderType === 'PURCHASE' &&
+                    enterpriseId.toString() ===
+                      orderDetails.buyerId.toString() && (
                       <DropdownMenu>
                         <DropdownMenuTrigger>
                           <Tooltips

@@ -56,22 +56,25 @@ const AddItem = ({ onCancel, cta }) => {
     description: itemDraft?.description || '',
     hsnCode: itemDraft?.hsnCode || '',
     SAC: itemDraft?.SAC || '',
-    rate: itemDraft?.rate || '',
-    gstPercentage: itemDraft?.gstPercentage || '',
-    quantity: itemDraft?.quantity || '',
-    unitId: itemDraft?.unitId || '',
+    // rate: itemDraft?.rate || '',
+    costPrice: parseFloat(itemDraft?.costPrice) || null,
+    salesPrice: parseFloat(itemDraft?.salesPrice) || null,
+    mrp: parseFloat(itemDraft?.mrp) || null,
+    gstPercentage: parseFloat(itemDraft?.gstPercentage) || null,
+    // quantity: itemDraft?.quantity || '',
+    // unitId: itemDraft?.unitId || null,
     type: itemDraft?.type || (isGoods ? 'goods' : 'services'),
-    batch: itemDraft?.batch || '',
+    // batch: itemDraft?.batch || '',
     expiry: itemDraft?.expiry || '',
-    weight: itemDraft?.weight || '',
-    weightUnitId: itemDraft?.weightUnitId || '',
-    length: itemDraft?.length || '',
-    lengthUnitId: itemDraft?.lengthUnitId || '',
-    breadth: itemDraft?.breadth || '',
-    breadthUnitId: itemDraft?.breadthUnitId || '',
-    height: itemDraft?.height || '',
-    heightUnitId: itemDraft?.heightUnitId || '',
-    applications: itemDraft?.applications || '',
+    weight: parseFloat(itemDraft?.weight) || null,
+    weightUnitId: itemDraft?.weightUnitId || null,
+    length: parseFloat(itemDraft?.length) || null,
+    lengthUnitId: itemDraft?.lengthUnitId || null,
+    breadth: parseFloat(itemDraft?.breadth) || null,
+    breadthUnitId: itemDraft?.breadthUnitId || null,
+    height: parseFloat(itemDraft?.height) || null,
+    heightUnitId: itemDraft?.heightUnitId || null,
+    // applications: itemDraft?.applications || '',
     manufacturerGstId: itemDraft?.manufacturerGstId || '',
     units: itemDraft?.units || '',
   });
@@ -132,8 +135,17 @@ const AddItem = ({ onCancel, cta }) => {
       error.SAC = '*Required SAC';
     }
     // rate
-    if (itemData.rate === '') {
-      error.rate = '*Required Rate';
+    // if (itemData.rate === '') {
+    //   error.rate = '*Required Rate';
+    // }
+    if (itemData.salesPrice === '') {
+      error.salesPrice = '*Required Sales Price';
+    }
+    if (itemData.costPrice === '') {
+      error.costPrice = '*Required Cost Price';
+    }
+    if (itemData.mrp === '') {
+      error.mrp = '*Required MRP';
     }
     // gst_percentage
     if (itemData.gstPercentage === '') {
@@ -180,26 +192,45 @@ const AddItem = ({ onCancel, cta }) => {
   const onChange = (e) => {
     const { id, value } = e.target;
 
-    // validation input value
-    if (
-      id === 'quantity' ||
-      id === 'rate' ||
-      id === 'gstPercentage' ||
-      id === 'weight' ||
-      id === 'height' ||
-      id === 'length' ||
-      id === 'breadth'
-    ) {
-      if (!Number.isNaN(value)) {
-        setItem((values) => ({ ...values, [id]: value }));
+    // numeric fields
+    const numericFields = [
+      'quantity',
+      'salesPrice',
+      'costPrice',
+      'mrp',
+      'gstPercentage',
+      'weight',
+      'height',
+      'length',
+      'breadth',
+    ];
+
+    if (numericFields.includes(id)) {
+      // Allow empty input
+      if (value === '') {
+        setItem((values) => ({ ...values, [id]: '' }));
         saveDraftToSession({
           key: 'itemDraft',
-          data: { ...item, [id]: value },
+          data: { ...item, [id]: '' },
+        });
+        return;
+      }
+
+      // Convert and format number
+      const parsedValue = parseFloat(value);
+      if (!Number.isNaN(parsedValue)) {
+        const formattedValue = parsedValue;
+
+        setItem((values) => ({ ...values, [id]: formattedValue }));
+        saveDraftToSession({
+          key: 'itemDraft',
+          data: { ...item, [id]: formattedValue },
         });
       }
       return;
     }
 
+    // non-numeric fields
     setItem((values) => ({ ...values, [id]: value }));
     saveDraftToSession({
       key: 'itemDraft',
@@ -279,7 +310,6 @@ const AddItem = ({ onCancel, cta }) => {
       hsnCode,
       type,
       units,
-      batch,
       weight,
       length,
       breadth,
@@ -357,10 +387,13 @@ const AddItem = ({ onCancel, cta }) => {
                     description: '',
                     hsnCode: '',
                     SAC: '',
-                    rate: '',
+                    // rate: '',
+                    salesPrice: '',
+                    costPrice: '',
+                    mrp: '',
                     gstPercentage: '',
                     quantity: '',
-                    batch: '',
+                    // batch: '',
                     expiry: '',
                     weight: '',
                     length: '',
@@ -446,17 +479,20 @@ const AddItem = ({ onCancel, cta }) => {
               {errorMsg?.SAC && <ErrorBox msg={errorMsg.SAC} />}
             </div>
           )}
-
-          {/* Batch */}
-          {item.type === 'goods' && (
+          <div className="flex flex-col">
             <InputWithLabel
-              name={translations('goods.components.add.label.batch')}
-              placeholder={translations('goods.components.add.label.batch')}
-              id="batch"
+              name={translations('goods.components.add.label.gst')}
+              id="gstPercentage"
+              placeholder="00.00 %"
+              type="number"
+              required={true}
               onChange={onChange}
-              value={item.batch}
+              value={item.gstPercentage}
             />
-          )}
+            {errorMsg?.gstPercentage && (
+              <ErrorBox msg={errorMsg.gstPercentage} />
+            )}
+          </div>
           {/* Expiry */}
           <div className="grid w-full items-center gap-1.5">
             <Label
@@ -480,14 +516,25 @@ const AddItem = ({ onCancel, cta }) => {
               <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
+
+          {/* Batch */}
+          {/* {item.type === 'goods' && (
+            <InputWithLabel
+              name={translations('goods.components.add.label.batch')}
+              placeholder={translations('goods.components.add.label.batch')}
+              id="batch"
+              onChange={onChange}
+              value={item.batch}
+            />
+          )} */}
           {/* application */}
-          <InputWithLabel
+          {/* <InputWithLabel
             name={translations('goods.components.add.label.application')}
             placeholder={translations('goods.components.add.label.application')}
             id="applications"
             onChange={onChange}
             value={item.applications}
-          />
+          /> */}
         </div>
         {/* description */}
         <div className="flex w-full flex-col">
@@ -510,7 +557,7 @@ const AddItem = ({ onCancel, cta }) => {
         </h2>
 
         <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <InputWithLabel
               name={translations('goods.components.add.label.rate')}
               placeholder="0.00"
@@ -521,8 +568,46 @@ const AddItem = ({ onCancel, cta }) => {
               value={item.rate}
             />
             {errorMsg?.rate && <ErrorBox msg={errorMsg.rate} />}
+          </div> */}
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.costPrice')}
+              placeholder="0.00"
+              id="costPrice"
+              type="number"
+              required={true}
+              onChange={onChange}
+              value={item.costPrice}
+            />
+            {errorMsg?.costPrice && <ErrorBox msg={errorMsg.costPrice} />}
           </div>
-          {item.type === 'goods' && (
+
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.salesPrice')}
+              placeholder="0.00"
+              id="salesPrice"
+              type="number"
+              required={true}
+              onChange={onChange}
+              value={item.salesPrice}
+            />
+            {errorMsg?.salesPrice && <ErrorBox msg={errorMsg.salesPrice} />}
+          </div>
+
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.mrp')}
+              placeholder="0.00"
+              id="mrp"
+              type="number"
+              required={true}
+              onChange={onChange}
+              value={item.mrp}
+            />
+            {errorMsg?.mrp && <ErrorBox msg={errorMsg.mrp} />}
+          </div>
+          {/* {item.type === 'goods' && (
             <div className="flex flex-col">
               <InputWithSelect
                 id="quantity"
@@ -543,21 +628,7 @@ const AddItem = ({ onCancel, cta }) => {
 
               {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
-          )}
-          <div className="flex flex-col">
-            <InputWithLabel
-              name={translations('goods.components.add.label.gst')}
-              id="gstPercentage"
-              placeholder="00.00 %"
-              type="number"
-              required={true}
-              onChange={onChange}
-              value={item.gstPercentage}
-            />
-            {errorMsg?.gstPercentage && (
-              <ErrorBox msg={errorMsg.gstPercentage} />
-            )}
-          </div>
+          )} */}
         </div>
       </div>
 

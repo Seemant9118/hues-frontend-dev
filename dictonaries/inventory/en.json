@@ -30,9 +30,9 @@
         },
         "components": {
             "add": {
-                "section1":"Item Overview",
-                "section2":"Pricing",
-                "section3":"Additional Information",
+                "section1": "Item Overview",
+                "section2": "Pricing",
+                "section3": "Additional Information",
                 "title1": "Add item",
                 "title2": "Edit item",
                 "label": {
@@ -42,6 +42,9 @@
                     "description": "Description",
                     "hsnCode": "HSN Code",
                     "rate": "Rate",
+                    "salesPrice": "Sales Price",
+                    "costPrice": "Cost Price",
+                    "mrp": "MRP",
                     "gst": "GST (%)",
                     "quantity": "Quantity",
                     "batch": "Batch",
@@ -67,6 +70,9 @@
                 "manufacturer": "Manufacturer",
                 "hsnCode": "HSN Code",
                 "rate": "Rate",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
                 "gst": "GST (%)",
                 "addedOn": "Added On"
             },
@@ -120,6 +126,9 @@
                     "description": "Description",
                     "sac": "SAC",
                     "rate": "Rate",
+                    "salesPrice": "Sales Price",
+                    "costPrice": "Cost Price",
+                    "mrp": "MRP",
                     "gst": "GST (%)",
                     "expiry": "Expiry",
                     "application": "Application"
@@ -138,6 +147,9 @@
                 "sac": "SAC",
                 "description": "Description",
                 "rate": "Rate",
+                "salesPrice": "Sales Price",
+                "costPrice": "Cost Price",
+                "mrp": "MRP",
                 "gst": "GST (%)",
                 "addedOn": "Added On"
             },

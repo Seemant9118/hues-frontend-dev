@@ -2,6 +2,7 @@
 
 import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
 import { invitation } from '@/api/invitation/Invitation';
+import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
@@ -22,13 +23,14 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
-import { LocalStorageService } from '@/lib/utils';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
 import { getInvitationStatus } from '@/services/Invitation_Service/Invitation_Service';
+import { acceptOrder } from '@/services/Invoice_Services/Invoice_Services';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
   remindOrder,
+  updateOrderForUnrepliedSales,
 } from '@/services/Orders_Services/Orders_Services';
 import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -37,8 +39,6 @@ import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { acceptOrder } from '@/services/Invoice_Services/Invoice_Services';
 import { useSalesOrderColumns } from './useSalesOrderColumns';
 
 // dynamic imports
@@ -82,7 +82,6 @@ const ViewOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-  const userId = LocalStorageService.get('user_profile');
   const enterpriseId = getEnterpriseId();
   const searchParams = useSearchParams();
   const [isEditingOrder, setIsEditingOrder] = useState(false);
@@ -264,6 +263,27 @@ const ViewOrder = () => {
     onError: (error) => {
       toast.error(
         error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
+  const withdrawOrderMutation = useMutation({
+    mutationKey: [invoiceApi.withDrawOrder.endpointKey],
+    mutationFn: updateOrderForUnrepliedSales,
+    onSuccess: (res) => {
+      toast.success(translations('successMsg.invoice_generate_success'));
+      setModalData((prev) => ({
+        ...prev,
+        isOpen: false,
+      }));
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      router.push(
+        `/dashboard/sales/sales-orders/${res?.data?.data?.newOrderId}?state=generateInvoice`,
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || translations('errorMsg.common'),
       );
     },
   });
@@ -534,9 +554,12 @@ const ViewOrder = () => {
                 {!isGenerateInvoice &&
                   !isRecordingPayment &&
                   !isNegotiation &&
-                  orderDetails.negotiationStatus === 'NEW' &&
-                  userId.toString() === orderDetails.createdBy.toString() && (
-                    <ProtectedWrapper permissionCode={'permission:sales-edit'}>
+                  orderDetails.orderType === 'SALES' &&
+                  enterpriseId.toString() ===
+                    orderDetails.sellerEnterpriseId.toString() &&
+                  orderDetails.negotiationStatus !== 'INVOICED' &&
+                  orderDetails.negotiationStatus !== 'PARTIAL_INVOICED' && (
+                    <ProtectedWrapper permissionCode="permission:sales-edit">
                       <Button
                         variant="blue_outline"
                         size="sm"
@@ -547,6 +570,7 @@ const ViewOrder = () => {
                       </Button>
                     </ProtectedWrapper>
                   )}
+
                 {/* generateInvoice CTA */}
                 {!isGenerateInvoice &&
                   !isRecordingPayment &&
@@ -563,39 +587,15 @@ const ViewOrder = () => {
                         size="sm"
                         onClick={() => {
                           // Case 1: Uninvited enterprise
+                          // Directly accept the order without showing a modal.
                           if (
                             orderDetails?.buyerType ===
                               'UNINVITED-ENTERPRISE' &&
                             orderDetails?.metaData?.sellerData?.orderStatus ===
                               'OFFER_SENT'
                           ) {
-                            setModalData({
-                              isOpen: true,
-                              title: 'Heads Up! This Client Isn’t Confirmed',
-                              description:
-                                'This client isn’t confirmed yet. By continuing, the order will be accepted, and you’ll be able to create an invoice. Do you still want to proceed?',
-                              buttons: [
-                                {
-                                  label: 'Cancel',
-                                  variant: 'outline',
-                                  className: 'w-36',
-                                  onClick: () =>
-                                    setModalData((prev) => ({
-                                      ...prev,
-                                      isOpen: false,
-                                    })),
-                                },
-                                {
-                                  label: 'Proceed',
-                                  className:
-                                    'w-36 bg-green-600 text-white hover:bg-green-700',
-                                  onClick: () => {
-                                    acceptOrderMutation.mutate({
-                                      orderId: Number(params.order_id),
-                                    });
-                                  },
-                                },
-                              ],
+                            acceptOrderMutation.mutate({
+                              orderId: Number(params.order_id),
                             });
                           }
 
@@ -622,8 +622,12 @@ const ViewOrder = () => {
                                   className:
                                     'w-36 bg-blue-600 text-white hover:bg-blue-700',
                                   onClick: () => {
-                                    acceptOrderMutation.mutate({
+                                    // Withdraw (create invoice for NEW order flow) and proceed
+                                    withdrawOrderMutation.mutate({
                                       orderId: Number(params.order_id),
+                                      amount: orderDetails?.amount,
+                                      gstAmount: orderDetails?.gstAmount,
+                                      orderItems: orderDetails?.orderItems,
                                     });
                                   },
                                 },
