@@ -421,8 +421,11 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                                   if (idx === index) {
                                     return {
                                       ...item,
-                                      totalAmount:
-                                        item.quantity * item.unitPrice,
+                                      totalAmount: parseFloat(
+                                        (
+                                          item.quantity * item.unitPrice
+                                        ).toFixed(2),
+                                      ),
                                       totalGstAmount: parseFloat(
                                         (
                                           item.quantity *
