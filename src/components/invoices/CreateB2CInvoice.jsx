@@ -689,7 +689,7 @@ const CreateB2CInvoice = ({
                         productType: selectedItemData.productType,
                         hsnCode: selectedItemData.hsnCode,
                         productName: selectedItemData.productName,
-                        unitPrice: selectedItemData.rate,
+                        unitPrice: selectedItemData.salesPrice,
                         gstPerUnit: isGstApplicable(
                           isGstApplicableForSalesOrders,
                         )

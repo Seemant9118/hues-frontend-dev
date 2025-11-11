@@ -585,7 +585,7 @@ const CreateB2BInvoice = ({
                             productType: selectedItemData.productType,
                             hsnCode: selectedItemData.hsnCode,
                             productName: selectedItemData.productName,
-                            unitPrice: selectedItemData.rate,
+                            unitPrice: selectedItemData.salesPrice,
                             gstPerUnit,
                           }));
 
