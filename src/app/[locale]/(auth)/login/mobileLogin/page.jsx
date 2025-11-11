@@ -3,6 +3,8 @@
 'use client';
 
 import { directorApi } from '@/api/director/directorApi';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
+import { handleOtpRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
 import { directorInviteList } from '@/services/Director_Services/DirectorServices';
@@ -19,6 +21,7 @@ import MobileLogin from '../multi-step-forms/mobileLoginOTPComponents/MobileLogi
 import VerifyMobileOTP from '../multi-step-forms/mobileLoginOTPComponents/VerifyMobileOTP';
 
 const MobileLoginPage = () => {
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translations = useTranslations('auth.mobileLogin');
 
   const queryClient = useQueryClient();
@@ -48,18 +51,20 @@ const MobileLoginPage = () => {
         setMobileLoginStep(2);
       }
     },
-    onError: () => {
-      setErrorMsg(translations('toast.failedToSendOtp'));
+    onError: (error) => {
+      const customError = apiErrorHandler(error);
+      setErrorMsg(translationsAPIErrors(customError));
     },
   });
 
   const verifyOTPMutation = useMutation({
     mutationFn: (data) => userVerifyOtp(data),
-    // eslint-disable-next-line consistent-return
+
     onSuccess: async (data) => {
-      // set refresh token
+      const redirectedUrl = LocalStorageService.get('redirectUrl');
+
+      // set tokens
       LocalStorageService.set('refreshtoken', data?.data?.data?.refresh_token);
-      // set access token
       LocalStorageService.set('token', data?.data?.data?.access_token);
 
       const {
@@ -72,15 +77,16 @@ const MobileLoginPage = () => {
         isEnterpriseOnboardingComplete,
         isAssociateRequestCreated,
         isAssociateRequestAccepted,
+        isDirector,
       } = data.data.data.user;
 
-      // user onboarding related states
+      // user onboarding state
       LocalStorageService.set('isOnboardingComplete', isOnboardingComplete);
       LocalStorageService.set('isPanVerified', isPanVerified);
       LocalStorageService.set('isAadhaarVerified', isAadhaarVerified);
       LocalStorageService.set('attemptsRemaining', remainingAttempts);
 
-      // enterprise onboarding related states
+      // enterprise onboarding state
       LocalStorageService.set(
         'isEnterprisestartedOnboarding',
         isEnterprisestartedOnboarding,
@@ -98,71 +104,39 @@ const MobileLoginPage = () => {
         'isAssociateRequestAccepted',
         isAssociateRequestAccepted,
       );
-      LocalStorageService.set('isDirector', data?.data?.data?.user?.isDirector);
+      LocalStorageService.set('isDirector', isDirector);
 
-      // check by calling api : directorInviteList
-      const directorInviteListData = await queryClient.fetchQuery({
-        queryKey: [directorApi.getDirectorInviteList.endpointKey],
-        queryFn: directorInviteList,
-      });
-      const isUserHaveValidDirectorInvites =
-        directorInviteListData?.data?.data?.length > 0;
+      // check directorInviteList with fallback
+      let isUserHaveValidDirectorInvites = false;
+      try {
+        const directorInviteListData = await queryClient.fetchQuery({
+          queryKey: [directorApi.getDirectorInviteList.endpointKey],
+          queryFn: directorInviteList,
+        });
+        isUserHaveValidDirectorInvites =
+          directorInviteListData?.data?.data?.length > 0;
+      } catch (error) {
+        isUserHaveValidDirectorInvites = false;
+      }
 
       toast.success(translations('toast.otpVerifiedSuccess'));
 
-      // isUserOnboardingComplete
-      if (isOnboardingComplete) {
-        // is logInWithInviteLink
-        if (islogInWithInviteLink) {
-          if (
-            islogInWithInviteLink?.data?.invitation?.invitationType ===
-              'CLIENT' ||
-            islogInWithInviteLink?.data?.invitation?.invitationType === 'VENDOR'
-          ) {
-            router.push('/login/enterprise/select_enterprise_type');
-          } else if (
-            islogInWithInviteLink?.data?.invitation?.invitationType ===
-              'DIRECTOR' &&
-            isUserHaveValidDirectorInvites
-          ) {
-            router.push('/login/confirmation_invite_as_director');
-          } else {
-            router.push('/login/confirmation_invite_as_associate');
-          }
-        }
-        // is not logInWithInviteLink
-        else {
-          if (isEnterprisestartedOnboarding && isEnterpriseOnboardingComplete) {
-            return router.push('/');
-          } else if (
-            isEnterprisestartedOnboarding &&
-            !isEnterpriseOnboardingComplete
-          ) {
-            // enterprise onboarding started and but not completed perform pending actions
-            return router.push('/login/enterprise/pending-actions');
-          } else {
-            return router.push('/login/user/confirmation');
-          }
-        }
-      }
-      // User onboarding is incomplete
-      else {
-        // isPanverified and aaadhar verified then move to confirmation
-        if (isPanVerified && isAadhaarVerified) {
-          return router.push('/login/user/confirmation');
-        }
-        // isPanverified and !aadhar not verified then move to aadhar
-        else if (isPanVerified && !isAadhaarVerified) {
-          return router.push('/login/user/aadhar-verification');
-        } else {
-          return router.push('/login/user/pan-verification');
-        }
-      }
+      await handleOtpRedirection({
+        isOnboardingComplete,
+        isPanVerified,
+        isAadhaarVerified,
+        isEnterprisestartedOnboarding,
+        isEnterpriseOnboardingComplete,
+        islogInWithInviteLink,
+        isUserHaveValidDirectorInvites,
+        redirectedUrl,
+        router,
+      });
     },
+
     onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('toast.otpInvalid'),
-      );
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import { UserProvider } from '@/context/UserContext';
@@ -14,6 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const ConfirmationInviteAsDirectorPage = () => {
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translations = useTranslations('auth.confirmationInviteAsDirector');
   const router = useRouter();
   const fromEnterpriseId = LocalStorageService.get(
@@ -50,7 +52,8 @@ const ConfirmationInviteAsDirectorPage = () => {
       router.push('/login/enterprise/select_enterprise_type');
     },
     onError: (error) => {
-      toast.error(error.response.data.message || translations('toast.error'));
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 
@@ -61,7 +64,7 @@ const ConfirmationInviteAsDirectorPage = () => {
         <div className="flex h-full flex-col items-center justify-center gap-2">
           <div className="text-2xl">{translations('noInvitationFound')}</div>
           <Link
-            href="/"
+            href="/dashboard"
             className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
           >
             {translations('skipForNow')}
@@ -125,7 +128,7 @@ const ConfirmationInviteAsDirectorPage = () => {
 
           <div className="flex w-full flex-col gap-14">
             <Link
-              href="/"
+              href="/dashboard"
               className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
             >
               {translations('skipButton')}

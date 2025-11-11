@@ -142,12 +142,14 @@ const OrdersOverview = ({
                   {orderId}
                   <Tooltips
                     trigger={
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => viewOrderinNewTab(params.order_id)}
                         className="font-bold hover:text-primary"
                       >
                         <Eye size={14} />
-                      </button>
+                      </Button>
                     }
                     content={translations('placeholder.preview_order')}
                   />

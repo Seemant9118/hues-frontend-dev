@@ -1,10 +1,13 @@
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import {
   createInvoiceForAcceptedOrder,
-  createInvoiceForNewOrder,
   previewInvoice,
+  withDrawOrder,
 } from '@/services/Invoice_Services/Invoice_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import base64ToBlob from 'base64toblob';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -16,6 +19,7 @@ import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
+import InputWithSelect from '../ui/InputWithSelect';
 import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import {
@@ -28,6 +32,7 @@ import {
   TableRow,
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
+import PINVerifyModalOfflineOrder from './PinVerifyModalOfflineOrder';
 
 const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const translations = useTranslations('components.generate_invoice');
@@ -35,9 +40,10 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-  const isAutoSelect = orderDetails?.negotiationStatus === 'NEW';
+  const isAutoSelect = false;
   const orderId = params.order_id;
 
+  const [isPINModalOpen, setIsPINModalOpen] = useState(false);
   const [invoicedData, setInvoicedData] = useState({
     pin: null,
     clientType: orderDetails?.clientType,
@@ -61,6 +67,13 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     clientEnterpriseId: orderDetails?.clientEnterpriseId,
   });
 
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+  });
+
   // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (previewInvoiceBase64) {
@@ -77,73 +90,52 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     }
   }, [previewInvoiceBase64]); // Dependency array to ensure effect runs only when base64StrToRenderPDF changes
 
-  const calculatedInvoiceQuantity = (quantity, invoiceQuantity) => {
-    const calculatedQty = quantity - invoiceQuantity;
-    return Math.max(calculatedQty, 0);
-  };
+  // --- 🔹 calculate remaining qty helper
+  const calculatedInvoiceQuantity = (quantity, invoiceQuantity) =>
+    Math.max(quantity - invoiceQuantity, 0);
 
+  // --- 🔹 build productDetailsList when orderDetails change
   useEffect(() => {
-    if (orderDetails?.orderItems) {
-      const initialQtys = orderDetails.orderItems.map((item) => item.quantity);
-      setInitialQuantities(initialQtys);
+    if (!orderDetails?.orderItems) return;
 
-      const getInitialProductDetailsList = orderDetails.orderItems.map(
-        (item) => {
-          const quantity = calculatedInvoiceQuantity(
-            item.quantity,
-            item.invoiceQuantity,
-          );
-          const { unitPrice } = item;
-          const totalAmount = quantity * unitPrice;
-          const totalGstAmount = totalAmount * (item.gstPerUnit / 100);
+    setInitialQuantities(orderDetails.orderItems.map((i) => i.quantity));
 
-          return {
-            ...item.productDetails,
-            productType: item.productType,
-            orderItemId: item.id,
-            quantity, // Calculated quantity
-            unitPrice, // Unit price
-            gstPerUnit: item.gstPerUnit,
-            totalAmount, // Calculated total amount
-            totalGstAmount: parseFloat(totalGstAmount.toFixed(2)), // Total GST amount
-            isSelected: isAutoSelect,
-          };
-        },
+    const productDetails = orderDetails.orderItems.map((item) => {
+      const quantity =
+        calculatedInvoiceQuantity(item.quantity, item.invoiceQuantity) || 0;
+
+      const { unitPrice = 0, unitId, gstPerUnit = 0 } = item;
+
+      const totalAmount = parseFloat((quantity * unitPrice).toFixed(2));
+      const totalGstAmount = parseFloat(
+        (totalAmount * (gstPerUnit / 100)).toFixed(2),
       );
 
-      // Filter out items with quantity 0
-      const filteredProductDetailsList = getInitialProductDetailsList.filter(
-        (item) => item.quantity > 0,
-      );
+      return {
+        ...item.productDetails,
+        productType: item.productType,
+        orderItemId: item.id,
+        quantity,
+        unitId,
+        unitPrice,
+        gstPerUnit,
+        totalAmount,
+        totalGstAmount,
+        isSelected: isAutoSelect,
+      };
+    });
 
-      setProductDetailsList(filteredProductDetailsList);
-      setInvoicedData((prev) => ({
-        ...prev,
-        invoiceItems: isAutoSelect ? filteredProductDetailsList : [],
-      }));
-      setAllSelected(isAutoSelect);
-    }
-  }, [orderDetails, isAutoSelect]);
+    const filteredList = productDetails.filter((p) => p.quantity > 0);
 
-  useEffect(() => {
-    const totalAmount = productDetailsList.reduce(
-      (acc, item) => acc + (item.isSelected ? item.totalAmount : 0),
-      0,
-    );
-
-    const totalGstAmount = productDetailsList.reduce(
-      (acc, item) => acc + (item.isSelected ? item.totalGstAmount : 0),
-      0,
-    );
-
+    setProductDetailsList(filteredList);
     setInvoicedData((prev) => ({
       ...prev,
-      amount: totalAmount,
-      gstAmount: totalGstAmount,
-      invoiceItems: productDetailsList.filter((item) => item.isSelected),
+      invoiceItems: isAutoSelect ? filteredList : [],
     }));
-  }, [productDetailsList]);
+    setAllSelected(isAutoSelect);
+  }, [orderDetails?.orderItems, isAutoSelect]);
 
+  // --- 🔹 sync invoicedData totals whenever invoiceItems change
   useEffect(() => {
     const totalAmount = invoicedData.invoiceItems.reduce(
       (acc, item) => acc + item.totalAmount,
@@ -157,88 +149,76 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
     setInvoicedData((prev) => ({
       ...prev,
-      amount: totalAmount,
-      gstAmount: totalGstAmount,
+      amount: parseFloat(totalAmount.toFixed(2)),
+      gstAmount: parseFloat(totalGstAmount.toFixed(2)),
     }));
   }, [invoicedData.invoiceItems]);
 
-  const updateProductDetailsList = (orderItemId, newQty) => {
+  // --- 🔹 update qty for a single item
+  const updateProductDetailsList = (orderItemId, newQtyRaw) => {
+    const newQty = newQtyRaw === '' ? '' : Number(newQtyRaw);
+
     setProductDetailsList((prevList) =>
       prevList.map((item) => {
-        if (item.orderItemId === orderItemId) {
-          return {
-            ...item,
-            quantity: newQty,
-            totalAmount:
-              newQty && !Number.isNaN(newQty) ? newQty * item.unitPrice : 0,
-            totalGstAmount:
-              newQty && !Number.isNaN(newQty)
-                ? parseFloat(
-                    (newQty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
-                      2,
-                    ),
-                  )
-                : 0,
-          };
-        }
-        return item;
+        if (item.orderItemId !== orderItemId) return item;
+
+        const qty = newQty === '' ? '' : Math.max(newQty, 0);
+
+        return {
+          ...item,
+          quantity: qty,
+          totalAmount:
+            qty && !Number.isNaN(qty)
+              ? parseFloat((qty * item.unitPrice).toFixed(2))
+              : 0,
+          totalGstAmount:
+            qty && !Number.isNaN(qty)
+              ? parseFloat(
+                  (qty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
+                )
+              : 0,
+        };
       }),
     );
 
-    // ✅ Validation block
+    // ✅ Validation
     const matchedItem = orderDetails?.orderItems?.find(
-      (item) => item.id === orderItemId,
+      (i) => i.id === orderItemId,
     );
     const maxQty =
       (matchedItem?.quantity || 0) - (matchedItem?.invoiceQuantity || 0);
 
     const newErrorMsg = { ...errorMsg };
 
-    if (newQty === '' || newQty === null || newQty === undefined) {
+    if (newQty === '') {
       newErrorMsg[`quantity_${orderItemId}`] = 'Quantity cannot be empty';
-    } else if (!Number.isInteger(newQty) || newQty <= 0) {
+    } else if (Number.isNaN(newQty) || newQty < 0) {
       newErrorMsg[`quantity_${orderItemId}`] =
         'Quantity must be a valid number';
     } else if (newQty > maxQty) {
       newErrorMsg[`quantity_${orderItemId}`] =
         `Only ${maxQty} items available for invoicing`;
     } else {
-      delete newErrorMsg[`quantity_${orderItemId}`]; // ✅ Clear if valid
+      delete newErrorMsg[`quantity_${orderItemId}`];
     }
 
     setErrorMsg(newErrorMsg);
   };
 
+  // --- 🔹 select/deselect all
   const handleSelectAll = (isSelected) => {
     setAllSelected(isSelected);
 
-    const updatedList = productDetailsList
-      .map((item) => ({
-        ...item,
-        isSelected,
-      }))
-      .filter((item) => item.quantity > 0); // Ensure selected items are valid
+    const updatedList = productDetailsList.map((item) => ({
+      ...item,
+      isSelected,
+    }));
 
     setProductDetailsList(updatedList);
-
-    if (isSelected) {
-      const updatedItems = updatedList.map((item) => ({
-        ...item,
-        totalAmount: item.quantity * item.unitPrice,
-        totalGstAmount: parseFloat(
-          (item.quantity * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
-        ),
-      }));
-      setInvoicedData({
-        ...invoicedData,
-        invoiceItems: updatedItems,
-      });
-    } else {
-      setInvoicedData((prev) => ({
-        ...prev,
-        invoiceItems: [],
-      }));
-    }
+    setInvoicedData((prev) => ({
+      ...prev,
+      invoiceItems: isSelected ? updatedList.filter((i) => i.quantity > 0) : [],
+    }));
   };
 
   const onHandleClose = () => {
@@ -260,7 +240,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         invoiceApi.getInvoices.endpointKey,
         orderId,
       ]);
-      router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
+      router.push(`/dashboard/sales/sales-invoices/${data?.data?.data?.id}`);
     },
     onError: (error) => {
       if (
@@ -276,13 +256,19 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   });
 
   // mutation fn - new generate Invoice : IF NEW
-  const invoiceMutationNew = useMutation({
-    mutationKey: [invoiceApi.createInvoiceForNewOrder.endpointKey],
-    mutationFn: createInvoiceForNewOrder,
+  const withDrawOrderMutation = useMutation({
+    mutationKey: [invoiceApi.withDrawOrder.endpointKey],
+    mutationFn: withDrawOrder,
     onSuccess: (data) => {
       toast.success(translations('successMsg.invoice_generate_success'));
 
-      router.push(`/sales/sales-invoices/${data?.data?.data?.id}`);
+      // redirected to create order with prefilled data
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      const { orderId } = data?.data?.data;
+      queryClient.invalidateQueries([orderApi.getSales.endpointKey]);
+      router.push(
+        `/dashboard/sales/sales-orders?action=create_order&referenceId=${orderId}`,
+      );
     },
     onError: (error) => {
       if (
@@ -300,9 +286,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   // handling submit fn
   const handleSubmit = (updateInvoice) => {
     if (orderDetails?.negotiationStatus === 'NEW') {
-      const { amount, gstAmount, invoiceItems, orderType, ...newInvoicedData } =
-        updateInvoice;
-      invoiceMutationNew.mutate(newInvoicedData);
+      withDrawOrderMutation.mutate(updateInvoice);
       return;
     }
     invoiceMutation.mutate(updateInvoice);
@@ -437,8 +421,11 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                                   if (idx === index) {
                                     return {
                                       ...item,
-                                      totalAmount:
-                                        item.quantity * item.unitPrice,
+                                      totalAmount: parseFloat(
+                                        (
+                                          item.quantity * item.unitPrice
+                                        ).toFixed(2),
+                                      ),
                                       totalGstAmount: parseFloat(
                                         (
                                           item.quantity *
@@ -501,7 +488,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                               -
                             </Button>
 
-                            <Input
+                            {/* <Input
                               min={1}
                               name="quantity"
                               className="w-20 rounded-sm pr-4"
@@ -526,6 +513,55 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                                 }
                               }}
                               disabled={isAutoSelect}
+                            /> */}
+
+                            <InputWithSelect
+                              id="quantity"
+                              disabled={isAutoSelect}
+                              value={product?.quantity ?? ''}
+                              onValueChange={(e) => {
+                                const inputValue = e.target.value;
+
+                                // Allow clearing the field
+                                if (inputValue === '') {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    '',
+                                  );
+                                  return;
+                                }
+
+                                const newQty = parseFloat(inputValue);
+
+                                if (!Number.isNaN(newQty)) {
+                                  updateProductDetailsList(
+                                    product.orderItemId,
+                                    newQty,
+                                  );
+                                }
+                              }}
+                              unit={product.unitId} // unitId from state
+                              onUnitChange={(val) => {
+                                const updatedItems = productDetailsList.map(
+                                  (item, idx) => {
+                                    if (idx === index) {
+                                      return {
+                                        ...item,
+                                        unitId: val,
+                                      };
+                                    }
+                                    return item;
+                                  },
+                                );
+
+                                setProductDetailsList(updatedItems); // keep productDetailsList in sync
+                                setInvoicedData((prev) => ({
+                                  ...prev,
+                                  invoiceItems: updatedItems,
+                                }));
+                              }}
+                              selectUnitDisabled={true}
+                              units={units?.quantity ?? []} // fallback to empty array
                             />
 
                             <Button
@@ -600,11 +636,17 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
               <Button
                 size="sm"
-                onClick={() => handlePreview(invoicedData)}
+                onClick={() => {
+                  isAutoSelect
+                    ? setIsPINModalOpen(true)
+                    : handlePreview(invoicedData);
+                }}
                 disabled={previewInvMutation.isPending}
               >
                 {previewInvMutation.isPending ? (
                   <Loading />
+                ) : isAutoSelect ? (
+                  translations('ctas.verify')
                 ) : (
                   translations('ctas.next')
                 )}
@@ -614,7 +656,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
         </>
       )}
 
-      {isPreviewOpen && (
+      {!isAutoSelect && isPreviewOpen && (
         <InvoicePreview
           order={invoicedData}
           setOrder={setInvoicedData}
@@ -622,9 +664,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
           setIsPreviewOpen={setIsPreviewOpen}
           url={url}
           isPDFProp={true}
-          isPendingInvoice={
-            invoiceMutation.isPending || invoiceMutationNew.isPending
-          }
+          isPendingInvoice={invoiceMutation.isPending}
           handleCreateFn={handleSubmit}
           handlePreview={handlePreview}
           isCreatable={true}
@@ -632,6 +672,18 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
           isCustomerRemarksAddable={true}
           isBankAccountDetailsSelectable={true}
           isActionable={true}
+          isPINError={isPINError}
+          setIsPINError={setIsPINError}
+        />
+      )}
+
+      {isAutoSelect && (
+        <PINVerifyModalOfflineOrder
+          open={isPINModalOpen}
+          setOpen={setIsPINModalOpen}
+          order={invoicedData}
+          isPendingInvoice={invoiceMutation.isPending}
+          handleCreateFn={handleSubmit}
           isPINError={isPINError}
           setIsPINError={setIsPINError}
         />

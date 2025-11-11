@@ -1,5 +1,6 @@
 'use client';
 
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/routing';
 import { BadgeCheck } from 'lucide-react';
@@ -18,7 +19,7 @@ const EnterpriseConfirmationPage = () => {
     e.preventDefault();
 
     toast.success(translations('toastSuccess'));
-    router.push('/');
+    router.push(goToHomePage());
   };
 
   return (

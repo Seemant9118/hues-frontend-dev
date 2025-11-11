@@ -1,3 +1,5 @@
+import { LocalStorageService } from '@/lib/utils';
+
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
   if (!name) return 'PR'; // Default initials
@@ -141,5 +143,23 @@ export const parseJwt = (token) => {
     return JSON.parse(payload);
   } catch (error) {
     return null;
+  }
+};
+
+export const getEnterpriseId = () => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const switchedEnterpriseId = LocalStorageService.get('switchedEnterpriseId');
+  return switchedEnterpriseId || enterpriseId;
+};
+
+export const goToHomePage = () => {
+  const token = LocalStorageService.get('token');
+
+  const payload = token ? parseJwt(token) : null;
+
+  if (payload?.roles?.includes('ADMIN')) {
+    return '/dashboard/admin/reports';
+  } else {
+    return '/dashboard';
   }
 };

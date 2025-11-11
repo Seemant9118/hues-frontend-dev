@@ -14,25 +14,29 @@ import {
 import { LocalStorageService, SessionStorageService, cn } from '@/lib/utils';
 import { CreateProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { CreateProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import InputWithLabel from '../ui/InputWithLabel';
 import Loading from '../ui/Loading';
+import InputWithSelect from '../ui/InputWithSelect';
 
 const AddItem = ({ onCancel, cta }) => {
   const translations = useTranslations();
 
   const redirectURL = LocalStorageService.get('redirectFromCatalogue');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const userId = LocalStorageService.get('user_profile');
   const itemDraft = SessionStorageService.get('itemDraft');
 
@@ -51,20 +55,37 @@ const AddItem = ({ onCancel, cta }) => {
     serviceName: itemDraft?.serviceName || '',
     description: itemDraft?.description || '',
     hsnCode: itemDraft?.hsnCode || '',
+    skuId: itemDraft?.skuId || '',
     SAC: itemDraft?.SAC || '',
-    rate: itemDraft?.rate || '',
-    gstPercentage: itemDraft?.gstPercentage || '',
-    quantity: itemDraft?.quantity || '',
+    // rate: itemDraft?.rate || '',
+    costPrice: parseFloat(itemDraft?.costPrice) || null,
+    salesPrice: parseFloat(itemDraft?.salesPrice) || null,
+    mrp: parseFloat(itemDraft?.mrp) || null,
+    gstPercentage: parseFloat(itemDraft?.gstPercentage) || null,
+    // quantity: itemDraft?.quantity || '',
+    // unitId: itemDraft?.unitId || null,
     type: itemDraft?.type || (isGoods ? 'goods' : 'services'),
-    batch: itemDraft?.batch || '',
+    // batch: itemDraft?.batch || '',
     expiry: itemDraft?.expiry || '',
-    weight: itemDraft?.weight || '',
-    length: itemDraft?.length || '',
-    breadth: itemDraft?.breadth || '',
-    height: itemDraft?.height || '',
-    applications: itemDraft?.applications || '',
+    weight: parseFloat(itemDraft?.weight) || null,
+    weightUnitId: itemDraft?.weightUnitId || null,
+    length: parseFloat(itemDraft?.length) || null,
+    lengthUnitId: itemDraft?.lengthUnitId || null,
+    breadth: parseFloat(itemDraft?.breadth) || null,
+    breadthUnitId: itemDraft?.breadthUnitId || null,
+    height: parseFloat(itemDraft?.height) || null,
+    heightUnitId: itemDraft?.heightUnitId || null,
+    // applications: itemDraft?.applications || '',
     manufacturerGstId: itemDraft?.manufacturerGstId || '',
     units: itemDraft?.units || '',
+  });
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
   });
 
   // save draft to session storage
@@ -74,17 +95,17 @@ const AddItem = ({ onCancel, cta }) => {
 
   // set date into expiry field of item
   useEffect(() => {
-    setItem((prevUserData) => ({
-      ...prevUserData,
-      expiry: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '', // Update dynamically
-    }));
-    saveDraftToSession({
-      key: 'itemDraft',
-      data: {
-        ...item,
-        expiry: selectedDate ? moment(selectedDate).format('DD/MM/YYYY') : '',
-      },
-    });
+    if (selectedDate) {
+      const formattedDate = moment(selectedDate).format('DD/MM/YYYY');
+      setItem((prevItem) => {
+        const updatedItem = { ...prevItem, expiry: formattedDate };
+        saveDraftToSession({
+          key: 'itemDraft',
+          data: updatedItem,
+        });
+        return updatedItem;
+      });
+    }
   }, [selectedDate]);
 
   const validation = (itemData) => {
@@ -115,15 +136,24 @@ const AddItem = ({ onCancel, cta }) => {
       error.SAC = '*Required SAC';
     }
     // rate
-    if (itemData.rate === '') {
-      error.rate = '*Required Rate';
+    // if (itemData.rate === '') {
+    //   error.rate = '*Required Rate';
+    // }
+    if (itemData.salesPrice === null) {
+      error.salesPrice = '*Required Sales Price';
+    }
+    if (itemData.costPrice === null) {
+      error.costPrice = '*Required Cost Price';
+    }
+    if (itemData.mrp === null) {
+      error.mrp = '*Required MRP';
     }
     // gst_percentage
-    if (itemData.gstPercentage === '') {
+    if (itemData.gstPercentage === null) {
       error.gstPercentage = '*Required GST (%)';
     }
     // quantity
-    if (itemData.quantity === '') {
+    if (itemData.quantity === null) {
       error.quantity = '*Required Quantity';
     }
     return error;
@@ -163,26 +193,45 @@ const AddItem = ({ onCancel, cta }) => {
   const onChange = (e) => {
     const { id, value } = e.target;
 
-    // validation input value
-    if (
-      id === 'quantity' ||
-      id === 'rate' ||
-      id === 'gstPercentage' ||
-      id === 'weight' ||
-      id === 'height' ||
-      id === 'length' ||
-      id === 'breadth'
-    ) {
-      if (!Number.isNaN(value)) {
-        setItem((values) => ({ ...values, [id]: value }));
+    // numeric fields
+    const numericFields = [
+      'quantity',
+      'salesPrice',
+      'costPrice',
+      'mrp',
+      'gstPercentage',
+      'weight',
+      'height',
+      'length',
+      'breadth',
+    ];
+
+    if (numericFields.includes(id)) {
+      // Allow empty input
+      if (value === '') {
+        setItem((values) => ({ ...values, [id]: '' }));
         saveDraftToSession({
           key: 'itemDraft',
-          data: { ...item, [id]: value },
+          data: { ...item, [id]: '' },
+        });
+        return;
+      }
+
+      // Convert and format number
+      const parsedValue = parseFloat(value);
+      if (!Number.isNaN(parsedValue)) {
+        const formattedValue = parsedValue;
+
+        setItem((values) => ({ ...values, [id]: formattedValue }));
+        saveDraftToSession({
+          key: 'itemDraft',
+          data: { ...item, [id]: formattedValue },
         });
       }
       return;
     }
 
+    // non-numeric fields
     setItem((values) => ({ ...values, [id]: value }));
     saveDraftToSession({
       key: 'itemDraft',
@@ -211,7 +260,6 @@ const AddItem = ({ onCancel, cta }) => {
       toast.error(error.response.data.message || 'Something went wrong!');
     },
   });
-
   // services mutations
   const mutationServices = useMutation({
     mutationFn: CreateProductServices,
@@ -234,7 +282,6 @@ const AddItem = ({ onCancel, cta }) => {
   });
 
   // combined mutation
-
   const handleSubmitGoods = (e) => {
     e.preventDefault();
 
@@ -262,9 +309,9 @@ const AddItem = ({ onCancel, cta }) => {
       productName,
       manufacturerName,
       hsnCode,
+      skuId,
       type,
       units,
-      batch,
       weight,
       length,
       breadth,
@@ -329,7 +376,6 @@ const AddItem = ({ onCancel, cta }) => {
               </div>
 
               <Select
-                required
                 value={item.type}
                 onValueChange={(value) => {
                   setErrorMsg({});
@@ -342,11 +388,15 @@ const AddItem = ({ onCancel, cta }) => {
                     serviceName: '',
                     description: '',
                     hsnCode: '',
+                    skuId: '',
                     SAC: '',
-                    rate: '',
+                    // rate: '',
+                    salesPrice: '',
+                    costPrice: '',
+                    mrp: '',
                     gstPercentage: '',
                     quantity: '',
-                    batch: '',
+                    // batch: '',
                     expiry: '',
                     weight: '',
                     length: '',
@@ -369,7 +419,7 @@ const AddItem = ({ onCancel, cta }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="goods">Goods</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
+                  {/* <SelectItem value="services">Services</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
@@ -379,9 +429,12 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 className="max-w-xs"
+                placeholder={translations(
+                  'goods.components.add.label.productName',
+                )}
+                required={true}
                 name={translations('goods.components.add.label.productName')}
                 id="productName"
-                required={true}
                 onChange={onChange}
                 value={item.productName}
               />
@@ -391,6 +444,9 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name={translations('services.components.add.label.serviceName')}
+                placeholder={translations(
+                  'services.components.add.label.serviceName',
+                )}
                 id="serviceName"
                 required={true}
                 onChange={onChange}
@@ -405,6 +461,7 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name={translations('goods.components.add.label.hsnCode')}
+                placeholder={translations('goods.components.add.label.hsnCode')}
                 id="hsnCode"
                 required={true}
                 onChange={onChange}
@@ -416,6 +473,7 @@ const AddItem = ({ onCancel, cta }) => {
             <div className="flex flex-col">
               <InputWithLabel
                 name={translations('services.components.add.label.sac')}
+                placeholder={translations('services.components.add.label.sac')}
                 id="SAC"
                 required={true}
                 onChange={onChange}
@@ -424,16 +482,20 @@ const AddItem = ({ onCancel, cta }) => {
               {errorMsg?.SAC && <ErrorBox msg={errorMsg.SAC} />}
             </div>
           )}
-
-          {/* Batch */}
-          {item.type === 'goods' && (
+          <div className="flex flex-col">
             <InputWithLabel
-              name={translations('goods.components.add.label.batch')}
-              id="batch"
+              name={translations('goods.components.add.label.gst')}
+              id="gstPercentage"
+              placeholder="00.00 %"
+              type="number"
+              required={true}
               onChange={onChange}
-              value={item.batch}
+              value={item.gstPercentage}
             />
-          )}
+            {errorMsg?.gstPercentage && (
+              <ErrorBox msg={errorMsg.gstPercentage} />
+            )}
+          </div>
           {/* Expiry */}
           <div className="grid w-full items-center gap-1.5">
             <Label
@@ -444,26 +506,55 @@ const AddItem = ({ onCancel, cta }) => {
             </Label>
             <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
               <DatePickers
-                selected={selectedDate}
+                selected={
+                  item?.expiry
+                    ? moment(item?.expiry, 'DD/MM/YYYY').toDate()
+                    : ''
+                }
                 onChange={(date) => setSelectedDate(date)}
                 dateFormat="dd/MM/yyyy"
-                popperPlacement="right"
+                popperPlacement="left"
+                isExpiryField={true}
               />
               <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
             </div>
           </div>
+
+          {/* skuId */}
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.skuId')}
+              placeholder={translations('goods.components.add.label.skuId')}
+              id="skuId"
+              onChange={onChange}
+              value={item.skuId}
+            />
+          </div>
+
+          {/* Batch */}
+          {/* {item.type === 'goods' && (
+            <InputWithLabel
+              name={translations('goods.components.add.label.batch')}
+              placeholder={translations('goods.components.add.label.batch')}
+              id="batch"
+              onChange={onChange}
+              value={item.batch}
+            />
+          )} */}
           {/* application */}
-          <InputWithLabel
+          {/* <InputWithLabel
             name={translations('goods.components.add.label.application')}
+            placeholder={translations('goods.components.add.label.application')}
             id="applications"
             onChange={onChange}
             value={item.applications}
-          />
+          /> */}
         </div>
         {/* description */}
         <div className="flex w-full flex-col">
           <InputWithLabel
             name={translations('goods.components.add.label.description')}
+            placeholder={translations('goods.components.add.label.description')}
             id="description"
             required={true}
             onChange={onChange}
@@ -480,9 +571,10 @@ const AddItem = ({ onCancel, cta }) => {
         </h2>
 
         <div className="grid grid-cols-3 grid-rows-1 items-center gap-4">
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <InputWithLabel
               name={translations('goods.components.add.label.rate')}
+              placeholder="0.00"
               id="rate"
               type="number"
               required={true}
@@ -490,33 +582,67 @@ const AddItem = ({ onCancel, cta }) => {
               value={item.rate}
             />
             {errorMsg?.rate && <ErrorBox msg={errorMsg.rate} />}
-          </div>
-          {item.type === 'goods' && (
-            <div className="flex flex-col">
-              <InputWithLabel
-                type="number"
-                name={translations('goods.components.add.label.quantity')}
-                id="quantity"
-                required={true}
-                onChange={onChange}
-                value={item.quantity}
-              />
-              {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
-            </div>
-          )}
+          </div> */}
           <div className="flex flex-col">
             <InputWithLabel
-              name={translations('goods.components.add.label.gst')}
-              id="gstPercentage"
+              name={translations('goods.components.add.label.costPrice')}
+              placeholder="0.00"
+              id="costPrice"
               type="number"
               required={true}
               onChange={onChange}
-              value={item.gstPercentage}
+              value={item.costPrice}
             />
-            {errorMsg?.gstPercentage && (
-              <ErrorBox msg={errorMsg.gstPercentage} />
-            )}
+            {errorMsg?.costPrice && <ErrorBox msg={errorMsg.costPrice} />}
           </div>
+
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.salesPrice')}
+              placeholder="0.00"
+              id="salesPrice"
+              type="number"
+              required={true}
+              onChange={onChange}
+              value={item.salesPrice}
+            />
+            {errorMsg?.salesPrice && <ErrorBox msg={errorMsg.salesPrice} />}
+          </div>
+
+          <div className="flex flex-col">
+            <InputWithLabel
+              name={translations('goods.components.add.label.mrp')}
+              placeholder="0.00"
+              id="mrp"
+              type="number"
+              required={true}
+              onChange={onChange}
+              value={item.mrp}
+            />
+            {errorMsg?.mrp && <ErrorBox msg={errorMsg.mrp} />}
+          </div>
+          {/* {item.type === 'goods' && (
+            <div className="flex flex-col">
+              <InputWithSelect
+                id="quantity"
+                name={translations('goods.components.add.label.quantity')}
+                required={true}
+                value={item.quantity}
+                onValueChange={onChange}
+                unit={item?.unitId} // unitId from state
+                onUnitChange={(val) => {
+                  setItem((prev) => {
+                    const updated = { ...prev, unitId: Number(val) }; // store ID
+                    saveDraftToSession({ key: 'itemDraft', data: updated });
+                    return updated;
+                  });
+                }}
+                units={units?.quantity} // pass the full object list
+              />
+
+              {errorMsg?.quantity && <ErrorBox msg={errorMsg.quantity} />}
+            </div>
+          )} */}
         </div>
       </div>
 
@@ -533,6 +659,9 @@ const AddItem = ({ onCancel, cta }) => {
                 name={translations(
                   'goods.components.add.label.manufactureName',
                 )}
+                placeholder={translations(
+                  'goods.components.add.label.manufactureName',
+                )}
                 id="manufacturerName"
                 required={true}
                 onChange={onChange}
@@ -545,41 +674,76 @@ const AddItem = ({ onCancel, cta }) => {
 
             <InputWithLabel
               name={translations('goods.components.add.label.manufacturerGST')}
+              placeholder={translations(
+                'goods.components.add.label.manufacturerGST',
+              )}
               id="manufacturerGstId"
               onChange={onChange}
               value={item.manufacturerGstId}
             />
 
-            <InputWithLabel
-              name={translations('goods.components.add.label.weight')}
+            <InputWithSelect
               id="weight"
-              type="number"
-              onChange={onChange}
+              name={translations('goods.components.add.label.weight')}
               value={item.weight}
+              onValueChange={onChange}
+              unit={item.weightUnitId} // auto-selected from state
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, weightUnitId: Number(val) }; // ensure ID
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.mass} // pass full object list like [{id: 1, name: 'kg'}]
             />
 
-            <InputWithLabel
-              name={translations('goods.components.add.label.length')}
-              id="length"
-              type="number"
-              onChange={onChange}
-              value={item.length}
-            />
-
-            <InputWithLabel
-              name={translations('goods.components.add.label.breadth')}
-              id="breadth"
-              type="number"
-              onChange={onChange}
-              value={item.breadth}
-            />
-
-            <InputWithLabel
-              name={translations('goods.components.add.label.height')}
+            <InputWithSelect
               id="height"
-              type="number"
-              onChange={onChange}
+              name={translations('goods.components.add.label.height')}
               value={item.height}
+              onValueChange={onChange}
+              unit={item.heightUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, heightUnitId: Number(val) };
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.length}
+            />
+
+            <InputWithSelect
+              id="length"
+              name={translations('goods.components.add.label.length')}
+              value={item.length}
+              onValueChange={onChange}
+              unit={item.lengthUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, lengthUnitId: Number(val) };
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.length}
+            />
+
+            <InputWithSelect
+              id="breadth"
+              name={translations('goods.components.add.label.breadth')}
+              value={item.breadth}
+              onValueChange={onChange}
+              unit={item.breadthUnitId}
+              onUnitChange={(val) => {
+                setItem((prev) => {
+                  const updated = { ...prev, breadthUnitId: Number(val) };
+                  saveDraftToSession({ key: 'itemDraft', data: updated });
+                  return updated;
+                });
+              }}
+              units={units?.length}
             />
           </div>
         </div>

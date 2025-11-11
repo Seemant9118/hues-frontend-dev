@@ -3,6 +3,7 @@ import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
@@ -25,6 +26,8 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
@@ -33,6 +36,7 @@ import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 import InvoiceTypePopover from './InvoiceTypePopover';
+import InputWithSelect from '../ui/InputWithSelect';
 
 const CreateB2CInvoice = ({
   cta,
@@ -46,7 +50,7 @@ const CreateB2CInvoice = ({
   const translations = useTranslations('components.create_B2C_Invoice');
 
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const b2CInvoiceDraft = SessionStorageService.get('b2CInvoiceDraft');
 
   const router = useRouter();
@@ -62,6 +66,7 @@ const CreateB2CInvoice = ({
     productType: b2CInvoiceDraft?.itemDraft?.productType || '',
     productId: b2CInvoiceDraft?.itemDraft?.productId || null,
     quantity: b2CInvoiceDraft?.itemDraft?.quantity || null,
+    unitId: b2CInvoiceDraft?.itemDraft?.unitId || null,
     unitPrice: b2CInvoiceDraft?.itemDraft?.unitPrice || null,
     gstPerUnit: b2CInvoiceDraft?.itemDraft?.gstPerUnit || null,
     totalAmount: b2CInvoiceDraft?.itemDraft?.totalAmount || null,
@@ -83,6 +88,14 @@ const CreateB2CInvoice = ({
     socialLinks: b2CInvoiceDraft?.socialLinks || null,
     remarks: b2CInvoiceDraft?.remarks || null,
     pin: b2CInvoiceDraft?.pin || null,
+  });
+
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
   });
 
   // save draft to session storage
@@ -233,10 +246,10 @@ const CreateB2CInvoice = ({
       value: 'GOODS',
       label: translations('form.input.item_type.goods'),
     },
-    {
-      value: 'SERVICE',
-      label: translations('form.input.item_type.services'),
-    },
+    // {
+    //   value: 'SERVICE',
+    //   label: translations('form.input.item_type.services'),
+    // },
   ];
 
   // Items fetching
@@ -360,7 +373,7 @@ const CreateB2CInvoice = ({
         translations('form.successMsg.invoice_created_successfully'),
       );
       SessionStorageService.remove('b2CInvoiceDraft');
-      router.push(`/sales/sales-invoices/${res.data.data.id}`);
+      router.push(`/dashboard/sales/sales-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -744,14 +757,10 @@ const CreateB2CInvoice = ({
 
             {/* Quantity */}
             <div className="flex flex-col gap-2">
-              <Label className="flex gap-1">
-                {translations('form.label.quantity')}
-                <span className="text-red-600">*</span>
-              </Label>
-              <Input
-                type="number"
-                step={1}
-                min={1}
+              <InputWithSelect
+                id="quantity"
+                name={translations('form.label.quantity')}
+                required={true}
                 disabled={
                   (cta === 'offer' && order.buyerId == null) ||
                   order.sellerEnterpriseId == null
@@ -761,7 +770,7 @@ const CreateB2CInvoice = ({
                     ? ''
                     : selectedItem.quantity
                 }
-                onChange={(e) => {
+                onValueChange={(e) => {
                   const inputValue = e.target.value;
 
                   // Allow user to clear input
@@ -775,12 +784,11 @@ const CreateB2CInvoice = ({
                     return;
                   }
 
-                  // Reject if not a positive integer
-                  if (!/^\d+$/.test(inputValue)) return;
-
+                  // Prevent non-integer or negative input
                   const value = Number(inputValue);
 
-                  if (value < 1) return;
+                  // Reject if not a positive integer
+                  if (!/^\d+$/.test(inputValue) || value < 1) return;
 
                   const totalAmt = parseFloat(
                     (value * selectedItem.unitPrice).toFixed(2),
@@ -789,27 +797,37 @@ const CreateB2CInvoice = ({
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
                   );
 
-                  setSelectedItem((prev) => ({
-                    ...prev,
+                  const updatedItem = {
+                    ...selectedItem,
                     quantity: value,
                     totalAmount: totalAmt,
                     totalGstAmount: gstAmt,
-                  }));
+                  };
+                  setSelectedItem(updatedItem);
 
                   saveDraftToSession({
                     key: 'b2CInvoiceDraft',
                     data: {
                       ...order,
-                      itemDraft: {
-                        ...selectedItem,
-                        quantity: value,
-                        totalAmount: totalAmt,
-                        totalGstAmount: gstAmt,
-                      },
+                      itemDraft: updatedItem,
                     },
                   });
                 }}
-                className="max-w-30"
+                unit={selectedItem.unitId} // unitId from state
+                onUnitChange={(val) => {
+                  setSelectedItem((prev) => {
+                    const updated = { ...prev, unitId: Number(val) }; // store ID
+                    saveDraftToSession({
+                      key: 'b2CInvoiceDraft',
+                      data: {
+                        ...order,
+                        itemDraft: updated,
+                      },
+                    });
+                    return updated;
+                  });
+                }}
+                units={units?.quantity} // pass the full object list
               />
 
               {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}

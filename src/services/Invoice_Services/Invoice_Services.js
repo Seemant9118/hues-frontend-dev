@@ -24,8 +24,8 @@ export const invoiceGenerateOTP = () => {
   return APIinstance.post(invoiceApi.generateOTPInvoice.endpoint);
 };
 
-export const createInvoiceForNewOrder = (data) => {
-  return APIinstance.post(invoiceApi.createInvoiceForNewOrder.endpoint, data);
+export const withDrawOrder = (data) => {
+  return APIinstance.put(invoiceApi.withDrawOrder.endpoint, data);
 };
 
 export const getAllSalesInvoices = ({ id, data }) => {
@@ -42,12 +42,26 @@ export const getAllPurchaseInvoices = ({ id, data }) => {
   );
 };
 
-export const exportInvoice = (data) => {
-  return APIinstance.post(invoiceApi.exportInvoice.endpoint, data, {
+export const exportSelectedInvoice = (data) => {
+  return APIinstance.post(invoiceApi.exportSelectedInvoice.endpoint, data, {
     responseType: 'blob', // Specify response type here
   });
 };
 
+export const exportAllInvoice = ({ type, body }) => {
+  return APIinstance.post(
+    `${invoiceApi.exportAllInvoices.endpoint}?context=${type}`,
+    body,
+    {
+      responseType: 'blob', // Specify response type here
+    },
+  );
+};
+
 export const previewDirectInvoice = (data) => {
   return APIinstance.post(invoiceApi.previewDirectInvoice.endpoint, data);
+};
+
+export const acceptOrder = (data) => {
+  return APIinstance.put(invoiceApi.acceptOrder.endpoint, data);
 };

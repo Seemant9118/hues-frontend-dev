@@ -3,31 +3,34 @@
         "purchase-orders": {
             "title": "Purchases",
             "emptyStateComponent": {
-                "heading": "Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring transparency and ease.",
+                "heading": "Get your purchases in sync—from bids to invoices, all in one flow",
                 "subItems": {
                     "subItem1": {
-                        "value": "Engage vendors with bids or receive offers on a unified platform."
+                        "value": "Send bids or get offers—connect with vendors in one simple space"
                     },
                     "subItem2": {
-                        "value": "Securely negotiate and finalize purchases with digital signatures."
+                        "value": "Negotiate and seal deals with ease—digital signatures keep it secure"
                     },
                     "subItem3": {
-                        "value": "Generate and organize invoices automatically or manually for precise tracking."
+                        "value": "Auto-generate or upload invoices—track everything your way"
                     },
                     "subItem4": {
-                        "value": "Streamline internal and external financial processes with easy payment advice."
+                        "value": "Simplify your payables—smart payment advice included"
                     }
                 }
             },
             "ctas": {
                 "export": {
-                    "placeholder": "Export Selected Order",
-                    "successMsg": "Order exported and download starts automatically",
-                    "errorMsg": "Something went wrong"
+                    "placeholder": "Download Selected Order(s)",
+                    "successMsg": "Order exported—your download’s starting now",
+                    "errorMsg": "Uh-oh, we hit a snag Retry ?"
                 },
                 "bid": {
                     "cta": "Bid",
-                    "placeholder": "Create a new Purchase Order"
+                    "placeholder": "Create a new purchase order"
+                },
+                 "search": {
+                    "placeholder": "Search by Vendor..."
                 }
             },
             "tabs": {
@@ -42,56 +45,57 @@
             },
             "table": {
                 "header": {
-                    "purchase_id": "PURCHASE ID",
-                    "date": "DATE",
-                    "vendors": "VENDORS",
-                    "status": "STATUS",
-                    "total_amount": "TOTAL AMOUNT"
+                    "purchase_id": "Purchase ID",
+                    "date": "Date",
+                    "vendors": "Vendor",
+                    "status": "Status",
+                    "total_amount": "Total Amount"
                 },
                 "column_actions": {
                     "revise": {
                         "cta": "Revise",
-                        "successMsg": "Revised Successfully"
+                        "successMsg": "Changes saved"
                     },
                     "delete": {
                         "cta": "Delete",
                         "cancel": "Cancel",
-                        "successMsg": "Deleted Successfully",
-                        "infoText": "You are removing this offer {orderId}"
+                        "successMsg": "Order deleted",
+                        "infoText": "You're about to remove offer {orderId}"
                     }
                 }
             },
             "order_details": {
                 "title": {
                     "purchases": "Purchases",
-                    "order_details": "Order Details",
-                    "negotiation": "Negotiation",
+                    "order_details": "Order details",
+                    "negotiation": "Review",
                     "invoices": "Invoices",
-                    "payment_advice": "Payment Advice",
-                    "upload_attachements": "Upload Attachements"
+                    "payment_advice": "Payment advise",
+                    "upload_attachements": "Upload Documents"
                 },
                 "ctas": {
-                    "upload_attachements": "Upload Attachements",
-                    "payment_advice": "Send Payment advice",
-                    "generate_invoice": "Generate Invoice",
+                    "upload_attachements": "Upload Documents",
+                    "payment_advice": "Send Payment Advise",
+                    "generate_invoice": "Invoice",
+                    "stock-in":"Stock in",
                     "view": {
-                        "placeholder": "Preview order"
+                        "placeholder": "Preview Order"
                     },
                     "more": {
-                        "placeholder": "More options",
+                        "placeholder": "More Options",
                         "revise": "Revise"
                     },
                     "footer_ctas": {
-                        "wait_response": "Waiting for Response",
-                        "negotiate": "Negotiate",
+                        "wait_response": "Awaiting response",
+                        "negotiate": "Review",
                         "accept": "Accept"
                     }
                 },
                 "fileUploader": {
                     "instruction": "Drag & Drop or Select a File (Max 10MB, .png / .pdf Formats)",
-                    "note": "Note - Upload attachments only",
-                    "attachedFilesLabel": "Attached files",
-                    "fileAttachedMessage": "Successfully attached",
+                    "note": "Note: Upload files only—no text or extras",
+                    "attachedFilesLabel": "Attached Documents",
+                    "fileAttachedMessage": "All set – file attached",
                     "buttons": {
                         "select": "Select",
                         "cancel": "Cancel",
@@ -109,54 +113,60 @@
                         "tab1": {
                             "table": {
                                 "header": {
-                                    "item": "ITEM",
-                                    "invoice_quantity": "INVOICE/QUANTITY",
-                                    "quantity": "QUANTITY",
-                                    "ask_rate": "ASKING RATE",
-                                    "total_amount": "TOTAL AMOUNT"
+                                    "item": "Item",
+                                    "invoice_quantity": "Invoice/Quantity",
+                                    "quantity": "Quantity",
+                                    "ask_rate": "Asking Rate",
+                                    "total_amount": "Total amount"
                                 }
                             }
                         },
                         "tab4": {
-                            "coming_soon": "Timeline here. Coming Soon..."
+                            "coming_soon": "Coming Soon..."
                         }
                     }
                 },
                 "successMsg": {
-                    "order_accepted": "Order Accepted"
+                    "order_accepted": "Order accepted",
+                    "stock_in": "Stock in successfully"
                 },
                 "errorMsg": {
-                    "common": "Something went wrong"
+                    "common": "Uh-oh, we hit a snag. Retry?"
                 }
             }
         },
         "purchase-invoices": {
             "title": "Invoices",
             "emptyStateComponent": {
-                "heading": "Simplify purchasing: from bids to invoices with digital negotiations and signatures, ensuring transparency and ease.",
+                "heading": "Get your purchases in sync—from bids to invoices, all in one flow",
                 "subItems": {
                     "subItem1": {
-                        "value": "Engage vendors with bids or receive offers on a unified platform."
+                        "value": "Send bids or get offers—connect with vendors in one simple space"
                     },
                     "subItem2": {
-                        "value": "Securely negotiate and finalize purchases with digital signatures."
+                        "value": "Negotiate and seal deals with ease—digital signatures keep it secure"
                     },
                     "subItem3": {
-                        "value": "Generate and organize invoices automatically or manually for precise tracking."
+                        "value": "Auto-generate or upload invoices—track everything your way."
                     },
                     "subItem4": {
-                        "value": "Streamline internal and external financial processes with easy payment advice."
+                        "value": "Simplify your payables—smart payment advice included"
                     }
                 }
             },
             "emptyStateComponent2": {
-                "heading": "No Debit Notes Raised"
+                "heading": "You have no debit notes"
             },
             "ctas": {
                 "export": {
-                    "placeholder": "Export Selected Invoice",
-                    "successMsg": "Invoice exported and download starts automatically",
-                    "errorMsg": "Something went wrong"
+                    "cta": "Export",
+                    "placeholder": "Download All Invoice(s)",
+                    "placeholder2": "Download selected invoices",
+                    "successMsg": "Invoice exported—your download’s starting now",
+                    "errorMsg": "Uh-oh, we hit a snag. Retry?"
+                },
+                 "search": {
+                    "placeholder": "Search by Vendor..."
                 }
             },
             "tabs": {
@@ -168,27 +178,27 @@
             },
             "table": {
                 "header": {
-                    "invoice_id": "INVOICE ID",
-                    "date": "DATE",
-                    "vendors": "VENDORS",
-                    "order_id": "ORDER ID",
-                    "status": "STATUS",
-                    "total_amount": "TOTAL AMOUNT"
+                    "invoice_id": "Invoice ID",
+                    "date": "Date",
+                    "vendors": "Vendor",
+                    "order_id": "Order ID",
+                    "status": "Status",
+                    "total_amount": "Total amount"
                 }
             },
             "invoice_details": {
                 "title": {
                     "invoices": "Invoices",
-                    "invoice_details": "Invoice Details",
-                    "payment_advice": "Payment Advice"
+                    "invoice_details": "Invoice details",
+                    "payment_advice": "Payment advice"
                 },
                 "ctas": {
-                    "payment_advice": "Send Payment advice",
+                    "payment_advice": "Send payment advice",
                     "share": {
-                        "placeholder": "Coming Soon.."
+                        "placeholder": "Coming Soon"
                     },
                     "download": {
-                        "placeholder": "Download Order Details"
+                        "placeholder": "Download your order details"
                     }
                 },
                 "tabs": {
@@ -204,7 +214,7 @@
                                     "item": "Item",
                                     "quantity": "Quantity",
                                     "rate": "Rate",
-                                    "total_amount": "Total Amount"
+                                    "total_amount": "Total amount"
                                 }
                             }
                         },
@@ -218,8 +228,8 @@
                                 }
                             },
                             "emtpyStateComponent": {
-                                "title": "No payments yet",
-                                "para": "You haven't made any payments yet. Start by generating your first payment to keep track of your transactions."
+                                "title": "No payments logged",
+                                "para": "Haven’t made a payment yet? Kick things off to start tracking"
                             }
                         },
                         "tab3": {
@@ -231,8 +241,8 @@
                                 "reason": "Reason"
                             },
                             "emtpyStateComponent": {
-                                "title": "No debit notes raised yet",
-                                "para": "You haven't any debit notes yet."
+                                "title": "No debit notes yet",
+                                "para": "Looks like you haven’t added any debit notes yet"
                             }
                         }
                     }
@@ -241,47 +251,47 @@
         },
         "purchase-payments": {
             "title": "Payments",
-            "title2": "Create a new payment advice",
+            "title2": "Add a payment advice",
             "emptyStateComponent": {
-                "heading": "No Payments yet",
-                "description": "You don’t have payment yet. Start by clicking on the Create Payment Advice button"
+                "heading": "No payments yet",
+                "description": "You haven’t added a payment advice yet. Tap 'Create Payment Advice' to get started."
             },
             "ctas": {
                 "export": {
-                    "placeholder": "Export Selected Payments",
-                    "successMsg": "Payments exported and download starts automatically",
-                    "errorMsg": "Something went wrong"
+                    "placeholder": "Export selected payments",
+                    "successMsg": "Payment exported—your download’s starting now",
+                    "errorMsg": "Uh-oh, we hit a snag. Retry?"
                 },
                 "create_payment_advice": {
-                    "cta": "Create Payment Advice",
-                    "placeholder": "Create Payment Advice"
+                    "cta": "Create payment advice",
+                    "placeholder": "Create payment advice"
                 }
             },
             "section": {
                 "table": {
                     "header": {
-                        "payment_id": "PAYMENT ID",
-                        "vendor_name": "VENDOR NAME",
-                        "invoice_id": "INVOICE ID",
-                        "total_amount": "TOTAL AMOUNT",
-                        "amount_paid": "AMOUNT PAID",
-                        "mode_of_payment": "MODE OF PAYMENT",
-                        "payment_date": "PAYMENT DATE",
-                        "status": "STATUS"
+                        "payment_id": "Payment ID",
+                        "vendor_name": "Vendor Name",
+                        "invoice_id": "Invoice ID",
+                        "total_amount": "Purchase Amount",
+                        "amount_paid": "Purchase Paid",
+                        "mode_of_payment": "Mode of Payment",
+                        "payment_date": "Purchase Date",
+                        "status": "Status"
                     }
                 }
             }
         },
         "purchase-debit_notes": {
-            "title": "Debit Notes",
+            "title": "Debit notes",
             "emptyStateComponent": {
-                "heading": "No Debit Notes Raised"
+                "heading": "No Debit Notes yet"
             },
             "ctas": {
                 "export": {
                     "placeholder": "Export Selected Debit Notes",
-                    "successMsg": "Debit Note exported and download starts automatically",
-                    "errorMsg": "Something went wrong"
+                    "successMsg": "Debit note exported—your download’s starting now",
+                    "errorMsg": "Uh-oh, we hit a snag. Retry?"
                 }
             },
             "tabs": {
@@ -293,33 +303,33 @@
             },
             "table": {
                 "header": {
-                    "invoice_id": "INVOICE ID",
-                    "date": "DATE",
-                    "vendors": "VENDORS",
-                    "total_amount": "TOTAL AMOUNT",
-                    "status": "STATUS"
+                    "invoice_id": "Invoice ID",
+                    "date": "Date",
+                    "vendors": "Vendors",
+                    "total_amount": "Total Amount",
+                    "status": "Status"
                 }
             },
             "debit_notes_details": {
                 "title": {
-                    "debit_notes": "Debit Notes",
-                    "debit_note_details": "Debit Note Details"
+                    "debit_notes": "Debit notes",
+                    "debit_note_details": "Debit note details"
                 },
                 "label": {
                     "date": "Date",
-                    "total_amount": "Total Amount",
+                    "total_amount": "Total amount",
                     "type": "Type",
                     "reason": "Reason"
                 },
                 "emtpyStateComponent": {
-                    "title": "No debit notes raised yet",
-                    "para": "You haven't any debit notes yet."
+                    "title": "No debit notes logged",
+                    "para": "You have no debit notes"
                 },
                 "comments": {
                     "title": "Comments",
-                    "attached_files_heading": "Attached Files",
+                    "attached_files_heading": "All set – file attached",
                     "input": {
-                        "placeholder": "Type your comment here..."
+                        "placeholder": "Leave a comment"
                     },
                     "ctas": {
                         "attach_file": {
@@ -330,17 +340,17 @@
                         }
                     },
                     "emtpyStateComponent": {
-                        "title": "No Comments yet",
-                        "para": "Say Something to start the conversation"
+                        "title": "All quiet here",
+                        "para": "Break the silence, drop a comment"
                     }
                 },
                 "successMsg": {
-                    "file_attached_success": "File Attached Successfully",
-                    "comment_success": "Comment Successfully"
+                    "file_attached_success": "All set – file attached",
+                    "comment_success": "Comment posted!"
                 },
                 "errorMsg": {
-                    "comment_error_emtpy": "Comment can not be empty",
-                    "common": "Something went wrong"
+                    "comment_error_emtpy": "Can’t post a blank comment",
+                    "common": "Uh-oh, we hit a snag. Retry?"
                 },
                 "ctas": {
                     "accept": "Accept",

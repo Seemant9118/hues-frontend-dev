@@ -26,7 +26,9 @@ const StyledLinks = ({ link }) => {
     link.subTab?.some((subtab) => pathname.startsWith(subtab.path));
 
   const isMainTabActive =
-    link.path === '/' ? pathname === '/' : pathname.startsWith(link.path);
+    link.path === '/dashboard'
+      ? pathname === '/dashboard'
+      : pathname.startsWith(link.path);
 
   const isSubTabActive = link.subTab?.some((subtab) =>
     pathname.startsWith(subtab.path),

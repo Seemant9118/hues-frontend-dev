@@ -39,7 +39,7 @@ const AuthProgress = ({ isCurrAuthStep }) => {
       id: 2,
       icon: <User size={14} />,
       title: translations('step2'),
-      isCurr: isCurrAuthStep === 'isAadharVerificationStep',
+      isCurr: isCurrAuthStep === 'isAadhaarVerificationStep',
       isDone: authProgress.isAadhaarVerified,
     },
     {

@@ -2,32 +2,65 @@
     "dashboard": {
         "title": "Dashboard",
         "invites": {
-            "prompt": "You have {count} invites pending.",
-            "actionPrompt": "Please take action",
-            "viewInvitesText": "View invites",
-            "invitesTitle": "Pending Invites",
-            "invitesDetails": "wants to add you as their {type}",
-            "handleAcceptCta": "Accept",
-            "handleRejectCta": "Reject",
+            "prompt": {
+                "one": "Heads up! {count} invite pending",
+                "other": "Heads up! {count} invites pending"
+            },
+            "actionPrompt": "Review and respond",
+            "viewInvitesText": "Invites inbox",
+            "invitesTitle": "Invites To Review",
+            "invitesDetails": "would like to add you as their {type}",
+            "handleAcceptCta": "Accept request",
+            "handleRejectCta": "Reject request",
             "messages": {
-                "reject": "Invitaion Rejected",
-                "accept": "Invitation Accepted"
+                "reject": "The invitation was declined",
+                "accept": "The invitation was approved"
+            }
+        },
+        "analytics": {
+            "sales": "Sales",
+            "purchase": "Purchases",
+            "average": "Average",
+            "bar-lines": {
+                "sales": "Sales",
+                "purchase": "Purchase"
+            },
+            "tabConfigs": {
+                "sales": {
+                    "labels": {
+                        "receipts": "Receipts",
+                        "receivables": "Receivables",
+                        "overdue": "Overdue"
+                    }
+                },
+                "purchase": {
+                    "labels": {
+                        "payments": "Payments",
+                        "payable": "Payable",
+                        "overdue": "Overdue"
+                    }
+                }
+            },
+            "granularity": {
+                "DAILY": "Daily",
+                "WEEKLY": "Weekly",
+                "MONTHLY": "Monthly"
             }
         },
         "emptyStateComponent": {
-            "heading": "Seamlessly monitor financial health and compliance with an integrated, real-time dashboard",
+            "heading": "Effortlessly track financial health and compliance through your integrated, real-time dashboard.",
             "subItems": {
                 "subItem1": {
-                    "value": "Safely integrate data with secure login and automatic API access."
+                    "value": "Securely integrate your data with login protection and seamless API connectivity."
                 },
                 "subItem2": {
-                    "value": "Access real-time financial status for strategic decision-making"
+                    "value": "Access up-to-date financial insights to drive confident, strategic decisions"
                 },
                 "subItem3": {
-                    "value": "Ensure regulatory compliance with automatic notification monitoring."
+                    "value": "Stay compliant with smart alerts and automated regulation tracking."
                 },
                 "subItem4": {
-                    "value": "Inform strategies with comprehensive dashboard data for competitive edge"
+                    "value": "Drive smarter strategies with rich dashboard insights for a competitive edge."
                 }
             }
         }

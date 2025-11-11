@@ -1,81 +1,115 @@
 'use client';
 
-import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
+import { useAuthProgress } from '@/context/AuthProgressContext';
 import { UserProvider } from '@/context/UserContext';
-import { sentAadharOTP } from '@/services/User_Auth_Service/UserAuthServices';
+import { useUserData } from '@/context/UserDataContext';
+import { LocalStorageService } from '@/lib/utils';
+import {
+  userUpdate,
+  validateAadharNumber,
+} from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AadharNumberDetail from '../../multi-step-forms/aadharVerificationComponents/AadharNumberDetail';
-import AadharVerifyOTP from '../../multi-step-forms/aadharVerificationComponents/AadharVerifyOTP';
 
 const AadharVerificationPage = () => {
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const translations = useTranslations('auth.aadharVerification');
-  const [aadharVerificationSteps, setAadharVerificationSteps] = useState(1);
+  // context
+  const { updateAuthProgress } = useAuthProgress();
+  const { userData } = useUserData();
+  const router = useRouter();
+  const [enterpriseDetails, setEnterpriseDetails] = useState(null);
   const [aadharNumber, setAadharNumber] = useState('');
-  const [verifyOTPdata, setVerifyOTPdata] = useState({
-    tranId: '',
-    aadhaar: '',
-    otp: '',
-  });
-  const [startFrom, setStartFrom] = useState(59);
+  const [loading, setLoading] = useState(false);
 
-  // Keep verifyOTPdata.aadhar updated with the latest aadharNumber
   useEffect(() => {
-    setVerifyOTPdata((prev) => ({
-      ...prev,
-      aadhaar: aadharNumber,
-    }));
-  }, [aadharNumber]);
+    setEnterpriseDetails(
+      LocalStorageService.get('enterpriseDetails') || userData,
+    );
+  }, []);
 
-  const sendAadharOTPMutation = useMutation({
-    mutationKey: [userAuth.sendAadharVerificationOTP.endpointKey],
-    mutationFn: sentAadharOTP,
+  // user update mutation
+  const userUpdateMutation = useMutation({
+    mutationFn: (data) => userUpdate(data),
     onSuccess: (data) => {
-      if (data) {
-        toast.success(translations('toast.otp_sent_success'));
-        setStartFrom(59);
-        setVerifyOTPdata((prev) => ({
-          ...prev,
-          tranId: data?.data?.data?.data?.tran_id,
-        }));
-        setAadharVerificationSteps(2); // move to next step - verify oTP
-      } else {
-        toast.info(translations('toast.server_not_responding'));
-      }
+      LocalStorageService.set(
+        'isOnboardingComplete',
+        data?.data?.data?.user?.isOnboardingComplete,
+      );
+      LocalStorageService.set(
+        'isPanVerified',
+        data?.data?.data?.user?.isPanVerified,
+      );
+      LocalStorageService.set(
+        'isAadhaarVerified',
+        data?.data?.data?.user?.isAadhaarVerified,
+      );
+      LocalStorageService.set(
+        'isEmailVerified',
+        data?.data?.data?.user?.isEmailVerified,
+      );
+      LocalStorageService.set(
+        'isEnterpriseOnboardingComplete',
+        data?.data?.data?.user?.isEnterpriseOnboardingComplete,
+      );
+
+      LocalStorageService.remove('enterpriseDetails');
     },
     onError: (error) => {
       toast.error(
         error.response.data.message || translations('toast.generic_error'),
       );
     },
+    retry: (failureCount, error) => {
+      return error.response.status === 401;
+    },
   });
+
+  const validateAadharAndUpdateUser = async (e) => {
+    e.preventDefault();
+    setLoading(true); // Enable loading state
+
+    try {
+      const response = await validateAadharNumber({
+        aadhaar: aadharNumber,
+      });
+
+      if (response?.status === 201) {
+        // Ensure the response indicates success
+        toast.success(
+          translations('steps.verifyAadharNum.success.otp_verified'),
+        );
+
+        await userUpdateMutation.mutateAsync(enterpriseDetails); // Await the mutation if needed
+        router.push('/login/user/confirmation');
+        updateAuthProgress('isAadhaarVerified', true);
+      } else {
+        const customError = apiErrorHandler(response.error);
+        toast.error(translationsAPIErrors(customError));
+      }
+    } catch (error) {
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
+    } finally {
+      setLoading(false); // Disable loading state
+    }
+  };
 
   return (
     <UserProvider>
       <div className="flex h-full flex-col items-center pt-20">
-        {aadharVerificationSteps === 1 && (
-          <AadharNumberDetail
-            aadharNumber={aadharNumber}
-            setAadharNumber={setAadharNumber}
-            sendAadharOTPMutation={sendAadharOTPMutation}
-            translations={translations}
-          />
-        )}
-
-        {aadharVerificationSteps === 2 && (
-          <AadharVerifyOTP
-            aadharNumber={aadharNumber}
-            verifyOTPdata={verifyOTPdata}
-            setVerifyOTPdata={setVerifyOTPdata}
-            sendAadharOTPMutation={sendAadharOTPMutation}
-            startFrom={startFrom}
-            setStartFrom={setStartFrom}
-            translations={translations}
-            setAadharVerificationSteps={setAadharVerificationSteps}
-          />
-        )}
+        <AadharNumberDetail
+          aadharNumber={aadharNumber}
+          setAadharNumber={setAadharNumber}
+          loading={loading}
+          validateAadharAndUpdateUser={validateAadharAndUpdateUser}
+          translations={translations}
+        />
       </div>
     </UserProvider>
   );

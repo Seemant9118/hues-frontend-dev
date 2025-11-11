@@ -1,12 +1,12 @@
 'use client';
 
 import { notificationApi } from '@/api/notifications/notificationApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { LocalStorageService } from '@/lib/utils';
 import {
   getNotifications,
   updateNotification,
@@ -22,7 +22,7 @@ import { Button } from '../ui/button';
 function NotificationPopUp() {
   const pathName = usePathname();
   const router = useRouter();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
   // State to manage visibility of read notifications
@@ -280,7 +280,7 @@ function NotificationPopUp() {
                 className="cursor-pointer text-center text-blue-400 underline"
                 onClick={() => {
                   setOpen(!open);
-                  router.push('/notification');
+                  router.push('/dashboard/notification');
                 }}
               >
                 See more

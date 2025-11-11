@@ -53,65 +53,75 @@ export default function NegotiationHistory({ orderId }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {negotiationData?.map((entry, index) => (
-            <React.Fragment key={`summary-${index}`}>
-              <TableRow
-                className="cursor-pointer"
-                onClick={() => toggleRow(index)}
-              >
-                <TableCell className="w-10">
-                  {entry.data.length > 0 ? (
-                    expandedRows.includes(index) ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )
-                  ) : null}
-                </TableCell>
-                <TableCell>{capitalize(entry.negotiatedBy)}</TableCell>
-                <TableCell>{`${entry.time} | ${entry.date}`}</TableCell>
-                <TableCell>{formattedAmount(entry.totalAmount)}</TableCell>
-              </TableRow>
-
-              {expandedRows.includes(index) && entry.data.length > 0 && (
-                <TableRow>
-                  <TableCell />
-                  <TableCell colSpan={3} className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs font-bold text-black">
-                            Order ID
-                          </TableHead>
-                          <TableHead className="text-xs font-bold text-black">
-                            Quantity
-                          </TableHead>
-                          <TableHead className="text-xs font-bold text-black">
-                            Unit Price
-                          </TableHead>
-                          <TableHead className="text-xs font-bold text-black">
-                            Total
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {entry.data.map((item, i) => (
-                          <TableRow key={`item-${index}-${i}`}>
-                            <TableCell>{item.orderId}</TableCell>
-                            <TableCell>{item.quantity}</TableCell>
-                            <TableCell>
-                              {formattedAmount(item.unitPrice)}
-                            </TableCell>
-                            <TableCell>{formattedAmount(item.price)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+          {negotiationData?.length > 0 &&
+            negotiationData?.map((entry, index) => (
+              <React.Fragment key={`summary-${index}`}>
+                <TableRow
+                  className="cursor-pointer"
+                  onClick={() => toggleRow(index)}
+                >
+                  <TableCell className="w-10">
+                    {entry.data.length > 0 ? (
+                      expandedRows.includes(index) ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )
+                    ) : null}
                   </TableCell>
+                  <TableCell>{capitalize(entry.negotiatedBy)}</TableCell>
+                  <TableCell>{`${entry.time} | ${entry.date}`}</TableCell>
+                  <TableCell>{formattedAmount(entry.totalAmount)}</TableCell>
                 </TableRow>
-              )}
-            </React.Fragment>
-          ))}
+
+                {expandedRows.includes(index) && entry.data.length > 0 && (
+                  <TableRow>
+                    <TableCell />
+                    <TableCell colSpan={3} className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-xs font-bold text-black">
+                              Order ID
+                            </TableHead>
+                            <TableHead className="text-xs font-bold text-black">
+                              Quantity
+                            </TableHead>
+                            <TableHead className="text-xs font-bold text-black">
+                              Unit Price
+                            </TableHead>
+                            <TableHead className="text-xs font-bold text-black">
+                              Total
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {entry.data.map((item, i) => (
+                            <TableRow key={`item-${index}-${i}`}>
+                              <TableCell>{item.orderId}</TableCell>
+                              <TableCell>{item.quantity}</TableCell>
+                              <TableCell>
+                                {formattedAmount(item.unitPrice)}
+                              </TableCell>
+                              <TableCell>
+                                {formattedAmount(item.price)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
+            ))}
+          {negotiationData?.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center">
+                No negotiation history available.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

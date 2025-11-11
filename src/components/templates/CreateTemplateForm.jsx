@@ -1,4 +1,5 @@
 import { templateApi } from '@/api/templates_api/template_api';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { LocalStorageService } from '@/lib/utils';
 import {
   getDocument,
@@ -37,7 +38,7 @@ const CreateTemplateForm = ({ url, id }) => {
 
   const { mutate } = useMutation({
     mutationFn: ({ signatureData, formData }) => {
-      const enterpriseId = LocalStorageService.get('enterprise_Id');
+      const enterpriseId = getEnterpriseId();
       const userId = LocalStorageService.get('user_profile');
       return updateTemplate(
         {

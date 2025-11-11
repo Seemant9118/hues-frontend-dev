@@ -70,6 +70,13 @@ export const updateOrder = (id, data) => {
   return APIinstance.post(`${orderApi.updateOrder.endpoint}${id}`, data);
 };
 
+export const updateOrderForUnrepliedSales = (data) => {
+  return APIinstance.put(
+    `${orderApi.updateOrderForUnrepliedSales.endpoint}`,
+    data,
+  );
+};
+
 export const exportOrder = (data) => {
   return APIinstance.post(orderApi.exportOrder.endpoint, data, {
     responseType: 'blob', // Specify response type here
@@ -123,4 +130,8 @@ export const viewOrderinNewTab = async (id) => {
   } catch (error) {
     toast.error('Error fetching Order PDF');
   }
+};
+
+export const remindOrder = (id) => {
+  return APIinstance.post(`${orderApi.remindOrder.endpoint}${id}`);
 };

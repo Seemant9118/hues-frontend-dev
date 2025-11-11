@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,6 +19,7 @@ import { toast } from 'sonner';
 
 const UdyamVerify = () => {
   const translations = useTranslations('auth.enterprise.udyamVerify');
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const router = useRouter();
   const type = LocalStorageService.get('type');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -57,7 +59,8 @@ const UdyamVerify = () => {
       router.push('/login/enterprise/enterprise-verification-details');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || translations('toast.error'));
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 

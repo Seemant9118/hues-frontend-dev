@@ -1,0 +1,40 @@
+{
+  "members": {
+    "pageTitle": "Hues! - Members",
+    "header": "Members",
+    "exportTooltip": "Export feature coming soon...",
+    "empty": {
+      "title": "No Members Invited yet",
+      "description": "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
+    },
+    "tableColumns": {
+      "name": "NAME",
+      "joiningDate": "JOINING DATE",
+      "phoneNumber": "PHONE NUMBER",
+      "emailId": "EMAIL ID",
+      "role": "ROLE",
+      "invitation": "INVITATION STATUS",
+      "statuses": {
+        "pending": "Pending",
+        "rejected": "Rejected",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions" : {
+        "edit": "Edit",
+        "share": "Share Invitation Link",
+        "inactive": "Make Inactive",
+        "active": "Make Active"
+      }
+    },
+    "success": {
+      "linkCopied": "Link copied to clipboard successfully!",
+      "userInactiveSuccess": "User made inactive successfully!"
+    },
+    "errors": {
+      "fetchFailed": "Something went wrong while fetching data",
+      "generateLinkFailed": "Failed to generate link",
+      "commonError": "Something went wrong"
+    }
+  }
+}

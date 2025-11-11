@@ -1,3 +1,6 @@
+// NOT IN USE CURRENTLY BUT MAY BE USED LATER
+
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -12,6 +15,7 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { OTPInput } from 'input-otp';
 import { ArrowLeft, Clock5 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -28,6 +32,7 @@ const AadharVerifyOTP = ({
   translations,
   setAadharVerificationSteps,
 }) => {
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const router = useRouter();
   const { updateAuthProgress } = useAuthProgress();
   const { userData } = useUserData(); // context
@@ -110,12 +115,12 @@ const AadharVerifyOTP = ({
         updateAuthProgress('isAadhaarVerified', true);
         router.push('/login/user/confirmation');
       } else {
-        toast.error(translations('steps.verifyAadhaNum.error.otp_failed'));
+        const customError = apiErrorHandler(response.error);
+        toast.error(translationsAPIErrors(customError));
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || translations('toast.generic_error');
-      toast.error(errorMessage);
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     } finally {
       setLoading(false); // Disable loading state
     }

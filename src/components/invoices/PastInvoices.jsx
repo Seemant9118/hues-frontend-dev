@@ -14,6 +14,7 @@ import emptyImg from '../../../public/Empty.png';
 import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
+import { ProtectedWrapper } from '../wrappers/ProtectedWrapper';
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const translations = useTranslations('components.past_invoices');
@@ -38,9 +39,9 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   // redirect to invoice details page
   function invoiceDetailsPage(invoiceId) {
     if (isPurchasesPage) {
-      router.push(`/purchases/purchase-invoices/${invoiceId}`);
+      router.push(`/dashboard/purchases/purchase-invoices/${invoiceId}`);
     } else {
-      router.push(`/sales/sales-invoices/${invoiceId}`);
+      router.push(`/dashboard/sales/sales-invoices/${invoiceId}`);
     }
   }
 
@@ -112,22 +113,30 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
             <p className="font-bold">
               {translations('emptyStateComponent.title')}
             </p>
-            <p className="max-w-96 text-center">
-              {translations('emptyStateComponent.para')}
-            </p>
+            <ProtectedWrapper
+              permissionCode={'permission:sales-invoice-create'}
+            >
+              <p className="max-w-96 text-center">
+                {translations('emptyStateComponent.para')}
+              </p>
+            </ProtectedWrapper>
 
             {!isPurchasesPage &&
               !orderDetails?.invoiceGenerationCompleted &&
               (orderDetails.negotiationStatus === 'ACCEPTED' ||
                 (orderDetails.negotiationStatus === 'NEW' &&
                   orderDetails?.orderType === 'SALES')) && (
-                <Button
-                  size="sm"
-                  className="bg-[#288AF9]"
-                  onClick={() => setIsGenerateInvoice(true)}
+                <ProtectedWrapper
+                  permissionCode={'permission:sales-invoice-create'}
                 >
-                  {translations('emptyStateComponent.ctas.generate_invoice')}
-                </Button>
+                  <Button
+                    size="sm"
+                    className="bg-[#288AF9]"
+                    onClick={() => setIsGenerateInvoice(true)}
+                  >
+                    {translations('emptyStateComponent.ctas.generate_invoice')}
+                  </Button>
+                </ProtectedWrapper>
               )}
           </div>
         )}

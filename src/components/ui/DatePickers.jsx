@@ -10,12 +10,14 @@ export default function DatePickers({
   dateFormat,
   popperPlacement,
   placeholderText,
+  isExpiryField = false,
 }) {
   // const [startDate, setStartDate] = useState('');
-  const years = Array.from(
-    { length: new Date().getFullYear() - 1949 },
-    (_, i) => 1950 + i,
-  );
+  const currentYear = new Date().getFullYear();
+  const maxYear = isExpiryField ? currentYear + 50 : currentYear;
+
+  const years = Array.from({ length: maxYear - 1950 + 1 }, (_, i) => 1950 + i);
+
   const months = [
     'January',
     'February',
@@ -42,6 +44,7 @@ export default function DatePickers({
   }) => (
     <div style={{ margin: 10, display: 'flex', justifyContent: 'center' }}>
       <button
+        type="button"
         className="p-1 text-lg font-bold"
         onClick={decreaseMonth}
         disabled={prevMonthButtonDisabled}
@@ -73,6 +76,7 @@ export default function DatePickers({
       </select>
 
       <button
+        type="button"
         className="p-1 text-lg font-bold"
         onClick={increaseMonth}
         disabled={nextMonthButtonDisabled}
@@ -84,7 +88,7 @@ export default function DatePickers({
 
   const customCalendar = ({ className, children }) => {
     return (
-      <div className="shadow-md">
+      <div className="m-2 shadow-md">
         <CalendarContainer className={className}>
           <div style={{ position: 'relative' }}>{children}</div>
         </CalendarContainer>
@@ -94,7 +98,7 @@ export default function DatePickers({
 
   return (
     <DatePicker
-      className="absolute top-1/2 w-[430px] -translate-y-2/3 cursor-pointer bg-transparent focus:outline-none"
+      className="absolute top-1/2 w-[400px] -translate-y-2/3 cursor-pointer bg-transparent focus:outline-none"
       placeholderText={placeholderText || 'DD/MM/YYYY'}
       dateFormat={dateFormat}
       popperPlacement={popperPlacement}

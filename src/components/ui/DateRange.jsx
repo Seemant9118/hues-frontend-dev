@@ -92,7 +92,21 @@ const DateRange = ({ dateRange, setDateRange }) => {
   );
 
   return (
-    <div className="flex w-full max-w-xs items-center gap-0.5 rounded-md border p-2">
+    <div className="flex w-fit items-center gap-0.5 rounded-md border px-2 py-1">
+      <DatePicker
+        ref={datepickerRef}
+        selectsRange
+        startDate={startDate}
+        endDate={endDate}
+        onChange={handleChange}
+        isClearable
+        placeholderText="Eg: 01/03/2024 - 01/03/2025"
+        className="w-[220px] rounded-md px-2 py-1.5 text-sm font-semibold focus:outline-none"
+        popperClassName="z-20"
+        renderCustomHeader={renderCustomHeader}
+        calendarContainer={customCalendar}
+        dateFormat="dd/MM/yyyy"
+      />
       <button
         onClick={() => datepickerRef.current?.setOpen(true)}
         type="button"
@@ -102,20 +116,6 @@ const DateRange = ({ dateRange, setDateRange }) => {
           className="cursor-pointer text-gray-600 hover:text-black"
         />
       </button>
-      <DatePicker
-        ref={datepickerRef}
-        selectsRange
-        startDate={startDate}
-        endDate={endDate}
-        onChange={handleChange}
-        isClearable
-        placeholderText="From : Date - To : Date"
-        className="w-[250px] rounded-md px-2 py-1 text-sm font-semibold focus:outline-none"
-        popperClassName="z-20"
-        renderCustomHeader={renderCustomHeader}
-        calendarContainer={customCalendar}
-        dateFormat="dd/MM/yyyy"
-      />
     </div>
   );
 };

@@ -3,6 +3,7 @@
 import { directorApi } from '@/api/director/directorApi';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -109,7 +110,7 @@ const SelectEnterprisePage = () => {
     ) {
       const redirectUrl = LocalStorageService.get('redirectUrl');
       LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-      router.push(redirectUrl || '/');
+      router.push(redirectUrl || goToHomePage());
     } else if (
       (!isEnterpriseOnboardingComplete || isEnterpriseOnboardingComplete) &&
       hasUserRequestAccessToEnterprise &&
@@ -247,7 +248,7 @@ const SelectEnterprisePage = () => {
           </div>
 
           <Link
-            href="/"
+            href="/dashboard"
             className="flex w-full items-center justify-center text-sm font-semibold text-[#121212] hover:underline"
           >
             Skip for Now

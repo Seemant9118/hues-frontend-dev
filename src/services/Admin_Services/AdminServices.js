@@ -1,18 +1,19 @@
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { APIinstance } from '@/services';
+import moment from 'moment';
 
 export const getAdminData = (dateRange) => {
   const [startDate, endDate] = dateRange;
 
   return APIinstance.post(`${AdminAPIs.getAdminData.endpoint}`, {
-    startDate,
-    endDate,
+    startDate: moment(startDate).format('YYYY-MM-DD'),
+    endDate: moment(endDate).format('YYYY-MM-DD'),
   });
 };
 
-export const getEnterprisesData = ({ page, limit }) => {
+export const getEnterprisesSalesData = ({ page, limit }) => {
   return APIinstance.get(
-    `${AdminAPIs.getEnterpriseData.endpoint}?page=${page}&limit=${limit}`,
+    `${AdminAPIs.getEnterpriseSalesData.endpoint}?page=${page}&limit=${limit}`,
   );
 };
 
@@ -102,4 +103,20 @@ export const getUserdataFromPAN = ({ panNumber }) => {
   return APIinstance.get(
     `${AdminAPIs.getUserdataFromPAN.endpoint}?panNumber=${panNumber}`,
   );
+};
+
+export const getSearchedEnterprises = (searchTerm) => {
+  return APIinstance.get(
+    `${AdminAPIs.getSearchedEnterprise.endpoint}?searchString=${searchTerm}`,
+  );
+};
+
+export const switchEnterprise = ({ enterpriseId }) => {
+  return APIinstance.get(
+    `${AdminAPIs.switchEnterprise.endpoint}${enterpriseId}`,
+  );
+};
+
+export const revertSwitchedEnterprise = () => {
+  return APIinstance.get(AdminAPIs.revertSwitchedEnterprise.endpoint);
 };

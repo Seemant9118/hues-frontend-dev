@@ -25,9 +25,9 @@ export const invoiceApi = {
     endpointKey: 'invoice_generate_otp',
   },
   // 6.createInvoiceNew : for NEW Order
-  createInvoiceForNewOrder: {
-    endpoint: `/order/invoice/generate`,
-    endpointKey: 'create_invoice_new_order',
+  withDrawOrder: {
+    endpoint: `/order/invoice/withdraw`,
+    endpointKey: 'withdraw_order',
   },
   // 7. getAllSalesInvoices : enterpriseLevel
   getAllSalesInvoices: {
@@ -37,16 +37,26 @@ export const invoiceApi = {
   // 8. getAllPurchaseInvoices : enterpriseLevel
   getAllPurchaseInvoices: {
     endpoint: `/order/invoice/getallpurchaseinvoicelist/`,
-    endpointKey: 'get_all_sales_invoices',
+    endpointKey: 'get_all_purchase_invoices',
   },
   // 9. export invoice
-  exportInvoice: {
+  exportSelectedInvoice: {
     endpoint: `/order/invoice/export`,
     endpointKey: 'export_invoice',
   },
-  // 10. preview direct invoice
+  // 10. export all invoices
+  exportAllInvoices: {
+    endpoint: `/order/invoice/export-all`,
+    endpointKey: 'export_all_invoices',
+  },
+  // 11. preview direct invoice
   previewDirectInvoice: {
     endpoint: `/order/invoice/preview-invoice`,
     endpointKey: 'preview_direct_invoice',
+  },
+  // 12. accept order
+  acceptOrder: {
+    endpoint: `/order/accept`,
+    endpointKey: 'accept_order',
   },
 };

@@ -1,44 +1,78 @@
 'use client';
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
-import { LocalStorageService } from '@/lib/utils';
-import { createAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import { rolesApi } from '@/api/rolesApi/rolesApi';
+import {
+  convertSnakeToTitleCase,
+  getEnterpriseId,
+} from '@/appUtils/helperFunctions';
+import {
+  createAssociateMembers,
+  updateAssociateMember,
+} from '@/services/Associate_Members_Services/AssociateMembersServices';
+import { getRoles } from '@/services/Roles_Services/Roles_Services';
 import { Label } from '@radix-ui/react-label';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserPlus } from 'lucide-react';
-import React, { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import Tooltips from '../auth/Tooltips';
 
-const MemberInviteModal = () => {
+const MemberInviteModal = ({
+  isModalOpen,
+  setIsModalOpen,
+  membersInfo,
+  isEditMode = false,
+}) => {
+  const enterpriseId = getEnterpriseId();
+
+  const translation = useTranslations('components.memberInviteModal');
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-
-  const [open, setOpen] = useState(false);
+  const [optionsForRoles, setOptionsForRoles] = useState([]);
   const [member, setMember] = useState({
     name: '',
     countryCode: '+91',
     mobileNumber: '',
     email: '',
     enterpriseId,
-    role: '',
+    rolesIds: [],
   });
+
+  useEffect(() => {
+    if (membersInfo && isEditMode) {
+      setMember({
+        name: membersInfo.invitation.userDetails.name || '',
+        countryCode: '+91',
+        mobileNumber: membersInfo.invitation.userDetails.mobileNumber || '',
+        email: membersInfo.invitation.userDetails.email || '',
+        enterpriseId,
+        rolesIds: membersInfo.roles?.map((role) => role.roleId) || [],
+      });
+    }
+  }, [membersInfo]);
+
+  const { data: rolesList } = useQuery({
+    queryKey: [rolesApi.getAllRoles.endpointKey],
+    queryFn: getRoles,
+    select: (data) => data.data.data,
+    enabled: !!isModalOpen,
+  });
+
+  // api call formatting for roles
+  useEffect(() => {
+    if (!rolesList) return;
+
+    const optionsForRoles = rolesList?.map((role) => ({
+      value: role?.id,
+      label: convertSnakeToTitleCase(role?.name),
+    }));
+
+    setOptionsForRoles(optionsForRoles);
+  }, [rolesList]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,64 +80,81 @@ const MemberInviteModal = () => {
     setMember({ ...member, [name]: value });
   };
 
-  const handleRoleChange = (value) => {
-    setMember({ ...member, role: value });
+  const handleRoleChange = (selectedOptions) => {
+    const selectedRoles = selectedOptions
+      ? selectedOptions.map((option) => option.value)
+      : [];
+    setMember((prev) => ({ ...prev, rolesIds: selectedRoles }));
   };
 
   const createMemberMutation = useMutation({
     mutationKey: [associateMemberApi.createAssociateMembers.endpointKey],
     mutationFn: createAssociateMembers,
     onSuccess: () => {
-      toast.success('Members Added Successfully');
+      toast.success(translation('toast.success'));
       setMember({
         name: '',
         countryCode: '+91',
         mobileNumber: '',
         email: '',
         enterpriseId,
-        role: '',
+        rolesIds: [],
       });
       queryClient.invalidateQueries([
         associateMemberApi.getAllAssociateMembers.endpointKey,
         enterpriseId,
       ]);
-      setOpen(false);
+      setIsModalOpen(false);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error.response.data.message || translation('toast.error'));
+    },
+  });
+
+  const updateMemberMutation = useMutation({
+    mutationKey: [associateMemberApi.updateAssociateMember.endpointKey],
+    mutationFn: updateAssociateMember,
+    onSuccess: () => {
+      toast.success(translation('toast.editSuccess'));
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || translation('toast.error'));
     },
   });
 
   const handleSubmit = () => {
-    createMemberMutation.mutate(member);
+    if (isEditMode && membersInfo?.id) {
+      updateMemberMutation.mutate({
+        id: membersInfo.id,
+        data: member,
+      });
+    } else {
+      createMemberMutation.mutate(member);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Tooltips
-          trigger={
-            <Button
-              onClick={() => setOpen(true)}
-              className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
-              size="sm"
-            >
-              <UserPlus size={16} />
-              Invite members
-            </Button>
-          }
-          content={'Invite associate members to your enterprise'}
-        />
-      </DialogTrigger>
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogContent className="flex flex-col gap-5">
-        <DialogTitle>Invite Member</DialogTitle>
+        <DialogTitle>
+          {isEditMode
+            ? translation('dialogTitleEdit') // Add this to your translation files
+            : translation('dialogTitle')}
+        </DialogTitle>
 
         <form className="w-full">
           <div className="flex flex-col gap-5">
             {/* name */}
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="text-sm font-bold">Name</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.name.label')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
 
@@ -120,7 +171,9 @@ const MemberInviteModal = () => {
             {/* phone */}
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="text-sm font-bold">Phone</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.phone.label')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
               <Input
@@ -138,9 +191,11 @@ const MemberInviteModal = () => {
             {/* email */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1">
-                <Label className="text-sm font-bold">Email</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.email.label')}
+                </Label>
                 <span className="text-xs font-bold text-[#A5ABBD]">
-                  {'(optional)'}
+                  {translation('form.email.optional')}
                 </span>
               </div>
               <Input
@@ -155,22 +210,23 @@ const MemberInviteModal = () => {
             {/* role */}
             <div className="flex flex-col gap-1">
               <div className="flex gap-1">
-                <Label className="text-sm font-bold">Role</Label>
+                <Label className="text-sm font-bold">
+                  {translation('form.role.label')}
+                </Label>
                 <span className="text-red-600">*</span>
               </div>
-              <Select onValueChange={handleRoleChange} required>
-                <SelectTrigger className="text-sm font-semibold">
-                  <SelectValue
-                    className="text-sm font-semibold"
-                    placeholder="Select Role"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="COMMENTATOR">Commentator</SelectItem>
-                  <SelectItem value="VIEWER">Viewer</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select
+                isMulti
+                name="roles"
+                placeholder={translation('form.role.placeholder')}
+                options={optionsForRoles}
+                className="text-sm"
+                classNamePrefix="select"
+                value={optionsForRoles?.filter((option) =>
+                  member?.rolesIds?.includes(option.value),
+                )}
+                onChange={handleRoleChange}
+              />
             </div>
 
             <div className="flex items-center justify-end gap-4">
@@ -178,11 +234,18 @@ const MemberInviteModal = () => {
                 size="sm"
                 variant={'outline'}
                 onClick={() => {
-                  setMember({});
-                  setOpen(false);
+                  setMember({
+                    name: '',
+                    countryCode: '+91',
+                    mobileNumber: '',
+                    email: '',
+                    enterpriseId,
+                    rolesIds: [],
+                  });
+                  setIsModalOpen(false);
                 }}
               >
-                Discard
+                {translation('form.actions.discard')}
               </Button>
 
               <Button
@@ -191,7 +254,14 @@ const MemberInviteModal = () => {
                 className="bg-[#288AF9] text-white hover:bg-primary hover:text-white"
                 size="sm"
               >
-                {createMemberMutation.isPending ? <Loading /> : 'Create'}
+                {updateAssociateMember.isPending ||
+                createMemberMutation.isPending ? (
+                  <Loading />
+                ) : isEditMode ? (
+                  translation('dialogTitleEdit')
+                ) : (
+                  translation('dialogTitle')
+                )}
               </Button>
             </div>
           </div>

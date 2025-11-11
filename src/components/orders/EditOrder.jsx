@@ -2,8 +2,10 @@
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { orderApi } from '@/api/order_api/order_api';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
@@ -27,15 +29,18 @@ import {
 import {
   OrderDetails,
   updateOrder,
+  updateOrderForUnrepliedSales,
 } from '@/services/Orders_Services/Orders_Services';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import InputWithSelect from '../ui/InputWithSelect';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
@@ -51,8 +56,9 @@ const EditOrder = ({
   const translations = useTranslations('components.create_edit_order');
 
   const queryClient = useQueryClient();
+  const router = useRouter();
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
   const pathName = usePathname();
   const isPurchasePage = pathName.includes('purchases');
   const [selectedItem, setSelectedItem] = useState({
@@ -60,6 +66,7 @@ const EditOrder = ({
     productType: '',
     productId: '',
     quantity: null,
+    unitId: null,
     unitPrice: null,
     gstPerUnit: null,
     totalAmount: null,
@@ -67,17 +74,25 @@ const EditOrder = ({
     negotiationStatus: 'NEW',
   });
 
-  // fetch profileDetails API
+  // fetch units
+  const { data: units } = useQuery({
+    queryKey: [stockInOutAPIs.getUnits.endpointKey],
+    queryFn: getUnits,
+    select: (data) => data.data.data,
+    enabled: !!enterpriseId,
+  });
+
+  // fetch profileDetails API only for sales orders
   const { data: profileDetails } = useQuery({
-    queryKey: [userAuth.getProfileDetails.endpointKey],
+    queryKey: [userAuth.getProfileDetails.endpointKey, userId],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
-    enabled: !!isEditingOrder && isPurchasePage === false,
+    enabled: Boolean(isEditingOrder && !isPurchasePage),
   });
 
   // for sales-order gst/non-gst check
   const isGstApplicableForSalesOrders =
-    isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
+    !isPurchasePage && Boolean(profileDetails?.enterpriseDetails?.gstNumber);
 
   // for purchase-orders gst/non-gst check
   const [
@@ -111,11 +126,13 @@ const EditOrder = ({
         productName: productDetails?.productName || productDetails?.serviceName, // Use empty string as default if undefined
         productType: item.productType,
         quantity: item.quantity,
+        unitId: item.unitId,
         totalAmount: item.totalAmount,
         totalGstAmount: item.totalGstAmount,
         unitPrice: item.unitPrice,
         version: item.version,
         negotiationStatus: item?.negotiationStatus || 'NEW',
+        ...item,
       };
     });
   };
@@ -208,16 +225,16 @@ const EditOrder = ({
             ...item,
             [key]: Number(newValue),
           };
-          // Recalculate totalAmount using updated values
-          updatedItem.totalAmount =
-            updatedItem.quantity * updatedItem.unitPrice;
 
-          // Recalculate totalGstAmount based on the updated totalAmount and gstPerUnit
-          updatedItem.totalGstAmount = parseFloat(
-            (updatedItem.totalAmount * (updatedItem.gstPerUnit / 100)).toFixed(
-              2,
-            ),
-          );
+          // ✅ Recalculate totalAmount with two decimal precision
+          const totalAmount =
+            Number(updatedItem.quantity) * Number(updatedItem.unitPrice);
+          updatedItem.totalAmount = Number(totalAmount.toFixed(2));
+
+          // ✅ Recalculate totalGstAmount with two decimal precision
+          const totalGstAmount =
+            updatedItem.totalAmount * (Number(updatedItem.gstPerUnit) / 100);
+          updatedItem.totalGstAmount = Number(totalGstAmount.toFixed(2));
 
           return updatedItem;
         }
@@ -321,7 +338,7 @@ const EditOrder = ({
     return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   }
 
-  // mutation Fn for update order
+  // mutation Fn for update order (purchase || sales && unconfirmed clients)
   const updateOrderMutation = useMutation({
     mutationKey: [orderApi.updateOrder.endpointKey],
     mutationFn: (data) => updateOrder(orderId, data),
@@ -336,15 +353,44 @@ const EditOrder = ({
     },
   });
 
+  // mutation Fn for update order (confirmed clients with no reply recieved)
+  const updateOrderForUnRepliedSalesMutation = useMutation({
+    mutationKey: [orderApi.updateOrderForUnrepliedSales.endpointKey],
+    mutationFn: (data) => updateOrderForUnrepliedSales(data),
+    onSuccess: (res) => {
+      toast.success(translations('form.successMsg.order_revised_successfully'));
+      // onCancel();
+      // queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      // setIsOrderCreationSuccess((prev) => !prev);
+      router.push(`/dashboard/sales/sales-orders/${res.data.data.newOrderId}`);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
   // handling submit fn
   const handleSubmit = () => {
     const { totalAmount, totalGstAmt } = handleSetTotalAmt();
 
-    updateOrderMutation.mutate({
-      ...order,
-      amount: parseFloat(totalAmount.toFixed(2)),
-      gstAmount: parseFloat(totalGstAmt.toFixed(2)),
-    });
+    // if purchase page or sales order with unconfirmed clients
+    if (
+      isPurchasePage ||
+      (!isPurchasePage && orderDetails?.buyerType === 'UNINVITED-ENTERPRISE')
+    ) {
+      updateOrderMutation.mutate({
+        ...order,
+        amount: parseFloat(totalAmount.toFixed(2)),
+        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+      });
+    } else {
+      updateOrderForUnRepliedSalesMutation.mutate({
+        ...order,
+        orderId,
+        amount: parseFloat(totalAmount.toFixed(2)),
+        gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+      });
+    }
   };
 
   return (
@@ -413,7 +459,7 @@ const EditOrder = ({
                       productId: selectedItemData.id,
                       productType: selectedItemData.productType,
                       productName: selectedItemData.productName,
-                      unitPrice: selectedItemData.rate,
+                      unitPrice: selectedItemData.salesPrice,
                       gstPerUnit: isGstApplicable(
                         isPurchasePage
                           ? isGstApplicableForPurchaseOrders
@@ -428,26 +474,55 @@ const EditOrder = ({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label>{translations('form.label.quantity')}</Label>
             <div className="flex flex-col gap-1">
-              <Input
-                type="number"
+              <InputWithSelect
+                id="quantity"
+                name={translations('form.label.quantity')}
+                required={true}
                 value={selectedItem.quantity}
-                onChange={(e) => {
+                onValueChange={(e) => {
+                  const inputValue = e.target.value;
+
+                  // Allow user to clear input
+                  if (inputValue === '') {
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      quantity: 0,
+                      totalAmount: 0,
+                      totalGstAmount: 0,
+                    }));
+                    return;
+                  }
+
+                  // Prevent non-integer or negative input
+                  const value = Number(inputValue);
+
+                  // Reject if not a positive integer
+                  if (!/^\d+$/.test(inputValue) || value < 1) return;
+
                   const totalAmt = parseFloat(
-                    (e.target.value * selectedItem.unitPrice).toFixed(2),
-                  ); // totalAmt excluding gst
+                    (value * selectedItem.unitPrice).toFixed(2),
+                  );
                   const gstAmt = parseFloat(
                     (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                  ); // total gstAmt
-                  setSelectedItem((prev) => ({
-                    ...prev,
-                    quantity: Number(e.target.value),
-                    totalAmount: totalAmt,
-                    totalGstAmount: gstAmt,
-                  }));
+                  );
+
+                  const updatedItem = {
+                    ...selectedItem,
+                    quantity: value,
+                    totalAmount: parseFloat(totalAmt).toFixed(2),
+                    totalGstAmount: parseFloat(gstAmt).toFixed(2),
+                  };
+                  setSelectedItem(updatedItem);
                 }}
-                className="max-w-30"
+                unit={selectedItem.unitId} // unitId from state
+                onUnitChange={(val) => {
+                  setSelectedItem((prev) => {
+                    const updated = { ...prev, unitId: Number(val) }; // store ID
+                    return updated;
+                  });
+                }}
+                units={units?.quantity} // pass the full object list
               />
             </div>
           </div>
@@ -467,8 +542,8 @@ const EditOrder = ({
                   setSelectedItem((prevValue) => ({
                     ...prevValue,
                     unitPrice: e.target.value,
-                    totalAmount: totalAmt,
-                    totalGstAmount: gstAmt,
+                    totalAmount: parseFloat(totalAmt).toFixed(2),
+                    totalGstAmount: parseFloat(gstAmt).toFixed(2),
                   }));
                 }}
                 className="max-w-30"
@@ -651,13 +726,52 @@ const EditOrder = ({
                     <TableRow key={item.id}>
                       <TableCell>{item.productName}</TableCell>
                       <TableCell>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleInputChange(item, 'quantity', e.target.value)
-                          }
-                          className="w-24 border-2 font-semibold"
+                        <InputWithSelect
+                          required={true}
+                          value={item.quantity === 0 ? '' : item.quantity}
+                          onValueChange={(e) => {
+                            const inputValue = e.target.value;
+
+                            // Allow user to clear input
+                            if (inputValue === '') {
+                              handleInputChange(
+                                { ...item, unitId: item.unitId },
+                                'quantity',
+                                0,
+                              );
+                              return;
+                            }
+
+                            // Allow decimals but reject negatives / invalid numbers
+                            if (
+                              !/^\d*\.?\d*$/.test(inputValue) ||
+                              inputValue < 0
+                            )
+                              return;
+
+                            // Reuse your existing updater logic
+                            handleInputChange(
+                              { ...item, unitId: item.unitId },
+                              'quantity',
+                              inputValue,
+                            );
+                          }}
+                          selectUnitDisabled={true}
+                          unit={item.unitId} // bind unitId here
+                          // onUnitChange={(val) => {
+                          //   // Update the order state with new unitId
+                          //   setOrder((prev) => ({
+                          //     ...prev,
+                          //     orderItems: prev.orderItems.map((orderItem) =>
+                          //       orderItem.productId === item.productId
+                          //         ? { ...orderItem, unitId: Number(val) }
+                          //         : orderItem,
+                          //     ),
+                          //   }));
+                          // }}
+                          units={units?.quantity}
+                          min={0}
+                          step="any" // <-- allows decimals
                         />
                       </TableCell>
                       <TableCell>

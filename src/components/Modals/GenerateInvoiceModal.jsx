@@ -88,7 +88,9 @@ const GenerateInvoiceModal = ({
                 {!pinStatus?.pinExists && (
                   <span
                     className="cursor-pointer text-primary underline hover:text-black"
-                    onClick={() => router.push('/settings?tab=pinSettings')}
+                    onClick={() =>
+                      router.push('/dashboard/settings?tab=pinSettings')
+                    }
                   >
                     {translations('infoText.info2')}
                   </span>
@@ -128,7 +130,9 @@ const GenerateInvoiceModal = ({
             {isPINError && (
               <p
                 className="cursor-pointer text-sm font-semibold hover:underline"
-                onClick={() => router.push('/settings?tab=pinSettings')}
+                onClick={() =>
+                  router.push('/dashboard/settings?tab=pinSettings')
+                }
               >
                 {translations('errorMsg.pin_error')}
               </p>

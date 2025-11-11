@@ -2,24 +2,24 @@
     "components": {
         "generate_link": {
             "ctas_staus": {
-                "pending": "Link",
-                "accepted": "Active",
+                "pending": "Creating your link",
+                "accepted": "Verified",
                 "rejected": "Rejected"
             },
             "toasts": {
-                "success": "Link Generated & Copied to clipboard",
-                "error": "Something went wrong"
+                "success": "You’re all set — link copied!",
+                "error": "We hit a snag! Please refresh or retry shortly"
             }
         },
         "upload": {
             "title": "Upload",
             "uploadInfo": "Drag & Drop or Select a File (Max 10MB, .csv/.xlsx Formats)",
-            "noteInfo": "Note - Trade enabled for eSigned inventories only.",
+            "noteInfo": "*Trading’s available for eSigned inventories only.",
             "selectCta": "Select",
-            "sampleCta": "Sample",
+            "sampleCta": "View Sample Format",
             "backCta": "View",
             "messages": {
-                "uploadSuccessMsg": "Upload Successfully"
+                "uploadSuccessMsg": "Success! File Uploaded"
             }
         },
         "addEditModal": {
@@ -27,53 +27,53 @@
                 "form": {
                     "label": {
                         "identifiers": {
-                            "identifier_type": "Identifier Type",
-                            "identifier_number": "Identifier Number"
+                            "identifier_type": "Select Identifier Type",
+                            "identifier_number": "Reference Number"
                         },
                         "addNewEntity": {
-                            "name": "Name",
+                            "name": "Entity Name",
                             "gst": "GST IN",
                             "email": "Email",
-                            "phone": "Phone",
-                            "pan": "PAN",
+                            "phone": "Phone number",
+                            "pan": "PAN Number",
                             "address": "Address"
                         }
                     },
                     "input": {
                         "select": {
-                            "pan": "PAN",
-                            "gst": "GST"
+                            "pan": "PAN Number",
+                            "gst": "GST IN"
                         }
                     },
                     "errorMsg": {
                         "identifiers": {
-                            "pan": "Please complete the PAN to proceed",
-                            "gst": "Please complete the GST number to proceed"
+                            "pan": "Enter a valid PAN to continue",
+                            "gst": "Enter a valid GST number to continue"
                         },
                         "addNewEntity": {
-                            "name": "Required Name",
+                            "name": "Name cannot be empty",
                             "phone": {
-                                "required": "Required Phone",
-                                "valid": "Please enter a valid mobile number"
+                                "required": "Phone number cannot be empty",
+                                "valid": "Please provide a valid mobile number."
                             },
-                            "email": "Please provide valid Email",
+                            "email": "Please provide a valid Email id",
                             "pan": {
-                                "required": "Required PAN",
-                                "valid": "Please provide valid PAN Number"
+                                "required": "PAN cannot be empty",
+                                "valid": "Enter a valid PAN to continuer"
                             },
                             "pincode": {
-                                "required": "Required Pincode",
-                                "valid": "Please provide valid Pincode"
+                                "required": "Pincode cannot be empty",
+                                "valid": "Enter a valid Pincode to continue"
                             }
                         }
                     },
                     "infoMsg": {
-                        "toSearch": "Type an identifier to search",
-                        "enterprise_not_available": "Enterprise not active on HUES."
+                        "toSearch": "Search by typing a name, PAN, or ID",
+                        "enterprise_not_available": "This enterprise hasn’t joined Hues yet."
                     },
                     "ctas": {
                         "identifiers": {
-                            "continue": "Continue to add new entity",
+                            "continue": "Next: Add new entity",
                             "invite": "Invite",
                             "sent": "Invite sent"
                         },
@@ -85,42 +85,42 @@
                     },
                     "toasts": {
                         "success": {
-                            "invitation": "Invitation sent successfully",
-                            "entityAdded": "Entity Added Successfully",
-                            "edited": "Edit Successfully"
+                            "invitation": "Your invitation has been sent",
+                            "entityAdded": "Success! Entity created",
+                            "edited": "Changes saved"
                         },
                         "error": {
-                            "common": "Something went wrong"
+                            "common": "We hit a snag Try again?"
                         }
                     }
                 }
             },
             "client": {
-                "title": "CLIENT",
+                "title": "Client",
                 "form": {
                     "ctas": {
                         "identifiers": {
-                            "continue": "Continue to add new client"
+                            "continue": "Next: Add new client"
                         }
                     },
                     "toasts": {
                         "success": {
-                            "entityAdded": "Client Added Successfully"
+                            "entityAdded": "Success! Client Added"
                         }
                     }
                 }
             },
             "vendor": {
-                "title": "VENDOR",
+                "title": "Vendor",
                 "form": {
                     "ctas": {
                         "identifiers": {
-                            "continue": "Continue to add new vendor"
+                            "continue": "Next: Add new vendor"
                         }
                     },
                     "toasts": {
                         "success": {
-                            "entityAdded": "Vendor Added Successfully"
+                            "entityAdded": "Success! Vendor Added"
                         }
                     }
                 }
@@ -131,28 +131,28 @@
             "title": "Filters",
             "form": {
                 "label": {
-                    "chooseDate": "Choose Date",
-                    "from": "From",
-                    "to": "To",
-                    "chooseType": "Choose Type",
+                    "chooseDate": "Select date",
+                    "from": "Select from",
+                    "to": "Select to",
+                    "chooseType": "Select type",
                     "types_available": {
                         "type1": {
-                            "value": "Invoice"
+                            "value": "Invotion"
                         },
                         "type2": {
-                            "value": "Order"
+                            "value": "Ortion"
                         },
                         "type3": {
-                            "value": "Invitation"
+                            "value": "Invitattion"
                         },
                         "type4": {
-                            "value": "Order Negotiaion"
+                            "value": "Order Negotiation"
                         }
                     }
                 },
                 "ctas": {
-                    "clear": "Clear",
-                    "save": "Apply"
+                    "clear": "Select Clear",
+                    "save": "Select Save"
                 }
             }
         },
@@ -168,22 +168,26 @@
             "form": {
                 "label": {
                     "select_date": "Select Date",
-                    "select_amount_range": "Select Amount Range",
-                    "select_status": "Select Status",
-                    "select_client": "Select Client",
-                    "invoice_generated": "Invoice Generated",
+                    "select_amount_range": "Select amount Range",
+                    "select_status": "Select status",
+                    "select_client": "Select client",
+                    "invoice_generated": "Invoice generated",
+                    "debit_note_raised": "Debit Note Raised",
                     "clear": "Clear"
                 },
                 "input": {
                     "select_status": {
                         "options": {
-                            "option1": "Bid Recieved",
-                            "option2": "Offer Sent",
+                            "option1": "Bid recieved",
+                            "option2": "Offer sent",
                             "option3": "Accepted",
                             "option4": "Rejected",
                             "option5": "Withdrawn",
-                            "option6": "Bid Sent",
-                            "option7": "Offer Recieved"
+                            "option6": "Bid sent",
+                            "option7": "Offer recieved",
+                            "option8": "Payment Pending",
+                            "option9": "Partial Paid",
+                            "option10": "Paid"
                         }
                     }
                 },
@@ -197,10 +201,10 @@
             "title": {
                 "offer": "Offer",
                 "bid": "Bid",
-                "revise": "Revise",
+                "revise": "Revise bid",
                 "sub_titles": {
-                    "add_item": "Add Items",
-                    "edit_item": "Edit Items"
+                    "add_item": "Add Items/Entries",
+                    "edit_item": "Edit Items/Entries"
                 }
             },
             "form": {
@@ -220,14 +224,14 @@
                     "amount": "Amount"
                 },
                 "errorMsg": {
-                    "customer": "*Please add or select a Customer",
-                    "client": "*Please select a client",
-                    "vendor": "*Please select a vendor",
-                    "item_type": "*Please select Item Type",
-                    "itemInvoice": "*Please add atleast one item to create invoice",
-                    "itemOrder": "*Please add atleast one item to create order",
-                    "itemBid": "*Please add atleast one item to create bid",
-                    "quantity": "*Required Quantity",
+                    "customer": "*Please select a customer or add a new one",
+                    "client": "*Please select a client or add a new one",
+                    "vendor": "*Please select a vendor or add a new one",
+                    "item_type": "*Please select an Item type",
+                    "itemInvoice": "*Please select or add atleast one item to create invoice",
+                    "itemOrder": "*Please select or add atleast one item to create order",
+                    "itemBid": "*Please select or add atleast one item to create bid",
+                    "quantity": "*Required quantity",
                     "price": "*Required Price",
                     "gst": "*Required (GST%)",
                     "value": "*Required Value",
@@ -235,10 +239,10 @@
                     "amount": "*Required Amount"
                 },
                 "successMsg": {
-                    "order_revised_successfully": "Order Revised Successfully",
-                    "offer_created_successfully": "Sales Order Created Successfully",
-                    "bid_created_successfully": "Purchase Order Created Successfully",
-                    "invoice_created_successfully": "Invoice created Successfully"
+                    "order_revised_successfully": "Success! Order Revised",
+                    "offer_created_successfully": "Success! Sales Order Created",
+                    "bid_created_successfully": "Success! Purchase Order Created",
+                    "invoice_created_successfully": "Success! Invoice Created"
                 },
                 "input": {
                     "clientType": {
@@ -264,14 +268,14 @@
                 },
                 "table": {
                     "header": {
-                        "item": "ITEM",
-                        "quantity": "QUANTITY",
-                        "price": "PRICE",
+                        "item": "Item",
+                        "quantity": "Quantity",
+                        "price": "Price",
                         "gst": "GST (%)",
-                        "invoice_value": "INVOICE VALUE",
-                        "value": "VALUE",
-                        "tax_amount": "TAX AMOUNT",
-                        "amount": "AMOUNT"
+                        "invoice_value": "Invoice Value",
+                        "value": "Value",
+                        "tax_amount": "Tax Amount",
+                        "amount": "Amount"
                     }
                 },
                 "ctas": {
@@ -291,31 +295,31 @@
         },
         "create_B2C_Invoice": {
             "title": {
-                "b2cInvoice": "B2C Invoice"
+                "b2cInvoice": "B2C invoice"
             },
             "form": {
                 "label": {
-                    "customer": "Customer Number",
-                    "customer_name": "Customer Name",
-                    "customer_address": "Customer Address",
-                    "address_type": "Select Address Type",
-                    "item_type": "Item Type",
+                    "customer": "Customer number",
+                    "customer_name": "Customer name",
+                    "customer_address": "Customer address",
+                    "address_type": "Select address type",
+                    "item_type": "Item type",
                     "item": "Item",
                     "quantity": "Quantity",
                     "price": "Price",
-                    "invoice_value": "Invoice Value",
+                    "invoice_value": "Invoice value",
                     "value": "Value",
                     "gst": "GST",
-                    "tax_amount": "Tax Amount",
+                    "tax_amount": "Tax amount",
                     "amount": "Amount"
                 },
                 "errorMsg": {
-                    "customer": "*Please add or select a Customer",
-                    "customer_name": "*Please write Customer name",
-                    "customer_address": "*Please write Customer address",
-                    "address_type": "*Please Select Address Type",
-                    "item_type": "*Please select Item Type",
-                    "itemInvoice": "*Please add atleast one item to create invoice",
+                    "customer": "*Please select a customer or add a new one",
+                    "customer_name": "*Enter Customer name",
+                    "customer_address": "*Enter Customer address",
+                    "address_type": "*Select an address type",
+                    "item_type": "*Select an Item type",
+                    "itemInvoice": "*Select or add atleast one item to create an invoice",
                     "quantity": "*Required Quantity",
                     "price": "*Required Price",
                     "gst": "*Required (GST%)",
@@ -324,19 +328,19 @@
                     "amount": "*Required Amount"
                 },
                 "successMsg": {
-                    "order_updated_successfully": "Order Updates Successfully",
-                    "offer_created_successfully": "Sales Order Created Successfully",
-                    "bid_created_successfully": "Purchase Order Created Successfully",
-                    "invoice_created_successfully": "Invoice Created Successfully"
+                    "order_updated_successfully": "Success! Your order is updated",
+                    "offer_created_successfully": "Success! Your order is created",
+                    "bid_created_successfully": "Success! Your purchase order is created",
+                    "invoice_created_successfully": "Success! Your invoice is created"
                 },
                 "input": {
                     "customer": {
-                        "placeholder": "Enter a number to search or add new one"
+                        "placeholder": "Type a number to search OR add a new one"
                     },
                     "item_type": {
                         "goods": "Goods",
                         "services": "Services",
-                        "placeholder": "Select..."
+                        "placeholder": "Select"
                     },
                     "item": {
                         "placeholder": "Select Items"
@@ -344,14 +348,14 @@
                 },
                 "table": {
                     "header": {
-                        "item": "ITEM",
-                        "quantity": "QUANTITY",
-                        "price": "PRICE",
+                        "item": "Item",
+                        "quantity": "Quantity",
+                        "price": "Price",
                         "gst": "GST (%)",
-                        "invoice_value": "INVOICE VALUE",
-                        "value": "VALUE",
-                        "tax_amount": "TAX AMOUNT",
-                        "amount": "AMOUNT"
+                        "invoice_value": "Invoice value",
+                        "value": "Value",
+                        "tax_amount": "Tax amount",
+                        "amount": "Amount"
                     }
                 },
                 "ctas": {
@@ -362,14 +366,14 @@
                     "next": "Next"
                 },
                 "footer": {
-                    "gross_amount": "Gross Amount",
-                    "tax_amount": "Tax Amount",
-                    "total_amount": "Total Amount"
+                    "gross_amount": "Gross amount",
+                    "tax_amount": "Tax amount",
+                    "total_amount": "Total amount"
                 }
             }
         },
         "redirection_pop_up": {
-            "para": "This enterprise has not accepted your invitation and will not be able to respond your offer. Do you want to proceed?",
+            "para": "This enterprise hasn’t accepted your invite yet and won’t be able to respond. Still want to go ahead?",
             "ctas": {
                 "yes": "Yes",
                 "no": "No"
@@ -379,15 +383,15 @@
             "title": "Overview",
             "label": {
                 "order_id": "Order ID",
-                "client_name": "Client Name",
-                "vendor_name": "Vendor Name",
-                "order_status": "Order Status",
-                "payment_status": "Payment Status",
-                "total_amount": "Total Amount",
+                "client_name": "Client name",
+                "vendor_name": "Vendor name",
+                "order_status": "Order status",
+                "payment_status": "Payment status",
+                "total_amount": "Total amount",
                 "view_negotiation": "View Negotiations"
             },
             "acknowledge_message": {
-                "infoText": "This order is directly recorded by our client/vendor. Acknowledge to add it to your order list",
+                "infoText": "This one's from your client/vendor. Tap Acknowledge to add it to your orders.",
                 "ctas": {
                     "undo": "Undo",
                     "no": "No",
@@ -395,15 +399,15 @@
                 }
             },
             "successMsg": {
-                "acknowledged_sucess": "Order Acknowledged Successfully",
-                "undo_acknowledged_success": "Undo Order Acknowledged Successfully"
+                "acknowledged_sucess": "Success! Your order has been acknowledged",
+                "undo_acknowledged_success": "Undo your order acknowledgment"
             },
             "errorMsg": {
-                "common": "Something went wrong"
+                "common": "Oops! We hit a snag Try again?"
             },
             "placeholder": {
-                "view_negotiation": "View Negotiation History",
-                "preview_order": "Preview Order"
+                "view_negotiation": "View negotiation history",
+                "preview_order": "Preview order"
             }
         },
         "invoice_overview": {
@@ -412,12 +416,12 @@
                 "invoice_id": "Invoice ID",
                 "order_id": "Order ID",
                 "date": "Date",
-                "client_name": "Client Name",
-                "vendor_name": "Vendor Name",
+                "client_name": "Client name",
+                "vendor_name": "Vendor name",
                 "type": "Type",
-                "payment_status": "Payment Status",
-                "total_amount": "Total Amount",
-                "debit_notes": "Debit Notes"
+                "payment_status": "Payment status",
+                "total_amount": "Total amount",
+                "debit_notes": "Debit notes"
             }
         },
         "past_invoices": {
@@ -428,42 +432,43 @@
             },
             "emptyStateComponent": {
                 "title": "No invoices yet",
-                "para": "You haven't created any invoices yet. Start by generating your first invoice to keep track of your orders",
+                "para": "No invoices yet! Create your first one to start tracking your orders",
                 "ctas": {
-                    "generate_invoice": "Generate Invoice"
+                    "generate_invoice": "Generate invoice"
                 }
             }
         },
         "invoice_modal": {
             "title": "Invoice",
             "view": {
-                "placeholder": "View Invoice"
+                "placeholder": "View invoice"
             },
-            "loading_document": "Loading Document...",
+            "loading_document": "Loading document",
             "ctas": {
                 "cancel": "Cancel",
                 "download": "Download"
             }
         },
         "generate_invoice": {
-            "title": "Generate Invoice",
+            "title": "Generate invoice",
             "table": {
                 "header": {
-                    "item_name": "ITEM NAME",
-                    "quantity": "QUANTITY",
-                    "unit_price": "UNIT PRICE",
-                    "total_amount": "TOTAL AMOUNT"
+                    "item_name": "Item name",
+                    "quantity": "Quantity",
+                    "unit_price": "Unit price",
+                    "total_amount": "Total amount"
                 }
             },
             "errorMsg": {
-                "common": "Something went wrong"
+                "common": "Oops! We hit a snag Try again?"
             },
             "successMsg": {
-                "otp_sent": "OTP Sent",
-                "invoice_generate_success": "Invoice Generated Successfully"
+                "otp_sent": "OTP sent",
+                "invoice_generate_success": "Success! Your invoice is created"
             },
             "ctas": {
                 "next": "Next",
+                "verify": "Verify",
                 "cancel": "Cancel"
             }
         },
@@ -476,7 +481,28 @@
             },
             "infoText": {
                 "title": "Enter PIN",
-                "pin_exist_info": "Enter a User PIN to Generate Invoice",
+                "pin_exist_info": "Enter your user PIN to generate an invoice",
+                "pin_not_exist_info": "No PIN created yet! Go to PIN settings to create one",
+                "info2": "Click here"
+            },
+            "successMsg": {
+                "invoice_generate_success": "Success! Invoice Generated"
+            },
+            "errorMsg": {
+                "common": "Oops! We hit a snag Try again?",
+                "pin_error": "Forgot PIN ?"
+            }
+        },
+        "pin_verify_modal_offline_order": {
+            "title": "Invoice",
+            "ctas": {
+                "generate": "Generate",
+                "view": "View",
+                "verify": "Verify"
+            },
+            "infoText": {
+                "title": "Verify PIN",
+                "pin_exist_info": "This order can’t be invoiced directly. Withdraw it to create a new order where you can raise full or partial invoices.",
                 "pin_not_exist_info": "You don’t have a PIN yet. Set up your PIN in PIN Settings first by",
                 "info2": "click here"
             },
@@ -489,23 +515,23 @@
             }
         },
         "preview_invoice_modal": {
-            "title": "Preview Invoice",
+            "title": "Preview invoice",
             "cta": "Preview"
         },
         "negotiation_component": {
             "table": {
                 "header": {
                     "label": {
-                        "item": "ITEM",
-                        "quantity": "QUANTITY",
-                        "rate": "RATE",
-                        "total": "TOTAL"
+                        "item": "Item",
+                        "quantity": "Quantity",
+                        "rate": "Rate",
+                        "total": "Total"
                     }
                 },
                 "child_table": {
                     "header": {
                         "label": {
-                            "itemName": "Item Name",
+                            "itemName": "Item name",
                             "ask": "Ask",
                             "counter": "Counter"
                         }
@@ -513,14 +539,14 @@
                 },
                 "column_actions": {
                     "history": {
-                        "placeholder": "View Negotiation history",
-                        "infoTitle": "History for ",
-                        "infoPara": "There is no negotiation history for this item."
+                        "placeholder": "View previous negotiations",
+                        "infoTitle": "History ?",
+                        "infoPara": "Looks like no one's made an offer on this item yet"
                     },
                     "who": {
-                        "buyer": "BUYER",
-                        "you": "YOU",
-                        "seller": "SELLER"
+                        "buyer": "Buyer",
+                        "you": "You",
+                        "seller": "Seller"
                     }
                 }
             },
@@ -529,49 +555,49 @@
                 "submit": "Submit"
             },
             "errorMsg": {
-                "common": "Something went wrong",
-                "empty": "Please fill in at least one negotiation item."
+                "common": "Oops! We hit a snag Try again?",
+                "empty": "Please add at least one item to negotiate"
             },
             "successMsg": {
-                "negotiation_submitted": "Negotiation submitted successfully"
+                "negotiation_submitted": "Success! Your negotiation has been submitted"
             }
         },
         "make_payment": {
             "form": {
                 "label": {
-                    "payment_mode": "Payment Mode",
+                    "payment_mode": "Payment mode",
                     "options": {
                         "neft": "NEFT",
                         "rtgs": "RTGS",
                         "upi": "UPI",
-                        "credit_debit": "Credit / Debit Card",
+                        "credit_debit": "Credit/Debit card",
                         "cheque": "Cheque",
                         "cash": "Cash"
                     },
                     "invoice_id": "Invoice ID",
                     "tran_id": "Transaction ID",
-                    "bank_acc_details": "Bank Account details",
-                    "payment_date": "Payment Date",
-                    "amount_paid": "Amount Paid",
+                    "bank_acc_details": "Bank account details",
+                    "payment_date": "Payment date",
+                    "amount_paid": "Amount paid",
                     "balance": "Balance"
                 },
                 "table": {
                     "title": "Invoices",
-                    "para": "Amount is auto-splitted, but you can customize it manually if needed",
+                    "para": "We’ve auto-split the amount for you—feel free to tweak it if needed.",
                     "header": {
                         "label": {
-                            "invoice_no": "INVOICE NO",
-                            "date": "DATE",
-                            "quantity": "QUANTITY",
-                            "balance_amt": "BALANCE AMOUNT",
-                            "amount_paid": "AMOUNT PAID"
+                            "invoice_no": "Invoice No.",
+                            "date": "Date",
+                            "quantity": "Quantity",
+                            "balance_amt": "Balance Amount",
+                            "amount_paid": "Amount Paid"
                         }
                     }
                 },
                 "upload_proof": {
-                    "title": "Upload Proof",
+                    "title": "Upload proof",
                     "para": "Drag & Drop or Select a File (Max 10MB,.png /.pdf Formats)",
-                    "note": "Note - Upload Payment Proofs only.",
+                    "note": "Note: Please upload payment proofs only",
                     "ctas": {
                         "select": "Select"
                     }
@@ -584,75 +610,75 @@
                 }
             },
             "successMsg": {
-                "payment_recorded_sucessfully": "Payment Recorded Successfully",
-                "attached_success": "Attached Successfully"
+                "payment_recorded_sucessfully": "Success! Your payment has been recorded",
+                "attached_success": "Success! Your payment proof is now attached"
             },
             "errorMsg": {
                 "invoices": "*Required! Please select invoice",
                 "payment_mode": "*Required! Please select payment mode",
                 "payment_date": "*Required! Please select payment date",
-                "amount_paid_required": "*Required!, Amount should not be empty",
-                "amount_paid_empty": "Amount should not be empty",
-                "amount_paid_exceed": "Amount exceeds balance amount",
-                "amount_paid_not_greater_than": "Amount Paid should not be greater than",
-                "invoiceAmountPaid_exceed": "Amount exceeds the total payment amount",
-                "invoiceAmountPaid_less": "Amount is less than the total payment amount",
-                "common": "Something went wrong"
+                "amount_paid_required": "*Required! Please update Amount",
+                "amount_paid_empty": "Please enter an amount to proceed",
+                "amount_paid_exceed": "The amount paid can't be more than the balance amount. Please correct and retry",
+                "amount_paid_not_greater_than": "The amount paid can’t be more than ? . Please correct and retry",
+                "invoiceAmountPaid_exceed": "Looks like you’ve gone over the total amount. Please correct and retry",
+                "invoiceAmountPaid_less": "That’s a bit short of the total due. Please correct and retry",
+                "common": "Oops! We hit a snag Try again?"
             }
         },
         "payment_details": {
             "emptyStateComponent": {
-                "title": "No Payments yet",
-                "para": "You haven't created any payments yet. Start by generating your first payment to keep track of your transactions"
+                "title": "No payments recorded yet",
+                "para": "Looks like you haven’t added any payments yet. Let’s get started and log your first one to keep everything on track!"
             },
             "ctas": {
-                "record_payment": "Record Payment"
+                "record_payment": "Add a payment"
             }
         },
         "invoice_type_modal": {
-            "title": "Choose Invoice Type",
+            "title": "Pick an invoice type",
             "cta": {
                 "invoice": "Invoice"
             },
             "types": {
                 "type1": "B2C (Business to Consumer)",
-                "type1_desc": "For direct sales to individual consumers,usually without GST registration.",
+                "type1_desc": "Used for direct sales to individual customers, often without GST registration",
                 "type2": "B2B (Business to Business)",
-                "type2_desc": "For transactions between two registered businesses with GST details."
+                "type2_desc": "Used for transactions between two GST registered businesses"
             }
         },
         "generate_pin_modal": {
             "update_pin": "Update PIN",
-            "create_pin": "Create PIN",
+            "create_pin": "Create a new PIN",
             "pin_description": "You can use this PIN to verify Invoices",
             "success_messages": {
-                "pin_created": "PIN successfully created!",
-                "pin_updated": "PIN successfully updated!",
-                "otp_sent": "OTP sent successfully!",
-                "otp_verified": "OTP verified successfully!",
-                "pin_verified": "PIN Verified successfully!"
+                "pin_created": "Success! Your PIN has been created",
+                "pin_updated": "Success! Your PIN has been updated",
+                "otp_sent": "Success! OTP sent",
+                "otp_verified": "Success! OTP has been verified",
+                "pin_verified": "Success! PIN has been verified"
             },
             "error_messages": {
-                "common": "Something went wrong!",
-                "try_new_pin": "Try a new PIN — this one’s already in use."
+                "common": "Oops! We hit a snag Try again?",
+                "try_new_pin": "Oops! That PIN’s taken. Give another one a go!"
             },
             "buttons": {
                 "update": "Update PIN",
-                "create": "Create PIN"
+                "create": "Create a new PIN"
             },
             "helper_components": {
                 "titles": {
                     "create_pin": "Create a New PIN",
                     "confirm_pin": "Confirm PIN",
-                    "enter_current_pin": "Enter Current PIN",
-                    "enter_otp": "OTP Sent to your Registered Number"
+                    "enter_current_pin": "Enter current PIN",
+                    "enter_otp": "OTP Sent to your registered Number"
                 },
                 "descriptions": {
-                    "create_pin": "Set a PIN to add more security",
+                    "create_pin": "Add a PIN to keep things extra secure",
                     "confirm_pin": "Confirm PIN to proceed safely",
                     "enter_current_pin": "Enter your current PIN to proceed",
-                    "enter_otp": "Verify OTP to change your PIN",
-                    "success_message": "You can now use it to authorize actions securely"
+                    "enter_otp": "Enter the received OTP to change your PIN",
+                    "success_message": "You can now use the new PIN to authorize transactions securely"
                 },
                 "buttons": {
                     "next": "Next",
@@ -661,9 +687,9 @@
                     "proceed": "Proceed"
                 },
                 "messages": {
-                    "pin_mismatch": "PINs do not match!",
-                    "forgot_pin": "Invalid PIN, Forgot PIN?",
-                    "try_new_pin": "Try a new PIN — this one’s already in use."
+                    "pin_mismatch": "Incorrect PIN, PIN mismatch",
+                    "forgot_pin": "Invalid PIN, Forgot PIN ?",
+                    "try_new_pin": "Oops! That PIN’s taken. Give another one a go!"
                 },
                 "steps": {
                     "enter_pin": "Enter PIN",
@@ -672,16 +698,16 @@
                 }
             },
             "audit_logs": {
-                "title": "PIN Audit Logs",
+                "title": "PIN audit logs",
                 "table": {
                     "header": {
                         "label": {
                             "pin_id": "PIN ID",
-                            "updated_by": "UPDATED BY",
-                            "update_on": "UPDATED ON",
-                            "action_type": "ACTION TYPE",
-                            "ip_address": "IP ADDRESS",
-                            "status": "STATUS"
+                            "updated_by": "Updated by",
+                            "update_on": "Updated on (date)",
+                            "action_type": "Action type",
+                            "ip_address": "IP address",
+                            "status": "Status"
                         }
                     },
                     "data": {
@@ -698,28 +724,28 @@
             "paymentId": "Payment ID",
             "invoiceId": "Invoice ID",
             "status": "Status",
-            "clientName": "Client Name",
-            "vendorName": "Vendor Name",
+            "clientName": "Client name",
+            "vendorName": "Vendor name",
             "transactionId": "Transaction ID",
             "modeOfPayment": "Mode of Payment",
-            "amountPaid": "Amount Paid",
-            "totalAmount": "Total Amount",
-            "paymentDate": "Payment Date",
-            "additionalProof": "Additional Proof",
+            "amountPaid": "Amount paid",
+            "totalAmount": "Total amount",
+            "paymentDate": "Payment date",
+            "additionalProof": "Additional proof",
             "fallback": "-"
         },
         "raise_debit_note_modal": {
             "trigger": {
-                "button": "Raise Debit Note",
-                "tooltip": "Raise a debit note"
+                "button": "Create a Debit note",
+                "tooltip": "Create a Debit note"
             },
             "content": {
-                "title": "Debit Note",
+                "title": "Debit note",
                 "form": {
                     "amount": {
                         "label": "Amount",
                         "required": "*",
-                        "error": "Amount should not be greater than total amount of invoice"
+                        "error": "That’s more than what’s on the invoice. Please enter a valid amount"
                     },
                     "remark": {
                         "label": "Remark",
@@ -732,46 +758,46 @@
                 }
             },
             "toast": {
-                "success": "Debit Note Raised",
-                "error": "Something went wrong"
+                "success": "Debit note created",
+                "error": "Oops! We hit a snag Try again?"
             }
         },
         "invoiceType": {
-            "title": "Select Invoice Type",
-            "set_as_default": "Set as Default",
+            "title": "Select invoice type",
+            "set_as_default": "Set as default",
             "proceed_button": "Proceed",
-            "toast_success": "Default Invoice Type set successfully",
-            "toast_error": "Something went wrong",
-            "change_default_prefix": "You can change your default from",
-            "change_default_link": "here",
+            "toast_success": "Success! This is now your default invoice type",
+            "toast_error": "Oops! We hit a snag Try again?",
+            "change_default_prefix": "Change your default prefix easily from this",
+            "change_default_link": "link",
             "types": {
                 "b2c": {
-                    "name": "B2C Invoice",
-                    "description": "For direct sales to individual consumers, usually without GST registration."
+                    "name": "B2C invoice",
+                    "description": "Used for direct sales to individual customers, often without GST registration"
                 },
                 "b2b": {
-                    "name": "B2B Invoice",
-                    "description": "For transactions between two registered businesses with GST details."
+                    "name": "B2B invoice",
+                    "description": "Used for transactions where both businesses are registered under GST"
                 }
             }
         },
         "invoice_settings": {
-            "default_invoice_type": "Default Invoice Type",
-            "default_skin": "Default Skin",
+            "default_invoice_type": "Default invoice type",
+            "default_skin": "Default skin",
             "preview_button": "Preview",
-            "custom_remarks_label": "Custom Remarks",
+            "custom_remarks_label": "Custom remarks",
             "discard_button": "Discard",
             "save_button": "Save",
-            "social_links_label": "Add Social links",
+            "social_links_label": "Add social media link",
             "social_links_placeholder": "Add link here",
             "invoice_types": {
                 "b2c": {
                     "name": "B2C (Business to Consumer)",
-                    "description": "For direct sales to individual consumers, usually without GST registration."
+                    "description": "Used for direct sales to individual customers, often without GST registration"
                 },
                 "b2b": {
                     "name": "B2B (Business to Business)",
-                    "description": "For transactions between two registered businesses with GST details."
+                    "description": "Used for transactions where both businesses are registered under GST."
                 }
             },
             "template": {
@@ -785,7 +811,7 @@
         },
         "validationUtils": {
             "phone": {
-                "required": "*Phone Number is required to proceed",
+                "required": "*Phone Number Is Required To Proceed",
                 "invalid": "*Please enter a 10 - digit phone number"
             },
             "pan": {
@@ -838,13 +864,13 @@
             "placeholder_account_number": "Enter account number",
             "btn_cancel": "Cancel",
             "btn_submit": "Submit",
-            "error_account_holder_required": "Account holder name is required",
+            "error_account_holder_required": "Add account holder name to proceed",
             "error_ifsc_required": "IFSC code is required",
             "error_ifsc_invalid": "Invalid IFSC code format",
             "error_account_number_required": "Account number is required",
             "error_account_number_short": "Account number must be at least 9 digits",
-            "toast_success": "Bank account added successfully!",
-            "toast_error": "Something went wrong",
+            "toast_success": "Success! Your bank account is added",
+            "toast_error": "Oops! We hit a snag Try again?",
             "attempt_msg_3": "You have only three attempts available for today.",
             "attempt_msg_2": "You have only two attempts left for today.",
             "attempt_msg_1": "You have only one attempt left for today.",
@@ -871,9 +897,9 @@
             "no_comments_title": "No Comments Yet",
             "no_comments_subtitle": "Something say to comment",
             "toast_comment_success": "Commented Successfully",
-            "toast_comment_error": "Comment cannot be empty!",
+            "toast_comment_error": "We need a comment to proceed",
             "toast_file_attached": "File attached successfully!",
-            "toast_general_error": "Something Went Wrong"
+            "toast_general_error": "Oops! We hit a snag Try again?"
         },
         "comment": {
             "edit": "Edit",
@@ -884,7 +910,7 @@
             "btn_file_upload": "Upload File",
             "toast_update_success": "Comment updated",
             "toast_update_error": "Something went wrong",
-            "toast_empty_comment_error": "Comment cannot be empty!",
+            "toast_empty_comment_error": "We need a comment to proceed",
             "fallback_name": "Name not available",
             "time_format_today": "hh:mm A",
             "time_format_other": "D MMMM, YYYY",
@@ -894,6 +920,42 @@
             "label_attachments": "Attachments",
             "label_comment": "Comment",
             "label_enterprise_icon": "Enterprise icon"
+        },
+        "memberInviteModal": {
+            "dialogTrigger": {
+                "button": "Invite members",
+                "tooltip": "Invite associate members to your enterprise"
+            },
+            "dialogTitle": "Invite Member",
+            "dialogTitleEdit": "Edit Member",
+            "form": {
+                "name": {
+                    "label": "Name",
+                    "required": "*"
+                },
+                "phone": {
+                    "label": "Phone",
+                    "required": "*"
+                },
+                "email": {
+                    "label": "Email",
+                    "optional": "(optional)"
+                },
+                "role": {
+                    "label": "Role",
+                    "required": "*",
+                    "placeholder": "Select Role"
+                },
+                "actions": {
+                    "discard": "Discard",
+                    "create": "Create"
+                }
+            },
+            "toast": {
+                "success": "Members Added Successfully",
+                "editSuccess": "Member Edited Successfully",
+                "error": "Something went wrong"
+            }
         },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
@@ -919,7 +981,9 @@
             "PARTIAL_PAID": "Partial Paid",
             "NOT_PAID": "Payment pending",
             "NOT_RAISED": "-",
-            "RAISED": "Debit Note Raised"
+            "RAISED": "Debit Note Raised",
+            "STOCK_OUT": "Stock Out",
+            "STOCK_IN": "Stock In"
         }
     }
 }

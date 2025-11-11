@@ -1,7 +1,7 @@
 import { addressAPIs } from '@/api/addressApi/addressApis';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
-import { LocalStorageService } from '@/lib/utils';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
 import { Label } from '@radix-ui/react-label';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -25,7 +25,7 @@ const EditModal = ({
   const translations = useTranslations('components.addEditModal');
 
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const [open, setOpen] = useState(isEditing);
   const [errorMsg, setErrorMsg] = useState({});

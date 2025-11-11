@@ -172,6 +172,7 @@
                     "select_status": "स्थिति चुनें",
                     "select_client": "क्लाइंट चुनें",
                     "invoice_generated": "चालान जनरेट किया गया",
+                    "debit_note_raised": "डेबिट नोट उठाया गया",
                     "clear": "साफ़ करें"
                 },
                 "input": {
@@ -183,7 +184,10 @@
                             "option4": "अस्वीकृत",
                             "option5": "वापस लिया गया",
                             "option6": "बोली भेजी गई",
-                            "option7": "प्रस्ताव प्राप्त हुआ"
+                            "option7": "प्रस्ताव प्राप्त हुआ",
+                            "option8": "भुगतान लंबित",
+                            "option9": "आंशिक भुगतान",
+                            "option10": "भुगतान किया गया"
                         }
                     }
                 },
@@ -463,6 +467,7 @@
             },
             "ctas": {
                 "next": "अगला",
+                "verify": "सत्यापित करें",
                 "cancel": "रद्द करें"
             }
         },
@@ -484,6 +489,27 @@
             },
             "errorMsg": {
                 "common": "कुछ गलत हो गया।",
+                "pin_error": "पिन भूल गए?"
+            }
+        },
+        "pin_verify_modal_offline_order": {
+            "title": "इनवॉइस",
+            "ctas": {
+                "generate": "जनरेट करें",
+                "view": "देखें",
+                "verify": "सत्यापित करें"
+            },
+            "infoText": {
+                "title": "पिन सत्यापन",
+                "pin_exist_info": "इस ऑर्डर पर सीधे इनवॉइस नहीं बनाया जा सकता। कृपया इसे वापस लें ताकि एक नया ऑर्डर बनाया जा सके, जिस पर आप पूरा या आंशिक इनवॉइस बना सकें।",
+                "pin_not_exist_info": "आपके पास अभी पिन नहीं है। पहले पिन सेटिंग्स में जाकर पिन सेट करें",
+                "info2": "यहाँ क्लिक करें"
+            },
+            "successMsg": {
+                "invoice_generate_success": "इनवॉइस सफलतापूर्वक जनरेट हुआ"
+            },
+            "errorMsg": {
+                "common": "कुछ गलत हो गया",
                 "pin_error": "पिन भूल गए?"
             }
         },
@@ -894,6 +920,42 @@
             "label_comment": "टिप्पणी",
             "label_enterprise_icon": "उद्यम आइकन"
         },
+        "memberInviteModal": {
+            "dialogTrigger": {
+                "button": "सदस्यों को आमंत्रित करें",
+                "tooltip": "अपने उद्यम में एसोसिएट सदस्यों को आमंत्रित करें"
+            },
+            "dialogTitle": "सदस्य आमंत्रित करें",
+            "dialogTitleEdit": "सदस्य संपादित करें",
+            "form": {
+                "name": {
+                    "label": "नाम",
+                    "required": "*"
+                },
+                "phone": {
+                    "label": "फ़ोन",
+                    "required": "*"
+                },
+                "email": {
+                    "label": "ईमेल",
+                    "optional": "(वैकल्पिक)"
+                },
+                "role": {
+                    "label": "भूमिका",
+                    "required": "*",
+                    "placeholder": "भूमिका चुनें"
+                },
+                "actions": {
+                    "discard": "रद्द करें",
+                    "create": "बनाएं"
+                }
+            },
+            "toast": {
+                "success": "सदस्य सफलतापूर्वक जोड़े गए",
+                "editSuccess": "सदस्य सफलतापूर्वक संपादित किया गया",
+                "error": "कुछ गलत हो गया"
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "स्वीकृत",
@@ -918,7 +980,9 @@
             "PARTIAL_PAID": "आंशिक भुगतान",
             "NOT_PAID": "भुगतान लंबित",
             "NOT_RAISED": "-",
-            "RAISED": "डेबिट नोट जारी किया गया"
+            "RAISED": "डेबिट नोट जारी किया गया",
+            "STOCK_OUT": "स्टॉक आउट",
+            "STOCK_IN": "स्टॉक इन"
         }
     }
 }

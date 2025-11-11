@@ -25,11 +25,13 @@ import { useUserData } from '@/context/UserDataContext';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
   const translations = useTranslations('auth.userPanVerification');
   const translationsForError = useTranslations();
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const attemptsRemaining = LocalStorageService.get('attemptsRemaining');
 
   const { updateAuthProgress } = useAuthProgress(); // context
@@ -115,11 +117,10 @@ const PanVerificationPage = () => {
 
   useEffect(() => {
     if (errorPanDetails) {
+      const customError = apiErrorHandler(errorPanDetails);
       setErrorMsg((prev) => ({
         ...prev,
-        panNumber:
-          errorPanDetails?.response?.data?.message ||
-          translations('error.generic'),
+        panNumber: translationsAPIErrors(customError),
       }));
     }
   }, [errorPanDetails]);
@@ -150,6 +151,7 @@ const PanVerificationPage = () => {
       LocalStorageService.set('enterpriseDetails', userData);
       // marked pan verified in context
       updateAuthProgress('isPanVerified', true);
+      LocalStorageService.set('isPanVerified', true);
     }
     setErrorMsg(isAnyError);
   };

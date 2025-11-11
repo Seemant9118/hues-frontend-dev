@@ -3,6 +3,7 @@
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { servicesApi } from '@/api/inventories/services/services';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Wrapper from '@/components/wrappers/Wrapper';
-import useMetaData from '@/custom-hooks/useMetaData';
+import useMetaData from '@/hooks/useMetaData';
 import { useRouter } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -41,7 +42,7 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
 
   const translations = useTranslations('catalogue');
 
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -160,13 +161,13 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
     {
       id: 1,
       name: translations('title'),
-      path: `/catalogue`,
+      path: `/dashboard/catalogue`,
       show: true, // Always show
     },
     {
       id: 2,
       name: translations('components.update.title'),
-      path: `/catalogue/?action=update`,
+      path: `/dashboard/catalogue/?action=update`,
       show: true, // Always show
     },
   ];
@@ -225,8 +226,8 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                   variant="outline"
                   onClick={() => {
                     item.type === 'goods'
-                      ? router.push('/inventory/goods?action=add')
-                      : router.push('/inventory/services/?action=add');
+                      ? router.push('/dashboard/inventory/goods?action=add')
+                      : router.push('/dashboard/inventory/services?action=add');
 
                     LocalStorageService.set(
                       'redirectFromCatalogue',
@@ -312,7 +313,7 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    router.push('/catalogue');
+                    router.push('/dashboard/catalogue');
                   }}
                 >
                   {translations('components.update.ctas.close')}
@@ -359,8 +360,10 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                       size="sm"
                       onClick={() => {
                         item.type === 'goods'
-                          ? router.push('/inventory/goods?action=add')
-                          : router.push('/inventory/services/?action=add');
+                          ? router.push('/dashboard/inventory/goods?action=add')
+                          : router.push(
+                              '/dashboard/inventory/services?action=add',
+                            );
 
                         LocalStorageService.set(
                           'redirectFromCatalogue',
@@ -406,8 +409,10 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                       size="sm"
                       onClick={() => {
                         item.type === 'goods'
-                          ? router.push('/inventory/goods?action=add')
-                          : router.push('/inventory/services/?action=add');
+                          ? router.push('/dashboard/inventory/goods?action=add')
+                          : router.push(
+                              '/dashboard/inventory/services?action=add',
+                            );
 
                         LocalStorageService.set(
                           'redirectFromCatalogue',

@@ -1,6 +1,8 @@
 'use client';
 
 import { templateApi } from '@/api/templates_api/template_api';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -9,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { LocalStorageService } from '@/lib/utils';
 import {
   getDocument,
   updateTemplate,
@@ -19,8 +22,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import Loading from '@/components/ui/Loading';
-import { LocalStorageService } from '@/lib/utils';
 import { toast } from 'sonner';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -76,7 +77,7 @@ const ViewTemplate = ({ url, id, signatureBoxPlacement, name }) => {
 
   const { mutate, isPending: isUpdating } = useMutation({
     mutationFn: () => {
-      const enterpriseId = LocalStorageService.get('enterprise_Id');
+      const enterpriseId = getEnterpriseId();
       const userId = LocalStorageService.get('user_profile');
       return updateTemplate(
         {

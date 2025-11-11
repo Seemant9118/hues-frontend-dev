@@ -3,6 +3,7 @@
 import { invitation } from '@/api/invitation/Invitation';
 import {
   capitalize,
+  getEnterpriseId,
   getInitialsNames,
   getRandomBgColor,
 } from '@/appUtils/helperFunctions';
@@ -12,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { LocalStorageService } from '@/lib/utils';
 import {
   acceptInvitation,
   rejectInvitation,
@@ -37,7 +37,7 @@ const PendingInvitesModal = ({
   const translations = useTranslations();
 
   const queryClient = useQueryClient();
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
+  const enterpriseId = getEnterpriseId();
 
   const acceptInvitationMutation = useMutation({
     mutationFn: (data) => acceptInvitation(data),

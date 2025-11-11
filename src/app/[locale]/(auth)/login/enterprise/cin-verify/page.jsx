@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,7 @@ import { toast } from 'sonner';
 
 const CINVerificationPage = () => {
   const translations = useTranslations('auth.enterprise.cinVerify');
+  const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const router = useRouter();
   const userId = LocalStorageService.get('user_profile');
   const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
@@ -58,7 +60,8 @@ const CINVerificationPage = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.response.data.messages || translations('toast.error'));
+      const customError = apiErrorHandler(error);
+      toast.error(translationsAPIErrors(customError));
     },
   });
 

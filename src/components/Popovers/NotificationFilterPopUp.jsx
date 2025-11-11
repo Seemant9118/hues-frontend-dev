@@ -67,7 +67,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="export">
+        <Button size="sm" variant="outline">
           <SlidersHorizontal size={16} />
           {translations('cta')}
         </Button>

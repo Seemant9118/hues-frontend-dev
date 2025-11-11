@@ -13,3 +13,15 @@ export function refreshToken() {
     },
   );
 }
+
+export function adminRefreshToken() {
+  const refreshTokenValue = LocalStorageService.get('refreshtoken');
+  return axios.get(
+    `${process.env.NEXT_PUBLIC_BASE_URL}${tokenApi.adminRefreshToken.endpoint}`,
+    {
+      headers: {
+        Authorization: `Bearer ${refreshTokenValue}`,
+      },
+    },
+  );
+}
