@@ -132,7 +132,8 @@
                 },
                 "successMsg": {
                     "order_accepted": "Order Accepted",
-                    "stock_out" : "Stock out successfully"
+                    "stock_out" : "Stock out successfully",
+                    "invoice_generate_success": "Order recreated for invoice processing"
                 },
                 "errorMsg": {
                     "common": "Oops! Something didn’t go as planned Try again?"
