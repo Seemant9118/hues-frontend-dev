@@ -432,6 +432,7 @@ const CreateB2BInvoice = ({
                     const {
                       value: id,
                       clientId,
+                      isAccepted,
                       clientEnterpriseId,
                     } = selectedOption;
 
@@ -442,6 +443,10 @@ const CreateB2BInvoice = ({
                         ...prev,
                         buyerId: id,
                         selectedValue: selectedOption,
+                        buyerType:
+                          isAccepted === 'ACCEPTED'
+                            ? 'ENTERPRISE'
+                            : 'UNCONFIRMED_ENTERPRISE',
                         getAddressRelatedData: {
                           clientId,
                           clientEnterpriseId,
