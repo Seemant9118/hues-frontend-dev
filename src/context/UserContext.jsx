@@ -1,5 +1,6 @@
 'use client';
 
+import { handleLogoutWithFcmDeregister } from '@/appUtils/helperFunctions';
 import { LocalStorageService } from '@/lib/utils';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -40,8 +41,7 @@ export const UserProvider = ({ children }) => {
   }, [pathname, router]);
 
   const logout = () => {
-    LocalStorageService.clear();
-    router.push('/login');
+    handleLogoutWithFcmDeregister(router);
   };
 
   // Render loading state during initialization

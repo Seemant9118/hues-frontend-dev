@@ -1,5 +1,6 @@
 'use client';
 
+import { redirectToHomeWithFcm } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -7,14 +8,12 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu';
-import { LocalStorageService } from '@/lib/utils';
 import { Globe, Mail, Menu, Phone, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
-import { goToHomePage, parseJwt } from '@/appUtils/helperFunctions';
 
 const features = [
   {
@@ -102,12 +101,7 @@ export default function HeroSection() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const token = LocalStorageService.get('token');
-    const userData = parseJwt(token);
-
-    if (userData?.userId) {
-      window.location.href = goToHomePage();
-    }
+    redirectToHomeWithFcm(router);
   }, []);
 
   return (

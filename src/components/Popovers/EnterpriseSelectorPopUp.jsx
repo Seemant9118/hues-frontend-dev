@@ -1,7 +1,12 @@
 'use client';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
-import { capitalize, goToHomePage, parseJwt } from '@/appUtils/helperFunctions';
+import {
+  capitalize,
+  goToHomePage,
+  parseJwt,
+  redirectToHomeWithFcm,
+} from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import {
@@ -11,16 +16,18 @@ import {
 } from '@/services/Admin_Services/AdminServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowRight, Box, ListRestart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import Loading from '../ui/Loading';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import SearchInput from '../ui/SearchInput';
-import Tooltips from '../auth/Tooltips';
 
 const DEBOUNCE_DELAY = 500;
 
 export default function EnterpriseSelectorPopUp() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const switchedEnterpriseName = LocalStorageService.get(
     'switchedEnterpriseName',
@@ -92,7 +99,7 @@ export default function EnterpriseSelectorPopUp() {
       );
 
       // reload immediately
-      window.location.href = goToHomePage();
+      redirectToHomeWithFcm(router);
     },
     onError: () => {
       toast.error('Failed to switch enterprise. Please try again.');

@@ -4,9 +4,10 @@ import { userAuth } from '@/api/user_auth/Users';
 import {
   getInitialsNames,
   getRandomBgColor,
-  goToHomePage,
+  handleLogoutWithFcmDeregister,
+  redirectToHomeWithFcm,
 } from '@/appUtils/helperFunctions';
-import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
+import { cn, LocalStorageService } from '@/lib/utils';
 import {
   addAnotherEnterprise,
   getUserAccounts,
@@ -84,7 +85,7 @@ const ProfileInfoPopUp = ({
       toast.success('Enterprise Switch Successfully');
 
       // reload immediately
-      window.location.href = goToHomePage();
+      redirectToHomeWithFcm(router);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -121,9 +122,7 @@ const ProfileInfoPopUp = ({
     mutationFn: LoggingOut,
     onSuccess: (res) => {
       setOpen(false);
-      LocalStorageService.clear();
-      SessionStorageService.clear();
-      router.push('/login');
+      handleLogoutWithFcmDeregister(router);
       toast.success(res.data.message || 'User Logged Out');
     },
     onError: (error) => {

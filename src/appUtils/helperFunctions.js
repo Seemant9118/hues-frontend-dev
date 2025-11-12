@@ -1,4 +1,8 @@
-import { LocalStorageService } from '@/lib/utils';
+/* eslint-disable no-console */
+
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import { deregisterFcmToken } from '@/services/FCM_Services/DeregisterFCMTokenServices';
+import { initializeFcmToken } from '@/services/FCM_Services/RegisterFCMTokenServices';
 
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
@@ -154,12 +158,63 @@ export const getEnterpriseId = () => {
 
 export const goToHomePage = () => {
   const token = LocalStorageService.get('token');
-
   const payload = token ? parseJwt(token) : null;
 
   if (payload?.roles?.includes('ADMIN')) {
     return '/dashboard/admin/reports';
-  } else {
-    return '/dashboard';
+  }
+  return '/dashboard';
+};
+
+export const redirectToHomeWithFcm = async (router, redirectPath) => {
+  try {
+    const accessToken = LocalStorageService.get('token');
+    const payload = accessToken ? parseJwt(accessToken) : null;
+
+    // ✅ Register FCM token if logged in
+    if (payload?.userId) {
+      await initializeFcmToken();
+    }
+
+    // ✅ Determine the path — fallback to home if not provided
+    const targetPath = redirectPath || goToHomePage();
+
+    // ✅ Navigate via router (no full page reload)
+    router.push(targetPath);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('🚨 FCM init + redirect failed:', err);
+
+    // Still navigate even if FCM fails
+    router.push(redirectPath || goToHomePage());
+  }
+};
+
+export const handleLogoutWithFcmDeregister = async (router) => {
+  try {
+    const accessToken = LocalStorageService.get('token');
+    const payload = accessToken ? parseJwt(accessToken) : null;
+    const fcmToken = LocalStorageService.get('fcm_web_token');
+
+    // 🔹 Clear session immediately so logout is guaranteed
+    LocalStorageService.clear();
+    SessionStorageService.clear();
+
+    // 🔹 Redirect user right away (non-blocking)
+    router.push('/login');
+
+    // 🔹 Fire and forget FCM deregistration (doesn’t block UI)
+    if (payload?.userId && fcmToken) {
+      deregisterFcmToken({ fcmToken, deviceType: 'web' })
+        .then(() => {
+          console.info('FCM token deregistered successfully.');
+        })
+        .catch((err) => {
+          console.warn('Failed to deregister FCM token:', err);
+        });
+    }
+  } catch (err) {
+    console.error('Logout process failed:', err);
+    router.push('/login');
   }
 };
