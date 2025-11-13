@@ -13,8 +13,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { usePathname, useRouter } from '@/i18n/routing';
+import { revertSwitchedEnterprise } from '@/services/Admin_Services/AdminServices';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
@@ -112,6 +115,40 @@ const ProfileInfoPopUp = ({
     },
   });
 
+  // revert enterprise view
+  const revertSwitchedEnterpriseMutation = useMutation({
+    mutationKey: [AdminAPIs.revertSwitchedEnterprise.endpointKey],
+    mutationFn: revertSwitchedEnterprise,
+    onSuccess: (data) => {
+      // eslint-disable-next-line camelcase
+      const { access_token, refresh_token } = data.data.data;
+
+      // update tokens
+      LocalStorageService.set('token', access_token);
+      LocalStorageService.set('refreshtoken', refresh_token);
+
+      // clear switched enterprise
+      LocalStorageService.remove('switchedEnterpriseId');
+      LocalStorageService.remove('switchedEnterpriseName');
+
+      // ✅ store success flag for after reload
+      LocalStorageService.set(
+        'switchSuccessMessage',
+        'Enterprise reverted to admin view',
+      );
+
+      // reload immediately
+      window.location.href = goToHomePage();
+    },
+    onError: () => {
+      toast.error('Failed to revert admin view. Please try again.');
+    },
+  });
+
+  const handleRevert = (enterprise) => {
+    revertSwitchedEnterpriseMutation.mutate(enterprise?.enterpriseId);
+  };
+
   // logout mutation
   const logoutMutation = useMutation({
     mutationKey: [userAuth.logout.endpointKey],
@@ -191,7 +228,18 @@ const ProfileInfoPopUp = ({
           <h1 className="text-sm">{translations(enterprises)}</h1>
           {switchedEnterpriseId && (
             <div className="absolute top-0 z-20 flex h-40 w-full items-center justify-center gap-1 rounded-md border bg-white/70 px-4 py-3 backdrop-blur-sm">
-              <ShieldBan size={14} /> Not allowed to switch
+              <div className="flex flex-col items-center justify-center gap-1">
+                <ShieldBan size={16} />
+                <span className="text-center text-sm">
+                  Want to switch to another?{' '}
+                  <button
+                    onClick={handleRevert}
+                    className="text-primary hover:underline"
+                  >
+                    remove the enterprise view.
+                  </button>
+                </span>
+              </div>
             </div>
           )}
           <div className="scrollBarStyles flex max-h-32 flex-col gap-5 overflow-y-auto">
