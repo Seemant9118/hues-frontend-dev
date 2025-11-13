@@ -1,5 +1,5 @@
 import { LocalStorageService } from '@/lib/utils';
-import { redirectToHomeWithFcm } from './helperFunctions';
+import { redirectToHomeWithFcm } from './redirectionUtilFn';
 
 export async function handleOtpRedirection({
   isOnboardingComplete,

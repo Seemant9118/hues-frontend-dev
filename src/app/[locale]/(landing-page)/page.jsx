@@ -1,6 +1,6 @@
 'use client';
 
-import { redirectToHomeWithFcm } from '@/appUtils/helperFunctions';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -101,7 +101,7 @@ export default function HeroSection() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    redirectToHomeWithFcm(router);
+    goToHomePage();
   }, []);
 
   return (

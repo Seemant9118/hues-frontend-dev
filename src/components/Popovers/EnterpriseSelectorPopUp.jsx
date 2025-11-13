@@ -1,12 +1,11 @@
 'use client';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { capitalize, parseJwt } from '@/appUtils/helperFunctions';
 import {
-  capitalize,
   goToHomePage,
-  parseJwt,
   redirectToHomeWithFcm,
-} from '@/appUtils/helperFunctions';
+} from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import {

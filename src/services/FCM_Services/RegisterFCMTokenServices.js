@@ -3,22 +3,13 @@
 import { fcmAPIs } from '@/api/fcmApis/fcmApis';
 import { messaging } from '@/lib/firebaseConfig';
 import { LocalStorageService } from '@/lib/utils';
-import axios from 'axios';
 import { getToken } from 'firebase/messaging';
+import { APIinstance } from '@/services';
 
 const FCM_TOKEN_KEY = 'fcm_web_token';
 
 const registerFcmToken = (data) => {
-  return axios.post(
-    `${process.env.NEXT_PUBLIC_BASE_URL}${fcmAPIs.registerFcmToken.endpoint}`,
-    data,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${LocalStorageService.get('token')}`,
-      },
-    },
-  );
+  return APIinstance.post(`${fcmAPIs.registerFcmToken.endpoint}`, data);
 };
 
 // Register valid token to backend

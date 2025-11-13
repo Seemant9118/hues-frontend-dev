@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { goToHomePage } from '@/appUtils/helperFunctions';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {

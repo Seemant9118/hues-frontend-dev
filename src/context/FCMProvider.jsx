@@ -13,6 +13,7 @@ import { initializeFcmToken } from '@/services/FCM_Services/RegisterFCMTokenServ
 
 export default function FCMProvider({ children }) {
   const queryClient = useQueryClient();
+  const isInitializedRef = useRef(false);
   const isForegroundHandledRef = useRef(false);
 
   const queryMap = {
@@ -39,31 +40,61 @@ export default function FCMProvider({ children }) {
   };
 
   useEffect(() => {
+    // Prevent double run under React Strict Mode
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+
     (async () => {
       await initializeFcmToken();
     })();
 
-    // 🔔 Foreground notifications
+    // Foreground listener
     const unsubscribe = onMessage(messaging, (payload) => {
-      isForegroundHandledRef.current = true;
+      isForegroundHandledRef.current = true; // mark foreground as handled
+
       const { body, image, endpointKey } = payload.data || {};
+
+      // Refetch queries for real-time data updates
       if (endpointKey) refetchAPI(endpointKey);
 
-      toast(body || 'New notification received', {
+      // Show toast only once (foreground)
+      toast(body || 'New notification', {
         icon: image || '🔔',
       });
 
-      // eslint-disable-next-line no-return-assign
-      setTimeout(() => (isForegroundHandledRef.current = false), 1200);
+      // Reset flag after a short delay (so BC message is ignored)
+      setTimeout(() => {
+        isForegroundHandledRef.current = false;
+      }, 1500);
     });
 
-    // 🪄 Background channel sync
+    // Background listener via BroadcastChannel
     const bc = new BroadcastChannel('fcm_channel');
     bc.onmessage = (event) => {
       const { data } = event.data || {};
-      if (data?.endpointKey) refetchAPI(data.endpointKey);
+      // notification,
+      // Skip duplicate toast if handled in foreground
+      if (isForegroundHandledRef.current) {
+        // Still refetch silently (important)
+        if (data?.endpointKey) {
+          refetchAPI(data.endpointKey);
+        }
+        return;
+      }
+
+      // If not handled in foreground (e.g., inactive tab or delayed BC message)
+      if (data?.endpointKey) {
+        refetchAPI(data.endpointKey);
+      }
+
+      // Show toast only if foreground handler didn’t already do it
+      // toast(notification?.title || 'New notification', {
+      //   description: notification?.body,
+      //   icon: notification?.image || '🔔',
+      // });
     };
 
+    // eslint-disable-next-line consistent-return
     return () => {
       unsubscribe();
       bc.close();

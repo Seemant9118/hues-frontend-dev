@@ -2,7 +2,6 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { validateEmail } from '@/appUtils/ValidationUtils';
-import { handleLogoutWithFcmDeregister } from '@/appUtils/helperFunctions';
 import ErrorBox from '@/components/ui/ErrorBox';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import Loading from '@/components/ui/Loading';
@@ -13,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getProfileDetails,
   LoggingOut,
@@ -70,7 +69,10 @@ function Profile() {
     mutationKey: [userAuth.logout.endpointKey],
     mutationFn: LoggingOut,
     onSuccess: (res) => {
-      handleLogoutWithFcmDeregister(router);
+      // Clear session immediately so logout is guaranteed
+      LocalStorageService.clear();
+      SessionStorageService.clear();
+      router.push('/login');
       toast.success(
         res.data.message || translations('toasts.logout.successMsg'),
       );

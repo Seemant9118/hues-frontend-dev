@@ -1,6 +1,6 @@
 'use client';
 
-import { redirectToHomeWithFcm } from '@/appUtils/helperFunctions';
+import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';

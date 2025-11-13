@@ -1,13 +1,8 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
-import {
-  getInitialsNames,
-  getRandomBgColor,
-  handleLogoutWithFcmDeregister,
-  redirectToHomeWithFcm,
-} from '@/appUtils/helperFunctions';
-import { cn, LocalStorageService } from '@/lib/utils';
+import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
+import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   addAnotherEnterprise,
   getUserAccounts,
@@ -18,6 +13,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { usePathname, useRouter } from '@/i18n/routing';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -122,7 +118,12 @@ const ProfileInfoPopUp = ({
     mutationFn: LoggingOut,
     onSuccess: (res) => {
       setOpen(false);
-      handleLogoutWithFcmDeregister(router);
+      // Clear session immediately so logout is guaranteed
+      LocalStorageService.clear();
+      SessionStorageService.clear();
+
+      // Redirect user right away (non-blocking)
+      router.push('/login');
       toast.success(res.data.message || 'User Logged Out');
     },
     onError: (error) => {

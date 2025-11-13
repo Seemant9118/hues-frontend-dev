@@ -3,7 +3,7 @@
 import { directorApi } from '@/api/director/directorApi';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
-import { redirectToHomeWithFcm } from '@/appUtils/helperFunctions';
+import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
