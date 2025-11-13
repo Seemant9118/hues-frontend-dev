@@ -12,9 +12,7 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
-import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { revertSwitchedEnterprise } from '@/services/Admin_Services/AdminServices';
