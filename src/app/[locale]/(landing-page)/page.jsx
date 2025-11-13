@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
+import { LocalStorageService } from '@/lib/utils';
+import { parseJwt } from '@/appUtils/helperFunctions';
 
 const features = [
   {
@@ -101,7 +103,12 @@ export default function HeroSection() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    goToHomePage();
+    const token = LocalStorageService.get('token');
+    const userData = parseJwt(token);
+
+    if (userData?.userId) {
+      window.location.href = goToHomePage();
+    }
   }, []);
 
   return (

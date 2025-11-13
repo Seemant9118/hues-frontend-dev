@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { revertSwitchedEnterprise } from '@/services/Admin_Services/AdminServices';
 import React, { useEffect, useState } from 'react';
@@ -83,7 +84,7 @@ const ProfileInfoPopUp = ({
       toast.success('Enterprise Switch Successfully');
 
       // reload immediately
-      redirectToHomeWithFcm(router);
+      window.location.href = goToHomePage();
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
