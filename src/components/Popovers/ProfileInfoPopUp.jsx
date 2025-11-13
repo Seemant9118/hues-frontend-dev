@@ -1,11 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
-import {
-  getInitialsNames,
-  getRandomBgColor,
-  goToHomePage,
-} from '@/appUtils/helperFunctions';
+import { getInitialsNames, getRandomBgColor } from '@/appUtils/helperFunctions';
 import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   addAnotherEnterprise,
@@ -18,6 +14,7 @@ import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { revertSwitchedEnterprise } from '@/services/Admin_Services/AdminServices';
 import React, { useEffect, useState } from 'react';
@@ -86,7 +83,7 @@ const ProfileInfoPopUp = ({
       toast.success('Enterprise Switch Successfully');
 
       // reload immediately
-      window.location.href = goToHomePage();
+      redirectToHomeWithFcm(router);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -157,8 +154,11 @@ const ProfileInfoPopUp = ({
     mutationFn: LoggingOut,
     onSuccess: (res) => {
       setOpen(false);
+      // Clear session immediately so logout is guaranteed
       LocalStorageService.clear();
       SessionStorageService.clear();
+
+      // Redirect user right away (non-blocking)
       router.push('/login');
       toast.success(res.data.message || 'User Logged Out');
     },

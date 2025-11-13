@@ -3,7 +3,7 @@
 import { directorApi } from '@/api/director/directorApi';
 import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { userAuth } from '@/api/user_auth/Users';
-import { goToHomePage } from '@/appUtils/helperFunctions';
+import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -110,7 +110,11 @@ const SelectEnterprisePage = () => {
     ) {
       const redirectUrl = LocalStorageService.get('redirectUrl');
       LocalStorageService.remove('redirectUrl'); // Clear the redirect URL
-      router.push(redirectUrl || goToHomePage());
+      if (redirectUrl) {
+        redirectToHomeWithFcm(router, redirectUrl);
+      } else {
+        redirectToHomeWithFcm(router);
+      }
     } else if (
       (!isEnterpriseOnboardingComplete || isEnterpriseOnboardingComplete) &&
       hasUserRequestAccessToEnterprise &&
