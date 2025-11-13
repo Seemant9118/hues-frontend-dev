@@ -13,7 +13,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { usePathname, useRouter } from '@/i18n/routing';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -81,7 +81,7 @@ const ProfileInfoPopUp = ({
       toast.success('Enterprise Switch Successfully');
 
       // reload immediately
-      redirectToHomeWithFcm(router);
+      window.location.href = goToHomePage();
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
