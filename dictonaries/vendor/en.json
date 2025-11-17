@@ -51,6 +51,35 @@
                     "rejected": "Declined by Vendor"
                 }
             }
+        },
+        "vendorDetails": {
+            "tabs":{
+                "tab1": {
+                    "title":"Overview",
+                    "content":{
+
+                    }
+                },
+                "tab2": {
+                    "title":"Document details",
+                    "content":{}
+                }
+            },
+            "title": "Vendor Details",
+            "overview": "Overview",
+            "enterpriseName": "Enterprise name",
+            "enterpriseType": "Enterprise type",
+            "email": "Email",
+            "phone": "Phone",
+            "address": "Enterprise Address",
+            "documentDetails": "Document Details",
+            "gst": "GST",
+            "cin": "CIN",
+            "udyam": "UDYAM",
+            "pan": "PAN",
+            "directorDetails": "Director Details",
+            "directorName": "Director Name",
+            "loading": "Loading enterprise details..."
         }
     }
 }

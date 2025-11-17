@@ -957,6 +957,28 @@
                 "error": "Something went wrong"
             }
         },
+        "createDispatchNote": {
+            "form": {
+                "table": {
+                    "header": {
+                        "item_name": "Item name",
+                        "invoice_qty": "Invoice Qty.",
+                        "dispatch_qty": "Dispatch Qty.",
+                        "total_amount": "Total Amount"
+                    }
+                },
+                "ctas": {
+                    "create": "Create",
+                    "discard": "Discard"
+                },
+                "successMsg": {
+                    "dispatach_created_success": "Dispatch note created Successfully"
+                },
+                "errorMsg": {
+                    "common":"Oops! We hit a snag Try again?"
+                }
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "Accepted",
@@ -983,7 +1005,8 @@
             "NOT_RAISED": "-",
             "RAISED": "Debit Note Raised",
             "STOCK_OUT": "Stock Out",
-            "STOCK_IN": "Stock In"
+            "STOCK_IN": "Stock In",
+            "DRAFT": "Draft"
         }
     }
 }

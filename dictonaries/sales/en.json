@@ -81,7 +81,7 @@
                     "upload_attachements": "Upload Document",
                     "record_payment": "Log payment",
                     "generate_invoice": "Invoice",
-                    "stock-out":"Stock out",
+                    "stock-out": "Stock out",
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -132,7 +132,7 @@
                 },
                 "successMsg": {
                     "order_accepted": "Order Accepted",
-                    "stock_out" : "Stock out successfully",
+                    "stock_out": "Stock out successfully",
                     "invoice_generate_success": "Order recreated for invoice processing"
                 },
                 "errorMsg": {
@@ -201,10 +201,12 @@
                 "title": {
                     "invoices": "Invoices",
                     "invoice_details": "Invoice details",
-                    "record_payment": "Record a payment"
+                    "record_payment": "Payment Receipt",
+                    "create_dispatch_note": "Create Dispatch Note"
                 },
                 "ctas": {
-                    "record_payment": "Record a payment",
+                    "record_payment": "Payment Receipt",
+                    "create_dispatch_note": "Dispatch",
                     "share": {
                         "placeholder": "Coming Soon.."
                     },
@@ -216,7 +218,8 @@
                     "label": {
                         "tab1": "Overview",
                         "tab2": "Payment Receipts",
-                        "tab3": "Debit Notes"
+                        "tab3": "Debit Notes",
+                        "tab4": "Dispatch Notes"
                     },
                     "content": {
                         "tab1": {
@@ -255,6 +258,20 @@
                             "emtpyStateComponent": {
                                 "title": "No debit notes yet",
                                 "para": "Looks like no debit notes yet"
+                            }
+                        },
+                        "tab4": {
+                            "table": {
+                                "header": {
+                                    "dispatchId": "Dispatch ID",
+                                    "status": "Status",
+                                    "createdAt": "Created At",
+                                    "items": "Items"
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "No dispatch notes yet",
+                                "para": "Looks like no dispatch notes yet"
                             }
                         }
                     }
@@ -370,6 +387,32 @@
                 "ctas": {
                     "accept": "Accept",
                     "reject": "Reject"
+                }
+            }
+        },
+        "sales-dispatch": {
+            "dispatch_details": {
+                "title": {
+                    "dispatch_notes": "Dispatch Notes",
+                    "dispatch_details": "Dispatch Details"
+                },
+                "overview_labels": {
+                    "status": "Status",
+                    "invoiceId": "Invoice ID",
+                    "buyerId": "Buyer",
+                    "totalAmount": "Total Amount",
+                    "dispatchId":"Dispatch ID"
+                },
+                "sections": {
+                    "items": "Items",
+                    "transport_bookings": "Transport Bookings",
+                    "no_booking": "No Booking Created yet"
+                },
+                "table_columns": {
+                    "type": "Type",
+                    "booking_no": "Booking No.",
+                    "date": "Date",
+                    "remarks": "Remarks"
                 }
             }
         }

@@ -21,7 +21,7 @@ export const clientEnterprise = {
   },
   //   4. get client by id
   getClient: {
-    endpoint: `/enterprise/client/`,
+    endpoint: `/enterprise/client/get/`,
     endpointKey: 'get_client',
   },
   //   5. get client list

@@ -1,12 +1,15 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import CreateDispatchNote from '@/components/dispatchNote/CreateDispatchNote';
+import { useDispatchNoteColumns } from '@/components/dispatchNote/dispatchNotesColumns';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -22,6 +25,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { getDispatchNotesByInvoice } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import {
@@ -48,6 +52,7 @@ const ViewInvoice = () => {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+  const [isCreatingDispatchNote, setIsCreatingDispatchNote] = useState(false);
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -68,6 +73,12 @@ const ViewInvoice = () => {
       path: `/dashboard/sales/sales-invoices/${params.invoiceId}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true
     },
+    {
+      id: 4,
+      name: translations('title.create_dispatch_note'),
+      path: `/dashboard/sales/sales-invoices/${params.invoiceId}`,
+      show: isCreatingDispatchNote, // Show only if isCreatingDispatchNote is true
+    },
   ];
 
   useEffect(() => {
@@ -75,6 +86,7 @@ const ViewInvoice = () => {
     const state = searchParams.get('state');
 
     setIsRecordingPayment(state === 'recordPayment');
+    setIsCreatingDispatchNote(state === 'createDispatchNote');
   }, [searchParams]);
 
   useEffect(() => {
@@ -83,12 +95,14 @@ const ViewInvoice = () => {
 
     if (isRecordingPayment) {
       newPath += '?state=recordPayment';
+    } else if (isCreatingDispatchNote) {
+      newPath += '?state=createDispatchNote';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.invoiceId, isRecordingPayment, router]);
+  }, [params.invoiceId, isRecordingPayment, isCreatingDispatchNote, router]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -143,6 +157,17 @@ const ViewInvoice = () => {
     enabled: tab === 'debitNotes',
   });
 
+  // fetch dispatch notes of invoice
+  const { isLoading: isDispatchNotesLoading, data: disptachNotes } = useQuery({
+    queryKey: [
+      deliveryProcess.getDispatchNotesByInvoice.endpointKey,
+      params.invoiceId,
+    ],
+    queryFn: () => getDispatchNotesByInvoice(params.invoiceId),
+    select: (data) => data.data.data,
+    enabled: tab === 'dispatchNote',
+  });
+
   const paymentStatus = ConditionalRenderingStatus({
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
@@ -150,6 +175,7 @@ const ViewInvoice = () => {
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
   });
 
+  const dispatchNoteColumns = useDispatchNoteColumns();
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = useSalesInvoiceColumns();
 
@@ -159,7 +185,11 @@ const ViewInvoice = () => {
   }
 
   const onRowClick = (row) => {
-    router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
+    return router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
+  };
+
+  const onDispatchedNoteRowClick = (row) => {
+    return router.push(`/dashboard/sales/sales-dispatched-notes/${row.id}`);
   };
 
   return (
@@ -174,7 +204,9 @@ const ViewInvoice = () => {
             />
           </div>
           <div className="flex gap-2">
+            {/* recording payment cta */}
             {!isRecordingPayment &&
+              !isCreatingDispatchNote &&
               (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                 ?.status === 'NOT_PAID' ||
                 invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -193,25 +225,25 @@ const ViewInvoice = () => {
                 </ProtectedWrapper>
               )}
 
-            {/* share CTA */}
-            {/* {!isRecordingPayment && (
-            <Tooltips
-              trigger={
+            {/* Create dispatch note cta */}
+            <ProtectedWrapper
+              permissionCode={'permission:sales-create-payment'}
+            >
+              {!isRecordingPayment && !isCreatingDispatchNote && (
                 <Button
-                  disabled
-                  variant="outline"
+                  variant="blue_outline"
                   size="sm"
-                  className="flex items-center justify-center"
+                  onClick={() => setIsCreatingDispatchNote(true)}
+                  className="font-bold"
                 >
-                  <Share2 size={14} />
+                  {translations('ctas.create_dispatch_note')}
                 </Button>
-              }
-              content={translations('ctas.share.placeholder')}
-            />
-          )} */}
+              )}
+            </ProtectedWrapper>
+
             {/* View CTA modal */}
             <ProtectedWrapper permissionCode={'permission:sales-document'}>
-              {!isRecordingPayment && (
+              {!isRecordingPayment && !isCreatingDispatchNote && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -222,7 +254,7 @@ const ViewInvoice = () => {
               )}
 
               {/* download CTA */}
-              {!isRecordingPayment && (
+              {!isRecordingPayment && !isCreatingDispatchNote && (
                 <Tooltips
                   trigger={
                     <Button
@@ -242,7 +274,7 @@ const ViewInvoice = () => {
             </ProtectedWrapper>
           </div>
         </section>
-        {!isRecordingPayment && (
+        {!isRecordingPayment && !isCreatingDispatchNote && (
           <Tabs
             value={tab}
             onValueChange={onTabChange}
@@ -257,6 +289,9 @@ const ViewInvoice = () => {
               </TabsTrigger>
               <TabsTrigger value="debitNotes">
                 {translations('tabs.label.tab3')}
+              </TabsTrigger>
+              <TabsTrigger value="dispatchNote">
+                {translations('tabs.label.tab4')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
@@ -434,17 +469,54 @@ const ViewInvoice = () => {
                 </div>
               )}
             </TabsContent>
+            <TabsContent value="dispatchNote">
+              {isDispatchNotesLoading && <Loading />}
+              {!isDispatchNotesLoading && disptachNotes?.length > 0 && (
+                <DataTable
+                  onRowClick={onDispatchedNoteRowClick}
+                  data={disptachNotes}
+                  columns={dispatchNoteColumns}
+                />
+              )}
+              {!isDispatchNotesLoading && disptachNotes?.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p className="font-bold">
+                    {translations(
+                      'tabs.content.tab4.emtpyStateComponent.title',
+                    )}
+                  </p>
+                  <ProtectedWrapper
+                    permissionCode={'permission:sales-create-payment'}
+                  >
+                    <p className="max-w-96 text-center">
+                      {translations(
+                        'tabs.content.tab4.emtpyStateComponent.para',
+                      )}
+                    </p>
+                  </ProtectedWrapper>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         )}
 
         {/* recordPayment component */}
-        {isRecordingPayment && (
+        {isRecordingPayment && !isCreatingDispatchNote && (
           <MakePaymentNewInvoice
             paymentStatus={paymentStatus}
             debitNoteStatus={debitNoteStatus}
             invoiceDetails={invoiceDetails?.invoiceDetails}
             setIsRecordingPayment={setIsRecordingPayment}
             contextType={'PAYMENT'}
+          />
+        )}
+
+        {isCreatingDispatchNote && (
+          <CreateDispatchNote
+            invoiceDetails={invoiceDetails}
+            isCreatingDispatchNote={isCreatingDispatchNote}
+            setIsCreatingDispatchNote={setIsCreatingDispatchNote}
           />
         )}
       </Wrapper>

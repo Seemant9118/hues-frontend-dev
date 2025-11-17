@@ -153,3 +153,6 @@ export const getEnterpriseId = () => {
   const switchedEnterpriseId = LocalStorageService.get('switchedEnterpriseId');
   return switchedEnterpriseId || enterpriseId;
 };
+
+export const formatDate = (date) =>
+  date ? new Date(date).toLocaleDateString('en-IN') : '--';

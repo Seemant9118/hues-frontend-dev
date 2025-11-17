@@ -51,6 +51,23 @@
                     "rejected": "अस्वीकृत"
                 }
             }
+        },
+        "vendorDetails": {
+            "title": "विक्रेता विवरण",
+            "overview": "सारांश",
+            "enterpriseName": "उद्यम का नाम",
+            "enterpriseType": "उद्यम का प्रकार",
+            "email": "ईमेल",
+            "phone": "फ़ोन",
+            "address": "उद्यम का पता",
+            "documentDetails": "दस्तावेज़ विवरण",
+            "gst": "जीएसटी",
+            "cin": "सीआईएन",
+            "udyam": "उद्योग",
+            "pan": "पैन",
+            "directorDetails": "निदेशक विवरण",
+            "directorName": "निदेशक का नाम",
+            "loading": "उद्यम विवरण लोड हो रहा है..."
         }
     }
 }
