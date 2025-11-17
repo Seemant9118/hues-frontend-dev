@@ -248,8 +248,16 @@ const CreateOrder = ({
           : customer?.invitation?.status;
       const clientId = customer?.id;
       const clientEnterpriseId = customer?.client?.id;
+      const isEnterpriseActive = !!customer?.client?.id; // it only checks enterprise is on platform or not
 
-      return { value, label, isAccepted, clientId, clientEnterpriseId };
+      return {
+        value,
+        label,
+        isAccepted,
+        clientId,
+        clientEnterpriseId,
+        isEnterpriseActive,
+      };
     }) ?? []),
     {
       value: 'add-new-client', // Special value for "Add New Client"
@@ -676,7 +684,11 @@ const CreateOrder = ({
                       totalGstAmount: null,
                     });
 
-                    const { value: id, isAccepted } = selectedOption;
+                    const {
+                      value: id,
+                      isAccepted,
+                      isEnterpriseActive,
+                    } = selectedOption;
 
                     if (id === 'add-new-client') {
                       setIsModalOpen(true);
@@ -690,10 +702,9 @@ const CreateOrder = ({
                       setOrder({
                         ...updatedOrder,
                         selectedValue: selectedOption,
-                        buyerType:
-                          isAccepted === 'ACCEPTED'
-                            ? 'ENTERPRISE'
-                            : 'UNCONFIRMED_ENTERPRISE',
+                        buyerType: isEnterpriseActive
+                          ? 'ENTERPRISE'
+                          : 'UNCONFIRMED_ENTERPRISE',
                       });
 
                       saveDraftToSession({

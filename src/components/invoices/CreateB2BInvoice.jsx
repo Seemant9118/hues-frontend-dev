@@ -147,8 +147,16 @@ const CreateB2BInvoice = ({
           : customer?.invitation?.status;
       const clientId = customer?.id;
       const clientEnterpriseId = customer?.client?.id;
+      const isEnterpriseActive = !!customer?.client?.id;
 
-      return { value, label, isAccepted, clientId, clientEnterpriseId };
+      return {
+        value,
+        label,
+        isAccepted,
+        clientId,
+        clientEnterpriseId,
+        isEnterpriseActive,
+      };
     }) ?? []),
     {
       value: 'add-new-client', // Special value for "Add New Client"
@@ -432,8 +440,8 @@ const CreateB2BInvoice = ({
                     const {
                       value: id,
                       clientId,
-                      isAccepted,
                       clientEnterpriseId,
+                      isEnterpriseActive,
                     } = selectedOption;
 
                     if (id === 'add-new-client') {
@@ -443,10 +451,9 @@ const CreateB2BInvoice = ({
                         ...prev,
                         buyerId: id,
                         selectedValue: selectedOption,
-                        buyerType:
-                          isAccepted === 'ACCEPTED'
-                            ? 'ENTERPRISE'
-                            : 'UNCONFIRMED_ENTERPRISE',
+                        buyerType: isEnterpriseActive
+                          ? 'ENTERPRISE'
+                          : 'UNCONFIRMED_ENTERPRISE',
                         getAddressRelatedData: {
                           clientId,
                           clientEnterpriseId,
