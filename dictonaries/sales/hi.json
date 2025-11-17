@@ -200,10 +200,12 @@
                 "title": {
                     "invoices": "चालान",
                     "invoice_details": "चालान विवरण",
-                    "record_payment": "भुगतान रिकॉर्ड करें"
+                    "record_payment": "भुगतान रसीद",
+                    "create_dispatch_note": "डिस्पैच"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "record_payment": "भुगतान रसीद",
+                    "create_dispatch_note": "डिस्पैच",
                     "share": {
                         "placeholder": "शीघ्र आ रहा है.."
                     },
@@ -215,7 +217,8 @@
                     "label": {
                         "tab1": "सारांश",
                         "tab2": "भुगतान रसीदें",
-                        "tab3": "डेबिट नोट्स"
+                        "tab3": "डेबिट नोट्स",
+                        "tab4": "डिस्पैच नोट्स"
                     },
                     "content": {
                         "tab1": {
@@ -254,6 +257,20 @@
                             "emtpyStateComponent": {
                                 "title": "अभी तक कोई डेबिट नोट नहीं उठाया गया",
                                 "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
+                            }
+                        },
+                        "tab4": {
+                            "table": {
+                                "header": {
+                                    "dispatchId": "डिस्पैच आईडी",
+                                    "status": "स्थिति",
+                                    "createdAt": "बनाने की तिथि",
+                                    "items": "आइटम"
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "अभी तक कोई डिस्पैच नोट नहीं",
+                                "para": "लगता है अभी तक कोई डिस्पैच नोट उपलब्ध नहीं है"
                             }
                         }
                     }
@@ -369,6 +386,93 @@
                 "ctas": {
                     "accept": "स्वीकार करें",
                     "reject": "अस्वीकार करें"
+                }
+            }
+        },
+        "sales-dispatched-notes": {
+            "title": "डिस्पैच नोट्स",
+            "emtpyStateComponent": {
+                "heading": "बोली, डील और इनवॉइस को सुरक्षित और डिजिटल रूप से प्रबंधित करें",
+                "subItems": {
+                    "subItem1": {
+                        "value": "बिक्री शुरू करें—ऑफ़र भेजकर या बोली प्राप्त करके, जो भी पहले आए!"
+                    },
+                    "subItem2": {
+                        "value": "डिजिटली साइन किए गए ऑफ़र और काउंटर-ऑफ़र के साथ आत्मविश्वास से बातचीत करें"
+                    },
+                    "subItem3": {
+                        "value": "डिजिटल हस्ताक्षरों के साथ डील को अंतिम रूप दें—तेज़, आसान और बाध्यकारी"
+                    },
+                    "subItem4": {
+                        "value": "केवल कुछ क्लिक में पेशेवर, साझा करने योग्य इनवॉइस तैयार करें"
+                    }
+                }
+            },
+            "table": {
+                "header": {
+                    "dispatch_id": "डिस्पैच आईडी",
+                    "invoice_id": "इनवॉइस आईडी",
+                    "date": "तारीख़",
+                    "customers_type": "प्रकार",
+                    "customers": "नाम",
+                    "status": "स्थिति",
+                    "order_id": "ऑर्डर आईडी",
+                    "total_amount": "कुल राशि"
+                }
+            },
+            "dispatch_details": {
+                "title": {
+                    "dispatch_notes": "डिस्पैच नोट्स",
+                    "dispatch_details": "डिस्पैच नोट विवरण"
+                },
+                "overview_labels": {
+                    "status": "स्थिति",
+                    "invoiceId": "इनवॉइस आईडी",
+                    "buyerId": "खरीदार",
+                    "totalAmount": "कुल राशि",
+                    "dispatchId": "डिस्पैच आईडी"
+                },
+                "sections": {
+                    "items": "आइटम",
+                    "transport_bookings": "ट्रांसपोर्ट बुकिंग",
+                    "no_booking": "अभी तक कोई बुकिंग नहीं बनाई गई"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "आइटम",
+                        "table": {
+                            "header": {
+                                "product": "प्रोडक्ट",
+                                "invoiceQty": "इनवॉइस मात्रा",
+                                "dispatchedQty": "डिस्पैच मात्रा",
+                                "rate": "दर",
+                                "amount": "राशि"
+                            }
+                        }
+                    },
+                    "tab2": {
+                        "title1": "ट्रांसपोर्ट बुकिंग",
+                        "title2": "अभी तक कोई बुकिंग नहीं",
+                        "table": {
+                            "header": {
+                                "type": "प्रकार",
+                                "booking_no": "बुकिंग नंबर",
+                                "dispatchedQty": "डिस्पैच मात्रा",
+                                "date": "तारीख़",
+                                "remarks": "टिप्पणी"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "अभी तक कोई ट्रांसपोर्ट बुकिंग नहीं",
+                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग दर्ज नहीं की है। अपनी बुकिंग हिस्ट्री अपडेट रखने के लिए अभी शुरू करें।"
+                        }
+                    }
+                },
+                "table_columns": {
+                    "type": "प्रकार",
+                    "booking_no": "बुकिंग नंबर",
+                    "date": "तारीख़",
+                    "remarks": "टिप्पणी"
                 }
             }
         }

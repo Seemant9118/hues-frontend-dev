@@ -25,7 +25,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { getDispatchNotesByInvoice } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import {
@@ -158,14 +158,11 @@ const ViewInvoice = () => {
   });
 
   // fetch dispatch notes of invoice
-  const { isLoading: isDispatchNotesLoading, data: disptachNotes } = useQuery({
-    queryKey: [
-      deliveryProcess.getDispatchNotesByInvoice.endpointKey,
-      params.invoiceId,
-    ],
-    queryFn: () => getDispatchNotesByInvoice(params.invoiceId),
+  const { isLoading: isDispatchNotesLoading, data: dispatchNotes } = useQuery({
+    queryKey: [deliveryProcess.getDispatchNotes.endpointKey],
+    queryFn: () => getDispatchNotes({ invoiceId: params?.invoiceId }),
     select: (data) => data.data.data,
-    enabled: tab === 'dispatchNote',
+    enabled: tab === 'dispatchNote' && !!params?.invoiceId,
   });
 
   const paymentStatus = ConditionalRenderingStatus({
@@ -229,16 +226,18 @@ const ViewInvoice = () => {
             <ProtectedWrapper
               permissionCode={'permission:sales-create-payment'}
             >
-              {!isRecordingPayment && !isCreatingDispatchNote && (
-                <Button
-                  variant="blue_outline"
-                  size="sm"
-                  onClick={() => setIsCreatingDispatchNote(true)}
-                  className="font-bold"
-                >
-                  {translations('ctas.create_dispatch_note')}
-                </Button>
-              )}
+              {!isRecordingPayment &&
+                !isCreatingDispatchNote &&
+                !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    onClick={() => setIsCreatingDispatchNote(true)}
+                    className="font-bold"
+                  >
+                    {translations('ctas.create_dispatch_note')}
+                  </Button>
+                )}
             </ProtectedWrapper>
 
             {/* View CTA modal */}
@@ -471,14 +470,14 @@ const ViewInvoice = () => {
             </TabsContent>
             <TabsContent value="dispatchNote">
               {isDispatchNotesLoading && <Loading />}
-              {!isDispatchNotesLoading && disptachNotes?.length > 0 && (
+              {!isDispatchNotesLoading && dispatchNotes?.length > 0 && (
                 <DataTable
                   onRowClick={onDispatchedNoteRowClick}
-                  data={disptachNotes}
+                  data={dispatchNotes}
                   columns={dispatchNoteColumns}
                 />
               )}
-              {!isDispatchNotesLoading && disptachNotes?.length === 0 && (
+              {!isDispatchNotesLoading && dispatchNotes?.length === 0 && (
                 <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p className="font-bold">

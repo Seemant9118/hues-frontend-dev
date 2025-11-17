@@ -29,10 +29,7 @@ import {
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
 
-// const dispatchedQty = 10; // it wall pass from api as in object as likely invoicedQty
-
 const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
-  // console.log(invoiceDetails);
   const translations = useTranslations('components.createDispatchNote.form');
 
   const queryClient = useQueryClient();
@@ -45,10 +42,8 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
     totalAmount: null,
     items: [],
   });
-  // console.log('dataweSend', dispatchedData);
   const [errorMsg, setErrorMsg] = useState(null);
   const [productDetailsList, setProductDetailsList] = useState(null);
-  // console.log('productList', productDetailsList);
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [allSelected, setAllSelected] = useState(false);
 
@@ -116,12 +111,12 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
     if (!dispatchedData?.items?.length) return;
 
     const totalAmount = dispatchedData.items.reduce(
-      (acc, item) => acc + (item.totalAmount || 0),
+      (acc, item) => acc + (item.amount || 0),
       0,
     );
 
     const totalGstAmount = dispatchedData.items.reduce(
-      (acc, item) => acc + (item.totalGstAmount || 0),
+      (acc, item) => acc + (item.gstAmount || 0),
       0,
     );
 
@@ -146,11 +141,11 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
         return {
           ...item,
           quantity: qty,
-          totalAmount:
+          amount:
             qty && !Number.isNaN(qty)
               ? parseFloat((qty * item.unitPrice).toFixed(2))
               : 0,
-          totalGstAmount:
+          gstAmount:
             qty && !Number.isNaN(qty)
               ? parseFloat(
                   (qty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
@@ -203,6 +198,8 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
     setDispatchedData((prev) => ({
       ...prev,
       items: isSelected ? updatedList.filter((i) => i.quantity > 0) : [],
+      totalAmount: isSelected ? prev.totalAmount : null,
+      totalGstAmount: isSelected ? prev.totalGstAmount : null,
     }));
   };
 
@@ -339,6 +336,9 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
                 </TableHead>
                 <TableHead className="shrink-0 text-xs font-bold text-black">
                   {translations('table.header.dispatch_qty')}
+                </TableHead>
+                <TableHead className="shrink-0 text-xs font-bold text-black">
+                  {translations('table.header.unit_price')}
                 </TableHead>
                 <TableHead className="shrink-0 text-xs font-bold text-black">
                   {translations('table.header.total_amount')}
@@ -516,6 +516,10 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
                       </TableCell>
 
                       <TableCell colSpan={1}>
+                        {`₹ ${(Number(product.unitPrice) || 0).toFixed(2)}`}
+                      </TableCell>
+
+                      <TableCell colSpan={1}>
                         <Input
                           type="text"
                           name="totalAmount"
@@ -537,7 +541,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
             {errorMsg?.isAnyInvoiceSelected && (
               <TableFooter className="w-full shrink-0">
                 <TableRow>
-                  <TableCell colSpan="6">
+                  <TableCell colSpan="7">
                     <ErrorBox msg={errorMsg?.isAnyInvoiceSelected} />
                   </TableCell>
                 </TableRow>

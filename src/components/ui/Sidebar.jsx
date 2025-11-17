@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   SquareKanban,
   Store,
+  Truck,
   UserRound,
   Users,
 } from 'lucide-react';
@@ -129,6 +130,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/dashboard/sales/sales-debitNotes',
+        },
+        {
+          name: 'sidebar.subTabs.dispatch',
+          icon: <Truck size={16} />,
+          path: '/dashboard/sales/sales-dispatched-notes',
         },
       ],
     },

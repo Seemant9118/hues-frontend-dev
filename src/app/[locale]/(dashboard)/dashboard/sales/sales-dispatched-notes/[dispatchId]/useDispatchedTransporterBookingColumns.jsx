@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 export const useDispatchedTransporterBookingColumns = () => {
   const translations = useTranslations(
-    'sales.sales-dispatch.dispatch_details.table2.header',
+    'sales.sales-dispatched-notes.dispatch_details.tabs.tab2.table.header',
   );
 
   return [
@@ -26,7 +26,7 @@ export const useDispatchedTransporterBookingColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('bookingNo')}
+          title={translations('booking_no')}
         />
       ),
       cell: ({ row }) => {
@@ -40,7 +40,7 @@ export const useDispatchedTransporterBookingColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('dispatchedQuantity')}
+          title={translations('dispatchedQty')}
         />
       ),
       cell: ({ row }) => {

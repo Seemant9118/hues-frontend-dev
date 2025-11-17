@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 export const useDispatchedItemColumns = () => {
   const translations = useTranslations(
-    'sales.sales-dispatch.dispatch_details.table1.header',
+    'sales.sales-dispatched-notes.dispatch_details.tabs.tab1.table.header',
   );
 
   return [
@@ -29,7 +29,7 @@ export const useDispatchedItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('invoiceQuantity')}
+          title={translations('invoiceQty')}
         />
       ),
       cell: ({ row }) => {
@@ -43,7 +43,7 @@ export const useDispatchedItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('dispatchedQuantity')}
+          title={translations('dispatchedQty')}
         />
       ),
       cell: ({ row }) => {

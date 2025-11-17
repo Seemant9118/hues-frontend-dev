@@ -18,7 +18,7 @@ export default function ClientDetailsPage() {
   const { clientId } = useParams();
   const { hasPermission } = usePermission();
 
-  const translations = useTranslations('client');
+  const translations = useTranslations('client.clientDetails');
   const [tab, setTab] = useState('overview');
 
   // Function to handle tab change
@@ -29,13 +29,13 @@ export default function ClientDetailsPage() {
   const clientBreadCrumbs = [
     {
       id: 1,
-      name: translations('title'),
+      name: translations('title1'),
       path: '/dashboard/clients',
       show: true, // Always show
     },
     {
       id: 2,
-      name: translations('clientDetails.title'),
+      name: translations('title2'),
       path: `/dashboard/clients/${clientId}`,
       show: true, // Always show
     },
@@ -68,10 +68,10 @@ export default function ClientDetailsPage() {
         <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
           <TabsList className="border">
             <TabsTrigger value="overview">
-              {translations('clientDetails.tabs.tab1.title')}
+              {translations('tabs.tab1.title')}
             </TabsTrigger>
             <TabsTrigger value="document">
-              {translations('clientDetails.tabs.tab2.title')}
+              {translations('tabs.tab2.title')}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
@@ -98,11 +98,15 @@ export default function ClientDetailsPage() {
                 address: formatValue(clientDetails?.address?.address),
               }}
               labelMap={{
-                name: 'Client Name',
-                enterpriseType: 'Enterprise type',
-                email: 'Email',
-                phone: 'Phone Number',
-                address: 'Enterprise Address',
+                name: translations('tabs.tab1.content.overview_labels.name'),
+                enterpriseType: translations(
+                  'tabs.tab1.content.overview_labels.enterprise_type',
+                ),
+                email: translations('tabs.tab1.content.overview_labels.email'),
+                phone: translations('tabs.tab1.content.overview_labels.phone'),
+                address: translations(
+                  'tabs.tab1.content.overview_labels.address',
+                ),
               }}
             />
           </TabsContent>
@@ -135,12 +139,16 @@ export default function ClientDetailsPage() {
                   clientDetails?.invitation?.userDetails?.udyam,
               }}
               labelMap={{
-                directorName: 'Director Name',
-                directorNumber: 'Director Phone number',
-                pan: 'Enterprise PAN',
-                gst: 'GSTIN',
-                cin: 'CIN',
-                udyam: 'UDYAM',
+                directorName: translations(
+                  'tabs.tab2.content.overview_labels.director_name',
+                ),
+                directorNumber: translations(
+                  'tabs.tab2.content.overview_labels.director_number',
+                ),
+                pan: translations('tabs.tab2.content.overview_labels.pan'),
+                gst: translations('tabs.tab2.content.overview_labels.gst'),
+                cin: translations('tabs.tab2.content.overview_labels.cin'),
+                udyam: translations('tabs.tab2.content.overview_labels.udyam'),
               }}
             />
           </TabsContent>

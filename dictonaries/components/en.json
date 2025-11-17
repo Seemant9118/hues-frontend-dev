@@ -964,6 +964,7 @@
                         "item_name": "Item name",
                         "invoice_qty": "Invoice Qty.",
                         "dispatch_qty": "Dispatch Qty.",
+                        "unit_price": "Unit price",
                         "total_amount": "Total Amount"
                     }
                 },

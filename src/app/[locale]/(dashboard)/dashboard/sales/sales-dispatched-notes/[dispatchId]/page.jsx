@@ -11,27 +11,39 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { getDispatchNote } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
-import React from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
+import { MoveUpRight } from 'lucide-react';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 import { useDispatchedTransporterBookingColumns } from './useDispatchedTransporterBookingColumns';
+import emptyImg from '../../../../../../../../public/Empty.png';
 
 const ViewDispatchNote = () => {
-  const translations = useTranslations('sales.sales-dispatch.dispatch_details');
+  const translations = useTranslations(
+    'sales.sales-dispatched-notes.dispatch_details',
+  );
 
+  const router = useRouter();
   const params = useParams();
+  const [tab, setTab] = useState('items');
+
+  const onTabChange = (tab) => {
+    setTab(tab);
+  };
 
   const dispatchOrdersBreadCrumbs = [
     {
       id: 1,
       name: translations('title.dispatch_notes'),
-      path: '/dashboard/sales/dispatch-notes',
+      path: '/dashboard/sales/sales-dispatched-notes',
       show: true,
     },
     {
       id: 2,
       name: translations('title.dispatch_details'),
-      path: `/dashboard/sales/dispatch-notes/${params.dispatchId}`,
+      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
       show: true,
     },
   ];
@@ -79,7 +91,7 @@ const ViewDispatchNote = () => {
 
   const overviewData = {
     invoiceId: dispatchDetails?.invoice?.referenceNumber,
-    buyerId: dispatchDetails?.buyerId,
+    buyerId: dispatchDetails?.buyerName,
     totalAmount: formattedAmount(dispatchDetails?.totalAmount),
     status: dispatchDetails?.status,
     dispatchId: dispatchDetails?.referenceNumber,
@@ -115,36 +127,68 @@ const ViewDispatchNote = () => {
           collapsible={true}
           data={overviewData}
           labelMap={overviewLabels}
+          customRender={{
+            invoiceId: () => (
+              <p
+                className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+                onClick={() => {
+                  router.push(
+                    `/dashboard/sales/sales-invoices/${dispatchDetails?.invoice?.id}`,
+                  );
+                }}
+              >
+                {dispatchDetails?.invoice?.referenceNumber}{' '}
+                <MoveUpRight size={12} />
+              </p>
+            ),
+          }}
         />
 
-        {/* ITEMS TABLE */}
-        <section className="mt-6 rounded-md border bg-white p-4">
-          <h2 className="mb-3 text-lg font-bold">
-            {translations('sections.items')}
-          </h2>
-          <DataTable
-            data={formattedDispatchedItems || []}
-            columns={dispatchedItemDetailsColumns}
-          />
-        </section>
-
-        {/* TRANSPORT BOOKINGS */}
-        <section className="mt-6 rounded-md border bg-white p-4">
-          <h2 className="mb-3 text-lg font-bold">
-            {translations('sections.transport_bookings')}
-          </h2>
-          {formattedDispatchedTransporterBookings?.length === 0 && (
-            <h2 className="text-center">
-              {translations('sections.no_booking')}
-            </h2>
-          )}
-          {formattedDispatchedTransporterBookings?.length > 0 && (
-            <DataTable
-              data={formattedDispatchedTransporterBookings || []}
-              columns={dispatchedTransportedBookingsColumns}
-            />
-          )}
-        </section>
+        <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
+          <TabsList className="border">
+            <TabsTrigger value="items">
+              {translations('tabs.tab1.title')}
+            </TabsTrigger>
+            <TabsTrigger value="transports">
+              {translations('tabs.tab2.title1')}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="items">
+            {/* ITEMS TABLE */}
+            <section className="mt-2">
+              <DataTable
+                data={formattedDispatchedItems || []}
+                columns={dispatchedItemDetailsColumns}
+              />
+            </section>
+          </TabsContent>
+          <TabsContent value="transports">
+            {/* TRANSPORT BOOKINGS */}
+            <section className="mt-2">
+              {formattedDispatchedTransporterBookings?.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p className="font-bold">
+                    {translations('tabs.tab2.emtpyStateComponent.title')}
+                  </p>
+                  <ProtectedWrapper
+                    permissionCode={'permission:sales-create-payment'}
+                  >
+                    <p className="max-w-96 text-center">
+                      {translations('tabs.tab2.emtpyStateComponent.para')}
+                    </p>
+                  </ProtectedWrapper>
+                </div>
+              )}
+              {formattedDispatchedTransporterBookings?.length > 0 && (
+                <DataTable
+                  data={formattedDispatchedTransporterBookings || []}
+                  columns={dispatchedTransportedBookingsColumns}
+                />
+              )}
+            </section>
+          </TabsContent>
+        </Tabs>
 
         {/* COMMENTS */}
       </Wrapper>

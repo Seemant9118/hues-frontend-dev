@@ -18,7 +18,7 @@ export default function VendorsDetailsPage() {
   const { vendorId } = useParams();
   const { hasPermission } = usePermission();
 
-  const translations = useTranslations('vendor');
+  const translations = useTranslations('vendor.vendorDetails');
   const [tab, setTab] = useState('overview');
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -28,13 +28,13 @@ export default function VendorsDetailsPage() {
   const vendorBreadCrumbs = [
     {
       id: 1,
-      name: translations('title'),
+      name: translations('title1'),
       path: '/dashboard/vendors',
       show: true, // Always show
     },
     {
       id: 2,
-      name: translations('vendorDetails.title'),
+      name: translations('title2'),
       path: `/dashboard/vendors/${vendorId}`,
       show: true, // Always show
     },
@@ -66,10 +66,10 @@ export default function VendorsDetailsPage() {
         <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
           <TabsList className="border">
             <TabsTrigger value="overview">
-              {translations('vendorDetails.tabs.tab1.title')}
+              {translations('tabs.tab1.title')}
             </TabsTrigger>
             <TabsTrigger value="document">
-              {translations('vendorDetails.tabs.tab2.title')}
+              {translations('tabs.tab2.title')}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
@@ -96,11 +96,15 @@ export default function VendorsDetailsPage() {
                 address: formatValue(vendorDetails?.address?.address),
               }}
               labelMap={{
-                name: 'Vendor Name',
-                enterpriseType: 'Enterprise type',
-                email: 'Email',
-                phone: 'Phone Number',
-                address: 'Enterprise Address',
+                name: translations('tabs.tab1.content.overview_labels.name'),
+                enterpriseType: translations(
+                  'tabs.tab1.content.overview_labels.enterprise_type',
+                ),
+                email: translations('tabs.tab1.content.overview_labels.email'),
+                phone: translations('tabs.tab1.content.overview_labels.phone'),
+                address: translations(
+                  'tabs.tab1.content.overview_labels.address',
+                ),
               }}
             />
           </TabsContent>
@@ -133,12 +137,16 @@ export default function VendorsDetailsPage() {
                   vendorDetails?.invitation?.userDetails?.udyam,
               }}
               labelMap={{
-                directorName: 'Director Name',
-                directorNumber: 'Director Phone number',
-                pan: 'Enterprise PAN',
-                gst: 'GSTIN',
-                cin: 'CIN',
-                udyam: 'UDYAM',
+                directorName: translations(
+                  'tabs.tab2.content.overview_labels.director_name',
+                ),
+                directorNumber: translations(
+                  'tabs.tab2.content.overview_labels.director_number',
+                ),
+                pan: translations('tabs.tab2.content.overview_labels.pan'),
+                gst: translations('tabs.tab2.content.overview_labels.gst'),
+                cin: translations('tabs.tab2.content.overview_labels.cin'),
+                udyam: translations('tabs.tab2.content.overview_labels.udyam'),
               }}
             />
           </TabsContent>

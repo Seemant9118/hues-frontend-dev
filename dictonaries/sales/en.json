@@ -390,23 +390,84 @@
                 }
             }
         },
-        "sales-dispatch": {
+        "sales-dispatched-notes": {
+            "title": "Dispatch Notes",
+            "emtpyStateComponent": {
+                "heading": "Manage bids, deals, and invoices—securely and digitally",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Start a sale by sending offers or receiving bids—whichever comes first!"
+                    },
+                    "subItem2": {
+                        "value": "Negotiate with confidence using digitally signed offers and counter-offers"
+                    },
+                    "subItem3": {
+                        "value": "Seal the deal with digital signatures—quick, easy, and binding"
+                    },
+                    "subItem4": {
+                        "value": "Wrap things up with professional, shareable invoices—just a few clicks"
+                    }
+                }
+            },
+            "table": {
+                "header": {
+                    "dispatch_id": "Dispatch ID",
+                    "invoice_id": "Invoice ID",
+                    "date": "Date",
+                    "customers_type": "Type",
+                    "customers": "Name",
+                    "status": "Status",
+                    "order_id": "Order ID",
+                    "total_amount": "Total Amount"
+                }
+            },
             "dispatch_details": {
                 "title": {
                     "dispatch_notes": "Dispatch Notes",
-                    "dispatch_details": "Dispatch Details"
+                    "dispatch_details": "Dispatch Note Details"
                 },
                 "overview_labels": {
                     "status": "Status",
                     "invoiceId": "Invoice ID",
                     "buyerId": "Buyer",
                     "totalAmount": "Total Amount",
-                    "dispatchId":"Dispatch ID"
+                    "dispatchId": "Dispatch ID"
                 },
                 "sections": {
                     "items": "Items",
                     "transport_bookings": "Transport Bookings",
                     "no_booking": "No Booking Created yet"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Items",
+                        "table": {
+                            "header": {
+                                "product": "Product",
+                                "invoiceQty": "Invoice Quantity",
+                                "dispatchedQty": "Dispatched Quantity",
+                                "rate": "Rate",
+                                "amount": "Amount"
+                            }
+                        }
+                    },
+                    "tab2": {
+                        "title1": "Transport Booking",
+                        "title2": "No booking yet",
+                        "table": {
+                            "header": {
+                                "type": "Type",
+                                "booking_no": "Booking No.",
+                                "dispatchedQty": "Dispatched Quantity",
+                                "date": "Date",
+                                "remarks": "Remarks"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No Trasnport booking yet",
+                            "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
+                        }
+                    }
                 },
                 "table_columns": {
                     "type": "Type",
