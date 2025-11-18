@@ -17,6 +17,7 @@
             "invoices": "चालान",
             "payments": "भुगतान",
             "debitNotes": "डेबिट नोट्स",
+            "dispatch": "डिस्पैच नोट्स",
             "clients": "क्लाइंट्स",
             "vendors": "विक्रेता",
             "customers": "ग्राहक"
