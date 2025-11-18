@@ -89,11 +89,12 @@ export const formattedAmount = (amount) => {
 };
 
 // fn for capitalization
-export function capitalize(str) {
-  if (str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
-  return '';
+export function capitalize(str = '') {
+  return str
+    ?.split(' ')
+    ?.filter(Boolean)
+    ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    ?.join(' ');
 }
 
 export function convertSnakeToTitleCase(input) {
@@ -156,3 +157,29 @@ export const getEnterpriseId = () => {
 
 export const formatDate = (date) =>
   date ? new Date(date).toLocaleDateString('en-IN') : '--';
+
+// avatar color from name
+const avatarColors = [
+  'bg-blue-600',
+  'bg-red-600',
+  'bg-green-600',
+  'bg-purple-600',
+  'bg-indigo-600',
+  'bg-yellow-600',
+];
+export const getColorFromName = (name) => {
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) {
+    sum += name.charCodeAt(i);
+  }
+  return avatarColors[sum % avatarColors.length];
+};
+
+export const roleColors = [
+  'bg-blue-500 text-white',
+  'bg-yellow-500 text-white',
+  'bg-green-500 text-white',
+  'bg-red-500 text-white',
+  'bg-cyan-500 text-white',
+  'bg-gray-500 text-white',
+];

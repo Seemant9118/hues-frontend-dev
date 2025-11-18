@@ -8,17 +8,17 @@ const AuthContext = createContext({
 
 export const AuthProvider = ({ children }) => {
   const [name, setName] = useState('');
-  const [role, setRole] = useState(null);
+  const [roles, setRoles] = useState(null);
   const [permissions, setPermissions] = useState([]); // now array of permission objects
 
   const setAuthData = (userName, userRole, permissionArray) => {
     setName(userName);
-    setRole(userRole);
+    setRoles(userRole);
     setPermissions(permissionArray);
   };
 
   return (
-    <AuthContext.Provider value={{ name, role, permissions, setAuthData }}>
+    <AuthContext.Provider value={{ name, roles, permissions, setAuthData }}>
       {children}
     </AuthContext.Provider>
   );
