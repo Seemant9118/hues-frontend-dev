@@ -2,7 +2,9 @@
 
 import React from 'react';
 
+import { capitalize, roleColors } from '@/appUtils/helperFunctions';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
+import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
@@ -28,9 +30,13 @@ import {
 import Image from 'next/image';
 import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
+import Avatar from './Avatar';
 import StyledLinks from './StyledLinks';
+import { Badge } from './badge';
 
 const Sidebar = () => {
+  const { name, roles } = useAuth();
+
   const { hasPermission } = usePermission();
   const isEnterpriseSwitched = Boolean(
     localStorage.getItem('switchedEnterpriseId'),
@@ -246,6 +252,33 @@ const Sidebar = () => {
             logoutCta="components.profilePopUpInfo.logoutCta"
             accessDeniedCta="components.profilePopUpInfo.accessDeniedCta"
           />
+
+          <hr />
+
+          {/* User + Roles */}
+          <div className="flex w-full items-center gap-2 rounded-sm p-2 text-xs">
+            {/* Avatar Circle */}
+            <Avatar name={name} />
+
+            {/* Name + Roles */}
+            <div className="flex flex-1 flex-col flex-wrap gap-1">
+              <p className="truncate text-sm font-semibold leading-tight">
+                {capitalize(name)}
+              </p>
+
+              <div className="flex flex-wrap gap-1">
+                {roles?.length > 0 &&
+                  roles.map((role, index) => {
+                    const color = roleColors[index % roleColors.length];
+                    return (
+                      <Badge key={role} className={color}>
+                        {role}
+                      </Badge>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </aside>
