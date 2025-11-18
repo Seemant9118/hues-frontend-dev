@@ -93,6 +93,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
         unitId,
         unitPrice,
         gstPerUnit,
+        __originalQuantity: quantity, // Keep reference for initial quantit
         amount: totalAmount,
         gstAmount: totalGstAmount,
       };
@@ -100,9 +101,12 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
 
     const filteredList = productDetails.filter((p) => p.quantity > 0);
 
-    setInitialQuantities(
-      invoiceDetails?.invoiceItemDetails?.map((p) => p.quantity),
+    // Initial quantities should match only filtered list order
+    const filteredInitialQuantities = filteredList.map(
+      (item) => item.__originalQuantity,
     );
+
+    setInitialQuantities(filteredInitialQuantities);
     setProductDetailsList(filteredList);
   }, [invoiceDetails?.invoiceItemDetails]);
 
@@ -129,7 +133,6 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
 
   // update qty for a single item
   const updateProductDetailsList = (orderItemId, newQtyRaw) => {
-    // console.log('orderItemId and newQtyVal', orderItemId, newQtyRaw);
     const newQty = newQtyRaw === '' ? '' : Number(newQtyRaw);
 
     setProductDetailsList((prevList) =>
@@ -155,17 +158,42 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
       }),
     );
 
-    // Validation
-    const matchedItem = invoiceDetails?.invoiceItemDetails?.find(
-      (i) => i.orderItemId?.id === orderItemId, // fix — nested orderItemId
-    );
+    // Sync dispatchedData.items
+    setDispatchedData((prev) => {
+      const exists = prev.items?.some((i) => i.orderItemId === orderItemId);
+      if (!exists) return prev; // only update if selected
 
-    // console.log('matchedItem', matchedItem);
+      const updatedItems = prev.items.map((item) => {
+        if (item.orderItemId !== orderItemId) return item;
+
+        return {
+          ...item,
+          quantity: newQty === '' ? '' : newQty,
+          amount:
+            newQty && !Number.isNaN(newQty)
+              ? parseFloat((newQty * item.unitPrice).toFixed(2))
+              : 0,
+          gstAmount:
+            newQty && !Number.isNaN(newQty)
+              ? parseFloat(
+                  (newQty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
+                    2,
+                  ),
+                )
+              : 0,
+        };
+      });
+
+      return { ...prev, items: updatedItems };
+    });
+
+    // validation logic
+    const matchedItem = invoiceDetails?.invoiceItemDetails?.find(
+      (i) => i.orderItemId?.id === orderItemId,
+    );
 
     const maxQty =
       (matchedItem?.quantity || 0) - (matchedItem?.dispatchedQuantity || 0);
-
-    // console.log('max', maxQty);
 
     const newErrorMsg = { ...errorMsg };
 
@@ -218,7 +246,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
 
       // find the corresponding invoice item from invoiceDetails
       const matchedOrderItem = invoiceDetails?.invoiceItemDetails?.find(
-        (invoiceItem) => invoiceItem.orderItemId?.id === id, // ✅ correct nested reference
+        (invoiceItem) => invoiceItem.orderItemId?.id === id, // correct nested reference
       );
 
       const maxQuantity =
@@ -506,7 +534,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
                             </Button>
                           </div>
 
-                          {/* 👇 Validation error for this quantity field */}
+                          {/* Validation error for this quantity field */}
                           {errorMsg?.[`quantity_${product.orderItemId}`] && (
                             <ErrorBox
                               msg={errorMsg[`quantity_${product.orderItemId}`]}

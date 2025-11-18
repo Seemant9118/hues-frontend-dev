@@ -89,10 +89,13 @@ const ViewDispatchNote = () => {
   };
   const formattedDispatchedTransporterBookings = mapTransportBookings();
 
+  const totalAmount = Number(dispatchDetails?.totalAmount || 0);
+  const totalGstAmount = Number(dispatchDetails?.totalGstAmount || 0);
+
   const overviewData = {
     invoiceId: dispatchDetails?.invoice?.referenceNumber,
     buyerId: dispatchDetails?.buyerName,
-    totalAmount: formattedAmount(dispatchDetails?.totalAmount),
+    totalAmount: formattedAmount(totalAmount + totalGstAmount),
     status: dispatchDetails?.status,
     dispatchId: dispatchDetails?.referenceNumber,
   };
