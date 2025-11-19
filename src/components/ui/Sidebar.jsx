@@ -193,8 +193,8 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="flex flex-col gap-10 overflow-hidden bg-[#F6F9FF] pb-3 pl-3 pt-3">
-      <Link href={goToHomePage()}>
+    <aside className="flex flex-col justify-between overflow-hidden bg-[#F6F9FF] pb-0 pt-3">
+      <Link href={goToHomePage()} className="pl-3">
         <Image
           src="/hues_logo.png"
           height={25}
@@ -205,9 +205,7 @@ const Sidebar = () => {
         />
       </Link>
 
-      {/* <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1"> */}
-
-      <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
+      <div className="navScrollBarStyles mt-6 flex h-full flex-col justify-between gap-2 overflow-y-scroll pb-1 pl-3 pr-1">
         <div className="flex flex-col gap-2">
           {/* admin Navigation Links */}
           {adminLinks?.length > 0 && (
@@ -252,32 +250,30 @@ const Sidebar = () => {
             logoutCta="components.profilePopUpInfo.logoutCta"
             accessDeniedCta="components.profilePopUpInfo.accessDeniedCta"
           />
+        </div>
+      </div>
 
-          <hr />
+      {/* User + Roles */}
+      <div className="flex w-full items-center gap-2 bg-gray-200 p-2 text-xs">
+        {/* Avatar Circle */}
+        <Avatar name={name} />
 
-          {/* User + Roles */}
-          <div className="flex w-full items-center gap-2 rounded-sm p-2 text-xs">
-            {/* Avatar Circle */}
-            <Avatar name={name} />
+        {/* Name + Roles */}
+        <div className="flex flex-1 flex-col flex-wrap gap-1">
+          <p className="truncate text-sm font-semibold leading-tight">
+            {capitalize(name)}
+          </p>
 
-            {/* Name + Roles */}
-            <div className="flex flex-1 flex-col flex-wrap gap-1">
-              <p className="truncate text-sm font-semibold leading-tight">
-                {capitalize(name)}
-              </p>
-
-              <div className="flex flex-wrap gap-1">
-                {roles?.length > 0 &&
-                  roles.map((role, index) => {
-                    const color = roleColors[index % roleColors.length];
-                    return (
-                      <Badge key={role} className={color}>
-                        {role}
-                      </Badge>
-                    );
-                  })}
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-1">
+            {roles?.length > 0 &&
+              roles.map((role, index) => {
+                const color = roleColors[index % roleColors.length];
+                return (
+                  <Badge key={role} className={color}>
+                    {role}
+                  </Badge>
+                );
+              })}
           </div>
         </div>
       </div>

@@ -7,8 +7,24 @@ export const deliveryProcess = {
     endpoint: `/dispatchnote/list/`,
     endpointKey: 'get_dispatch_notes_by_invoice',
   },
-  getDisptachNote: {
+  getDispatchNote: {
     endpoint: `/dispatchnote/details/`,
     endpointKey: 'get_dispatch_note_by_id',
+  },
+  addTransporter: {
+    endpoint: `/dispatchnote/addtransporter/`,
+    endpointKey: 'add_transporter_to_dispatch_note',
+  },
+  sendToTransporter: {
+    endpoint: `/dispatchnote/sendtotransporter/`,
+    endpointKey: 'send_dispatch_note_to_transporter',
+  },
+  addBooking: {
+    endpoint: `/dispatchnote/addbooking/`,
+    endpointKey: 'add_booking_to_dispatch_note',
+  },
+  updateStatus: {
+    endpoint: `/dispatchnote/updatestatus/`,
+    endpointKey: 'update_dispatch_note_status',
   },
 };

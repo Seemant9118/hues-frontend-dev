@@ -145,6 +145,12 @@ const ConditionalRenderingStatus = ({
       statusBG = '#F8BA051A';
       statusBorder = '#F8BA05';
       break;
+    case 'READY_FOR_DISPATCH':
+      statusText = translations('READY_FOR_DISPATCH');
+      statusColor = '#288AF9';
+      statusBG = '#288AF91A';
+      statusBorder = '#288AF9';
+      break;
 
     default:
       return null;

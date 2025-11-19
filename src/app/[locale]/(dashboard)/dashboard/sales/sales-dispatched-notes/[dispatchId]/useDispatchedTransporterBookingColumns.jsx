@@ -36,20 +36,6 @@ export const useDispatchedTransporterBookingColumns = () => {
     },
 
     {
-      accessorKey: 'dispatchedQuantity',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('dispatchedQty')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { dispatchedQuantity } = row.original;
-        return dispatchedQuantity;
-      },
-    },
-
-    {
       accessorKey: 'date',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={translations('date')} />
@@ -70,7 +56,7 @@ export const useDispatchedTransporterBookingColumns = () => {
       ),
       cell: ({ row }) => {
         const { remarks } = row.original;
-        return remarks;
+        return remarks || '--';
       },
     },
   ];

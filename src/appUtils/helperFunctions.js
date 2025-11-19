@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
@@ -183,3 +183,7 @@ export const roleColors = [
   'bg-cyan-500 text-white',
   'bg-gray-500 text-white',
 ];
+
+export function saveDraftToSession({ key, data }) {
+  SessionStorageService.set(key, data);
+}

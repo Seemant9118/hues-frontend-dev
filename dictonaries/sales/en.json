@@ -424,14 +424,44 @@
             "dispatch_details": {
                 "title": {
                     "dispatch_notes": "Dispatch Notes",
-                    "dispatch_details": "Dispatch Note Details"
+                    "dispatch_details": "Dispatch Note Details",
+                    "addBooking": "Add Booking Details"
                 },
                 "overview_labels": {
                     "status": "Status",
                     "invoiceId": "Invoice ID",
                     "buyerId": "Buyer",
                     "totalAmount": "Total Amount",
-                    "dispatchId": "Dispatch ID"
+                    "dispatchId": "Dispatch ID",
+                    "transporter": "Transporter",
+                    "deliveryVoucherId": "Delivery Voucher ID",
+                    "e_wayBillId": "E-Way Bill ID"
+                },
+                "overview_inputs": {
+                    "transporter": "Select Transporter",
+                    "addNewTransporter": "Add New Transporter",
+                    "editTransporter": "Edit Transporter",
+                    "ctas": {
+                        "add": "Add",
+                        "edit": "Edit",
+                        "share": "(Share with Transporter)",
+                        "readyForDispatch": "Ready for Dispatch",
+                        "addBooking": "Add Booking",
+                        "generateEWayBill": "Generate E-Way Bill",
+                        "updatePartB": "Update Part-B",
+                        "cancel": "Cancel"
+                    },
+                    "placeholders": {
+                        "selectTransporter": "Select Transporter"
+                    },
+                    "toast": {
+                        "successAdd": "Transporter added successfully to dispatch note",
+                        "successEdit": "Transporter edited successfully to dispatch note",
+                        "sendToTransporterSuccess": "Details sent successfully to transporter",
+                        "dispatchNoteReady": "Dispatch note is ready for dispatch",
+                        "error": "Error adding transporter to dispatch note",
+                        "commonError": "We hit a snag. Please try again."
+                    }
                 },
                 "sections": {
                     "items": "Items",
@@ -440,7 +470,7 @@
                 },
                 "tabs": {
                     "tab1": {
-                        "title": "Items",
+                        "title": "Overview",
                         "table": {
                             "header": {
                                 "product": "Product",
@@ -474,6 +504,42 @@
                     "booking_no": "Booking No.",
                     "date": "Date",
                     "remarks": "Remarks"
+                },
+                "addBooking": {
+                    "titles": {
+                        "bookingType": "Booking Type",
+                        "bookingNumber": "Booking Number",
+                        "bookingDate": "Booking Date",
+                        "remarks": "Remarks",
+                        "sourceAddress": "Source Address",
+                        "destinationAddress": "Destination Address"
+                    },
+                    "placeholders": {
+                        "selectType": "Select type",
+                        "enterBookingNumber": "Enter Booking Number",
+                        "enterRemarks": "Enter Remarks",
+                        "enterSourceAddress": "Enter Source Address",
+                        "enterDestinationAddress": "Enter Destination Address"
+                    },
+                    "bookingTypes": {
+                        "lr": "Lorry Receipt (LR)",
+                        "lb": "Lading Bill (LB)",
+                        "airway": "Airway Receipt",
+                        "railway": "Railway Receipt"
+                    },
+                    "ctas": {
+                        "cancel": "Cancel",
+                        "addBooking": "Add Booking"
+                    },
+                    "errors": {
+                        "bookingTypeRequired": "Booking type is required",
+                        "bookingNumberRequired": "Booking number is required",
+                        "bookingDateRequired": "Date is required"
+                    },
+                    "toast": {
+                        "success": "Booking created successfully",
+                        "error": "Error creating booking for dispatch note"
+                    }
                 }
             }
         }
