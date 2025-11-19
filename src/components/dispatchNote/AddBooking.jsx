@@ -1,5 +1,6 @@
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { saveDraftToSession } from '@/appUtils/helperFunctions';
+import { SessionStorageService } from '@/lib/utils';
 import { addBookingToDispatchNote } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { useMutation } from '@tanstack/react-query';
 import { CalendarDays } from 'lucide-react';
@@ -40,16 +41,18 @@ const AddBooking = ({
 }) => {
   const router = useRouter();
 
-  const [bookingData, setBookingData] = useState({
-    bookingType: '',
-    bookingNumber: '',
-    bookingDate: '', // always store as string DD/MM/YYYY
-    remarks: '',
-    sourceAddress: '',
-    destinationAddress: '',
-  });
-  const [errorMsg, setErrorMsg] = useState({});
+  const bookingDraftData = SessionStorageService.get('bookingDataDraft');
 
+  const [bookingData, setBookingData] = useState({
+    bookingType: bookingDraftData?.bookingType || '',
+    bookingNumber: bookingDraftData?.bookingNumber || '',
+    bookingDate: bookingDraftData?.bookingDate || '', // always store as string DD/MM/YYYY
+    remarks: bookingDraftData?.remarks || '',
+    sourceAddress: bookingDraftData?.sourceAddress || '',
+    destinationAddress: bookingDraftData?.destinationAddress || '',
+  });
+
+  const [errorMsg, setErrorMsg] = useState({});
   // INPUT CHANGE HANDLER
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -111,6 +114,7 @@ const AddBooking = ({
       });
       setIsAddingBooking(false);
       setTab('transports');
+      SessionStorageService.remove('bookingDataDraft');
 
       queryClient.invalidateQueries({
         queryKey: [deliveryProcess.getDispatchNote.endpointKey],
