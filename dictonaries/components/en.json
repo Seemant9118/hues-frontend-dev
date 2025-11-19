@@ -1007,7 +1007,8 @@
             "RAISED": "Debit Note Raised",
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
-            "DRAFT": "Draft"
+            "DRAFT": "Draft",
+            "READY_FOR_DISPATCH":" Ready for Dispatch"
         }
     }
 }

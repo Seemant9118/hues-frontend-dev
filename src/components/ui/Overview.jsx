@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, isValidElement } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
@@ -9,6 +9,7 @@ export default function Overview({
   data = {},
   labelMap = {}, // { orderId: "Order ID", ... }
   customRender = {}, // { orderStatus: (value)=> <CustomComponent /> }
+  customLabelRender = {},
   collapsible = false,
   sectionClass = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full animate-fadeInUp',
 }) {
@@ -16,18 +17,27 @@ export default function Overview({
 
   const renderValue = (key, value) => {
     if (customRender[key]) return customRender[key](value);
+
+    // If React element, render directly
+    if (isValidElement(value)) return value;
+
+    // If normal object, stringify
     if (typeof value === 'object' && value !== null) {
       return JSON.stringify(value);
     }
+
     return String(value ?? '--');
   };
 
   const getLabel = (key) => {
-    return labelMap[key] || key.replace(/([A-Z])/g, ' $1').toUpperCase();
+    if (customLabelRender[key]) return customLabelRender[key]();
+
+    const label = labelMap[key] || key.replace(/([A-Z])/g, ' $1').toUpperCase();
+    return label;
   };
 
   return (
-    <section className="mb-2 w-full rounded-md border p-4">
+    <section className="mb-4 w-full rounded-md border p-4">
       {/* Collapsible Header */}
       {collapsible && (
         <div className="mb-3 flex items-center justify-between">

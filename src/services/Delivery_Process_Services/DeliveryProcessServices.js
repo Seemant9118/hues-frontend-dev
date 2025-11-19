@@ -22,5 +22,33 @@ export const getDispatchNotes = ({ invoiceId, enterpriseId, page, limit }) => {
 };
 
 export const getDispatchNote = (id) => {
-  return APIinstance.get(`${deliveryProcess.getDisptachNote.endpoint}${id}`);
+  return APIinstance.get(`${deliveryProcess.getDispatchNote.endpoint}${id}`);
+};
+
+export const addTransporterToDispatchNote = ({ dispatchNoteId, data }) => {
+  return APIinstance.put(
+    `${deliveryProcess.addTransporter.endpoint}${dispatchNoteId}`,
+    data,
+  );
+};
+
+export const sendToTransporter = ({ dispatchNoteId, data }) => {
+  return APIinstance.post(
+    `${deliveryProcess.sendToTransporter.endpoint}${dispatchNoteId}`,
+    data,
+  );
+};
+
+export const addBookingToDispatchNote = ({ dispatchNoteId, data }) => {
+  return APIinstance.post(
+    `${deliveryProcess.addBooking.endpoint}${dispatchNoteId}`,
+    data,
+  );
+};
+
+export const updateDispatchNoteStatus = ({ dispatchNoteId, data }) => {
+  return APIinstance.put(
+    `${deliveryProcess.updateStatus.endpoint}${dispatchNoteId}`,
+    data,
+  );
 };

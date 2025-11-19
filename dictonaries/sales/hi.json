@@ -423,28 +423,58 @@
             "dispatch_details": {
                 "title": {
                     "dispatch_notes": "डिस्पैच नोट्स",
-                    "dispatch_details": "डिस्पैच नोट विवरण"
+                    "dispatch_details": "डिस्पैच नोट विवरण",
+                    "addBooking": "बुकिंग विवरण जोड़ें"
                 },
                 "overview_labels": {
                     "status": "स्थिति",
                     "invoiceId": "इनवॉइस आईडी",
                     "buyerId": "खरीदार",
                     "totalAmount": "कुल राशि",
-                    "dispatchId": "डिस्पैच आईडी"
+                    "dispatchId": "डिस्पैच आईडी",
+                    "transporter": "ट्रांसपोर्टर",
+                    "deliveryVoucherId": "डिलीवरी वाउचर आईडी",
+                    "e_wayBillId": "ई-वे बिल आईडी"
+                },
+                "overview_inputs": {
+                    "transporter": "ट्रांसपोर्टर चुनें",
+                    "addNewTransporter": "नया ट्रांसपोर्टर जोड़ें",
+                    "editTransporter": "ट्रांसपोर्टर संपादित करें",
+                    "ctas": {
+                        "add": "जोड़ें",
+                        "edit": "संपादित करें",
+                        "share": "(ट्रांसपोर्टर को भेजें)",
+                        "readyForDispatch": "डिस्पैच के लिए तैयार",
+                        "addBooking": "बुकिंग जोड़ें",
+                        "generateEWayBill": "ई-वे बिल बनाएं",
+                        "updatePartB": "पार्ट-बी अपडेट करें",
+                        "cancel": "रद्द करें"
+                    },
+                    "placeholders": {
+                        "selectTransporter": "ट्रांसपोर्टर चुनें"
+                    },
+                    "toast": {
+                        "successAdd": "ट्रांसपोर्टर को सफलतापूर्वक डिस्पैच नोट में जोड़ा गया",
+                        "successEdit": "ट्रांसपोर्टर को सफलतापूर्वक अपडेट किया गया",
+                        "sendToTransporterSuccess": "विवरण सफलतापूर्वक ट्रांसपोर्टर को भेजा गया",
+                        "dispatchNoteReady": "डिस्पैच नोट डिस्पैच के लिए तैयार है",
+                        "error": "ट्रांसपोर्टर जोड़ने में त्रुटि",
+                        "commonError": "कुछ समस्या हुई। कृपया पुनः प्रयास करें।"
+                    }
                 },
                 "sections": {
-                    "items": "आइटम",
-                    "transport_bookings": "ट्रांसपोर्ट बुकिंग",
+                    "items": "आइटम्स",
+                    "transport_bookings": "ट्रांसपोर्ट बुकिंग्स",
                     "no_booking": "अभी तक कोई बुकिंग नहीं बनाई गई"
                 },
                 "tabs": {
                     "tab1": {
-                        "title": "आइटम",
+                        "title": "ओवरव्यू",
                         "table": {
                             "header": {
-                                "product": "प्रोडक्ट",
+                                "product": "उत्पाद",
                                 "invoiceQty": "इनवॉइस मात्रा",
-                                "dispatchedQty": "डिस्पैच मात्रा",
+                                "dispatchedQty": "डिस्पैच की गई मात्रा",
                                 "rate": "दर",
                                 "amount": "राशि"
                             }
@@ -457,22 +487,58 @@
                             "header": {
                                 "type": "प्रकार",
                                 "booking_no": "बुकिंग नंबर",
-                                "dispatchedQty": "डिस्पैच मात्रा",
-                                "date": "तारीख़",
-                                "remarks": "टिप्पणी"
+                                "dispatchedQty": "डिस्पैच की गई मात्रा",
+                                "date": "तारीख",
+                                "remarks": "टिप्पणियाँ"
                             }
                         },
                         "emtpyStateComponent": {
                             "title": "अभी तक कोई ट्रांसपोर्ट बुकिंग नहीं",
-                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग दर्ज नहीं की है। अपनी बुकिंग हिस्ट्री अपडेट रखने के लिए अभी शुरू करें।"
+                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग रिकॉर्ड नहीं की है। अपनी बुकिंग हिस्ट्री अपडेट रखने के लिए अभी शुरू करें।"
                         }
                     }
                 },
                 "table_columns": {
                     "type": "प्रकार",
                     "booking_no": "बुकिंग नंबर",
-                    "date": "तारीख़",
-                    "remarks": "टिप्पणी"
+                    "date": "तारीख",
+                    "remarks": "टिप्पणियाँ"
+                },
+                "addBooking": {
+                    "titles": {
+                        "bookingType": "बुकिंग प्रकार",
+                        "bookingNumber": "बुकिंग नंबर",
+                        "bookingDate": "बुकिंग तिथि",
+                        "remarks": "टिप्पणी",
+                        "sourceAddress": "स्रोत पता",
+                        "destinationAddress": "गंतव्य पता"
+                    },
+                    "placeholders": {
+                        "selectType": "प्रकार चुनें",
+                        "enterBookingNumber": "बुकिंग नंबर दर्ज करें",
+                        "enterRemarks": "टिप्पणी दर्ज करें",
+                        "enterSourceAddress": "स्रोत पता दर्ज करें",
+                        "enterDestinationAddress": "गंतव्य पता दर्ज करें"
+                    },
+                    "bookingTypes": {
+                        "lr": "लॉरी रसीद (LR)",
+                        "lb": "लेडिंग बिल (LB)",
+                        "airway": "एयरवे रसीद",
+                        "railway": "रेलवे रसीद"
+                    },
+                    "ctas": {
+                        "cancel": "रद्द करें",
+                        "addBooking": "बुकिंग जोड़ें"
+                    },
+                    "errors": {
+                        "bookingTypeRequired": "बुकिंग प्रकार आवश्यक है",
+                        "bookingNumberRequired": "बुकिंग नंबर आवश्यक है",
+                        "bookingDateRequired": "तिथि आवश्यक है"
+                    },
+                    "toast": {
+                        "success": "बुकिंग सफलतापूर्वक बनाई गई",
+                        "error": "डिस्पैच नोट के लिए बुकिंग बनाने में त्रुटि"
+                    }
                 }
             }
         }
