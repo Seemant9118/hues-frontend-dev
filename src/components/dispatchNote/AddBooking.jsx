@@ -3,11 +3,20 @@ import { saveDraftToSession } from '@/appUtils/helperFunctions';
 import { SessionStorageService } from '@/lib/utils';
 import { addBookingToDispatchNote } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { useMutation } from '@tanstack/react-query';
-import { CalendarDays } from 'lucide-react';
+import {
+  CalendarDays,
+  Check,
+  FileText,
+  Image,
+  Upload,
+  UploadCloud,
+  X,
+} from 'lucide-react';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { FileUploader } from 'react-drag-drop-files';
 import OrderBreadCrumbs from '../orders/OrderBreadCrumbs';
 import { Button } from '../ui/button';
 import DatePickers from '../ui/DatePickers';
@@ -42,7 +51,7 @@ const AddBooking = ({
   const router = useRouter();
 
   const bookingDraftData = SessionStorageService.get('bookingDataDraft');
-
+  const [files, setFiles] = useState([]);
   const [bookingData, setBookingData] = useState({
     bookingType: bookingDraftData?.bookingType || '',
     bookingNumber: bookingDraftData?.bookingNumber || '',
@@ -127,6 +136,16 @@ const AddBooking = ({
     },
   });
 
+  // handle upload proofs fn
+  const handleAttached = async (file) => {
+    setFiles((prevFiles) => [...prevFiles, file]);
+    toast.success(translations('addBooking.toast.fileAttachedSuccess'));
+  };
+
+  const handleFileRemove = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+  };
+
   const handleSubmit = (bookingData) => {
     const errors = validation(bookingData);
 
@@ -135,19 +154,28 @@ const AddBooking = ({
       return;
     }
 
-    // Convert UI date (DD/MM/YYYY) → API (YYYY-MM-DD)
-    const apiPayload = {
-      ...bookingData,
-      bookingDate: moment(bookingData.bookingDate, 'DD/MM/YYYY').format(
-        'YYYY-MM-DD',
-      ),
-    };
+    // Build FormData
+    const formData = new FormData();
+    // handle files if any
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+    formData.append('dispatchNoteId', dispatchNoteId);
+    formData.append('bookingType', bookingData.bookingType);
+    formData.append('bookingNumber', bookingData.bookingNumber);
+    formData.append('sourceAddress', bookingData.sourceAddress);
+    formData.append('destinationAddress', bookingData.destinationAddress);
+    formData.append('remarks', bookingData.remarks);
+    const formattedPaymentDate = moment(
+      bookingData.bookingDate,
+      'DD/MM/YYYY',
+    ).format('YYYY-MM-DD');
+    formData.append('bookingDate', formattedPaymentDate);
 
     setErrorMsg({});
-    createBookingMutation.mutate({
-      dispatchNoteId,
-      data: apiPayload,
-    });
+    createBookingMutation.mutate({ dispatchNoteId, data: formData });
   };
 
   return (
@@ -371,6 +399,74 @@ const AddBooking = ({
                 />
               </div>
             </section>
+            {/* uploads payments proofs */}
+            <div className="flex flex-col gap-1 p-1">
+              <Label className="text-sm font-semibold">
+                {translations('addBooking.titles.addAttachements')}
+              </Label>
+              <div className="flex flex-wrap gap-4">
+                {files?.map((file) => (
+                  <div
+                    key={file.name}
+                    className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                  >
+                    {/* Remove Button */}
+                    <X
+                      size={16}
+                      onClick={() => handleFileRemove(file)}
+                      className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                    />
+                    {/* File icon */}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                      {file.name.split('.').pop() === 'pdf' ? (
+                        <FileText size={16} className="text-red-600" />
+                      ) : (
+                        // eslint-disable-next-line jsx-a11y/alt-text
+                        <Image size={16} className="text-primary" />
+                      )}
+                    </div>
+
+                    {/* File name */}
+                    <p className="truncate text-sm font-medium text-neutral-800">
+                      {file.name}
+                    </p>
+
+                    {/* Success message */}
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                        <Check size={12} />
+                      </div>
+                      <p className="text-xs font-medium text-green-600">
+                        {translations('addBooking.toast.attachementSuccess')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <FileUploader
+                handleChange={handleAttached}
+                name="file"
+                types={['png', 'pdf']}
+              >
+                <div className="mb-2 flex min-w-[700px] cursor-pointer items-center justify-between gap-3 rounded border-2 border-dashed border-[#288AF9] px-5 py-10">
+                  <div className="flex items-center gap-4">
+                    <UploadCloud className="text-[#288AF9]" size={40} />
+                    <div className="flex flex-col gap-1">
+                      <p className="text-xs font-medium text-darkText">
+                        {translations('addBooking.placeholders.upload_para')}
+                      </p>
+                      <p className="text-xs font-normal text-[#288AF9]">
+                        {translations('addBooking.placeholders.upload_note')}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="blue_outline">
+                    <Upload />
+                    {translations('addBooking.ctas.select')}
+                  </Button>
+                </div>
+              </FileUploader>
+            </div>
           </div>
         </div>
       </div>

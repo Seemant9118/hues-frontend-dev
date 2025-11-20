@@ -52,3 +52,10 @@ export const updateDispatchNoteStatus = ({ dispatchNoteId, data }) => {
     data,
   );
 };
+
+export const update = ({ dispatchNoteId, data }) => {
+  return APIinstance.put(
+    `${deliveryProcess.update.endpoint}${dispatchNoteId}`,
+    data,
+  );
+};
