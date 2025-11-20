@@ -390,7 +390,7 @@
             }
         },
         "sales-dispatched-notes": {
-            "title": "डिस्पैच नोट्स",
+            "title": "डिस्पैच",
             "emtpyStateComponent": {
                 "heading": "बोली, डील और इनवॉइस को सुरक्षित और डिजिटल रूप से प्रबंधित करें",
                 "subItems": {
@@ -422,19 +422,24 @@
             },
             "dispatch_details": {
                 "title": {
-                    "dispatch_notes": "डिस्पैच नोट्स",
-                    "dispatch_details": "डिस्पैच नोट विवरण",
+                    "dispatch_notes": "डिस्पैच",
+                    "dispatch_details": "डिस्पैच विवरण",
                     "addBooking": "बुकिंग विवरण जोड़ें"
                 },
                 "overview_labels": {
                     "status": "स्थिति",
-                    "invoiceId": "इनवॉइस आईडी",
-                    "buyerId": "खरीदार",
+                    "invoiceId": "चालान आईडी",
+                    "consignor": "प्रेषक",
+                    "consignee": "प्राप्तकर्ता",
                     "totalAmount": "कुल राशि",
                     "dispatchId": "डिस्पैच आईडी",
-                    "transporter": "ट्रांसपोर्टर",
-                    "deliveryVoucherId": "डिलीवरी वाउचर आईडी",
-                    "e_wayBillId": "ई-वे बिल आईडी"
+                    "transporter": "परिवहनकर्ता",
+                    "delivery_challan_no": "डिलीवरी चालान संख्या",
+                    "ewb": "ई-वे बिल",
+                    "dispatch_from": "डिस्पैच स्थान",
+                    "billing_from": "बिलिंग स्थान",
+                    "billing_address": "बिलिंग पता",
+                    "shipping_address": "शिपिंग पता"
                 },
                 "overview_inputs": {
                     "transporter": "ट्रांसपोर्टर चुनें",
@@ -511,14 +516,17 @@
                         "bookingDate": "बुकिंग तिथि",
                         "remarks": "टिप्पणी",
                         "sourceAddress": "स्रोत पता",
-                        "destinationAddress": "गंतव्य पता"
+                        "destinationAddress": "गंतव्य पता",
+                        "addAttachements": "अटैचमेंट जोड़ें"
                     },
                     "placeholders": {
                         "selectType": "प्रकार चुनें",
                         "enterBookingNumber": "बुकिंग नंबर दर्ज करें",
                         "enterRemarks": "टिप्पणी दर्ज करें",
                         "enterSourceAddress": "स्रोत पता दर्ज करें",
-                        "enterDestinationAddress": "गंतव्य पता दर्ज करें"
+                        "enterDestinationAddress": "गंतव्य पता दर्ज करें",
+                        "upload_para": "ड्रैग और ड्रॉप करें या फ़ाइल चुनें (अधिकतम 10MB, .png / .pdf फ़ॉर्मेट)",
+                        "upload_note": "नोट: कृपया केवल भुगतान प्रमाण ही अपलोड करें"
                     },
                     "bookingTypes": {
                         "lr": "लॉरी रसीद (LR)",
@@ -528,7 +536,8 @@
                     },
                     "ctas": {
                         "cancel": "रद्द करें",
-                        "addBooking": "बुकिंग जोड़ें"
+                        "addBooking": "बुकिंग जोड़ें",
+                        "select": "चुनें"
                     },
                     "errors": {
                         "bookingTypeRequired": "बुकिंग प्रकार आवश्यक है",
@@ -537,6 +546,8 @@
                     },
                     "toast": {
                         "success": "बुकिंग सफलतापूर्वक बनाई गई",
+                        "attachementSuccess": "अटैचमेंट सफलतापूर्वक जोड़ दिया गया",
+                        "fileAttachedSuccess": "फ़ाइल सफलतापूर्वक संलग्न की गई!",
                         "error": "डिस्पैच नोट के लिए बुकिंग बनाने में त्रुटि"
                     }
                 }

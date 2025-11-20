@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 export const useDispatchedTransporterBookingColumns = () => {
   const translations = useTranslations(
-    'sales.sales-dispatched-notes.dispatch_details.tabs.tab2.table.header',
+    'sales.sales-dispatched-notes.dispatch_details.tabs.tab3.table.header',
   );
 
   return [

@@ -1,11 +1,14 @@
 'use client';
 
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import {
+  capitalize,
   formattedAmount,
   getStylesForSelectComponent,
 } from '@/appUtils/helperFunctions';
+import CommentBox from '@/components/comments/CommentBox';
 import AddBooking from '@/components/dispatchNote/AddBooking';
 import AddTransport from '@/components/dispatchNote/AddTransport';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -17,9 +20,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
+import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import {
   getDispatchNote,
   sendToTransporter,
+  update,
   updateDispatchNoteStatus,
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import {
@@ -32,6 +37,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
@@ -52,6 +58,11 @@ const ViewDispatchNote = () => {
   const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isAddingBooking, setIsAddingBooking] = useState(false);
+
+  const [selectDispatcher, setSelectDispatcher] = useState(null);
+  const [editModeDispatchFrom, setEditModeDispatchFrom] = useState(false);
+  const [selectBillingFrom, setSelectBillingFrom] = useState(null);
+  const [editModeBillingFrom, setEditModeBillingFrom] = useState(false);
 
   const onTabChange = (tab) => {
     setTab(tab);
@@ -144,6 +155,39 @@ const ViewDispatchNote = () => {
     },
   });
 
+  // get addresses
+  const { data: addresses } = useQuery({
+    queryKey: [addressAPIs.getAddressByEnterprise.endpointKey, enterpriseId],
+    queryFn: () => getAddressByEnterprise(enterpriseId),
+    select: (res) => res.data.data,
+  });
+
+  const addressesOptions = [
+    ...(addresses || []).map((address) => {
+      const value = address?.id;
+      const label = address?.address;
+
+      return { value, label };
+    }),
+    // Special option for "address New Address"
+  ];
+
+  // update - address (dispatch from,biling from)
+  const updateDispatchInfo = useMutation({
+    mutationFn: update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [deliveryProcess.getDispatchNote.endpointKey],
+      });
+      toast.success(translations('overview_inputs.toast.dispatchNoteReady'));
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message ||
+          translations('overview_inputs.toast.commonError'),
+      );
+    },
+  });
   // fetch dispatch details
   const { isLoading: isDispatchDetailsLoading, data: dispatchDetails } =
     useQuery({
@@ -193,23 +237,34 @@ const ViewDispatchNote = () => {
   const totalGstAmount = Number(dispatchDetails?.totalGstAmount || 0);
   const overviewData = {
     invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
-    buyerId: dispatchDetails?.buyerName || '-',
-    totalAmount: formattedAmount(totalAmount + totalGstAmount),
+    consignor: dispatchDetails?.sellerDetails?.name || '-',
+    consignee: dispatchDetails?.buyerName || '-',
     status: dispatchDetails?.status || '-',
     dispatchId: dispatchDetails?.referenceNumber || '-',
+    totalAmount: formattedAmount(totalAmount + totalGstAmount),
+    deliveryChallanNo: dispatchDetails?.deliveryVoucher?.referenceNumber || '-',
+    EWB: dispatchDetails?.eWayBill?.ewbNumber || '-',
     transporter: dispatchDetails?.transporterName || '-',
-    deliveryVoucherId: dispatchDetails?.deliveryVoucher?.referenceNumber || '-',
-    ewayBillId: dispatchDetails?.eWayBill?.ewbNumber || '-',
+    dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
+    billingFrom: dispatchDetails?.billingFromAddress?.address || '-',
+    billingAddress: capitalize(dispatchDetails?.billingAddress?.address) || '-',
+    shippingAddress:
+      capitalize(dispatchDetails?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
     invoiceId: translations('overview_labels.invoiceId'),
-    buyerId: translations('overview_labels.buyerId'),
-    totalAmount: translations('overview_labels.totalAmount'),
+    consignor: translations('overview_labels.consignor'),
+    consignee: translations('overview_labels.consignee'),
     status: translations('overview_labels.status'),
     dispatchId: translations('overview_labels.dispatchId'),
-    transporter: translations('overview_labels.transporter'), // here in label i also want to render ctas of 'add' and 'edit' with condition
-    deliveryVoucherId: translations('overview_labels.deliveryVoucherId'),
-    ewayBillId: translations('overview_labels.e_wayBillId'),
+    totalAmount: translations('overview_labels.totalAmount'),
+    deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
+    EWB: translations('overview_labels.ewb'),
+    transporter: translations('overview_labels.transporter'),
+    dispatchFrom: translations('overview_labels.dispatch_from'),
+    billingFrom: translations('overview_labels.billing_from'),
+    billingAddress: translations('overview_labels.billing_address'),
+    shippingAddress: translations('overview_labels.shipping_address'),
   };
   const hasNoTransporter = !dispatchDetails?.transporterName;
   const hasTransporter = Boolean(dispatchDetails?.transporterName);
@@ -251,6 +306,52 @@ const ViewDispatchNote = () => {
             )}
           </>
         )}
+      </div>
+    ),
+    dispatchFrom: () => (
+      <div className="flex items-center gap-2">
+        <span>{translations('overview_labels.dispatch_from')}</span>
+        {dispatchDetails?.dispatchFromAddress?.address &&
+          !editModeDispatchFrom && (
+            <button
+              onClick={() => setEditModeDispatchFrom(true)}
+              className="text-xs text-primary underline"
+            >
+              <Pencil size={12} />
+            </button>
+          )}
+        {editModeDispatchFrom &&
+          dispatchDetails?.dispatchFromAddress?.address && (
+            <button
+              onClick={() => setEditModeDispatchFrom(false)}
+              className="text-xs text-primary underline"
+            >
+              <X size={12} />
+            </button>
+          )}
+      </div>
+    ),
+    billingFrom: () => (
+      <div className="flex items-center gap-2">
+        <span>{translations('overview_labels.billing_from')}</span>
+        {dispatchDetails?.billingFromAddress?.address &&
+          !editModeBillingFrom && (
+            <button
+              onClick={() => setEditModeBillingFrom(true)}
+              className="text-xs text-primary underline"
+            >
+              <Pencil size={12} />
+            </button>
+          )}
+        {editModeBillingFrom &&
+          dispatchDetails?.billingFromAddress?.address && (
+            <button
+              onClick={() => setEditModeBillingFrom(false)}
+              className="text-xs text-primary underline"
+            >
+              <X size={12} />
+            </button>
+          )}
       </div>
     ),
   };
@@ -332,6 +433,159 @@ const ViewDispatchNote = () => {
             getStylesForSelectComponent={getStylesForSelectComponent}
           />
         </>
+      );
+    },
+    dispatchFrom: () => {
+      const hasAddress = dispatchDetails?.dispatchFromAddress?.address;
+      const selectedValue = selectDispatcher?.selectedValue;
+
+      // CASE 1: Edit Mode → Show Select with Prefilled Value
+      if (editModeDispatchFrom && hasAddress) {
+        return (
+          <Select
+            name="dispatchFrom"
+            placeholder={translations('overview_inputs.dispatch_from')}
+            options={addressesOptions}
+            styles={getStylesForSelectComponent()}
+            className="max-w-full text-sm"
+            classNamePrefix="select"
+            value={
+              selectedValue ||
+              addressesOptions.find(
+                (opt) => opt.value === dispatchDetails.dispatchFromAddress.id,
+              )
+            }
+            onChange={(selectedOption) => {
+              if (!selectedOption) return;
+
+              setSelectDispatcher({
+                dispatchFrom: selectedOption.value,
+                selectedValue: selectedOption,
+              });
+
+              updateDispatchInfo.mutate({
+                dispatchNoteId: params.dispatchId,
+                data: {
+                  dispatchFromAddressId: selectedOption.value,
+                },
+              });
+
+              setEditModeDispatchFrom(false);
+            }}
+          />
+        );
+      }
+
+      // CASE 2: No Address → Show Blank Select
+      if (!hasAddress) {
+        return (
+          <Select
+            name="dispatchFrom"
+            placeholder={translations('overview_inputs.dispatch_from')}
+            options={addressesOptions}
+            styles={getStylesForSelectComponent()}
+            className="max-w-full text-sm"
+            classNamePrefix="select"
+            value={selectedValue || null}
+            onChange={(selectedOption) => {
+              if (!selectedOption) return;
+
+              setSelectDispatcher({
+                dispatchFrom: selectedOption.value,
+                selectedValue: selectedOption,
+              });
+
+              updateDispatchInfo.mutate({
+                dispatchNoteId: params.dispatchId,
+                data: {
+                  dispatchFromAddressId: selectedOption.value,
+                },
+              });
+            }}
+          />
+        );
+      }
+
+      // CASE 3: Has Address & Not Editing → Show Text
+      return (
+        <span>{capitalize(dispatchDetails.dispatchFromAddress.address)}</span>
+      );
+    },
+
+    billingFrom: () => {
+      const hasBillingAddress = dispatchDetails?.billingFromAddress?.address;
+      const selectedValue = selectBillingFrom?.selectedValue;
+
+      // CASE 1: Edit Mode → Show Select with Prefilled Value
+      if (editModeBillingFrom && hasBillingAddress) {
+        return (
+          <Select
+            name="billingFrom"
+            placeholder={translations('overview_inputs.billing_from')}
+            options={addressesOptions}
+            styles={getStylesForSelectComponent()}
+            className="max-w-full text-sm"
+            classNamePrefix="select"
+            value={
+              selectedValue ||
+              addressesOptions.find(
+                (opt) => opt.value === dispatchDetails.billingFromAddress.id,
+              )
+            }
+            onChange={(selectedOption) => {
+              if (!selectedOption) return;
+
+              setSelectBillingFrom({
+                billingFrom: selectedOption.value,
+                selectedValue: selectedOption,
+              });
+
+              updateDispatchInfo.mutate({
+                dispatchNoteId: params.dispatchId,
+                data: {
+                  billingFromAddressId: selectedOption.value,
+                },
+              });
+
+              setEditModeBillingFrom(false);
+            }}
+          />
+        );
+      }
+
+      // CASE 2: No Address → Show Select
+      if (!hasBillingAddress) {
+        return (
+          <Select
+            name="billingFrom"
+            placeholder={translations('overview_inputs.billing_from')}
+            options={addressesOptions}
+            styles={getStylesForSelectComponent()}
+            className="max-w-full text-sm"
+            classNamePrefix="select"
+            value={selectedValue || null}
+            onChange={(selectedOption) => {
+              if (!selectedOption) return;
+
+              setSelectBillingFrom({
+                billingFrom: selectedOption.value,
+                selectedValue: selectedOption,
+              });
+
+              updateDispatchInfo.mutate({
+                dispatchNoteId: params.dispatchId,
+                data: {
+                  billingFromAddressId: selectedOption.value,
+                },
+              });
+            }}
+          />
+        );
+      }
+
+      // CASE 3: Has Address & Not Editing → Text
+      return (
+        <span>{capitalize(dispatchDetails.billingFromAddress.address)}</span>
       );
     },
   };
@@ -419,8 +673,11 @@ const ViewDispatchNote = () => {
                   <TabsTrigger value="overview">
                     {translations('tabs.tab1.title')}
                   </TabsTrigger>
+                  <TabsTrigger value="items">
+                    {translations('tabs.tab2.title')}
+                  </TabsTrigger>
                   <TabsTrigger value="transports">
-                    {translations('tabs.tab2.title1')}
+                    {translations('tabs.tab3.title1')}
                   </TabsTrigger>
                 </TabsList>
                 {/* ctas update part b */}
@@ -441,6 +698,13 @@ const ViewDispatchNote = () => {
                   customLabelRender={customLabelRender}
                 />
 
+                {/* COMMENTS */}
+                <CommentBox
+                  contextId={params.dispatchId}
+                  context={'DISPATCH_NOTE'}
+                />
+              </TabsContent>
+              <TabsContent value="items">
                 {/* ITEMS TABLE */}
                 <section className="mt-2">
                   <DataTable
@@ -456,13 +720,13 @@ const ViewDispatchNote = () => {
                     <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
                       <Image src={emptyImg} alt="emptyIcon" />
                       <p className="font-bold">
-                        {translations('tabs.tab2.emtpyStateComponent.title')}
+                        {translations('tabs.tab3.emtpyStateComponent.title')}
                       </p>
                       <ProtectedWrapper
                         permissionCode={'permission:sales-create-payment'}
                       >
                         <p className="max-w-96 text-center">
-                          {translations('tabs.tab2.emtpyStateComponent.para')}
+                          {translations('tabs.tab3.emtpyStateComponent.para')}
                         </p>
                       </ProtectedWrapper>
                     </div>

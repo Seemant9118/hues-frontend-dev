@@ -391,7 +391,7 @@
             }
         },
         "sales-dispatched-notes": {
-            "title": "Dispatch Notes",
+            "title": "Dispatch",
             "emtpyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
@@ -423,22 +423,29 @@
             },
             "dispatch_details": {
                 "title": {
-                    "dispatch_notes": "Dispatch Notes",
-                    "dispatch_details": "Dispatch Note Details",
+                    "dispatch_notes": "Dispatch",
+                    "dispatch_details": "Dispatch Details",
                     "addBooking": "Add Booking Details"
                 },
                 "overview_labels": {
                     "status": "Status",
                     "invoiceId": "Invoice ID",
-                    "buyerId": "Buyer",
+                    "consignor": "Consignor",
+                    "consignee": "Consignee",
                     "totalAmount": "Total Amount",
                     "dispatchId": "Dispatch ID",
                     "transporter": "Transporter",
-                    "deliveryVoucherId": "Delivery Voucher ID",
-                    "e_wayBillId": "E-Way Bill ID"
+                    "delivery_challan_no": "Delivery challan no.",
+                    "ewb": "EWB",
+                    "dispatch_from": "Dispatch From",
+                    "billing_from": "Billing From",
+                    "billing_address": "Billing Address",
+                    "shipping_address": "Shipping Address"
                 },
                 "overview_inputs": {
                     "transporter": "Select Transporter",
+                    "dispatch_from": "Select Dispatch From",
+                    "billing_from":"Select Billing From",
                     "addNewTransporter": "Add New Transporter",
                     "editTransporter": "Edit Transporter",
                     "ctas": {
@@ -470,7 +477,11 @@
                 },
                 "tabs": {
                     "tab1": {
-                        "title": "Overview",
+                        "title": "Overview"
+                    },
+                    "tab2": {
+                        "title": "Items",
+                        "title2": "No items yet",
                         "table": {
                             "header": {
                                 "product": "Product",
@@ -479,9 +490,13 @@
                                 "rate": "Rate",
                                 "amount": "Amount"
                             }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No Trasnport booking yet",
+                            "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
                         }
                     },
-                    "tab2": {
+                    "tab3": {
                         "title1": "Transport Booking",
                         "title2": "No booking yet",
                         "table": {
@@ -512,14 +527,17 @@
                         "bookingDate": "Booking Date",
                         "remarks": "Remarks",
                         "sourceAddress": "Source Address",
-                        "destinationAddress": "Destination Address"
+                        "destinationAddress": "Destination Address",
+                        "addAttachements": "Add Attachments"
                     },
                     "placeholders": {
                         "selectType": "Select type",
                         "enterBookingNumber": "Enter Booking Number",
                         "enterRemarks": "Enter Remarks",
                         "enterSourceAddress": "Enter Source Address",
-                        "enterDestinationAddress": "Enter Destination Address"
+                        "enterDestinationAddress": "Enter Destination Address",
+                        "upload_para":"Drag & Drop or Select a File (Max 10MB,.png /.pdf Formats)",
+                        "upload_note":"Note: Please upload payment proofs only"
                     },
                     "bookingTypes": {
                         "lr": "Lorry Receipt (LR)",
@@ -529,7 +547,8 @@
                     },
                     "ctas": {
                         "cancel": "Cancel",
-                        "addBooking": "Add Booking"
+                        "addBooking": "Add Booking",
+                        "select": "Select"
                     },
                     "errors": {
                         "bookingTypeRequired": "Booking type is required",
@@ -538,6 +557,8 @@
                     },
                     "toast": {
                         "success": "Booking created successfully",
+                        "fileAttachedSuccess": "File attached successfully!",
+                        "attachementSuccess": "Attachment added successfully",
                         "error": "Error creating booking for dispatch note"
                     }
                 }

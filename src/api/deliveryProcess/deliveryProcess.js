@@ -27,4 +27,8 @@ export const deliveryProcess = {
     endpoint: `/dispatchnote/updatestatus/`,
     endpointKey: 'update_dispatch_note_status',
   },
+  update: {
+    endpoint: `/dispatchnote/update/`,
+    endpointKey: 'update_dispatch_note_status',
+  },
 };

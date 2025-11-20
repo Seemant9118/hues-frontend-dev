@@ -17,7 +17,7 @@
             "invoices": "Invoices",
             "payments": "Payments",
             "debitNotes": "Debit Notes",
-            "dispatch": "Dispatch Notes",
+            "dispatch": "Dispatch",
             "clients": "Clients",
             "vendors": "Vendors",
             "customers": "Customers"
