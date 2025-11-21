@@ -41,10 +41,6 @@ function AppProviders({ children }) {
   );
 }
 
-const isValidEnv =
-  process.env.NEXT_PUBLIC_NODE_ENV === 'dev' ||
-  process.env.NEXT_PUBLIC_NODE_ENV === 'production';
-
 export default async function RootLayout({ children, params: { locale } }) {
   const currLocale = getCurrentLocale(locale);
   let messages = {};
@@ -57,7 +53,9 @@ export default async function RootLayout({ children, params: { locale } }) {
 
   return (
     <html lang={locale} className={nanumPen.variable}>
-      <head>{isValidEnv && <ClarityScript />}</head>
+      <head>
+        <ClarityScript />
+      </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {/* Toast notifications */}
