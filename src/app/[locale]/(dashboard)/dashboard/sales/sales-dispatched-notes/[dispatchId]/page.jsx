@@ -3,6 +3,7 @@
 import { addressAPIs } from '@/api/addressApi/addressApis';
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { settingsAPI } from '@/api/settings/settingsApi';
 import {
   capitalize,
   formattedAmount,
@@ -11,6 +12,8 @@ import {
 import CommentBox from '@/components/comments/CommentBox';
 import AddBooking from '@/components/dispatchNote/AddBooking';
 import AddTransport from '@/components/dispatchNote/AddTransport';
+import CreateEWB from '@/components/dispatchNote/CreateEWB';
+import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -31,6 +34,7 @@ import {
   createVendor,
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MoveUpRight, Pencil, Plus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -58,8 +62,9 @@ const ViewDispatchNote = () => {
   const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isAddingBooking, setIsAddingBooking] = useState(false);
-
+  const [isCreatingEWB, setIsCreatingEWB] = useState(false);
   const [selectDispatcher, setSelectDispatcher] = useState(null);
+  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [editModeDispatchFrom, setEditModeDispatchFrom] = useState(false);
   const [selectBillingFrom, setSelectBillingFrom] = useState(null);
   const [editModeBillingFrom, setEditModeBillingFrom] = useState(false);
@@ -87,12 +92,19 @@ const ViewDispatchNote = () => {
       path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
       show: isAddingBooking,
     },
+    {
+      id: 4,
+      name: translations('title.createEWB'),
+      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      show: isCreatingEWB,
+    },
   ];
   useEffect(() => {
     // Read the state from the query parameters
     const state = searchParams.get('state');
 
     setIsAddingBooking(state === 'addBooking');
+    setIsCreatingEWB(state === 'createEWB');
   }, [searchParams]);
 
   useEffect(() => {
@@ -101,12 +113,14 @@ const ViewDispatchNote = () => {
 
     if (isAddingBooking) {
       newPath += '?state=addBooking';
+    } else if (isCreatingEWB) {
+      newPath += '?state=createEWB';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.dispatchId, isAddingBooking, router]);
+  }, [params.dispatchId, isAddingBooking, isCreatingEWB, router]);
 
   // vendors[transporter] fetching
   const { data: transports } = useQuery({
@@ -170,6 +184,14 @@ const ViewDispatchNote = () => {
       return { value, label };
     }),
     // Special option for "address New Address"
+    {
+      value: 'add-new-address', // Special value for "Add New Address"
+      label: (
+        <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
+          <Plus size={14} /> {translations('overview_inputs.addNewAddress')}
+        </span>
+      ),
+    },
   ];
 
   // update - address (dispatch from,biling from)
@@ -179,7 +201,7 @@ const ViewDispatchNote = () => {
       queryClient.invalidateQueries({
         queryKey: [deliveryProcess.getDispatchNote.endpointKey],
       });
-      toast.success(translations('overview_inputs.toast.dispatchNoteReady'));
+      toast.success(translations('overview_inputs.toast.dispatchInfoUpdated'));
     },
     onError: (error) => {
       toast.error(
@@ -458,6 +480,11 @@ const ViewDispatchNote = () => {
             onChange={(selectedOption) => {
               if (!selectedOption) return;
 
+              if (selectedOption.value === 'add-new-address') {
+                setIsAddingNewAddress(true);
+                return;
+              }
+
               setSelectDispatcher({
                 dispatchFrom: selectedOption.value,
                 selectedValue: selectedOption,
@@ -489,6 +516,11 @@ const ViewDispatchNote = () => {
             value={selectedValue || null}
             onChange={(selectedOption) => {
               if (!selectedOption) return;
+
+              if (selectedOption.value === 'add-new-address') {
+                setIsAddingNewAddress(true);
+                return;
+              }
 
               setSelectDispatcher({
                 dispatchFrom: selectedOption.value,
@@ -535,6 +567,11 @@ const ViewDispatchNote = () => {
             onChange={(selectedOption) => {
               if (!selectedOption) return;
 
+              if (selectedOption.value === 'add-new-address') {
+                setIsAddingNewAddress(true);
+                return;
+              }
+
               setSelectBillingFrom({
                 billingFrom: selectedOption.value,
                 selectedValue: selectedOption,
@@ -566,6 +603,11 @@ const ViewDispatchNote = () => {
             value={selectedValue || null}
             onChange={(selectedOption) => {
               if (!selectedOption) return;
+
+              if (selectedOption.value === 'add-new-address') {
+                setIsAddingNewAddress(true);
+                return;
+              }
 
               setSelectBillingFrom({
                 billingFrom: selectedOption.value,
@@ -625,7 +667,7 @@ const ViewDispatchNote = () => {
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
       <Wrapper className="h-full py-2">
-        {!isAddingBooking && (
+        {!isAddingBooking && !isCreatingEWB && (
           <>
             {/* HEADER */}
             <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
@@ -657,7 +699,7 @@ const ViewDispatchNote = () => {
                   </Button>
                 )}
                 {/* generate e-way bill cta */}
-                <Button size="sm" disabled={true}>
+                <Button size="sm" onClick={() => setIsCreatingEWB(true)}>
                   {translations('overview_inputs.ctas.generateEWayBill')}
                 </Button>
               </div>
@@ -689,6 +731,14 @@ const ViewDispatchNote = () => {
                   )}
               </section>
               <TabsContent value="overview">
+                {/* add new address : visible if isAddingNewAddress is true */}
+                <AddNewAddress
+                  isAddressAdding={isAddingNewAddress}
+                  setIsAddressAdding={setIsAddingNewAddress}
+                  mutationKey={settingsAPI.addUpdateAddress.endpointKey}
+                  mutationFn={addUpdateAddress}
+                  invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
+                />
                 {/* OVERVIEW SECTION */}
                 <Overview
                   collapsible={false}
@@ -743,7 +793,7 @@ const ViewDispatchNote = () => {
           </>
         )}
 
-        {isAddingBooking && (
+        {isAddingBooking && !isCreatingEWB && (
           <AddBooking
             translations={translations}
             overviewData={overviewData}
@@ -756,6 +806,17 @@ const ViewDispatchNote = () => {
             isAddingBooking={isAddingBooking}
             setIsAddingBooking={setIsAddingBooking}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+          />
+        )}
+
+        {isCreatingEWB && !isAddingBooking && (
+          <CreateEWB
+            overviewData={overviewData}
+            overviewLabels={overviewLabels}
+            customRender={customRender}
+            customLabelRender={customLabelRender}
+            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+            setIsCreatingEWB={setIsCreatingEWB}
           />
         )}
       </Wrapper>
