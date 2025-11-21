@@ -976,8 +976,21 @@
                     "dispatach_created_success": "Dispatch note created Successfully"
                 },
                 "errorMsg": {
-                    "common":"Oops! We hit a snag Try again?"
+                    "common": "Oops! We hit a snag Try again?"
                 }
+            }
+        },
+        "attachment_uploader": {
+            "label": "Attachments",
+            "toast": {
+                "fileAttached": "file attached successfully",
+                "fileRemoved": "file removed successfully"
+            },
+            "fileStatus": "File attached successfully",
+            "upload": {
+                "dropzoneTitle": "Drag & Drop or Select a File",
+                "supportedFormatsLabel": "Supported formats:",
+                "selectButton": "Select"
             }
         },
         "conditionalRenderingStatus": {
@@ -1008,7 +1021,7 @@
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
             "DRAFT": "Draft",
-            "READY_FOR_DISPATCH":" Ready for Dispatch"
+            "READY_FOR_DISPATCH": " Ready for Dispatch"
         }
     }
 }

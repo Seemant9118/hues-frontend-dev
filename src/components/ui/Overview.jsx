@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, isValidElement } from 'react';
 import { Button } from '@/components/ui/button';
+import clsx from 'clsx';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { isValidElement, useState } from 'react';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 
 export default function Overview({
@@ -11,7 +12,7 @@ export default function Overview({
   customRender = {}, // { orderStatus: (value)=> <CustomComponent /> }
   customLabelRender = {},
   collapsible = false,
-  sectionClass = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full animate-fadeInUp',
+  sectionClass = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full',
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -52,7 +53,7 @@ export default function Overview({
           </Button>
 
           {!isOpen && (
-            <div className="flex w-full animate-fadeInUp justify-between text-sm font-bold">
+            <div className="flex w-full justify-between text-sm font-bold">
               {Object.keys(data)
                 .slice(0, 4)
                 .map((key) => (
@@ -73,7 +74,9 @@ export default function Overview({
 
       {/* Expanded Content */}
       {(!collapsible || isOpen) && (
-        <section className={sectionClass}>
+        <section
+          className={clsx(sectionClass, collapsible && 'animate-smoothDown')}
+        >
           {Object.entries(data).map(([key, value]) => (
             <div key={key} className="flex flex-col gap-2">
               <p className="text-sm font-semibold text-gray-600">

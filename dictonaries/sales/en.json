@@ -425,7 +425,8 @@
                 "title": {
                     "dispatch_notes": "Dispatch",
                     "dispatch_details": "Dispatch Details",
-                    "addBooking": "Add Booking Details"
+                    "addBooking": "Add Booking Details",
+                    "createEWB": "Create E-Way Bill (Part A)"
                 },
                 "overview_labels": {
                     "status": "Status",
@@ -445,8 +446,9 @@
                 "overview_inputs": {
                     "transporter": "Select Transporter",
                     "dispatch_from": "Select Dispatch From",
-                    "billing_from":"Select Billing From",
+                    "billing_from": "Select Billing From",
                     "addNewTransporter": "Add New Transporter",
+                    "addNewAddress": "Add New Address",
                     "editTransporter": "Edit Transporter",
                     "ctas": {
                         "add": "Add",
@@ -466,6 +468,7 @@
                         "successEdit": "Transporter edited successfully to dispatch note",
                         "sendToTransporterSuccess": "Details sent successfully to transporter",
                         "dispatchNoteReady": "Dispatch note is ready for dispatch",
+                        "dispatchInfoUpdated": "Dispatch information updated successfully",
                         "error": "Error adding transporter to dispatch note",
                         "commonError": "We hit a snag. Please try again."
                     }
@@ -528,7 +531,7 @@
                         "remarks": "Remarks",
                         "sourceAddress": "Source Address",
                         "destinationAddress": "Destination Address",
-                        "addAttachements": "Add Attachments"
+                        "addAttachments": "Add Attachments"
                     },
                     "placeholders": {
                         "selectType": "Select type",
@@ -536,8 +539,8 @@
                         "enterRemarks": "Enter Remarks",
                         "enterSourceAddress": "Enter Source Address",
                         "enterDestinationAddress": "Enter Destination Address",
-                        "upload_para":"Drag & Drop or Select a File (Max 10MB,.png /.pdf Formats)",
-                        "upload_note":"Note: Please upload payment proofs only"
+                        "upload_para": "Drag & Drop or Select a File (Max 10MB,.png /.pdf Formats)",
+                        "upload_note": "Note: Please upload payment proofs only"
                     },
                     "bookingTypes": {
                         "lr": "Lorry Receipt (LR)",

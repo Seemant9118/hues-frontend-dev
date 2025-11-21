@@ -43,7 +43,7 @@ export default function AddNewAddress({
   });
 
   // Determine whether in "edit" mode
-  const isEditing = Boolean(editingAddress);
+  const isEditing = !!editingAddress;
 
   const parseAndSetAddress = (editingAddress) => {
     if (!editingAddress?.address) return;
@@ -121,7 +121,7 @@ export default function AddNewAddress({
 
   // Reset on open
   useEffect(() => {
-    if (!isAddressAdding) {
+    if (!isAddressAdding && setAddress && setErrorMsg && setEditingAddress) {
       setAddress({
         isSezAddress: false,
         pincode: '',
@@ -172,8 +172,8 @@ export default function AddNewAddress({
         address: '',
       });
       setErrorMsg('');
-      setEditingAddress(null);
-      setEditingAddressId(null);
+      setEditingAddress && setEditingAddress(null);
+      setEditingAddressId && setEditingAddressId(null);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Something went wrong');
