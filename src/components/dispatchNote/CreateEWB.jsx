@@ -21,10 +21,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import React, { useEffect, useState } from 'react';
 import OrderBreadCrumbs from '../orders/OrderBreadCrumbs';
-import Overview from '../ui/Overview';
-import AttachmentUploader from '../upload/AttachementUploader';
-import Wrapper from '../wrappers/Wrapper';
 import ErrorBox from '../ui/ErrorBox';
+import Overview from '../ui/Overview';
+import Wrapper from '../wrappers/Wrapper';
+import { DataTable } from '../table/data-table';
+import { useEWBItemColumns } from './EWB-items-columns';
 
 // Mock utils (replace with real API calls)
 const mockInvoice = {
@@ -37,8 +38,20 @@ const mockInvoice = {
   toGstin: '09XYZAB1234C1Z0',
   fromPincode: '110001',
   toPincode: '560001',
-  items: [
-    { id: 1, name: 'Product A', hsn: '1001', qty: 10, taxableValue: 1000 },
+  itemList: [
+    {
+      id: 1,
+      hsnCode: 'AJDHJ342',
+      taxableAmount: '500',
+      productName: 'Test Product name',
+      productDesc: 'Test Product Desc',
+      quantity: '15',
+      qtyUnit: '5',
+      sgstRate: '5',
+      cgstRate: '5',
+      igstRate: '5',
+      cessRate: '5',
+    },
   ],
   totInvValue: 1200,
 };
@@ -79,30 +92,46 @@ export default function CreateEWB({
     docNo: '',
     docDate: '',
     fromGstin: '',
-    fromTrdName: '',
     fromPincode: '',
+    fromStateCode: '',
+    fromTrdName: '',
     actFromStateCode: '',
     toGstin: '',
-    toTrdName: '',
     toPincode: '',
+    toStateCode: '',
+    toTrdName: '',
     actToStateCode: '',
-    transactionType: '',
-    items: [],
+    transactionType: '', // ?
+    fromAddr1: '',
+    fromAddr2: '',
+    fromPlace: '',
+    toAddr1: '',
+    toAddr2: '',
+    toPlace: '',
+    dispatchFromGSTIN: '',
+    dispatchFromTradeName: '',
+    shipToGSTIN: '',
+    shipToTradeName: '',
+    itemList: [],
     totInvValue: 0,
     totalValue: 0,
+    cgstValue: '',
+    sgstValue: '',
+    igstValue: '',
+    cessValue: '',
+    cessNonAdvolValue: '',
+    transMode: '',
     transporterId: '',
     transporterName: '',
-    transMode: '',
     transDistance: '',
     transDocNo: '',
     transDocDate: '',
     vehicleNo: '',
     vehicleType: '',
-    remarks: '',
+    remarks: '', // option
   }));
 
   const [errors, setErrors] = useState({});
-  const [files, setFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   // Auto-populate from mock invoice on mount
@@ -116,9 +145,9 @@ export default function CreateEWB({
       toGstin: inv.toGstin,
       fromPincode: inv.fromPincode,
       toPincode: inv.toPincode,
-      items: inv.items,
+      itemList: inv.itemList,
       totInvValue: inv.totInvValue,
-      totalValue: inv.items.reduce((a, b) => a + (b.taxableValue || 0), 0),
+      totalValue: inv.itemList.reduce((a, b) => a + (b.taxableValue || 0), 0),
     }));
   }, []);
 
@@ -139,8 +168,8 @@ export default function CreateEWB({
 
     if (!form.fromGstin) e.fromGstin = 'From GSTIN required';
     if (!form.toGstin) e.toGstin = 'To GSTIN required';
-    if (!form.items || form.items.length === 0)
-      e.items = 'At least one item required';
+    if (!form.itemList || form.itemList.length === 0)
+      e.itemList = 'At least one item required';
 
     // Trans mode specific
     if (form.transMode !== '1' && !form.transDocNo) {
@@ -185,6 +214,8 @@ export default function CreateEWB({
     );
   };
 
+  const EWBItemColumns = useEWBItemColumns();
+
   return (
     <Wrapper className="flex h-full flex-col justify-between">
       {/* HEADER */}
@@ -206,162 +237,316 @@ export default function CreateEWB({
         <CardHeader>
           <CardTitle>Create E-Way Bill (Part A)</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="grid grid-cols-3 gap-4">
           {/* Supply Row */}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label>
-                Supply Type <span className="text-red-600">*</span>
-              </Label>
-              <Select onValueChange={(v) => handleChange('supplyType')(v)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Supply" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {supplyOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {errors.supplyType && <ErrorBox msg={errors.supplyType} />}
-            </div>
-
-            <div>
-              <Label>
-                Sub Supply Type <span className="text-red-600">*</span>
-              </Label>
-              <Select onValueChange={(v) => handleChange('subSupplyType')(v)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Sub Supply" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {subSupplyOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {errors.subSupplyType && <ErrorBox msg={errors.subSupplyType} />}
-            </div>
-
-            <div>
-              <Label>
-                Document Type <span className="text-red-600">*</span>
-              </Label>
-              <Select onValueChange={(v) => handleChange('docType')(v)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="INV / CHL / BIL / BOE / OTH" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="INV">INV</SelectItem>
-                    <SelectItem value="CHL">CHL</SelectItem>
-                    <SelectItem value="BIL">BIL</SelectItem>
-                    <SelectItem value="BOE">BOE</SelectItem>
-                    <SelectItem value="OTH">OTH</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {errors.docType && <ErrorBox msg={errors.docType} />}
-            </div>
+          <div>
+            <Label>
+              Supply Type <span className="text-red-600">*</span>
+            </Label>
+            <Select onValueChange={(v) => handleChange('supplyType')(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Supply" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {supplyOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {errors.supplyType && <ErrorBox msg={errors.supplyType} />}
           </div>
-
-          {/* Doc Row */}
-          <div className="mt-4 grid grid-cols-3 gap-4">
-            <div>
-              <Label>
-                Document Number <span className="text-red-600">*</span>
-              </Label>
-              <Input
-                value={form.docNo}
-                onChange={(e) => handleChange('docNo')(e)}
-              />
-              {errors.docNo && <ErrorBox msg={errors.docNo} />}
-            </div>
-            <div>
-              <Label>
-                Document Date <span className="text-red-600">*</span>
-              </Label>
-              <Input
-                type="date"
-                value={form.docDate}
-                onChange={(e) => handleChange('docDate')(e)}
-              />
-              {errors.docDate && <ErrorBox msg={errors.docDate} />}
-            </div>
-            <div>
-              <Label>Sub Supply Desc</Label>
-              <Input
-                value={form.subSupplyDesc}
-                onChange={(e) => handleChange('subSupplyDesc')(e)}
-              />
-            </div>
+          <div>
+            <Label>
+              Sub Supply Type <span className="text-red-600">*</span>
+            </Label>
+            <Select onValueChange={(v) => handleChange('subSupplyType')(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Sub Supply" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {subSupplyOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {errors.subSupplyType && <ErrorBox msg={errors.subSupplyType} />}
           </div>
-
-          {/* Addresses */}
-          <div className="mt-6 grid grid-cols-2 gap-6">
-            <div>
-              <Label>Source Address</Label>
-              <Textarea
-                value={`${form.fromTrdName || ''}\nGSTIN: ${form.fromGstin || ''}\nPincode: ${form.fromPincode || ''}`}
-                onChange={() => {}}
-                className="min-h-[120px]"
-              />
-            </div>
-            <div>
-              <Label>Destination Address</Label>
-              <Textarea
-                value={`${form.toTrdName || ''}\nGSTIN: ${form.toGstin || ''}\nPincode: ${form.toPincode || ''}`}
-                onChange={() => {}}
-                className="min-h-[120px]"
-              />
-            </div>
+          <div>
+            <Label>
+              Document Type <span className="text-red-600">*</span>
+            </Label>
+            <Select onValueChange={(v) => handleChange('docType')(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="INV / CHL / BIL / BOE / OTH" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="INV">INV</SelectItem>
+                  <SelectItem value="CHL">CHL</SelectItem>
+                  <SelectItem value="BIL">BIL</SelectItem>
+                  <SelectItem value="BOE">BOE</SelectItem>
+                  <SelectItem value="OTH">OTH</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {errors.docType && <ErrorBox msg={errors.docType} />}
+          </div>
+          <div>
+            <Label>
+              Document Number <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              value={form.docNo}
+              onChange={(e) => handleChange('docNo')(e)}
+            />
+            {errors.docNo && <ErrorBox msg={errors.docNo} />}
+          </div>
+          <div>
+            <Label>
+              Document Date <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              type="date"
+              value={form.docDate}
+              onChange={(e) => handleChange('docDate')(e)}
+            />
+            {errors.docDate && <ErrorBox msg={errors.docDate} />}
+          </div>
+          <div>
+            <Label>Sub Supply Desc</Label>
+            <Input
+              value={form.subSupplyDesc}
+              onChange={(e) => handleChange('subSupplyDesc')(e)}
+            />
+          </div>
+          <div>
+            <Label>From GSTIN</Label>
+            <Input
+              value={form.fromGstin}
+              onChange={(e) => handleChange('fromGstin')(e)}
+            />
+          </div>
+          <div>
+            <Label>From Pincode</Label>
+            <Input
+              value={form.fromPincode}
+              onChange={(e) => handleChange('fromPincode')(e)}
+            />
+          </div>
+          <div>
+            <Label>From State code</Label>
+            <Input
+              value={form.fromStateCode}
+              onChange={(e) => handleChange('fromStateCode')(e)}
+            />
+          </div>
+          <div>
+            <Label>From Trd Name</Label>
+            <Input
+              value={form.fromTrdName}
+              onChange={(e) => handleChange('fromTrdName')(e)}
+            />
+          </div>
+          <div>
+            <Label>Act from State code</Label>
+            <Input
+              value={form.actFromStateCode}
+              onChange={(e) => handleChange('actFromStateCode')(e)}
+            />
+          </div>
+          <div>
+            <Label>To GSTIN</Label>
+            <Input
+              value={form.toGstin}
+              onChange={(e) => handleChange('toGstin')(e)}
+            />
+          </div>
+          <div>
+            <Label>To Pincode</Label>
+            <Input
+              value={form.toPincode}
+              onChange={(e) => handleChange('toPincode')(e)}
+            />
+          </div>
+          <div>
+            <Label>To State code</Label>
+            <Input
+              value={form.toStateCode}
+              onChange={(e) => handleChange('toStateCode')(e)}
+            />
+          </div>
+          <div>
+            <Label>To Trd Name</Label>
+            <Input
+              value={form.toTrdName}
+              onChange={(e) => handleChange('toTrdName')(e)}
+            />
+          </div>
+          <div>
+            <Label>Act to State code</Label>
+            <Input
+              value={form.actToStateCode}
+              onChange={(e) => handleChange('actToStateCode')(e)}
+            />
+          </div>
+          <div>
+            <Label>Transaction Type</Label>
+            <Input
+              value={form.transactionType}
+              onChange={(e) => handleChange('transactionType')(e)}
+            />
+          </div>
+          <div>
+            <Label>From Address 1</Label>
+            <Input
+              value={form.fromAddr1}
+              onChange={(e) => handleChange('fromAddr1')(e)}
+            />
+          </div>
+          <div>
+            <Label>From Address 2</Label>
+            <Input
+              value={form.fromAddr2}
+              onChange={(e) => handleChange('fromAddr2')(e)}
+            />
+          </div>
+          <div>
+            <Label>From Place</Label>
+            <Input
+              value={form.fromPlace}
+              onChange={(e) => handleChange('fromPlace')(e)}
+            />
+          </div>
+          <div>
+            <Label>To Address 1</Label>
+            <Input
+              value={form.toAddr1}
+              onChange={(e) => handleChange('toAddr1')(e)}
+            />
+          </div>
+          <div>
+            <Label>To Address 2</Label>
+            <Input
+              value={form.toAddr2}
+              onChange={(e) => handleChange('toAddr2')(e)}
+            />
+          </div>
+          <div>
+            <Label>To Place</Label>
+            <Input
+              value={form.toPlace}
+              onChange={(e) => handleChange('toPlace')(e)}
+            />
+          </div>
+          <div>
+            <Label>Dispatch From GSTIN</Label>
+            <Input
+              value={form.dispatchFromGSTIN}
+              onChange={(e) => handleChange('dispatchFromGSTIN')(e)}
+            />
+          </div>
+          <div>
+            <Label>Dispatch From Trade Name</Label>
+            <Input
+              value={form.dispatchFromTradeName}
+              onChange={(e) => handleChange('dispatchFromTradeName')(e)}
+            />
+          </div>
+          <div>
+            <Label>Ship To GSTIN</Label>
+            <Input
+              value={form.shipToGSTIN}
+              onChange={(e) => handleChange('shipToGSTIN')(e)}
+            />
+          </div>
+          <div>
+            <Label>Ship To Trade Name</Label>
+            <Input
+              value={form.shipToTradeName}
+              onChange={(e) => handleChange('shipToTradeName')(e)}
+            />
           </div>
 
           {/* Items */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between">
-              <Label>Items</Label>
+          <div className="col-span-3 mt-4 w-full rounded-md border p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <Label className="text-xl">Items</Label>
               <div className="text-sm text-muted-foreground">
-                {form.items.length} item(s)
+                {form.itemList.length} item(s)
               </div>
             </div>
-            <div className="mt-2 rounded-md border">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="p-2 text-left">Name</th>
-                    <th className="p-2 text-left">HSN</th>
-                    <th className="p-2 text-left">Qty</th>
-                    <th className="p-2 text-left">Taxable</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {form.items.map((it) => (
-                    <tr key={it.id} className="border-t">
-                      <td className="p-2">{it.name}</td>
-                      <td className="p-2">{it.hsn}</td>
-                      <td className="p-2">{it.qty}</td>
-                      <td className="p-2">{it.taxableValue}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {errors.items && (
-              <p className="text-sm text-destructive">{errors.items}</p>
+
+            <DataTable data={form?.itemList} columns={EWBItemColumns} />
+
+            {errors.itemList && (
+              <p className="text-sm text-destructive">{errors.itemList}</p>
             )}
+            <div className="mt-6 grid w-full grid-cols-3 gap-4">
+              <div>
+                <Label>Total Invoice Value</Label>
+                <Input
+                  value={form.totInvValue}
+                  onChange={(e) => handleChange('totInvValue')(e)}
+                />
+              </div>
+              <div>
+                <Label>Total Value</Label>
+                <Input
+                  value={form.totalValue}
+                  onChange={(e) => handleChange('totalValue')(e)}
+                />
+              </div>
+              <div>
+                <Label>CGST</Label>
+                <Input
+                  value={form.cgstValue}
+                  onChange={(e) => handleChange('cgstValue')(e)}
+                />
+              </div>
+              <div>
+                <Label>SGST</Label>
+                <Input
+                  value={form.sgstValue}
+                  onChange={(e) => handleChange('sgstValue')(e)}
+                />
+              </div>
+              <div>
+                <Label>IGST</Label>
+                <Input
+                  value={form.igstValue}
+                  onChange={(e) => handleChange('igstValue')(e)}
+                />
+              </div>
+              <div>
+                <Label>CESS</Label>
+                <Input
+                  value={form.cessValue}
+                  onChange={(e) => handleChange('cessValue')(e)}
+                />
+              </div>
+              <div>
+                <Label>CESS cessNonAdvolValue</Label>
+                <Input
+                  value={form.cessNonAdvolValue}
+                  onChange={(e) => handleChange('cessNonAdvolValue')(e)}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Transport */}
-          <div className="mt-6 rounded-md border p-4">
+          <div className="col-span-3 mt-4 w-full rounded-md border p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <Label className="text-xl">Transport</Label>
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Transport Mode</Label>
@@ -394,9 +579,6 @@ export default function CreateEWB({
                   onChange={(e) => handleChange('transDistance')(e)}
                 />
               </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-4">
               <div>
                 <Label>Transport Doc No</Label>
                 <Input
@@ -414,9 +596,17 @@ export default function CreateEWB({
                 />
               </div>
               <div>
+                <Label>Vehicle Type</Label>
+                <Input
+                  value={form.vehicleType}
+                  onChange={(e) => handleChange('vehicleType')(e)}
+                  placeholder="Vehicle Type"
+                />
+              </div>
+              <div>
                 <Label>Vehicle No (Part B)</Label>
                 <Input
-                  value={form.vehicleNo}
+                  value={form.vehicleType}
                   onChange={(e) => handleChange('vehicleNo')(e)}
                   placeholder="(Update in Part B)"
                 />
@@ -425,26 +615,18 @@ export default function CreateEWB({
           </div>
 
           {/* Remarks + Attach */}
-          <div className="mt-6">
+          <div className="col-span-3 mt-4 w-full">
             <Label>Remarks</Label>
             <Textarea
               value={form.remarks}
               onChange={(e) => handleChange('remarks')(e)}
               className="min-h-[80px]"
-            />
-          </div>
-          {/* uploads attachments */}
-          <div className="mt-6">
-            <AttachmentUploader
-              label="Attachments"
-              acceptedTypes={['png', 'pdf', 'jpg']}
-              files={files}
-              setFiles={setFiles}
+              placeholder="Enter remarks"
             />
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3">
+        <CardFooter className="sticky bottom-0 flex w-full justify-end gap-2 border-t bg-white/70 p-2 backdrop-blur-sm">
           <Button
             size="sm"
             variant="outline"
