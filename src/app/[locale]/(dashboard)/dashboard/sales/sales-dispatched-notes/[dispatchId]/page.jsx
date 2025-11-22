@@ -817,6 +817,7 @@ const ViewDispatchNote = () => {
             customLabelRender={customLabelRender}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
             setIsCreatingEWB={setIsCreatingEWB}
+            dispatchDetails={dispatchDetails}
           />
         )}
       </Wrapper>

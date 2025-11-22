@@ -1,5 +1,6 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 
 export const useEWBItemColumns = () => {
@@ -10,7 +11,12 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Product Name" />
       ),
-      cell: ({ row }) => <span>{row.original.productName}</span>,
+      cell: ({ row }) => {
+        const productName =
+          row.original?.invoiceItem?.orderItemId?.productDetails?.productName ||
+          '--';
+        return <span>{productName}</span>;
+      },
     },
 
     // Product Description
@@ -19,11 +25,16 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Description" />
       ),
-      cell: ({ row }) => (
-        <span className="line-clamp-2 text-muted-foreground">
-          {row.original.productDesc}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const productDesc =
+          row.original?.invoiceItem?.orderItemId?.productDetails?.description ||
+          '--';
+        return (
+          <span className="line-clamp-2 text-muted-foreground">
+            {productDesc}
+          </span>
+        );
+      },
     },
 
     // HSN Code
@@ -32,7 +43,12 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="HSN Code" />
       ),
-      cell: ({ row }) => <span>{row.original.hsnCode}</span>,
+      cell: ({ row }) => {
+        const hsnCode =
+          row.original?.invoiceItem?.orderItemId?.productDetails?.hsnCode ||
+          '--';
+        return <span>{hsnCode}</span>;
+      },
     },
 
     // Quantity
@@ -41,11 +57,10 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Qty" />
       ),
-      cell: ({ row }) => (
-        <span>
-          {row.original.quantity} {row.original.qtyUnit}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const dispatchedQty = row.original?.dispatchedQuantity || '--';
+        return <span>{dispatchedQty}</span>;
+      },
     },
 
     // Taxable Amount
@@ -54,9 +69,10 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Taxable Value" />
       ),
-      cell: ({ row }) => (
-        <span>₹{Number(row.original.taxableAmount).toFixed(2)}</span>
-      ),
+      cell: ({ row }) => {
+        const taxableAmount = row.original?.amount || '--';
+        return <span>{formattedAmount(taxableAmount)}</span>;
+      },
     },
 
     // SGST
@@ -65,7 +81,10 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="SGST %" />
       ),
-      cell: ({ row }) => <span>{row.original.sgstRate}%</span>,
+      cell: ({ row }) => {
+        const sgst = row.original?.sgst;
+        return <span>{sgst ? `${sgst}%` : '--'}</span>;
+      },
     },
 
     // CGST
@@ -74,7 +93,10 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CGST %" />
       ),
-      cell: ({ row }) => <span>{row.original.cgstRate}%</span>,
+      cell: ({ row }) => {
+        const cgst = row.original?.cgst;
+        return <span>{cgst ? `${cgst}%` : '--'}</span>;
+      },
     },
 
     // IGST
@@ -83,7 +105,10 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="IGST %" />
       ),
-      cell: ({ row }) => <span>{row.original.igstRate}%</span>,
+      cell: ({ row }) => {
+        const igst = row.original?.igst;
+        return <span>{igst ? `${igst}%` : '--'}</span>;
+      },
     },
 
     // Cess
@@ -92,7 +117,10 @@ export const useEWBItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Cess %" />
       ),
-      cell: ({ row }) => <span>{row.original.cessRate}%</span>,
+      cell: ({ row }) => {
+        const cess = row.original?.cess;
+        return <span>{cess ? `${cess}%` : '--'}</span>;
+      },
     },
   ];
 };
