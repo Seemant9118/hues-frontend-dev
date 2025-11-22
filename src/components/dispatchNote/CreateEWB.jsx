@@ -19,42 +19,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import OrderBreadCrumbs from '../orders/OrderBreadCrumbs';
+import { DataTable } from '../table/data-table';
 import ErrorBox from '../ui/ErrorBox';
 import Overview from '../ui/Overview';
 import Wrapper from '../wrappers/Wrapper';
-import { DataTable } from '../table/data-table';
 import { useEWBItemColumns } from './EWB-items-columns';
-
-// Mock utils (replace with real API calls)
-const mockInvoice = {
-  id: 'INV/NWYC15/2526/0027',
-  consignor: 'Kamlapuri tech - by surepass',
-  consignee: 'suman ki company',
-  docNo: 'INV-2025-0027',
-  docDate: '2025-11-01',
-  fromGstin: '29ABCDE1234F2Z5',
-  toGstin: '09XYZAB1234C1Z0',
-  fromPincode: '110001',
-  toPincode: '560001',
-  itemList: [
-    {
-      id: 1,
-      hsnCode: 'AJDHJ342',
-      taxableAmount: '500',
-      productName: 'Test Product name',
-      productDesc: 'Test Product Desc',
-      quantity: '15',
-      qtyUnit: '5',
-      sgstRate: '5',
-      cgstRate: '5',
-      igstRate: '5',
-      cessRate: '5',
-    },
-  ],
-  totInvValue: 1200,
-};
 
 const supplyOptions = [
   { value: 'O', label: 'Outward' },
@@ -83,6 +55,7 @@ export default function CreateEWB({
   customLabelRender,
   dispatchOrdersBreadCrumbs,
   setIsCreatingEWB,
+  dispatchDetails,
 }) {
   const [form, setForm] = useState(() => ({
     supplyType: '',
@@ -136,25 +109,63 @@ export default function CreateEWB({
 
   // Auto-populate from mock invoice on mount
   useEffect(() => {
-    const inv = mockInvoice;
     setForm((s) => ({
       ...s,
-      docNo: inv.docNo,
-      docDate: inv.docDate,
-      fromGstin: inv.fromGstin,
-      toGstin: inv.toGstin,
-      fromPincode: inv.fromPincode,
-      toPincode: inv.toPincode,
-      itemList: inv.itemList,
-      totInvValue: inv.totInvValue,
-      totalValue: inv.itemList.reduce((a, b) => a + (b.taxableValue || 0), 0),
+      docType: 'INV', // default INV
+      docNo: dispatchDetails?.invoice?.referenceNumber?.replace(
+        /^INV[-/]?/,
+        '',
+      ),
+      docDate: moment(dispatchDetails?.createdAt)?.format('YYYY-MM-DD'),
+      fromGstin: dispatchDetails?.sellerDetails?.gst,
+      fromPincode: dispatchDetails?.billingFromAddress?.pincode,
+      fromStateCode: dispatchDetails?.billingFromAddress?.stateCode,
+      fromTrdName: dispatchDetails?.sellerDetails?.tradeName,
+      actFromStateCode: dispatchDetails?.dispatchFromAddress?.stateCode,
+      toGstin: dispatchDetails?.buyerDetails?.gst,
+      toPincode: dispatchDetails?.shippingAddress?.pincode,
+      toStateCode: dispatchDetails?.billingAddress?.stateCode,
+      toTrdName: dispatchDetails?.buyerDetails?.tradeName,
+      actToStateCode: dispatchDetails?.dispatchAddress?.stateCode,
+      transactionType: '',
+      fromAddr1: '', // doubt
+      fromAddr2: '', // doubt
+      fromPlace: '', // doubt
+      toAddr1: '', // doubt
+      toAddr2: '', // doubt
+      toPlace: '', // doubt
+      dispatchFromGSTIN: '', // doubt
+      dispatchFromTradeName: '', // doubt
+      shipToGSTIN: '', // doubt
+      shipToTradeName: '', // doubt
+      itemList: dispatchDetails?.items,
+      totInvValue:
+        Number(dispatchDetails?.totalAmount) +
+        Number(dispatchDetails?.totalGstAmount),
+      totalValue: Number(dispatchDetails?.totalAmount),
+      cgstValue: dispatchDetails?.cgst,
+      sgstValue: dispatchDetails?.sgst,
+      igstValue: dispatchDetails?.igst,
+      cessValue: dispatchDetails?.cess,
+      cessNonAdvolValue: '', // doubt
+      transMode: '', // doubt
+      transporterId: '', // doubt
+      transporterName: '', // doubt
+      transDistance: '', // doubt
+      transDocNo: '', // doubt
+      transDocDate: '', // doubt
+      vehicleNo: '', // doubt
+      vehicleType: '', // doubt
+      remarks: '', // option
     }));
-  }, []);
+  }, [dispatchDetails]);
 
   const validate = () => {
     const e = {};
     if (!form.supplyType) e.supplyType = 'Select supply type';
     if (!form.subSupplyType) e.subSupplyType = 'Select sub supply type';
+    if (form?.subSupplyType === '8' && !form?.subSupplyDesc)
+      e.subSupplyDesc = `Sub Supply Description is required for 'Others'.`;
     if (!form.docType) e.docType = 'Select document type';
     if (!form.docNo) e.docNo = 'Document number is required';
     if (!form.docDate) e.docDate = 'Document date is required';
@@ -283,7 +294,10 @@ export default function CreateEWB({
             <Label>
               Document Type <span className="text-red-600">*</span>
             </Label>
-            <Select onValueChange={(v) => handleChange('docType')(v)}>
+            <Select
+              value={form?.docType}
+              onValueChange={(v) => handleChange('docType')(v)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="INV / CHL / BIL / BOE / OTH" />
               </SelectTrigger>
@@ -304,6 +318,7 @@ export default function CreateEWB({
               Document Number <span className="text-red-600">*</span>
             </Label>
             <Input
+              disabled
               value={form.docNo}
               onChange={(e) => handleChange('docNo')(e)}
             />
@@ -314,22 +329,28 @@ export default function CreateEWB({
               Document Date <span className="text-red-600">*</span>
             </Label>
             <Input
+              disabled
               type="date"
-              value={form.docDate}
+              value={form?.docDate}
               onChange={(e) => handleChange('docDate')(e)}
             />
             {errors.docDate && <ErrorBox msg={errors.docDate} />}
           </div>
           <div>
-            <Label>Sub Supply Desc</Label>
+            <Label>Sub Supply Desc</Label>{' '}
+            {form?.subSupplyType === '8' && (
+              <span className="text-red-600">*</span>
+            )}
             <Input
               value={form.subSupplyDesc}
               onChange={(e) => handleChange('subSupplyDesc')(e)}
             />
+            {errors.subSupplyDesc && <ErrorBox msg={errors.subSupplyDesc} />}
           </div>
           <div>
             <Label>From GSTIN</Label>
             <Input
+              disabled
               value={form.fromGstin}
               onChange={(e) => handleChange('fromGstin')(e)}
             />
@@ -337,6 +358,7 @@ export default function CreateEWB({
           <div>
             <Label>From Pincode</Label>
             <Input
+              disabled
               value={form.fromPincode}
               onChange={(e) => handleChange('fromPincode')(e)}
             />
@@ -344,6 +366,7 @@ export default function CreateEWB({
           <div>
             <Label>From State code</Label>
             <Input
+              disabled
               value={form.fromStateCode}
               onChange={(e) => handleChange('fromStateCode')(e)}
             />
@@ -351,6 +374,7 @@ export default function CreateEWB({
           <div>
             <Label>From Trd Name</Label>
             <Input
+              disabled
               value={form.fromTrdName}
               onChange={(e) => handleChange('fromTrdName')(e)}
             />
@@ -358,6 +382,7 @@ export default function CreateEWB({
           <div>
             <Label>Act from State code</Label>
             <Input
+              disabled
               value={form.actFromStateCode}
               onChange={(e) => handleChange('actFromStateCode')(e)}
             />
@@ -365,6 +390,7 @@ export default function CreateEWB({
           <div>
             <Label>To GSTIN</Label>
             <Input
+              disabled
               value={form.toGstin}
               onChange={(e) => handleChange('toGstin')(e)}
             />
@@ -372,6 +398,7 @@ export default function CreateEWB({
           <div>
             <Label>To Pincode</Label>
             <Input
+              disabled
               value={form.toPincode}
               onChange={(e) => handleChange('toPincode')(e)}
             />
@@ -379,6 +406,7 @@ export default function CreateEWB({
           <div>
             <Label>To State code</Label>
             <Input
+              disabled
               value={form.toStateCode}
               onChange={(e) => handleChange('toStateCode')(e)}
             />
@@ -386,6 +414,7 @@ export default function CreateEWB({
           <div>
             <Label>To Trd Name</Label>
             <Input
+              disabled
               value={form.toTrdName}
               onChange={(e) => handleChange('toTrdName')(e)}
             />
@@ -393,17 +422,35 @@ export default function CreateEWB({
           <div>
             <Label>Act to State code</Label>
             <Input
+              disabled
               value={form.actToStateCode}
               onChange={(e) => handleChange('actToStateCode')(e)}
             />
           </div>
           <div>
             <Label>Transaction Type</Label>
-            <Input
-              value={form.transactionType}
-              onChange={(e) => handleChange('transactionType')(e)}
-            />
+
+            <Select
+              value={form?.transactionType}
+              onValueChange={(v) => handleChange('transactionType')(v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select transaction type" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="1">Regular</SelectItem>
+                <SelectItem value="2">Bill To — Ship To</SelectItem>
+                <SelectItem value="3">Bill From — Dispatch From</SelectItem>
+                <SelectItem value="4">Combination of 2 & 3</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {errors?.transactionType && (
+              <ErrorBox msg={errors.transactionType} />
+            )}
           </div>
+
           <div>
             <Label>From Address 1</Label>
             <Input
@@ -480,11 +527,11 @@ export default function CreateEWB({
             <div className="mb-2 flex items-center justify-between">
               <Label className="text-xl">Items</Label>
               <div className="text-sm text-muted-foreground">
-                {form.itemList.length} item(s)
+                {form?.itemList?.length} item(s)
               </div>
             </div>
 
-            <DataTable data={form?.itemList} columns={EWBItemColumns} />
+            <DataTable data={form?.itemList || []} columns={EWBItemColumns} />
 
             {errors.itemList && (
               <p className="text-sm text-destructive">{errors.itemList}</p>
@@ -493,49 +540,56 @@ export default function CreateEWB({
               <div>
                 <Label>Total Invoice Value</Label>
                 <Input
-                  value={form.totInvValue}
+                  disabled
+                  value={form?.totInvValue}
                   onChange={(e) => handleChange('totInvValue')(e)}
                 />
               </div>
               <div>
                 <Label>Total Value</Label>
                 <Input
-                  value={form.totalValue}
+                  disabled
+                  value={form?.totalValue}
                   onChange={(e) => handleChange('totalValue')(e)}
                 />
               </div>
               <div>
                 <Label>CGST</Label>
                 <Input
-                  value={form.cgstValue}
+                  disabled
+                  value={form?.cgstValue}
                   onChange={(e) => handleChange('cgstValue')(e)}
                 />
               </div>
               <div>
                 <Label>SGST</Label>
                 <Input
-                  value={form.sgstValue}
+                  disabled
+                  value={form?.sgstValue}
                   onChange={(e) => handleChange('sgstValue')(e)}
                 />
               </div>
               <div>
                 <Label>IGST</Label>
                 <Input
-                  value={form.igstValue}
+                  disabled
+                  value={form?.igstValue}
                   onChange={(e) => handleChange('igstValue')(e)}
                 />
               </div>
               <div>
                 <Label>CESS</Label>
                 <Input
-                  value={form.cessValue}
+                  disabled
+                  value={form?.cessValue}
                   onChange={(e) => handleChange('cessValue')(e)}
                 />
               </div>
               <div>
                 <Label>CESS cessNonAdvolValue</Label>
                 <Input
-                  value={form.cessNonAdvolValue}
+                  disabled
+                  value={form?.cessNonAdvolValue}
                   onChange={(e) => handleChange('cessNonAdvolValue')(e)}
                 />
               </div>
