@@ -12,7 +12,8 @@ import {
 import CommentBox from '@/components/comments/CommentBox';
 import AddBooking from '@/components/dispatchNote/AddBooking';
 import AddTransport from '@/components/dispatchNote/AddTransport';
-import CreateEWB from '@/components/dispatchNote/CreateEWB';
+import CreateEWBA from '@/components/dispatchNote/CreateEWBA';
+import CreateEWBB from '@/components/dispatchNote/CreateEWBB';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -62,7 +63,8 @@ const ViewDispatchNote = () => {
   const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isAddingBooking, setIsAddingBooking] = useState(false);
-  const [isCreatingEWB, setIsCreatingEWB] = useState(false);
+  const [isCreatingEWBA, setIsCreatingEWBA] = useState(false);
+  const [isCreatingEWBB, setIsCreatingEWBB] = useState(false);
   const [selectDispatcher, setSelectDispatcher] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [editModeDispatchFrom, setEditModeDispatchFrom] = useState(false);
@@ -94,9 +96,15 @@ const ViewDispatchNote = () => {
     },
     {
       id: 4,
-      name: translations('title.createEWB'),
+      name: translations('title.createEWBA'),
       path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
-      show: isCreatingEWB,
+      show: isCreatingEWBA,
+    },
+    {
+      id: 5,
+      name: translations('title.createEWBB'),
+      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      show: isCreatingEWBB,
     },
   ];
   useEffect(() => {
@@ -104,7 +112,8 @@ const ViewDispatchNote = () => {
     const state = searchParams.get('state');
 
     setIsAddingBooking(state === 'addBooking');
-    setIsCreatingEWB(state === 'createEWB');
+    setIsCreatingEWBA(state === 'createEWBA');
+    setIsCreatingEWBB(state === 'createEWBB');
   }, [searchParams]);
 
   useEffect(() => {
@@ -113,14 +122,22 @@ const ViewDispatchNote = () => {
 
     if (isAddingBooking) {
       newPath += '?state=addBooking';
-    } else if (isCreatingEWB) {
-      newPath += '?state=createEWB';
+    } else if (isCreatingEWBA) {
+      newPath += '?state=createEWBA';
+    } else if (isCreatingEWBB) {
+      newPath += '?state=createEWBB';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.dispatchId, isAddingBooking, isCreatingEWB, router]);
+  }, [
+    params.dispatchId,
+    isAddingBooking,
+    isCreatingEWBA,
+    isCreatingEWBB,
+    router,
+  ]);
 
   // vendors[transporter] fetching
   const { data: transports } = useQuery({
@@ -667,7 +684,7 @@ const ViewDispatchNote = () => {
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
       <Wrapper className="h-full py-2">
-        {!isAddingBooking && !isCreatingEWB && (
+        {!isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
           <>
             {/* HEADER */}
             <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
@@ -699,7 +716,7 @@ const ViewDispatchNote = () => {
                   </Button>
                 )}
                 {/* generate e-way bill cta */}
-                <Button size="sm" onClick={() => setIsCreatingEWB(true)}>
+                <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
                   {translations('overview_inputs.ctas.generateEWayBill')}
                 </Button>
               </div>
@@ -710,7 +727,7 @@ const ViewDispatchNote = () => {
               onValueChange={onTabChange}
               defaultValue={'overview'}
             >
-              <section className="flex items-center justify-between gap-1">
+              <section className="mb-2 flex items-center justify-between gap-1">
                 <TabsList className="border">
                   <TabsTrigger value="overview">
                     {translations('tabs.tab1.title')}
@@ -721,15 +738,31 @@ const ViewDispatchNote = () => {
                   <TabsTrigger value="transports">
                     {translations('tabs.tab3.title1')}
                   </TabsTrigger>
+                  <TabsTrigger value="ewb">
+                    {translations('tabs.tab4.title')}
+                  </TabsTrigger>
                 </TabsList>
                 {/* ctas update part b */}
                 {tab === 'transports' &&
                   formattedDispatchedTransporterBookings?.length > 0 && (
-                    <Button size="sm" disabled={true} variant="blue_outline">
+                    <Button
+                      size="sm"
+                      disabled={false}
+                      onClick={() => setIsCreatingEWBB(true)}
+                      variant="blue_outline"
+                    >
                       {translations('overview_inputs.ctas.updatePartB')}
                     </Button>
                   )}
               </section>
+              {/* OVERVIEW SECTION - TODO customs data (required) */}
+              <Overview
+                collapsible={tab !== 'overview'}
+                data={overviewData}
+                labelMap={overviewLabels}
+                customRender={customRender}
+                customLabelRender={customLabelRender}
+              />
               <TabsContent value="overview">
                 {/* add new address : visible if isAddingNewAddress is true */}
                 <AddNewAddress
@@ -738,14 +771,6 @@ const ViewDispatchNote = () => {
                   mutationKey={settingsAPI.addUpdateAddress.endpointKey}
                   mutationFn={addUpdateAddress}
                   invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
-                />
-                {/* OVERVIEW SECTION */}
-                <Overview
-                  collapsible={false}
-                  data={overviewData}
-                  labelMap={overviewLabels}
-                  customRender={customRender}
-                  customLabelRender={customLabelRender}
                 />
 
                 {/* COMMENTS */}
@@ -789,11 +814,37 @@ const ViewDispatchNote = () => {
                   )}
                 </section>
               </TabsContent>
+              <TabsContent value="ewb">
+                {/* EWB */}
+                <section className="mt-2">
+                  {formattedDispatchedTransporterBookings?.length === 0 && (
+                    <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p className="font-bold">
+                        {translations('tabs.tab3.emtpyStateComponent.title')}
+                      </p>
+                      <ProtectedWrapper
+                        permissionCode={'permission:sales-create-payment'}
+                      >
+                        <p className="max-w-96 text-center">
+                          {translations('tabs.tab3.emtpyStateComponent.para')}
+                        </p>
+                      </ProtectedWrapper>
+                    </div>
+                  )}
+                  {formattedDispatchedTransporterBookings?.length > 0 && (
+                    <DataTable
+                      data={formattedDispatchedTransporterBookings || []}
+                      columns={dispatchedTransportedBookingsColumns}
+                    />
+                  )}
+                </section>
+              </TabsContent>
             </Tabs>
           </>
         )}
 
-        {isAddingBooking && !isCreatingEWB && (
+        {isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
           <AddBooking
             translations={translations}
             overviewData={overviewData}
@@ -809,14 +860,25 @@ const ViewDispatchNote = () => {
           />
         )}
 
-        {isCreatingEWB && !isAddingBooking && (
-          <CreateEWB
+        {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
+          <CreateEWBA
             overviewData={overviewData}
             overviewLabels={overviewLabels}
             customRender={customRender}
             customLabelRender={customLabelRender}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWB}
+            setIsCreatingEWB={setIsCreatingEWBA}
+            dispatchDetails={dispatchDetails}
+          />
+        )}
+        {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
+          <CreateEWBB
+            overviewData={overviewData}
+            overviewLabels={overviewLabels}
+            customRender={customRender}
+            customLabelRender={customLabelRender}
+            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+            setIsCreatingEWB={setIsCreatingEWBB}
             dispatchDetails={dispatchDetails}
           />
         )}

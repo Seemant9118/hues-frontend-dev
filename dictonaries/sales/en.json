@@ -426,7 +426,8 @@
                     "dispatch_notes": "Dispatch",
                     "dispatch_details": "Dispatch Details",
                     "addBooking": "Add Booking Details",
-                    "createEWB": "Create E-Way Bill (Part A)"
+                    "createEWBA": "Create E-Way Bill (Part A)",
+                    "createEWBB": "Create E-Way Bill (Part B)"
                 },
                 "overview_labels": {
                     "status": "Status",
@@ -515,6 +516,9 @@
                             "title": "No Trasnport booking yet",
                             "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
                         }
+                    },
+                    "tab4": {
+                        "title": "E-way bills"
                     }
                 },
                 "table_columns": {
