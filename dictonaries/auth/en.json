@@ -199,7 +199,8 @@
                 "information":"We use your GST info to verify tax compliance and identify the filing authority for your business"
             },
             "cinVerify": {
-                "title": "We found a CIN registered to this business",
+                "titleFound": "We found a CIN registered to this business",
+                "titleNotFound": "Enter a CIN to proceed",
                 "subtitle": "Please confirm the CIN to proceed",
                 "label": "Company Identification Number (CIN)",
                 "placeholder": "Type in your CIN to begin verification",
