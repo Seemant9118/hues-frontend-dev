@@ -32,54 +32,6 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
-const sanitizeAddress = (address = '', city = '', state = '', pincode = '') => {
-  if (!address) return '';
-
-  let clean = address;
-
-  // Normalize for comparison
-  const normalizedCity = city?.trim().toLowerCase();
-  const normalizedState = state?.trim().toLowerCase();
-
-  // Remove pincode like "- 400701" or "400701"
-  if (pincode) {
-    const pinRegex = new RegExp(`[-,\\s]*${pincode}\\b`, 'i');
-    clean = clean?.replace(pinRegex, '');
-  }
-
-  // Remove exact city anywhere (case insensitive)
-  if (city) {
-    const cityRegex = new RegExp(
-      `\\b${normalizedCity.replace(/ /g, '\\s+')}\\b`,
-      'i',
-    );
-    clean = clean?.replace(cityRegex, '');
-  }
-
-  // Remove exact state
-  if (state) {
-    const stateRegex = new RegExp(
-      `\\b${normalizedState.replace(/ /g, '\\s+')}\\b`,
-      'i',
-    );
-    clean = clean?.replace(stateRegex, '');
-  }
-
-  // Remove country INDIA (if present)
-  clean = clean?.replace(/\bindia\b/i, '');
-
-  // Remove duplicated commas, spaces, hyphens
-  clean = clean?.replace(/,+/g, ','); // multiple commas → single
-  clean = clean?.replace(/\s{2,}/g, ' '); // extra spaces → single
-  clean = clean?.replace(/,\s*,/g, ','); // ",  ,"
-  clean = clean?.replace(/-\s*,/g, ','); // "- ,"
-
-  // Remove trailing comma or hyphen
-  clean = clean?.replace(/^[,\-\s]+|[,\-\s]+$/g, '');
-
-  return clean?.trim();
-};
-
 const EnterpriseVerificationDetailsPage = () => {
   const translations = useTranslations(
     'auth.enterprise.enterpriseVerification',
@@ -105,6 +57,53 @@ const EnterpriseVerificationDetailsPage = () => {
   });
   const [errorMsg, setErrorMsg] = React.useState(null);
 
+  const sanitizeAddress = (address, city, state, pincode) => {
+    if (!address) return '';
+
+    let clean = address;
+
+    // Normalize for comparison
+    const normalizedCity = city?.trim().toLowerCase();
+    const normalizedState = state?.trim().toLowerCase();
+
+    // Remove pincode like "- 400701" or "400701"
+    if (pincode) {
+      const pinRegex = new RegExp(`[-,\\s]*${pincode}\\b`, 'i');
+      clean = clean?.replace(pinRegex, '');
+    }
+
+    // Remove exact city anywhere (case insensitive)
+    if (city) {
+      const cityRegex = new RegExp(
+        `\\b${normalizedCity.replace(/ /g, '\\s+')}\\b`,
+        'i',
+      );
+      clean = clean?.replace(cityRegex, '');
+    }
+
+    // Remove exact state
+    if (state) {
+      const stateRegex = new RegExp(
+        `\\b${normalizedState.replace(/ /g, '\\s+')}\\b`,
+        'i',
+      );
+      clean = clean?.replace(stateRegex, '');
+    }
+
+    // Remove country INDIA (if present)
+    clean = clean?.replace(/\bindia\b/i, '');
+
+    // Remove duplicated commas, spaces, hyphens
+    clean = clean?.replace(/,+/g, ','); // multiple commas → single
+    clean = clean?.replace(/\s{2,}/g, ' '); // extra spaces → single
+    clean = clean?.replace(/,\s*,/g, ','); // ",  ,"
+    clean = clean?.replace(/-\s*,/g, ','); // "- ,"
+
+    // Remove trailing comma or hyphen
+    clean = clean?.replace(/^[,\-\s]+|[,\-\s]+$/g, '');
+
+    return clean?.trim();
+  };
   // fetch details
   const { data: enterpriseData } = useQuery({
     queryKey: [enterpriseUser.getEnterprise.endpointKey, enterpriseId],
