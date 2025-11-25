@@ -19,25 +19,25 @@ const supplyOptions = [
 // Mappings based on the user's requirement
 const subSupplyMap = {
   O: [
-    { value: '1', label: 'Supply' },
-    { value: '3', label: 'Export' },
-    { value: '4', label: 'Job Work' },
-    { value: '5', label: 'SKD/CKD' },
-    { value: '6', label: 'Recipient not known' },
-    { value: '7', label: 'For own Use' },
-    { value: '8', label: 'Exhibition or fairs' },
-    { value: '9', label: 'Line Sales' },
-    { value: '10', label: 'Others' },
+    { value: 1, label: 'Supply' },
+    { value: 3, label: 'Export' },
+    { value: 4, label: 'Job Work' },
+    { value: 5, label: 'SKD/CKD' },
+    { value: 6, label: 'Recipient not known' },
+    { value: 7, label: 'For own Use' },
+    { value: 8, label: 'Exhibition or fairs' },
+    { value: 9, label: 'Line Sales' },
+    { value: 10, label: 'Others' },
   ],
   I: [
-    { value: '1', label: 'Supply' },
-    { value: '2', label: 'Import' },
-    { value: '5', label: 'SKD/CKD' },
-    { value: '6', label: 'Job Work Returns' },
-    { value: '7', label: 'Sales Return' },
-    { value: '8', label: 'Exhibition or fairs' },
-    { value: '9', label: 'For Own Use' },
-    { value: '10', label: 'Others' },
+    { value: 1, label: 'Supply' },
+    { value: 2, label: 'Import' },
+    { value: 5, label: 'SKD/CKD' },
+    { value: 6, label: 'Job Work Returns' },
+    { value: 7, label: 'Sales Return' },
+    { value: 8, label: 'Exhibition or fairs' },
+    { value: 9, label: 'For Own Use' },
+    { value: 10, label: 'Others' },
   ],
 };
 
@@ -167,16 +167,16 @@ export default function Step1Supply({ formData, setFormData, errors }) {
         </Select>
         {errors?.subSupplyType && <ErrorBox msg={errors.subSupplyType} />}
       </div>
-      {formData.subSupplyType === '10' && (
+      {formData.subSupplyType === 10 && (
         <div>
           <Label>Sub Supply Desc</Label>{' '}
-          {formData.subSupplyType === '10' && (
+          {formData.subSupplyType === 10 && (
             <span className="text-red-600">*</span>
           )}
           <Input
             value={formData.subSupplyDesc}
             onChange={(e) => handleChange('subSupplyDesc')(e)}
-            disabled={formData.subSupplyType !== '10'}
+            disabled={formData.subSupplyType !== 10}
           />
           {errors?.subSupplyDesc && <ErrorBox msg={errors.subSupplyDesc} />}
         </div>
@@ -222,7 +222,6 @@ export default function Step1Supply({ formData, setFormData, errors }) {
         </Label>
         <Input
           disabled
-          type="date"
           value={formData.docDate}
           onChange={(e) => handleChange('docDate')(e)}
         />
@@ -231,6 +230,7 @@ export default function Step1Supply({ formData, setFormData, errors }) {
       <div>
         <Label>Transaction Type</Label>
         <Select
+          disabled
           value={formData.transactionType}
           onValueChange={(v) => handleChange('transactionType')(v)}
         >
@@ -238,10 +238,10 @@ export default function Step1Supply({ formData, setFormData, errors }) {
             <SelectValue placeholder="Select transaction type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Regular</SelectItem>
-            <SelectItem value="2">Bill To — Ship To</SelectItem>
-            <SelectItem value="3">Bill From — Dispatch From</SelectItem>
-            <SelectItem value="4">Combination of 2 & 3</SelectItem>
+            <SelectItem value={1}>Regular</SelectItem>
+            <SelectItem value={2}>Bill To — Ship To</SelectItem>
+            <SelectItem value={3}>Bill From — Dispatch From</SelectItem>
+            <SelectItem value={4}>Combination of 2 & 3</SelectItem>
           </SelectContent>
         </Select>
         {errors?.transactionType && <ErrorBox msg={errors.transactionType} />}

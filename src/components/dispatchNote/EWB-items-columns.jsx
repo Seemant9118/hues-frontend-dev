@@ -12,9 +12,7 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="Product Name" />
       ),
       cell: ({ row }) => {
-        const productName =
-          row.original?.invoiceItem?.orderItemId?.productDetails?.productName ||
-          '--';
+        const productName = row.original?.productName || '--';
         return <span>{productName}</span>;
       },
     },
@@ -26,9 +24,7 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="Description" />
       ),
       cell: ({ row }) => {
-        const productDesc =
-          row.original?.invoiceItem?.orderItemId?.productDetails?.description ||
-          '--';
+        const productDesc = row.original?.productDesc || '--';
         return (
           <span className="line-clamp-2 text-muted-foreground">
             {productDesc}
@@ -44,9 +40,7 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="HSN Code" />
       ),
       cell: ({ row }) => {
-        const hsnCode =
-          row.original?.invoiceItem?.orderItemId?.productDetails?.hsnCode ||
-          '--';
+        const hsnCode = row.original?.hsnCode || '--';
         return <span>{hsnCode}</span>;
       },
     },
@@ -58,8 +52,20 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="Qty" />
       ),
       cell: ({ row }) => {
-        const dispatchedQty = row.original?.dispatchedQuantity || '--';
-        return <span>{dispatchedQty}</span>;
+        const quantity = row.original?.quantity || '--';
+        return <span>{quantity}</span>;
+      },
+    },
+
+    // quantity unit
+    {
+      accessorKey: 'qtyUnit',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Qty Unit" />
+      ),
+      cell: ({ row }) => {
+        const qtyUnit = row.original?.qtyUnit || '--';
+        return <span>{qtyUnit}</span>;
       },
     },
 
@@ -70,7 +76,7 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="Taxable Value" />
       ),
       cell: ({ row }) => {
-        const taxableAmount = row.original?.amount || '--';
+        const taxableAmount = row.original?.taxableAmount || '--';
         return <span>{formattedAmount(taxableAmount)}</span>;
       },
     },

@@ -1,7 +1,13 @@
 'use client';
 
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
+import { saveDraftToSession } from '@/appUtils/helperFunctions';
+import { SessionStorageService } from '@/lib/utils';
+import { generateEWB } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import OrderBreadCrumbs from '../orders/OrderBreadCrumbs';
 import Overview from '../ui/Overview';
 import Wrapper from '../wrappers/Wrapper';
@@ -9,6 +15,7 @@ import MultiStepForm from './multiStepForm/MultiStepForm';
 import { stepsConfigA } from './multiStepForm/stepsConfig';
 
 export default function CreateEWBA({
+  dispatchNoteId,
   overviewData,
   overviewLabels,
   customRender,
@@ -17,34 +24,40 @@ export default function CreateEWBA({
   setIsCreatingEWB,
   dispatchDetails,
 }) {
+  const queryClient = useQueryClient();
+  const draftData = SessionStorageService.get(`${dispatchNoteId}_EWBA`);
   const [form, setForm] = useState(() => ({
+    // supply
     supplyType: '',
     subSupplyType: '',
     subSupplyDesc: '',
     docType: '',
     docNo: '',
     docDate: '',
+    transactionType: '',
+    // consigner
     fromGstin: '',
     fromPincode: '',
     fromStateCode: '',
     fromTrdName: '',
     actFromStateCode: '',
+    fromAddr1: '',
+    fromAddr2: '',
+    fromPlace: '',
+    dispatchFromGSTIN: '',
+    dispatchFromTradeName: '',
+    // consignee
     toGstin: '',
     toPincode: '',
     toStateCode: '',
     toTrdName: '',
     actToStateCode: '',
-    transactionType: '', // ?
-    fromAddr1: '',
-    fromAddr2: '',
-    fromPlace: '',
     toAddr1: '',
     toAddr2: '',
     toPlace: '',
-    dispatchFromGSTIN: '',
-    dispatchFromTradeName: '',
     shipToGSTIN: '',
     shipToTradeName: '',
+    // items
     itemList: [],
     totInvValue: 0,
     totalValue: 0,
@@ -53,6 +66,7 @@ export default function CreateEWBA({
     igstValue: '',
     cessValue: '',
     cessNonAdvolValue: '',
+    // transport
     transMode: '',
     transporterId: '',
     transporterName: '',
@@ -61,62 +75,113 @@ export default function CreateEWBA({
     transDocDate: '',
     vehicleNo: '',
     vehicleType: '',
-    remarks: '', // option
+    remarks: '',
   }));
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
 
-  // Auto-populate from mock invoice on mount
   useEffect(() => {
-    setForm((s) => ({
-      ...s,
-      docType: 'INV', // default INV
+    if (!dispatchDetails) return;
+
+    // FORMAT ITEM LIST
+    const formattedItems =
+      dispatchDetails?.items?.map((item) => {
+        const product = item?.invoiceItem?.orderItemId?.productDetails;
+
+        return {
+          hsnCode: product?.hsnCode || '',
+          taxableAmount: Number(item?.amount || 0),
+          productName: product?.productName || '',
+          productDesc: product?.description || '',
+          quantity: item?.dispatchedQuantity || 0,
+          // Adjust unit based on your logic (unitId/weightUnitId)
+          qtyUnit:
+            product?.weightUnitId ||
+            product?.unitId ||
+            item?.invoiceItem?.unitId ||
+            '',
+          sgstRate: product?.sgstPercentage || 0,
+          cgstRate: product?.cgstPercentage || 0,
+          igstRate: product?.igstPercentage || 0,
+          cessRate: 0,
+          cessNonAdvol: 0,
+        };
+      }) || [];
+
+    // MAP DISPATCH DETAILS
+    const mapped = {
+      // supply
       docNo: dispatchDetails?.invoice?.referenceNumber?.replace(
         /^INV[-/]?/,
         '',
       ),
-      docDate: moment(dispatchDetails?.createdAt)?.format('YYYY-MM-DD'),
+      docDate: moment(dispatchDetails?.createdAt)?.format('DD/MM/YYYY'),
+      transactionType: dispatchDetails?.transactionType?.code,
+
+      // consigner
       fromGstin: dispatchDetails?.sellerDetails?.gst,
-      fromPincode: dispatchDetails?.billingFromAddress?.pincode,
-      fromStateCode: dispatchDetails?.billingFromAddress?.stateCode,
-      fromTrdName: dispatchDetails?.sellerDetails?.tradeName,
-      actFromStateCode: dispatchDetails?.dispatchFromAddress?.stateCode,
+      fromPincode: Number(dispatchDetails?.billingFromAddress?.pincode) || '',
+      fromStateCode:
+        Number(dispatchDetails?.billingFromAddress?.stateCode) || '',
+      fromTrdName: dispatchDetails?.sellerDetails?.name,
+      actFromStateCode:
+        Number(dispatchDetails?.dispatchFromAddress?.stateCode) || '',
+      fromAddr1: dispatchDetails?.billingFromAddress?.address,
+      fromAddr2: '',
+      fromPlace: dispatchDetails?.billingFromAddress?.pincode,
+      dispatchFromGSTIN: dispatchDetails?.sellerDetails?.gst,
+      dispatchFromTradeName: dispatchDetails?.sellerDetails?.name,
+
+      // consignee
       toGstin: dispatchDetails?.buyerDetails?.gst || 'URP',
-      toPincode: dispatchDetails?.shippingAddress?.pincode,
-      toStateCode: dispatchDetails?.billingAddress?.stateCode,
-      toTrdName: dispatchDetails?.buyerDetails?.tradeName,
-      actToStateCode: dispatchDetails?.dispatchAddress?.stateCode,
-      transactionType: '',
-      fromAddr1: '', // doubt
-      fromAddr2: '', // doubt
-      fromPlace: '', // doubt
-      toAddr1: '', // doubt
-      toAddr2: '', // doubt
-      toPlace: '', // doubt
-      dispatchFromGSTIN: '', // doubt
-      dispatchFromTradeName: '', // doubt
-      shipToGSTIN: '', // doubt
-      shipToTradeName: '', // doubt
-      itemList: dispatchDetails?.items,
+      toPincode: Number(dispatchDetails?.shippingAddress?.pincode) || '',
+      toStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
+      toTrdName: dispatchDetails?.buyerDetails?.name,
+      actToStateCode: Number(dispatchDetails?.dispatchAddress?.stateCode) || '',
+      toAddr1: dispatchDetails?.shippingAddress?.address,
+      toAddr2: '',
+      toPlace: dispatchDetails?.shippingAddress?.pincode,
+      shipToGSTIN: dispatchDetails?.buyerDetails?.gst || 'URP',
+      shipToTradeName: dispatchDetails?.buyerDetails?.name,
+
+      // UPDATED ITEM LIST
+      itemList: formattedItems,
       totInvValue:
         Number(dispatchDetails?.totalAmount) +
         Number(dispatchDetails?.totalGstAmount),
       totalValue: Number(dispatchDetails?.totalAmount),
-      cgstValue: dispatchDetails?.cgst,
-      sgstValue: dispatchDetails?.sgst,
-      igstValue: dispatchDetails?.igst,
-      cessValue: dispatchDetails?.cess,
-      cessNonAdvolValue: '', // doubt
-      transMode: '', // doubt
-      transporterId: '', // doubt
-      transporterName: '', // doubt
-      transDistance: '', // doubt
-      transDocNo: '', // doubt
-      transDocDate: '', // doubt
-      vehicleNo: '', // doubt
-      vehicleType: '', // doubt
-      remarks: '', // option
-    }));
+      cgstValue: dispatchDetails?.totalCgstAmount,
+      sgstValue: dispatchDetails?.totalSgstAmount,
+      igstValue: dispatchDetails?.totalIgstAmount,
+      cessValue: dispatchDetails?.cessAmount,
+      cessNonAdvolValue: '',
+
+      // transport
+      transMode: '',
+      transporterId: '',
+      transporterName: '',
+      transDistance: '',
+      transDocNo: '',
+      transDocDate: '',
+      vehicleNo: '',
+      vehicleType: '',
+      remarks: '',
+    };
+
+    // Merge with draftData
+    setForm((prev) => {
+      const merged = {};
+
+      Object.keys(prev).forEach((key) => {
+        merged[key] =
+          draftData?.[key] !== undefined
+            ? draftData[key]
+            : mapped[key] !== undefined
+              ? mapped[key]
+              : '';
+      });
+
+      return merged;
+    });
   }, [dispatchDetails]);
 
   const validate = () => {
@@ -150,33 +215,37 @@ export default function CreateEWBA({
     return Object.keys(e).length === 0;
   };
 
+  const generateEWBPartAMutation = useMutation({
+    mutationFn: generateEWB,
+    onSuccess: () => {
+      toast.success('EWB Part A generated successfully');
+      setIsCreatingEWB(false);
+      queryClient.invalidateQueries({
+        queryKey: [deliveryProcess.getDispatchNote.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || 'Failed to generate EWB Part A',
+      );
+    },
+  });
+
   const handleSubmit = async (type = 'save') => {
     if (!validate()) return;
-    setSubmitting(true);
-    // Mock API call
-    await new Promise((r) => {
-      setTimeout(r, 600);
-    });
-
-    // Example duplicate docNo check - replace with real API call
-    if (form.docNo === 'DUPLICATE') {
-      setErrors({
-        docNo: 'Duplicate e-way bill exists for this document number',
-      });
-      setSubmitting(false);
-      return;
-    }
 
     // Build payload
     const payload = { ...form };
-    // eslint-disable-next-line no-console
-    console.log('E-Waybill payload ->', payload);
 
-    setSubmitting(false);
-    // eslint-disable-next-line no-alert
-    alert(
-      type === 'save' ? 'Saved as draft (mock)' : 'Generated E-Way bill (mock)',
-    );
+    // api call for - save draft
+    if (type === 'save') {
+      toast.success('EWB Part A saved successfully');
+      saveDraftToSession({ key: `${dispatchNoteId}_EWBA`, data: payload });
+      setIsCreatingEWB(false);
+      return;
+    }
+    // api call for - generate
+    generateEWBPartAMutation.mutate({ dispatchNoteId, data: payload });
   };
 
   return (
@@ -199,13 +268,14 @@ export default function CreateEWBA({
 
       {/* Main Form */}
       <MultiStepForm
+        dispatchNoteId={dispatchNoteId}
         config={stepsConfigA}
         formData={form}
         setFormData={setForm}
         errors={errors}
         setErrors={setErrors}
         onFinalSubmit={handleSubmit}
-        isSubmitting={submitting}
+        isSubmitting={generateEWBPartAMutation?.isPending}
         onCancel={() => setIsCreatingEWB(false)}
       />
     </Wrapper>

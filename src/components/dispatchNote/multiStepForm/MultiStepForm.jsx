@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { saveDraftToSession } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,8 +8,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import React, { useState } from 'react';
 
 export default function MultiStepForm({
+  dispatchNoteId,
   config,
   formData,
   setFormData,
@@ -43,6 +45,7 @@ export default function MultiStepForm({
 
     if (!isLastStep) {
       setCurrentStep((prev) => prev + 1);
+      saveDraftToSession({ key: `${dispatchNoteId}_EWBA`, data: formData });
     }
   };
 

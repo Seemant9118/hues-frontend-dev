@@ -57,8 +57,16 @@ export default function Step5Transport({ formData, setFormData, errors }) {
           />
         </div>
         <div>
+          <Label>Transporter Name</Label>
+          <Input
+            value={formData.transporterName}
+            onChange={(e) => handleChange('transporterName')(e)}
+          />
+        </div>
+        <div>
           <Label>Transport Distance (KM)</Label>
           <Input
+            type="number"
             value={formData.transDistance}
             onChange={(e) => handleChange('transDistance')(e)}
           />

@@ -1,6 +1,12 @@
 'use client';
 
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
+import { saveDraftToSession } from '@/appUtils/helperFunctions';
+import { SessionStorageService } from '@/lib/utils';
+import { updateEWBPartB } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import OrderBreadCrumbs from '../orders/OrderBreadCrumbs';
 import Overview from '../ui/Overview';
 import Wrapper from '../wrappers/Wrapper';
@@ -8,6 +14,7 @@ import MultiStepForm from './multiStepForm/MultiStepForm';
 import { stepsConfigB } from './multiStepForm/stepsConfig';
 
 export default function CreateEWBB({
+  dispatchNoteId,
   overviewData,
   overviewLabels,
   customRender,
@@ -16,6 +23,8 @@ export default function CreateEWBB({
   setIsCreatingEWB,
   dispatchDetails,
 }) {
+  const queryClient = useQueryClient();
+  const draftData = SessionStorageService.get(`${dispatchNoteId}_EWBB`);
   const [form, setForm] = useState(() => ({
     transMode: '',
     transporterId: '',
@@ -25,24 +34,23 @@ export default function CreateEWBB({
     transDocDate: '',
     vehicleNo: '',
     vehicleType: '',
-    remarks: '', // option
+    remarks: '',
   }));
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
 
   // Auto-populate from mock invoice on mount
   useEffect(() => {
     setForm((s) => ({
       ...s,
-      transMode: '', // doubt
-      transporterId: '', // doubt
-      transporterName: '', // doubt
-      transDistance: '', // doubt
-      transDocNo: '', // doubt
-      transDocDate: '', // doubt
-      vehicleNo: '', // doubt
-      vehicleType: '', // doubt
-      remarks: '', // option
+      transMode: draftData?.transMode || '',
+      transporterId: draftData?.transporterId || '',
+      transporterName: draftData?.transporterName || '',
+      transDistance: draftData?.transDistance || '',
+      transDocNo: draftData?.transDocNo || '',
+      transDocDate: draftData?.transDocDate || '',
+      vehicleNo: draftData?.vehicleNo || '',
+      vehicleType: draftData?.vehicleType || '',
+      remarks: draftData?.remarks || '',
     }));
   }, [dispatchDetails]);
 
@@ -57,26 +65,35 @@ export default function CreateEWBB({
     return Object.keys(e).length === 0;
   };
 
+  const updateEWBPartBMutation = useMutation({
+    mutationFn: updateEWBPartB,
+    onSuccess: () => {
+      toast.success('EWB Part B updated successfully');
+      setIsCreatingEWB(false);
+      queryClient.invalidateQueries({
+        queryKey: [deliveryProcess.getDispatchNote.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Failed to update EWB Part B');
+    },
+  });
+
   const handleSubmit = async (type = 'save') => {
     if (!validate()) return;
-    setSubmitting(true);
-    // Mock API call
-    await new Promise((r) => {
-      setTimeout(r, 600);
-    });
 
     // Build payload
     const payload = { ...form };
-    // eslint-disable-next-line no-console
-    console.log('E-Waybill B payload ->', payload);
 
-    setSubmitting(false);
-    // eslint-disable-next-line no-alert
-    alert(
-      type === 'save'
-        ? 'Saved as draft (mock)'
-        : 'Generated E-Way bill B (mock)',
-    );
+    // api call for - save draft
+    if (type === 'save') {
+      toast.success('EWB Part B saved successfully');
+      saveDraftToSession({ key: `${dispatchNoteId}_EWBB`, data: payload });
+      setIsCreatingEWB(false);
+      return;
+    }
+    // api call for - generate
+    updateEWBPartBMutation.mutate({ data: payload });
   };
 
   return (
@@ -105,7 +122,7 @@ export default function CreateEWBB({
         errors={errors}
         setErrors={setErrors}
         onFinalSubmit={handleSubmit}
-        isSubmitting={submitting}
+        isSubmitting={updateEWBPartBMutation.isPending}
         onCancel={() => setIsCreatingEWB(false)}
       />
     </Wrapper>

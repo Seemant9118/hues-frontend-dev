@@ -862,6 +862,7 @@ const ViewDispatchNote = () => {
 
         {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
           <CreateEWBA
+            dispatchNoteId={params.dispatchId}
             overviewData={overviewData}
             overviewLabels={overviewLabels}
             customRender={customRender}
@@ -873,6 +874,7 @@ const ViewDispatchNote = () => {
         )}
         {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
           <CreateEWBB
+            dispatchNoteId={params.dispatchId}
             overviewData={overviewData}
             overviewLabels={overviewLabels}
             customRender={customRender}
