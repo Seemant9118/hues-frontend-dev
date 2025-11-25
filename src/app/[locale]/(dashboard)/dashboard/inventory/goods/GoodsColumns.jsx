@@ -163,8 +163,9 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
               <ProtectedWrapper permissionCode="permission:item-masters-edit">
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
-                  onClick={() => {
+                  onClick={(e) => {
                     setIsEditing((prev) => !prev);
+                    e.stopPropagation();
                     setGoodsToEdit(row.original);
                   }}
                 >
