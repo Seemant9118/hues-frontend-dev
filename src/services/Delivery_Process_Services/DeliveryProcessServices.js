@@ -59,3 +59,14 @@ export const update = ({ dispatchNoteId, data }) => {
     data,
   );
 };
+
+export const generateEWB = ({ dispatchNoteId, data }) => {
+  return APIinstance.post(
+    `${deliveryProcess.generateEWB.endpoint}${dispatchNoteId}`,
+    data,
+  );
+};
+
+export const updateEWBPartB = ({ data }) => {
+  return APIinstance.put(deliveryProcess.updateEWBPartB.endpoint, data);
+};
