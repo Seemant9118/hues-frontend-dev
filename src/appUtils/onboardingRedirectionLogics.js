@@ -1,5 +1,5 @@
 import { LocalStorageService } from '@/lib/utils';
-import { goToHomePage } from './helperFunctions';
+import { redirectToHomeWithFcm } from './redirectionUtilFn';
 
 export async function handleOtpRedirection({
   isOnboardingComplete,
@@ -28,7 +28,7 @@ export async function handleOtpRedirection({
       isEnterpriseOnboardingComplete
     ) {
       LocalStorageService.remove('redirectUrl');
-      return router.push(redirectedUrl || goToHomePage());
+      return redirectToHomeWithFcm(router, redirectedUrl);
     } else if (
       isEnterprisestartedOnboarding &&
       !isEnterpriseOnboardingComplete

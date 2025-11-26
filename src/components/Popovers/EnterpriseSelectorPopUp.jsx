@@ -1,7 +1,8 @@
 'use client';
 
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
-import { capitalize, goToHomePage, parseJwt } from '@/appUtils/helperFunctions';
+import { capitalize, parseJwt } from '@/appUtils/helperFunctions';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { cn, LocalStorageService } from '@/lib/utils';
 import {
@@ -13,10 +14,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowRight, Box, ListRestart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import Tooltips from '../auth/Tooltips';
 import Loading from '../ui/Loading';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import SearchInput from '../ui/SearchInput';
-import Tooltips from '../auth/Tooltips';
 
 const DEBOUNCE_DELAY = 500;
 
