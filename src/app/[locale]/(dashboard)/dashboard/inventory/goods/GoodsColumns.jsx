@@ -36,7 +36,9 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
         const { description, productName } = row.original;
         return (
           <div className="flex items-center gap-1">
-            {productName}
+            <span className="hover:text-primary hover:underline">
+              {productName}
+            </span>
             <Tooltips trigger={<Info size={14} />} content={description} />
           </div>
         );

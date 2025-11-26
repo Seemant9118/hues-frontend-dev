@@ -92,6 +92,13 @@
                 "items": "सामान",
                 "item_details": "सामान विवरण"
             },
+            "ctas": {
+                "edit": "संपादित करें",
+                "delete": "हटाएँ",
+                "cancel": "रद्द करें",
+                "infoText": "आप {name} को आइटम मास्टर से हटाने वाले हैं। क्या आप सुनिश्चित हैं?",
+                "successMsg": "सफलतापूर्वक हटा दिया गया"
+            },
             "tabs": {
                 "tab1": {
                     "title": "सारांश"
@@ -99,25 +106,25 @@
             },
             "overview_labels": {
                 "id": "आईडी",
-                "productName": "उत्पाद नाम",
+                "productName": "उत्पाद का नाम",
                 "manufacturerName": "निर्माता का नाम",
                 "manufacturerGstId": "निर्माता जीएसटी आईडी",
                 "skuId": "एसकेयू आईडी",
                 "hsnCode": "एचएसएन कोड",
                 "description": "विवरण",
-                "costPrice": "लागत मूल्य",
-                "salesPrice": "बिक्री मूल्य",
+                "costPrice": "क्रय मूल्य",
+                "salesPrice": "विक्रय मूल्य",
                 "mrp": "एमआरपी",
                 "gstPercentage": "जीएसटी प्रतिशत",
                 "cgstPercentage": "सीजीएसटी %",
                 "sgstPercentage": "एसजीएसटी %",
                 "igstPercentage": "आईजीएसटी %",
                 "createdAt": "निर्माण तिथि",
-                "updatedAt": "अपडेट तिथि",
+                "updatedAt": "अद्यतन तिथि",
                 "weight": "वजन",
                 "length": "लंबाई",
                 "breadth": "चौड़ाई",
-                "height": "ऊँचाई"
+                "height": "ऊंचाई"
             }
         }
     },

@@ -2,22 +2,34 @@
 
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { formattedAmount } from '@/appUtils/helperFunctions';
+import EditItem from '@/components/inventory/EditItem';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { GetProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
+import {
+  DeleteProductGoods,
+  GetProductGoods,
+  UpdateProductGoods,
+} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { useQuery } from '@tanstack/react-query';
+import { Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const ViewItem = () => {
   const translations = useTranslations('goods.goodDetails');
+  const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
+  const [isEditing, setIsEditing] = useState(false);
+  const [goodsToEdit, setGoodsToEdit] = useState(null);
+
   const itemsBreadCrumbs = [
     {
       id: 1,
@@ -93,27 +105,71 @@ const ViewItem = () => {
 
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
-      <Wrapper className="h-full py-2">
-        {/* Headers */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-          <div className="flex gap-2">
-            {/* breadcrumbs */}
-            <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
-          </div>
-        </section>
+      {!isEditing && (
+        <Wrapper className="h-full py-2">
+          {/* Headers */}
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+            <div className="flex gap-2">
+              {/* breadcrumbs */}
+              <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
+            </div>
 
-        {/* Content */}
-        <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
-          <TabsList className="border">
-            <TabsTrigger value="overview">
-              {translations('tabs.tab1.title')}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview">
-            <Overview data={overviewData} labelMap={overviewLabels} />
-          </TabsContent>
-        </Tabs>
-      </Wrapper>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  setIsEditing((prev) => !prev);
+                  e.stopPropagation();
+                  setGoodsToEdit(itemDetails);
+                }}
+              >
+                <Pencil size={12} />
+                {translations('ctas.edit')}
+              </Button>
+
+              <ConfirmAction
+                deleteCta={translations('ctas.delete')}
+                infoText={translations('ctas.infoText', {
+                  name: itemDetails?.productName,
+                })}
+                cancelCta={translations('ctas.cancel')}
+                id={itemDetails?.id}
+                mutationKey={goodsApi.getAllProductGoods.endpointKey}
+                mutationFunc={DeleteProductGoods}
+                successMsg={translations('ctas.successMsg')}
+                invalidateKey={goodsApi.getAllProductGoods.endpointKey}
+                redirectedTo={() => router.push('/dashboard/inventory/goods')}
+              />
+            </div>
+          </section>
+
+          {/* Content */}
+          <Tabs
+            value={tab}
+            onValueChange={onTabChange}
+            defaultValue={'overview'}
+          >
+            <TabsList className="border">
+              <TabsTrigger value="overview">
+                {translations('tabs.tab1.title')}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <Overview data={overviewData} labelMap={overviewLabels} />
+            </TabsContent>
+          </Tabs>
+        </Wrapper>
+      )}
+      {isEditing && (
+        <EditItem
+          setIsEditing={setIsEditing}
+          goodsToEdit={goodsToEdit}
+          setGoodsToEdit={setGoodsToEdit}
+          mutationFunc={UpdateProductGoods}
+          queryKey={[goodsApi.getProductGoods.endpointKey, params.good_id]}
+        />
+      )}
     </ProtectedWrapper>
   );
 };

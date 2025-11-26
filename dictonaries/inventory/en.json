@@ -92,6 +92,13 @@
                 "items": "Goods",
                 "item_details": "Good Details"
             },
+            "ctas": {
+                "edit": "Edit",
+                "delete": "Delete",
+                "cancel": "Cancel",
+                "infoText": "You're about to remove {name} from item master. Sure?",
+                "successMsg": "Deleted successfully"
+            },
             "tabs": {
                 "tab1": {
                     "title": "Overview"
