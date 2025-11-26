@@ -54,6 +54,8 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { templateApi } from '@/api/templates_api/template_api';
+import { getDocument } from '@/services/Template_Services/Template_Services';
 import { usePINAuditLogsColumns } from './usePINAuditLogsColumns';
 
 function Settings() {
@@ -173,10 +175,20 @@ function Settings() {
       hasPermission('permission:view-dashboard'),
   });
 
+  const pvtUrl = profileDetails?.enterpriseDetails?.logoUrl;
+  // Fetch the PDF document using react-query
+  const { data: publicUrl } = useQuery({
+    queryKey: [templateApi.getS3Document.endpointKey, pvtUrl],
+    queryFn: () => getDocument(pvtUrl),
+    enabled: !!pvtUrl, // Only fetch if pvtUrl is available
+    select: (res) => res.data.data,
+  });
+
   const uploadLogoMutation = useMutation({
     mutationFn: uploadLogo,
     onSuccess: () => {
       toast.success(translations('tabs.content.tab1.toasts.logo.successMsg'));
+      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
     },
     onError: () => {
       toast.error(translations('tabs.content.tab1.toasts.logo.errorMsg'));
@@ -350,10 +362,11 @@ function Settings() {
                   <div className="flex w-full items-center justify-start gap-4">
                     {profileDetails?.enterpriseDetails?.logoUrl ? (
                       <Image
-                        src={profileDetails?.enterpriseDetails?.logoUrl}
+                        src={publicUrl?.publicUrl}
                         alt="logo"
-                        width={50}
-                        height={50}
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 rounded-full object-cover"
                       />
                     ) : (
                       <Avatar name={profileDetails?.enterpriseDetails?.name} />
