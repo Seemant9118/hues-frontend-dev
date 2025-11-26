@@ -43,11 +43,18 @@
                         "format": "JPEG and PNG format",
                         "ctas": {
                             "upload": "Upload",
+                            "update": "Update",
                             "delete": "Delete"
                         }
                     },
                     "heading1": "Enterprise Information",
-                    "heading2": "Business Identification"
+                    "heading2": "Business Identification",
+                    "toasts": {
+                        "logo": {
+                            "successMsg": "Logo Updated Successfully",
+                            "errorMsg": "Something went wrong while uploading logo"
+                        }
+                    }
                 },
                 "tab2": {
                     "bankAccount": {
