@@ -24,6 +24,8 @@ const ConfirmAction = ({
   mutationKey,
   mutationFunc,
   successMsg,
+  customError,
+  redirectedTo,
 }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -34,10 +36,17 @@ const ConfirmAction = ({
     onSuccess: () => {
       toast.success(successMsg);
       setOpen(false);
+      if (redirectedTo) {
+        redirectedTo();
+      }
       queryClient.invalidateQueries([invalidateKey]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      if (customError) {
+        toast.error(customError);
+      } else {
+        toast.error(error.response.data.message || 'Something went wrong');
+      }
     },
   });
 
@@ -64,7 +73,8 @@ const ConfirmAction = ({
           <DialogClose asChild>
             <Button
               size="sm"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setOpen(false);
               }}
               variant={'outline'}
@@ -75,7 +85,8 @@ const ConfirmAction = ({
           <Button
             size="sm"
             disabled={deleteMutation.isPending}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               deleteMutation.mutate({ id, type });
             }}
           >
