@@ -24,4 +24,9 @@ export const settingsAPI = {
     endpoint: `/enterprise/address`,
     endpointKey: 'add_update_address',
   },
+  // upload logo
+  uploadLogo: {
+    endpoint: `/enterprise/upload-logo`,
+    endpointKey: 'upload_logo',
+  },
 };

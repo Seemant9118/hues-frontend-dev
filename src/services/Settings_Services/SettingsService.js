@@ -24,3 +24,7 @@ export const getInvoicePreviewConfig = (data) => {
 export const addUpdateAddress = ({ data }) => {
   return APIinstance.post(`${settingsAPI.addUpdateAddress.endpoint}`, data);
 };
+
+export const uploadLogo = ({ data }) => {
+  return APIinstance.post(`${settingsAPI.uploadLogo.endpoint}`, data);
+};

@@ -14,6 +14,7 @@ import AddBankAccount from '@/components/settings/AddBankAccount';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
 import { DataTable } from '@/components/table/data-table';
+import Avatar from '@/components/ui/Avatar';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
@@ -36,13 +37,22 @@ import {
   createSettings,
   getSettingsByKey,
   getTemplateForSettings,
+  uploadLogo,
 } from '@/services/Settings_Services/SettingsService';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Pencil, PencilIcon, PlusCircle, X } from 'lucide-react';
+import {
+  MapPin,
+  Pencil,
+  PencilIcon,
+  PlusCircle,
+  Upload,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { usePINAuditLogsColumns } from './usePINAuditLogsColumns';
 
@@ -56,6 +66,7 @@ function Settings() {
   );
   const queryClient = useQueryClient();
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const searchParams = useSearchParams();
   const { hasPermission } = usePermission();
   // const [bgColor, setBgColor] = useState('');
@@ -75,6 +86,13 @@ function Settings() {
   const [isAddressAdding, setIsAddressAdding] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [addressId, setAddressId] = useState(null);
+
+  const openFilePicker = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   // update enterprise mutation
   const updateEnterpriseMutation = useMutation({
     mutationKey: [
@@ -155,12 +173,25 @@ function Settings() {
       hasPermission('permission:view-dashboard'),
   });
 
-  useMetaData(`Settings -  ${capitalize(tab)}`, 'HUES SETTINGS'); // dynamic title
+  const uploadLogoMutation = useMutation({
+    mutationFn: uploadLogo,
+    onSuccess: () => {
+      toast.success(translations('tabs.content.tab1.toasts.logo.successMsg'));
+    },
+    onError: () => {
+      toast.error(translations('tabs.content.tab1.toasts.logo.errorMsg'));
+    },
+  });
 
-  // useEffect(() => {
-  //   const bgColorClass = getRandomBgColor();
-  //   setBgColor(bgColorClass);
-  // }, []);
+  const uploadFile = (file) => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    uploadLogoMutation.mutate({ data: formData });
+  };
+
+  useMetaData(`Settings -  ${capitalize(tab)}`, 'HUES SETTINGS'); // dynamic title
 
   // fetch settings - invoice
   const { data: invoiceSettings } = useQuery({
@@ -224,7 +255,7 @@ function Settings() {
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
-      <Wrapper className="h-full gap-8">
+      <Wrapper className="h-full">
         <SubHeader name="Settings"></SubHeader>
 
         <Tabs
@@ -314,56 +345,73 @@ function Settings() {
             {/* if enterpriseOnboardingComplete */}
             {profileDetails?.enterpriseDetails?.id && (
               <div className="flex flex-col gap-4">
-                {/* <div className="flex justify-between gap-2 rounded-sm border p-4">
-                <div className="flex w-full items-center justify-start gap-4">
-                  <div
-                    className={`${bgColor} flex h-16 w-16 items-center justify-center rounded-full p-2 text-2xl text-white`}
-                  >
-                    {getInitialsNames(profileDetails?.enterpriseDetails?.name)}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold">
-                      {translations(
-                        'tabs.content.tab1.profilePicSection.title',
-                      )}
-                    </span>
-                    <span className="text-xs text-grey">
-                      {translations(
-                        'tabs.content.tab1.profilePicSection.format',
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex w-full items-center justify-end gap-2">
-                  <Tooltips
-                    trigger={
-                      <Button size="sm" variant="blue_outline" disabled>
+                {/* logo */}
+                <div className="mt-4 flex justify-between gap-2 rounded-sm border p-4">
+                  <div className="flex w-full items-center justify-start gap-4">
+                    {profileDetails?.enterpriseDetails?.logoUrl ? (
+                      <Image
+                        src={profileDetails?.enterpriseDetails?.logoUrl}
+                        alt="logo"
+                        width={50}
+                        height={50}
+                      />
+                    ) : (
+                      <Avatar name={profileDetails?.enterpriseDetails?.name} />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold">
                         {translations(
-                          'tabs.content.tab1.profilePicSection.ctas.upload',
+                          'tabs.content.tab1.profilePicSection.title',
                         )}
-                      </Button>
-                    }
-                    content={'This feature Coming Soon...'}
-                  />
+                      </span>
+                      <span className="text-xs text-grey">
+                        {translations(
+                          'tabs.content.tab1.profilePicSection.format',
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex w-full items-center justify-end gap-2">
+                    <>
+                      <input
+                        id="logoUpload"
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        onChange={(e) => uploadFile(e.target.files[0])}
+                        className="hidden"
+                      />
 
-                  <Tooltips
-                    trigger={
-                      <Button size="sm" variant="outline" disabled>
-                        {translations(
-                          'tabs.content.tab1.profilePicSection.ctas.delete',
-                        )}
-                      </Button>
-                    }
-                    content={'This feature Coming Soon...'}
-                  />
+                      <label htmlFor="logoUpload">
+                        <Button
+                          debounceTime={1000}
+                          size="sm"
+                          variant="blue_outline"
+                          type="button"
+                          onClick={openFilePicker}
+                        >
+                          <span className="flex items-center gap-1">
+                            <Upload size={16} />
+                            {profileDetails?.enterpriseDetails?.logoUrl
+                              ? translations(
+                                  'tabs.content.tab1.profilePicSection.ctas.update',
+                                )
+                              : translations(
+                                  'tabs.content.tab1.profilePicSection.ctas.upload',
+                                )}
+                          </span>
+                        </Button>
+                      </label>
+                    </>
+                  </div>
                 </div>
-              </div> */}
+                {/* Enterprise Information */}
                 <div className="mt-5 flex flex-col gap-4">
                   <h1 className="font-semibold uppercase text-primary">
                     {translations('tabs.content.tab1.heading1')}
                   </h1>
 
-                  <div className="grid grid-cols-3 grid-rows-2 gap-8 p-2">
+                  <div className="grid grid-cols-3 grid-rows-2">
                     <div className="flex flex-col gap-1">
                       <Label className="text-xs">
                         {translations('tabs.content.tab1.label.name')}
@@ -565,8 +613,8 @@ function Settings() {
                     </div>
                   </div>
                 </div>
-
-                <div className="flex flex-col gap-4">
+                {/* Business Identification */}
+                <div className="flex flex-col">
                   <h1 className="font-semibold uppercase text-primary">
                     {translations('tabs.content.tab1.heading2')}
                   </h1>
