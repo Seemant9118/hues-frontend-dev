@@ -178,6 +178,10 @@ function Goods() {
     }
   };
 
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/goods/${row.id}`);
+  };
+
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
@@ -285,6 +289,7 @@ function Goods() {
                         }
                         totalPages={paginationData?.totalPages}
                         currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
                       />
                     )}
                   </>
