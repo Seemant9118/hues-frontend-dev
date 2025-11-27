@@ -36,7 +36,9 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
         const { description, productName } = row.original;
         return (
           <div className="flex items-center gap-1">
-            {productName}
+            <span className="hover:text-primary hover:underline">
+              {productName}
+            </span>
             <Tooltips trigger={<Info size={14} />} content={description} />
           </div>
         );
@@ -163,8 +165,9 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
               <ProtectedWrapper permissionCode="permission:item-masters-edit">
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
-                  onClick={() => {
+                  onClick={(e) => {
                     setIsEditing((prev) => !prev);
+                    e.stopPropagation();
                     setGoodsToEdit(row.original);
                   }}
                 >
