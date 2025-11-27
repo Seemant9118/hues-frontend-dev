@@ -106,7 +106,7 @@
             },
             "overview_labels": {
                 "id": "आईडी",
-                "productName": "उत्पाद का नाम",
+                "productName": "उत्पाद नाम",
                 "manufacturerName": "निर्माता का नाम",
                 "manufacturerGstId": "निर्माता जीएसटी आईडी",
                 "skuId": "एसकेयू आईडी",
@@ -120,11 +120,11 @@
                 "sgstPercentage": "एसजीएसटी %",
                 "igstPercentage": "आईजीएसटी %",
                 "createdAt": "निर्माण तिथि",
-                "updatedAt": "अद्यतन तिथि",
+                "updatedAt": "अपडेट तिथि",
                 "weight": "वजन",
                 "length": "लंबाई",
                 "breadth": "चौड़ाई",
-                "height": "ऊंचाई"
+                "height": "ऊँचाई"
             }
         }
     },

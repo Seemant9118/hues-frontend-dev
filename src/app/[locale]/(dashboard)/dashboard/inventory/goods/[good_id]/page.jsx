@@ -58,7 +58,6 @@ const ViewItem = () => {
   });
 
   const overviewData = {
-    id: itemDetails?.id,
     productName: itemDetails?.productName,
     manufacturerName: itemDetails?.manufacturerName,
     manufacturerGstId: itemDetails?.manufacturerGstId,
@@ -81,7 +80,6 @@ const ViewItem = () => {
   };
 
   const overviewLabels = {
-    id: translations('overview_labels.id'),
     productName: translations('overview_labels.productName'),
     manufacturerName: translations('overview_labels.manufacturerName'),
     manufacturerGstId: translations('overview_labels.manufacturerGstId'),
@@ -110,13 +108,13 @@ const ViewItem = () => {
           {/* Headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex items-center gap-1">
-              {/* breadcrumbs */}
               <button
                 onClick={() => router.back()}
                 className="rounded-sm p-2 hover:bg-gray-100"
               >
                 <ArrowLeft size={16} />
               </button>
+              {/* breadcrumbs */}
               <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
             </div>
 
