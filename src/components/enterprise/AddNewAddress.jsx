@@ -1,6 +1,5 @@
 'use client';
 
-import { addressAPIs } from '@/api/addressApi/addressApis';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,13 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { getDataFromPinCode } from '@/services/address_Services/AddressServices';
+import { addressAPIs } from '@/api/addressApi/addressApis';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
-import { Checkbox } from '../ui/checkbox';
 
 export default function AddNewAddress({
   isAddressAdding,
@@ -35,7 +34,6 @@ export default function AddNewAddress({
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState('');
   const [address, setAddress] = useState({
-    isSezAddress: false,
     pincode: '',
     state: '',
     city: '',
@@ -43,12 +41,12 @@ export default function AddNewAddress({
   });
 
   // Determine whether in "edit" mode
-  const isEditing = !!editingAddress;
+  const isEditing = Boolean(editingAddress);
 
   const parseAndSetAddress = (editingAddress) => {
-    if (!editingAddress?.address) return;
+    if (!editingAddress) return;
 
-    const parts = editingAddress.address.split(',').map((part) => part.trim());
+    const parts = editingAddress.split(',').map((part) => part.trim());
 
     if (parts.length < 2) return;
 
@@ -61,7 +59,6 @@ export default function AddNewAddress({
     const [state, pincode] = stateAndPincode.split('-').map((x) => x.trim());
 
     setAddress({
-      isSezAddress: editingAddress.isSezAddress || false,
       address: rawAddress,
       city,
       state,
@@ -121,9 +118,8 @@ export default function AddNewAddress({
 
   // Reset on open
   useEffect(() => {
-    if (!isAddressAdding && setAddress && setErrorMsg && setEditingAddress) {
+    if (!isAddressAdding) {
       setAddress({
-        isSezAddress: false,
         pincode: '',
         state: '',
         city: '',
@@ -172,8 +168,8 @@ export default function AddNewAddress({
         address: '',
       });
       setErrorMsg('');
-      setEditingAddress && setEditingAddress(null);
-      setEditingAddressId && setEditingAddressId(null);
+      setEditingAddress(null);
+      setEditingAddressId(null);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Something went wrong');
@@ -245,7 +241,7 @@ export default function AddNewAddress({
           </div>
         </div>
 
-        <div className="">
+        <div className="mt-4 space-y-1">
           <Label htmlFor="state">
             State <span className="text-red-500">*</span>
           </Label>
@@ -259,7 +255,7 @@ export default function AddNewAddress({
           {errorMsg.state && <ErrorBox msg={errorMsg.state} />}
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="mt-4 flex flex-col gap-1">
           <Label htmlFor="address">
             Address <span className="text-red-500">*</span>
           </Label>
@@ -277,20 +273,6 @@ export default function AddNewAddress({
             placeholder="Enter full address"
           />
           {errorMsg.address && <ErrorBox msg={errorMsg.address} />}
-        </div>
-
-        <div className="mt-2 flex items-center gap-3">
-          <Checkbox
-            id="isSezAddress"
-            checked={address.isSezAddress}
-            onCheckedChange={(checked) =>
-              setAddress((prev) => ({
-                ...prev,
-                isSezAddress: checked,
-              }))
-            }
-          />
-          <Label htmlFor="isSezAddress">SEZ address</Label>
         </div>
 
         <DialogFooter className="mt-6">

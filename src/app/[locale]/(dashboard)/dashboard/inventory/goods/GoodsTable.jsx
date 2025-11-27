@@ -25,7 +25,6 @@ export function GoodsTable({
   isFetching,
   totalPages,
   currFetchedPage,
-  onRowClick,
 }) {
   const tableContainerRef = React.useRef(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = React.useState(false);
@@ -148,9 +147,6 @@ export function GoodsTable({
                       key={row.id}
                       className={
                         'border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
-                      }
-                      onClick={
-                        onRowClick ? () => onRowClick(row.original) : undefined
                       }
                     >
                       {row.getVisibleCells().map((cell) => {

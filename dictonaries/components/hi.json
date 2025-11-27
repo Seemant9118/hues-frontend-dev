@@ -956,71 +956,33 @@
                 "error": "कुछ गलत हो गया"
             }
         },
-        "createDispatchNote": {
-            "form": {
-                "table": {
-                    "header": {
-                        "item_name": "आइटम नाम",
-                        "invoice_qty": "इनवॉइस मात्रा",
-                        "dispatch_qty": "डिस्पैच मात्रा",
-                        "unit_price": "यूनिट मूल्य",
-                        "total_amount": "कुल राशि"
-                    }
-                },
-                "ctas": {
-                    "create": "बनाएँ",
-                    "discard": "रद्द करें"
-                },
-                "successMsg": {
-                    "dispatach_created_success": "डिस्पैच नोट सफलतापूर्वक बनाया गया"
-                },
-                "errorMsg": {
-                    "common": "ओह! कुछ गलत हो गया। कृपया दोबारा कोशिश करें।"
-                }
-            }
-        },
-        "attachment_uploader": {
-            "label": "संलग्नक",
-            "toast": {
-                "fileAttached": "फ़ाइल सफलतापूर्वक संलग्न की गई",
-                "fileRemoved": "फ़ाइल सफलतापूर्वक हटाई गई"
-            },
-            "fileStatus": "फ़ाइल सफलतापूर्वक संलग्न की गई",
-            "upload": {
-                "dropzoneTitle": "अपनी फ़ाइलें यहाँ अपलोड करें",
-                "supportedFormatsLabel": "समर्थित फ़ॉर्मेट:",
-                "selectButton": "चुनें"
-            }
-        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "स्वीकृत",
-                "isPayment": "स्वीकार किया गया"
+                "isPayment": "स्वीकृति प्राप्त"
             },
             "PENDING": {
                 "default": "लंबित",
-                "isPayment_seller": "अभी तक स्वीकार नहीं किया गया",
-                "isPayment_buyer": "विक्रेता द्वारा अभी तक स्वीकार नहीं किया गया"
+                "isPayment_seller": "अभी तक स्वीकृति नहीं मिली",
+                "isPayment_buyer": "विक्रेता द्वारा अभी तक स्वीकृति नहीं मिली"
             },
             "NEW": "नया",
-            "OFFER_SENT": "ऑफ़र भेजा गया",
-            "OFFER_RECEIVED": "ऑफ़र प्राप्त हुआ",
+            "OFFER_SENT": "प्रस्ताव भेजा गया",
+            "OFFER_RECEIVED": "प्रस्ताव प्राप्त हुआ",
             "BID_SENT": "बोली भेजी गई",
             "BID_RECEIVED": "बोली प्राप्त हुई",
-            "NEGOTIATION": "बातचीत",
-            "INVOICED": "इनवॉइस किया गया",
-            "PARTIAL_INVOICED": "आंशिक इनवॉइस",
+            "NEGOTIATION": "मोलभाव",
+            "INVOICED": "चालान जारी किया गया",
+            "PARTIAL_INVOICED": "आंशिक चालान",
             "WITHDRAWN": "वापस लिया गया",
             "REJECTED": "अस्वीकृत",
-            "PAID": "भुगतान किया गया",
+            "PAID": "भुगतान हुआ",
             "PARTIAL_PAID": "आंशिक भुगतान",
             "NOT_PAID": "भुगतान लंबित",
             "NOT_RAISED": "-",
-            "RAISED": "डेबिट नोट जारी",
-            "STOCK_OUT": "स्टॉक समाप्त",
-            "STOCK_IN": "स्टॉक उपलब्ध",
-            "DRAFT": "ड्राफ़्ट",
-            "READY_FOR_DISPATCH": "डिस्पैच के लिए तैयार"
+            "RAISED": "डेबिट नोट जारी किया गया",
+            "STOCK_OUT": "स्टॉक आउट",
+            "STOCK_IN": "स्टॉक इन"
         }
     }
 }

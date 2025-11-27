@@ -1,6 +1,4 @@
-/* eslint-disable no-console */
-
-import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import { LocalStorageService } from '@/lib/utils';
 
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
@@ -89,12 +87,11 @@ export const formattedAmount = (amount) => {
 };
 
 // fn for capitalization
-export function capitalize(str = '') {
-  return str
-    ?.split(' ')
-    ?.filter(Boolean)
-    ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    ?.join(' ');
+export function capitalize(str) {
+  if (str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+  return '';
 }
 
 export function convertSnakeToTitleCase(input) {
@@ -155,35 +152,14 @@ export const getEnterpriseId = () => {
   return switchedEnterpriseId || enterpriseId;
 };
 
-export const formatDate = (date) =>
-  date ? new Date(date).toLocaleDateString('en-IN') : '--';
+export const goToHomePage = () => {
+  const token = LocalStorageService.get('token');
 
-// avatar color from name
-const avatarColors = [
-  'bg-blue-600',
-  'bg-red-600',
-  'bg-green-600',
-  'bg-purple-600',
-  'bg-indigo-600',
-  'bg-yellow-600',
-];
-export const getColorFromName = (name) => {
-  let sum = 0;
-  for (let i = 0; i < name.length; i++) {
-    sum += name.charCodeAt(i);
+  const payload = token ? parseJwt(token) : null;
+
+  if (payload?.roles?.includes('ADMIN')) {
+    return '/dashboard/admin/reports';
+  } else {
+    return '/dashboard';
   }
-  return avatarColors[sum % avatarColors.length];
 };
-
-export const roleColors = [
-  'bg-blue-500 text-white',
-  'bg-yellow-500 text-white',
-  'bg-green-500 text-white',
-  'bg-red-500 text-white',
-  'bg-cyan-500 text-white',
-  'bg-gray-500 text-white',
-];
-
-export function saveDraftToSession({ key, data }) {
-  SessionStorageService.set(key, data);
-}

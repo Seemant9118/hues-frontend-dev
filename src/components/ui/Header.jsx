@@ -1,6 +1,7 @@
 'use client';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import {
   Popover,
   PopoverContent,
@@ -16,7 +17,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import NotificationPopUp from '../Popovers/NotificationPopUp';
 import { Button } from './button';
 
