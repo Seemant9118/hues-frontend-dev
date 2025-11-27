@@ -16,7 +16,7 @@ import {
   UpdateProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { useQuery } from '@tanstack/react-query';
-import { Pencil } from 'lucide-react';
+import { ArrowLeft, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -109,8 +109,14 @@ const ViewItem = () => {
         <Wrapper className="h-full py-2">
           {/* Headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-1">
               {/* breadcrumbs */}
+              <button
+                onClick={() => router.back()}
+                className="rounded-sm p-2 hover:bg-gray-100"
+              >
+                <ArrowLeft size={16} />
+              </button>
               <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
             </div>
 
