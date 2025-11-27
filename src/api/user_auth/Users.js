@@ -157,6 +157,12 @@ export const userAuth = {
     endpointKey: 'verify_cin',
   },
 
+  // cin verify (manual)
+  verifyPanCin: {
+    endpoint: `/enterprise/verify-pan-cin`,
+    endpointKey: 'verify_pan_cin',
+  },
+
   // 29. udyam verify
   udyamVerify: {
     endpoint: `/enterprise/verifyudyam`,

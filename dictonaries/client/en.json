@@ -51,6 +51,51 @@
                     "rejected": "Declined by client"
                 }
             }
+        },
+        "clientDetails": {
+            "tabs":{
+                "tab1": {
+                    "title":"Overview",
+                    "content":{
+                        "overview_labels":{
+                            "name":"Name",
+                            "enterprise_type":"Enterprise Type",
+                            "email":"Email",
+                            "phone":"Phone Number",
+                            "address": "Enterprise Address"
+                        }
+                    }
+                },
+                "tab2": {
+                    "title":"Document details",
+                    "content":{
+                        "overview_labels":{
+                            "director_name":"Director Name",
+                            "director_number":"Director Phone number",
+                            "pan":"Enterprise PAN",
+                            "gst":"GST IN",
+                            "cin": "CIN",
+                            "udyam": "UDYAM"
+                        }
+                    }
+                }
+            },
+            "title1":"Clients",
+            "title2": "Client Details",
+            "overview": "Overview",
+            "enterpriseName": "Enterprise name",
+            "enterpriseType": "Enterprise type",
+            "email": "Email",
+            "phone": "Phone",
+            "address": "Enterprise Address",
+            "documentDetails": "Document Details",
+            "gst": "GST",
+            "cin": "CIN",
+            "udyam": "UDYAM",
+            "pan": "PAN",
+            "directorDetails": "Director Details",
+            "directorName": "Director Name",
+            "loading": "Loading enterprise details..."
         }
     }
 }

@@ -184,6 +184,10 @@ function Goods() {
 
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/goods/${row.id}`);
+  };
+
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (

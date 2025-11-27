@@ -14,6 +14,11 @@ export const AdminAPIs = {
     endpointKey: 'get_onboarding_data',
   },
 
+  deleteEnterprise: {
+    endpoint: `/admin-panel/dashboard/enterprises/delete/`,
+    endpointKey: 'delete_enterprise',
+  },
+
   addUser: {
     endpoint: `/admin-panel/dashboard/enterprises/users/create`,
     endpointKey: 'add_user',

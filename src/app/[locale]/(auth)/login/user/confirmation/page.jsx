@@ -3,7 +3,7 @@
 'use client';
 
 import { directorApi } from '@/api/director/directorApi';
-import { goToHomePage } from '@/appUtils/helperFunctions';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { LocalStorageService } from '@/lib/utils';

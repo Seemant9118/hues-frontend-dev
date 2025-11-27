@@ -147,6 +147,11 @@ export function cinVerify(data) {
   return APIinstance.post(userAuth.cinVerify.endpoint, data);
 }
 
+// cin verify (manual)
+export function verifyPanCin(data) {
+  return APIinstance.post(userAuth.verifyPanCin.endpoint, data);
+}
+
 // 29. udyamVerify
 export function udyamVerify(data) {
   return APIinstance.post(userAuth.udyamVerify.endpoint, data);
