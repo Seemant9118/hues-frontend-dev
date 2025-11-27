@@ -69,7 +69,6 @@ function Profile() {
     mutationKey: [userAuth.logout.endpointKey],
     mutationFn: LoggingOut,
     onSuccess: (res) => {
-      // Clear session immediately so logout is guaranteed
       LocalStorageService.clear();
       SessionStorageService.clear();
       router.push('/login');

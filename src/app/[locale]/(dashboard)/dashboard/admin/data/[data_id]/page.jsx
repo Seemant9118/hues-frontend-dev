@@ -6,7 +6,6 @@ import AddUsers from '@/components/admin/AddUsers';
 import { useUserColumns } from '@/components/admin/useUserColumns';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import { VerifyDetailsModal } from '@/components/enterprise/VerifyDetailsModal';
-import ConfirmAction from '@/components/Modals/ConfirmAction';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AddBankAccount from '@/components/settings/AddBankAccount';
 import { DataTable } from '@/components/table/data-table';
@@ -20,7 +19,6 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   addBankAccountForEnterprise,
   addNUpdateAddress,
-  deleteEnterprise,
   getEnterpriseDetails,
   getEnterpriseResData,
   updateEnterpriseDetails,
@@ -35,14 +33,13 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import moment from 'moment';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 // eslint-disable-next-line no-unused-vars
 export default function EnterpriseDetails() {
   const userId = LocalStorageService.get('user_profile');
-  const router = useRouter();
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
   const params = useParams();
@@ -282,21 +279,6 @@ export default function EnterpriseDetails() {
                 ? 'Onboarding Completed'
                 : 'Mark onboarding as complete'}
             </Button>
-
-            <ConfirmAction
-              deleteCta={'Delete'}
-              cancelCta={'Cancel'}
-              infoText={`Are you sure you want to delete ${enterpriseDetails?.name}?`}
-              id={params?.data_id}
-              mutationKey={AdminAPIs.deleteEnterprise.endpointKey}
-              mutationFunc={deleteEnterprise}
-              successMsg={'Enterprise deleted successfully'}
-              customError={'failed to delete enterprise'}
-              redirectedTo={() => {
-                router.push(`/dashboard/admin/data`);
-              }}
-              invalidateKey={AdminAPIs.getOnboardingData.endpointKey}
-            />
           </div>
         </section>
         {/* overview */}

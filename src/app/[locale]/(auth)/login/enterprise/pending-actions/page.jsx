@@ -2,8 +2,8 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import { handlePendingActionsRedirection } from '@/appUtils/onboardingRedirectionLogics';
-import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import ConfirmationModal from '@/components/auth/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';

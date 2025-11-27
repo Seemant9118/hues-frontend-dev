@@ -42,8 +42,8 @@ const OrdersOverview = ({
   const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const pathName = usePathname();
-  const isSalesDetailPage = pathName.includes('/sales');
-  const isPurchaseDetailPage = pathName.includes('/purchase');
+  const isSalesDetailPage = pathName.includes('/sales-orders');
+  const isPurchaseDetailPage = pathName.includes('/purchase-orders');
 
   const paymentProgressPercent = (amtPaid / totalAmount) * 100;
 

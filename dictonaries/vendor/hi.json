@@ -51,51 +51,6 @@
                     "rejected": "अस्वीकृत"
                 }
             }
-        },
-        "vendorDetails": {
-            "tabs": {
-                "tab1": {
-                    "title": "ओवरव्यू",
-                    "content": {
-                        "overview_labels": {
-                            "name": "नाम",
-                            "enterprise_type": "एंटरप्राइज़ प्रकार",
-                            "email": "ईमेल",
-                            "phone": "फ़ोन नंबर",
-                            "address": "एंटरप्राइज़ पता"
-                        }
-                    }
-                },
-                "tab2": {
-                    "title": "दस्तावेज़ विवरण",
-                    "content": {
-                        "overview_labels": {
-                            "director_name": "निर्देशक का नाम",
-                            "director_number": "निर्देशक फ़ोन नंबर",
-                            "pan": "एंटरप्राइज़ पैन",
-                            "gst": "जीएसटी आईएन",
-                            "cin": "सीआईएन",
-                            "udyam": "उद्योग (UDYAM)"
-                        }
-                    }
-                }
-            },
-            "title1": "विक्रेता",
-            "title2": "विक्रेता विवरण",
-            "overview": "ओवरव्यू",
-            "enterpriseName": "एंटरप्राइज़ नाम",
-            "enterpriseType": "एंटरप्राइज़ प्रकार",
-            "email": "ईमेल",
-            "phone": "फ़ोन",
-            "address": "एंटरप्राइज़ पता",
-            "documentDetails": "दस्तावेज़ विवरण",
-            "gst": "जीएसटी",
-            "cin": "सीआईएन",
-            "udyam": "उद्योग (UDYAM)",
-            "pan": "पैन",
-            "directorDetails": "निर्देशक विवरण",
-            "directorName": "निर्देशक का नाम",
-            "loading": "एंटरप्राइज़ विवरण लोड हो रहे हैं..."
         }
     }
 }

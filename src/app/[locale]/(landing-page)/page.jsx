@@ -1,6 +1,5 @@
 'use client';
 
-import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -8,14 +7,14 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu';
+import { LocalStorageService } from '@/lib/utils';
 import { Globe, Mail, Menu, Phone, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
-import { LocalStorageService } from '@/lib/utils';
-import { parseJwt } from '@/appUtils/helperFunctions';
+import { goToHomePage, parseJwt } from '@/appUtils/helperFunctions';
 
 const features = [
   {

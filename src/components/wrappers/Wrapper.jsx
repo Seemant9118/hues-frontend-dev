@@ -3,10 +3,7 @@ import React from 'react';
 
 const Wrapper = ({ children, className, id }) => {
   return (
-    <div
-      id={id}
-      className={cn('flex animate-fadeComes flex-col gap-2', className)}
-    >
+    <div id={id} className={cn('flex flex-col gap-2', className)}>
       {children}
     </div>
   );

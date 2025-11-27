@@ -217,7 +217,7 @@ const CommentBox = ({ contextId, context }) => {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         {!isOpen && (
-          <section className="flex w-full items-center gap-2">
+          <section className="flex w-full animate-fadeInUp items-center gap-2">
             <MessageCircle size={16} />
             <h1 className="text-sm font-bold">
               {translations('comments_heading')}
@@ -232,7 +232,7 @@ const CommentBox = ({ contextId, context }) => {
           </section>
         )}
         {isOpen && (
-          <section className="flex w-full items-center gap-2">
+          <section className="flex w-full animate-fadeInUp items-center gap-2">
             <MessageCircle size={16} />
             <h1 className="text-sm font-bold">
               {translations('comments_heading')}
@@ -247,7 +247,7 @@ const CommentBox = ({ contextId, context }) => {
         </CollapsibleTrigger>
       </div>
 
-      <CollapsibleContent className="animate-fadeInDown space-y-2">
+      <CollapsibleContent className="animate-fadeInUp space-y-2">
         {/* comment input */}
         <div className="relative">
           {/* 1 */}
