@@ -23,6 +23,10 @@ export const getOnboardingData = ({ page, limit }) => {
   );
 };
 
+export const deleteEnterprise = ({ id }) => {
+  return APIinstance.post(`${AdminAPIs.deleteEnterprise.endpoint}${id}`);
+};
+
 export const addUser = (data) => {
   return APIinstance.post(AdminAPIs.addUser.endpoint, data);
 };

@@ -66,12 +66,21 @@ const EnterprisePANVerifyPage = () => {
 
   const getDetailsByPanVerifiedMutation = useMutation({
     mutationKey: [userAuth.getEnterpriseDetailsForPanVerify.endpointKey],
-    mutationFn: getEnterpriseDetailsForPanVerify,
+
+    mutationFn: async (payload) => {
+      try {
+        return await getEnterpriseDetailsForPanVerify(payload);
+      } catch (error) {
+        // Prevent Next.js dev overlay (VERY IMPORTANT)
+        return Promise.reject(error);
+      }
+    },
+
     onSuccess: (data) => {
       toast.success(translations('toast.success'));
 
-      // states
       const { enterpriseId, gstData, companyDetails } = data.data.data;
+
       LocalStorageService.set('enterprise_Id', enterpriseId);
       LocalStorageService.set('gst', gstData?.gstinResList);
 
@@ -82,12 +91,27 @@ const EnterprisePANVerifyPage = () => {
         router.push('/login/enterprise/gst-verify');
       } else {
         LocalStorageService.set('companyData', companyDetails);
-        router.push('/login/enterprise/cin-verify');
+        router.push(
+          `/login/enterprise/cin-verify?type=${enterpriseOnboardData.type}`,
+        );
       }
     },
     onError: (error) => {
-      const customError = apiErrorHandler(error);
-      setErrorMsg(translationsAPIErrors(customError));
+      // Proprietorship / Individual: show error
+      if (
+        enterpriseType === 'proprietorship' ||
+        enterpriseType === 'individual'
+      ) {
+        const customError = apiErrorHandler(error);
+        setErrorMsg(translationsAPIErrors(customError));
+        return;
+      }
+
+      // Non-proprietorship cases: NO error shown, just redirect
+      LocalStorageService.set('enterprisePAN', enterpriseOnboardData.panNumber);
+      router.push(
+        `/login/enterprise/cin-verify?type=${enterpriseOnboardData.type}`,
+      );
     },
   });
 
@@ -95,12 +119,13 @@ const EnterprisePANVerifyPage = () => {
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      const errors = validatePan(enterpriseOnboardData.panNumber);
 
+      const errors = validatePan(enterpriseOnboardData.panNumber);
       if (errors) {
         setErrorMsg(errors);
         return;
       }
+
       setErrorMsg('');
       getDetailsByPanVerifiedMutation.mutate(enterpriseOnboardData);
     },

@@ -154,7 +154,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     }));
   }, [invoicedData.invoiceItems]);
 
-  // --- 🔹 update qty for a single item
+  // update qty for a single item
   const updateProductDetailsList = (orderItemId, newQtyRaw) => {
     const newQty = newQtyRaw === '' ? '' : Number(newQtyRaw);
 
@@ -181,7 +181,38 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       }),
     );
 
-    // ✅ Validation
+    // Sync invoicedData.invoiceItems
+    setInvoicedData((prev) => {
+      const exists = prev.invoiceItems?.some(
+        (i) => i.orderItemId === orderItemId,
+      );
+      if (!exists) return prev;
+
+      const updatedItems = prev.invoiceItems.map((item) => {
+        if (item.orderItemId !== orderItemId) return item;
+
+        return {
+          ...item,
+          quantity: newQty === '' ? '' : newQty,
+          totalAmount:
+            newQty && !Number.isNaN(newQty)
+              ? parseFloat((newQty * item.unitPrice).toFixed(2))
+              : 0,
+          totalGstAmount:
+            newQty && !Number.isNaN(newQty)
+              ? parseFloat(
+                  (newQty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
+                    2,
+                  ),
+                )
+              : 0,
+        };
+      });
+
+      return { ...prev, invoiceItems: updatedItems };
+    });
+
+    // Validation
     const matchedItem = orderDetails?.orderItems?.find(
       (i) => i.id === orderItemId,
     );
@@ -205,7 +236,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     setErrorMsg(newErrorMsg);
   };
 
-  // --- 🔹 select/deselect all
+  // select/deselect all
   const handleSelectAll = (isSelected) => {
     setAllSelected(isSelected);
 
