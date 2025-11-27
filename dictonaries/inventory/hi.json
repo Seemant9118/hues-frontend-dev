@@ -71,8 +71,8 @@
                 "manufacturer": "निर्माता",
                 "hsnCode": "HSN कोड",
                 "rate": "दर",
-                "costPrice":"लागत मूल्य",
-                "salesPrice":"बिक्री मूल्य",
+                "costPrice": "लागत मूल्य",
+                "salesPrice": "बिक्री मूल्य",
                 "mrp": "अधिकतम खुदरा मूल्य",
                 "gst": "GST (%)",
                 "addedOn": "जोड़ा गया"
@@ -85,6 +85,46 @@
                     "infoText": "आप {name} को इन्वेंट्री से हटा रहे हैं",
                     "successMsg": "सफलतापूर्वक हटाया गया"
                 }
+            }
+        },
+        "goodDetails": {
+            "title": {
+                "items": "सामान",
+                "item_details": "सामान विवरण"
+            },
+            "ctas": {
+                "edit": "संपादित करें",
+                "delete": "हटाएँ",
+                "cancel": "रद्द करें",
+                "infoText": "आप {name} को आइटम मास्टर से हटाने वाले हैं। क्या आप सुनिश्चित हैं?",
+                "successMsg": "सफलतापूर्वक हटा दिया गया"
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "सारांश"
+                }
+            },
+            "overview_labels": {
+                "id": "आईडी",
+                "productName": "उत्पाद नाम",
+                "manufacturerName": "निर्माता का नाम",
+                "manufacturerGstId": "निर्माता जीएसटी आईडी",
+                "skuId": "एसकेयू आईडी",
+                "hsnCode": "एचएसएन कोड",
+                "description": "विवरण",
+                "costPrice": "लागत मूल्य",
+                "salesPrice": "बिक्री मूल्य",
+                "mrp": "एमआरपी",
+                "gstPercentage": "जीएसटी प्रतिशत",
+                "cgstPercentage": "सीजीएसटी %",
+                "sgstPercentage": "एसजीएसटी %",
+                "igstPercentage": "आईजीएसटी %",
+                "createdAt": "निर्माण तिथि",
+                "updatedAt": "अपडेट तिथि",
+                "weight": "वजन",
+                "length": "लंबाई",
+                "breadth": "चौड़ाई",
+                "height": "ऊँचाई"
             }
         }
     },
@@ -149,8 +189,8 @@
                 "sac": "SAC",
                 "description": "विवरण",
                 "rate": "दर",
-                "costPrice":"लागत मूल्य",
-                "salesPrice":"बिक्री मूल्य",
+                "costPrice": "लागत मूल्य",
+                "salesPrice": "बिक्री मूल्य",
                 "mrp": "अधिकतम खुदरा मूल्य",
                 "gst": "GST (%)",
                 "addedOn": "जोड़ा गया"
