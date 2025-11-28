@@ -7,6 +7,7 @@ import { updateEWBPartB } from '@/services/Delivery_Process_Services/DeliveryPro
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import moment from 'moment';
 import OrderBreadCrumbs from '../orders/OrderBreadCrumbs';
 import Overview from '../ui/Overview';
 import Wrapper from '../wrappers/Wrapper';
@@ -22,6 +23,7 @@ export default function CreateEWBB({
   dispatchOrdersBreadCrumbs,
   setIsCreatingEWB,
   dispatchDetails,
+  selectedTransportForUpdateB,
 }) {
   const queryClient = useQueryClient();
   const draftData = SessionStorageService.get(`${dispatchNoteId}_EWBB`);
@@ -40,19 +42,24 @@ export default function CreateEWBB({
 
   // Auto-populate from mock invoice on mount
   useEffect(() => {
+    const transportDetails = dispatchDetails?.transportBookings?.find(
+      (transport) => transport.id === selectedTransportForUpdateB,
+    );
+
     setForm((s) => ({
       ...s,
       transMode: draftData?.transMode || '',
       transporterId: draftData?.transporterId || '',
-      transporterName: draftData?.transporterName || '',
+      transporterName: dispatchDetails?.transporterName || '',
       transDistance: draftData?.transDistance || '',
-      transDocNo: draftData?.transDocNo || '',
-      transDocDate: draftData?.transDocDate || '',
+      transDocNo: transportDetails?.bookingNumber || '',
+      transDocDate:
+        moment(transportDetails?.bookingDate).format('DD/MM/YYYY') || '',
       vehicleNo: draftData?.vehicleNo || '',
       vehicleType: draftData?.vehicleType || '',
       remarks: draftData?.remarks || '',
     }));
-  }, [dispatchDetails]);
+  }, [dispatchDetails, selectedTransportForUpdateB]);
 
   const validate = () => {
     const e = {};

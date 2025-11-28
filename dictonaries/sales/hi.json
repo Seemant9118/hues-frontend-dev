@@ -424,29 +424,30 @@
                 "title": {
                     "dispatch_notes": "डिस्पैच",
                     "dispatch_details": "डिस्पैच विवरण",
+                    "ewaybillDetails": "ई-वे बिल विवरण",
                     "addBooking": "बुकिंग विवरण जोड़ें",
-                    "createEWBA": "ई-वे बिल बनाएँ (भाग A)",
-                    "createEWBB": "ई-वे बिल बनाएँ (भाग B)"
+                    "createEWBA": "ई-वे बिल (भाग A) बनाएँ",
+                    "createEWBB": "ई-वे बिल (भाग B) बनाएँ"
                 },
                 "overview_labels": {
-                    "status": "स्टेटस",
-                    "invoiceId": "इनवॉइस ID",
-                    "consignor": "कंसाइनर",
-                    "consignee": "कंसाइनी",
+                    "status": "स्थिति",
+                    "invoiceId": "इनवॉइस आईडी",
+                    "consignor": "प्रेषक",
+                    "consignee": "प्राप्तकर्ता",
                     "totalAmount": "कुल राशि",
-                    "dispatchId": "डिस्पैच ID",
+                    "dispatchId": "डिस्पैच आईडी",
                     "transporter": "ट्रांसपोर्टर",
                     "delivery_challan_no": "डिलीवरी चालान नंबर",
-                    "ewb": "EWB",
-                    "dispatch_from": "डिस्पैच फ्रॉम",
-                    "billing_from": "बिलिंग फ्रॉम",
+                    "ewb": "ईडब्ल्यूबी",
+                    "dispatch_from": "डिस्पैच स्थान",
+                    "billing_from": "बिलिंग स्थान",
                     "billing_address": "बिलिंग पता",
                     "shipping_address": "शिपिंग पता"
                 },
                 "overview_inputs": {
                     "transporter": "ट्रांसपोर्टर चुनें",
-                    "dispatch_from": "डिस्पैच फ्रॉम चुनें",
-                    "billing_from": "बिलिंग फ्रॉम चुनें",
+                    "dispatch_from": "डिस्पैच स्थान चुनें",
+                    "billing_from": "बिलिंग स्थान चुनें",
                     "addNewTransporter": "नया ट्रांसपोर्टर जोड़ें",
                     "addNewAddress": "नया पता जोड़ें",
                     "editTransporter": "ट्रांसपोर्टर संपादित करें",
@@ -457,6 +458,7 @@
                         "readyForDispatch": "डिस्पैच के लिए तैयार",
                         "addBooking": "बुकिंग जोड़ें",
                         "generateEWayBill": "ई-वे बिल जनरेट करें",
+                        "refreshEWayBill": "ई-वे बिल रिफ्रेश करें",
                         "updatePartB": "भाग-B अपडेट करें",
                         "cancel": "रद्द करें"
                     },
@@ -466,15 +468,15 @@
                     "toast": {
                         "successAdd": "ट्रांसपोर्टर को डिस्पैच नोट में सफलतापूर्वक जोड़ा गया",
                         "successEdit": "ट्रांसपोर्टर को डिस्पैच नोट में सफलतापूर्वक संपादित किया गया",
-                        "sendToTransporterSuccess": "विवरण सफलतापूर्वक ट्रांसपोर्टर को भेजा गया",
+                        "sendToTransporterSuccess": "ट्रांसपोर्टर को विवरण सफलतापूर्वक भेजे गए",
                         "dispatchNoteReady": "डिस्पैच नोट डिस्पैच के लिए तैयार है",
                         "dispatchInfoUpdated": "डिस्पैच जानकारी सफलतापूर्वक अपडेट की गई",
                         "error": "डिस्पैच नोट में ट्रांसपोर्टर जोड़ने में त्रुटि",
-                        "commonError": "कुछ समस्या हुई। कृपया पुनः प्रयास करें।"
+                        "commonError": "कुछ गड़बड़ हुई। कृपया पुनः प्रयास करें।"
                     }
                 },
                 "sections": {
-                    "items": "आइटम",
+                    "items": "आइटम्स",
                     "transport_bookings": "ट्रांसपोर्ट बुकिंग्स",
                     "no_booking": "अभी तक कोई बुकिंग नहीं बनाई गई"
                 },
@@ -483,20 +485,20 @@
                         "title": "ओवरव्यू"
                     },
                     "tab2": {
-                        "title": "आइटम",
+                        "title": "आइटम्स",
                         "title2": "अभी तक कोई आइटम नहीं",
                         "table": {
                             "header": {
                                 "product": "उत्पाद",
                                 "invoiceQty": "इनवॉइस मात्रा",
                                 "dispatchedQty": "डिस्पैच की गई मात्रा",
-                                "rate": "रेट",
+                                "rate": "दर",
                                 "amount": "राशि"
                             }
                         },
                         "emtpyStateComponent": {
                             "title": "अभी तक कोई ट्रांसपोर्ट बुकिंग नहीं",
-                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग रिकॉर्ड नहीं की है। अपनी बुकिंग हिस्ट्री अपडेट रखने के लिए अभी शुरू करें"
+                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग रिकॉर्ड नहीं की है। शुरुआत करें और अपनी बुकिंग हिस्ट्री अपडेट रखें।"
                         }
                     },
                     "tab3": {
@@ -504,34 +506,60 @@
                         "title2": "अभी तक कोई बुकिंग नहीं",
                         "table": {
                             "header": {
-                                "type": "प्रकार",
+                                "type": "मोड",
                                 "booking_no": "बुकिंग नंबर",
                                 "dispatchedQty": "डिस्पैच की गई मात्रा",
-                                "date": "तारीख",
-                                "remarks": "टिप्पणी"
+                                "date": "बुकिंग तिथि",
+                                "attachments": "अटैचमेंट्स",
+                                "action": "एक्शन",
+                                "remarks": "टिप्पणियाँ"
+                            },
+                            "ctas": {
+                                "updatePartB": "भाग-B अपडेट करें"
                             }
                         },
                         "emtpyStateComponent": {
                             "title": "अभी तक कोई ट्रांसपोर्ट बुकिंग नहीं",
-                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग रिकॉर्ड नहीं की है। अपनी बुकिंग हिस्ट्री अपडेट रखने के लिए अभी शुरू करें"
+                            "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग रिकॉर्ड नहीं की है। शुरुआत करें और अपनी बुकिंग हिस्ट्री अपडेट रखें।"
                         }
                     },
                     "tab4": {
-                        "title": "ई-वे बिल"
+                        "title": "ई-वे बिल्स",
+                        "table": {
+                            "header": {
+                                "ewbNo": "ईडब्ल्यूबी नंबर",
+                                "ewayBillDate": "ई-वे बिल तिथि",
+                                "from": "प्रेषक पार्टी",
+                                "to": "प्राप्तकर्ता पार्टी",
+                                "totalValue": "कुल मूल्य",
+                                "invoiceValue": "इनवॉइस मूल्य",
+                                "transporter": "ट्रांसपोर्टर नाम",
+                                "status": "स्थिति",
+                                "noValidDays": "मान्य दिनों की संख्या",
+                                "vehicleType": "वाहन प्रकार"
+                            },
+                            "ctas": {
+                                "viewDetails": "विवरण देखें"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "अभी तक कोई ई-वे बिल जनरेट नहीं हुआ",
+                            "para": "आपने अभी तक कोई ई-वे बिल रिकॉर्ड नहीं किया है। शुरुआत करें और अपने ई-वे बिल्स का इतिहास अपडेट रखें।"
+                        }
                     }
                 },
                 "table_columns": {
                     "type": "प्रकार",
                     "booking_no": "बुकिंग नंबर",
-                    "date": "तारीख",
-                    "remarks": "टिप्पणी"
+                    "date": "तिथि",
+                    "remarks": "टिप्पणियाँ"
                 },
                 "addBooking": {
                     "titles": {
                         "bookingType": "बुकिंग प्रकार",
                         "bookingNumber": "बुकिंग नंबर",
                         "bookingDate": "बुकिंग तिथि",
-                        "remarks": "टिप्पणी",
+                        "remarks": "टिप्पणियाँ",
                         "sourceAddress": "स्रोत पता",
                         "destinationAddress": "गंतव्य पता",
                         "addAttachments": "अटैचमेंट जोड़ें"
@@ -539,17 +567,17 @@
                     "placeholders": {
                         "selectType": "प्रकार चुनें",
                         "enterBookingNumber": "बुकिंग नंबर दर्ज करें",
-                        "enterRemarks": "टिप्पणी दर्ज करें",
+                        "enterRemarks": "टिप्पणियाँ दर्ज करें",
                         "enterSourceAddress": "स्रोत पता दर्ज करें",
                         "enterDestinationAddress": "गंतव्य पता दर्ज करें",
                         "upload_para": "ड्रैग और ड्रॉप करें या फ़ाइल चुनें (अधिकतम 10MB, .png /.pdf प्रारूप)",
                         "upload_note": "नोट: कृपया केवल भुगतान प्रमाण अपलोड करें"
                     },
                     "bookingTypes": {
-                        "lr": "लॉरी रसीद (LR)",
+                        "lr": "लॉरी रिसीट (LR)",
                         "lb": "लेडिंग बिल (LB)",
-                        "airway": "एयरवे रसीद",
-                        "railway": "रेलवे रसीद"
+                        "airway": "एयरवे रिसीट",
+                        "railway": "रेलवे रिसीट"
                     },
                     "ctas": {
                         "cancel": "रद्द करें",
@@ -559,7 +587,7 @@
                     "errors": {
                         "bookingTypeRequired": "बुकिंग प्रकार आवश्यक है",
                         "bookingNumberRequired": "बुकिंग नंबर आवश्यक है",
-                        "bookingDateRequired": "तारीख आवश्यक है"
+                        "bookingDateRequired": "तिथि आवश्यक है"
                     },
                     "toast": {
                         "success": "बुकिंग सफलतापूर्वक बनाई गई",

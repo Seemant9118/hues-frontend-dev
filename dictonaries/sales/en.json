@@ -425,6 +425,7 @@
                 "title": {
                     "dispatch_notes": "Dispatch",
                     "dispatch_details": "Dispatch Details",
+                    "ewaybillDetails": "E-way bill Details",
                     "addBooking": "Add Booking Details",
                     "createEWBA": "Create E-Way Bill (Part A)",
                     "createEWBB": "Create E-Way Bill (Part B)"
@@ -458,6 +459,7 @@
                         "readyForDispatch": "Ready for Dispatch",
                         "addBooking": "Add Booking",
                         "generateEWayBill": "Generate E-Way Bill",
+                        "refreshEWayBill": "Refresh E-Way Bill",
                         "updatePartB": "Update Part-B",
                         "cancel": "Cancel"
                     },
@@ -505,11 +507,16 @@
                         "title2": "No booking yet",
                         "table": {
                             "header": {
-                                "type": "Type",
+                                "type": "Mode",
                                 "booking_no": "Booking No.",
                                 "dispatchedQty": "Dispatched Quantity",
-                                "date": "Date",
+                                "date": "Booking Date",
+                                "attachments": "Attachments",
+                                "action": "Action",
                                 "remarks": "Remarks"
+                            },
+                            "ctas": {
+                                "updatePartB": "Update Part-B"
                             }
                         },
                         "emtpyStateComponent": {
@@ -518,7 +525,28 @@
                         }
                     },
                     "tab4": {
-                        "title": "E-way bills"
+                        "title": "E-way bills",
+                        "table": {
+                            "header": {
+                                "ewbNo": "EWB No",
+                                "ewayBillDate": "E-Way Bill Date",
+                                "from": "From Party",
+                                "to": "To Party",
+                                "totalValue": "Total Value",
+                                "invoiceValue": "Invoice Value",
+                                "transporter": "Transporter Name",
+                                "status": "Status",
+                                "noValidDays": "Valid Days",
+                                "vehicleType": "Vehicle Type"
+                            },
+                            "ctas": {
+                                "viewDetails": "View Details"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No E-way bills generated yet",
+                            "para": "You haven't recorded any E-way bills yet. Start now to keep your E-way bills history up to date"
+                        }
                     }
                 },
                 "table_columns": {

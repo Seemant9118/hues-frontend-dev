@@ -16,11 +16,21 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ViewPdf from '../pdf/ViewPdf';
 
-const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
+const InvoiceMediaViewModal = ({
+  open,
+  onOpenChange,
+  cta,
+  Url,
+  isDownloadable = true,
+}) => {
   const translations = useTranslations('components.invoice_modal');
   const [isOpen, setIsOpen] = useState(false);
   const [isPDF, setIsPDF] = useState(false);
   const [isImage, setIsImage] = useState(false);
+
+  useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
 
   useEffect(() => {
     const fileExt = Url?.split('?')[0].toLowerCase();
@@ -42,7 +52,13 @@ const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(value) => {
+        setIsOpen(value);
+        onOpenChange?.(value);
+      }}
+    >
       <DialogTrigger asChild>
         {React.cloneElement(cta, { key: 'invoice-media-cta' })}
       </DialogTrigger>
@@ -54,7 +70,10 @@ const InvoiceMediaViewModal = ({ cta, Url, isDownloadable = true }) => {
         {/* Custom Close Button */}
 
         <X
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setIsOpen(false);
+            onOpenChange?.(false);
+          }}
           className="absolute right-4 top-4 z-10 cursor-pointer p-1 text-white transition hover:text-primary"
           size={28}
         />

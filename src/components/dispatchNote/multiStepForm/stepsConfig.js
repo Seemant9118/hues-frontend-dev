@@ -31,7 +31,7 @@ export const stepsConfigA = [
   },
   {
     key: 'fromDetails',
-    title: 'Consigner Details',
+    title: 'Consignor Details',
     component: Step2FromDetails,
     validate: (form) => {
       const e = {};
@@ -60,18 +60,18 @@ export const stepsConfigA = [
       return e;
     },
   },
-  {
-    key: 'transport',
-    title: 'Transport Details',
-    component: Step5Transport,
-    validate: (form) => {
-      const e = {};
-      if (form.transMode !== '1' && !form.transDocNo) {
-        e.transDocNo = 'Transport document number required for selected mode';
-      }
-      return e;
-    },
-  },
+  // {
+  //   key: 'transport',
+  //   title: 'Transport Details',
+  //   component: Step5Transport,
+  //   validate: (form) => {
+  //     const e = {};
+  //     if (form.transMode !== '1' && !form.transDocNo) {
+  //       e.transDocNo = 'Transport document number required for selected mode';
+  //     }
+  //     return e;
+  //   },
+  // },
 ];
 
 export const stepsConfigB = [

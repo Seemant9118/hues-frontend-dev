@@ -27,8 +27,9 @@ export default function Step5Transport({ formData, setFormData, errors }) {
   };
 
   return (
-    <div className="grid w-full gap-4">
-      <div className="grid grid-cols-3 gap-4">
+    <div className="scrollBarStyles flex flex-col gap-1">
+      <h1 className="font-semibold">Transporter</h1>
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Transport Mode</Label>
           <Select
@@ -59,6 +60,7 @@ export default function Step5Transport({ formData, setFormData, errors }) {
         <div>
           <Label>Transporter Name</Label>
           <Input
+            disabled
             value={formData.transporterName}
             onChange={(e) => handleChange('transporterName')(e)}
           />
@@ -71,9 +73,14 @@ export default function Step5Transport({ formData, setFormData, errors }) {
             onChange={(e) => handleChange('transDistance')(e)}
           />
         </div>
+      </div>
+
+      <h1 className="font-semibold">Documents</h1>
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Transport Doc No</Label>
           <Input
+            disabled
             value={formData.transDocNo}
             onChange={(e) => handleChange('transDocNo')(e)}
           />
@@ -82,11 +89,15 @@ export default function Step5Transport({ formData, setFormData, errors }) {
         <div>
           <Label>Transport Doc Date</Label>
           <Input
-            type="date"
+            disabled
             value={formData.transDocDate}
             onChange={(e) => handleChange('transDocDate')(e)}
           />
         </div>
+      </div>
+
+      <h1 className="font-semibold">Vehicle Info</h1>
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Vehicle Type</Label>
           <Input

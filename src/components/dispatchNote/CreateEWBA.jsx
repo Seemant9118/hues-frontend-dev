@@ -1,7 +1,10 @@
 'use client';
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
-import { saveDraftToSession } from '@/appUtils/helperFunctions';
+import {
+  saveDraftToSession,
+  splitAddressAccordingToEWayBill,
+} from '@/appUtils/helperFunctions';
 import { SessionStorageService } from '@/lib/utils';
 import { generateEWB } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -39,22 +42,28 @@ export default function CreateEWBA({
     fromGstin: '',
     fromPincode: '',
     fromStateCode: '',
+    fromStateCodeName: '',
     fromTrdName: '',
     actFromStateCode: '',
+    actFromStateCodeName: '',
     fromAddr1: '',
     fromAddr2: '',
     fromPlace: '',
+    fromPlaceName: '',
     dispatchFromGSTIN: '',
     dispatchFromTradeName: '',
     // consignee
     toGstin: '',
     toPincode: '',
     toStateCode: '',
+    toStateCodeName: '',
     toTrdName: '',
     actToStateCode: '',
+    actToStateCodeName: '',
     toAddr1: '',
     toAddr2: '',
     toPlace: '',
+    toPlaceName: '',
     shipToGSTIN: '',
     shipToTradeName: '',
     // items
@@ -107,6 +116,14 @@ export default function CreateEWBA({
         };
       }) || [];
 
+    // address splitting - from & to
+    const fromAddress = splitAddressAccordingToEWayBill(
+      dispatchDetails?.billingFromAddress?.address,
+    );
+    const toAddress = splitAddressAccordingToEWayBill(
+      dispatchDetails?.shippingAddress?.address,
+    );
+
     // MAP DISPATCH DETAILS
     const mapped = {
       // supply
@@ -122,12 +139,16 @@ export default function CreateEWBA({
       fromPincode: Number(dispatchDetails?.billingFromAddress?.pincode) || '',
       fromStateCode:
         Number(dispatchDetails?.billingFromAddress?.stateCode) || '',
+      fromStateCodeName: dispatchDetails?.billingFromAddress?.stateName || '',
       fromTrdName: dispatchDetails?.sellerDetails?.name,
       actFromStateCode:
         Number(dispatchDetails?.dispatchFromAddress?.stateCode) || '',
-      fromAddr1: dispatchDetails?.billingFromAddress?.address,
-      fromAddr2: '',
+      actFromStateCodeName:
+        dispatchDetails?.dispatchFromAddress?.stateName || '',
+      fromAddr1: fromAddress?.addr1 || '',
+      fromAddr2: fromAddress?.addr2 || '',
       fromPlace: dispatchDetails?.billingFromAddress?.pincode,
+      fromPlaceName: dispatchDetails?.billingFromAddress?.district || '',
       dispatchFromGSTIN: dispatchDetails?.sellerDetails?.gst,
       dispatchFromTradeName: dispatchDetails?.sellerDetails?.name,
 
@@ -135,11 +156,14 @@ export default function CreateEWBA({
       toGstin: dispatchDetails?.buyerDetails?.gst || 'URP',
       toPincode: Number(dispatchDetails?.shippingAddress?.pincode) || '',
       toStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
+      toStateCodeName: dispatchDetails?.billingAddress?.stateName || '',
       toTrdName: dispatchDetails?.buyerDetails?.name,
-      actToStateCode: Number(dispatchDetails?.dispatchAddress?.stateCode) || '',
-      toAddr1: dispatchDetails?.shippingAddress?.address,
-      toAddr2: '',
+      actToStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
+      actToStateCodeName: dispatchDetails?.billingAddress?.stateName || '',
+      toAddr1: toAddress?.addr1 || '',
+      toAddr2: toAddress?.addr2 || '',
       toPlace: dispatchDetails?.shippingAddress?.pincode,
+      toPlaceName: dispatchDetails?.shippingAddress?.district || '',
       shipToGSTIN: dispatchDetails?.buyerDetails?.gst || 'URP',
       shipToTradeName: dispatchDetails?.buyerDetails?.name,
 
@@ -207,9 +231,9 @@ export default function CreateEWBA({
       e.itemList = 'At least one item required';
 
     // Trans mode specific
-    if (form.transMode !== '1' && !form.transDocNo) {
-      e.transDocNo = 'Transport document number required for selected mode';
-    }
+    // if (form.transMode !== '1' && !form.transDocNo) {
+    //   e.transDocNo = 'Transport document number required for selected mode';
+    // }
 
     setErrors(e);
     return Object.keys(e).length === 0;

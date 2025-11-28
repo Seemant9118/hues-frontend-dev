@@ -70,3 +70,13 @@ export const generateEWB = ({ dispatchNoteId, data }) => {
 export const updateEWBPartB = ({ data }) => {
   return APIinstance.put(deliveryProcess.updateEWBPartB.endpoint, data);
 };
+
+export const getEWB = ({ id }) => {
+  return APIinstance.get(`${deliveryProcess.getEWB.endpoint}${id}`);
+};
+
+export const getEWBs = ({ id, page, limit }) => {
+  return APIinstance.get(
+    `${deliveryProcess.getEWBs.endpoint}?dispatchNoteId=${id}&page=${page}&limit=${limit}`,
+  );
+};
