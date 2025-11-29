@@ -69,8 +69,8 @@ export function DataTable({
           ))}
         </TableHeader>
         <TableBody>
-          {table?.getRowModel().rows?.length ? (
-            table?.getRowModel().rows.map((row) => {
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => {
               return (
                 <TableRow
                   className={cn(

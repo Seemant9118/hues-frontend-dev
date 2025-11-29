@@ -1,25 +1,25 @@
 'use client';
 
-import { redirectToHomeWithFcm } from '@/appUtils/redirectionUtilFn';
+import { goToHomePage } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
+import { useRouter } from '@/i18n/routing';
 import { BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
 import React from 'react';
 import { toast } from 'sonner';
 
 const EnterpriseConfirmationPage = () => {
-  const router = useRouter();
   const translations = useTranslations(
     'auth.enterprise.enterpriseConfirmation',
   );
+  const router = useRouter();
 
   const handleContinue = (e) => {
     e.preventDefault();
 
     toast.success(translations('toastSuccess'));
-    redirectToHomeWithFcm(router);
+    router.push(goToHomePage());
   };
 
   return (

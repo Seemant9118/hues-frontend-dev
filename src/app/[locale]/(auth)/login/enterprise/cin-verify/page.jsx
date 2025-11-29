@@ -8,14 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import { LocalStorageService } from '@/lib/utils';
-import {
-  cinVerify,
-  verifyPanCin,
-} from '@/services/User_Auth_Service/UserAuthServices';
+import { cinVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -23,17 +20,12 @@ const CINVerificationPage = () => {
   const translations = useTranslations('auth.enterprise.cinVerify');
   const translationsAPIErrors = useTranslations('auth.apiErrorsOnboarding');
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const enterpriseType = searchParams.get('type');
   const userId = LocalStorageService.get('user_profile');
   const tempEnterpriseId = LocalStorageService.get('tempEnterpriseId');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const enterprisePAN = LocalStorageService.get('enterprisePAN');
 
   const [enterpriseData, setEnterpriseData] = useState({
     cinOrLlpin: '',
-    panNumber: enterprisePAN ?? '',
-    type: enterpriseType ?? '',
     enterpriseId: tempEnterpriseId ?? enterpriseId,
     userId,
   });
@@ -58,30 +50,7 @@ const CINVerificationPage = () => {
       toast.success(translations('toast.success'));
       const { enterpriseId, isDirector } = data.data.data;
       LocalStorageService.set('enterprise_Id', enterpriseId);
-      LocalStorageService.remove('enterprisePAN');
       // LocalStorageService.set('gst', data?.data?.data?.gstData?.gstinResList);
-
-      // if din matched
-      if (isDirector) {
-        router.push('/login/enterprise/gst-verify');
-      } else {
-        router.push('/login/enterprise/invite-director');
-      }
-    },
-    onError: (error) => {
-      const customError = apiErrorHandler(error);
-      toast.error(translationsAPIErrors(customError));
-    },
-  });
-
-  const verifyPANCINMutation = useMutation({
-    mutationKey: [userAuth.verifyPanCin.mutationKey],
-    mutationFn: verifyPanCin,
-    onSuccess: (data) => {
-      toast.success(translations('toast.success'));
-      const { enterpriseId, isDirector } = data.data.data;
-      LocalStorageService.set('enterprise_Id', enterpriseId);
-      LocalStorageService.remove('enterprisePAN');
 
       // if din matched
       if (isDirector) {
@@ -98,12 +67,7 @@ const CINVerificationPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // if cin manually entered
-    if (enterprisePAN) {
-      verifyPANCINMutation.mutate(enterpriseData); // api call
-    } else {
-      verifyCINMutation.mutate(enterpriseData); // api call
-    }
+    verifyCINMutation.mutate(enterpriseData); // api call
   };
 
   const handleBack = () => {
@@ -115,7 +79,7 @@ const CINVerificationPage = () => {
       <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
-            {translations('titleFound')}
+            {translations('title')}
           </h1>
           <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
             {translations('subtitle')}
@@ -137,12 +101,7 @@ const CINVerificationPage = () => {
                 placeholder={translations('placeholder')}
                 className="uppercase focus:font-bold"
                 value={enterpriseData.cinOrLlpin}
-                onChange={(e) =>
-                  setEnterpriseData({
-                    ...enterpriseData,
-                    cinOrLlpin: e.target.value,
-                  })
-                }
+                disabled
               />
             </div>
           </div>

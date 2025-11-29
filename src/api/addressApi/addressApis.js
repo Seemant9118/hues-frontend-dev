@@ -3,10 +3,6 @@ export const addressAPIs = {
     endpoint: `/enterprise/client/get-address`,
     endpointKey: 'get_addresses',
   },
-  getAddressByEnterprise: {
-    endpoint: `/enterprise/addresses/`,
-    endpointKey: 'get_address_by_enterprise',
-  },
   getAddressFromPincode: {
     endpoint: `/pincode/get`,
     endpointKey: 'get_data_from_pincode',

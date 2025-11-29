@@ -6,6 +6,7 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
+import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -37,7 +38,6 @@ import {
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { VendorsTable } from './VendorsTable';
@@ -73,7 +73,6 @@ const VendorsPage = () => {
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
 
-  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingVendor, setEditingVendor] = useState();
@@ -81,6 +80,9 @@ const VendorsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [vendors, setVendors] = useState(null);
+  const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
+  const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
+    useState(null);
   const [paginationData, setPaginationData] = useState({});
 
   // 🧩 Vendors Query (default list)
@@ -278,7 +280,8 @@ const VendorsPage = () => {
 
   // onRowClick
   const onRowClick = (row) => {
-    router.push(`/dashboard/vendors/${row.id}`);
+    setIsEnterpriseDetailsShow(true);
+    setSelectedEnterpriseContent(row);
   };
 
   const onEditClick = (userData) => {
@@ -419,6 +422,15 @@ const VendorsPage = () => {
                 files={files}
                 setisUploading={setIsUploading}
                 setFiles={setFiles}
+              />
+            )}
+
+            {isEnterpriseDetailsShow && (
+              <EnterpriseDetails
+                data={selectedEnterpriseContent}
+                isEnterpriseDetailsShow={isEnterpriseDetailsShow}
+                setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
+                isClient={false}
               />
             )}
 

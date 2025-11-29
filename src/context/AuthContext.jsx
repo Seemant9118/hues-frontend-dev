@@ -7,18 +7,16 @@ const AuthContext = createContext({
 });
 
 export const AuthProvider = ({ children }) => {
-  const [name, setName] = useState('');
-  const [roles, setRoles] = useState(null);
+  const [role, setRole] = useState(null);
   const [permissions, setPermissions] = useState([]); // now array of permission objects
 
-  const setAuthData = (userName, userRole, permissionArray) => {
-    setName(userName);
-    setRoles(userRole);
+  const setAuthData = (userRole, permissionArray) => {
+    setRole(userRole);
     setPermissions(permissionArray);
   };
 
   return (
-    <AuthContext.Provider value={{ name, roles, permissions, setAuthData }}>
+    <AuthContext.Provider value={{ role, permissions, setAuthData }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,12 +1,6 @@
-import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 
-const ConditionalRenderingStatus = ({
-  status,
-  isPayment,
-  isSellerPage,
-  className,
-}) => {
+const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
   const translations = useTranslations('components.conditionalRenderingStatus');
   let statusText;
   let statusColor;
@@ -138,30 +132,13 @@ const ConditionalRenderingStatus = ({
       statusBorder = '#39C06F';
       break;
 
-    // dispatch note status
-    case 'DRAFT':
-      statusText = translations('DRAFT');
-      statusColor = '#F8BA05';
-      statusBG = '#F8BA051A';
-      statusBorder = '#F8BA05';
-      break;
-    case 'READY_FOR_DISPATCH':
-      statusText = translations('READY_FOR_DISPATCH');
-      statusColor = '#288AF9';
-      statusBG = '#288AF91A';
-      statusBorder = '#288AF9';
-      break;
-
     default:
       return null;
   }
 
   return (
     <p
-      className={clsx(
-        'flex w-fit items-center justify-center gap-1 rounded border px-1.5 py-1 text-xs font-bold',
-        className,
-      )}
+      className="flex items-center justify-center gap-1 rounded border px-1.5 py-1 text-xs font-bold"
       style={{
         color: statusColor,
         backgroundColor: statusBG,

@@ -1,16 +1,12 @@
 'use client';
 
-import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getInitialsNames,
   getRandomBgColor,
-  roleColors,
+  goToHomePage,
 } from '@/appUtils/helperFunctions';
-import { goToHomePage } from '@/appUtils/redirectionUtilFn';
-import { usePathname, useRouter } from '@/i18n/routing';
 import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
-import { revertSwitchedEnterprise } from '@/services/Admin_Services/AdminServices';
 import {
   addAnotherEnterprise,
   getUserAccounts,
@@ -20,10 +16,12 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ShieldBan, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { usePathname, useRouter } from '@/i18n/routing';
+import { revertSwitchedEnterprise } from '@/services/Admin_Services/AdminServices';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
@@ -158,11 +156,8 @@ const ProfileInfoPopUp = ({
     mutationFn: LoggingOut,
     onSuccess: (res) => {
       setOpen(false);
-      // Clear session immediately so logout is guaranteed
       LocalStorageService.clear();
       SessionStorageService.clear();
-
-      // Redirect user right away (non-blocking)
       router.push('/login');
       toast.success(res.data.message || 'User Logged Out');
     },
@@ -276,22 +271,11 @@ const ProfileInfoPopUp = ({
                   >
                     {getInitialsNames(userAccount?.enterprise?.enterpriseName)}
                   </div>
-                  <div className="flex w-full flex-col gap-0.5">
+                  <div className="flex w-full justify-between gap-2">
                     <span className="text-sm font-bold">
                       {userAccount?.enterprise?.enterpriseName ??
                         'Enterprise Not Completed'}
                     </span>
-                    <div className="flex flex-wrap gap-1">
-                      {userAccount?.roles?.length > 0 &&
-                        userAccount?.roles.map((role, index) => {
-                          const color = roleColors[index % roleColors.length];
-                          return (
-                            <Badge key={role} className={color}>
-                              {role}
-                            </Badge>
-                          );
-                        })}
-                    </div>
                     {userAccount?.enterprise?.enterpriseId &&
                       !userAccount?.enterprise?.isOnboardingCompleted && (
                         <Tooltips

@@ -21,7 +21,7 @@ export const vendorEnterprise = {
   },
   //   4. get vendor by id
   getVendor: {
-    endpoint: `/enterprise/vendor/get/`,
+    endpoint: `/enterprise/vendor/`,
     endpointKey: 'get_vendor',
   },
   //   5. get vendor list

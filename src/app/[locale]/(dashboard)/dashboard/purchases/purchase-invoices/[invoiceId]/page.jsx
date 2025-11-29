@@ -212,13 +212,18 @@ const ViewInvoice = () => {
                 >
                   {/* View CTA modal */}
                   {!isPaymentAdvicing && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => viewPdfInNewTab(pvtUrl)}
-                    >
-                      <Eye size={14} />
-                    </Button>
+                    <Tooltips
+                      trigger={
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => viewPdfInNewTab(pvtUrl)}
+                        >
+                          <Eye size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.view.placeholder')}
+                    />
                   )}
 
                   {/* download CTA */}

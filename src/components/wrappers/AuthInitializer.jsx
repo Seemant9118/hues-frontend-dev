@@ -19,11 +19,7 @@ export default function AuthInitializer() {
   useEffect(() => {
     if (!rolesAndPermissions) return;
 
-    setAuthData(
-      rolesAndPermissions?.userDetails?.name,
-      rolesAndPermissions?.userDetails?.roles,
-      rolesAndPermissions?.permissions,
-    );
+    setAuthData(null, rolesAndPermissions);
   }, [rolesAndPermissions]);
 
   return null; // No UI
