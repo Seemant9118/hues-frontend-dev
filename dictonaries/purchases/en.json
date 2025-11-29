@@ -197,8 +197,11 @@
                     "share": {
                         "placeholder": "Coming Soon"
                     },
+                    "view": {
+                        "placeholder":"Preview Invoice"
+                    },
                     "download": {
-                        "placeholder": "Download your order details"
+                        "placeholder": "Download your invoice details"
                     }
                 },
                 "tabs": {

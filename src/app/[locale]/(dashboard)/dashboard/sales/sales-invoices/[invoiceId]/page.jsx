@@ -242,14 +242,19 @@ const ViewInvoice = () => {
 
             {/* View CTA modal */}
             <ProtectedWrapper permissionCode={'permission:sales-document'}>
-              {!isRecordingPayment && !isCreatingDispatchNote && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => viewPdfInNewTab(pvtUrl)}
-                >
-                  <Eye size={14} />
-                </Button>
+              {!isRecordingPayment && (
+                <Tooltips
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => viewPdfInNewTab(pvtUrl)}
+                    >
+                      <Eye size={14} />
+                    </Button>
+                  }
+                  content={translations('ctas.view.placeholder')}
+                />
               )}
 
               {/* download CTA */}
