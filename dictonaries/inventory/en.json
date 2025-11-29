@@ -92,7 +92,7 @@
                 "items": "Goods",
                 "item_details": "Good Details"
             },
-             "ctas": {
+            "ctas": {
                 "edit": "Edit",
                 "delete": "Delete",
                 "cancel": "Cancel",

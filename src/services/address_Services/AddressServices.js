@@ -13,6 +13,12 @@ export const getAddress = (clientId, clientEnterpriseId) => {
   );
 };
 
+export const getAddressByEnterprise = (enterpriseId) => {
+  return APIinstance.get(
+    `${addressAPIs.getAddressByEnterprise.endpoint}${enterpriseId}`,
+  );
+};
+
 export const getDataFromPinCode = (pincode) => {
   return APIinstance.get(
     `${addressAPIs.getAddressFromPincode.endpoint}?pincode=${pincode}`,
