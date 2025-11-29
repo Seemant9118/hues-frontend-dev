@@ -208,8 +208,11 @@
                     "share": {
                         "placeholder": "Coming Soon.."
                     },
+                    "view": {
+                        "placeholder": "Preview Invoice"
+                    },
                     "download": {
-                        "placeholder": "Download order details"
+                        "placeholder": "Download invoice details"
                     }
                 },
                 "tabs": {

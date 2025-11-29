@@ -7,6 +7,7 @@ import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import DynamicModal from '@/components/Modals/DynamicModal';
+import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrder';
@@ -31,9 +32,11 @@ import {
   OrderDetails,
   remindOrder,
   updateOrderForUnrepliedSales,
+  viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -412,27 +415,27 @@ const ViewOrder = () => {
                   setIsGenerateInvoice={setIsGenerateInvoice}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 {/* view CTA */}
-                {/* {!isGenerateInvoice &&
-                !isRecordingPayment &&
-                !isNegotiation &&
-                !viewNegotiationHistory &&
-                orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => viewOrderinNewTab(params.order_id)}
-                        size="sm"
-                        variant="ghost"
-                        className="font-bold"
-                      >
-                        <Eye size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.view.placeholder')}
-                  />
-                )} */}
+                {!isGenerateInvoice &&
+                  !isRecordingPayment &&
+                  !isNegotiation &&
+                  !viewNegotiationHistory &&
+                  orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => viewOrderinNewTab(params.order_id)}
+                          size="sm"
+                          variant="outline"
+                          className="font-bold"
+                        >
+                          <Eye size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.view.placeholder')}
+                    />
+                  )}
 
                 {/* negotiation ctas */}
                 {!isGenerateInvoice &&
@@ -494,7 +497,8 @@ const ViewOrder = () => {
                           !isGenerateInvoice &&
                           !isRecordingPayment &&
                           orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-                          orderDetails?.sellerEnterpriseId === enterpriseId && (
+                          orderDetails?.sellerEnterpriseId === enterpriseId &&
+                          !viewNegotiationHistory && (
                             <>
                               {orderDetails?.orderStatus ===
                                 'BID_SUBMITTED' && (
@@ -536,7 +540,8 @@ const ViewOrder = () => {
                   !isRecordingPayment &&
                   (orderDetails.negotiationStatus === 'INVOICED' ||
                     orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
-                  orderDetails?.metaData?.payment?.status !== 'PAID' && (
+                  orderDetails?.metaData?.payment?.status !== 'PAID' &&
+                  !viewNegotiationHistory && (
                     <ProtectedWrapper
                       permissionCode={'permission:sales-create-payment'}
                     >
@@ -557,8 +562,11 @@ const ViewOrder = () => {
                   orderDetails.orderType === 'SALES' &&
                   enterpriseId.toString() ===
                     orderDetails.sellerEnterpriseId.toString() &&
+                  orderDetails.negotiationStatus !== 'WITHDRAWN' &&
+                  orderDetails.negotiationStatus !== 'ACCEPTED' &&
                   orderDetails.negotiationStatus !== 'INVOICED' &&
-                  orderDetails.negotiationStatus !== 'PARTIAL_INVOICED' && (
+                  orderDetails.negotiationStatus !== 'PARTIAL_INVOICED' &&
+                  !viewNegotiationHistory && (
                     <ProtectedWrapper permissionCode="permission:sales-edit">
                       <Button
                         variant="blue_outline"
@@ -578,7 +586,8 @@ const ViewOrder = () => {
                   (orderDetails?.negotiationStatus === 'ACCEPTED' ||
                     orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
                     (orderDetails.negotiationStatus === 'NEW' &&
-                      orderDetails?.orderType === 'SALES')) && (
+                      orderDetails?.orderType === 'SALES')) &&
+                  !viewNegotiationHistory && (
                     <ProtectedWrapper
                       permissionCode={'permission:sales-invoice-create'}
                     >
@@ -653,7 +662,8 @@ const ViewOrder = () => {
                   !orderDetails?.invoiceGenerationCompleted &&
                   orderDetails?.negotiationStatus === 'ACCEPTED' &&
                   orderDetails?.metaData?.sellerData?.stockOut ===
-                    'STOCK_OUT' && (
+                    'STOCK_OUT' &&
+                  !viewNegotiationHistory && (
                     <ProtectedWrapper
                       permissionCode={'permission:sales-stock-out'}
                     >
