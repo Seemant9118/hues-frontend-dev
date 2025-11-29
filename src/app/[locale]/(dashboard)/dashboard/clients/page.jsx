@@ -8,7 +8,6 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
-import EnterpriseDetails from '@/components/enterprise/EnterpriseDetails';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -40,6 +39,7 @@ import {
 import { Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ClientTable } from './ClientTable';
@@ -59,6 +59,7 @@ const DEBOUNCE_DELAY = 500;
 const ClientPage = () => {
   useMetaData('Hues! - Clients', 'HUES CLIENTS'); // dynamic title
 
+  const router = useRouter();
   const translations = useTranslations('client');
   // next-intl supports only object keys, not arrays. Use object keys for subItems.
   const keys = [
@@ -82,9 +83,6 @@ const ClientPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [clients, setClients] = useState([]);
-  const [isEnterpriseDetailsShow, setIsEnterpriseDetailsShow] = useState(false);
-  const [selectedEnterpriseContent, setSelectedEnterpriseContent] =
-    useState(null);
   const [paginationData, setPaginationData] = useState({
     totalPages: 0,
     currFetchedPage: 1,
@@ -256,8 +254,7 @@ const ClientPage = () => {
 
   // onRowClick
   const onRowClick = (row) => {
-    setIsEnterpriseDetailsShow(true);
-    setSelectedEnterpriseContent(row);
+    router.push(`/dashboard/clients/${row.id}`);
   };
 
   const onEditClick = (userData) => {
@@ -398,15 +395,6 @@ const ClientPage = () => {
                 files={files}
                 setisUploading={setIsUploading}
                 setFiles={setFiles}
-              />
-            )}
-
-            {isEnterpriseDetailsShow && (
-              <EnterpriseDetails
-                data={selectedEnterpriseContent}
-                isEnterpriseDetailsShow={isEnterpriseDetailsShow}
-                setIsEnterpriseDetailsShow={setIsEnterpriseDetailsShow}
-                isClient={true}
               />
             )}
 

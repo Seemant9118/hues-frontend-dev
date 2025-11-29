@@ -25,7 +25,7 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -216,7 +216,7 @@ const PurchaseDebitNotes = () => {
                       className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                       size="sm"
                     >
-                      <Download size={14} />
+                      <Upload size={14} />
                     </Button>
                   }
                   content={'coming soon'}

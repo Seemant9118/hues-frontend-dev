@@ -608,7 +608,7 @@ function Settings() {
                                       }
                                       onClick={() => {
                                         setIsAddressAdding(true);
-                                        setEditingAddress(addr.address);
+                                        setEditingAddress(addr);
                                         setAddressId(addr.id);
                                       }}
                                     >

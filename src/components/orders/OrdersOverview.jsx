@@ -6,8 +6,9 @@ import {
   undoAcknowledgeStatus,
   updateAcknowledgeStatus,
 } from '@/services/Acknowledge_Services/AcknowledgeServices';
+import { viewOrderinNewTab } from '@/services/Orders_Services/Orders_Services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, MoveUpRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Info, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname } from 'next/navigation';
 import React, { useState } from 'react';
@@ -41,8 +42,8 @@ const OrdersOverview = ({
   const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const pathName = usePathname();
-  const isSalesDetailPage = pathName.includes('/sales-orders');
-  const isPurchaseDetailPage = pathName.includes('/purchase-orders');
+  const isSalesDetailPage = pathName.includes('/sales');
+  const isPurchaseDetailPage = pathName.includes('/purchase');
 
   const paymentProgressPercent = (amtPaid / totalAmount) * 100;
 
@@ -139,6 +140,19 @@ const OrdersOverview = ({
                 </p>
                 <p className="flex items-center gap-2 text-sm font-bold">
                   {orderId}
+                  <Tooltips
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => viewOrderinNewTab(params.order_id)}
+                        className="font-bold hover:text-primary"
+                      >
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    content={translations('placeholder.preview_order')}
+                  />
                 </p>
               </section>
 
