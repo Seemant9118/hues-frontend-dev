@@ -209,8 +209,11 @@
                     "share": {
                         "placeholder": "शीघ्र आ रहा है.."
                     },
+                    "view": {
+                        "placeholder": "इनवॉइस देखें"
+                    },
                     "download": {
-                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                        "placeholder": "इनवॉइस विवरण डाउनलोड करें"
                     }
                 },
                 "tabs": {
