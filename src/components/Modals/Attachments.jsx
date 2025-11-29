@@ -1,9 +1,9 @@
 /* eslint-disable import/no-unresolved */
 
-import AttachmentsModal from '@/components/modals/AttachmentModal';
-import InvoicePDFViewModal from '@/components/modals/InvoicePDFViewModal';
 import { PaperclipIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import AttachmentsModal from './AttachmentModal';
+import InvoicePDFViewModal from './InvoicePDFViewModal';
 
 const Attachments = ({ attachments }) => {
   const [selectedAttachment, setSelectedAttachment] = useState(null);
