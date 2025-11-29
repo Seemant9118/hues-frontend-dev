@@ -12,7 +12,8 @@ import {
 import CommentBox from '@/components/comments/CommentBox';
 import AddBooking from '@/components/dispatchNote/AddBooking';
 import AddTransport from '@/components/dispatchNote/AddTransport';
-import CreateEWB from '@/components/dispatchNote/CreateEWB';
+import CreateEWBA from '@/components/dispatchNote/CreateEWBA';
+import CreateEWBB from '@/components/dispatchNote/CreateEWBB';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -26,6 +27,7 @@ import { LocalStorageService } from '@/lib/utils';
 import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import {
   getDispatchNote,
+  getEWBs,
   sendToTransporter,
   update,
   updateDispatchNoteStatus,
@@ -35,8 +37,21 @@ import {
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoveUpRight, Pencil, Plus, X } from 'lucide-react';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import {
+  MoveUpRight,
+  Pencil,
+  Plus,
+  PlusCircle,
+  RefreshCcw,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -46,6 +61,159 @@ import { toast } from 'sonner';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 import { useDispatchedTransporterBookingColumns } from './useDispatchedTransporterBookingColumns';
+import { SalesTable } from '../../salestable/SalesTable';
+import { useEWBsColumns } from './useEWBsColumns';
+
+// const TESTING_DATA = [
+//   {
+//     ewbNo: 131001298692,
+//     ewayBillDate: '26/09/2018',
+//     genMode: 'API',
+//     userGstin: '29AKLPM8755F1Z2',
+//     supplyType: 'O',
+//     subSupplyType: '1 ',
+//     docType: 'INV',
+//     docNo: '7007-8',
+//     docDate: '10/09/2018',
+//     fromGstin: '29AKLPM8755F1Z2',
+//     fromTrdName: 'welton',
+//     fromAddr1: '4556',
+//     fromAddr2: 'hulimavu',
+//     fromPlace: 'bannargatta',
+//     fromPincode: 560090,
+//     fromStateCode: 29,
+//     toGstin: '02EHFPS5910D2Z0',
+//     toTrdName: 'test2',
+//     toAddr1: 'Shree Nilaya',
+//     toAddr2: 'Dasarahosahalli',
+//     toPlace: 'Beml Nagar',
+//     toPincode: 560090,
+//     toStateCode: 29,
+//     totalValue: 56099.0,
+//     totInvValue: 68358.0,
+//     cgstValue: 1.0,
+//     sgstValue: 1.0,
+//     igstValue: 0.0,
+//     cessValue: 400.56,
+//     transporterId: '',
+//     transporterName: '',
+//     status: 'ACT',
+//     actualDist: 2500,
+//     noValidDays: 25,
+//     validUpto: '27/09/2018 11:59:00 PM',
+//     extendedTimes: 0,
+//     rejectStatus: 'N',
+//     actFromStateCode: 29,
+//     actToStateCode: 29,
+//     vehicleType: 'R',
+//     transactionType: 4,
+//     otherValue: -10.0,
+//     cessNonAdvolValue: 400.0,
+//     itemList: [
+//       {
+//         itemNo: 1,
+//         productId: 0,
+//         productName: 'CEMENT',
+//         productDesc: ' ',
+//         hsnCode: 25210010,
+//         quantity: 2.0,
+//         qtyUnit: 'BOX',
+//         cgstRate: 0.05,
+//         sgstRate: 0.05,
+//         igstRate: 0.0,
+//         cessRate: 3.0,
+//         cessNonAdvol: 0,
+//         taxableAmount: 56.0,
+//       },
+//       {
+//         itemNo: 2,
+//         productId: 0,
+//         productName: 'steel',
+//         productDesc: 'steel rods',
+//         hsnCode: 2402,
+//         quantity: 4.0,
+//         qtyUnit: 'NOS',
+//         cgstRate: 10.0,
+//         sgstRate: 10.0,
+//         igstRate: 0.0,
+//         cessRate: 3.0,
+//         cessNonAdvol: 0.0,
+//         taxableAmount: 0.0,
+//       },
+//     ],
+//     VehiclListDetails: [
+//       {
+//         updMode: 'API',
+//         vehicleNo: 'PQR1234',
+//         fromPlace: 'Bengaluru',
+//         fromState: 29,
+//         tripshtNo: 1810002031,
+//         userGSTINTransin: '29AKLPM8755F1Z2',
+//         enteredDate: '26/09/2018 02:40:00 PM',
+//         transMode: '1 ',
+//         transDocNo: '1234',
+//         transDocDate: '03/05/2018',
+//         groupNo: '1',
+//       },
+//       {
+//         updMode: 'API',
+//         vehicleNo: 'PQR1234',
+//         fromPlace: 'Bengaluru',
+//         fromState: 29,
+//         tripshtNo: 1110002030,
+//         userGSTINTransin: '29AKLPM8755F1Z2',
+//         enteredDate: '26/09/2018 02:40:00 PM',
+//         transMode: '1 ',
+//         transDocNo: '1234',
+//         transDocDate: '03/05/2018',
+//         vehicleType: '',
+//         groupNo: '0',
+//       },
+//       {
+//         updMode: 'API',
+//         vehicleNo: 'KA25AB3456',
+//         fromPlace: 'BANGALORE SOUTH',
+//         fromState: 29,
+//         tripshtNo: 1510002029,
+//         userGSTINTransin: '29AKLPM8755F1Z2',
+//         enteredDate: '26/09/2018 02:40:00 PM',
+//         transMode: '1 ',
+//         transDocNo: '1234',
+//         transDocDate: '12/10/2017',
+//         vehicleType: '',
+//         groupNo: '0',
+//       },
+//       {
+//         updMode: 'API',
+//         vehicleNo: 'KA25AB3456',
+//         fromPlace: 'BANGALORE SOUTH',
+//         fromState: 29,
+//         tripshtNo: 1810002028,
+//         userGSTINTransin: '29AKLPM8755F1Z2',
+//         enteredDate: '26/09/2018 02:40:00 PM',
+//         transMode: '1 ',
+//         transDocNo: '1234',
+//         transDocDate: '12/10/2017',
+//         vehicleType: '',
+//         groupNo: '0',
+//       },
+//       {
+//         updMode: 'API',
+//         vehicleNo: 'RJ191G5024',
+//         fromPlace: 'bannargatta',
+//         fromState: 29,
+//         tripshtNo: 0,
+//         userGSTINTransin: '29AKLPM8755F1Z2',
+//         enteredDate: '26/09/2018 02:40:00 PM',
+//         transMode: '1 ',
+//         transDocNo: '12345',
+//         transDocDate: null,
+//         vehicleType: 'R',
+//         groupNo: '0',
+//       },
+//     ],
+//   },
+// ];
 
 const ViewDispatchNote = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -62,12 +230,17 @@ const ViewDispatchNote = () => {
   const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isAddingBooking, setIsAddingBooking] = useState(false);
-  const [isCreatingEWB, setIsCreatingEWB] = useState(false);
+  const [isCreatingEWBA, setIsCreatingEWBA] = useState(false);
+  const [isCreatingEWBB, setIsCreatingEWBB] = useState(false);
   const [selectDispatcher, setSelectDispatcher] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [editModeDispatchFrom, setEditModeDispatchFrom] = useState(false);
   const [selectBillingFrom, setSelectBillingFrom] = useState(null);
   const [editModeBillingFrom, setEditModeBillingFrom] = useState(false);
+  const [selectedTransportForUpdateB, setSelectedTransportForUpdateB] =
+    useState(null);
+  const [ewayBills, setEwayBills] = useState(null);
+  const [paginationData, setPaginationData] = useState(null);
 
   const onTabChange = (tab) => {
     setTab(tab);
@@ -94,9 +267,15 @@ const ViewDispatchNote = () => {
     },
     {
       id: 4,
-      name: translations('title.createEWB'),
+      name: translations('title.createEWBA'),
       path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
-      show: isCreatingEWB,
+      show: isCreatingEWBA,
+    },
+    {
+      id: 5,
+      name: translations('title.createEWBB'),
+      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      show: isCreatingEWBB,
     },
   ];
   useEffect(() => {
@@ -104,7 +283,8 @@ const ViewDispatchNote = () => {
     const state = searchParams.get('state');
 
     setIsAddingBooking(state === 'addBooking');
-    setIsCreatingEWB(state === 'createEWB');
+    setIsCreatingEWBA(state === 'createEWBA');
+    setIsCreatingEWBB(state === 'createEWBB');
   }, [searchParams]);
 
   useEffect(() => {
@@ -113,14 +293,22 @@ const ViewDispatchNote = () => {
 
     if (isAddingBooking) {
       newPath += '?state=addBooking';
-    } else if (isCreatingEWB) {
-      newPath += '?state=createEWB';
+    } else if (isCreatingEWBA) {
+      newPath += '?state=createEWBA';
+    } else if (isCreatingEWBB) {
+      newPath += '?state=createEWBB';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.dispatchId, isAddingBooking, isCreatingEWB, router]);
+  }, [
+    params.dispatchId,
+    isAddingBooking,
+    isCreatingEWBA,
+    isCreatingEWBB,
+    router,
+  ]);
 
   // vendors[transporter] fetching
   const { data: transports } = useQuery({
@@ -245,10 +433,12 @@ const ViewDispatchNote = () => {
     if (!Array.isArray(dispatchDetails.transportBookings)) return [];
 
     return dispatchDetails?.transportBookings?.map((booking) => ({
+      bookingId: booking?.id,
       type: booking?.bookingType ?? '--',
       bookingNo: booking?.bookingNumber ?? '--',
       date: booking?.bookingDate ?? null,
       remarks: booking?.remarks ?? '--',
+      attachments: booking.documents,
     }));
   };
   const formattedDispatchedTransporterBookings =
@@ -656,10 +846,72 @@ const ViewDispatchNote = () => {
     });
   };
 
+  // get EWBs list
+  // Fetch dispatched notes data with infinite scroll
+  const {
+    data,
+    fetchNextPage,
+    isFetching,
+    isLoading: isEWBsLoading,
+  } = useInfiniteQuery({
+    queryKey: [deliveryProcess.getEWBs.endpointKey, params.dispatchId],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getEWBs({
+        id: params.dispatchId,
+        page: pageParam,
+        limit: 10,
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: tab === 'ewb',
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
+
+  useEffect(() => {
+    if (!data) return;
+
+    // Extract EWBs from all pages
+    const flattenedEWBsData = data.pages
+      .map((page) => page?.data?.ewayBills ?? [])
+      .flat();
+
+    // Deduplicate using `id`
+    const uniqueEWBsData = Array.from(
+      new Map(flattenedEWBsData.map((ewb) => [ewb.id, ewb])).values(),
+    );
+
+    // Update state
+    setEwayBills(uniqueEWBsData);
+
+    // Pagination: use last page's pagination block
+    const lastPage = data.pages[data.pages.length - 1]?.data?.pagination;
+
+    setPaginationData({
+      totalPages: Number(lastPage?.totalPages ?? 0),
+      currFetchedPage: Number(lastPage?.page ?? 1),
+    });
+  }, [data]);
+
+  const onEWBRowClick = (row) => {
+    return router.push(
+      `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}/${row.ewbNo}`,
+    );
+  };
+
   // columns
   const dispatchedItemDetailsColumns = useDispatchedItemColumns();
   const dispatchedTransportedBookingsColumns =
-    useDispatchedTransporterBookingColumns();
+    useDispatchedTransporterBookingColumns({
+      setIsCreatingEWBB,
+      setSelectedTransportForUpdateB,
+    });
+  const ewaybillsColumns = useEWBsColumns();
 
   if (isDispatchDetailsLoading) {
     <Loading />;
@@ -667,7 +919,7 @@ const ViewDispatchNote = () => {
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
       <Wrapper className="h-full py-2">
-        {!isAddingBooking && !isCreatingEWB && (
+        {!isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
           <>
             {/* HEADER */}
             <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
@@ -687,21 +939,6 @@ const ViewDispatchNote = () => {
                     {translations('overview_inputs.ctas.readyForDispatch')}
                   </Button>
                 )}
-                {/* add a booking */}
-                {(dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
-                  dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
-                  <Button
-                    size="sm"
-                    onClick={() => setIsAddingBooking(true)}
-                    variant="blue_outline"
-                  >
-                    {translations('overview_inputs.ctas.addBooking')}
-                  </Button>
-                )}
-                {/* generate e-way bill cta */}
-                <Button size="sm" onClick={() => setIsCreatingEWB(true)}>
-                  {translations('overview_inputs.ctas.generateEWayBill')}
-                </Button>
               </div>
             </section>
 
@@ -710,7 +947,7 @@ const ViewDispatchNote = () => {
               onValueChange={onTabChange}
               defaultValue={'overview'}
             >
-              <section className="flex items-center justify-between gap-1">
+              <section className="mb-2 flex items-center justify-between gap-1">
                 <TabsList className="border">
                   <TabsTrigger value="overview">
                     {translations('tabs.tab1.title')}
@@ -721,16 +958,59 @@ const ViewDispatchNote = () => {
                   <TabsTrigger value="transports">
                     {translations('tabs.tab3.title1')}
                   </TabsTrigger>
+                  <TabsTrigger value="ewb">
+                    {translations('tabs.tab4.title')}
+                  </TabsTrigger>
                 </TabsList>
-                {/* ctas update part b */}
+                {/* ctas - tab based */}
+                {/* add a booking */}
                 {tab === 'transports' &&
-                  formattedDispatchedTransporterBookings?.length > 0 && (
-                    <Button size="sm" disabled={true} variant="blue_outline">
-                      {translations('overview_inputs.ctas.updatePartB')}
+                  (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
+                    dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
+                    <Button
+                      size="sm"
+                      onClick={() => setIsAddingBooking(true)}
+                      variant="blue_outline"
+                    >
+                      <PlusCircle size={14} />
+                      {translations('overview_inputs.ctas.addBooking')}
                     </Button>
+                  )}
+
+                {/* generate e-way bill cta */}
+                {tab === 'ewb' &&
+                  (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
+                    dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="blue_outline"
+                        onClick={() => setIsCreatingEWBA(true)}
+                      >
+                        <RefreshCcw size={14} />
+                        {translations('overview_inputs.ctas.refreshEWayBill')}
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="blue_outline"
+                        onClick={() => setIsCreatingEWBA(true)}
+                      >
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.generateEWayBill')}
+                      </Button>
+                    </div>
                   )}
               </section>
               <TabsContent value="overview">
+                {/* OVERVIEW SECTION - TODO customs data (required) */}
+                <Overview
+                  collapsible={tab !== 'overview'}
+                  data={overviewData}
+                  labelMap={overviewLabels}
+                  customRender={customRender}
+                  customLabelRender={customLabelRender}
+                />
                 {/* add new address : visible if isAddingNewAddress is true */}
                 <AddNewAddress
                   isAddressAdding={isAddingNewAddress}
@@ -738,14 +1018,6 @@ const ViewDispatchNote = () => {
                   mutationKey={settingsAPI.addUpdateAddress.endpointKey}
                   mutationFn={addUpdateAddress}
                   invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
-                />
-                {/* OVERVIEW SECTION */}
-                <Overview
-                  collapsible={false}
-                  data={overviewData}
-                  labelMap={overviewLabels}
-                  customRender={customRender}
-                  customLabelRender={customLabelRender}
                 />
 
                 {/* COMMENTS */}
@@ -789,11 +1061,40 @@ const ViewDispatchNote = () => {
                   )}
                 </section>
               </TabsContent>
+              <TabsContent value="ewb">
+                {isEWBsLoading && <Loading />}
+                {!isEWBsLoading && ewayBills?.length > 0 ? (
+                  <SalesTable
+                    id="ewbs"
+                    columns={ewaybillsColumns}
+                    data={ewayBills}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onEWBRowClick}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="font-bold">
+                      {translations('tabs.tab4.emtpyStateComponent.title')}
+                    </p>
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create-payment'}
+                    >
+                      <p className="max-w-96 text-center">
+                        {translations('tabs.tab4.emtpyStateComponent.para')}
+                      </p>
+                    </ProtectedWrapper>
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </>
         )}
 
-        {isAddingBooking && !isCreatingEWB && (
+        {isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
           <AddBooking
             translations={translations}
             overviewData={overviewData}
@@ -809,15 +1110,29 @@ const ViewDispatchNote = () => {
           />
         )}
 
-        {isCreatingEWB && !isAddingBooking && (
-          <CreateEWB
+        {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
+          <CreateEWBA
+            dispatchNoteId={params.dispatchId}
             overviewData={overviewData}
             overviewLabels={overviewLabels}
             customRender={customRender}
             customLabelRender={customLabelRender}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWB}
+            setIsCreatingEWB={setIsCreatingEWBA}
             dispatchDetails={dispatchDetails}
+          />
+        )}
+        {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
+          <CreateEWBB
+            dispatchNoteId={params.dispatchId}
+            overviewData={overviewData}
+            overviewLabels={overviewLabels}
+            customRender={customRender}
+            customLabelRender={customLabelRender}
+            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+            setIsCreatingEWB={setIsCreatingEWBB}
+            dispatchDetails={dispatchDetails}
+            selectedTransportForUpdateB={selectedTransportForUpdateB}
           />
         )}
       </Wrapper>

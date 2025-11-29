@@ -1,23 +1,36 @@
 'use client';
 
-import { formatDate } from '@/appUtils/helperFunctions';
+import { capitalize, formatDate } from '@/appUtils/helperFunctions';
+import Attachments from '@/components/Modals/Attachments';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { useTranslations } from 'next-intl';
 
-export const useDispatchedTransporterBookingColumns = () => {
+const bookingType = {
+  LR: 'LORRY RECIEPT',
+  LB: 'LADING BILL',
+};
+
+export const useDispatchedTransporterBookingColumns = ({
+  setIsCreatingEWBB,
+  setSelectedTransportForUpdateB,
+}) => {
   const translations = useTranslations(
-    'sales.sales-dispatched-notes.dispatch_details.tabs.tab3.table.header',
+    'sales.sales-dispatched-notes.dispatch_details.tabs.tab3.table',
   );
 
   return [
     {
       accessorKey: 'type',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('type')} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.type')}
+        />
       ),
       cell: ({ row }) => {
         const { type } = row.original;
-        return <span>{type}</span>;
+        const bookingMode = bookingType[type] || type;
+        return <span>{capitalize(bookingMode)}</span>;
       },
     },
 
@@ -26,7 +39,7 @@ export const useDispatchedTransporterBookingColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('booking_no')}
+          title={translations('header.booking_no')}
         />
       ),
       cell: ({ row }) => {
@@ -38,7 +51,10 @@ export const useDispatchedTransporterBookingColumns = () => {
     {
       accessorKey: 'date',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('date')} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.date')}
+        />
       ),
       cell: ({ row }) => {
         const { date } = row.original;
@@ -47,11 +63,48 @@ export const useDispatchedTransporterBookingColumns = () => {
     },
 
     {
+      accessorKey: 'attachments',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.attachments')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { attachments } = row.original;
+        return <Attachments attachments={attachments} />;
+      },
+    },
+
+    {
+      accessorKey: 'action',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.action')}
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <button
+            onClick={() => {
+              setIsCreatingEWBB(true);
+              setSelectedTransportForUpdateB(row.original?.bookingId);
+            }}
+            className="rounded-sm border bg-green-500 px-2 py-1 text-white hover:border hover:bg-green-600 hover:underline"
+          >
+            {translations('ctas.updatePartB')}
+          </button>
+        );
+      },
+    },
+
+    {
       accessorKey: 'remarks',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('remarks')}
+          title={translations('header.remarks')}
         />
       ),
       cell: ({ row }) => {

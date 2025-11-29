@@ -187,3 +187,14 @@ export const roleColors = [
 export function saveDraftToSession({ key, data }) {
   SessionStorageService.set(key, data);
 }
+
+export const splitAddressAccordingToEWayBill = (address) => {
+  if (!address) return { addr1: '', addr2: '' };
+
+  const clean = address.trim();
+
+  const addr1 = clean.substring(0, 30);
+  const addr2 = clean.substring(30, 60); // next 30 chars
+
+  return { addr1, addr2 };
+};

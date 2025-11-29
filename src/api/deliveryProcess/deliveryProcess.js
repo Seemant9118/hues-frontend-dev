@@ -31,4 +31,20 @@ export const deliveryProcess = {
     endpoint: `/dispatchnote/update/`,
     endpointKey: 'update_dispatch_note_status',
   },
+  generateEWB: {
+    endpoint: `/dispatchnote/eway-bill/`,
+    endpointKey: 'generate_ewb',
+  },
+  updateEWBPartB: {
+    endpoint: `/dispatchnote/eway-bill/part-b`,
+    endpointKey: 'update_ewb_part_b',
+  },
+  getEWB: {
+    endpoint: `/dispatchnote/eway-bill/`,
+    endpointKey: 'get_ewb',
+  },
+  getEWBs: {
+    endpoint: `/dispatchnote/eway-bills/list-by-dispatch-note`,
+    endpointKey: 'get_ewbs',
+  },
 };
