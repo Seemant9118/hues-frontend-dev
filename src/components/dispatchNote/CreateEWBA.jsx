@@ -76,15 +76,15 @@ export default function CreateEWBA({
     cessValue: '',
     cessNonAdvolValue: '',
     // transport
-    transMode: '',
-    transporterId: '',
-    transporterName: '',
-    transDistance: '',
-    transDocNo: '',
-    transDocDate: '',
-    vehicleNo: '',
-    vehicleType: '',
-    remarks: '',
+    // transMode: '',
+    // transporterId: '',
+    // transporterName: '',
+    // transDistance: '',
+    // transDocNo: '',
+    // transDocDate: '',
+    // vehicleNo: '',
+    // vehicleType: '',
+    // remarks: '',
   }));
   const [errors, setErrors] = useState({});
 
@@ -108,10 +108,10 @@ export default function CreateEWBA({
             String(product?.unitId) ||
             String(item?.invoiceItem?.unitId) ||
             '',
-          sgstRate: Number(item?.sgstAmount) || 0,
-          cgstRate: Number(item?.cgstAmount) || 0,
-          igstRate: Number(item?.igstAmount) || 0,
-          cessRate: Number(item?.cessAmount) || 0,
+          sgstRate: Number(item?.sgstPercentage) || 0,
+          cgstRate: Number(item?.cgstPercentage) || 0,
+          igstRate: Number(item?.igstPercentage) || 0,
+          cessRate: Number(item?.cessPercentage) || 0,
           cessNonAdvol: Number(item?.cessNonAdvol) || 0,
         };
       }) || [];
@@ -179,22 +179,22 @@ export default function CreateEWBA({
         Number(dispatchDetails?.totalAmount) +
         Number(dispatchDetails?.totalGstAmount),
       totalValue: Number(dispatchDetails?.totalAmount) || 0,
-      cgstValue: Number(dispatchDetails?.totalCgstAmount) || 0,
-      sgstValue: Number(dispatchDetails?.totalSgstAmount) || 0,
-      igstValue: Number(dispatchDetails?.totalIgstAmount) || 0,
-      cessValue: Number(dispatchDetails?.cessAmount) || 0,
+      cgstValue: Number(dispatchDetails?.totalCgstPercentage) || 0,
+      sgstValue: Number(dispatchDetails?.totalSgstPercentage) || 0,
+      igstValue: Number(dispatchDetails?.totalIgstPercentage) || 0,
+      cessValue: Number(dispatchDetails?.cessPercentage) || 0,
       cessNonAdvolValue: Number(dispatchDetails?.cessNonAdvolValue) || 0,
 
       // transport
-      transMode: '',
-      transporterId: '',
-      transporterName: '',
-      transDistance: '',
-      transDocNo: '',
-      transDocDate: '',
-      vehicleNo: '',
-      vehicleType: '',
-      remarks: '',
+      // transMode: '',
+      // transporterId: '',
+      // transporterName: '',
+      // transDistance: 0,
+      // transDocNo: '',
+      // transDocDate: '',
+      // vehicleNo: '',
+      // vehicleType: '',
+      // remarks: '',
     };
 
     // Merge with draftData

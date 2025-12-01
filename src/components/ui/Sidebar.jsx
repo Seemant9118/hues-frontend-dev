@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
+  ArchiveRestore,
   Bell,
   Boxes,
   ClipboardList,
@@ -119,7 +120,7 @@ const Sidebar = () => {
       subTab: [
         {
           name: 'sidebar.subTabs.dispatch',
-          icon: <Boxes size={16} />,
+          icon: <ArchiveRestore size={16} />,
           path: '/dashboard/transport/dispatch',
         },
       ],

@@ -85,11 +85,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'sgstRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SGST" />
+        <DataTableColumnHeader column={column} title="SGST %" />
       ),
       cell: ({ row }) => {
         const sgstRate = row.original?.sgstRate;
-        return <span>{sgstRate ? `${formattedAmount(sgstRate)}` : '--'}</span>;
+        return <span>{sgstRate ? `${sgstRate}%` : '--'}</span>;
       },
     },
 
@@ -97,11 +97,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'cgstRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="CGST" />
+        <DataTableColumnHeader column={column} title="CGST %" />
       ),
       cell: ({ row }) => {
         const cgstRate = row.original?.cgstRate;
-        return <span>{cgstRate ? `${formattedAmount(cgstRate)}` : '--'}</span>;
+        return <span>{cgstRate ? `${cgstRate}%` : '--'}</span>;
       },
     },
 
@@ -109,11 +109,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'igstRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="IGST" />
+        <DataTableColumnHeader column={column} title="IGST %" />
       ),
       cell: ({ row }) => {
         const igstRate = row.original?.igstRate;
-        return <span>{igstRate ? `${formattedAmount(igstRate)}` : '--'}</span>;
+        return <span>{igstRate ? `${igstRate}%` : '--'}</span>;
       },
     },
 
@@ -121,11 +121,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'cessRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Cess" />
+        <DataTableColumnHeader column={column} title="Cess %" />
       ),
       cell: ({ row }) => {
         const cessRate = row.original?.cessRate;
-        return <span>{cessRate ? `${cessRate}` : '--'}</span>;
+        return <span>{cessRate ? `${cessRate}%` : '--'}</span>;
       },
     },
   ];
