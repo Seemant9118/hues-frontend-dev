@@ -5,6 +5,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { File } from 'lucide-react';
+import { Button } from '../ui/button';
 
 const AttachmentsModal = ({ open, onClose, attachments, onSelect }) => {
   return (
@@ -14,19 +15,21 @@ const AttachmentsModal = ({ open, onClose, attachments, onSelect }) => {
           <DialogTitle>View Attachments</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col items-center gap-3 border">
           {attachments.map((item) => (
-            <button
+            <Button
               key={item.id}
-              className="flex w-full items-center gap-2 rounded-md border p-2 hover:bg-muted"
               onClick={() => {
                 onSelect(item);
                 onClose();
               }}
+              variant="outline"
+              size="sm"
+              className="max-w-sm"
             >
               <File size={15} />
               <span className="truncate">{item.name}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </DialogContent>

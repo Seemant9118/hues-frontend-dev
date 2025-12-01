@@ -97,22 +97,22 @@ export default function CreateEWBA({
         const product = item?.invoiceItem?.orderItemId?.productDetails;
 
         return {
-          hsnCode: product?.hsnCode || '',
+          hsnCode: Number(product?.hsnCode) || null,
           taxableAmount: Number(item?.amount || 0),
           productName: product?.productName || '',
           productDesc: product?.description || '',
           quantity: item?.dispatchedQuantity || 0,
           // Adjust unit based on your logic (unitId/weightUnitId)
           qtyUnit:
-            product?.weightUnitId ||
-            product?.unitId ||
-            item?.invoiceItem?.unitId ||
+            String(product?.weightUnitId) ||
+            String(product?.unitId) ||
+            String(item?.invoiceItem?.unitId) ||
             '',
-          sgstRate: product?.sgstPercentage || 0,
-          cgstRate: product?.cgstPercentage || 0,
-          igstRate: product?.igstPercentage || 0,
-          cessRate: 0,
-          cessNonAdvol: 0,
+          sgstRate: Number(product?.sgstPercentage) || 0,
+          cgstRate: Number(product?.cgstPercentage) || 0,
+          igstRate: Number(product?.igstPercentage) || 0,
+          cessRate: Number(product?.cessRate) || 0,
+          cessNonAdvol: Number(product?.cessNonAdvol) || 0,
         };
       }) || [];
 
@@ -131,53 +131,53 @@ export default function CreateEWBA({
         /^INV[-/]?/,
         '',
       ),
-      docDate: moment(dispatchDetails?.createdAt)?.format('DD/MM/YYYY'),
+      docDate: moment(dispatchDetails?.createdAt)?.format('DD/MM/YYYY'), // doubt: is dispatch note createdAt or invoice createdAt
       transactionType: dispatchDetails?.transactionType?.code,
 
-      // consigner
+      // consignor
       fromGstin: dispatchDetails?.sellerDetails?.gst,
       fromPincode: Number(dispatchDetails?.billingFromAddress?.pincode) || '',
       fromStateCode:
         Number(dispatchDetails?.billingFromAddress?.stateCode) || '',
-      fromStateCodeName: dispatchDetails?.billingFromAddress?.stateName || '',
-      fromTrdName: dispatchDetails?.sellerDetails?.name,
+      fromStateCodeName: dispatchDetails?.billingFromAddress?.stateName || '', // to show frontend only
+      fromTrdName: dispatchDetails?.sellerDetails?.tradeName,
       actFromStateCode:
         Number(dispatchDetails?.dispatchFromAddress?.stateCode) || '',
       actFromStateCodeName:
-        dispatchDetails?.dispatchFromAddress?.stateName || '',
+        dispatchDetails?.dispatchFromAddress?.stateName || '', // to show frontend only
       fromAddr1: fromAddress?.addr1 || '',
       fromAddr2: fromAddress?.addr2 || '',
       fromPlace: dispatchDetails?.billingFromAddress?.pincode,
-      fromPlaceName: dispatchDetails?.billingFromAddress?.district || '',
+      fromPlaceName: dispatchDetails?.billingFromAddress?.district || '', // to show frontend only
       dispatchFromGSTIN: dispatchDetails?.sellerDetails?.gst,
-      dispatchFromTradeName: dispatchDetails?.sellerDetails?.name,
+      dispatchFromTradeName: dispatchDetails?.sellerDetails?.tradeName,
 
       // consignee
-      toGstin: dispatchDetails?.buyerDetails?.gst || 'URP',
-      toPincode: Number(dispatchDetails?.shippingAddress?.pincode) || '',
+      toGstin: dispatchDetails?.buyerGst || 'URP',
+      toPincode: Number(dispatchDetails?.billingAddress?.pincode) || '',
       toStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
-      toStateCodeName: dispatchDetails?.billingAddress?.stateName || '',
-      toTrdName: dispatchDetails?.buyerDetails?.name,
-      actToStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
-      actToStateCodeName: dispatchDetails?.billingAddress?.stateName || '',
+      toStateCodeName: dispatchDetails?.billingAddress?.stateName || '', // to show frontend only
+      toTrdName: dispatchDetails?.buyerTradeName,
+      actToStateCode: Number(dispatchDetails?.shippingAddress?.stateCode) || '',
+      actToStateCodeName: dispatchDetails?.shippingAddress?.stateName || '', // to show frontend only
       toAddr1: toAddress?.addr1 || '',
       toAddr2: toAddress?.addr2 || '',
       toPlace: dispatchDetails?.shippingAddress?.pincode,
-      toPlaceName: dispatchDetails?.shippingAddress?.district || '',
-      shipToGSTIN: dispatchDetails?.buyerDetails?.gst || 'URP',
-      shipToTradeName: dispatchDetails?.buyerDetails?.name,
+      toPlaceName: dispatchDetails?.shippingAddress?.district || '', // to show frontend only
+      shipToGSTIN: dispatchDetails?.buyerGst || 'URP',
+      shipToTradeName: dispatchDetails?.buyerTradeName,
 
       // UPDATED ITEM LIST
       itemList: formattedItems,
       totInvValue:
         Number(dispatchDetails?.totalAmount) +
         Number(dispatchDetails?.totalGstAmount),
-      totalValue: Number(dispatchDetails?.totalAmount),
-      cgstValue: dispatchDetails?.totalCgstAmount,
-      sgstValue: dispatchDetails?.totalSgstAmount,
-      igstValue: dispatchDetails?.totalIgstAmount,
-      cessValue: dispatchDetails?.cessAmount,
-      cessNonAdvolValue: '',
+      totalValue: Number(dispatchDetails?.totalAmount) || 0,
+      cgstValue: Number(dispatchDetails?.totalCgstAmount) || 0,
+      sgstValue: Number(dispatchDetails?.totalSgstAmount) || 0,
+      igstValue: Number(dispatchDetails?.totalIgstAmount) || 0,
+      cessValue: Number(dispatchDetails?.cessAmount) || 0,
+      cessNonAdvolValue: Number(dispatchDetails?.cessNonAdvolValue) || 0,
 
       // transport
       transMode: '',

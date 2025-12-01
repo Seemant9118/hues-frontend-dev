@@ -439,6 +439,7 @@ const ViewDispatchNote = () => {
       date: booking?.bookingDate ?? null,
       remarks: booking?.remarks ?? '--',
       attachments: booking.documents,
+      hasPartBDetails: booking?.hasPartBDetails,
     }));
   };
   const formattedDispatchedTransporterBookings =
@@ -850,6 +851,7 @@ const ViewDispatchNote = () => {
   // Fetch dispatched notes data with infinite scroll
   const {
     data,
+    refetch,
     fetchNextPage,
     isFetching,
     isLoading: isEWBsLoading,
@@ -967,11 +969,7 @@ const ViewDispatchNote = () => {
                 {tab === 'transports' &&
                   (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
                     dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
-                    <Button
-                      size="sm"
-                      onClick={() => setIsAddingBooking(true)}
-                      variant="blue_outline"
-                    >
+                    <Button size="sm" onClick={() => setIsAddingBooking(true)}>
                       <PlusCircle size={14} />
                       {translations('overview_inputs.ctas.addBooking')}
                     </Button>
@@ -985,17 +983,16 @@ const ViewDispatchNote = () => {
                       <Button
                         size="sm"
                         variant="blue_outline"
-                        onClick={() => setIsCreatingEWBA(true)}
+                        onClick={async () => {
+                          const res = await refetch();
+                          if (!res.error) toast.success('E-way bills fetched');
+                        }}
                       >
                         <RefreshCcw size={14} />
                         {translations('overview_inputs.ctas.refreshEWayBill')}
                       </Button>
 
-                      <Button
-                        size="sm"
-                        variant="blue_outline"
-                        onClick={() => setIsCreatingEWBA(true)}
-                      >
+                      <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
                         <PlusCircle size={14} />
                         {translations('overview_inputs.ctas.generateEWayBill')}
                       </Button>
@@ -1062,8 +1059,8 @@ const ViewDispatchNote = () => {
                 </section>
               </TabsContent>
               <TabsContent value="ewb">
-                {isEWBsLoading && <Loading />}
-                {!isEWBsLoading && ewayBills?.length > 0 ? (
+                {(isEWBsLoading || isFetching) && <Loading />}
+                {(!isEWBsLoading || !isFetching) && ewayBills?.length > 0 ? (
                   <SalesTable
                     id="ewbs"
                     columns={ewaybillsColumns}
