@@ -15,24 +15,24 @@ import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { SalesTable } from '../salestable/SalesTable';
+import { SalesTable } from '../../sales/salestable/SalesTable';
 import { useSalesDispatchedNotes } from './useSalesDispatchedNotes';
 
 // macros
 const PAGE_LIMIT = 10;
 
-const SalesDispatchedNotes = () => {
+const DispatchedNotes = () => {
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const translations = useTranslations('sales.sales-dispatched-notes');
+  const translations = useTranslations('transport.dispatched-notes');
 
   const keys = [
-    'sales.sales-dispatched-notes.emtpyStateComponent.subItems.subItem1',
-    'sales.sales-dispatched-notes.emtpyStateComponent.subItems.subItem2',
-    'sales.sales-dispatched-notes.emtpyStateComponent.subItems.subItem3',
-    'sales.sales-dispatched-notes.emtpyStateComponent.subItems.subItem4',
+    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem1',
+    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem2',
+    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem3',
+    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem4',
   ];
 
   const { hasPermission } = usePermission();
@@ -97,7 +97,7 @@ const SalesDispatchedNotes = () => {
   }, [data]);
 
   const onRowClick = (row) => {
-    router.push(`/dashboard/sales/sales-dispatched-notes/${row.id}`);
+    router.push(`/dashboard/transport/dispatch/${row.id}`);
   };
 
   const dispatchedNotesColumns = useSalesDispatchedNotes();
@@ -143,4 +143,4 @@ const SalesDispatchedNotes = () => {
   );
 };
 
-export default SalesDispatchedNotes;
+export default DispatchedNotes;

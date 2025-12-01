@@ -186,7 +186,7 @@ const ViewInvoice = () => {
   };
 
   const onDispatchedNoteRowClick = (row) => {
-    return router.push(`/dashboard/sales/sales-dispatched-notes/${row.id}`);
+    return router.push(`/dashboard/transport/dispatch/${row.id}`);
   };
 
   return (

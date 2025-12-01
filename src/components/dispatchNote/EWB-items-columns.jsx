@@ -85,11 +85,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'sgstRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SGST %" />
+        <DataTableColumnHeader column={column} title="SGST" />
       ),
       cell: ({ row }) => {
-        const sgst = row.original?.sgst;
-        return <span>{sgst ? `${sgst}%` : '--'}</span>;
+        const sgstRate = row.original?.sgstRate;
+        return <span>{sgstRate ? `${formattedAmount(sgstRate)}` : '--'}</span>;
       },
     },
 
@@ -97,11 +97,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'cgstRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="CGST %" />
+        <DataTableColumnHeader column={column} title="CGST" />
       ),
       cell: ({ row }) => {
-        const cgst = row.original?.cgst;
-        return <span>{cgst ? `${cgst}%` : '--'}</span>;
+        const cgstRate = row.original?.cgstRate;
+        return <span>{cgstRate ? `${formattedAmount(cgstRate)}` : '--'}</span>;
       },
     },
 
@@ -109,11 +109,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'igstRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="IGST %" />
+        <DataTableColumnHeader column={column} title="IGST" />
       ),
       cell: ({ row }) => {
-        const igst = row.original?.igst;
-        return <span>{igst ? `${igst}%` : '--'}</span>;
+        const igstRate = row.original?.igstRate;
+        return <span>{igstRate ? `${formattedAmount(igstRate)}` : '--'}</span>;
       },
     },
 
@@ -121,11 +121,11 @@ export const useEWBItemColumns = () => {
     {
       accessorKey: 'cessRate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Cess %" />
+        <DataTableColumnHeader column={column} title="Cess" />
       ),
       cell: ({ row }) => {
-        const cess = row.original?.cess;
-        return <span>{cess ? `${cess}%` : '--'}</span>;
+        const cessRate = row.original?.cessRate;
+        return <span>{cessRate ? `${cessRate}` : '--'}</span>;
       },
     },
   ];

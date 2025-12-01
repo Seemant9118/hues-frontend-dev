@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 export const useEWBsColumns = () => {
   const t = useTranslations(
-    'sales.sales-dispatched-notes.dispatch_details.tabs.tab4.table',
+    'transport.dispatched-notes.dispatch_details.tabs.tab4.table',
   );
 
   return [

@@ -30,7 +30,7 @@ export default function Step2FromDetails({ formData, setFormData, errors }) {
             onChange={(e) => handleChange('fromTrdName')(e)}
           />
         </div>
-        <div>
+        {/* <div>
           <Label>Dispatch From GSTIN</Label>
           <Input
             disabled
@@ -45,7 +45,7 @@ export default function Step2FromDetails({ formData, setFormData, errors }) {
             value={formData.dispatchFromTradeName}
             onChange={(e) => handleChange('dispatchFromTradeName')(e)}
           />
-        </div>
+        </div> */}
       </div>
 
       <h1 className="font-semibold">Addresses</h1>

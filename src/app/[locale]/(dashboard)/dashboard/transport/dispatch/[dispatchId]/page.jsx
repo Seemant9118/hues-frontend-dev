@@ -61,7 +61,7 @@ import { toast } from 'sonner';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 import { useDispatchedTransporterBookingColumns } from './useDispatchedTransporterBookingColumns';
-import { SalesTable } from '../../salestable/SalesTable';
+import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useEWBsColumns } from './useEWBsColumns';
 
 // const TESTING_DATA = [
@@ -218,7 +218,7 @@ import { useEWBsColumns } from './useEWBsColumns';
 const ViewDispatchNote = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations(
-    'sales.sales-dispatched-notes.dispatch_details',
+    'transport.dispatched-notes.dispatch_details',
   );
 
   const queryClient = useQueryClient();
@@ -250,31 +250,31 @@ const ViewDispatchNote = () => {
     {
       id: 1,
       name: translations('title.dispatch_notes'),
-      path: '/dashboard/sales/sales-dispatched-notes',
+      path: '/dashboard/transport/dispatch',
       show: true,
     },
     {
       id: 2,
       name: translations('title.dispatch_details'),
-      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
       show: true,
     },
     {
       id: 3,
       name: translations('title.addBooking'),
-      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
       show: isAddingBooking,
     },
     {
       id: 4,
       name: translations('title.createEWBA'),
-      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
       show: isCreatingEWBA,
     },
     {
       id: 5,
       name: translations('title.createEWBB'),
-      path: `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`,
+      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
       show: isCreatingEWBB,
     },
   ];
@@ -289,7 +289,7 @@ const ViewDispatchNote = () => {
 
   useEffect(() => {
     // Update URL based on the state (avoid shallow navigation for full update)
-    let newPath = `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}`;
+    let newPath = `/dashboard/transport/dispatch/${params.dispatchId}`;
 
     if (isAddingBooking) {
       newPath += '?state=addBooking';
@@ -439,6 +439,7 @@ const ViewDispatchNote = () => {
       date: booking?.bookingDate ?? null,
       remarks: booking?.remarks ?? '--',
       attachments: booking.documents,
+      ewayBillNo: booking.ewayBillNo,
       hasPartBDetails: booking?.hasPartBDetails,
     }));
   };
@@ -455,8 +456,8 @@ const ViewDispatchNote = () => {
     status: dispatchDetails?.status || '-',
     dispatchId: dispatchDetails?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
-    deliveryChallanNo: dispatchDetails?.deliveryVoucher?.referenceNumber || '-',
-    EWB: dispatchDetails?.eWayBill?.ewbNumber || '-',
+    deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
+    EWB: dispatchDetails?.ewb || '-',
     transporter: dispatchDetails?.transporterName || '-',
     dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
     billingFrom: dispatchDetails?.billingFromAddress?.address || '-',
@@ -498,7 +499,7 @@ const ViewDispatchNote = () => {
         )}
 
         {/* Edit CTA */}
-        {hasTransporter && (
+        {hasTransporter && dispatchDetails?.status === 'DRAFT' && (
           <>
             {!editMode && (
               <button
@@ -525,7 +526,8 @@ const ViewDispatchNote = () => {
       <div className="flex items-center gap-2">
         <span>{translations('overview_labels.dispatch_from')}</span>
         {dispatchDetails?.dispatchFromAddress?.address &&
-          !editModeDispatchFrom && (
+          !editModeDispatchFrom &&
+          dispatchDetails?.status === 'DRAFT' && (
             <button
               onClick={() => setEditModeDispatchFrom(true)}
               className="text-xs text-primary underline"
@@ -534,7 +536,8 @@ const ViewDispatchNote = () => {
             </button>
           )}
         {editModeDispatchFrom &&
-          dispatchDetails?.dispatchFromAddress?.address && (
+          dispatchDetails?.dispatchFromAddress?.address &&
+          dispatchDetails?.status === 'DRAFT' && (
             <button
               onClick={() => setEditModeDispatchFrom(false)}
               className="text-xs text-primary underline"
@@ -548,7 +551,8 @@ const ViewDispatchNote = () => {
       <div className="flex items-center gap-2">
         <span>{translations('overview_labels.billing_from')}</span>
         {dispatchDetails?.billingFromAddress?.address &&
-          !editModeBillingFrom && (
+          !editModeBillingFrom &&
+          dispatchDetails?.status === 'DRAFT' && (
             <button
               onClick={() => setEditModeBillingFrom(true)}
               className="text-xs text-primary underline"
@@ -557,7 +561,8 @@ const ViewDispatchNote = () => {
             </button>
           )}
         {editModeBillingFrom &&
-          dispatchDetails?.billingFromAddress?.address && (
+          dispatchDetails?.billingFromAddress?.address &&
+          dispatchDetails?.status === 'DRAFT' && (
             <button
               onClick={() => setEditModeBillingFrom(false)}
               className="text-xs text-primary underline"
@@ -830,7 +835,7 @@ const ViewDispatchNote = () => {
       queryClient.invalidateQueries({
         queryKey: [deliveryProcess.getDispatchNote.endpointKey],
       });
-      toast.success(translations('overview_inputs.toast.dispatchNoteReady'));
+      toast.success(translations('overview_inputs.toast.dcGenerated'));
     },
     onError: (error) => {
       toast.error(
@@ -840,7 +845,7 @@ const ViewDispatchNote = () => {
     },
   });
 
-  const readyForDispatch = () => {
+  const generateDC = () => {
     updateStatusMutation.mutate({
       dispatchNoteId: params.dispatchId,
       data: { status: 'READY_FOR_DISPATCH' },
@@ -902,7 +907,7 @@ const ViewDispatchNote = () => {
 
   const onEWBRowClick = (row) => {
     return router.push(
-      `/dashboard/sales/sales-dispatched-notes/${params.dispatchId}/${row.ewbNo}`,
+      `/dashboard/transport/dispatch${params.dispatchId}/${row.ewbNo}`,
     );
   };
 
@@ -933,12 +938,8 @@ const ViewDispatchNote = () => {
               <div className="flex items-center gap-2">
                 {/* ready for dispatch cta */}
                 {dispatchDetails?.status === 'DRAFT' && (
-                  <Button
-                    size="sm"
-                    variant="blue_outline"
-                    onClick={readyForDispatch}
-                  >
-                    {translations('overview_inputs.ctas.readyForDispatch')}
+                  <Button size="sm" onClick={generateDC}>
+                    {translations('overview_inputs.ctas.generateDC')}
                   </Button>
                 )}
               </div>

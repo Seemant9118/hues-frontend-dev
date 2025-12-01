@@ -958,6 +958,21 @@
         },
         "createDispatchNote": {
             "form": {
+                "transporter": {
+                    "label": "ट्रांसपोर्टर",
+                    "placeholder": "ट्रांसपोर्टर चुनें",
+                    "add-new-transport": "नया ट्रांसपोर्ट जोड़ें"
+                },
+                "dispatchFrom": {
+                    "label": "यहां से डिस्पैच",
+                    "placeholder": "पता चुनें",
+                    "add-new-address": "नया पता जोड़ें"
+                },
+                "billingFrom": {
+                    "label": "यहां से बिलिंग",
+                    "placeholder": "पता चुनें",
+                    "add-new-address": "नया पता जोड़ें"
+                },
                 "table": {
                     "header": {
                         "item_name": "आइटम नाम",

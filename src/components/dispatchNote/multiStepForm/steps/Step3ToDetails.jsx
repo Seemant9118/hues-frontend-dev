@@ -32,7 +32,7 @@ export default function Step3ToDetails({ formData, setFormData, errors }) {
           />
         </div>
 
-        <div>
+        {/* <div>
           <Label>Ship To GSTIN</Label>
           <Input
             disabled
@@ -47,7 +47,7 @@ export default function Step3ToDetails({ formData, setFormData, errors }) {
             value={formData.shipToTradeName}
             onChange={(e) => handleChange('shipToTradeName')(e)}
           />
-        </div>
+        </div> */}
       </div>
 
       <h1 className="font-semibold">Addresses</h1>

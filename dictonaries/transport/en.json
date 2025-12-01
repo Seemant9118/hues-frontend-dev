@@ -1,0 +1,215 @@
+{
+    "transport": {
+        "dispatched-notes": {
+            "title": "Dispatch",
+            "emtpyStateComponent": {
+                "heading": "Manage bids, deals, and invoices—securely and digitally",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Start a sale by sending offers or receiving bids—whichever comes first!"
+                    },
+                    "subItem2": {
+                        "value": "Negotiate with confidence using digitally signed offers and counter-offers"
+                    },
+                    "subItem3": {
+                        "value": "Seal the deal with digital signatures—quick, easy, and binding"
+                    },
+                    "subItem4": {
+                        "value": "Wrap things up with professional, shareable invoices—just a few clicks"
+                    }
+                }
+            },
+            "table": {
+                "header": {
+                    "dispatch_id": "Dispatch ID",
+                    "invoice_id": "Invoice ID",
+                    "date": "Date",
+                    "customers_type": "Type",
+                    "customers": "Name",
+                    "status": "Status",
+                    "order_id": "Order ID",
+                    "total_amount": "Total Amount"
+                }
+            },
+            "dispatch_details": {
+                "title": {
+                    "dispatch_notes": "Dispatch",
+                    "dispatch_details": "Dispatch Details",
+                    "ewaybillDetails": "E-way bill Details",
+                    "addBooking": "Add Booking Details",
+                    "createEWBA": "Create E-Way Bill (Part A)",
+                    "createEWBB": "Create E-Way Bill (Part B)"
+                },
+                "overview_labels": {
+                    "status": "Status",
+                    "invoiceId": "Invoice ID",
+                    "consignor": "Consignor",
+                    "consignee": "Consignee",
+                    "totalAmount": "Total Amount",
+                    "dispatchId": "Dispatch ID",
+                    "transporter": "Transporter",
+                    "delivery_challan_no": "Delivery challan no.",
+                    "ewb": "EWB",
+                    "dispatch_from": "Dispatch From",
+                    "billing_from": "Billing From",
+                    "billing_address": "Billing Address",
+                    "shipping_address": "Shipping Address"
+                },
+                "overview_inputs": {
+                    "transporter": "Select Transporter",
+                    "dispatch_from": "Select Dispatch From",
+                    "billing_from": "Select Billing From",
+                    "addNewTransporter": "Add New Transporter",
+                    "addNewAddress": "Add New Address",
+                    "editTransporter": "Edit Transporter",
+                    "ctas": {
+                        "add": "Add",
+                        "edit": "Edit",
+                        "share": "(Share with Transporter)",
+                        "readyForDispatch": "Ready for Dispatch",
+                        "generateDC":"Generate Delivery Challan",
+                        "addBooking": "Add Booking",
+                        "generateEWayBill": "Generate E-Way Bill",
+                        "refreshEWayBill": "Refresh E-Way Bill",
+                        "updatePartB": "Update Part-B",
+                        "cancel": "Cancel"
+                    },
+                    "placeholders": {
+                        "selectTransporter": "Select Transporter"
+                    },
+                    "toast": {
+                        "successAdd": "Transporter added successfully to dispatch note",
+                        "successEdit": "Transporter edited successfully to dispatch note",
+                        "sendToTransporterSuccess": "Details sent successfully to transporter",
+                        "dispatchNoteReady": "Dispatch note is ready for dispatch",
+                        "dcGenerated": "Delivery Challan Generated",
+                        "dispatchInfoUpdated": "Dispatch information updated successfully",
+                        "error": "Error adding transporter to dispatch note",
+                        "commonError": "We hit a snag. Please try again."
+                    }
+                },
+                "sections": {
+                    "items": "Items",
+                    "transport_bookings": "Transport Bookings",
+                    "no_booking": "No Booking Created yet"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    },
+                    "tab2": {
+                        "title": "Items",
+                        "title2": "No items yet",
+                        "table": {
+                            "header": {
+                                "product": "Product",
+                                "invoiceQty": "Invoice Quantity",
+                                "dispatchedQty": "Dispatched Quantity",
+                                "rate": "Rate",
+                                "amount": "Amount"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No Trasnport booking yet",
+                            "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
+                        }
+                    },
+                    "tab3": {
+                        "title1": "Transport Booking",
+                        "title2": "No booking yet",
+                        "table": {
+                            "header": {
+                                "type": "Mode",
+                                "booking_no": "Booking No.",
+                                "dispatchedQty": "Dispatched Quantity",
+                                "date": "Booking Date",
+                                "attachments": "Attachments",
+                                "action": "Action",
+                                "remarks": "Remarks"
+                            },
+                            "ctas": {
+                                "updatePartB": "Update Part-B"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No Trasnport booking yet",
+                            "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
+                        }
+                    },
+                    "tab4": {
+                        "title": "E-way bills",
+                        "table": {
+                            "header": {
+                                "ewbNo": "EWB No",
+                                "ewayBillDate": "E-Way Bill Date",
+                                "from": "From Party",
+                                "to": "To Party",
+                                "totalValue": "Total Value",
+                                "invoiceValue": "Invoice Value",
+                                "transporter": "Transporter Name",
+                                "status": "Status",
+                                "noValidDays": "Valid Days",
+                                "vehicleType": "Vehicle Type"
+                            },
+                            "ctas": {
+                                "viewDetails": "View Details"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No E-way bills generated yet",
+                            "para": "You haven't recorded any E-way bills yet. Start now to keep your E-way bills history up to date"
+                        }
+                    }
+                },
+                "table_columns": {
+                    "type": "Type",
+                    "booking_no": "Booking No.",
+                    "date": "Date",
+                    "remarks": "Remarks"
+                },
+                "addBooking": {
+                    "titles": {
+                        "bookingType": "Booking Type",
+                        "bookingNumber": "Booking Number",
+                        "bookingDate": "Booking Date",
+                        "remarks": "Remarks",
+                        "sourceAddress": "Source Address",
+                        "destinationAddress": "Destination Address",
+                        "addAttachments": "Add Attachments"
+                    },
+                    "placeholders": {
+                        "selectType": "Select type",
+                        "enterBookingNumber": "Enter Booking Number",
+                        "enterRemarks": "Enter Remarks",
+                        "enterSourceAddress": "Enter Source Address",
+                        "enterDestinationAddress": "Enter Destination Address",
+                        "upload_para": "Drag & Drop or Select a File (Max 10MB,.png /.pdf Formats)",
+                        "upload_note": "Note: Please upload payment proofs only"
+                    },
+                    "bookingTypes": {
+                        "lr": "Lorry Receipt (LR)",
+                        "lb": "Lading Bill (LB)",
+                        "airway": "Airway Receipt",
+                        "railway": "Railway Receipt"
+                    },
+                    "ctas": {
+                        "cancel": "Cancel",
+                        "addBooking": "Add Booking",
+                        "select": "Select"
+                    },
+                    "errors": {
+                        "bookingTypeRequired": "Booking type is required",
+                        "bookingNumberRequired": "Booking number is required",
+                        "bookingDateRequired": "Date is required"
+                    },
+                    "toast": {
+                        "success": "Booking created successfully",
+                        "fileAttachedSuccess": "File attached successfully!",
+                        "attachementSuccess": "Attachment added successfully",
+                        "error": "Error creating booking for dispatch note"
+                    }
+                }
+            }
+        }
+    }
+}
