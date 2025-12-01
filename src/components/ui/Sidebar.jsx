@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
+  ArchiveRestore,
   Bell,
   Boxes,
   ClipboardList,
@@ -113,6 +114,18 @@ const Sidebar = () => {
       ],
     },
     hasPermission('permission:sales-view') && {
+      name: 'sidebar.transport',
+      icon: <Truck size={16} />,
+      path: '/dashboard/transport/dispatch',
+      subTab: [
+        {
+          name: 'sidebar.subTabs.dispatch',
+          icon: <ArchiveRestore size={16} />,
+          path: '/dashboard/transport/dispatch',
+        },
+      ],
+    },
+    hasPermission('permission:sales-view') && {
       name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
       path: '/dashboard/sales/sales-orders',
@@ -136,11 +149,6 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/dashboard/sales/sales-debitNotes',
-        },
-        {
-          name: 'sidebar.subTabs.dispatch',
-          icon: <Truck size={16} />,
-          path: '/dashboard/sales/sales-dispatched-notes',
         },
       ],
     },

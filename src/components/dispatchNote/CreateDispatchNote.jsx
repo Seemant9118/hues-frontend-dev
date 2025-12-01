@@ -1,15 +1,30 @@
 /* eslint-disable no-unsafe-optional-chaining */
 
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
+import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
+import { settingsAPI } from '@/api/settings/settingsApi';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
+import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
+import { LocalStorageService } from '@/lib/utils';
+import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import { createDispatchNote } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import {
+  createVendor,
+  getVendors,
+} from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 import { toast } from 'sonner';
+import AddNewAddress from '../enterprise/AddNewAddress';
+import AddModal from '../Modals/AddModal';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 import OrdersOverview from '../orders/OrdersOverview';
 import { Button } from '../ui/button';
@@ -17,6 +32,7 @@ import { Checkbox } from '../ui/checkbox';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import InputWithSelect from '../ui/InputWithSelect';
+import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 import {
   Table,
@@ -30,13 +46,22 @@ import {
 import Wrapper from '../wrappers/Wrapper';
 
 const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
+  const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations('components.createDispatchNote.form');
 
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
 
+  const [transporter, setTransporter] = useState(null);
+  const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
+  const [selectDispatcher, setSelectDispatcher] = useState(null);
+  const [selectBilling, setSelectBilling] = useState(null);
+  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
+    transporterId: '',
+    dispatchFromAddressId: '',
+    billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
     totalGstAmount: null,
     totalAmount: null,
@@ -46,6 +71,58 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [productDetailsList, setProductDetailsList] = useState(null);
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [allSelected, setAllSelected] = useState(false);
+
+  // vendors[transporter] fetching
+  const { data: transports } = useQuery({
+    queryKey: [vendorEnterprise.getVendors.endpointKey],
+    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }),
+    select: (res) => res.data.data.users,
+  });
+
+  // vendors options
+  const transportOptions = [
+    ...(transports || []).map((vendor) => {
+      const value = vendor?.id;
+      const label =
+        vendor?.vendor?.name || vendor.invitation?.userDetails?.name;
+
+      return { value, label };
+    }),
+    // Special option for "Add New Vendor"
+    {
+      value: 'add-new-vendor', // Special value for "Add New Vendor"
+      label: (
+        <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
+          <Plus size={14} /> {translations('transporter.add-new-transport')}
+        </span>
+      ),
+    },
+  ];
+
+  // get addresses
+  const { data: addresses } = useQuery({
+    queryKey: [addressAPIs.getAddressByEnterprise.endpointKey, enterpriseId],
+    queryFn: () => getAddressByEnterprise(enterpriseId),
+    select: (res) => res.data.data,
+  });
+
+  const addressesOptions = [
+    ...(addresses || []).map((address) => {
+      const value = address?.id;
+      const label = address?.address;
+
+      return { value, label };
+    }),
+    // Special option for "address New Address"
+    {
+      value: 'add-new-address', // Special value for "Add New Address"
+      label: (
+        <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
+          <Plus size={14} /> {translations('dispatchFrom.add-new-address')}
+        </span>
+      ),
+    },
+  ];
 
   // fetch units
   const { data: units } = useQuery({
@@ -235,6 +312,16 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const validations = (disptachedData) => {
     const error = {};
 
+    if (!dispatchedData?.transporterId) {
+      error.transporterId = 'Please select an Transporter';
+    }
+    if (!dispatchedData?.dispatchFromAddressId) {
+      error.dispatchFrom = 'Please select an dispatch address';
+    }
+    if (!dispatchedData?.billingFromAddressId) {
+      error.billingFrom = 'Please select an billing address';
+    }
+
     // Check if any invoice is selected
     if (!disptachedData?.items?.length) {
       error.isAnyInvoiceSelected = 'Please select at least one Item to create';
@@ -343,240 +430,390 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
           amtPaid={invoiceDetails?.invoiceDetails?.amountPaid}
           totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
         />
-        <section className="flex h-full flex-col justify-between">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-1">
-                  <Checkbox
-                    checked={allSelected}
-                    onCheckedChange={(value) => handleSelectAll(value)}
+        <section className="mt-2 flex h-full flex-col justify-between">
+          <div className="flex flex-col gap-4">
+            {/* form - transporter, dispatch from, billing from */}
+            <div className="grid grid-cols-2 gap-2 rounded-sm border p-4">
+              <h1>Dispatch Details</h1>
+              {/* transporter */}
+              <div className="col-span-2">
+                <Label>{translations('transporter.label')}</Label>{' '}
+                <span className="text-red-500">*</span>
+                <div className="flex flex-col gap-4">
+                  {/* Transporter Select */}
+                  <Select
+                    name="transporter"
+                    placeholder={translations('transporter.placeholder')}
+                    options={transportOptions}
+                    styles={getStylesForSelectComponent()}
+                    className="max-w-full text-sm"
+                    classNamePrefix="select"
+                    value={transporter ? transporter.selectedValue : null}
+                    onChange={(selectedOption) => {
+                      if (!selectedOption) return;
+
+                      if (selectedOption.value === 'add-new-vendor') {
+                        setIsAddingNewTransport(true);
+                        return;
+                      }
+
+                      // Update state correctly
+                      setTransporter({
+                        transporterId: selectedOption.value,
+                        selectedValue: selectedOption,
+                      });
+
+                      setDispatchedData((prev) => ({
+                        ...prev,
+                        transporterId: selectedOption.value,
+                      }));
+
+                      setIsAddingNewTransport(false);
+                    }}
                   />
-                </TableHead>
-                <TableHead className="shrink-0 text-xs font-bold text-black">
-                  {translations('table.header.item_name')}
-                </TableHead>
-                <TableHead
-                  className="shrink-0 text-xs font-bold text-black"
-                  colSpan="2"
-                >
-                  {translations('table.header.invoice_qty')}
-                </TableHead>
-                <TableHead className="shrink-0 text-xs font-bold text-black">
-                  {translations('table.header.dispatch_qty')}
-                </TableHead>
-                <TableHead className="shrink-0 text-xs font-bold text-black">
-                  {translations('table.header.unit_price')}
-                </TableHead>
-                <TableHead className="shrink-0 text-xs font-bold text-black">
-                  {translations('table.header.total_amount')}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
 
-            <TableBody className="shrink-0">
-              {productDetailsList?.length > 0 &&
-                productDetailsList?.map((product, index) => {
-                  return (
-                    <TableRow key={product.id}>
-                      <TableCell colSpan={1}>
-                        <Checkbox
-                          checked={product.isSelected}
-                          onCheckedChange={(value) => {
-                            const updatedList = [...productDetailsList];
-                            updatedList[index].isSelected = value;
+                  {/* Add Vendor Modal */}
+                  {isAddingNewTransport && (
+                    <AddModal
+                      type={'Add'}
+                      cta="vendor"
+                      btnName={translations('transporter.add-new-transport')}
+                      mutationFunc={createVendor}
+                      isOpen={isAddingNewTransport}
+                      setIsOpen={setIsAddingNewTransport}
+                    />
+                  )}
 
-                            setProductDetailsList(updatedList);
+                  {errorMsg?.transporterId && (
+                    <ErrorBox msg={errorMsg?.transporterId} />
+                  )}
+                </div>
+              </div>
+              {/* dispatch from */}
+              <div>
+                <Label>{translations('dispatchFrom.label')}</Label>
+                <span className="text-red-500">*</span>
+                <div className="flex flex-col gap-4">
+                  {/* Dispatch Select */}
+                  <Select
+                    name="dispatchFrom"
+                    placeholder={translations('dispatchFrom.placeholder')}
+                    options={addressesOptions}
+                    styles={getStylesForSelectComponent()}
+                    className="max-w-full text-sm"
+                    classNamePrefix="select"
+                    value={
+                      selectDispatcher ? selectDispatcher?.selectedValue : null
+                    }
+                    onChange={(selectedOption) => {
+                      if (!selectedOption) return;
 
-                            if (value) {
-                              const updatedItems = productDetailsList.map(
-                                (item, idx) => {
-                                  if (idx === index) {
-                                    return {
-                                      ...item,
-                                      totalAmount: parseFloat(
-                                        (
-                                          item.quantity * item.unitPrice
-                                        ).toFixed(2),
-                                      ),
-                                      totalGstAmount: parseFloat(
-                                        (
-                                          item.quantity *
-                                          item.unitPrice *
-                                          (item.gstPerUnit / 100)
-                                        ).toFixed(2),
-                                      ),
-                                    };
-                                  }
-                                  return item;
-                                },
-                              );
+                      if (selectedOption.value === 'add-new-address') {
+                        setIsAddingNewAddress(true);
+                        return;
+                      }
 
-                              setDispatchedData({
-                                ...dispatchedData,
-                                items: updatedItems.filter(
-                                  (item) => item.isSelected,
-                                ),
-                              });
-                              setErrorMsg((prevMsg) => ({
-                                ...prevMsg,
-                                isAnyInvoiceSelected: '',
-                              }));
-                            } else {
-                              setDispatchedData((prev) => ({
-                                ...prev,
-                                items: prev.items.filter(
-                                  (item) =>
-                                    item.orderItemId !==
-                                    updatedList[index].orderItemId,
-                                ),
-                              }));
-                            }
-                          }}
-                        />
-                      </TableCell>
+                      setSelectDispatcher({
+                        dispatchFrom: selectedOption.value,
+                        selectedValue: selectedOption,
+                      });
 
-                      <TableCell colSpan={1}>
-                        {product?.productName ?? product?.serviceName}
-                      </TableCell>
+                      setDispatchedData((prev) => ({
+                        ...prev,
+                        dispatchFromAddressId: selectedOption.value,
+                      }));
+                    }}
+                  />
+                  {errorMsg?.dispatchFrom && (
+                    <ErrorBox msg={errorMsg?.dispatchFrom} />
+                  )}
+                </div>
+              </div>
+              {/* billing from */}
+              <div>
+                <Label>{translations('billingFrom.label')}</Label>
+                <span className="text-red-500">*</span>
+                <div className="flex flex-col gap-4">
+                  {/* billing Select */}
+                  <Select
+                    name="billingFrom"
+                    placeholder={translations('billingFrom.placeholder')}
+                    options={addressesOptions}
+                    styles={getStylesForSelectComponent()}
+                    className="max-w-full text-sm"
+                    classNamePrefix="select"
+                    value={selectBilling ? selectBilling?.selectedValue : null}
+                    onChange={(selectedOption) => {
+                      if (!selectedOption) return;
 
-                      <TableCell colSpan={1}>
-                        {initialQuantities[index]}
-                      </TableCell>
+                      if (selectedOption.value === 'add-new-address') {
+                        setIsAddingNewAddress(true);
+                        return;
+                      }
 
-                      <TableCell colSpan={2}>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex gap-1">
-                            <Button
-                              className="disabled:hover:cursor-not-allowed"
-                              variant="export"
-                              debounceTime="300"
-                              onClick={() => {
-                                if (product.quantity > 1) {
-                                  updateProductDetailsList(
-                                    product.orderItemId,
-                                    product.quantity - 1,
-                                  );
-                                }
-                              }}
-                              disabled={product?.quantity <= 1}
-                            >
-                              -
-                            </Button>
+                      setSelectBilling({
+                        billingFrom: selectedOption.value,
+                        selectedValue: selectedOption,
+                      });
 
-                            <InputWithSelect
-                              id="quantity"
-                              value={product?.quantity ?? ''}
-                              onValueChange={(e) => {
-                                const inputValue = e.target.value;
+                      setDispatchedData((prev) => ({
+                        ...prev,
+                        billingFromAddressId: selectedOption.value,
+                      }));
+                    }}
+                  />
+                  {errorMsg?.billingFrom && (
+                    <ErrorBox msg={errorMsg?.billingFrom} />
+                  )}
+                </div>
+              </div>
 
-                                // Allow clearing the field
-                                if (inputValue === '') {
-                                  updateProductDetailsList(
-                                    product.orderItemId,
-                                    '',
-                                  );
-                                  return;
-                                }
+              {/* add new address : visible if isAddingNewAddress is true */}
+              <AddNewAddress
+                isAddressAdding={isAddingNewAddress}
+                setIsAddressAdding={setIsAddingNewAddress}
+                mutationKey={settingsAPI.addUpdateAddress.endpointKey}
+                mutationFn={addUpdateAddress}
+                invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
+              />
+            </div>
 
-                                const newQty = parseFloat(inputValue);
+            {/* table of items */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-1">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={(value) => handleSelectAll(value)}
+                    />
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.item_name')}
+                  </TableHead>
+                  <TableHead
+                    className="shrink-0 text-xs font-bold text-black"
+                    colSpan="2"
+                  >
+                    {translations('table.header.invoice_qty')}
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.dispatch_qty')}
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.unit_price')}
+                  </TableHead>
+                  <TableHead className="shrink-0 text-xs font-bold text-black">
+                    {translations('table.header.total_amount')}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
 
-                                if (!Number.isNaN(newQty)) {
-                                  updateProductDetailsList(
-                                    product.orderItemId,
-                                    newQty,
-                                  );
-                                }
-                              }}
-                              unit={product.unitId} // unitId from state
-                              onUnitChange={(val) => {
+              <TableBody className="shrink-0">
+                {productDetailsList?.length > 0 &&
+                  productDetailsList?.map((product, index) => {
+                    return (
+                      <TableRow key={product.id}>
+                        <TableCell colSpan={1}>
+                          <Checkbox
+                            checked={product.isSelected}
+                            onCheckedChange={(value) => {
+                              const updatedList = [...productDetailsList];
+                              updatedList[index].isSelected = value;
+
+                              setProductDetailsList(updatedList);
+
+                              if (value) {
                                 const updatedItems = productDetailsList.map(
                                   (item, idx) => {
                                     if (idx === index) {
                                       return {
                                         ...item,
-                                        unitId: val,
+                                        totalAmount: parseFloat(
+                                          (
+                                            item.quantity * item.unitPrice
+                                          ).toFixed(2),
+                                        ),
+                                        totalGstAmount: parseFloat(
+                                          (
+                                            item.quantity *
+                                            item.unitPrice *
+                                            (item.gstPerUnit / 100)
+                                          ).toFixed(2),
+                                        ),
                                       };
                                     }
                                     return item;
                                   },
                                 );
 
-                                setProductDetailsList(updatedItems); // keep productDetailsList in sync
+                                setDispatchedData({
+                                  ...dispatchedData,
+                                  items: updatedItems.filter(
+                                    (item) => item.isSelected,
+                                  ),
+                                });
+                                setErrorMsg((prevMsg) => ({
+                                  ...prevMsg,
+                                  isAnyInvoiceSelected: '',
+                                }));
+                              } else {
                                 setDispatchedData((prev) => ({
                                   ...prev,
-                                  items: updatedItems,
+                                  items: prev.items.filter(
+                                    (item) =>
+                                      item.orderItemId !==
+                                      updatedList[index].orderItemId,
+                                  ),
                                 }));
-                              }}
-                              selectUnitDisabled={true}
-                              units={units?.quantity ?? []} // fallback to empty array
-                            />
-
-                            <Button
-                              className="disabled:cursor-not-allowed"
-                              variant="export"
-                              debounceTime="300"
-                              onClick={() => {
-                                if (
-                                  product?.quantity < initialQuantities[index]
-                                ) {
-                                  updateProductDetailsList(
-                                    product.orderItemId,
-                                    product.quantity + 1,
-                                  );
-                                }
-                              }}
-                              disabled={
-                                product?.quantity >= initialQuantities[index]
                               }
-                            >
-                              +
-                            </Button>
+                            }}
+                          />
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {product?.productName ?? product?.serviceName}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {initialQuantities[index]}
+                        </TableCell>
+
+                        <TableCell colSpan={2}>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex gap-1">
+                              <Button
+                                className="disabled:hover:cursor-not-allowed"
+                                variant="export"
+                                debounceTime="300"
+                                onClick={() => {
+                                  if (product.quantity > 1) {
+                                    updateProductDetailsList(
+                                      product.orderItemId,
+                                      product.quantity - 1,
+                                    );
+                                  }
+                                }}
+                                disabled={product?.quantity <= 1}
+                              >
+                                -
+                              </Button>
+
+                              <InputWithSelect
+                                id="quantity"
+                                value={product?.quantity ?? ''}
+                                onValueChange={(e) => {
+                                  const inputValue = e.target.value;
+
+                                  // Allow clearing the field
+                                  if (inputValue === '') {
+                                    updateProductDetailsList(
+                                      product.orderItemId,
+                                      '',
+                                    );
+                                    return;
+                                  }
+
+                                  const newQty = parseFloat(inputValue);
+
+                                  if (!Number.isNaN(newQty)) {
+                                    updateProductDetailsList(
+                                      product.orderItemId,
+                                      newQty,
+                                    );
+                                  }
+                                }}
+                                unit={product.unitId} // unitId from state
+                                onUnitChange={(val) => {
+                                  const updatedItems = productDetailsList.map(
+                                    (item, idx) => {
+                                      if (idx === index) {
+                                        return {
+                                          ...item,
+                                          unitId: val,
+                                        };
+                                      }
+                                      return item;
+                                    },
+                                  );
+
+                                  setProductDetailsList(updatedItems); // keep productDetailsList in sync
+                                  setDispatchedData((prev) => ({
+                                    ...prev,
+                                    items: updatedItems,
+                                  }));
+                                }}
+                                selectUnitDisabled={true}
+                                units={units?.quantity ?? []} // fallback to empty array
+                              />
+
+                              <Button
+                                className="disabled:cursor-not-allowed"
+                                variant="export"
+                                debounceTime="300"
+                                onClick={() => {
+                                  if (
+                                    product?.quantity < initialQuantities[index]
+                                  ) {
+                                    updateProductDetailsList(
+                                      product.orderItemId,
+                                      product.quantity + 1,
+                                    );
+                                  }
+                                }}
+                                disabled={
+                                  product?.quantity >= initialQuantities[index]
+                                }
+                              >
+                                +
+                              </Button>
+                            </div>
+
+                            {/* Validation error for this quantity field */}
+                            {errorMsg?.[`quantity_${product.orderItemId}`] && (
+                              <ErrorBox
+                                msg={
+                                  errorMsg[`quantity_${product.orderItemId}`]
+                                }
+                              />
+                            )}
                           </div>
+                        </TableCell>
 
-                          {/* Validation error for this quantity field */}
-                          {errorMsg?.[`quantity_${product.orderItemId}`] && (
-                            <ErrorBox
-                              msg={errorMsg[`quantity_${product.orderItemId}`]}
-                            />
-                          )}
-                        </div>
-                      </TableCell>
+                        <TableCell colSpan={1}>
+                          {`₹ ${(Number(product.unitPrice) || 0).toFixed(2)}`}
+                        </TableCell>
 
-                      <TableCell colSpan={1}>
-                        {`₹ ${(Number(product.unitPrice) || 0).toFixed(2)}`}
-                      </TableCell>
+                        <TableCell colSpan={1}>
+                          <Input
+                            type="text"
+                            name="totalAmount"
+                            disabled
+                            className="w-32 disabled:cursor-not-allowed"
+                            value={`₹ ${(Number(product.amount) || 0).toFixed(2)}`}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                {productDetailsList?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan="6">No result found</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
 
-                      <TableCell colSpan={1}>
-                        <Input
-                          type="text"
-                          name="totalAmount"
-                          disabled
-                          className="w-32 disabled:cursor-not-allowed"
-                          value={`₹ ${(Number(product.amount) || 0).toFixed(2)}`}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              {productDetailsList?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan="6">No result found</TableCell>
-                </TableRow>
+              {errorMsg?.isAnyInvoiceSelected && (
+                <TableFooter className="w-full shrink-0">
+                  <TableRow>
+                    <TableCell colSpan="7">
+                      <ErrorBox msg={errorMsg?.isAnyInvoiceSelected} />
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
               )}
-            </TableBody>
-
-            {errorMsg?.isAnyInvoiceSelected && (
-              <TableFooter className="w-full shrink-0">
-                <TableRow>
-                  <TableCell colSpan="7">
-                    <ErrorBox msg={errorMsg?.isAnyInvoiceSelected} />
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            )}
-          </Table>
-
+            </Table>
+          </div>
           <div className="flex justify-end gap-4 border-t pt-4">
             <div className="mt-auto h-[1px] bg-neutral-300"></div>
 

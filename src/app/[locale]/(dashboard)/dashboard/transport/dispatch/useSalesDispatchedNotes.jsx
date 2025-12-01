@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 export const useSalesDispatchedNotes = () => {
   const translations = useTranslations(
-    'sales.sales-dispatched-notes.table.header',
+    'transport.dispatched-notes.table.header',
   );
 
   // Function to handle row selection

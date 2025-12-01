@@ -88,8 +88,8 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="SGST %" />
       ),
       cell: ({ row }) => {
-        const sgst = row.original?.sgst;
-        return <span>{sgst ? `${sgst}%` : '--'}</span>;
+        const sgstRate = row.original?.sgstRate;
+        return <span>{sgstRate ? `${sgstRate}%` : '--'}</span>;
       },
     },
 
@@ -100,8 +100,8 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="CGST %" />
       ),
       cell: ({ row }) => {
-        const cgst = row.original?.cgst;
-        return <span>{cgst ? `${cgst}%` : '--'}</span>;
+        const cgstRate = row.original?.cgstRate;
+        return <span>{cgstRate ? `${cgstRate}%` : '--'}</span>;
       },
     },
 
@@ -112,8 +112,8 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="IGST %" />
       ),
       cell: ({ row }) => {
-        const igst = row.original?.igst;
-        return <span>{igst ? `${igst}%` : '--'}</span>;
+        const igstRate = row.original?.igstRate;
+        return <span>{igstRate ? `${igstRate}%` : '--'}</span>;
       },
     },
 
@@ -124,8 +124,8 @@ export const useEWBItemColumns = () => {
         <DataTableColumnHeader column={column} title="Cess %" />
       ),
       cell: ({ row }) => {
-        const cess = row.original?.cess;
-        return <span>{cess ? `${cess}%` : '--'}</span>;
+        const cessRate = row.original?.cessRate;
+        return <span>{cessRate ? `${cessRate}%` : '--'}</span>;
       },
     },
   ];

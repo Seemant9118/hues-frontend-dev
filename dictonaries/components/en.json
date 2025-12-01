@@ -959,6 +959,21 @@
         },
         "createDispatchNote": {
             "form": {
+                "transporter": {
+                    "label": "Transporter",
+                    "placeholder": "Select Transporter",
+                    "add-new-transport": "Add new Transport"
+                },
+                "dispatchFrom": {
+                    "label": "Dispatch From",
+                    "placeholder": "Select address",
+                    "add-new-address": "Add new address"
+                },
+                "billingFrom": {
+                    "label": "Billing From",
+                    "placeholder": "Select address",
+                    "add-new-address": "Add new address"
+                },
                 "table": {
                     "header": {
                         "item_name": "Item name",

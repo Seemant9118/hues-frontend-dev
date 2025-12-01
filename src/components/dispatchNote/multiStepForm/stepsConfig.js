@@ -22,9 +22,9 @@ export const stepsConfigA = [
         const docDate = new Date(form.docDate);
         const today = new Date();
         if (docDate > today) e.docDate = 'Document date cannot be in future';
-        const diffDays = Math.floor((today - docDate) / (1000 * 60 * 60 * 24));
-        if (diffDays > 180)
-          e.docDate = 'Document date should be within 180 days';
+        // const diffDays = Math.floor((today - docDate) / (1000 * 60 * 60 * 24));
+        // if (diffDays > 180)
+        //   e.docDate = 'Document date should be within 180 days';
       }
       return e;
     },

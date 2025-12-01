@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 export const useDispatchedItemColumns = () => {
   const translations = useTranslations(
-    'sales.sales-dispatched-notes.dispatch_details.tabs.tab2.table.header',
+    'transport.dispatched-notes.dispatch_details.tabs.tab2.table.header',
   );
 
   return [

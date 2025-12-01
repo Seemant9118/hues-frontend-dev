@@ -76,15 +76,15 @@ export default function CreateEWBA({
     cessValue: '',
     cessNonAdvolValue: '',
     // transport
-    transMode: '',
-    transporterId: '',
-    transporterName: '',
-    transDistance: '',
-    transDocNo: '',
-    transDocDate: '',
-    vehicleNo: '',
-    vehicleType: '',
-    remarks: '',
+    // transMode: '',
+    // transporterId: '',
+    // transporterName: '',
+    // transDistance: '',
+    // transDocNo: '',
+    // transDocDate: '',
+    // vehicleNo: '',
+    // vehicleType: '',
+    // remarks: '',
   }));
   const [errors, setErrors] = useState({});
 
@@ -108,11 +108,11 @@ export default function CreateEWBA({
             String(product?.unitId) ||
             String(item?.invoiceItem?.unitId) ||
             '',
-          sgstRate: Number(product?.sgstPercentage) || 0,
-          cgstRate: Number(product?.cgstPercentage) || 0,
-          igstRate: Number(product?.igstPercentage) || 0,
-          cessRate: Number(product?.cessRate) || 0,
-          cessNonAdvol: Number(product?.cessNonAdvol) || 0,
+          sgstRate: Number(item?.sgstPercentage) || 0,
+          cgstRate: Number(item?.cgstPercentage) || 0,
+          igstRate: Number(item?.igstPercentage) || 0,
+          cessRate: Number(item?.cessPercentage) || 0,
+          cessNonAdvol: Number(item?.cessNonAdvol) || 0,
         };
       }) || [];
 
@@ -127,6 +127,7 @@ export default function CreateEWBA({
     // MAP DISPATCH DETAILS
     const mapped = {
       // supply
+      supplyType: 'O',
       docNo: dispatchDetails?.invoice?.referenceNumber?.replace(
         /^INV[-/]?/,
         '',
@@ -140,7 +141,9 @@ export default function CreateEWBA({
       fromStateCode:
         Number(dispatchDetails?.billingFromAddress?.stateCode) || '',
       fromStateCodeName: dispatchDetails?.billingFromAddress?.stateName || '', // to show frontend only
-      fromTrdName: dispatchDetails?.sellerDetails?.tradeName,
+      fromTrdName:
+        dispatchDetails?.sellerDetails?.tradeName ||
+        dispatchDetails?.sellerDetails?.name,
       actFromStateCode:
         Number(dispatchDetails?.dispatchFromAddress?.stateCode) || '',
       actFromStateCodeName:
@@ -150,22 +153,25 @@ export default function CreateEWBA({
       fromPlace: dispatchDetails?.billingFromAddress?.pincode,
       fromPlaceName: dispatchDetails?.billingFromAddress?.district || '', // to show frontend only
       dispatchFromGSTIN: dispatchDetails?.sellerDetails?.gst,
-      dispatchFromTradeName: dispatchDetails?.sellerDetails?.tradeName,
+      dispatchFromTradeName:
+        dispatchDetails?.sellerDetails?.tradeName ||
+        dispatchDetails?.sellerDetails?.name,
 
       // consignee
-      toGstin: dispatchDetails?.buyerGst || 'URP',
+      toGstin: dispatchDetails?.buyerGst || 'URD',
       toPincode: Number(dispatchDetails?.billingAddress?.pincode) || '',
       toStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
       toStateCodeName: dispatchDetails?.billingAddress?.stateName || '', // to show frontend only
-      toTrdName: dispatchDetails?.buyerTradeName,
+      toTrdName: dispatchDetails?.buyerTradeName || dispatchDetails?.buyerName,
       actToStateCode: Number(dispatchDetails?.shippingAddress?.stateCode) || '',
       actToStateCodeName: dispatchDetails?.shippingAddress?.stateName || '', // to show frontend only
       toAddr1: toAddress?.addr1 || '',
       toAddr2: toAddress?.addr2 || '',
       toPlace: dispatchDetails?.shippingAddress?.pincode,
       toPlaceName: dispatchDetails?.shippingAddress?.district || '', // to show frontend only
-      shipToGSTIN: dispatchDetails?.buyerGst || 'URP',
-      shipToTradeName: dispatchDetails?.buyerTradeName,
+      shipToGSTIN: dispatchDetails?.buyerGst || 'URD',
+      shipToTradeName:
+        dispatchDetails?.buyerTradeName || dispatchDetails?.buyerName,
 
       // UPDATED ITEM LIST
       itemList: formattedItems,
@@ -173,22 +179,22 @@ export default function CreateEWBA({
         Number(dispatchDetails?.totalAmount) +
         Number(dispatchDetails?.totalGstAmount),
       totalValue: Number(dispatchDetails?.totalAmount) || 0,
-      cgstValue: Number(dispatchDetails?.totalCgstAmount) || 0,
-      sgstValue: Number(dispatchDetails?.totalSgstAmount) || 0,
-      igstValue: Number(dispatchDetails?.totalIgstAmount) || 0,
-      cessValue: Number(dispatchDetails?.cessAmount) || 0,
+      cgstValue: Number(dispatchDetails?.totalCgstPercentage) || 0,
+      sgstValue: Number(dispatchDetails?.totalSgstPercentage) || 0,
+      igstValue: Number(dispatchDetails?.totalIgstPercentage) || 0,
+      cessValue: Number(dispatchDetails?.cessPercentage) || 0,
       cessNonAdvolValue: Number(dispatchDetails?.cessNonAdvolValue) || 0,
 
       // transport
-      transMode: '',
-      transporterId: '',
-      transporterName: '',
-      transDistance: '',
-      transDocNo: '',
-      transDocDate: '',
-      vehicleNo: '',
-      vehicleType: '',
-      remarks: '',
+      // transMode: '',
+      // transporterId: '',
+      // transporterName: '',
+      // transDistance: 0,
+      // transDocNo: '',
+      // transDocDate: '',
+      // vehicleNo: '',
+      // vehicleType: '',
+      // remarks: '',
     };
 
     // Merge with draftData
@@ -221,8 +227,8 @@ export default function CreateEWBA({
       const docDate = new Date(form.docDate);
       const today = new Date();
       if (docDate > today) e.docDate = 'Document date cannot be in future';
-      const diffDays = Math.floor((today - docDate) / (1000 * 60 * 60 * 24));
-      if (diffDays > 180) e.docDate = 'Document date should be within 180 days';
+      // const diffDays = Math.floor((today - docDate) / (1000 * 60 * 60 * 24));
+      // if (diffDays > 180) e.docDate = 'Document date should be within 180 days';
     }
 
     if (!form.fromGstin) e.fromGstin = 'From GSTIN required';

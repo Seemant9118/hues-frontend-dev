@@ -15,7 +15,7 @@ export const useDispatchedTransporterBookingColumns = ({
   setSelectedTransportForUpdateB,
 }) => {
   const translations = useTranslations(
-    'sales.sales-dispatched-notes.dispatch_details.tabs.tab3.table',
+    'transport.dispatched-notes.dispatch_details.tabs.tab3.table',
   );
 
   return [
@@ -85,19 +85,47 @@ export const useDispatchedTransporterBookingColumns = ({
         />
       ),
       cell: ({ row }) => {
-        const { hasPartBDetails } = row.original;
-        return hasPartBDetails ? (
+        const { hasPartBDetails, ewayBillNo } = row.original;
+
+        // Case 1: EWB present & Part-B NOT added → show "Update Part-B"
+        if (ewayBillNo && hasPartBDetails === false) {
+          return (
+            <button
+              onClick={() => {
+                setIsCreatingEWBB(true);
+                setSelectedTransportForUpdateB(row.original?.bookingId);
+              }}
+              className="rounded-sm border bg-green-500 px-2 py-1 text-white hover:border hover:bg-green-600 hover:underline"
+            >
+              {translations('ctas.updatePartB')}
+            </button>
+          );
+        }
+
+        // Case 2: EWB present & Part-B added → show "Part-B Details"
+        if (ewayBillNo && hasPartBDetails === true) {
+          return (
+            <button
+              onClick={() => {}}
+              className="rounded-sm border bg-blue-500 px-2 py-1 text-white hover:border hover:bg-blue-600 hover:underline"
+            >
+              {translations('ctas.viewPartBDetails')}
+            </button>
+          );
+        }
+
+        // Case 3: No EWB → show NA
+        return (
           <button
+            disabled={true}
             onClick={() => {
               setIsCreatingEWBB(true);
               setSelectedTransportForUpdateB(row.original?.bookingId);
             }}
-            className="rounded-sm border bg-green-500 px-2 py-1 text-white hover:border hover:bg-green-600 hover:underline"
+            className="rounded-sm border bg-gray-500 px-2 py-1 text-white hover:border"
           >
-            {translations('ctas.updatePartB')}
+            E-Way Bill Not Generated
           </button>
-        ) : (
-          'NA'
         );
       },
     },
