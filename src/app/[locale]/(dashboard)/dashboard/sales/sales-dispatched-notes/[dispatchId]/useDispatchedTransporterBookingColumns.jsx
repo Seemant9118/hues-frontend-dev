@@ -85,7 +85,8 @@ export const useDispatchedTransporterBookingColumns = ({
         />
       ),
       cell: ({ row }) => {
-        return (
+        const { hasPartBDetails } = row.original;
+        return hasPartBDetails ? (
           <button
             onClick={() => {
               setIsCreatingEWBB(true);
@@ -95,6 +96,8 @@ export const useDispatchedTransporterBookingColumns = ({
           >
             {translations('ctas.updatePartB')}
           </button>
+        ) : (
+          'NA'
         );
       },
     },
