@@ -79,7 +79,7 @@ export default function CreateEWBA({
     // transMode: '',
     // transporterId: '',
     // transporterName: '',
-    // transDistance: '',
+    transDistance: '0',
     // transDocNo: '',
     // transDocDate: '',
     // vehicleNo: '',
@@ -103,11 +103,7 @@ export default function CreateEWBA({
           productDesc: product?.description || '',
           quantity: item?.dispatchedQuantity || 0,
           // Adjust unit based on your logic (unitId/weightUnitId)
-          qtyUnit:
-            String(product?.weightUnitId) ||
-            String(product?.unitId) ||
-            String(item?.invoiceItem?.unitId) ||
-            '',
+          qtyUnit: String(item?.qtyUnit) || '',
           sgstRate: Number(item?.sgstPercentage) || 0,
           cgstRate: Number(item?.cgstPercentage) || 0,
           igstRate: Number(item?.igstPercentage) || 0,
@@ -138,7 +134,9 @@ export default function CreateEWBA({
         /^INV[-/]?/,
         '',
       ),
-      docDate: moment(dispatchDetails?.createdAt)?.format('DD/MM/YYYY'), // doubt: is dispatch note createdAt or invoice createdAt
+      docDate: moment(dispatchDetails?.invoice?.createdAt)?.format(
+        'DD/MM/YYYY',
+      ), // invoice createdAt
       transactionType: dispatchDetails?.transactionType?.code,
 
       // consignor
@@ -193,7 +191,7 @@ export default function CreateEWBA({
       // transMode: '',
       // transporterId: '',
       // transporterName: '',
-      // transDistance: 0,
+      transDistance: '0',
       // transDocNo: '',
       // transDocDate: '',
       // vehicleNo: '',
