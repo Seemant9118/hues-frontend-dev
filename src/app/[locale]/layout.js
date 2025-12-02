@@ -21,7 +21,7 @@ const nanumPen = nanumPenScript({
 
 // Metadata configuration
 export const metadata = {
-  title: 'Hues! ~ AI for .. All',
+  title: 'Hues! ~ Beta trial',
   description: 'HUES DASHBOARD',
 };
 
