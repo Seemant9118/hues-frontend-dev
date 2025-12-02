@@ -18,6 +18,7 @@ import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
+import { DynamicTextInfo } from '@/components/ui/dynamic-text-info';
 import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -59,9 +60,9 @@ import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import emptyImg from '../../../../../../../../public/Empty.png';
+import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 import { useDispatchedTransporterBookingColumns } from './useDispatchedTransporterBookingColumns';
-import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useEWBsColumns } from './useEWBsColumns';
 
 // const TESTING_DATA = [
@@ -905,6 +906,22 @@ const ViewDispatchNote = () => {
     });
   }, [data]);
 
+  // logics to rendered required component/ctas
+  const isNeededToCreateBookingOrEWB =
+    dispatchDetails?.deliveryChallanNo &&
+    !dispatchDetails?.ewb &&
+    dispatchDetails?.transportBookings?.length === 0;
+  const showAddBookingCTA =
+    (tab !== 'ewb' && isNeededToCreateBookingOrEWB) ||
+    (tab === 'transports' &&
+      (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
+        dispatchDetails?.status === 'READY_FOR_TRANSPORT'));
+  const showGenerateEWBCTA =
+    (tab !== 'transports' && isNeededToCreateBookingOrEWB) ||
+    (tab === 'ewb' &&
+      (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
+        dispatchDetails?.status === 'READY_FOR_TRANSPORT'));
+
   const onEWBRowClick = (row) => {
     return router.push(
       `/dashboard/transport/dispatch${params.dispatchId}/${row.ewbNo}`,
@@ -966,21 +983,22 @@ const ViewDispatchNote = () => {
                   </TabsTrigger>
                 </TabsList>
                 {/* ctas - tab based */}
-                {/* add a booking */}
-                {tab === 'transports' &&
-                  (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
-                    dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
-                    <Button size="sm" onClick={() => setIsAddingBooking(true)}>
+                <div className="flex items-center gap-2">
+                  {/* add a booking cta */}
+                  {showAddBookingCTA && (
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={() => setIsAddingBooking(true)}
+                    >
                       <PlusCircle size={14} />
                       {translations('overview_inputs.ctas.addBooking')}
                     </Button>
                   )}
-
-                {/* generate e-way bill cta */}
-                {tab === 'ewb' &&
-                  (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
-                    dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
-                    <div className="flex items-center gap-2">
+                  {/* refresh EWB cta */}
+                  {tab === 'ewb' &&
+                    (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
+                      dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
                       <Button
                         size="sm"
                         variant="blue_outline"
@@ -992,13 +1010,15 @@ const ViewDispatchNote = () => {
                         <RefreshCcw size={14} />
                         {translations('overview_inputs.ctas.refreshEWayBill')}
                       </Button>
-
-                      <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
-                        <PlusCircle size={14} />
-                        {translations('overview_inputs.ctas.generateEWayBill')}
-                      </Button>
-                    </div>
+                    )}
+                  {/* generate e-way bill cta */}
+                  {showGenerateEWBCTA && (
+                    <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
+                      <PlusCircle size={14} />
+                      {translations('overview_inputs.ctas.generateEWayBill')}
+                    </Button>
                   )}
+                </div>
               </section>
               <TabsContent value="overview">
                 {/* OVERVIEW SECTION - TODO customs data (required) */}
@@ -1017,6 +1037,14 @@ const ViewDispatchNote = () => {
                   mutationFn={addUpdateAddress}
                   invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
                 />
+
+                {isNeededToCreateBookingOrEWB && (
+                  <DynamicTextInfo
+                    variant="warning"
+                    title="No Transport Booking or E-Way Bill Found"
+                    description="Please add transport details or generate an E-Way Bill to proceed."
+                  />
+                )}
 
                 {/* COMMENTS */}
                 <CommentBox

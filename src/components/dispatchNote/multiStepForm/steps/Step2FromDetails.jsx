@@ -48,7 +48,7 @@ export default function Step2FromDetails({ formData, setFormData, errors }) {
         </div> */}
       </div>
 
-      <h1 className="font-semibold">Addresses</h1>
+      <h1 className="font-semibold">Address</h1>
       <div className="grid grid-cols-3 gap-4">
         <div>
           <Label>From Pincode</Label>

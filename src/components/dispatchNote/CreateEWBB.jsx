@@ -51,7 +51,7 @@ export default function CreateEWBB({
       transMode: draftData?.transMode || '',
       transporterId: draftData?.transporterId || '',
       transporterName: dispatchDetails?.transporterName || '',
-      transDistance: draftData?.transDistance || '',
+      transDistance: draftData?.transDistance || 0,
       transDocNo: transportDetails?.bookingNumber || '',
       transDocDate:
         moment(transportDetails?.bookingDate).format('DD/MM/YYYY') || '',

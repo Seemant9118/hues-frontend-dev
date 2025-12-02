@@ -68,7 +68,7 @@
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
                         "generateDC":"Generate Delivery Challan",
-                        "addBooking": "Add Booking",
+                        "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",
                         "updatePartB": "Update Part-B",
