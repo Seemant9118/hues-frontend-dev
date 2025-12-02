@@ -103,11 +103,7 @@ export default function CreateEWBA({
           productDesc: product?.description || '',
           quantity: item?.dispatchedQuantity || 0,
           // Adjust unit based on your logic (unitId/weightUnitId)
-          qtyUnit:
-            String(product?.weightUnitId) ||
-            String(product?.unitId) ||
-            String(item?.invoiceItem?.unitId) ||
-            '',
+          qtyUnit: String(item?.qtyUnit) || '',
           sgstRate: Number(item?.sgstPercentage) || 0,
           cgstRate: Number(item?.cgstPercentage) || 0,
           igstRate: Number(item?.igstPercentage) || 0,
