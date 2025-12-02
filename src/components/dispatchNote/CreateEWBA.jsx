@@ -164,7 +164,7 @@ export default function CreateEWBA({
         dispatchDetails?.sellerDetails?.name,
 
       // consignee
-      toGstin: dispatchDetails?.buyerGst || 'URD',
+      toGstin: dispatchDetails?.buyerGst || 'URP',
       toPincode: Number(dispatchDetails?.billingAddress?.pincode) || '',
       toStateCode: Number(dispatchDetails?.billingAddress?.stateCode) || '',
       toStateCodeName: dispatchDetails?.billingAddress?.stateName || '', // to show frontend only
@@ -175,7 +175,7 @@ export default function CreateEWBA({
       toAddr2: toAddress?.addr2 || '',
       toPlace: dispatchDetails?.shippingAddress?.pincode,
       toPlaceName: dispatchDetails?.shippingAddress?.district || '', // to show frontend only
-      shipToGSTIN: dispatchDetails?.buyerGst || 'URD',
+      shipToGSTIN: dispatchDetails?.buyerGst || 'URP',
       shipToTradeName:
         dispatchDetails?.buyerTradeName || dispatchDetails?.buyerName,
 
