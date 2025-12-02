@@ -45,7 +45,7 @@ export default function Step4Items({ formData, setFormData, errors }) {
           />
         </div>
         <div>
-          <Label>CGST Rate</Label>
+          <Label>CGST</Label>
           <Input
             disabled
             value={formData?.cgstValue}
@@ -53,7 +53,7 @@ export default function Step4Items({ formData, setFormData, errors }) {
           />
         </div>
         <div>
-          <Label>SGST Rate</Label>
+          <Label>SGST</Label>
           <Input
             disabled
             value={formData?.sgstValue}
@@ -61,7 +61,7 @@ export default function Step4Items({ formData, setFormData, errors }) {
           />
         </div>
         <div>
-          <Label>IGST Rate</Label>
+          <Label>IGST</Label>
           <Input
             disabled
             value={formData?.igstValue}
@@ -69,7 +69,7 @@ export default function Step4Items({ formData, setFormData, errors }) {
           />
         </div>
         <div>
-          <Label>CESS Rate</Label>
+          <Label>CESS</Label>
           <Input
             disabled
             value={formData?.cessValue}

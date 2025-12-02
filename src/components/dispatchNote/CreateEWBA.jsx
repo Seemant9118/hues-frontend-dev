@@ -124,10 +124,16 @@ export default function CreateEWBA({
       dispatchDetails?.shippingAddress?.address,
     );
 
+    // totalInvValue, totalValue
+    const total = Number(dispatchDetails?.totalAmount) || 0;
+    const gst = Number(dispatchDetails?.totalGstAmount) || 0;
+
     // MAP DISPATCH DETAILS
     const mapped = {
       // supply
-      supplyType: 'O',
+      supplyType: 'O', // for now
+      subSupplyType: '1', // for now
+      docType: dispatchDetails?.sellerDetails?.gst ? 'INV' : 'BIL', // for now
       docNo: dispatchDetails?.invoice?.referenceNumber?.replace(
         /^INV[-/]?/,
         '',
@@ -175,14 +181,12 @@ export default function CreateEWBA({
 
       // UPDATED ITEM LIST
       itemList: formattedItems,
-      totInvValue:
-        Number(dispatchDetails?.totalAmount) +
-        Number(dispatchDetails?.totalGstAmount),
-      totalValue: Number(dispatchDetails?.totalAmount) || 0,
-      cgstValue: Number(dispatchDetails?.totalCgstPercentage) || 0,
-      sgstValue: Number(dispatchDetails?.totalSgstPercentage) || 0,
-      igstValue: Number(dispatchDetails?.totalIgstPercentage) || 0,
-      cessValue: Number(dispatchDetails?.cessPercentage) || 0,
+      totInvValue: Number((total + gst).toFixed(2)),
+      totalValue: Number(total.toFixed(2)),
+      cgstValue: Number(dispatchDetails?.totalCgstAmount) || 0,
+      sgstValue: Number(dispatchDetails?.totalSgstAmount) || 0,
+      igstValue: Number(dispatchDetails?.totalIgstAmount) || 0,
+      cessValue: Number(dispatchDetails?.cessAmount) || 0,
       cessNonAdvolValue: Number(dispatchDetails?.cessNonAdvolValue) || 0,
 
       // transport

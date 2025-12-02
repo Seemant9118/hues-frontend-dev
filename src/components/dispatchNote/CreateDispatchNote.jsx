@@ -434,7 +434,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
           <div className="flex flex-col gap-4">
             {/* form - transporter, dispatch from, billing from */}
             <div className="grid grid-cols-2 gap-2 rounded-sm border p-4">
-              <h1>Dispatch Details</h1>
+              <h1 className="font-semibold">Dispatch Details</h1>
               {/* transporter */}
               <div className="col-span-2">
                 <Label>{translations('transporter.label')}</Label>{' '}
@@ -579,6 +579,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
             </div>
 
             {/* table of items */}
+            <h1 className="font-semibold">Items</h1>
             <Table>
               <TableHeader>
                 <TableRow>
