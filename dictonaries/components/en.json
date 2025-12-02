@@ -1036,6 +1036,7 @@
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
             "DRAFT": "Draft",
+            "IN_TRANSIT":"In Transit",
             "READY_FOR_DISPATCH": " Ready for Dispatch"
         }
     }

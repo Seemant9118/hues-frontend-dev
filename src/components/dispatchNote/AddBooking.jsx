@@ -36,6 +36,7 @@ const AddBooking = ({
   setTab,
   queryClient,
   dispatchNoteId,
+  deliveryId,
   //   isAddingBooking,
   setIsAddingBooking,
   dispatchOrdersBreadCrumbs,
@@ -51,6 +52,7 @@ const AddBooking = ({
     remarks: bookingDraftData?.remarks || '',
     sourceAddress: bookingDraftData?.sourceAddress || '',
     destinationAddress: bookingDraftData?.destinationAddress || '',
+    voucherId: Number(deliveryId),
   });
 
   const [errorMsg, setErrorMsg] = useState({});
@@ -118,7 +120,7 @@ const AddBooking = ({
       SessionStorageService.remove('bookingDataDraft');
 
       queryClient.invalidateQueries({
-        queryKey: [deliveryProcess.getDispatchNote.endpointKey],
+        queryKey: [deliveryProcess.getDeliveryChallan.endpointKey],
       });
     },
     onError: (error) => {
@@ -144,6 +146,7 @@ const AddBooking = ({
         formData.append('files', file);
       });
     }
+    formData.append('voucherId', deliveryId);
     formData.append('dispatchNoteId', dispatchNoteId);
     formData.append('bookingType', bookingData.bookingType);
     formData.append('bookingNumber', bookingData.bookingNumber);

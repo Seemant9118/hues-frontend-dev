@@ -25,6 +25,13 @@ export const getDispatchNote = (id) => {
   return APIinstance.get(`${deliveryProcess.getDispatchNote.endpoint}${id}`);
 };
 
+export const previewDispatchNote = ({ id, data }) => {
+  return APIinstance.post(
+    `${deliveryProcess.previewDispatchNote.endpoint}${id}`,
+    data,
+  );
+};
+
 export const addTransporterToDispatchNote = ({ dispatchNoteId, data }) => {
   return APIinstance.put(
     `${deliveryProcess.addTransporter.endpoint}${dispatchNoteId}`,
@@ -78,5 +85,29 @@ export const getEWB = ({ id }) => {
 export const getEWBs = ({ id, page, limit }) => {
   return APIinstance.get(
     `${deliveryProcess.getEWBs.endpoint}?dispatchNoteId=${id}&page=${page}&limit=${limit}`,
+  );
+};
+
+export const previewDeliveryChallan = ({ id, data }) => {
+  return APIinstance.post(
+    `${deliveryProcess.previewDeliveryChallan.endpoint}${id}`,
+    data,
+  );
+};
+
+export const generateDeliveryChallan = ({ id, data }) => {
+  return APIinstance.post(
+    `${deliveryProcess.generateDeliveryChallan.endpoint}${id}`,
+    data,
+  );
+};
+
+export const getDeliveryChallan = (id) => {
+  return APIinstance.get(`${deliveryProcess.getDeliveryChallan.endpoint}${id}`);
+};
+
+export const getDeliveryChallans = ({ page, limit }) => {
+  return APIinstance.get(
+    `${deliveryProcess.getDeliveryChallans.endpoint}?page=${page}&limit=${limit}`,
   );
 };

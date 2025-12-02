@@ -151,6 +151,12 @@ const ConditionalRenderingStatus = ({
       statusBG = '#288AF91A';
       statusBorder = '#288AF9';
       break;
+    case 'IN_TRANSIT':
+      statusText = translations('IN_TRANSIT');
+      statusColor = '#F8BA05';
+      statusBG = '#F8BA051A';
+      statusBorder = '#F8BA05';
+      break;
 
     default:
       return null;

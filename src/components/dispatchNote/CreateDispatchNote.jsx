@@ -60,6 +60,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
     transporterId: '',
+    transporterType: '',
     dispatchFromAddressId: '',
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
@@ -88,6 +89,10 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
 
       return { value, label };
     }),
+    {
+      value: null, // if no transport than user can select this"
+      label: 'Self',
+    },
     // Special option for "Add New Vendor"
     {
       value: 'add-new-vendor', // Special value for "Add New Vendor"
@@ -312,9 +317,6 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const validations = (disptachedData) => {
     const error = {};
 
-    if (!dispatchedData?.transporterId) {
-      error.transporterId = 'Please select an Transporter';
-    }
     if (!dispatchedData?.dispatchFromAddressId) {
       error.dispatchFrom = 'Please select an dispatch address';
     }
@@ -466,6 +468,9 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
                       setDispatchedData((prev) => ({
                         ...prev,
                         transporterId: selectedOption.value,
+                        transporterType: selectedOption.value
+                          ? 'THIRD_PARTY'
+                          : 'SELF',
                       }));
 
                       setIsAddingNewTransport(false);
