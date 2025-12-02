@@ -123,6 +123,11 @@ const Sidebar = () => {
           icon: <ArchiveRestore size={16} />,
           path: '/dashboard/transport/dispatch',
         },
+        {
+          name: 'sidebar.subTabs.deliveryChallan',
+          icon: <ReceiptText size={16} />,
+          path: '/dashboard/transport/delivery-challan',
+        },
       ],
     },
     hasPermission('permission:sales-view') && {

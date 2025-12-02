@@ -19,6 +19,7 @@
             "payments": "Payments",
             "debitNotes": "Debit Notes",
             "dispatch": "Dispatch",
+            "deliveryChallan":"Delivery Challan",
             "clients": "Clients",
             "vendors": "Vendors",
             "customers": "Customers"

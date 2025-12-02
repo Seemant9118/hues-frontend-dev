@@ -11,8 +11,10 @@ import {
 } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import AddBooking from '@/components/dispatchNote/AddBooking';
 import AddTransport from '@/components/dispatchNote/AddTransport';
-import GenerateDCPreviewForm from '@/components/dispatchNote/generateDCform/GenerateDCPreivewForm';
+import CreateEWBA from '@/components/dispatchNote/CreateEWBA';
+import CreateEWBB from '@/components/dispatchNote/CreateEWBB';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -26,9 +28,8 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import {
-  getDispatchNote,
-  previewDeliveryChallan,
-  previewDispatchNote,
+  getDeliveryChallan,
+  getEWBs,
   sendToTransporter,
   update,
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
@@ -38,14 +39,33 @@ import {
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, MoveUpRight, Pencil, Plus, X } from 'lucide-react';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import {
+  Eye,
+  MoveUpRight,
+  Pencil,
+  Plus,
+  PlusCircle,
+  RefreshCcw,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import emptyImg from '../../../../../../../../public/Empty.png';
+import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
+import { useDispatchedTransporterBookingColumns } from './useDispatchedTransporterBookingColumns';
+import { useEWBsColumns } from './useEWBsColumns';
 
 // const TESTING_DATA = [
 //   {
@@ -198,10 +218,10 @@ import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 //   },
 // ];
 
-const ViewDispatchNote = () => {
+const ViewDelivery = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations(
-    'transport.dispatched-notes.dispatch_details',
+    'transport.delivery-challan.delivery_challan_details',
   );
 
   const queryClient = useQueryClient();
@@ -209,8 +229,6 @@ const ViewDispatchNote = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
-  const [isGeneratingDC, setIsGeneratingDC] = useState(false);
-  const [dcPreviewUrl, setDCPriviewUrl] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -222,10 +240,10 @@ const ViewDispatchNote = () => {
   const [editModeDispatchFrom, setEditModeDispatchFrom] = useState(false);
   const [selectBillingFrom, setSelectBillingFrom] = useState(null);
   const [editModeBillingFrom, setEditModeBillingFrom] = useState(false);
-  // const [selectedTransportForUpdateB, setSelectedTransportForUpdateB] =
-  //   useState(null);
-  // const [ewayBills, setEwayBills] = useState(null);
-  // const [paginationData, setPaginationData] = useState(null);
+  const [selectedTransportForUpdateB, setSelectedTransportForUpdateB] =
+    useState(null);
+  const [ewayBills, setEwayBills] = useState(null);
+  const [paginationData, setPaginationData] = useState(null);
 
   const onTabChange = (tab) => {
     setTab(tab);
@@ -235,38 +253,32 @@ const ViewDispatchNote = () => {
     {
       id: 1,
       name: translations('title.dispatch_notes'),
-      path: '/dashboard/transport/dispatch',
+      path: '/dashboard/transport/delivery-challan/',
       show: true,
     },
     {
       id: 2,
       name: translations('title.dispatch_details'),
-      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
+      path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
       show: true,
     },
     {
       id: 3,
       name: translations('title.addBooking'),
-      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
+      path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
       show: isAddingBooking,
     },
     {
       id: 4,
       name: translations('title.createEWBA'),
-      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
+      path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
       show: isCreatingEWBA,
     },
     {
       id: 5,
       name: translations('title.createEWBB'),
-      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
+      path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
       show: isCreatingEWBB,
-    },
-    {
-      id: 5,
-      name: translations('title.generateDC'),
-      path: `/dashboard/transport/dispatch/${params.dispatchId}`,
-      show: isGeneratingDC,
     },
   ];
   useEffect(() => {
@@ -276,12 +288,11 @@ const ViewDispatchNote = () => {
     setIsAddingBooking(state === 'addBooking');
     setIsCreatingEWBA(state === 'createEWBA');
     setIsCreatingEWBB(state === 'createEWBB');
-    setIsGeneratingDC(state === 'generateDC');
   }, [searchParams]);
 
   useEffect(() => {
     // Update URL based on the state (avoid shallow navigation for full update)
-    let newPath = `/dashboard/transport/dispatch/${params.dispatchId}`;
+    let newPath = `/dashboard/transport/delivery-challan/${params.deliveryId}`;
 
     if (isAddingBooking) {
       newPath += '?state=addBooking';
@@ -289,19 +300,16 @@ const ViewDispatchNote = () => {
       newPath += '?state=createEWBA';
     } else if (isCreatingEWBB) {
       newPath += '?state=createEWBB';
-    } else if (isGeneratingDC) {
-      newPath += '?state=generateDC';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
   }, [
-    params.dispatchId,
+    params.deliveryId,
     isAddingBooking,
     isCreatingEWBA,
     isCreatingEWBB,
-    isGeneratingDC,
     router,
   ]);
 
@@ -397,18 +405,18 @@ const ViewDispatchNote = () => {
   const { isLoading: isDispatchDetailsLoading, data: dispatchDetails } =
     useQuery({
       queryKey: [
-        deliveryProcess.getDispatchNote.endpointKey,
-        params.dispatchId,
+        deliveryProcess.getDeliveryChallan.endpointKey,
+        params.deliveryId,
       ],
-      queryFn: () => getDispatchNote(params.dispatchId),
+      queryFn: () => getDeliveryChallan(params.deliveryId),
       select: (data) => data.data.data,
     });
 
   // formated dispatched items for table
   const mapDispatchDetailsForItems = (dispatchDetails = {}) => {
-    if (!Array.isArray(dispatchDetails.items)) return [];
+    if (!Array.isArray(dispatchDetails?.metaData?.items)) return [];
 
-    return dispatchDetails?.items?.map((item) => ({
+    return dispatchDetails?.metaData?.items?.map((item) => ({
       productName:
         item?.invoiceItem?.orderItemId?.productDetails?.productName ?? '--',
 
@@ -424,59 +432,59 @@ const ViewDispatchNote = () => {
   const formattedDispatchedItems = mapDispatchDetailsForItems(dispatchDetails);
 
   // formatted dispatched transporter bookings for table
-  // const mapTransportBookings = (dispatchDetails = {}) => {
-  //   if (!Array.isArray(dispatchDetails.transportBookings)) return [];
+  const mapTransportBookings = (dispatchDetails = {}) => {
+    if (!Array.isArray(dispatchDetails.transportBookings)) return [];
 
-  //   return dispatchDetails?.transportBookings?.map((booking) => ({
-  //     bookingId: booking?.id,
-  //     type: booking?.bookingType ?? '--',
-  //     bookingNo: booking?.bookingNumber ?? '--',
-  //     date: booking?.bookingDate ?? null,
-  //     remarks: booking?.remarks ?? '--',
-  //     attachments: booking.documents,
-  //     ewayBillNo: booking.ewayBillNo,
-  //     hasPartBDetails: booking?.hasPartBDetails,
-  //   }));
-  // };
-  // const formattedDispatchedTransporterBookings =
-  //   mapTransportBookings(dispatchDetails);
+    return dispatchDetails?.transportBookings?.map((booking) => ({
+      bookingId: booking?.id,
+      type: booking?.bookingType ?? '--',
+      bookingNo: booking?.bookingNumber ?? '--',
+      date: booking?.bookingDate ?? null,
+      remarks: booking?.remarks ?? '--',
+      attachments: booking.documents,
+      ewayBillNo: booking.ewayBillNo,
+      hasPartBDetails: booking?.hasPartBDetails,
+    }));
+  };
+  const formattedDispatchedTransporterBookings =
+    mapTransportBookings(dispatchDetails);
 
   // OVERVIEW DATA
-  const totalAmount = Number(dispatchDetails?.totalAmount || 0);
-  const totalGstAmount = Number(dispatchDetails?.totalGstAmount || 0);
+  const totalAmount = Number(dispatchDetails?.metaData?.totalAmount || 0);
+  const totalGstAmount = Number(dispatchDetails?.metaData?.totalGstAmount || 0);
   const overviewData = {
-    invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
-    consignor: dispatchDetails?.sellerDetails?.name || '-',
-    consignee: dispatchDetails?.buyerName || '-',
-    supply: dispatchDetails?.supply || 'Outward',
-    dispatchId: dispatchDetails?.referenceNumber || '-',
+    dispatchId: dispatchDetails?.dispatchNote?.referenceNumber || '-',
+    consignor: dispatchDetails?.metaData?.sellerDetails?.name || '-',
+    consignee: dispatchDetails?.metaData?.buyerName || '-',
+    supply: dispatchDetails?.metaData?.supply || 'Outward',
+    deliveryChallanNo: dispatchDetails?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
-    // deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
-    // EWB: dispatchDetails?.ewb || '-',
-    transporter: dispatchDetails?.transporterName || '-',
-    dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
-    billingFrom: dispatchDetails?.billingFromAddress?.address || '-',
-    billingAddress: capitalize(dispatchDetails?.billingAddress?.address) || '-',
+    EWB: dispatchDetails?.metaData?.ewb || '-',
+    transporter: dispatchDetails?.metaData?.transporterName || '-',
+    dispatchFrom:
+      dispatchDetails?.metaData?.dispatchFromAddress?.address || '-',
+    billingFrom: dispatchDetails?.metaData?.billingFromAddress?.address || '-',
+    billingAddress:
+      capitalize(dispatchDetails?.metaData?.billingAddress?.address) || '-',
     shippingAddress:
-      capitalize(dispatchDetails?.shippingAddress?.address) || '-',
+      capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
-    invoiceId: translations('overview_labels.invoiceId'),
+    dispatchId: translations('overview_labels.dispatchId'),
     consignor: translations('overview_labels.consignor'),
     consignee: translations('overview_labels.consignee'),
     supply: translations('overview_labels.supply'),
-    dispatchId: translations('overview_labels.dispatchId'),
+    deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
     totalAmount: translations('overview_labels.totalAmount'),
-    // deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
-    // EWB: translations('overview_labels.ewb'),
+    EWB: translations('overview_labels.ewb'),
     transporter: translations('overview_labels.transporter'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
     billingFrom: translations('overview_labels.billing_from'),
     billingAddress: translations('overview_labels.billing_address'),
     shippingAddress: translations('overview_labels.shipping_address'),
   };
-  const hasNoTransporter = !dispatchDetails?.transporterName;
-  const hasTransporter = Boolean(dispatchDetails?.transporterName);
+  const hasNoTransporter = !dispatchDetails?.metaData?.transporterName;
+  const hasTransporter = Boolean(dispatchDetails?.metaData?.transporterName);
   // overview custom label render
   const customLabelRender = {
     transporter: () => (
@@ -484,7 +492,7 @@ const ViewDispatchNote = () => {
         <span>{translations('overview_labels.transporter')}</span>
 
         {/* Add CTA */}
-        {dispatchDetails?.transporterType !== 'SELF' &&
+        {dispatchDetails?.metaData?.transporterType !== 'SELF' &&
           hasNoTransporter &&
           !isModalOpen && (
             <button
@@ -496,7 +504,7 @@ const ViewDispatchNote = () => {
           )}
 
         {/* Edit CTA */}
-        {dispatchDetails?.transporterType !== 'SELF' &&
+        {dispatchDetails?.metaData?.transporterType !== 'SELF' &&
           hasTransporter &&
           dispatchDetails?.status === 'DRAFT' && (
             <>
@@ -574,33 +582,36 @@ const ViewDispatchNote = () => {
   };
   // overview custom render
   const customRender = {
-    invoiceId: () => (
+    dispatchId: () => (
       <p
         className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
         onClick={() => {
           router.push(
-            `/dashboard/sales/sales-invoices/${dispatchDetails?.invoice?.id}`,
+            `/dashboard/transport/dispatch/${dispatchDetails?.dispatchNote?.id}`,
           );
         }}
       >
-        {dispatchDetails?.invoice?.referenceNumber} <MoveUpRight size={12} />
+        {dispatchDetails?.dispatchNote?.referenceNumber}{' '}
+        <MoveUpRight size={12} />
       </p>
     ),
     transporter: () => {
-      const hasTransporter = Boolean(dispatchDetails?.transporterName);
+      const hasTransporter = Boolean(
+        dispatchDetails?.metaData?.transporterName,
+      );
 
       // 1. Transporter exists + not in edit mode → show label
       if (hasTransporter && !editMode && !isModalOpen) {
         return (
           <div className="flex flex-col gap-1">
-            <span>{dispatchDetails.transporterName} </span>
+            <span>{dispatchDetails?.metaData?.transporterName} </span>
             <span
               onClick={() =>
                 sendToTransporterMutation.mutate({
-                  dispatchNoteId: params.dispatchId,
+                  dispatchNoteId: dispatchDetails?.dispatchNote?.id,
                   data: {
                     transporterContact:
-                      dispatchDetails?.transporterMobileNumber,
+                      dispatchDetails?.metaData?.transporterMobileNumber,
                   },
                 })
               }
@@ -619,13 +630,15 @@ const ViewDispatchNote = () => {
             triggerLabel="Edit Transporter"
             transportOptions={transportOptions}
             translations={translations}
-            dispatchNoteId={params.dispatchId}
+            dispatchNoteId={params.deliveryId}
             isModalOpen={editMode}
             setIsModalOpen={setEditMode}
             isAddingNewTransport={isAddingNewTransport}
             setIsAddingNewTransport={setIsAddingNewTransport}
             isEditMode={editMode}
-            transportedEnterpriseId={dispatchDetails?.transporterEnterpriseId}
+            transportedEnterpriseId={
+              dispatchDetails?.metaData?.transporterEnterpriseId
+            }
             createVendor={createVendor}
             getStylesForSelectComponent={getStylesForSelectComponent}
           />
@@ -636,15 +649,15 @@ const ViewDispatchNote = () => {
       return (
         <>
           <span>
-            {dispatchDetails?.transporterType === 'SELF'
-              ? dispatchDetails?.sellerDetails?.name
+            {dispatchDetails?.metaData?.transporterType === 'SELF'
+              ? dispatchDetails?.metaData?.sellerDetails?.name
               : '--'}
           </span>
           <AddTransport
             triggerLabel="Add Transporter"
             transportOptions={transportOptions}
             translations={translations}
-            dispatchNoteId={params.dispatchId}
+            dispatchNoteId={params.deliveryId}
             isModalOpen={isModalOpen}
             setIsModalOpen={setIsModalOpen}
             isAddingNewTransport={isAddingNewTransport}
@@ -657,7 +670,8 @@ const ViewDispatchNote = () => {
       );
     },
     dispatchFrom: () => {
-      const hasAddress = dispatchDetails?.dispatchFromAddress?.address;
+      const hasAddress =
+        dispatchDetails?.metaData?.dispatchFromAddress?.address;
       const selectedValue = selectDispatcher?.selectedValue;
 
       // CASE 1: Edit Mode → Show Select with Prefilled Value
@@ -673,7 +687,9 @@ const ViewDispatchNote = () => {
             value={
               selectedValue ||
               addressesOptions.find(
-                (opt) => opt.value === dispatchDetails.dispatchFromAddress.id,
+                (opt) =>
+                  opt.value ===
+                  dispatchDetails.metaData?.dispatchFromAddress.id,
               )
             }
             onChange={(selectedOption) => {
@@ -690,7 +706,7 @@ const ViewDispatchNote = () => {
               });
 
               updateDispatchInfo.mutate({
-                dispatchNoteId: params.dispatchId,
+                dispatchNoteId: params.deliveryId,
                 data: {
                   dispatchFromAddressId: selectedOption.value,
                 },
@@ -727,7 +743,7 @@ const ViewDispatchNote = () => {
               });
 
               updateDispatchInfo.mutate({
-                dispatchNoteId: params.dispatchId,
+                dispatchNoteId: params.deliveryId,
                 data: {
                   dispatchFromAddressId: selectedOption.value,
                 },
@@ -739,12 +755,15 @@ const ViewDispatchNote = () => {
 
       // CASE 3: Has Address & Not Editing → Show Text
       return (
-        <span>{capitalize(dispatchDetails.dispatchFromAddress.address)}</span>
+        <span>
+          {capitalize(dispatchDetails?.metaData?.dispatchFromAddress?.address)}
+        </span>
       );
     },
 
     billingFrom: () => {
-      const hasBillingAddress = dispatchDetails?.billingFromAddress?.address;
+      const hasBillingAddress =
+        dispatchDetails?.metaData?.billingFromAddress?.address;
       const selectedValue = selectBillingFrom?.selectedValue;
 
       // CASE 1: Edit Mode → Show Select with Prefilled Value
@@ -760,7 +779,8 @@ const ViewDispatchNote = () => {
             value={
               selectedValue ||
               addressesOptions.find(
-                (opt) => opt.value === dispatchDetails.billingFromAddress.id,
+                (opt) =>
+                  opt.value === dispatchDetails.metaData?.billingFromAddress.id,
               )
             }
             onChange={(selectedOption) => {
@@ -777,7 +797,7 @@ const ViewDispatchNote = () => {
               });
 
               updateDispatchInfo.mutate({
-                dispatchNoteId: params.dispatchId,
+                dispatchNoteId: params.deliveryId,
                 data: {
                   billingFromAddressId: selectedOption.value,
                 },
@@ -814,7 +834,7 @@ const ViewDispatchNote = () => {
               });
 
               updateDispatchInfo.mutate({
-                dispatchNoteId: params.dispatchId,
+                dispatchNoteId: params.deliveryId,
                 data: {
                   billingFromAddressId: selectedOption.value,
                 },
@@ -826,207 +846,115 @@ const ViewDispatchNote = () => {
 
       // CASE 3: Has Address & Not Editing → Text
       return (
-        <span>{capitalize(dispatchDetails.billingFromAddress.address)}</span>
+        <span>
+          {capitalize(dispatchDetails?.metaData?.billingFromAddress?.address)}
+        </span>
       );
     },
-  };
-
-  const previewDispatchNoteMutation = useMutation({
-    mutationFn: previewDispatchNote,
-    onSuccess: async (data) => {
-      toast.success('Document Generated Successfully');
-      const pdfSlug = data?.data?.data?.dispatchDocumentSlug;
-
-      viewPdfInNewTab(pdfSlug);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
-  const formatDispatchPreviewPayload = (d) => {
-    return {
-      referenceNumber: d?.deliveryChallanNo || '',
-      createdAt: d?.createdAt?.split('T')[0] || '',
-      transporterName: d?.transporterName || '',
-
-      buyerName: d?.buyerName || '',
-      buyerGst: d?.buyerGst || '',
-      billingAddress: {
-        address: d?.billingAddress?.address || '',
-      },
-
-      sellerDetails: {
-        name: d?.sellerDetails?.name || '',
-        gst: d?.sellerDetails?.gst || '',
-      },
-      billingFromAddress: {
-        address: d?.billingFromAddress?.address || '',
-      },
-
-      invoice: {
-        referenceNumber: d?.invoice?.referenceNumber || '',
-        createdAt: d?.invoice?.createdAt?.split('T')[0] || '',
-      },
-
-      items: d?.items?.map((item) => ({
-        invoiceItem: {
-          orderItemId: {
-            productDetails: {
-              hsnCode:
-                item?.invoiceItem?.orderItemId?.productDetails?.hsnCode || '',
-              productName:
-                item?.invoiceItem?.orderItemId?.productDetails?.productName ||
-                '',
-            },
-          },
-        },
-        dispatchedQuantity: item?.dispatchedQuantity || 0,
-        amount: Number(item?.amount).toFixed(2),
-        cgstPercentage: item?.cgstPercentage || 0,
-        sgstPercentage: item?.sgstPercentage || 0,
-        igstPercentage: item?.igstPercentage || 0,
-        totalAmount: (
-          Number(item?.amount || 0) + Number(item?.gstAmount || 0)
-        ).toFixed(2),
-      })),
-
-      totalAmount: (
-        Number(d?.totalAmount || 0) + Number(d?.totalGstAmount || 0)
-      ).toFixed(2),
-    };
-  };
-
-  const handlePreview = () => {
-    if (dispatchDetails?.dispatchDocumentSlug) {
-      viewPdfInNewTab(dispatchDetails?.dispatchDocumentSlug);
-    } else {
-      const formattedPayload = formatDispatchPreviewPayload(dispatchDetails);
-      previewDispatchNoteMutation.mutate({
-        id: params.dispatchId,
-        data: formattedPayload,
-      });
-    }
   };
 
   // updateStatus mutation
-  const previewDCMutation = useMutation({
-    mutationFn: previewDeliveryChallan,
-    // eslint-disable-next-line consistent-return
-    onSuccess: (data) => {
-      toast.success('Delivery Challan previewed');
-      if (data?.data?.data?.base64Pdf) {
-        const base64StrToRenderPDF = data?.data?.data?.base64Pdf;
-        const newUrl = `data:application/pdf;base64,${base64StrToRenderPDF}`;
-        setDCPriviewUrl(newUrl);
-        setIsGeneratingDC(true);
+  // const updateStatusMutation = useMutation({
+  //   mutationFn: updateDispatchNoteStatus,
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({
+  //       queryKey: [deliveryProcess.getDispatchNote.endpointKey],
+  //     });
+  //     toast.success(translations('overview_inputs.toast.dcGenerated'));
+  //   },
+  //   onError: (error) => {
+  //     toast.error(
+  //       error.response.data.message ||
+  //         translations('overview_inputs.toast.commonError'),
+  //     );
+  //   },
+  // });
 
-        // Clean up the blob URL when the component unmounts or the base64 string changes
-        return () => {
-          window.URL.revokeObjectURL(newUrl);
-        };
-      }
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message ||
-          translations('overview_inputs.toast.commonError'),
-      );
-    },
-  });
-
-  const generateDC = () => {
-    const formattedPayload = formatDispatchPreviewPayload(dispatchDetails);
-    // preview DC
-    previewDCMutation.mutate({
-      id: params.dispatchId,
-      data: formattedPayload,
-    });
-  };
+  // const generateDC = () => {
+  //   updateStatusMutation.mutate({
+  //     dispatchNoteId: params.deliveryId,
+  //     data: { status: 'READY_FOR_DISPATCH' },
+  //   });
+  // };
 
   // get EWBs list
   // Fetch dispatched notes data with infinite scroll
-  // const {
-  //   data,
-  //   refetch,
-  //   fetchNextPage,
-  //   isFetching,
-  //   isLoading: isEWBsLoading,
-  // } = useInfiniteQuery({
-  //   queryKey: [deliveryProcess.getEWBs.endpointKey, params.dispatchId],
-  //   queryFn: async ({ pageParam = 1 }) => {
-  //     const response = await getEWBs({
-  //       id: params.dispatchId,
-  //       page: pageParam,
-  //       limit: 10,
-  //     });
-  //     return response;
-  //   },
-  //   initialPageParam: 1,
-  //   getNextPageParam: (_lastGroup, groups) => {
-  //     const nextPage = groups.length + 1;
-  //     return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
-  //   },
-  //   enabled: tab === 'ewb',
-  //   refetchOnWindowFocus: false,
-  //   placeholderData: keepPreviousData,
-  // });
+  const {
+    data,
+    refetch,
+    fetchNextPage,
+    isFetching,
+    isLoading: isEWBsLoading,
+  } = useInfiniteQuery({
+    queryKey: [deliveryProcess.getEWBs.endpointKey, params.deliveryId],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getEWBs({
+        id: params.deliveryId,
+        page: pageParam,
+        limit: 10,
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: tab === 'ewb',
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 
-  // useEffect(() => {
-  //   if (!data) return;
+  useEffect(() => {
+    if (!data) return;
 
-  //   // Extract EWBs from all pages
-  //   const flattenedEWBsData = data.pages
-  //     .map((page) => page?.data?.ewayBills ?? [])
-  //     .flat();
+    // Extract EWBs from all pages
+    const flattenedEWBsData = data.pages
+      .map((page) => page?.data?.ewayBills ?? [])
+      .flat();
 
-  //   // Deduplicate using `id`
-  //   const uniqueEWBsData = Array.from(
-  //     new Map(flattenedEWBsData.map((ewb) => [ewb.id, ewb])).values(),
-  //   );
+    // Deduplicate using `id`
+    const uniqueEWBsData = Array.from(
+      new Map(flattenedEWBsData.map((ewb) => [ewb.id, ewb])).values(),
+    );
 
-  //   // Update state
-  //   setEwayBills(uniqueEWBsData);
+    // Update state
+    setEwayBills(uniqueEWBsData);
 
-  //   // Pagination: use last page's pagination block
-  //   const lastPage = data.pages[data.pages.length - 1]?.data?.pagination;
+    // Pagination: use last page's pagination block
+    const lastPage = data.pages[data.pages.length - 1]?.data?.pagination;
 
-  //   setPaginationData({
-  //     totalPages: Number(lastPage?.totalPages ?? 0),
-  //     currFetchedPage: Number(lastPage?.page ?? 1),
-  //   });
-  // }, [data]);
+    setPaginationData({
+      totalPages: Number(lastPage?.totalPages ?? 0),
+      currFetchedPage: Number(lastPage?.page ?? 1),
+    });
+  }, [data]);
 
   // logics to rendered required component/ctas
   const isNeededToCreateBookingOrEWB =
-    dispatchDetails?.deliveryChallanNo &&
-    !dispatchDetails?.ewb &&
+    !dispatchDetails?.metaData?.ewb &&
     dispatchDetails?.transportBookings?.length === 0;
-  // const showAddBookingCTA =
-  //   (tab !== 'ewb' && isNeededToCreateBookingOrEWB) ||
-  //   (tab === 'transports' &&
-  //     (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
-  //       dispatchDetails?.status === 'READY_FOR_TRANSPORT'));
-  // const showGenerateEWBCTA =
-  //   (tab !== 'transports' && isNeededToCreateBookingOrEWB) ||
-  //   (tab === 'ewb' &&
-  //     (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
-  //       dispatchDetails?.status === 'READY_FOR_TRANSPORT'));
+  const showAddBookingCTA = tab !== 'ewb';
+  const showGenerateEWBCTA = tab !== 'transports';
 
-  // const onEWBRowClick = (row) => {
-  //   return router.push(
-  //     `/dashboard/transport/dispatch${params.dispatchId}/${row.ewbNo}`,
-  //   );
-  // };
+  const handlePreview = () => {
+    viewPdfInNewTab(dispatchDetails?.document?.documentSlug);
+  };
+
+  const onEWBRowClick = (row) => {
+    return router.push(
+      `/dashboard/transport/dispatch${params.deliveryId}/${row.ewbNo}`,
+    );
+  };
 
   // columns
   const dispatchedItemDetailsColumns = useDispatchedItemColumns();
-  // const dispatchedTransportedBookingsColumns =
-  //   useDispatchedTransporterBookingColumns({
-  //     setIsCreatingEWBB,
-  //     setSelectedTransportForUpdateB,
-  //   });
-  // const ewaybillsColumns = useEWBsColumns();
+  const dispatchedTransportedBookingsColumns =
+    useDispatchedTransporterBookingColumns({
+      setIsCreatingEWBB,
+      setSelectedTransportForUpdateB,
+    });
+  const ewaybillsColumns = useEWBsColumns();
 
   if (isDispatchDetailsLoading) {
     <Loading />;
@@ -1034,67 +962,52 @@ const ViewDispatchNote = () => {
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
       <Wrapper className="h-full py-2">
-        {!isAddingBooking &&
-          !isCreatingEWBA &&
-          !isCreatingEWBB &&
-          !isGeneratingDC && (
-            <>
-              {/* HEADER */}
-              <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-                <OrderBreadCrumbs
-                  possiblePagesBreadcrumbs={dispatchOrdersBreadCrumbs}
-                />
+        {!isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
+          <>
+            {/* HEADER */}
+            <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+              <OrderBreadCrumbs
+                possiblePagesBreadcrumbs={dispatchOrdersBreadCrumbs}
+              />
+              {/* preview */}
+              <Tooltips
+                trigger={
+                  <Button
+                    onClick={handlePreview}
+                    size="sm"
+                    variant="outline"
+                    className="font-bold"
+                  >
+                    <Eye size={14} />
+                  </Button>
+                }
+                content={'Preview Delivery challan'}
+              />
+            </section>
 
-                {/* ctas */}
-                <div className="flex items-center gap-2">
-                  {/* preview */}
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={handlePreview}
-                        size="sm"
-                        variant="outline"
-                        className="font-bold"
-                      >
-                        <Eye size={14} />
-                      </Button>
-                    }
-                    content={translations(
-                      'overview_inputs.ctas.preview.tootips-content',
-                    )}
-                  />
-                  {/* generateDC cta */}
-                  {dispatchDetails?.status === 'DRAFT' && (
-                    <Button size="sm" onClick={generateDC}>
-                      {translations('overview_inputs.ctas.generateDC')}
-                    </Button>
-                  )}
-                </div>
-              </section>
-
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'overview'}
-              >
-                <section className="mb-2 flex items-center justify-between gap-1">
-                  <TabsList className="border">
-                    <TabsTrigger value="overview">
-                      {translations('tabs.tab1.title')}
-                    </TabsTrigger>
-                    <TabsTrigger value="items">
-                      {translations('tabs.tab2.title')}
-                    </TabsTrigger>
-                    {/* <TabsTrigger value="transports">
+            <Tabs
+              value={tab}
+              onValueChange={onTabChange}
+              defaultValue={'overview'}
+            >
+              <section className="mb-2 flex items-center justify-between gap-1">
+                <TabsList className="border">
+                  <TabsTrigger value="overview">
+                    {translations('tabs.tab1.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="items">
+                    {translations('tabs.tab2.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="transports">
                     {translations('tabs.tab3.title1')}
                   </TabsTrigger>
                   <TabsTrigger value="ewb">
                     {translations('tabs.tab4.title')}
-                  </TabsTrigger> */}
-                  </TabsList>
-                  {/* ctas - tab based */}
-                  {/* <div className="flex items-center gap-2">
-
+                  </TabsTrigger>
+                </TabsList>
+                {/* ctas - tab based */}
+                <div className="flex items-center gap-2">
+                  {/* add a booking cta */}
                   {showAddBookingCTA && (
                     <Button
                       variant="blue_outline"
@@ -1105,74 +1018,72 @@ const ViewDispatchNote = () => {
                       {translations('overview_inputs.ctas.addBooking')}
                     </Button>
                   )}
-
-                  {tab === 'ewb' &&
-                    (dispatchDetails?.status === 'READY_FOR_DISPATCH' ||
-                      dispatchDetails?.status === 'READY_FOR_TRANSPORT') && (
-                      <Button
-                        size="sm"
-                        variant="blue_outline"
-                        onClick={async () => {
-                          const res = await refetch();
-                          if (!res.error) toast.success('E-way bills fetched');
-                        }}
-                      >
-                        <RefreshCcw size={14} />
-                        {translations('overview_inputs.ctas.refreshEWayBill')}
-                      </Button>
-                    )}
-
+                  {/* refresh EWB cta */}
+                  {tab === 'ewb' && (
+                    <Button
+                      size="sm"
+                      variant="blue_outline"
+                      onClick={async () => {
+                        const res = await refetch();
+                        if (!res.error) toast.success('E-way bills fetched');
+                      }}
+                    >
+                      <RefreshCcw size={14} />
+                      {translations('overview_inputs.ctas.refreshEWayBill')}
+                    </Button>
+                  )}
+                  {/* generate e-way bill cta */}
                   {showGenerateEWBCTA && (
                     <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
                       <PlusCircle size={14} />
                       {translations('overview_inputs.ctas.generateEWayBill')}
                     </Button>
                   )}
-                </div> */}
+                </div>
+              </section>
+              <TabsContent value="overview">
+                {/* OVERVIEW SECTION - TODO customs data (required) */}
+                <Overview
+                  collapsible={tab !== 'overview'}
+                  data={overviewData}
+                  labelMap={overviewLabels}
+                  customRender={customRender}
+                  customLabelRender={customLabelRender}
+                />
+                {/* add new address : visible if isAddingNewAddress is true */}
+                <AddNewAddress
+                  isAddressAdding={isAddingNewAddress}
+                  setIsAddressAdding={setIsAddingNewAddress}
+                  mutationKey={settingsAPI.addUpdateAddress.endpointKey}
+                  mutationFn={addUpdateAddress}
+                  invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
+                />
+
+                {isNeededToCreateBookingOrEWB && (
+                  <DynamicTextInfo
+                    variant="warning"
+                    title="No Transport Booking or E-Way Bill Found"
+                    description="Please add transport bookings or generate an E-Way Bill to proceed."
+                  />
+                )}
+
+                {/* COMMENTS */}
+                <CommentBox
+                  contextId={params.deliveryId}
+                  context={'DISPATCH_NOTE'}
+                />
+              </TabsContent>
+              <TabsContent value="items">
+                {/* ITEMS TABLE */}
+                <section className="mt-2">
+                  <DataTable
+                    data={formattedDispatchedItems || []}
+                    columns={dispatchedItemDetailsColumns}
+                  />
                 </section>
-                <TabsContent value="overview">
-                  {/* OVERVIEW SECTION - TODO customs data (required) */}
-                  <Overview
-                    collapsible={tab !== 'overview'}
-                    data={overviewData}
-                    labelMap={overviewLabels}
-                    customRender={customRender}
-                    customLabelRender={customLabelRender}
-                  />
-                  {/* add new address : visible if isAddingNewAddress is true */}
-                  <AddNewAddress
-                    isAddressAdding={isAddingNewAddress}
-                    setIsAddressAdding={setIsAddingNewAddress}
-                    mutationKey={settingsAPI.addUpdateAddress.endpointKey}
-                    mutationFn={addUpdateAddress}
-                    invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
-                  />
-
-                  {isNeededToCreateBookingOrEWB && (
-                    <DynamicTextInfo
-                      variant="warning"
-                      title="No Transport Booking or E-Way Bill Found"
-                      description="Please add transport details or generate an E-Way Bill to proceed."
-                    />
-                  )}
-
-                  {/* COMMENTS */}
-                  <CommentBox
-                    contextId={params.dispatchId}
-                    context={'DISPATCH_NOTE'}
-                  />
-                </TabsContent>
-                <TabsContent value="items">
-                  {/* ITEMS TABLE */}
-                  <section className="mt-2">
-                    <DataTable
-                      data={formattedDispatchedItems || []}
-                      columns={dispatchedItemDetailsColumns}
-                    />
-                  </section>
-                </TabsContent>
+              </TabsContent>
+              <TabsContent value="transports">
                 {/* TRANSPORT BOOKINGS */}
-                {/* <TabsContent value="transports">
                 <section className="mt-2">
                   {formattedDispatchedTransporterBookings?.length === 0 && (
                     <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
@@ -1196,8 +1107,8 @@ const ViewDispatchNote = () => {
                     />
                   )}
                 </section>
-              </TabsContent> */}
-                {/* <TabsContent value="ewb">
+              </TabsContent>
+              <TabsContent value="ewb">
                 {(isEWBsLoading || isFetching) && <Loading />}
                 {(!isEWBsLoading || !isFetching) && ewayBills?.length > 0 ? (
                   <SalesTable
@@ -1225,22 +1136,12 @@ const ViewDispatchNote = () => {
                     </ProtectedWrapper>
                   </div>
                 )}
-              </TabsContent> */}
-              </Tabs>
-            </>
-          )}
-
-        {isGeneratingDC && (
-          <GenerateDCPreviewForm
-            dispatchNoteId={params.dispatchId}
-            dispatchDetails={dispatchDetails}
-            url={dcPreviewUrl}
-            breadcrumb={dispatchOrdersBreadCrumbs}
-            onClose={() => setIsGeneratingDC(false)}
-          />
+              </TabsContent>
+            </Tabs>
+          </>
         )}
 
-        {/* {isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
+        {isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
           <AddBooking
             translations={translations}
             overviewData={overviewData}
@@ -1249,41 +1150,42 @@ const ViewDispatchNote = () => {
             customLabelRender={customLabelRender}
             setTab={setTab}
             queryClient={queryClient}
-            dispatchNoteId={params.dispatchId}
+            dispatchNoteId={dispatchDetails?.dispatchNote?.id}
+            deliveryId={params.deliveryId}
             isAddingBooking={isAddingBooking}
             setIsAddingBooking={setIsAddingBooking}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
           />
-        )} */}
+        )}
 
-        {/* {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
+        {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
           <CreateEWBA
-            dispatchNoteId={params.dispatchId}
+            dispatchNoteId={params.deliveryId}
             overviewData={overviewData}
             overviewLabels={overviewLabels}
             customRender={customRender}
             customLabelRender={customLabelRender}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
             setIsCreatingEWB={setIsCreatingEWBA}
-            dispatchDetails={dispatchDetails}
+            dispatchDetails={dispatchDetails?.metaData}
           />
         )}
         {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
           <CreateEWBB
-            dispatchNoteId={params.dispatchId}
+            dispatchNoteId={params.deliveryId}
             overviewData={overviewData}
             overviewLabels={overviewLabels}
             customRender={customRender}
             customLabelRender={customLabelRender}
             dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
             setIsCreatingEWB={setIsCreatingEWBB}
-            dispatchDetails={dispatchDetails}
+            dispatchDetails={dispatchDetails?.metaData}
             selectedTransportForUpdateB={selectedTransportForUpdateB}
           />
-        )} */}
+        )}
       </Wrapper>
     </ProtectedWrapper>
   );
 };
 
-export default ViewDispatchNote;
+export default ViewDelivery;

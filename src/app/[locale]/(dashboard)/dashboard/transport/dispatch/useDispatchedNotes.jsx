@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
-export const useSalesDispatchedNotes = () => {
+export const useDispatchedNotes = () => {
   const translations = useTranslations(
     'transport.dispatched-notes.table.header',
   );

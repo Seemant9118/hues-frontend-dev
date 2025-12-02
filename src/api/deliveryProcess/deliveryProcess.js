@@ -11,6 +11,10 @@ export const deliveryProcess = {
     endpoint: `/dispatchnote/details/`,
     endpointKey: 'get_dispatch_note_by_id',
   },
+  previewDispatchNote: {
+    endpoint: `/dispatchnote/document/`,
+    endpointKey: 'preview_dispatch_note',
+  },
   addTransporter: {
     endpoint: `/dispatchnote/addtransporter/`,
     endpointKey: 'add_transporter_to_dispatch_note',
@@ -46,5 +50,23 @@ export const deliveryProcess = {
   getEWBs: {
     endpoint: `/dispatchnote/eway-bills/list-by-dispatch-note`,
     endpointKey: 'get_ewbs',
+  },
+
+  // delivery challan
+  previewDeliveryChallan: {
+    endpoint: `/dispatchnote/voucher/preview-document/`,
+    endpointKey: 'preview_delivery_challan',
+  },
+  generateDeliveryChallan: {
+    endpoint: `/dispatchnote/voucher/create/`,
+    endpointKey: 'generate_delivery_challan',
+  },
+  getDeliveryChallan: {
+    endpoint: `/dispatchnote/voucher/`,
+    endpointKey: 'get_delivery_challan',
+  },
+  getDeliveryChallans: {
+    endpoint: `/dispatchnote/vouchers/list`,
+    endpointKey: 'get_delivery_challans',
   },
 };

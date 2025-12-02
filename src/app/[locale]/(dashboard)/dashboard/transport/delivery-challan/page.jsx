@@ -10,29 +10,29 @@ import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
-import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { getDeliveryChallans } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { SalesTable } from '../../sales/salestable/SalesTable';
-import { useDispatchedNotes } from './useDispatchedNotes';
+import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
 const PAGE_LIMIT = 10;
 
-const DispatchedNotes = () => {
+const DeliveryChallan = () => {
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const translations = useTranslations('transport.dispatched-notes');
+  const translations = useTranslations('transport.delivery-challan');
 
   const keys = [
-    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem1',
-    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem2',
-    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem3',
-    'transport.dispatched-notes.emtpyStateComponent.subItems.subItem4',
+    'transport.delivery-challan.emtpyStateComponent.subItems.subItem1',
+    'transport.delivery-challan.emtpyStateComponent.subItems.subItem2',
+    'transport.delivery-challan.emtpyStateComponent.subItems.subItem3',
+    'transport.delivery-challan.emtpyStateComponent.subItems.subItem4',
   ];
 
   const { hasPermission } = usePermission();
@@ -47,10 +47,9 @@ const DispatchedNotes = () => {
     isFetching,
     isLoading: isInvoiceLoading,
   } = useInfiniteQuery({
-    queryKey: [deliveryProcess.getDispatchNotes.endpointKey, enterpriseId],
+    queryKey: [deliveryProcess.getDeliveryChallans.endpointKey, enterpriseId],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await getDispatchNotes({
-        enterpriseId,
+      const response = await getDeliveryChallans({
         page: pageParam,
         limit: PAGE_LIMIT,
       });
@@ -70,7 +69,7 @@ const DispatchedNotes = () => {
   useEffect(() => {
     if (!data) return;
 
-    // Flatten sales dispatched data from all pages
+    // Flatten delivery data from all pages
     const flattenedSalesDispatchedNotesData = data.pages
       .map((page) => page?.data?.data?.data) // Assuming sales dispatched data is nested in `data.data.data`
       .flat();
@@ -97,10 +96,10 @@ const DispatchedNotes = () => {
   }, [data]);
 
   const onRowClick = (row) => {
-    router.push(`/dashboard/transport/dispatch/${row.id}`);
+    router.push(`/dashboard/transport/delivery-challan/${row.id}`);
   };
 
-  const dispatchedNotesColumns = useDispatchedNotes();
+  const dispatchedNotesColumns = useDeliveryChallanColumns();
 
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
@@ -143,4 +142,4 @@ const DispatchedNotes = () => {
   );
 };
 
-export default DispatchedNotes;
+export default DeliveryChallan;
