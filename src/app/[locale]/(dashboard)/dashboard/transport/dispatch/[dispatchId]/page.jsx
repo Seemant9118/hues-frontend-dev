@@ -222,6 +222,7 @@ const ViewDispatchNote = () => {
   const [editModeDispatchFrom, setEditModeDispatchFrom] = useState(false);
   const [selectBillingFrom, setSelectBillingFrom] = useState(null);
   const [editModeBillingFrom, setEditModeBillingFrom] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   // const [selectedTransportForUpdateB, setSelectedTransportForUpdateB] =
   //   useState(null);
   // const [ewayBills, setEwayBills] = useState(null);
@@ -451,7 +452,7 @@ const ViewDispatchNote = () => {
     supply: dispatchDetails?.supply || 'Outward',
     dispatchId: dispatchDetails?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
-    // deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
+    deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
     // EWB: dispatchDetails?.ewb || '-',
     transporter: dispatchDetails?.transporterName || '-',
     dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
@@ -467,7 +468,7 @@ const ViewDispatchNote = () => {
     supply: translations('overview_labels.supply'),
     dispatchId: translations('overview_labels.dispatchId'),
     totalAmount: translations('overview_labels.totalAmount'),
-    // deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
+    deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
     // EWB: translations('overview_labels.ewb'),
     transporter: translations('overview_labels.transporter'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
@@ -586,6 +587,84 @@ const ViewDispatchNote = () => {
         {dispatchDetails?.invoice?.referenceNumber} <MoveUpRight size={12} />
       </p>
     ),
+    deliveryChallanNo: () => {
+      const challanData = dispatchDetails?.vouchers;
+
+      // Case 1: Array of objects
+      if (Array.isArray(challanData)) {
+        const count = challanData.length;
+
+        // If showAll = true → show full list
+        if (showAll) {
+          return challanData.map((challan) => (
+            <p
+              key={challan.id}
+              className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+              onClick={() =>
+                router.push(
+                  `/dashboard/transport/delivery-challan/${challan.id}`,
+                )
+              }
+            >
+              {challan.referenceNumber} <MoveUpRight size={12} />
+            </p>
+          ));
+        }
+
+        // If list has more than 1 → show only first item + CTA
+        if (count > 1) {
+          return (
+            <>
+              <p
+                key={challanData[0].id}
+                className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+                onClick={() =>
+                  router.push(
+                    `/dashboard/transport/delivery-challan/${challanData[0].id}`,
+                  )
+                }
+              >
+                {challanData[0].referenceNumber} <MoveUpRight size={12} />
+              </p>
+
+              <button
+                className="cursor-pointer text-sm text-primary underline"
+                onClick={() => setShowAll(true)}
+              >
+                +{count - 1} more
+              </button>
+            </>
+          );
+        }
+
+        // Only 1 item
+        if (count === 1) {
+          const challan = challanData[0];
+          return (
+            <p
+              key={challan.id}
+              className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+              onClick={() =>
+                router.push(
+                  `/dashboard/transport/delivery-challan/${challan.id}`,
+                )
+              }
+            >
+              {challan.referenceNumber} <MoveUpRight size={12} />
+            </p>
+          );
+        }
+      }
+
+      // Case 2: String (show as plain text)
+      if (typeof challanData === 'string') {
+        return <p className="text-base font-semibold">{challanData}</p>;
+      }
+
+      // Case 3: Fallback
+      return <p className="text-base text-muted-foreground">--</p>;
+    },
+
     transporter: () => {
       const hasTransporter = Boolean(dispatchDetails?.transporterName);
 
@@ -1064,7 +1143,7 @@ const ViewDispatchNote = () => {
                     )}
                   />
                   {/* generateDC cta */}
-                  {dispatchDetails?.status === 'DRAFT' && (
+                  {dispatchDetails?.vouchers?.length === 0 && (
                     <Button size="sm" onClick={generateDC}>
                       {translations('overview_inputs.ctas.generateDC')}
                     </Button>
