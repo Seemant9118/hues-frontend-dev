@@ -2,7 +2,6 @@
 
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { useTranslations } from 'next-intl';
-import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 
 export const useDispatchNoteColumns = () => {
   const translations = useTranslations(
@@ -25,17 +24,14 @@ export const useDispatchNoteColumns = () => {
     },
 
     {
-      accessorKey: 'status',
+      accessorKey: 'supply',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('status')} />
+        <DataTableColumnHeader column={column} title={translations('supply')} />
       ),
       cell: ({ row }) => {
-        const { status } = row.original;
-        return (
-          <div className="flex max-w-sm">
-            <ConditionalRenderingStatus status={status} />
-          </div>
-        );
+        const supply = row.original?.supply;
+
+        return supply || 'Outward Supply';
       },
     },
 

@@ -94,6 +94,26 @@ const FieldRenderer = React.memo(function FieldRenderer({
         </div>
       )}
 
+      {type === 'radio' && options && (
+        <div className="mt-1 flex items-center gap-4">
+          {options.map((opt) => (
+            <label
+              key={opt.value}
+              className="flex cursor-pointer items-center gap-2"
+            >
+              <input
+                type="radio"
+                name={name}
+                value={opt.value}
+                checked={value === opt.value}
+                onChange={() => onChange(name, opt.value)}
+              />
+              <span>{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+
       {type === 'checkbox' && (
         <div className="flex items-center gap-2">
           <input

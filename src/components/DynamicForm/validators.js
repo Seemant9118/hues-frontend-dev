@@ -11,13 +11,7 @@ export const validateDynamicForm = (schema, data) => {
 };
 
 export const validateBookingRow = (formData) => {
-  const requiredFields = [
-    'bookingType',
-    'bookingNumber',
-    'bookingDate',
-    'sourceAddress',
-    'destinationAddress',
-  ];
+  const requiredFields = ['bookingType', 'bookingNumber', 'bookingDate'];
 
   const errors = {};
 

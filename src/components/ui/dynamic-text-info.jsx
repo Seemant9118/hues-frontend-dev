@@ -1,7 +1,7 @@
 // components/ui/dynamic-text-info.tsx
 
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
 const variants = {
   info: {
@@ -23,7 +23,7 @@ const variants = {
     border: 'border-yellow-200',
   },
   danger: {
-    icon: XCircle,
+    icon: Info,
     bg: 'bg-red-50',
     text: 'text-red-700',
     border: 'border-red-200',

@@ -14,7 +14,18 @@ import { toast } from 'sonner';
 import { useBookingColumns } from './useBookingColumns';
 
 export const FormSchema = [
-  { type: 'checkbox', label: 'EWB is Generated ?', name: 'isEWBGenerated' },
+  {
+    type: 'radio',
+    label: 'Is EWB required?',
+    name: 'isEWBRequired',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+    ],
+    // required: true,
+  },
+
+  // { type: 'checkbox', label: 'EWB is Generated ?', name: 'isEWBGenerated' },
 
   {
     type: 'select',
@@ -134,7 +145,7 @@ export default function GenerateDCPreviewForm({
     // Prepare safe structured payload
     const updatedFormData = {
       dispatchNoteId: Number(dispatchNoteId),
-      isEWBGenerated: formData?.isEWBGenerated,
+      isEWBRequired: formData?.isEWBRequired,
       metaData: dispatchDetails || {}, // full dispatch note
       bookings: formData?.transportBookings || [], // booking rows only
     };

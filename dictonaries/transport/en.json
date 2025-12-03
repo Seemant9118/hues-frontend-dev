@@ -1,7 +1,7 @@
 {
     "transport": {
         "dispatched-notes": {
-            "title": "Dispatch",
+            "title": "Dispatch Notes",
             "emtpyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
@@ -27,22 +27,23 @@
                     "customers_type": "Type",
                     "customers": "Name",
                     "status": "Status",
+                    "supply": "Supply",
                     "order_id": "Order ID",
                     "total_amount": "Total Amount"
                 }
             },
             "dispatch_details": {
                 "title": {
-                    "dispatch_notes": "Dispatch",
-                    "dispatch_details": "Dispatch Details",
-                    "generateDC":"Generate Delivery Challan",
+                    "dispatch_notes": "Dispatch Notes",
+                    "dispatch_details": "Dispatch Note Details",
+                    "generateDC": "Generate Delivery Challan",
                     "ewaybillDetails": "E-way bill Details",
                     "addBooking": "Add Booking Details",
                     "createEWBA": "Create E-Way Bill (Part A)",
                     "createEWBB": "Create E-Way Bill (Part B)"
                 },
                 "overview_labels": {
-                    "supply": "Supply",
+                    "supply": "Movement",
                     "invoiceId": "Invoice ID",
                     "consignor": "Consignor",
                     "consignee": "Consignee",
@@ -68,14 +69,14 @@
                         "edit": "Edit",
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
-                        "generateDC":"Generate Delivery Challan",
+                        "generateDC": "Generate Delivery Challan",
                         "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",
                         "updatePartB": "Update Part-B",
                         "cancel": "Cancel",
-                        "preview":{
-                            "tootips-content":"Preview Dispatch Note"
+                        "preview": {
+                            "tootips-content": "Preview Dispatch Note"
                         }
                     },
                     "placeholders": {
@@ -239,7 +240,7 @@
                     "deliveryChallanNo": "Delivery Challan No.",
                     "dispatchReferenceNumber": "Dispatch ID",
                     "date": "Date",
-                    "supply":"Supply",
+                    "supply": "Movement",
                     "customers_type": "Type",
                     "customers": "Name",
                     "status": "Status",
@@ -257,7 +258,7 @@
                     "createEWBB": "Create E-Way Bill (Part B)"
                 },
                 "overview_labels": {
-                    "supply": "Supply",
+                    "supply": "Movement",
                     "invoiceId": "Invoice ID",
                     "consignor": "Consignor",
                     "consignee": "Consignee",
@@ -283,7 +284,7 @@
                         "edit": "Edit",
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
-                        "generateDC":"Generate Delivery Challan",
+                        "generateDC": "Generate Delivery Challan",
                         "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",

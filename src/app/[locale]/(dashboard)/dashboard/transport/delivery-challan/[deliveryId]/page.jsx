@@ -456,7 +456,7 @@ const ViewDelivery = () => {
     dispatchId: dispatchDetails?.dispatchNote?.referenceNumber || '-',
     consignor: dispatchDetails?.metaData?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.metaData?.buyerName || '-',
-    supply: dispatchDetails?.metaData?.supply || 'Outward',
+    supply: dispatchDetails?.metaData?.supply || 'Outward Supply',
     deliveryChallanNo: dispatchDetails?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
     EWB: dispatchDetails?.metaData?.ewb || '-',
@@ -934,6 +934,10 @@ const ViewDelivery = () => {
   const isNeededToCreateBookingOrEWB =
     !dispatchDetails?.metaData?.ewb &&
     dispatchDetails?.transportBookings?.length === 0;
+  const isEWBRequired =
+    dispatchDetails?.transportBookings?.length > 0 &&
+    dispatchDetails?.isEWBRequired &&
+    !dispatchDetails?.metaData?.ewb;
   const showAddBookingCTA = tab !== 'ewb';
   const showGenerateEWBCTA = tab !== 'transports';
 
@@ -1064,6 +1068,25 @@ const ViewDelivery = () => {
                     variant="warning"
                     title="No Transport Booking or E-Way Bill Found"
                     description="Please add transport bookings or generate an E-Way Bill to proceed."
+                  />
+                )}
+
+                {isEWBRequired && (
+                  <DynamicTextInfo
+                    variant={totalAmount > 50000 ? 'danger' : 'warning'}
+                    title={
+                      totalAmount > 50000
+                        ? 'E-Way Bill Required'
+                        : 'E-Way Bill Optional'
+                    }
+                    description={
+                      `This challan ${totalAmount > 50000 ? 'requires' : 'may not require'} an E-Way Bill. ` +
+                      `(${
+                        totalAmount > 50000
+                          ? 'Since the total amount exceeds ₹50,000, generating an E-Way Bill is mandatory.'
+                          : 'Since the total amount is ₹50,000 or below, generating an E-Way Bill is optional.'
+                      })`
+                    }
                   />
                 )}
 

@@ -1,7 +1,7 @@
 {
     "transport": {
         "dispatched-notes": {
-            "title": "डिस्पैच",
+            "dispatch_notes": "डिस्पैच नोट्स",
             "emtpyStateComponent": {
                 "heading": "बिड्स, डील्स और इनवॉइस को सुरक्षित और डिजिटल तरीके से प्रबंधित करें",
                 "subItems": {
@@ -33,8 +33,8 @@
             },
             "dispatch_details": {
                 "title": {
-                    "dispatch_notes": "डिस्पैच",
-                    "dispatch_details": "डिस्पैच विवरण",
+                    "dispatch_notes": "डिस्पैच नोट्स",
+                    "dispatch_details": "डिस्पैच नोट विवरण",
                     "ewaybillDetails": "ई-वे बिल विवरण",
                     "addBooking": "बुकिंग विवरण जोड़ें",
                     "createEWBA": "ई-वे बिल बनाएं (भाग A)",
