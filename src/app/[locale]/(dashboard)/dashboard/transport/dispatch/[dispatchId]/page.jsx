@@ -17,7 +17,6 @@ import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
-import { DynamicTextInfo } from '@/components/ui/dynamic-text-info';
 import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -449,7 +448,7 @@ const ViewDispatchNote = () => {
     invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
     consignor: dispatchDetails?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.buyerName || '-',
-    supply: dispatchDetails?.supply || 'Outward',
+    supply: dispatchDetails?.supply || 'Outward Supply',
     dispatchId: dispatchDetails?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
     deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
@@ -1077,10 +1076,10 @@ const ViewDispatchNote = () => {
   // }, [data]);
 
   // logics to rendered required component/ctas
-  const isNeededToCreateBookingOrEWB =
-    dispatchDetails?.deliveryChallanNo &&
-    !dispatchDetails?.ewb &&
-    dispatchDetails?.transportBookings?.length === 0;
+  // const isNeededToCreateBookingOrEWB =
+  //   dispatchDetails?.deliveryChallanNo &&
+  //   !dispatchDetails?.ewb &&
+  //   dispatchDetails?.transportBookings?.length === 0;
   // const showAddBookingCTA =
   //   (tab !== 'ewb' && isNeededToCreateBookingOrEWB) ||
   //   (tab === 'transports' &&
@@ -1226,14 +1225,6 @@ const ViewDispatchNote = () => {
                     mutationFn={addUpdateAddress}
                     invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
                   />
-
-                  {isNeededToCreateBookingOrEWB && (
-                    <DynamicTextInfo
-                      variant="warning"
-                      title="No Transport Booking or E-Way Bill Found"
-                      description="Please add transport details or generate an E-Way Bill to proceed."
-                    />
-                  )}
 
                   {/* COMMENTS */}
                   <CommentBox

@@ -1,7 +1,6 @@
 'use client';
 
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
@@ -113,18 +112,14 @@ export const useDispatchedNotes = () => {
       ),
     },
     {
-      accessorKey: 'status',
+      accessorKey: 'supply',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('status')} />
+        <DataTableColumnHeader column={column} title={translations('supply')} />
       ),
       cell: ({ row }) => {
-        const dispatchedNotesStatus = row.original?.status;
+        const supply = row.original?.supply;
 
-        return (
-          <div className="flex items-start gap-2">
-            <ConditionalRenderingStatus status={dispatchedNotesStatus} />
-          </div>
-        );
+        return supply || 'Outward Supply';
       },
     },
     {

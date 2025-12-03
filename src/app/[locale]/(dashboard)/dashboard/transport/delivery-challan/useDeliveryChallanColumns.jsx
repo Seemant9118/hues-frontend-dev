@@ -128,7 +128,7 @@ export const useDeliveryChallanColumns = () => {
       cell: ({ row }) => {
         const supply = row.original?.supply;
 
-        return supply || 'Outward';
+        return supply || 'Outward Supply';
       },
     },
 

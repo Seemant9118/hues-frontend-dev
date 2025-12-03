@@ -44,7 +44,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
-import RedirectionToInvoiceModal from '../Modals/RedirectionToInvoiceModal';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import InputWithSelect from '../ui/InputWithSelect';
@@ -74,7 +73,6 @@ const CreateOrder = ({
   const isPurchasePage = pathName.includes('purchases');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
-  const [redirectPopupOnFail, setRedirectPopUpOnFail] = useState(false);
   const [selectedItem, setSelectedItem] = useState(
     cta === 'offer'
       ? {
@@ -638,17 +636,6 @@ const CreateOrder = ({
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
       <SubHeader name={name}></SubHeader>
-      {/* redirection to invoice modal */}
-      {redirectPopupOnFail && (
-        <RedirectionToInvoiceModal
-          cta={cta}
-          redirectPopupOnFail={redirectPopupOnFail}
-          setRedirectPopUpOnFail={setRedirectPopUpOnFail}
-          order={order}
-          setOrder={setOrder}
-        />
-      )}
-
       <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
         {cta === 'offer' ? (
           order.clientType === 'B2B' && (
@@ -684,11 +671,7 @@ const CreateOrder = ({
                       totalGstAmount: null,
                     });
 
-                    const {
-                      value: id,
-                      isAccepted,
-                      isEnterpriseActive,
-                    } = selectedOption;
+                    const { value: id, isEnterpriseActive } = selectedOption;
 
                     if (id === 'add-new-client') {
                       setIsModalOpen(true);
@@ -714,12 +697,6 @@ const CreateOrder = ({
                           selectedValue: selectedOption,
                         },
                       });
-
-                      if (isOrder === 'invoice') {
-                        setRedirectPopUpOnFail(false);
-                      } else {
-                        setRedirectPopUpOnFail(isAccepted !== 'ACCEPTED');
-                      }
                     }
                   }}
                 />

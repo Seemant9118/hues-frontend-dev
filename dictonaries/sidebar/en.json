@@ -18,8 +18,8 @@
             "invoices": "Invoices",
             "payments": "Payments",
             "debitNotes": "Debit Notes",
-            "dispatch": "Dispatch",
-            "deliveryChallan":"Delivery Challan",
+            "dispatch": "Dispatch Notes",
+            "deliveryChallan":"Delivery Challans",
             "clients": "Clients",
             "vendors": "Vendors",
             "customers": "Customers"
