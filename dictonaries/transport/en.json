@@ -262,7 +262,7 @@
                     "consignor": "Consignor",
                     "consignee": "Consignee",
                     "totalAmount": "Total Amount",
-                    "dispatchId": "Dipatch ID",
+                    "dispatchId": "Dispatch ID",
                     "transporter": "Transporter",
                     "delivery_challan_no": "Delivery challan no.",
                     "ewb": "EWB",
