@@ -9,6 +9,7 @@ import { Button } from '../ui/button';
 
 export const useCreateSalesColumns = (
   isOrder,
+  isOfferType,
   setOrder,
   setSelectedItem,
   isPurchasePage,
@@ -49,6 +50,20 @@ export const useCreateSalesColumns = (
         <DataTableColumnHeader column={column} title={translations('price')} />
       ),
     },
+    ...(isOfferType === 'SERVICE'
+      ? [
+          {
+            accessorKey: 'discountPercentage',
+            header: ({ column }) => (
+              <DataTableColumnHeader
+                column={column}
+                title={translations('discount')}
+                className="min-w-[50px]"
+              />
+            ),
+          },
+        ]
+      : []),
     ...(isGstApplicable(
       isPurchasePage
         ? isGstApplicableForPurchaseOrders
@@ -102,7 +117,7 @@ export const useCreateSalesColumns = (
             ),
           },
           {
-            accessorKey: 'amount',
+            accessorKey: 'finalAmount',
             header: ({ column }) => (
               <DataTableColumnHeader
                 column={column}
@@ -110,10 +125,7 @@ export const useCreateSalesColumns = (
               />
             ),
             cell: ({ row }) => {
-              const amount = parseFloat(row.getValue('totalAmount'));
-              const totalGstAmount = parseFloat(row.getValue('totalGstAmount'));
-              const finalAmount = amount + totalGstAmount;
-
+              const finalAmount = parseFloat(row.getValue('finalAmount'));
               return formattedAmount(finalAmount);
             },
           },

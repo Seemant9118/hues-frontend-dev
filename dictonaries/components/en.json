@@ -219,6 +219,7 @@
                     "price": "Price",
                     "invoice_value": "Invoice Value",
                     "value": "Value",
+                    "discount": "Discount",
                     "gst": "GST",
                     "tax_amount": "Tax Amount",
                     "amount": "Amount"
@@ -271,6 +272,7 @@
                         "item": "Item",
                         "quantity": "Quantity",
                         "price": "Price",
+                        "discount": "Discount (%)",
                         "gst": "GST (%)",
                         "invoice_value": "Invoice Value",
                         "value": "Value",
@@ -289,6 +291,7 @@
                 "footer": {
                     "gross_amount": "Gross Amount",
                     "tax_amount": "Tax Amount",
+                    "discountAmount": "Discount",
                     "total_amount": "Total Amount"
                 }
             }
@@ -1008,6 +1011,76 @@
                 "selectButton": "Select"
             }
         },
+        "addService": {
+            "title": "Add Service",
+            "multiStepForm": {
+                "overview": {
+                    "section1": {
+                        "title": "Basic Information"
+                    },
+                    "section2": {
+                        "title": "Service Metrics"
+                    },
+                    "section3": {
+                        "title": "Tags & Keywords"
+                    }
+                },
+                "pricing": {
+                    "section1": {
+                        "title": "Base Pricing"
+                    },
+                    "section2": {
+                        "title": "Tax Information"
+                    }
+                },
+                "operations": {
+                    "section1": {
+                        "title": "Resource Requirements"
+                    },
+                    "section2": {
+                        "title": "Capacity Constraints"
+                    },
+                    "section3": {
+                        "title": "Required Inputs"
+                    }
+                },
+                "sla": {
+                    "section1": {
+                        "title": "Service Level Agreement"
+                    },
+                    "section2": {
+                        "title": "Revision & Warranty"
+                    },
+                    "section3": {
+                        "title": "Penalty & Credits"
+                    }
+                },
+                "description": {
+                    "section1": {
+                        "title": "Service Description"
+                    },
+                    "section2": {
+                        "title": "Inclusions & Exclusions"
+                    }
+                },
+                "addOns": {
+                    "section1": {
+                        "title": "Add-On Services"
+                    }
+                },
+                "contracts": {
+                    "section1": {
+                        "title": "Service Agreement"
+                    },
+                    "section2": {
+                        "title": "Required Consents"
+                    },
+                    "section3": {
+                        "title": "Compliance"
+                    }
+                }
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "Accepted",
@@ -1036,7 +1109,7 @@
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
             "DRAFT": "Draft",
-            "IN_TRANSIT":"In Transit",
+            "IN_TRANSIT": "In Transit",
             "READY_FOR_DISPATCH": " Ready for Dispatch"
         }
     }

@@ -41,7 +41,7 @@ import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
 // dynamic imports
-const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
+const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
   loading: () => <Loading />,
 });
 

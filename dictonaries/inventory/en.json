@@ -204,6 +204,46 @@
                     "successMsg": "Deleted successfully"
                 }
             }
+        },
+        "serviceDetails": {
+            "title": {
+                "items": "Service",
+                "item_details": "Service Details"
+            },
+            "ctas": {
+                "edit": "Edit",
+                "delete": "Delete",
+                "cancel": "Cancel",
+                "infoText": "You're about to remove {name} from item master. Sure?",
+                "successMsg": "Deleted successfully"
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "Overview"
+                }
+            },
+            "overview_labels": {
+                "id": "ID",
+                "productName": "Product Name",
+                "manufacturerName": "Manufacturer Name",
+                "manufacturerGstId": "Manufacturer GST ID",
+                "skuId": "SKU ID",
+                "hsnCode": "HSN Code",
+                "description": "Description",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
+                "gstPercentage": "GST Percentage",
+                "cgstPercentage": "CGST %",
+                "sgstPercentage": "SGST %",
+                "igstPercentage": "IGST %",
+                "createdAt": "Created At",
+                "updatedAt": "Updated At",
+                "weight": "Weight",
+                "length": "Length",
+                "breadth": "Breadth",
+                "height": "Height"
+            }
         }
     }
 }
