@@ -32,7 +32,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
       ),
     },
     {
-      accessorKey: 'sac',
+      accessorKey: 'sacCode',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -41,7 +41,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
       ),
     },
     {
-      accessorKey: 'description',
+      accessorKey: 'shortDescription',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -49,12 +49,12 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
         />
       ),
       cell: ({ row }) => {
-        const { description } = row.original;
-        return <p className="truncate">{description}</p>;
+        const { shortDescription } = row.original;
+        return <p className="truncate">{shortDescription}</p>;
       },
     },
     {
-      accessorKey: 'rate',
+      accessorKey: 'basePrice',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -113,8 +113,9 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
               <ProtectedWrapper permissionCode="permission:item-masters-edit">
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
-                  onClick={() => {
-                    setIsEditing((prev) => !prev);
+                  onClick={(e) => {
+                    setIsEditing(true);
+                    e.stopPropagation();
                     setServicesToEdit(row.original);
                   }}
                 >
