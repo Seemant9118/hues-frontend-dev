@@ -22,7 +22,7 @@ export const CreateProductServices = (data) => {
   return APIinstance.post(servicesApi.createProductServices.endpoint, data);
 };
 
-export const UpdateProductServices = (data, id) => {
+export const UpdateProductServices = ({ id, data }) => {
   return APIinstance.put(
     `${servicesApi.updateProductServices.endpoint}${id}`,
     data,

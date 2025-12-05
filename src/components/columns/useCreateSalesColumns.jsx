@@ -9,6 +9,7 @@ import { Button } from '../ui/button';
 
 export const useCreateSalesColumns = (
   isOrder,
+  isOfferType,
   setOrder,
   setSelectedItem,
   isPurchasePage,
@@ -49,6 +50,20 @@ export const useCreateSalesColumns = (
         <DataTableColumnHeader column={column} title={translations('price')} />
       ),
     },
+    ...(isOfferType === 'SERVICE'
+      ? [
+          {
+            accessorKey: 'discountPercentage',
+            header: ({ column }) => (
+              <DataTableColumnHeader
+                column={column}
+                title={translations('discount')}
+                className="min-w-[50px]"
+              />
+            ),
+          },
+        ]
+      : []),
     ...(isGstApplicable(
       isPurchasePage
         ? isGstApplicableForPurchaseOrders
@@ -102,7 +117,7 @@ export const useCreateSalesColumns = (
             ),
           },
           {
-            accessorKey: 'amount',
+            accessorKey: 'finalAmount',
             header: ({ column }) => (
               <DataTableColumnHeader
                 column={column}
@@ -110,11 +125,18 @@ export const useCreateSalesColumns = (
               />
             ),
             cell: ({ row }) => {
-              const amount = parseFloat(row.getValue('totalAmount'));
-              const totalGstAmount = parseFloat(row.getValue('totalGstAmount'));
-              const finalAmount = amount + totalGstAmount;
+              const finalAmountFromRow = parseFloat(
+                row.getValue('finalAmount'),
+              );
+              const discountAmount =
+                Number(row.getValue('discountAmount')) || 0;
+              const totalGstAmount =
+                Number(row.getValue('totalGstAmount')) || 0;
+              const totalAmount = Number(row.getValue('totalAmount')) || 0;
+              const finalAmount = totalAmount - discountAmount + totalGstAmount;
 
-              return formattedAmount(finalAmount);
+              // for edit there was no finalAmountFromRow coming from (api data)
+              return formattedAmount(finalAmountFromRow || finalAmount);
             },
           },
         ]

@@ -15,6 +15,7 @@ import {
   Database,
   FileSymlink,
   Gauge,
+  HandPlatter,
   IndianRupee,
   NotebookTabs,
   Package,
@@ -106,11 +107,11 @@ const Sidebar = () => {
           icon: <Boxes size={16} />,
           path: '/dashboard/inventory/goods',
         },
-        // {
-        //   name: 'sidebar.subTabs.services',
-        //   icon: <HandPlatter size={16} />,
-        //   path: '/dashboard/inventory/services',
-        // },
+        {
+          name: 'sidebar.subTabs.services',
+          icon: <HandPlatter size={16} />,
+          path: '/dashboard/inventory/services',
+        },
       ],
     },
     hasPermission('permission:sales-view') && {

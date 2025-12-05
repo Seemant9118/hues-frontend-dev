@@ -158,6 +158,20 @@ const ConditionalRenderingStatus = ({
       statusBorder = '#F8BA05';
       break;
 
+    // services
+    case true:
+      statusText = 'Active';
+      statusColor = '#39C06F';
+      statusBG = '#39C06F1A';
+      statusBorder = '#39C06F';
+      break;
+    case false:
+      statusText = 'Inactive';
+      statusColor = '#ffffffff';
+      statusBG = '#696969ff';
+      statusBorder = '#0e0e0eff';
+      break;
+
     default:
       return null;
   }

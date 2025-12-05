@@ -7,7 +7,7 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
-import EditOrder from '@/components/orders/EditOrder';
+import EditOrder from '@/components/orders/EditOrderS';
 import NegotiationHistory from '@/components/orders/NegotiationHistory';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNew from '@/components/payments/MakePaymentNew';
@@ -289,13 +289,10 @@ const ViewOrder = () => {
         {/* editOrder Component */}
         {isEditingOrder && (
           <EditOrder
-            type="sales"
-            name="Edit"
             cta="bid"
             isOrder="order"
             orderId={params.order_id}
             onCancel={() => setIsEditingOrder(false)}
-            isEditingOrder={isEditingOrder}
           />
         )}
         {!isEditingOrder && !isLoading && orderDetails && (

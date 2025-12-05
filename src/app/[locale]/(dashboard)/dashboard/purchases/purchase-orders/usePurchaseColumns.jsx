@@ -1,7 +1,7 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -108,6 +108,20 @@ export const usePurchaseColumns = (
             <span>{referenceNumber}</span>
           </div>
         );
+      },
+    },
+    {
+      accessorKey: 'invoiceType',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.item_type')}
+          className="min-w-[50px]"
+        />
+      ),
+      cell: ({ row }) => {
+        const { invoiceType } = row.original;
+        return capitalize(invoiceType) || '--';
       },
     },
     {

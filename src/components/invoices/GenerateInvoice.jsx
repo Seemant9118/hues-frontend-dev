@@ -51,6 +51,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     gstAmount: orderDetails?.gstAmount,
     amount: orderDetails?.amount,
     orderType: orderDetails?.orderType,
+    discountAmount: orderDetails?.discountAmount,
     invoiceType: orderDetails?.invoiceType || 'GOODS',
     invoiceItems: [],
   });
@@ -113,6 +114,8 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
 
       return {
         ...item.productDetails,
+        discountAmount: item.discountAmount || 0,
+        discountPercentage: item.discountPercentage,
         productType: item.productType,
         orderItemId: item.id,
         quantity,

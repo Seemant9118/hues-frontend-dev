@@ -18,7 +18,6 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductServices,
   GetSearchedServices,
-  UpdateProductServices,
   UploadProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import {
@@ -36,10 +35,10 @@ import { useServicesColumns } from './ServicesColumns';
 import { ServicesTable } from './ServicesTable';
 
 // dynamic imports
-const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
+const AddService = dynamic(() => import('@/components/inventory/AddService'), {
   loading: () => <Loading />,
 });
-const EditItem = dynamic(() => import('@/components/inventory/EditItem'), {
+const EditService = dynamic(() => import('@/components/inventory/AddService'), {
   loading: () => <Loading />,
 });
 const UploadItems = dynamic(
@@ -76,7 +75,7 @@ function Services() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
-  const [isAdding, setIsAdding] = useState(false);
+  const [isCreatingService, setIsCreatingService] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -87,14 +86,14 @@ function Services() {
   useEffect(() => {
     // Read the state from the query parameters
     const state = searchParams.get('action');
-    setIsAdding(state === 'add');
+    setIsCreatingService(state === 'add');
     setIsEditing(state === 'edit');
     setIsUploading(state === 'upload');
   }, [searchParams]);
 
   useEffect(() => {
     let newPath = `/dashboard/inventory/services`;
-    if (isAdding) {
+    if (isCreatingService) {
       newPath += `?action=add`;
     } else if (isEditing) {
       newPath += `?action=edit`;
@@ -105,7 +104,7 @@ function Services() {
     }
 
     router.push(newPath);
-  }, [router, isAdding, isEditing, isUploading]);
+  }, [router, isCreatingService, isEditing, isUploading]);
 
   const servicesQuery = useInfiniteQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
@@ -192,6 +191,10 @@ function Services() {
     }
   };
 
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/services/${row.id}`);
+  };
+
   // columns
   const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
 
@@ -205,7 +208,7 @@ function Services() {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
-          {!isAdding && !isUploading && !isEditing && (
+          {!isCreatingService && !isUploading && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-4">
@@ -265,7 +268,10 @@ function Services() {
                   </ProtectedWrapper>
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
-                    <Button onClick={() => setIsAdding(true)} size="sm">
+                    <Button
+                      onClick={() => setIsCreatingService(true)}
+                      size="sm"
+                    >
                       <CircleFadingPlus size={14} />
                       {translations('ctas.add')}
                     </Button>
@@ -301,6 +307,7 @@ function Services() {
                         }
                         totalPages={paginationData?.totalPages}
                         currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
                       />
                     )}
                   </>
@@ -308,21 +315,13 @@ function Services() {
               </div>
             </Wrapper>
           )}
-          {isAdding && (
-            <AddItem
-              setIsAdding={setIsAdding}
-              name={'Item'}
-              cta={'Item'}
-              onCancel={() => setIsAdding(false)}
-            />
+          {isCreatingService && (
+            <AddService setIsCreatingService={setIsCreatingService} />
           )}
           {isEditing && (
-            <EditItem
-              setIsEditing={setIsEditing}
+            <EditService
+              setIsCreatingService={setIsEditing}
               servicesToEdit={servicesToEdit}
-              setServicesToEdit={setServicesToEdit}
-              mutationFunc={UpdateProductServices}
-              queryKey={[servicesApi.getAllProductServices.endpointKey]}
             />
           )}
           {isUploading && (
