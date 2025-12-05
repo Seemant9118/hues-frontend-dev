@@ -61,7 +61,7 @@ export default function Overview({
   };
 
   return (
-    <div className="mt-2 flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <h2 className="text-sm font-bold text-primary">
         {translation('multiStepForm.overview.section1.title')}
       </h2>
@@ -75,7 +75,7 @@ export default function Overview({
             onValueChange={(v) => handleChange('serviceCategory')(v)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Category" />
+              <SelectValue placeholder="eg. Compliance, IT Consultancy etc" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

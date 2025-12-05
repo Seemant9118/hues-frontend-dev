@@ -45,7 +45,7 @@ const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
   loading: () => <Loading />,
 });
 
-const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
+const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });
 
@@ -553,12 +553,9 @@ const SalesOrder = () => {
           {/* editOrder Component */}
           {isEditingOrder && !isCreatingSales && (
             <EditOrder
-              type="sales"
-              name="Edit"
               cta="offer"
               isOrder="order"
               orderId={orderId}
-              isEditingOrder={isEditingOrder}
               onCancel={() => setIsEditingOrder(false)}
             />
           )}

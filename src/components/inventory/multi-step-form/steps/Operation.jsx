@@ -71,7 +71,7 @@ export default function Operations({
   };
 
   return (
-    <div className="mt-2 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {/* ---------------------- RESOURCE REQUIREMENTS ---------------------- */}
       <h2 className="text-sm font-bold text-primary">
         {translation('multiStepForm.operations.section1.title') ||

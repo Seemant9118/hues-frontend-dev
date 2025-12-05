@@ -53,7 +53,7 @@ export default function SLAAndWarranty({
   };
 
   return (
-    <div className="mt-2 flex flex-col gap-6">
+    <div className="lex flex-col gap-6">
       {/* --------------------------- SERVICE LEVEL AGREEMENT --------------------------- */}
       <h2 className="text-sm font-bold text-primary">
         {translation('multiStepForm.sla.section1.title') ||

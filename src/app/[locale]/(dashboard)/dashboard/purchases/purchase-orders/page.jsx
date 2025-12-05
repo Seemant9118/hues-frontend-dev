@@ -45,7 +45,7 @@ const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
   loading: () => <Loading />,
 });
 
-const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
+const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });
 
@@ -72,7 +72,6 @@ const PurchaseOrders = () => {
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [tab, setTab] = useState('all');
-  const [isOrderCreationSuccess, setIsOrderCreationSuccess] = useState(false);
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
@@ -108,8 +107,6 @@ const PurchaseOrders = () => {
         paymentStatus: ['NOT_PAID'],
         clientIds: filterData?.clientIds,
       };
-    } else if (isOrderCreationSuccess) {
-      newFilterData = null;
     } else if (tab === 'all') {
       newFilterData =
         filterData?.clientIds?.length > 0
@@ -613,28 +610,20 @@ const PurchaseOrders = () => {
           )}
           {isCreatingPurchase && !isEditingOrder && (
             <CreateOrder
-              type="purchase"
               name={'Bid'}
               cta="bid"
               isOrder="order"
               isCreatingPurchase={isCreatingPurchase}
-              setPurchaseListing={setPurchaseListing}
               onCancel={() => setIsCreatingPurchase(false)}
-              onSubmit={() => {
-                setIsCreatingPurchase(false);
-              }}
-              setIsOrderCreationSuccess={setIsOrderCreationSuccess}
             />
           )}
 
           {isEditingOrder && !isCreatingPurchase && (
             <EditOrder
-              type="purchase"
-              name="Edit"
-              cta="purchase"
+              cta="bid"
+              isOrder="order"
               orderId={orderId}
               onCancel={() => setIsEditingOrder(false)}
-              setIsOrderCreationSuccess={setIsOrderCreationSuccess}
             />
           )}
         </>

@@ -11,11 +11,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { MoreVertical, Pencil } from 'lucide-react';
+import { Info, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { usePermission } from '@/hooks/usePermissions';
+import Tooltips from '@/components/auth/Tooltips';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   const translations = useTranslations('services');
@@ -30,6 +32,17 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
           title={translations('table.header.serviceName')}
         />
       ),
+      cell: ({ row }) => {
+        const { shortDescription, serviceName } = row.original;
+        return (
+          <div className="flex items-center gap-1">
+            <span className="hover:text-primary hover:underline">
+              {serviceName}
+            </span>
+            <Tooltips trigger={<Info size={14} />} content={shortDescription} />
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'sacCode',
@@ -61,6 +74,10 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
           title={translations('table.header.rate')}
         />
       ),
+      cell: ({ row }) => {
+        const value = row.getValue('basePrice');
+        return formattedAmount(value);
+      },
     },
     {
       accessorKey: 'gstPercentage',

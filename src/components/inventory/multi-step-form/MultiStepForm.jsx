@@ -73,14 +73,14 @@ export default function MultiStepForm({
   return (
     <Card className="flex h-full flex-1 flex-col gap-4 border-0 p-0 shadow-none">
       <CardHeader>
-        <CardTitle className="flex flex-col gap-2">
+        <CardTitle className="flex items-center gap-2">
           {config[currentStep].title}
           <span className="text-sm font-normal text-muted-foreground">
             ( Step {currentStep + 1} of {totalSteps} )
           </span>
         </CardTitle>
         {/* Stepper Indicator */}
-        <div className="mt-4 flex w-full gap-2">
+        <div className="mt-1 flex w-full gap-2">
           {config.map((step, index) => (
             <div
               key={step.key}

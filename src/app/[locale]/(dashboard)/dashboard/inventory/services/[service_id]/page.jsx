@@ -8,24 +8,33 @@ import {
 } from '@/appUtils/helperFunctions';
 
 import ConfirmAction from '@/components/Modals/ConfirmAction';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import {
   DeleteProductServices,
   GetProductServices,
+  UpdateProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import moment from 'moment';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const EditService = dynamic(() => import('@/components/inventory/AddService'), {
   loading: () => <Loading />,
@@ -33,11 +42,15 @@ const EditService = dynamic(() => import('@/components/inventory/AddService'), {
 
 const ViewService = () => {
   const translations = useTranslations('services.serviceDetails');
+  const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
+  const [statusUpdate, setStatusUpdate] = useState({
+    isActive: false,
+  });
 
   const itemsBreadCrumbs = [
     {
@@ -67,38 +80,62 @@ const ViewService = () => {
   });
 
   const overviewData = {
-    serviceName: itemDetails?.serviceName,
+    serviceName: capitalize(itemDetails?.serviceName),
     serviceCategory: capitalize(itemDetails?.serviceCategory),
     serviceSubType: capitalize(itemDetails?.serviceSubType),
-    deliveryMode: convertSnakeToTitleCase(itemDetails?.deliveryMode),
-    unitOfMeasure: convertSnakeToTitleCase(itemDetails?.unitOfMeasure),
-    defaultDuration: itemDetails?.defaultDuration,
+    status: itemDetails?.isActive,
     basePrice: formattedAmount(itemDetails?.basePrice),
-    pricingModel: capitalize(itemDetails?.pricingModel),
     gstPercentage: itemDetails?.gstPercentage ?? '-', // null → show "-"
+    unitOfMeasure: convertSnakeToTitleCase(itemDetails?.unitOfMeasure),
+    pricingModel: capitalize(itemDetails?.pricingModel),
     sacCode: itemDetails?.sacCode,
+    deliveryMode: convertSnakeToTitleCase(itemDetails?.deliveryMode),
     locationRequirements: itemDetails?.locationRequirements || '--',
+    defaultDuration: itemDetails?.defaultDuration,
     shortDescription: capitalize(itemDetails?.shortDescription) || '--',
     longDescription: capitalize(itemDetails?.longDescription) || '--',
-    createdAt: moment(itemDetails?.createdAt).format('DD-MM-YYYY'),
   };
 
   const overviewLabels = {
     serviceName: 'Service Name',
     serviceCategory: 'Service Category',
     serviceSubType: 'Service Sub-Type',
-    deliveryMode: 'Delivery Mode',
-    unitOfMeasure: 'Unit of Measure',
-    defaultDuration: 'Default Duration',
+    status: 'Status',
     basePrice: 'Base Price',
-    pricingModel: 'Pricing Model',
     gstPercentage: 'GST Percentage',
+    unitOfMeasure: 'Unit of Measure',
+    pricingModel: 'Pricing Model',
     sacCode: 'SAC Code',
+    deliveryMode: 'Delivery Mode',
+    defaultDuration: 'Default Duration',
     locationRequirements: 'Location Requirements',
     shortDescription: 'Short Description',
     longDescription: 'Long Description',
-    createdAt: 'Created On',
   };
+
+  const customRender = {
+    status: () => {
+      return <ConditionalRenderingStatus status={itemDetails?.isActive} />;
+    },
+  };
+  // Set default when itemDetails change
+  useEffect(() => {
+    setStatusUpdate({
+      isActive: itemDetails?.isActive,
+    });
+  }, [itemDetails]);
+
+  const updateServiceMutation = useMutation({
+    mutationFn: UpdateProductServices,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [servicesApi.getProductServices.endpointKey],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Something went wrong');
+    },
+  });
 
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
@@ -107,30 +144,17 @@ const ViewService = () => {
           {/* Headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex items-center gap-1">
+              {/* breadcrumbs */}
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push('/dashboard/inventory/services')}
                 className="rounded-sm p-2 hover:bg-gray-100"
               >
                 <ArrowLeft size={16} />
               </button>
-              {/* breadcrumbs */}
               <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
             </div>
 
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  setIsEditing((prev) => !prev);
-                  e.stopPropagation();
-                  setServicesToEdit(itemDetails);
-                }}
-              >
-                <Pencil size={12} />
-                {translations('ctas.edit')}
-              </Button>
-
               <ConfirmAction
                 deleteCta={translations('ctas.delete')}
                 infoText={translations('ctas.infoText', {
@@ -145,6 +169,50 @@ const ViewService = () => {
                   router.push('/dashboard/inventory/services')
                 }
               />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVertical size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="flex max-w-fit flex-col gap-1"
+                >
+                  <ProtectedWrapper permissionCode="permission:item-masters-edit">
+                    <DropdownMenuItem className="flex items-center justify-center gap-2">
+                      <span className="text-sm font-semibold">{'Status:'}</span>
+
+                      <Switch
+                        checked={statusUpdate.isActive}
+                        onCheckedChange={(val) => {
+                          const updatedState = { isActive: val };
+
+                          setStatusUpdate(updatedState);
+
+                          updateServiceMutation.mutate({
+                            id: params.service_id,
+                            data: updatedState, // send updated value
+                          });
+                        }}
+                      />
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="flex items-center justify-center gap-2"
+                      onClick={(e) => {
+                        setIsEditing((prev) => !prev);
+                        e.stopPropagation();
+                        setServicesToEdit(itemDetails);
+                      }}
+                    >
+                      <Pencil size={12} />
+                      {translations('ctas.edit')}
+                    </DropdownMenuItem>
+                  </ProtectedWrapper>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </section>
 
@@ -154,13 +222,19 @@ const ViewService = () => {
             onValueChange={onTabChange}
             defaultValue={'overview'}
           >
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-            </TabsList>
+            <section className="flex justify-between gap-2">
+              <TabsList className="border">
+                <TabsTrigger value="overview">
+                  {translations('tabs.tab1.title')}
+                </TabsTrigger>
+              </TabsList>
+            </section>
             <TabsContent value="overview">
-              <Overview data={overviewData} labelMap={overviewLabels} />
+              <Overview
+                data={overviewData}
+                labelMap={overviewLabels}
+                customRender={customRender}
+              />
             </TabsContent>
           </Tabs>
         </Wrapper>

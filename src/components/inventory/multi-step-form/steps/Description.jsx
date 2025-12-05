@@ -31,7 +31,7 @@ export default function Description({
   };
 
   return (
-    <div className="mt-2 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {/* --------------------------- SERVICE DESCRIPTION --------------------------- */}
       <h2 className="text-sm font-bold text-primary">
         {translation('multiStepForm.description.section1.title') ||

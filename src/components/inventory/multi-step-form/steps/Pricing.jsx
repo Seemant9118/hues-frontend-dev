@@ -60,7 +60,7 @@ export default function Pricing({
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {/* ------------- BASE PRICING ------------- */}
       <h2 className="text-sm font-bold text-primary">
         {translation('multiStepForm.pricing.section1.title') || 'Base Pricing'}

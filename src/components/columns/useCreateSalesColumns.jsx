@@ -125,8 +125,18 @@ export const useCreateSalesColumns = (
               />
             ),
             cell: ({ row }) => {
-              const finalAmount = parseFloat(row.getValue('finalAmount'));
-              return formattedAmount(finalAmount);
+              const finalAmountFromRow = parseFloat(
+                row.getValue('finalAmount'),
+              );
+              const discountAmount =
+                Number(row.getValue('discountAmount')) || 0;
+              const totalGstAmount =
+                Number(row.getValue('totalGstAmount')) || 0;
+              const totalAmount = Number(row.getValue('totalAmount')) || 0;
+              const finalAmount = totalAmount - discountAmount + totalGstAmount;
+
+              // for edit there was no finalAmountFromRow coming from (api data)
+              return formattedAmount(finalAmountFromRow || finalAmount);
             },
           },
         ]

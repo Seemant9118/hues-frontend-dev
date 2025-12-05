@@ -198,3 +198,17 @@ export const splitAddressAccordingToEWayBill = (address) => {
 
   return { addr1, addr2 };
 };
+
+// Convert DD/MM/YYYY → YYYY-MM-DD
+export const toInputDate = (dateStr) => {
+  if (!dateStr) return '';
+  const [dd, mm, yyyy] = dateStr.split('/');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// Convert YYYY-MM-DD → DD/MM/YYYY
+export const toDisplayDate = (dateStr) => {
+  if (!dateStr) return '';
+  const [yyyy, mm, dd] = dateStr.split('-');
+  return `${dd}/${mm}/${yyyy}`;
+};

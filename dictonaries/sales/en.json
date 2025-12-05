@@ -45,8 +45,9 @@
             "table": {
                 "header": {
                     "order_id": "Order ID",
+                    "item_type": "Type",
                     "date": "Date",
-                    "customers_type": "Type",
+                    "customers_type": "Customer Type",
                     "customers": "Name",
                     "status": "Status",
                     "total_amount": "Total Amount"
