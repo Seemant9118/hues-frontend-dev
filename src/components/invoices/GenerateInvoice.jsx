@@ -105,24 +105,47 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       const quantity =
         calculatedInvoiceQuantity(item.quantity, item.invoiceQuantity) || 0;
 
-      const { unitPrice = 0, unitId, gstPerUnit = 0 } = item;
+      const {
+        unitPrice = 0,
+        unitId,
+        gstPerUnit = 0,
+        discountPercentage,
+      } = item;
 
+      // 1️⃣ Total Before Discount
       const totalAmount = parseFloat((quantity * unitPrice).toFixed(2));
+
+      // 2️⃣ Discount Amount
+      let discountAmount = 0;
+
+      if (discountPercentage) {
+        discountAmount = parseFloat(
+          ((totalAmount * discountPercentage) / 100).toFixed(2),
+        );
+      }
+
+      // 3️⃣ Taxable Amount After Discount
+      const amountAfterDiscount = Math.max(totalAmount - discountAmount, 0);
+
+      // 4️⃣ GST Amount
       const totalGstAmount = parseFloat(
-        (totalAmount * (gstPerUnit / 100)).toFixed(2),
+        (amountAfterDiscount * (gstPerUnit / 100)).toFixed(2),
       );
 
       return {
         ...item.productDetails,
-        discountAmount: item.discountAmount || 0,
-        discountPercentage: item.discountPercentage,
+
+        // keep both for safety
+        discountPercentage: discountPercentage || 0,
+        discountAmount,
         productType: item.productType,
         orderItemId: item.id,
         quantity,
         unitId,
         unitPrice,
         gstPerUnit,
-        totalAmount,
+        // totals
+        totalAmount, // before discount
         totalGstAmount,
         isSelected: isAutoSelect,
       };
@@ -131,29 +154,57 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     const filteredList = productDetails.filter((p) => p.quantity > 0);
 
     setProductDetailsList(filteredList);
+
     setInvoicedData((prev) => ({
       ...prev,
       invoiceItems: isAutoSelect ? filteredList : [],
     }));
+
     setAllSelected(isAutoSelect);
   }, [orderDetails?.orderItems, isAutoSelect]);
 
-  // --- 🔹 sync invoicedData totals whenever invoiceItems change
+  // --- 🔹 Sync invoicedData totals using updated discount + GST formula
   useEffect(() => {
-    const totalAmount = invoicedData.invoiceItems.reduce(
-      (acc, item) => acc + item.totalAmount,
-      0,
-    );
+    if (!invoicedData.invoiceItems || invoicedData.invoiceItems.length === 0)
+      return;
 
-    const totalGstAmount = invoicedData.invoiceItems.reduce(
-      (acc, item) => acc + item.totalGstAmount,
-      0,
-    );
+    let finalTotalAmount = 0;
+    let finalTotalGstAmount = 0;
+    let finalDiscountAmount = 0;
+
+    invoicedData.invoiceItems.forEach((item) => {
+      const { quantity, unitPrice, discountPercentage, gstPerUnit } = item;
+
+      // 1️⃣ Total before discount
+      const totalAmount = parseFloat((quantity * unitPrice).toFixed(2));
+
+      // 2️⃣ Discount calculation (percentage OR fixed)
+      let discountAmount = 0;
+
+      if (discountPercentage) {
+        discountAmount = parseFloat(
+          ((totalAmount * discountPercentage) / 100).toFixed(2),
+        );
+      }
+      // 3️⃣ Taxable amount (after discount)
+      const taxableAmount = Math.max(totalAmount - discountAmount, 0);
+
+      // 4️⃣ GST calculation
+      const totalGstAmount = parseFloat(
+        (taxableAmount * (gstPerUnit / 100)).toFixed(2),
+      );
+
+      // Add into final totals
+      finalTotalAmount += totalAmount;
+      finalDiscountAmount += discountAmount;
+      finalTotalGstAmount += totalGstAmount;
+    });
 
     setInvoicedData((prev) => ({
       ...prev,
-      amount: parseFloat(totalAmount.toFixed(2)),
-      gstAmount: parseFloat(totalGstAmount.toFixed(2)),
+      discountAmount: parseFloat(finalDiscountAmount.toFixed(2)),
+      amount: parseFloat(finalTotalAmount.toFixed(2)),
+      gstAmount: parseFloat(finalTotalGstAmount.toFixed(2)),
     }));
   }, [invoicedData.invoiceItems]);
 
@@ -161,30 +212,56 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
   const updateProductDetailsList = (orderItemId, newQtyRaw) => {
     const newQty = newQtyRaw === '' ? '' : Number(newQtyRaw);
 
+    // --- Update productDetailsList ---
     setProductDetailsList((prevList) =>
       prevList.map((item) => {
         if (item.orderItemId !== orderItemId) return item;
 
         const qty = newQty === '' ? '' : Math.max(newQty, 0);
 
+        if (qty === '' || Number.isNaN(qty)) {
+          return {
+            ...item,
+            quantity: '',
+            totalAmount: 0,
+            discountAmount: 0,
+            totalGstAmount: 0,
+          };
+        }
+
+        // Step 1: total before discount
+        const totalAmount = parseFloat((qty * item.unitPrice).toFixed(2));
+
+        // Step 2: calculate discount using discountPercentage
+        const discountAmount = item.discountPercentage
+          ? parseFloat(
+              ((totalAmount * item.discountPercentage) / 100).toFixed(2),
+            )
+          : 0;
+
+        // Step 3: amount after discount
+        const amountAfterDiscount = parseFloat(
+          (totalAmount - discountAmount).toFixed(2),
+        );
+
+        const safeTaxableAmount = Math.max(amountAfterDiscount, 0);
+
+        // Step 4: GST on taxable amount
+        const totalGstAmount = parseFloat(
+          (safeTaxableAmount * (item.gstPerUnit / 100)).toFixed(2),
+        );
+
         return {
           ...item,
           quantity: qty,
-          totalAmount:
-            qty && !Number.isNaN(qty)
-              ? parseFloat((qty * item.unitPrice).toFixed(2))
-              : 0,
-          totalGstAmount:
-            qty && !Number.isNaN(qty)
-              ? parseFloat(
-                  (qty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(2),
-                )
-              : 0,
+          totalAmount,
+          discountAmount,
+          totalGstAmount,
         };
       }),
     );
 
-    // Sync invoicedData.invoiceItems
+    // --- Sync invoicedData.invoiceItems ---
     setInvoicedData((prev) => {
       const exists = prev.invoiceItems?.some(
         (i) => i.orderItemId === orderItemId,
@@ -194,28 +271,51 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       const updatedItems = prev.invoiceItems.map((item) => {
         if (item.orderItemId !== orderItemId) return item;
 
+        if (newQty === '' || Number.isNaN(newQty)) {
+          return {
+            ...item,
+            quantity: '',
+            totalAmount: 0,
+            discountAmount: 0,
+            totalGstAmount: 0,
+          };
+        }
+
+        // Step 1: total amount
+        const totalAmount = parseFloat((newQty * item.unitPrice).toFixed(2));
+
+        // Step 2: recalculate discount (same logic!)
+        const discountAmount = item.discountPercentage
+          ? parseFloat(
+              ((totalAmount * item.discountPercentage) / 100).toFixed(2),
+            )
+          : 0;
+
+        // Step 3: taxable amount
+        const amountAfterDiscount = parseFloat(
+          (totalAmount - discountAmount).toFixed(2),
+        );
+
+        const safeTaxableAmount = Math.max(amountAfterDiscount, 0);
+
+        // Step 4: GST
+        const totalGstAmount = parseFloat(
+          (safeTaxableAmount * (item.gstPerUnit / 100)).toFixed(2),
+        );
+
         return {
           ...item,
-          quantity: newQty === '' ? '' : newQty,
-          totalAmount:
-            newQty && !Number.isNaN(newQty)
-              ? parseFloat((newQty * item.unitPrice).toFixed(2))
-              : 0,
-          totalGstAmount:
-            newQty && !Number.isNaN(newQty)
-              ? parseFloat(
-                  (newQty * item.unitPrice * (item.gstPerUnit / 100)).toFixed(
-                    2,
-                  ),
-                )
-              : 0,
+          quantity: newQty,
+          totalAmount,
+          discountAmount,
+          totalGstAmount,
         };
       });
 
       return { ...prev, invoiceItems: updatedItems };
     });
 
-    // Validation
+    // --- Validation ---
     const matchedItem = orderDetails?.orderItems?.find(
       (i) => i.id === orderItemId,
     );
@@ -445,54 +545,91 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
                           checked={product.isSelected}
                           onCheckedChange={(value) => {
                             const updatedList = [...productDetailsList];
+
+                            // Update selection state
                             updatedList[index].isSelected = value;
 
-                            setProductDetailsList(updatedList);
-
+                            // ---------- If checkbox is checked ----------
                             if (value) {
-                              const updatedItems = productDetailsList.map(
-                                (item, idx) => {
-                                  if (idx === index) {
-                                    return {
-                                      ...item,
-                                      totalAmount: parseFloat(
-                                        (
-                                          item.quantity * item.unitPrice
-                                        ).toFixed(2),
-                                      ),
-                                      totalGstAmount: parseFloat(
-                                        (
-                                          item.quantity *
-                                          item.unitPrice *
-                                          (item.gstPerUnit / 100)
-                                        ).toFixed(2),
-                                      ),
-                                    };
-                                  }
-                                  return item;
-                                },
+                              const item = updatedList[index];
+                              const {
+                                quantity,
+                                unitPrice,
+                                discountPercentage,
+                                discountAmount: apiDiscountAmount,
+                                gstPerUnit,
+                              } = item;
+
+                              // 1️⃣ Total before discount
+                              const totalAmount = parseFloat(
+                                (quantity * unitPrice).toFixed(2),
                               );
 
-                              setInvoicedData({
-                                ...invoicedData,
-                                invoiceItems: updatedItems.filter(
-                                  (item) => item.isSelected,
+                              // 2️⃣ Discount calculation
+                              let discountAmount = 0;
+
+                              if (discountPercentage) {
+                                discountAmount = parseFloat(
+                                  (
+                                    (totalAmount * discountPercentage) /
+                                    100
+                                  ).toFixed(2),
+                                );
+                              } else if (apiDiscountAmount) {
+                                discountAmount = parseFloat(
+                                  apiDiscountAmount.toFixed(2),
+                                );
+                              }
+
+                              // 3️⃣ Taxable amount (after discount)
+                              const taxableAmount = Math.max(
+                                totalAmount - discountAmount,
+                                0,
+                              );
+
+                              // 4️⃣ GST calculation
+                              const totalGstAmount = parseFloat(
+                                (taxableAmount * (gstPerUnit / 100)).toFixed(2),
+                              );
+
+                              // override updated item totals
+                              updatedList[index] = {
+                                ...item,
+                                totalAmount,
+                                discountAmount,
+                                totalGstAmount,
+                              };
+
+                              setProductDetailsList(updatedList);
+
+                              // update invoice items (only selected)
+                              setInvoicedData((prev) => ({
+                                ...prev,
+                                invoiceItems: updatedList.filter(
+                                  (i) => i.isSelected,
                                 ),
-                              });
+                              }));
+
+                              // Clear error msg
                               setErrorMsg((prevMsg) => ({
                                 ...prevMsg,
                                 isAnyInvoiceSelected: '',
                               }));
-                            } else {
-                              setInvoicedData((prev) => ({
-                                ...prev,
-                                invoiceItems: prev.invoiceItems.filter(
-                                  (item) =>
-                                    item.orderItemId !==
-                                    updatedList[index].orderItemId,
-                                ),
-                              }));
+
+                              return;
                             }
+
+                            // ---------- If checkbox is unchecked ----------
+                            setProductDetailsList(updatedList);
+
+                            setInvoicedData((prev) => ({
+                              ...prev,
+                              invoiceItems: prev.invoiceItems.filter(
+                                (i) =>
+                                  i.orderItemId !==
+                                  updatedList[index].orderItemId,
+                              ),
+                            }));
                           }}
                           disabled={isAutoSelect}
                         />

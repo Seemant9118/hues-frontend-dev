@@ -369,13 +369,15 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const createDispatchNoteMutation = useMutation({
     mutationKey: [deliveryProcess.createDispatchNote.endpointKey],
     mutationFn: createDispatchNote,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(translations('successMsg.dispatach_created_success'));
       queryClient.invalidateQueries([
         invoiceApi.getInvoice.endpointKey,
         params.invoiceId,
       ]);
-      router.push(`/dashboard/sales/sales-invoices/${params.invoiceId}`);
+      router.push(
+        `/dashboard/transport/dispatch/${data?.data?.data?.data?.dispatchNoteId}`,
+      );
     },
     onError: (error) => {
       toast.error(
