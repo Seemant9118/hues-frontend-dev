@@ -11,7 +11,7 @@ import {
 import { servicesApi } from '@/api/inventories/services/services';
 import Wrapper from '../wrappers/Wrapper';
 import MultiStepForm from './multi-step-form/MultiStepForm';
-import { stepsServiceConfig } from './multi-step-form/stepsConfig';
+import { stepsServiceConfig } from './multi-step-form/services-form-configs/stepsConfig';
 
 const AddService = ({ setIsCreatingService, servicesToEdit }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
@@ -129,6 +129,7 @@ const AddService = ({ setIsCreatingService, servicesToEdit }) => {
       const merged = {
         ...prev,
         ...servicesToEdit,
+        gstPercentage: Number(servicesToEdit?.gstPercentage),
 
         resourceConstraints: {
           ...prev.resourceConstraints,
@@ -188,6 +189,9 @@ const AddService = ({ setIsCreatingService, servicesToEdit }) => {
       queryClient.invalidateQueries({
         queryKey: [servicesApi.getAllProductServices.endpointKey],
       });
+      queryClient.invalidateQueries({
+        queryKey: [servicesApi.getProductServices.endpointKey],
+      });
       setIsCreatingService(false);
       SessionStorageService.remove(`${enterpriseId}_ServiceData`);
     },
@@ -236,6 +240,7 @@ const AddService = ({ setIsCreatingService, servicesToEdit }) => {
 
       {/* Main Form */}
       <MultiStepForm
+        isEditing={!!servicesToEdit}
         id={enterpriseId}
         config={stepsServiceConfig}
         formData={service}
