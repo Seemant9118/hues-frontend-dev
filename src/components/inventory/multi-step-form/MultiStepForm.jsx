@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
 
 export default function MultiStepForm({
+  isGoods,
+  isEditing,
   id,
   config,
   formData,
@@ -46,7 +48,13 @@ export default function MultiStepForm({
 
     if (!isLastStep) {
       setCurrentStep((prev) => prev + 1);
-      saveDraftToSession({ key: `${id}_ServiceData`, data: formData });
+
+      const draftKey = isGoods ? `${id}_GoodsData` : `${id}_ServiceData`;
+
+      saveDraftToSession({
+        key: draftKey,
+        data: formData,
+      });
     }
   };
 
@@ -139,7 +147,7 @@ export default function MultiStepForm({
               onClick={() => onFinalSubmit('create')}
               disabled={isSubmitting}
             >
-              Create
+              {isEditing ? 'Update' : 'Create'}
             </Button>
           </>
         )}

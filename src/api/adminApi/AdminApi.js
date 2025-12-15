@@ -112,4 +112,10 @@ export const AdminAPIs = {
     endpoint: `/admin-panel/admin/revert-token`,
     endpointKey: 'revert_enterprise',
   },
+
+  // goods categories
+  getProductGoodsCategories: {
+    endpoint: `/admin-panel/product-goods-category/categories`,
+    endpointKey: 'get_product_goods-categories',
+  },
 };

@@ -1011,6 +1011,37 @@
                 "selectButton": "Select"
             }
         },
+        "addGoods": {
+            "title": "Add Goods",
+            "multiStepForm": {
+                "overview": {
+                    "section1": {
+                        "title": "Item Overview"
+                    }
+                },
+                "additionalInfo": {
+                    "section1": {
+                        "title": "Pricing"
+                    },
+                    "section2": {
+                        "title": "Dimensions"
+                    }
+                },
+                "tradePromotions": {
+                    "section1": {
+                        "title": "Trade Promotions and Offers"
+                    }
+                },
+                "promotionalContent": {
+                    "section1": {
+                        "title": "Product Media"
+                    },
+                    "section2": {
+                        "title": "SEO Information"
+                    }
+                }
+            }
+        },
         "addService": {
             "title": "Add Service",
             "multiStepForm": {
