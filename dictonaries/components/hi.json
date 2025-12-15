@@ -1007,6 +1007,107 @@
                 "selectButton": "चुनें"
             }
         },
+        "addGoods": {
+            "title": "सामान जोड़ें",
+            "multiStepForm": {
+                "overview": {
+                    "section1": {
+                        "title": "आइटम का अवलोकन"
+                    }
+                },
+                "additionalInfo": {
+                    "section1": {
+                        "title": "मूल्य निर्धारण"
+                    },
+                    "section2": {
+                        "title": "आयाम"
+                    }
+                },
+                "tradePromotions": {
+                    "section1": {
+                        "title": "व्यापार प्रमोशन और ऑफ़र"
+                    }
+                },
+                "promotionalContent": {
+                    "section1": {
+                        "title": "प्रोडक्ट मीडिया"
+                    },
+                    "section2": {
+                        "title": "एसईओ जानकारी"
+                    }
+                }
+            }
+        },
+        "addService": {
+            "title": "सेवा जोड़ें",
+            "multiStepForm": {
+                "overview": {
+                    "section1": {
+                        "title": "मूल जानकारी"
+                    },
+                    "section2": {
+                        "title": "सेवा मेट्रिक्स"
+                    },
+                    "section3": {
+                        "title": "टैग्स और कीवर्ड्स"
+                    }
+                },
+                "pricing": {
+                    "section1": {
+                        "title": "आधार मूल्य निर्धारण"
+                    },
+                    "section2": {
+                        "title": "कर संबंधी जानकारी"
+                    }
+                },
+                "operations": {
+                    "section1": {
+                        "title": "संसाधन आवश्यकताएँ"
+                    },
+                    "section2": {
+                        "title": "क्षमता सीमाएँ"
+                    },
+                    "section3": {
+                        "title": "आवश्यक इनपुट"
+                    }
+                },
+                "sla": {
+                    "section1": {
+                        "title": "सेवा स्तर समझौता"
+                    },
+                    "section2": {
+                        "title": "संशोधन और वारंटी"
+                    },
+                    "section3": {
+                        "title": "दंड और क्रेडिट्स"
+                    }
+                },
+                "description": {
+                    "section1": {
+                        "title": "सेवा विवरण"
+                    },
+                    "section2": {
+                        "title": "शामिल और अपवर्जन"
+                    }
+                },
+                "addOns": {
+                    "section1": {
+                        "title": "ऐड-ऑन सेवाएँ"
+                    }
+                },
+                "contracts": {
+                    "section1": {
+                        "title": "सेवा अनुबंध"
+                    },
+                    "section2": {
+                        "title": "आवश्यक सहमति"
+                    },
+                    "section3": {
+                        "title": "अनुपालन"
+                    }
+                }
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "स्वीकृत",
