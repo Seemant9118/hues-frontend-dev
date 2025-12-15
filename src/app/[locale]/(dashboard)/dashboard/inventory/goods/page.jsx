@@ -18,7 +18,6 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
   GetSearchedProductGoods,
-  UpdateProductGoods,
   UploadProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import {
@@ -35,10 +34,10 @@ import { toast } from 'sonner';
 import { useGoodsColumns } from './GoodsColumns';
 import { GoodsTable } from './GoodsTable';
 
-const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
+const AddGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
   loading: () => <Loading />,
 });
-const EditItem = dynamic(() => import('@/components/inventory/EditItem'), {
+const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
   loading: () => <Loading />,
 });
 const UploadItems = dynamic(
@@ -297,22 +296,12 @@ function Goods() {
               </div>
             </Wrapper>
           )}
-          {isAdding && (
-            <AddItem
-              setIsAdding={setIsAdding}
-              name={'Item'}
-              cta={'Item'}
-              onCancel={() => setIsAdding(false)}
-            />
-          )}
+          {isAdding && <AddGoods setIsCreatingGoods={setIsAdding} />}
 
           {isEditing && (
-            <EditItem
-              setIsEditing={setIsEditing}
+            <EditGoods
+              setIsCreatingGoods={setIsEditing}
               goodsToEdit={goodsToEdit}
-              setGoodsToEdit={setGoodsToEdit}
-              mutationFunc={UpdateProductGoods}
-              queryKey={[goodsApi.getAllProductGoods.endpointKey]}
             />
           )}
           {isUploading && (

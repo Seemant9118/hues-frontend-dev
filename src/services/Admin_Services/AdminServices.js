@@ -124,3 +124,8 @@ export const switchEnterprise = ({ enterpriseId }) => {
 export const revertSwitchedEnterprise = () => {
   return APIinstance.get(AdminAPIs.revertSwitchedEnterprise.endpoint);
 };
+
+// goods categories
+export const getProductGoodsCategories = () => {
+  return APIinstance.get(AdminAPIs.getProductGoodsCategories.endpoint);
+};
