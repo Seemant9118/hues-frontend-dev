@@ -1,5 +1,6 @@
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
+import InputCreate from '@/components/ui/InputCreate';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -206,10 +207,16 @@ export default function Overview({
       <div>
         <div>
           <Label>Tags</Label>
-          <Input
+          {/* <Input
             placeholder="Add tags.."
             value={formData?.tags}
             onChange={(e) => handleChange('tags')(e)}
+          /> */}
+
+          <InputCreate
+            value={formData?.tags}
+            onChange={(e) => handleChange('tags')(e)}
+            placeholder="Type and press Enter"
           />
         </div>
       </div>

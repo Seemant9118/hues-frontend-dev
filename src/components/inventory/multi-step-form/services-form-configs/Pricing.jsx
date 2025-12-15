@@ -53,7 +53,7 @@ export default function Pricing({
     if (selected) {
       setFormData((prev) => ({
         ...prev,
-        gstPercentage: selected.gstPercentage,
+        gstPercentage: Number(selected.gstPercentage),
         taxClass: selected.taxClass,
       }));
     }

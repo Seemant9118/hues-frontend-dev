@@ -1,10 +1,10 @@
-import AddOns from './steps/AddOns';
-import ContractsAndConsents from './steps/ContractsAndConsents';
-import Description from './steps/Description';
-import Operations from './steps/Operation';
-import Overview from './steps/Overview';
-import Pricing from './steps/Pricing';
-import SLAAndWarranty from './steps/SLAAndWarranty';
+import AddOns from './AddOns';
+import ContractsAndConsents from './ContractsAndConsents';
+import Description from './Description';
+import Operations from './Operation';
+import Overview from './Overview';
+import Pricing from './Pricing';
+import SLAAndWarranty from './SLAAndWarranty';
 
 // Services
 export const stepsServiceConfig = [
