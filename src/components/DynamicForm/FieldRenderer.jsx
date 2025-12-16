@@ -20,6 +20,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
 }) {
   const {
     name,
+    headLabel,
     label,
     required,
     type,
@@ -32,6 +33,8 @@ const FieldRenderer = React.memo(function FieldRenderer({
 
   return (
     <div className="flex flex-col gap-1">
+      {/* HEAD LABLE */}
+      {headLabel && <div className="text-md mt-4 font-bold">{headLabel}</div>}
       {/* LABEL */}
       {label && (
         <Label className="text-sm font-medium">
@@ -67,7 +70,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
       )}
 
       {type === 'select' && (
-        <Select value={value || ''} onValueChange={(v) => onChange(name, v)}>
+        <Select value={value} onValueChange={(v) => onChange(name, v)}>
           <SelectTrigger>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
@@ -95,11 +98,11 @@ const FieldRenderer = React.memo(function FieldRenderer({
       )}
 
       {type === 'radio' && options && (
-        <div className="mt-1 flex items-center gap-4">
+        <div className="mt-1 flex flex-col gap-4">
           {options.map((opt) => (
             <label
               key={opt.value}
-              className="flex cursor-pointer items-center gap-2"
+              className="flex cursor-pointer items-center gap-2 text-sm"
             >
               <input
                 type="radio"
@@ -107,6 +110,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
                 value={opt.value}
                 checked={value === opt.value}
                 onChange={() => onChange(name, opt.value)}
+                className="accent-primary"
               />
               <span>{opt.label}</span>
             </label>

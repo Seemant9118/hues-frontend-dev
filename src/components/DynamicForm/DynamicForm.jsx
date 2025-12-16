@@ -1,8 +1,14 @@
 import { useCallback } from 'react';
 import FieldRenderer from './FieldRenderer';
 
-export default function DynamicForm({ schema, formData, setFormData, errors }) {
-  const handleChange = useCallback(
+export default function DynamicForm({
+  schema,
+  formData,
+  setFormData,
+  errors,
+  onChange,
+}) {
+  const defaultChangeHandler = useCallback(
     (name, value) => {
       setFormData((prev) => ({
         ...prev,
@@ -11,6 +17,9 @@ export default function DynamicForm({ schema, formData, setFormData, errors }) {
     },
     [setFormData],
   );
+
+  // Use parent handler if provided
+  const handleChange = onChange || defaultChangeHandler;
 
   return (
     <div className="flex flex-col gap-4">

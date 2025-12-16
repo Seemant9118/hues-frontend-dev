@@ -9,12 +9,19 @@ const bookingTypeMapping = {
   LB: 'LADING BILL',
 };
 
+const transportModeMapping = {
+  ROAD: 'Road',
+  AIR: 'Air',
+  RAIL: 'Rail',
+  SHIP: 'Ship',
+};
+
 export const useBookingColumns = ({ setFormData }) => {
   return [
     {
-      accessorKey: 'type',
+      accessorKey: 'bookingType',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={'Type'} />
+        <DataTableColumnHeader column={column} title={'Booking Type'} />
       ),
       cell: ({ row }) => {
         const { bookingType } = row.original;
@@ -24,50 +31,65 @@ export const useBookingColumns = ({ setFormData }) => {
     },
 
     {
-      accessorKey: 'bookingNo',
+      accessorKey: 'bookingNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={'Booking no.'} />
+        <DataTableColumnHeader column={column} title={'Booking No.'} />
       ),
-      cell: ({ row }) => {
-        const { bookingNumber } = row.original;
-        return bookingNumber;
-      },
+      cell: ({ row }) => row.original.bookingNumber || '--',
     },
 
     {
-      accessorKey: 'date',
+      accessorKey: 'bookingDate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={'Booking Date'} />
       ),
       cell: ({ row }) => {
         const { bookingDate } = row.original;
-        return formatDate(bookingDate);
+        return bookingDate ? formatDate(bookingDate) : '--';
       },
     },
 
-    //   {
-    //     accessorKey: 'attachments',
-    //     header: ({ column }) => (
-    //       <DataTableColumnHeader
-    //         column={column}
-    //         title={translations('header.attachments')}
-    //       />
-    //     ),
-    //     cell: ({ row }) => {
-    //       const { attachments } = row.original;
-    //       return <Attachments attachments={attachments} />;
-    //     },
-    //   },
+    {
+      accessorKey: 'legFrom',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={'Leg From'} />
+      ),
+      cell: ({ row }) => row.original.legFrom || '--',
+    },
+
+    {
+      accessorKey: 'legTo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={'Leg To'} />
+      ),
+      cell: ({ row }) => row.original.legTo || '--',
+    },
+
+    {
+      accessorKey: 'transMode',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={'Transport Mode'} />
+      ),
+      cell: ({ row }) => {
+        const { transMode } = row.original;
+        return transportModeMapping[transMode] || transMode || '--';
+      },
+    },
+
+    {
+      accessorKey: 'transporterId',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={'Transporter ID'} />
+      ),
+      cell: ({ row }) => row.original.transporterId || '--',
+    },
 
     {
       accessorKey: 'remarks',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={'Remarks'} />
       ),
-      cell: ({ row }) => {
-        const { remarks } = row.original;
-        return remarks || '--';
-      },
+      cell: ({ row }) => row.original.remarks || '--',
     },
 
     {
@@ -83,7 +105,7 @@ export const useBookingColumns = ({ setFormData }) => {
             onClick={() => {
               setFormData((prev) => {
                 const updated = [...(prev.transportBookings || [])];
-                updated.splice(rowIndex, 1); // remove row
+                updated.splice(rowIndex, 1);
 
                 return {
                   ...prev,

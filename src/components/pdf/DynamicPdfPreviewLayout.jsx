@@ -12,6 +12,7 @@ export default function DynamicPdfPreviewLayout({
   onAdd,
   onCreate,
   FormComponent, // dynamic form engine
+  onChange,
 }) {
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden">
@@ -24,6 +25,7 @@ export default function DynamicPdfPreviewLayout({
             formData={formData}
             setFormData={setFormData}
             errors={errors}
+            onChange={onChange}
           />
 
           <Button className="sticky bottom-0 w-full" size="sm" onClick={onAdd}>

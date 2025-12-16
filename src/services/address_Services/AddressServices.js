@@ -13,9 +13,9 @@ export const getAddress = (clientId, clientEnterpriseId) => {
   );
 };
 
-export const getAddressByEnterprise = (enterpriseId) => {
+export const getAddressByEnterprise = (enterpriseId, context) => {
   return APIinstance.get(
-    `${addressAPIs.getAddressByEnterprise.endpoint}${enterpriseId}`,
+    `${addressAPIs.getAddressByEnterprise.endpoint}${enterpriseId}?context=${context}`,
   );
 };
 
