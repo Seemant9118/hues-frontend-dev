@@ -21,6 +21,7 @@ import Loading from '../ui/Loading';
 import { Checkbox } from '../ui/checkbox';
 
 export default function AddNewAddress({
+  isLegAddressAdding = false,
   isAddressAdding,
   setIsAddressAdding,
   enterpriseId,
@@ -323,7 +324,12 @@ export default function AddNewAddress({
               const payload = {
                 ...address,
                 ...(isEditing &&
-                  editingAddressId && { addressId: editingAddressId }),
+                  editingAddressId && {
+                    addressId: editingAddressId,
+                  }),
+                ...(isLegAddressAdding && {
+                  addressType: 'LEG_ADDRESS',
+                }),
               };
 
               const mutationPayload = enterpriseId

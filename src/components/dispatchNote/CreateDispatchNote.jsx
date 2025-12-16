@@ -2,7 +2,6 @@
 
 import { addressAPIs } from '@/api/addressApi/addressApis';
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
@@ -10,10 +9,6 @@ import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
 import { LocalStorageService } from '@/lib/utils';
 import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import { createDispatchNote } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import {
-  createVendor,
-  getVendors,
-} from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -24,7 +19,6 @@ import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import AddNewAddress from '../enterprise/AddNewAddress';
-import AddModal from '../Modals/AddModal';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 import OrdersOverview from '../orders/OrdersOverview';
 import { Button } from '../ui/button';
@@ -52,15 +46,10 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
-
-  const [transporter, setTransporter] = useState(null);
-  const [isAddingNewTransport, setIsAddingNewTransport] = useState(false);
   const [selectDispatcher, setSelectDispatcher] = useState(null);
   const [selectBilling, setSelectBilling] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
-    transporterId: '',
-    transporterType: '',
     dispatchFromAddressId: '',
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
@@ -72,37 +61,6 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [productDetailsList, setProductDetailsList] = useState(null);
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [allSelected, setAllSelected] = useState(false);
-
-  // vendors[transporter] fetching
-  const { data: transports } = useQuery({
-    queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }),
-    select: (res) => res.data.data.users,
-  });
-
-  // vendors options
-  const transportOptions = [
-    ...(transports || []).map((vendor) => {
-      const value = vendor?.id;
-      const label =
-        vendor?.vendor?.name || vendor.invitation?.userDetails?.name;
-
-      return { value, label };
-    }),
-    {
-      value: null, // if no transport than user can select this"
-      label: 'Self',
-    },
-    // Special option for "Add New Vendor"
-    {
-      value: 'add-new-vendor', // Special value for "Add New Vendor"
-      label: (
-        <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
-          <Plus size={14} /> {translations('transporter.add-new-transport')}
-        </span>
-      ),
-    },
-  ];
 
   // get addresses
   const { data: addresses } = useQuery({
@@ -436,153 +394,102 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
         />
         <section className="mt-2 flex h-full flex-col justify-between">
           <div className="flex flex-col gap-4">
-            {/* form - transporter, dispatch from, billing from */}
-            <div className="grid grid-cols-2 gap-2 rounded-sm border p-4">
+            <div className="flex flex-col gap-2 rounded-sm border p-4">
+              {/* form - transporter, dispatch from, billing from */}
               <h1 className="font-semibold">Dispatch Details</h1>
-              {/* transporter */}
-              <div className="col-span-2">
-                <Label>{translations('transporter.label')}</Label>{' '}
-                <span className="text-red-500">*</span>
-                <div className="flex flex-col gap-4">
-                  {/* Transporter Select */}
-                  <Select
-                    name="transporter"
-                    placeholder={translations('transporter.placeholder')}
-                    options={transportOptions}
-                    styles={getStylesForSelectComponent()}
-                    className="max-w-full text-sm"
-                    classNamePrefix="select"
-                    value={transporter ? transporter.selectedValue : null}
-                    onChange={(selectedOption) => {
-                      if (!selectedOption) return;
-
-                      if (selectedOption.value === 'add-new-vendor') {
-                        setIsAddingNewTransport(true);
-                        return;
+              <div className="grid grid-cols-2 gap-2 rounded-sm">
+                {/* dispatch from */}
+                <div>
+                  <Label>{translations('dispatchFrom.label')}</Label>
+                  <span className="text-red-500">*</span>
+                  <div className="flex flex-col gap-4">
+                    {/* Dispatch Select */}
+                    <Select
+                      name="dispatchFrom"
+                      placeholder={translations('dispatchFrom.placeholder')}
+                      options={addressesOptions}
+                      styles={getStylesForSelectComponent()}
+                      className="max-w-full text-sm"
+                      classNamePrefix="select"
+                      value={
+                        selectDispatcher
+                          ? selectDispatcher?.selectedValue
+                          : null
                       }
+                      onChange={(selectedOption) => {
+                        if (!selectedOption) return;
 
-                      // Update state correctly
-                      setTransporter({
-                        transporterId: selectedOption.value,
-                        selectedValue: selectedOption,
-                      });
+                        if (selectedOption.value === 'add-new-address') {
+                          setIsAddingNewAddress(true);
+                          return;
+                        }
 
-                      setDispatchedData((prev) => ({
-                        ...prev,
-                        transporterId: selectedOption.value,
-                        transporterType: selectedOption.value
-                          ? 'THIRD_PARTY'
-                          : 'SELF',
-                      }));
+                        setSelectDispatcher({
+                          dispatchFrom: selectedOption.value,
+                          selectedValue: selectedOption,
+                        });
 
-                      setIsAddingNewTransport(false);
-                    }}
-                  />
-
-                  {/* Add Vendor Modal */}
-                  {isAddingNewTransport && (
-                    <AddModal
-                      type={'Add'}
-                      cta="vendor"
-                      btnName={translations('transporter.add-new-transport')}
-                      mutationFunc={createVendor}
-                      isOpen={isAddingNewTransport}
-                      setIsOpen={setIsAddingNewTransport}
+                        setDispatchedData((prev) => ({
+                          ...prev,
+                          dispatchFromAddressId: selectedOption.value,
+                        }));
+                      }}
                     />
-                  )}
-
-                  {errorMsg?.transporterId && (
-                    <ErrorBox msg={errorMsg?.transporterId} />
-                  )}
+                    {errorMsg?.dispatchFrom && (
+                      <ErrorBox msg={errorMsg?.dispatchFrom} />
+                    )}
+                  </div>
                 </div>
-              </div>
-              {/* dispatch from */}
-              <div>
-                <Label>{translations('dispatchFrom.label')}</Label>
-                <span className="text-red-500">*</span>
-                <div className="flex flex-col gap-4">
-                  {/* Dispatch Select */}
-                  <Select
-                    name="dispatchFrom"
-                    placeholder={translations('dispatchFrom.placeholder')}
-                    options={addressesOptions}
-                    styles={getStylesForSelectComponent()}
-                    className="max-w-full text-sm"
-                    classNamePrefix="select"
-                    value={
-                      selectDispatcher ? selectDispatcher?.selectedValue : null
-                    }
-                    onChange={(selectedOption) => {
-                      if (!selectedOption) return;
-
-                      if (selectedOption.value === 'add-new-address') {
-                        setIsAddingNewAddress(true);
-                        return;
+                {/* billing from */}
+                <div>
+                  <Label>{translations('billingFrom.label')}</Label>
+                  <span className="text-red-500">*</span>
+                  <div className="flex flex-col gap-4">
+                    {/* billing Select */}
+                    <Select
+                      name="billingFrom"
+                      placeholder={translations('billingFrom.placeholder')}
+                      options={addressesOptions}
+                      styles={getStylesForSelectComponent()}
+                      className="max-w-full text-sm"
+                      classNamePrefix="select"
+                      value={
+                        selectBilling ? selectBilling?.selectedValue : null
                       }
+                      onChange={(selectedOption) => {
+                        if (!selectedOption) return;
 
-                      setSelectDispatcher({
-                        dispatchFrom: selectedOption.value,
-                        selectedValue: selectedOption,
-                      });
+                        if (selectedOption.value === 'add-new-address') {
+                          setIsAddingNewAddress(true);
+                          return;
+                        }
 
-                      setDispatchedData((prev) => ({
-                        ...prev,
-                        dispatchFromAddressId: selectedOption.value,
-                      }));
-                    }}
-                  />
-                  {errorMsg?.dispatchFrom && (
-                    <ErrorBox msg={errorMsg?.dispatchFrom} />
-                  )}
+                        setSelectBilling({
+                          billingFrom: selectedOption.value,
+                          selectedValue: selectedOption,
+                        });
+
+                        setDispatchedData((prev) => ({
+                          ...prev,
+                          billingFromAddressId: selectedOption.value,
+                        }));
+                      }}
+                    />
+                    {errorMsg?.billingFrom && (
+                      <ErrorBox msg={errorMsg?.billingFrom} />
+                    )}
+                  </div>
                 </div>
+
+                {/* add new address : visible if isAddingNewAddress is true */}
+                <AddNewAddress
+                  isAddressAdding={isAddingNewAddress}
+                  setIsAddressAdding={setIsAddingNewAddress}
+                  mutationKey={settingsAPI.addUpdateAddress.endpointKey}
+                  mutationFn={addUpdateAddress}
+                  invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
+                />
               </div>
-              {/* billing from */}
-              <div>
-                <Label>{translations('billingFrom.label')}</Label>
-                <span className="text-red-500">*</span>
-                <div className="flex flex-col gap-4">
-                  {/* billing Select */}
-                  <Select
-                    name="billingFrom"
-                    placeholder={translations('billingFrom.placeholder')}
-                    options={addressesOptions}
-                    styles={getStylesForSelectComponent()}
-                    className="max-w-full text-sm"
-                    classNamePrefix="select"
-                    value={selectBilling ? selectBilling?.selectedValue : null}
-                    onChange={(selectedOption) => {
-                      if (!selectedOption) return;
-
-                      if (selectedOption.value === 'add-new-address') {
-                        setIsAddingNewAddress(true);
-                        return;
-                      }
-
-                      setSelectBilling({
-                        billingFrom: selectedOption.value,
-                        selectedValue: selectedOption,
-                      });
-
-                      setDispatchedData((prev) => ({
-                        ...prev,
-                        billingFromAddressId: selectedOption.value,
-                      }));
-                    }}
-                  />
-                  {errorMsg?.billingFrom && (
-                    <ErrorBox msg={errorMsg?.billingFrom} />
-                  )}
-                </div>
-              </div>
-
-              {/* add new address : visible if isAddingNewAddress is true */}
-              <AddNewAddress
-                isAddressAdding={isAddingNewAddress}
-                setIsAddressAdding={setIsAddingNewAddress}
-                mutationKey={settingsAPI.addUpdateAddress.endpointKey}
-                mutationFn={addUpdateAddress}
-                invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
-              />
             </div>
 
             {/* table of items */}
