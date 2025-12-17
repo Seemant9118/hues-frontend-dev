@@ -11,11 +11,14 @@ import {
 } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import { DeliveryResultDialog } from '@/components/deliveryManagement/DeliveryResultDialog';
+import { ModifyPOD } from '@/components/deliveryManagement/ModifyPOD';
 import AddBooking from '@/components/dispatchNote/AddBooking';
 import AddTransport from '@/components/dispatchNote/AddTransport';
 import CreateEWBA from '@/components/dispatchNote/CreateEWBA';
 import CreateEWBB from '@/components/dispatchNote/CreateEWBB';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
+import PINVerifyModal from '@/components/invoices/PINVerifyModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -28,8 +31,13 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
 import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import {
+  acceptPOD,
   getDeliveryChallan,
   getEWBs,
+  getPOD,
+  previewPOD,
+  rejectPOD,
+  sendPOD,
   sendToTransporter,
   update,
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
@@ -47,12 +55,15 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import {
+  CheckCircle,
   Eye,
   MoveUpRight,
   Pencil,
+  PencilLine,
   Plus,
   PlusCircle,
   RefreshCcw,
+  Send,
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -61,11 +72,13 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import RejectReasonModal from '@/components/deliveryManagement/RejectReasonModal';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 import { useDispatchedTransporterBookingColumns } from './useDispatchedTransporterBookingColumns';
 import { useEWBsColumns } from './useEWBsColumns';
+import { usePODColumns } from './usePODColumns';
 
 // const TESTING_DATA = [
 //   {
@@ -244,6 +257,14 @@ const ViewDelivery = () => {
     useState(null);
   const [ewayBills, setEwayBills] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
+  const [openModify, setOpenModify] = useState(false);
+  const [type, setType] = useState('');
+  const [isOpenPinVerifyModal, setIsOpenPinVerifyModal] = useState(false);
+  const [isPINError, setIsPINError] = useState(false);
+  const [deliveryResultType, setDeliveryResultType] = useState(null);
+  const [openDeliveryResult, setOpenDeliveryResult] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [openRejectReasonModal, setOpenRejectReasonModal] = useState(false);
 
   const onTabChange = (tab) => {
     setTab(tab);
@@ -348,9 +369,9 @@ const ViewDelivery = () => {
       toast.success(
         translations('overview_inputs.toast.sendToTransporterSuccess'),
       );
-      queryClient.invalidateQueries({
-        queryKey: [deliveryProcess.getDispatchNote.endpointKey],
-      });
+      queryClient.invalidateQueries([
+        deliveryProcess.getDispatchNote.endpointKey,
+      ]);
     },
     onError: (error) => {
       toast.error(
@@ -389,9 +410,9 @@ const ViewDelivery = () => {
   const updateDispatchInfo = useMutation({
     mutationFn: update,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [deliveryProcess.getDispatchNote.endpointKey],
-      });
+      queryClient.invalidateQueries([
+        deliveryProcess.getDispatchNote.endpointKey,
+      ]);
       toast.success(translations('overview_inputs.toast.dispatchInfoUpdated'));
     },
     onError: (error) => {
@@ -411,6 +432,9 @@ const ViewDelivery = () => {
       queryFn: () => getDeliveryChallan(params.deliveryId),
       select: (data) => data.data.data,
     });
+
+  const isSellerEnterprise =
+    dispatchDetails?.metaData?.sellerEnterpriseId === enterpriseId;
 
   // formated dispatched items for table
   const mapDispatchDetailsForItems = (dispatchDetails = {}) => {
@@ -453,14 +477,17 @@ const ViewDelivery = () => {
   const totalAmount = Number(dispatchDetails?.metaData?.totalAmount || 0);
   const totalGstAmount = Number(dispatchDetails?.metaData?.totalGstAmount || 0);
   const overviewData = {
-    dispatchId: dispatchDetails?.dispatchNote?.referenceNumber || '-',
+    ...(isSellerEnterprise && {
+      dispatchId: dispatchDetails?.dispatchNote?.referenceNumber || '-',
+    }),
+
     consignor: dispatchDetails?.metaData?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.metaData?.buyerName || '-',
     supply: dispatchDetails?.metaData?.supply || 'Outward Supply',
     deliveryChallanNo: dispatchDetails?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
     EWB: dispatchDetails?.metaData?.ewb || '-',
-    transporter: dispatchDetails?.metaData?.transporterName || '-',
+
     dispatchFrom:
       dispatchDetails?.metaData?.dispatchFromAddress?.address || '-',
     billingFrom: dispatchDetails?.metaData?.billingFromAddress?.address || '-',
@@ -470,22 +497,26 @@ const ViewDelivery = () => {
       capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
-    dispatchId: translations('overview_labels.dispatchId'),
+    ...(isSellerEnterprise && {
+      dispatchId: translations('overview_labels.dispatchId'),
+    }),
+
     consignor: translations('overview_labels.consignor'),
     consignee: translations('overview_labels.consignee'),
     supply: translations('overview_labels.supply'),
     deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
     totalAmount: translations('overview_labels.totalAmount'),
     EWB: translations('overview_labels.ewb'),
-    transporter: translations('overview_labels.transporter'),
+
     dispatchFrom: translations('overview_labels.dispatch_from'),
     billingFrom: translations('overview_labels.billing_from'),
     billingAddress: translations('overview_labels.billing_address'),
     shippingAddress: translations('overview_labels.shipping_address'),
   };
+
+  // overview custom label render
   const hasNoTransporter = !dispatchDetails?.metaData?.transporterName;
   const hasTransporter = Boolean(dispatchDetails?.metaData?.transporterName);
-  // overview custom label render
   const customLabelRender = {
     transporter: () => (
       <div className="flex items-center gap-2">
@@ -582,19 +613,23 @@ const ViewDelivery = () => {
   };
   // overview custom render
   const customRender = {
-    dispatchId: () => (
-      <p
-        className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
-        onClick={() => {
-          router.push(
-            `/dashboard/transport/dispatch/${dispatchDetails?.dispatchNote?.id}`,
-          );
-        }}
-      >
-        {dispatchDetails?.dispatchNote?.referenceNumber}{' '}
-        <MoveUpRight size={12} />
-      </p>
-    ),
+    dispatchId: () => {
+      if (!isSellerEnterprise) return null;
+
+      return (
+        <p
+          className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+          onClick={() => {
+            router.push(
+              `/dashboard/transport/dispatch/${dispatchDetails?.dispatchNote?.id}`,
+            );
+          }}
+        >
+          {dispatchDetails?.dispatchNote?.referenceNumber}
+          <MoveUpRight size={12} />
+        </p>
+      );
+    },
     transporter: () => {
       const hasTransporter = Boolean(
         dispatchDetails?.metaData?.transporterName,
@@ -853,30 +888,6 @@ const ViewDelivery = () => {
     },
   };
 
-  // updateStatus mutation
-  // const updateStatusMutation = useMutation({
-  //   mutationFn: updateDispatchNoteStatus,
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({
-  //       queryKey: [deliveryProcess.getDispatchNote.endpointKey],
-  //     });
-  //     toast.success(translations('overview_inputs.toast.dcGenerated'));
-  //   },
-  //   onError: (error) => {
-  //     toast.error(
-  //       error.response.data.message ||
-  //         translations('overview_inputs.toast.commonError'),
-  //     );
-  //   },
-  // });
-
-  // const generateDC = () => {
-  //   updateStatusMutation.mutate({
-  //     dispatchNoteId: params.deliveryId,
-  //     data: { status: 'READY_FOR_DISPATCH' },
-  //   });
-  // };
-
   // get EWBs list
   // Fetch dispatched notes data with infinite scroll
   const {
@@ -930,16 +941,205 @@ const ViewDelivery = () => {
     });
   }, [data]);
 
-  // logics to rendered required component/ctas
-  const isNeededToCreateBookingOrEWB =
-    !dispatchDetails?.metaData?.ewb &&
-    dispatchDetails?.transportBookings?.length === 0;
-  const isEWBRequired =
-    dispatchDetails?.transportBookings?.length > 0 &&
-    dispatchDetails?.isEWBRequired &&
-    !dispatchDetails?.metaData?.ewb;
-  const showAddBookingCTA = tab !== 'ewb';
-  const showGenerateEWBCTA = tab !== 'transports';
+  const sendPODMutation = useMutation({
+    mutationFn: sendPOD,
+    onSuccess: () => {
+      queryClient.invalidateQueries([
+        deliveryProcess.getDispatchNote.endpointKey,
+        params.deliveryId,
+      ]);
+
+      toast.success('POD send to consignee');
+      setTab('pod');
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const buildPODPayload = (dispatchDetails) => {
+    const meta = dispatchDetails.metaData;
+    const seller = meta.sellerDetails;
+    const { invoice } = meta;
+
+    return {
+      voucherId: dispatchDetails.id,
+      dispatchNoteId: dispatchDetails.dispatchNoteId,
+      buyerId: dispatchDetails.buyerId,
+      buyerType: dispatchDetails.buyerType,
+      metadata: {
+        buyerId: meta.buyerId,
+        buyerType: meta.buyerType,
+        sellerEnterpriseId: meta.sellerEnterpriseId,
+
+        sellerDetails: {
+          name: seller?.name || '',
+          gst: seller?.gst || '',
+          billFromAddress: meta.billingFromAddress?.address || '',
+          dispatchFromAddress: meta.dispatchFromAddress?.address || '',
+        },
+
+        buyerDetails: {
+          name: meta.buyerName || '',
+          gst: meta.buyerGst || '',
+          billingAddress: meta.billingAddress?.address || '',
+          shippingAddress: meta.shippingAddress?.address || '',
+        },
+
+        invoiceDetails: {
+          referenceNumber: invoice?.referenceNumber || '',
+          invoiceDate: invoice?.createdAt || '',
+          eWayBillId: meta.ewb || '',
+        },
+      },
+
+      items: meta.items.map((item) => ({
+        dispatchNoteItemId: item.id,
+
+        acceptQuantity: item.dispatchedQuantity ?? 0,
+        rejectQuantity: 0,
+
+        rejectionReason: '',
+
+        amount: Number(item.amount),
+        gstAmount: Number(item.gstAmount),
+
+        metadata: {
+          productDetails: item.invoiceItem?.orderItemId?.productDetails || {},
+        },
+      })),
+    };
+  };
+
+  const handleSendPOD = () => {
+    const payload = buildPODPayload(dispatchDetails);
+
+    sendPODMutation.mutate({ data: payload });
+  };
+
+  // fetch pod details
+  const {
+    data: podDetails,
+    isLoading: isPODsLoading,
+    isFetching: isPODsFetching,
+  } = useQuery({
+    queryKey: [deliveryProcess.getPOD.endpointKey, dispatchDetails?.id],
+    queryFn: () => getPOD({ id: dispatchDetails?.id }),
+    select: (data) => data?.data?.data,
+    enabled: tab === 'pod',
+  });
+
+  const previewPODMutation = useMutation({
+    mutationFn: previewPOD,
+    onSuccess: async (data) => {
+      toast.success('Document Generated Successfully');
+      const pdfSlug = data?.data?.data?.podDocumentSlug;
+
+      viewPdfInNewTab(pdfSlug);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handlePreviewPOD = () => {
+    if (podDetails?.documentLink) {
+      viewPdfInNewTab(podDetails?.documentLink);
+    } else {
+      previewPODMutation.mutate({
+        id: podDetails?.id,
+      });
+    }
+  };
+
+  const podTotalAmount = Number(podDetails?.totalAmount || 0);
+  const podTotalGstAmount = Number(podDetails?.totalGstAmount || 0);
+  const podOverviewData = {
+    podId: podDetails?.referenceNumber || '-',
+    consignor: podDetails?.metaData?.sellerDetails?.name || '-',
+    consignee: podDetails?.metaData?.buyerDetails?.name || '-',
+    status: podDetails?.status,
+    totalAmount: formattedAmount(podTotalAmount + podTotalGstAmount),
+  };
+  const podOverviewLabel = {
+    podId: translations('overview_labels.podId'),
+    consignor: translations('overview_labels.consignor'),
+    consignee: translations('overview_labels.consignee'),
+    status: translations('overview_labels.status'),
+    totalAmount: translations('overview_labels.totalAmount'),
+  };
+
+  const podCustomDataRender = {
+    podId: () => (
+      <div className="flex items-center gap-2">
+        <span>{podDetails?.referenceNumber}</span>
+        {/* preview pod cta */}
+        <Tooltips
+          trigger={
+            <button
+              onClick={handlePreviewPOD}
+              className="rounded-sm border p-2 font-bold hover:bg-accent"
+            >
+              <Eye size={14} />
+            </button>
+          }
+          content={'Preview PoD Document'}
+        />
+      </div>
+    ),
+  };
+
+  const acceptPODMutation = useMutation({
+    mutationFn: acceptPOD,
+    onSuccess: () => {
+      toast.success('PIN verified & POD accepted');
+
+      queryClient.invalidateQueries([deliveryProcess.getPOD.endpointKey]);
+
+      setDeliveryResultType('ACCEPTED');
+      setOpenDeliveryResult(true);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+      setIsPINError(true);
+    },
+  });
+
+  const rejectPODMutation = useMutation({
+    mutationFn: rejectPOD,
+    onSuccess: () => {
+      toast.success('PIN verified & POD rejected');
+
+      queryClient.invalidateQueries([deliveryProcess.getPOD.endpoint]);
+
+      setDeliveryResultType('REJECTED');
+      setOpenDeliveryResult(true);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+      setIsPINError(true);
+    },
+  });
+
+  const handleAcceptOrRejectPODs = () => {
+    setIsOpenPinVerifyModal(false);
+
+    if (type === 'ACCEPTED') {
+      const payload = {
+        podId: dispatchDetails?.pods?.[0]?.id,
+      };
+
+      acceptPODMutation.mutate(payload);
+    } else {
+      const rejectionReason = type === 'REJECTED' ? rejectReason : undefined;
+      const payload = {
+        podId: dispatchDetails?.pods?.[0]?.id,
+        data: { rejectionReason },
+      };
+
+      rejectPODMutation.mutate(payload);
+    }
+  };
 
   const handlePreview = () => {
     viewPdfInNewTab(dispatchDetails?.document?.documentSlug);
@@ -951,6 +1151,29 @@ const ViewDelivery = () => {
     );
   };
 
+  // logic to render data into overview component
+  const overviewDataToRender = tab !== 'pod' ? overviewData : podOverviewData;
+  const overviewLabelsToRender =
+    tab !== 'pod' ? overviewLabels : podOverviewLabel;
+  const overviewCustomDataToRender =
+    tab !== 'pod' ? customRender : podCustomDataRender;
+  const overviewCustomLabelsToRender = tab !== 'pod' && customLabelRender;
+  const isPOD = tab === 'pod';
+
+  // logics to rendered required component/ctas
+  const isNeededToCreateBookingOrEWB =
+    !dispatchDetails?.metaData?.ewb &&
+    dispatchDetails?.transportBookings?.length === 0;
+  const isEWBRequired =
+    dispatchDetails?.transportBookings?.length > 0 &&
+    dispatchDetails?.isEWBRequired &&
+    !dispatchDetails?.metaData?.ewb;
+  const showAddBookingCTA = tab !== 'ewb' && tab !== 'pod' && tab !== 'items';
+  const showSendPODCTA =
+    tab !== 'ewb' && tab !== 'transports' && tab !== 'items';
+  const showGenerateEWBCTA =
+    tab !== 'transports' && tab !== 'pod' && tab !== 'items';
+
   // columns
   const dispatchedItemDetailsColumns = useDispatchedItemColumns();
   const dispatchedTransportedBookingsColumns =
@@ -959,6 +1182,7 @@ const ViewDelivery = () => {
       setSelectedTransportForUpdateB,
     });
   const ewaybillsColumns = useEWBsColumns();
+  const podsColumns = usePODColumns();
 
   if (isDispatchDetailsLoading) {
     <Loading />;
@@ -1008,52 +1232,75 @@ const ViewDelivery = () => {
                   <TabsTrigger value="ewb">
                     {translations('tabs.tab4.title')}
                   </TabsTrigger>
+                  <TabsTrigger value="pod">
+                    {translations('tabs.tab5.title')}
+                  </TabsTrigger>
                 </TabsList>
                 {/* ctas - tab based */}
                 <div className="flex items-center gap-2">
+                  {/* send POD */}
+                  {showSendPODCTA && !dispatchDetails?.isPodCreated && (
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={handleSendPOD}
+                    >
+                      <Send size={14} />
+                      {translations('overview_inputs.ctas.sendPOD')}
+                    </Button>
+                  )}
+
                   {/* add a booking cta */}
-                  {showAddBookingCTA && (
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      onClick={() => setIsAddingBooking(true)}
-                    >
-                      <PlusCircle size={14} />
-                      {translations('overview_inputs.ctas.addBooking')}
-                    </Button>
-                  )}
+                  {showAddBookingCTA &&
+                    dispatchDetails?.metaData?.sellerEnterpriseId ===
+                      enterpriseId && (
+                      <Button
+                        variant="blue_outline"
+                        size="sm"
+                        onClick={() => setIsAddingBooking(true)}
+                      >
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.addBooking')}
+                      </Button>
+                    )}
                   {/* refresh EWB cta */}
-                  {tab === 'ewb' && (
-                    <Button
-                      size="sm"
-                      variant="blue_outline"
-                      onClick={async () => {
-                        const res = await refetch();
-                        if (!res.error) toast.success('E-way bills fetched');
-                      }}
-                    >
-                      <RefreshCcw size={14} />
-                      {translations('overview_inputs.ctas.refreshEWayBill')}
-                    </Button>
-                  )}
+                  {tab === 'ewb' &&
+                    dispatchDetails?.metaData?.sellerEnterpriseId ===
+                      enterpriseId && (
+                      <Button
+                        size="sm"
+                        variant="blue_outline"
+                        onClick={async () => {
+                          const res = await refetch();
+                          if (!res.error) toast.success('E-way bills fetched');
+                        }}
+                      >
+                        <RefreshCcw size={14} />
+                        {translations('overview_inputs.ctas.refreshEWayBill')}
+                      </Button>
+                    )}
                   {/* generate e-way bill cta */}
-                  {showGenerateEWBCTA && (
-                    <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
-                      <PlusCircle size={14} />
-                      {translations('overview_inputs.ctas.generateEWayBill')}
-                    </Button>
-                  )}
+                  {showGenerateEWBCTA &&
+                    dispatchDetails?.metaData?.sellerEnterpriseId ===
+                      enterpriseId && (
+                      <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.generateEWayBill')}
+                      </Button>
+                    )}
                 </div>
               </section>
+
+              {/* OVERVIEW SECTION */}
+              <Overview
+                collapsible={tab !== 'overview'}
+                data={overviewDataToRender}
+                labelMap={overviewLabelsToRender}
+                customRender={overviewCustomDataToRender}
+                customLabelRender={overviewCustomLabelsToRender}
+                isPOD={isPOD}
+              />
               <TabsContent value="overview">
-                {/* OVERVIEW SECTION - TODO customs data (required) */}
-                <Overview
-                  collapsible={tab !== 'overview'}
-                  data={overviewData}
-                  labelMap={overviewLabels}
-                  customRender={customRender}
-                  customLabelRender={customLabelRender}
-                />
                 {/* add new address : visible if isAddingNewAddress is true */}
                 <AddNewAddress
                   isAddressAdding={isAddingNewAddress}
@@ -1160,52 +1407,177 @@ const ViewDelivery = () => {
                   </div>
                 )}
               </TabsContent>
+              <TabsContent value="pod">
+                {(isPODsLoading || isPODsFetching) && <Loading />}
+                {(!isPODsLoading || !isPODsFetching) &&
+                podDetails?.items?.length > 0 ? (
+                  <div className="flex h-full flex-col gap-2">
+                    <h1 className="font-bold">Items</h1>
+                    {/* Scrollable table area */}
+                    <div className="flex-1 overflow-auto">
+                      <DataTable
+                        id="pods"
+                        columns={podsColumns}
+                        data={podDetails?.items}
+                      />
+                    </div>
+
+                    {/* Sticky CTA bar : only visible to buyer */}
+                    {dispatchDetails?.metaData?.sellerEnterpriseId !==
+                      enterpriseId &&
+                      podDetails?.status === 'PENDING' && (
+                        <div className="sticky bottom-0 z-20 flex items-center justify-between gap-4 bg-white p-3">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 font-bold text-white hover:bg-green-500"
+                            onClick={() => {
+                              setIsOpenPinVerifyModal(true);
+                              setType('ACCEPTED');
+                            }}
+                          >
+                            <CheckCircle size={24} /> Accept as Delivered
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="font-bold"
+                            onClick={() => setOpenModify(true)}
+                          >
+                            <PencilLine size={24} /> Modify & Accept
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-500 font-bold text-red-500 hover:bg-red-500 hover:text-white"
+                            onClick={() => {
+                              setType('REJECTED');
+                              setOpenRejectReasonModal(true);
+                            }}
+                          >
+                            <X size={24} /> Reject Delivery
+                          </Button>
+                        </div>
+                      )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="font-bold">
+                      {translations('tabs.tab5.emtpyStateComponent.title')}
+                    </p>
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create-payment'}
+                    >
+                      <p className="max-w-96 text-center">
+                        {translations('tabs.tab5.emtpyStateComponent.para')}
+                      </p>
+                    </ProtectedWrapper>
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </>
         )}
 
-        {isAddingBooking && !isCreatingEWBA && !isCreatingEWBB && (
-          <AddBooking
-            translations={translations}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            setTab={setTab}
-            queryClient={queryClient}
-            dispatchNoteId={dispatchDetails?.dispatchNote?.id}
-            deliveryId={params.deliveryId}
-            isAddingBooking={isAddingBooking}
-            setIsAddingBooking={setIsAddingBooking}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+        {isAddingBooking &&
+          !isCreatingEWBA &&
+          !isCreatingEWBB &&
+          !openModify && (
+            <AddBooking
+              translations={translations}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              setTab={setTab}
+              queryClient={queryClient}
+              dispatchNoteId={dispatchDetails?.dispatchNote?.id}
+              deliveryId={params.deliveryId}
+              isAddingBooking={isAddingBooking}
+              setIsAddingBooking={setIsAddingBooking}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+            />
+          )}
+
+        {isCreatingEWBA &&
+          !isCreatingEWBB &&
+          !isAddingBooking &&
+          !openModify && (
+            <CreateEWBA
+              dispatchNoteId={params.deliveryId}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+              setIsCreatingEWB={setIsCreatingEWBA}
+              dispatchDetails={dispatchDetails?.metaData}
+            />
+          )}
+        {isCreatingEWBB &&
+          !isCreatingEWBA &&
+          !isAddingBooking &&
+          !openModify && (
+            <CreateEWBB
+              dispatchNoteId={params.deliveryId}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+              setIsCreatingEWB={setIsCreatingEWBB}
+              dispatchDetails={dispatchDetails?.metaData}
+              selectedTransportForUpdateB={selectedTransportForUpdateB}
+            />
+          )}
+
+        {openModify &&
+          !isAddingBooking &&
+          !isCreatingEWBA &&
+          !isCreatingEWBB && (
+            <ModifyPOD
+              open={openModify}
+              onOpenChange={() => setOpenModify(false)}
+              data={podDetails?.items}
+              podId={dispatchDetails?.pods?.[0]?.id}
+            />
+          )}
+        {/* Reject Reason Modal */}
+        {openRejectReasonModal && (
+          <RejectReasonModal
+            open={openRejectReasonModal}
+            setOpen={setOpenRejectReasonModal}
+            onConfirm={(reason) => {
+              setRejectReason(reason);
+              setIsOpenPinVerifyModal(true);
+            }}
           />
         )}
 
-        {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
-          <CreateEWBA
-            dispatchNoteId={params.deliveryId}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWBA}
-            dispatchDetails={dispatchDetails?.metaData}
+        {/* PIN Verification Modal */}
+        {isOpenPinVerifyModal && (
+          <PINVerifyModal
+            open={isOpenPinVerifyModal}
+            setOpen={setIsOpenPinVerifyModal}
+            order={{ type }}
+            handleCreateFn={handleAcceptOrRejectPODs}
+            isPINError={isPINError}
+            setIsPINError={setIsPINError}
           />
         )}
-        {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
-          <CreateEWBB
-            dispatchNoteId={params.deliveryId}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWBB}
-            dispatchDetails={dispatchDetails?.metaData}
-            selectedTransportForUpdateB={selectedTransportForUpdateB}
-          />
-        )}
+
+        {/* Result Dialog */}
+        <DeliveryResultDialog
+          open={openDeliveryResult}
+          type={deliveryResultType}
+          onClose={() => {
+            setOpenDeliveryResult(false);
+            setDeliveryResultType(null);
+          }}
+          voucherId={dispatchDetails?.id}
+        />
       </Wrapper>
     </ProtectedWrapper>
   );

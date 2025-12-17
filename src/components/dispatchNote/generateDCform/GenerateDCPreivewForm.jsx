@@ -358,6 +358,8 @@ export default function GenerateDCPreviewForm({
       dispatchNoteId: Number(dispatchNoteId),
       movementType: formData?.movementType,
       isEWBRequired: formData?.isEWBRequired === 'true',
+      buyerId: dispatchDetails?.buyerId,
+      buyerType: dispatchDetails?.buyerType,
       metaData: dispatchDetails || {}, // full dispatch note
       bookings: formData?.transportBookings || [], // booking rows only
     };

@@ -38,13 +38,13 @@ const ViewItem = () => {
     {
       id: 1,
       name: translations('title.items'),
-      path: '/dashboard/inventory/goods',
+      path: '/dashboard/item-master/goods',
       show: true, // Always show
     },
     {
       id: 2,
       name: translations('title.item_details'),
-      path: `/dashboard/inventory/goods/${params.good_id}`,
+      path: `/dashboard/item-master/goods/${params.good_id}`,
       show: true, // Always show
     },
   ];
@@ -141,7 +141,7 @@ const ViewItem = () => {
                 mutationFunc={DeleteProductGoods}
                 successMsg={translations('ctas.successMsg')}
                 invalidateKey={goodsApi.getAllProductGoods.endpointKey}
-                redirectedTo={() => router.push('/dashboard/inventory/goods')}
+                redirectedTo={() => router.push('/dashboard/item-master/goods')}
               />
             </div>
           </section>

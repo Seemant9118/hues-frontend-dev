@@ -55,13 +55,13 @@ const ViewService = () => {
     {
       id: 1,
       name: translations('title.items'),
-      path: '/dashboard/inventory/services',
+      path: '/dashboard/item-master/services',
       show: true, // Always show
     },
     {
       id: 2,
       name: translations('title.item_details'),
-      path: `/dashboard/inventory/services/${params.service_id}`,
+      path: `/dashboard/item-master/services/${params.service_id}`,
       show: true, // Always show
     },
   ];
@@ -145,7 +145,7 @@ const ViewService = () => {
             <div className="flex items-center gap-1">
               {/* breadcrumbs */}
               <button
-                onClick={() => router.push('/dashboard/inventory/services')}
+                onClick={() => router.push('/dashboard/item-master/services')}
                 className="rounded-sm p-2 hover:bg-gray-100"
               >
                 <ArrowLeft size={16} />
@@ -165,7 +165,7 @@ const ViewService = () => {
                 successMsg={translations('ctas.successMsg')}
                 invalidateKey={servicesApi.getAllProductServices.endpointKey}
                 redirectedTo={() =>
-                  router.push('/dashboard/inventory/services')
+                  router.push('/dashboard/item-master/services')
                 }
               />
               <DropdownMenu>
