@@ -69,4 +69,49 @@ export const deliveryProcess = {
     endpoint: `/dispatchnote/vouchers/list`,
     endpointKey: 'get_delivery_challans',
   },
+
+  // pods
+  getPOD: {
+    endpoint: `/pod/`,
+    endpointKey: 'get_pod_details',
+  },
+  sendPOD: {
+    endpoint: `/pod/create`,
+    endpointKey: 'send_pod',
+  },
+  acceptPOD: {
+    endpoint: `/pod/:podId/accept`,
+    endpointKey: 'accept_pod',
+  },
+  rejectPOD: {
+    endpoint: `/pod/:podId/reject`,
+    endpointKey: 'reject_pod',
+  },
+  modifyAndAcceptPOD: {
+    endpoint: `/pod/:podId/modify-and-accept`,
+    endpointKey: 'modify_accept_pod',
+  },
+  previewPOD: {
+    endpoint: `/pod/document/`,
+    endpointKey: 'preview_pod',
+  },
+
+  // GRNs
+  getGRNs: {
+    endpoint: `/grn/list`,
+    endpointKey: 'get_grn_list',
+  },
+  getGRN: {
+    endpoint: `/grn/`,
+    endpointKey: 'get_grn',
+  },
+  previewGRN: {
+    endpoint: `/grn/document/`,
+    endpointKey: 'preview_grn',
+  },
+  // qc
+  updateStatusForQC: {
+    endpoint: `/grn/items/status/`,
+    endpointKey: 'update_status_qc',
+  },
 };

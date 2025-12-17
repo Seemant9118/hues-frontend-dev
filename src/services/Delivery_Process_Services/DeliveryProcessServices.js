@@ -111,3 +111,54 @@ export const getDeliveryChallans = ({ page, limit }) => {
     `${deliveryProcess.getDeliveryChallans.endpoint}?page=${page}&limit=${limit}`,
   );
 };
+
+export const getPOD = ({ id }) => {
+  return APIinstance.get(`${deliveryProcess.getPOD.endpoint}${id}`);
+};
+
+export const sendPOD = ({ data }) => {
+  return APIinstance.post(deliveryProcess.sendPOD.endpoint, data);
+};
+
+export const acceptPOD = ({ podId, data }) => {
+  const endpoint = deliveryProcess.acceptPOD.endpoint.replace(':podId', podId);
+  return APIinstance.post(endpoint, data);
+};
+
+export const rejectPOD = ({ podId, data }) => {
+  const endpoint = deliveryProcess.rejectPOD.endpoint.replace(':podId', podId);
+  return APIinstance.post(endpoint, data);
+};
+
+export const modifyAndAcceptPOD = ({ podId, data }) => {
+  const endpoint = deliveryProcess.modifyAndAcceptPOD.endpoint.replace(
+    ':podId',
+    podId,
+  );
+  return APIinstance.put(endpoint, data);
+};
+
+export const previewPOD = ({ id }) => {
+  return APIinstance.post(`${deliveryProcess.previewPOD.endpoint}${id}`);
+};
+
+export const getGRNs = ({ page, limit }) => {
+  return APIinstance.get(
+    `${deliveryProcess.getGRNs.endpoint}?page=${page}&limit=${limit}`,
+  );
+};
+
+export const getGRN = ({ id }) => {
+  return APIinstance.get(`${deliveryProcess.getGRN.endpoint}${id}`);
+};
+
+export const previewGRN = ({ id }) => {
+  return APIinstance.post(`${deliveryProcess.previewGRN.endpoint}${id}`);
+};
+
+export const updateStatusForQC = ({ id, data }) => {
+  return APIinstance.put(
+    `${deliveryProcess.updateStatusForQC.endpoint}${id}`,
+    data,
+  );
+};
