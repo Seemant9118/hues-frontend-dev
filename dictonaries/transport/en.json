@@ -217,7 +217,7 @@
             }
         },
         "delivery-challan": {
-            "title": "Delivery Challan",
+            "title": "Delivery Challans",
             "emtpyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
@@ -250,7 +250,7 @@
             },
             "delivery_challan_details": {
                 "title": {
-                    "dispatch_notes": "Delivery Challan",
+                    "dispatch_notes": "Delivery Challans",
                     "dispatch_details": "Delivery Challan Details",
                     "ewaybillDetails": "E-way bill Details",
                     "addBooking": "Add Booking Details",
@@ -260,6 +260,8 @@
                 "overview_labels": {
                     "supply": "Movement",
                     "invoiceId": "Invoice ID",
+                    "podId": "POD ID",
+                    "status": "Status",
                     "consignor": "Consignor",
                     "consignee": "Consignee",
                     "totalAmount": "Total Amount",
@@ -285,6 +287,7 @@
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
                         "generateDC": "Generate Delivery Challan",
+                        "sendPOD": "Send POD",
                         "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",
@@ -354,7 +357,7 @@
                         }
                     },
                     "tab4": {
-                        "title": "E-way bills",
+                        "title": "E-way bill",
                         "table": {
                             "header": {
                                 "ewbNo": "EWB No",
@@ -375,6 +378,30 @@
                         "emtpyStateComponent": {
                             "title": "No E-way bills generated yet",
                             "para": "You haven't recorded any E-way bills yet. Start now to keep your E-way bills history up to date"
+                        }
+                    },
+                    "tab5": {
+                        "title": "POD",
+                        "table": {
+                            "header": {
+                                "sr": "Sr.",
+                                "skuId": "SKU ID",
+                                "itemName": "Item Name",
+                                "qtyDelivered": "Qty Delivered",
+                                "qtyAccepted": "Qty Accepted",
+                                "qtyRejected": "Qty Rejected",
+                                "price": "Price",
+                                "gst": "GST(%)",
+                                "amount": "Amount",
+                                "status": "Status"
+                            },
+                            "ctas": {
+                                "viewDetails": "View Details"
+                            }
+                        },
+                        "emtpyStateComponent": {
+                            "title": "No POD (Proof of Delivery) generated",
+                            "para": "You haven't recorded any POD yet. Start now to keep your POD history up to date"
                         }
                     }
                 },
@@ -424,6 +451,44 @@
                         "fileAttachedSuccess": "File attached successfully!",
                         "attachementSuccess": "Attachment added successfully",
                         "error": "Error creating booking for dispatch note"
+                    }
+                }
+            }
+        },
+        "grns": {
+            "title": "GRNs Awaiting Quality Check",
+            "emtpyStateComponent": {
+                "heading": "Manage bids, deals, and invoices—securely and digitally",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Start a sale by sending offers or receiving bids—whichever comes first!"
+                    },
+                    "subItem2": {
+                        "value": "Negotiate with confidence using digitally signed offers and counter-offers"
+                    },
+                    "subItem3": {
+                        "value": "Seal the deal with digital signatures—quick, easy, and binding"
+                    },
+                    "subItem4": {
+                        "value": "Wrap things up with professional, shareable invoices—just a few clicks"
+                    }
+                }
+            },
+            "grnsDetails": {
+                "title1": "GRNs Awaiting Quality Check",
+                "title2": "Quality Acknowledgment Certificate",
+                "overview_labels": {
+                    "grnId": "GRN ID",
+                    "grnDate": "GRN Date",
+                    "podId": "PoD ID",
+                    "invoiceId": "Invoice ID",
+                    "invoiceDate": "Invoice Date",
+                    "deliveryDate": "Delivery  Date",
+                    "EWB": "eWay Bill ID"
+                },
+                 "tabs": {
+                    "tab1": {
+                        "title": "Overview"
                     }
                 }
             }

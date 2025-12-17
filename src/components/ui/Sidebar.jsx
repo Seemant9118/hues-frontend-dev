@@ -15,6 +15,7 @@ import {
   Database,
   FileSymlink,
   Gauge,
+  HandHelping,
   HandPlatter,
   IndianRupee,
   NotebookTabs,
@@ -100,17 +101,17 @@ const Sidebar = () => {
     hasPermission('permission:item-masters-view') && {
       name: 'sidebar.itemMaster',
       icon: <Package size={16} />,
-      path: '/dashboard/inventory/goods',
+      path: '/dashboard/item-master/goods',
       subTab: [
         {
           name: 'sidebar.subTabs.goods',
           icon: <Boxes size={16} />,
-          path: '/dashboard/inventory/goods',
+          path: '/dashboard/item-master/goods',
         },
         {
           name: 'sidebar.subTabs.services',
           icon: <HandPlatter size={16} />,
-          path: '/dashboard/inventory/services',
+          path: '/dashboard/item-master/services',
         },
       ],
     },
@@ -128,6 +129,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.deliveryChallan',
           icon: <ReceiptText size={16} />,
           path: '/dashboard/transport/delivery-challan',
+        },
+        {
+          name: 'sidebar.subTabs.grn',
+          icon: <HandHelping size={16} />,
+          path: '/dashboard/transport/grn',
         },
       ],
     },

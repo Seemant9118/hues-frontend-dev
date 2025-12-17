@@ -178,10 +178,10 @@ const PINVerifyModal = ({
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
-    if (pin.length < 4) {
+    if (pin?.length < 4) {
       toast.error('Enter a valid PIN');
     } else {
-      const formatDate = moment(dueDate).format('DD-MM-yyyy');
+      const formatDate = moment(dueDate)?.format('DD-MM-yyyy');
       const updatedOrder = {
         ...order,
         remarks: customerRemarks,

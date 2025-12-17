@@ -92,7 +92,7 @@ function Services() {
   }, [searchParams]);
 
   useEffect(() => {
-    let newPath = `/dashboard/inventory/services`;
+    let newPath = `/dashboard/item-master/services`;
     if (isCreatingService) {
       newPath += `?action=add`;
     } else if (isEditing) {
@@ -192,7 +192,7 @@ function Services() {
   };
 
   const onRowClick = (row) => {
-    return router.push(`/dashboard/inventory/services/${row.id}`);
+    return router.push(`/dashboard/item-master/services/${row.id}`);
   };
 
   // columns
