@@ -6,6 +6,7 @@ const ConditionalRenderingStatus = ({
   isPayment = false,
   isSellerPage = false,
   className,
+  isSeller = false,
   isPOD = false,
 }) => {
   const translations = useTranslations('components.conditionalRenderingStatus');
@@ -19,7 +20,9 @@ const ConditionalRenderingStatus = ({
   if (isPOD) {
     switch (status) {
       case 'PENDING':
-        statusText = translations('PENDING.pod');
+        statusText = isSeller
+          ? translations('PENDING.pod.podSeller')
+          : translations('PENDING.pod.podBuyer');
         statusColor = '#288AF9';
         statusBG = '#288AF91A';
         statusBorder = '#288AF9';
@@ -207,6 +210,14 @@ const ConditionalRenderingStatus = ({
         statusColor = '#F8BA05';
         statusBG = '#F8BA051A';
         statusBorder = '#F8BA05';
+        break;
+
+      // QC
+      case 'PARTIALLY_COMPLETED':
+        statusText = 'QC Ongoing';
+        statusColor = '#288AF9';
+        statusBG = '#288AF91A';
+        statusBorder = '#288AF9';
         break;
 
       default:

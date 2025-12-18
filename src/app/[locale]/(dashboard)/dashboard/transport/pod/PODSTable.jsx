@@ -17,7 +17,7 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual';
 import React from 'react';
 
-export function GRNSTable({
+export function PODSTable({
   id,
   columns,
   data,
@@ -88,7 +88,7 @@ export function GRNSTable({
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 52, // Adjusted height estimate
+    estimateSize: () => 40, // Adjusted height estimate
     getScrollElement: () => tableContainerRef.current,
     measureElement: (element) =>
       element?.offsetHeight || element?.getBoundingClientRect().height,
@@ -100,8 +100,8 @@ export function GRNSTable({
       {' '}
       {/* Makes it grow vertically */}
       <div
+        className="infinite-datatable-scrollable-body scrollBarStyles flex-grow overflow-scroll rounded-[6px]"
         ref={tableContainerRef}
-        className="infinite-datatable-scrollable-body scrollBarStyles min-h-0 flex-1 overflow-x-auto overflow-y-scroll rounded-[6px]"
       >
         {/* Table wrapper to allow horizontal scroll only when needed */}
         <div className="inline-block min-w-full align-middle">

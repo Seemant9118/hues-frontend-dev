@@ -11,7 +11,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 
-export const DeliveryResultDialog = ({ open, type, onClose, voucherId }) => {
+export const DeliveryResultDialog = ({ open, type, onClose, id }) => {
   const queryClient = useQueryClient();
   const hasInvalidatedRef = useRef(false);
 
@@ -22,10 +22,7 @@ export const DeliveryResultDialog = ({ open, type, onClose, voucherId }) => {
 
     // invalidate ONLY once when dialog opens
     if (!hasInvalidatedRef.current) {
-      queryClient.invalidateQueries([
-        deliveryProcess.getPOD.endpoint,
-        voucherId,
-      ]);
+      queryClient.invalidateQueries([deliveryProcess.getPODbyId.endpoint, id]);
       hasInvalidatedRef.current = true;
     }
 
@@ -35,7 +32,7 @@ export const DeliveryResultDialog = ({ open, type, onClose, voucherId }) => {
 
     // eslint-disable-next-line consistent-return
     return () => clearTimeout(timer);
-  }, [open, type, voucherId, onClose, queryClient]);
+  }, [open, type, id, onClose, queryClient]);
 
   // reset ref when dialog closes
   useEffect(() => {

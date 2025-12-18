@@ -1121,7 +1121,10 @@
                 "default": "Pending",
                 "isPayment_seller": "Not Acknowledged Yet",
                 "isPayment_buyer": "Not acknowledged by seller",
-                "pod":"Awaiting action"
+                "pod":{
+                    "podSeller": "PoD Sent",
+                    "podBuyer" : "PoD Pending"
+                }
             },
             "COMPLETED":"Completed",
             "NEW": "New",

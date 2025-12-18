@@ -13,6 +13,7 @@ export default function Overview({
   customLabelRender = {},
   collapsible = false,
   isPOD = false,
+  isSeller,
   sectionClass = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full',
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +67,7 @@ export default function Overview({
                         <ConditionalRenderingStatus
                           status={data[key]}
                           isPOD={isPOD}
+                          isSeller={isSeller}
                         />
                       )}
                     </p>
@@ -92,6 +94,7 @@ export default function Overview({
                   <ConditionalRenderingStatus
                     status={data[key]}
                     isPOD={isPOD}
+                    isSeller={isSeller}
                   />
                 )}
               </p>

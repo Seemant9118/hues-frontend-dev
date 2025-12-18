@@ -1,33 +1,23 @@
 'use client';
 
-import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
-export const usePODColumns = () => {
+export const usePODColumns = ({ isSeller }) => {
   const t = useTranslations(
     'transport.delivery-challan.delivery_challan_details.tabs.tab5.table',
   );
 
   return [
-    /* SKU ID */
+    /* POD Reference Number */
     {
-      accessorKey: 'skuId',
+      accessorKey: 'referenceNumber',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.skuId')} />
+        <DataTableColumnHeader column={column} title={t('header.podId')} />
       ),
-      cell: ({ row }) => row.original.metaData?.productDetails?.skuId || '--',
-    },
-
-    /* Item Name */
-    {
-      accessorKey: 'itemName',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.itemName')} />
-      ),
-      cell: ({ row }) =>
-        row.original.metaData?.productDetails?.productName || '--',
+      cell: ({ row }) => row.original?.referenceNumber ?? '--',
     },
 
     /* Status */
@@ -36,73 +26,37 @@ export const usePODColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('header.status')} />
       ),
-      cell: ({ row }) => {
-        return (
-          <ConditionalRenderingStatus
-            isPOD={true}
-            status={row.original.status}
-          />
-        );
-      },
-    },
-
-    /* Qty Accepted */
-    {
-      accessorKey: 'acceptQuantity',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('header.qtyAccepted')}
+      cell: ({ row }) => (
+        <ConditionalRenderingStatus
+          isSeller={isSeller}
+          isPOD
+          status={row.original?.status}
         />
       ),
-      cell: ({ row }) => row.original.acceptQuantity ?? 0,
     },
 
-    /* Qty Rejected */
+    /* Created At */
     {
-      accessorKey: 'rejectQuantity',
+      accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('header.qtyRejected')}
-        />
-      ),
-      cell: ({ row }) => row.original.rejectQuantity ?? 0,
-    },
-
-    /* Price */
-    {
-      accessorKey: 'price',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.price')} />
+        <DataTableColumnHeader column={column} title={t('header.createdAt')} />
       ),
       cell: ({ row }) => {
-        const price = formattedAmount(
-          row.original.metaData?.productDetails?.salesPrice,
-        );
-        return price || '--';
+        const createdAt = row.original?.createdAt;
+        return createdAt ? moment(createdAt).format('DD/MM/YYYY') : '--';
       },
     },
 
-    /* GST % */
+    /* Items Count */
     {
-      accessorKey: 'gst',
+      accessorKey: 'items',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.gst')} />
+        <DataTableColumnHeader column={column} title={t('header.items')} />
       ),
       cell: ({ row }) => {
-        const gst = row.original.metaData?.productDetails?.gstPercentage;
-        return gst ? `${gst}%` : '0.00%';
+        const items = row.original?.items;
+        return Array.isArray(items) ? items.length : 0;
       },
-    },
-
-    /* Amount */
-    {
-      accessorKey: 'amount',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.amount')} />
-      ),
-      cell: ({ row }) => formattedAmount(row.original.amount) || '--',
     },
   ];
 };

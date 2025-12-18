@@ -89,7 +89,7 @@ function Goods() {
   }, [searchParams]);
 
   useEffect(() => {
-    let newPath = `/dashboard/item-master/goods`;
+    let newPath = `/dashboard/inventory/goods`;
     if (isAdding) newPath += `?action=add`;
     else if (isEditing) newPath += `?action=edit`;
     else if (isUploading) newPath += `?action=upload`;
@@ -178,7 +178,7 @@ function Goods() {
   };
 
   const onRowClick = (row) => {
-    return router.push(`/dashboard/item-master/goods/${row.id}`);
+    return router.push(`/dashboard/inventory/goods/${row.id}`);
   };
 
   const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);

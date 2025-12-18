@@ -1,7 +1,7 @@
 {
     "sidebar": {
         "dashboard": "Dashboard",
-        "itemMaster": "Item Master",
+        "itemMaster": "Inventory",
         "catalogue": "Catalogue",
         "transport":"Transport",
         "sales": "Sales",
@@ -12,15 +12,18 @@
         "settings": "Settings",
         "profile": "Profile",
         "subTabs": {
-            "goods": "Goods",
-            "services": "Services",
+            "goods": "Goods master",
+            "services": "Services master",
+            "stocks" : "Stocks",
+            "qc":"Quality Check",
             "orders": "Orders",
             "invoices": "Invoices",
             "payments": "Payments",
             "debitNotes": "Debit Notes",
             "dispatch": "Dispatch Notes",
             "deliveryChallan":"Delivery Challans",
-            "grn":"Quality Check",
+            "pod":"PoDs",
+            "grn":"GRNs",
             "clients": "Clients",
             "vendors": "Vendors",
             "customers": "Customers"

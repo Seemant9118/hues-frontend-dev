@@ -245,5 +245,56 @@
                 "height": "Height"
             }
         }
+    },
+    "qc": {
+        "title": "Quality Checks",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Bulk upload and tweak your product info with ease"
+                },
+                "subItem2": {
+                    "value": "Add fresh items for a squeaky-clean inventory"
+                },
+                "subItem3": {
+                    "value": "Digitally sign your stock to keep things secure and compliant"
+                },
+                "subItem4": {
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                }
+            }
+        },
+        "table": {
+            "header": {
+                "product": "Product",
+                "manufacturer": "Manufacturer",
+                "hsnCode": "HSN Code",
+                "rate": "Rate",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
+                "gst": "GST (%)",
+                "addedOn": "Added On"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
+                    "successMsg": "Deleted successfully"
+                }
+            }
+        },
+        "qcDetails": {
+            "title1":"Quality Checks",
+            "title2": "Quality Check Item",
+            "tabs":{
+                "tab1":{
+                    "title":"QC Item"
+                }
+            }
+        }
     }
 }
