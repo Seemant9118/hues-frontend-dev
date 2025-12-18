@@ -13,22 +13,25 @@ import {
   Boxes,
   ClipboardList,
   Database,
+  FileSignature,
   FileSymlink,
   Gauge,
-  HandHelping,
   HandPlatter,
   IndianRupee,
   NotebookTabs,
+  NotepadText,
   Package,
   ReceiptText,
   ScrollText,
   Settings,
+  ShieldCheck,
   ShoppingCart,
   SquareKanban,
   Store,
   Truck,
   UserRound,
   Users,
+  Warehouse,
 } from 'lucide-react';
 import Image from 'next/image';
 import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
@@ -101,17 +104,27 @@ const Sidebar = () => {
     hasPermission('permission:item-masters-view') && {
       name: 'sidebar.itemMaster',
       icon: <Package size={16} />,
-      path: '/dashboard/item-master/goods',
+      path: '/dashboard/inventory/goods',
       subTab: [
         {
           name: 'sidebar.subTabs.goods',
           icon: <Boxes size={16} />,
-          path: '/dashboard/item-master/goods',
+          path: '/dashboard/inventory/goods',
         },
         {
           name: 'sidebar.subTabs.services',
           icon: <HandPlatter size={16} />,
-          path: '/dashboard/item-master/services',
+          path: '/dashboard/inventory/services',
+        },
+        {
+          name: 'sidebar.subTabs.stocks',
+          icon: <Warehouse size={16} />,
+          path: '/dashboard/inventory/stocks',
+        },
+        {
+          name: 'sidebar.subTabs.qc',
+          icon: <ShieldCheck size={16} />,
+          path: '/dashboard/inventory/qc',
         },
       ],
     },
@@ -131,8 +144,13 @@ const Sidebar = () => {
           path: '/dashboard/transport/delivery-challan',
         },
         {
+          name: 'sidebar.subTabs.pod',
+          icon: <FileSignature size={16} />,
+          path: '/dashboard/transport/pod',
+        },
+        {
           name: 'sidebar.subTabs.grn',
-          icon: <HandHelping size={16} />,
+          icon: <NotepadText size={16} />,
           path: '/dashboard/transport/grn',
         },
       ],

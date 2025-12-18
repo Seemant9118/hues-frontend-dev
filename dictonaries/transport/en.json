@@ -385,15 +385,10 @@
                         "table": {
                             "header": {
                                 "sr": "Sr.",
-                                "skuId": "SKU ID",
-                                "itemName": "Item Name",
-                                "qtyDelivered": "Qty Delivered",
-                                "qtyAccepted": "Qty Accepted",
-                                "qtyRejected": "Qty Rejected",
-                                "price": "Price",
-                                "gst": "GST(%)",
-                                "amount": "Amount",
-                                "status": "Status"
+                                "podId": "PoD ID",
+                                "createdAt": "Created At",
+                                "status": "Status",
+                                "items": "Items(s)"
                             },
                             "ctas": {
                                 "viewDetails": "View Details"
@@ -456,8 +451,8 @@
             }
         },
         "grns": {
-            "title": "GRNs Awaiting Quality Check",
-            "emtpyStateComponent": {
+            "title": "GRNs (Goods Recieved Note)",
+            "emptyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
                     "subItem1": {
@@ -475,8 +470,8 @@
                 }
             },
             "grnsDetails": {
-                "title1": "GRNs Awaiting Quality Check",
-                "title2": "Quality Acknowledgment Certificate",
+                "title1": "GRNs (Goods Recieved Note)",
+                "title2": "GRNs (Goods Recieved Note) Details",
                 "overview_labels": {
                     "grnId": "GRN ID",
                     "grnDate": "GRN Date",
@@ -486,9 +481,66 @@
                     "deliveryDate": "Delivery  Date",
                     "EWB": "eWay Bill ID"
                 },
-                 "tabs": {
+                "tabs": {
                     "tab1": {
-                        "title": "Overview"
+                        "title": "Overview",
+                        "table":{
+                            "header":{
+                                "skuId": "SKU ID",
+                                "itemName":"Item name",
+                                "qtyReceived" :"Qty. Recieved"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "pods": {
+            "title": "PoDs (Proof of Deliveries)",
+            "emtpyStateComponent": {
+                "heading": "Manage bids, deals, and invoices—securely and digitally",
+                "subItems": {
+                    "subItem1": {
+                        "value": "Start a sale by sending offers or receiving bids—whichever comes first!"
+                    },
+                    "subItem2": {
+                        "value": "Negotiate with confidence using digitally signed offers and counter-offers"
+                    },
+                    "subItem3": {
+                        "value": "Seal the deal with digital signatures—quick, easy, and binding"
+                    },
+                    "subItem4": {
+                        "value": "Wrap things up with professional, shareable invoices—just a few clicks"
+                    }
+                }
+            },
+            "podsDetails": {
+                "title1": "PoDs (Proof of Deliveries)",
+                "title2": "PoD Details",
+                "overview_labels": {
+                    "clientName":"Client Name",
+                    "vendorName" : "Vendor Name",
+                    "podId": "PoD ID",
+                    "podDate":"PoD Date",
+                    "invoiceId": "Invoice ID",
+                    "invoiceDate": "Invoice Date",
+                    "grnId": "GRN ID",
+                    "grnDate": "GRN Date",
+                    "deliveryId":"Delivery ID",
+                    "deliveryDate": "Delivery  Date",
+                    "EWB": "eWay Bill ID",
+                    "status":"Status"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview",
+                        "table":{
+                            "header":{
+                                "skuId": "SKU ID",
+                                "itemName":"Item name",
+                                "qtyReceived" :"Qty. Recieved"
+                            }
+                        }
                     }
                 }
             }

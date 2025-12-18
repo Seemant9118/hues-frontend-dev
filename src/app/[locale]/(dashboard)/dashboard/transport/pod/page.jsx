@@ -10,29 +10,29 @@ import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
-import { getGRNs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { getPODs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGrnColumns } from './GRNColumns';
-import { GRNSTable } from './GRNSTable';
+import { useEffect, useState } from 'react';
+import { usePODColumns } from './PODColumns';
+import { PODSTable } from './PODSTable';
 
 const PAGE_LIMIT = 10;
 
 function GRN() {
-  useMetaData('Hues! - GRN', 'HUES GRN');
+  useMetaData('Hues! - PoD', 'HUES PoD');
 
-  const translations = useTranslations('transport.grns');
+  const translations = useTranslations('transport.pods');
+  const router = useRouter();
 
   const keys = [
-    'transport.grns.emptyStateComponent.subItems.subItem1',
-    'transport.grns.emptyStateComponent.subItems.subItem2',
-    'transport.grns.emptyStateComponent.subItems.subItem3',
-    'transport.grns.emptyStateComponent.subItems.subItem4',
+    'transport.pods.emptyStateComponent.subItems.subItem1',
+    'transport.pods.emptyStateComponent.subItems.subItem2',
+    'transport.pods.emptyStateComponent.subItems.subItem3',
+    'transport.pods.emptyStateComponent.subItems.subItem4',
   ];
 
-  const router = useRouter();
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -40,10 +40,10 @@ function GRN() {
   const [grns, setGrns] = useState([]);
   const [paginationData, setPaginationData] = useState({});
 
-  const grnsQuery = useInfiniteQuery({
-    queryKey: [deliveryProcess.getGRNs.endpointKey],
+  const podsQuery = useInfiniteQuery({
+    queryKey: [deliveryProcess.getPODs.endpointKey],
     queryFn: async ({ pageParam = 1 }) => {
-      return getGRNs({
+      return getPODs({
         page: pageParam,
         limit: PAGE_LIMIT,
       });
@@ -58,7 +58,7 @@ function GRN() {
   });
 
   useEffect(() => {
-    const source = grnsQuery.data;
+    const source = podsQuery.data;
     if (!source) return;
     const flattened = source.pages.flatMap(
       (page) => page?.data?.data?.data || [],
@@ -72,13 +72,15 @@ function GRN() {
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [grnsQuery.data]);
+  }, [podsQuery.data]);
+
+  const isSeller = false;
+
+  const PODsColumns = usePODColumns({ isSeller });
 
   const onRowClick = (row) => {
-    router.push(`/dashboard/transport/grn/${row.id}`);
+    router.push(`/dashboard/transport/pod/${row.id}`);
   };
-
-  const GRNsColumns = useGrnColumns();
 
   return (
     // TODO: update permissions
@@ -93,7 +95,7 @@ function GRN() {
           <Wrapper className="h-screen">
             <SubHeader name={translations('title')}></SubHeader>
             <div className="flex-grow overflow-hidden">
-              {grnsQuery.isLoading ? (
+              {podsQuery.isLoading ? (
                 <Loading />
               ) : (
                 <>
@@ -105,12 +107,12 @@ function GRN() {
                     />
                   ) : (
                     // Case 2: data is available → Show Table
-                    <GRNSTable
+                    <PODSTable
                       id="grns-table"
-                      columns={GRNsColumns}
+                      columns={PODsColumns}
                       data={grns}
-                      fetchNextPage={grnsQuery.fetchNextPage}
-                      isFetching={grnsQuery.isFetching}
+                      fetchNextPage={podsQuery.fetchNextPage}
+                      isFetching={podsQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
                       onRowClick={onRowClick}

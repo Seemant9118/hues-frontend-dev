@@ -226,10 +226,8 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                   variant="outline"
                   onClick={() => {
                     item.type === 'goods'
-                      ? router.push('/dashboard/item-master/goods?action=add')
-                      : router.push(
-                          '/dashboard/item-master/services?action=add',
-                        );
+                      ? router.push('/dashboard/inventory/goods?action=add')
+                      : router.push('/dashboard/inventory/services?action=add');
 
                     LocalStorageService.set(
                       'redirectFromCatalogue',
@@ -362,11 +360,9 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                       size="sm"
                       onClick={() => {
                         item.type === 'goods'
-                          ? router.push(
-                              '/dashboard/item-master/goods?action=add',
-                            )
+                          ? router.push('/dashboard/inventory/goods?action=add')
                           : router.push(
-                              '/dashboard/item-master/services?action=add',
+                              '/dashboard/inventory/services?action=add',
                             );
 
                         LocalStorageService.set(
@@ -413,11 +409,9 @@ const UpdateCatalogue = ({ setIsUpdatingCatalogue }) => {
                       size="sm"
                       onClick={() => {
                         item.type === 'goods'
-                          ? router.push(
-                              '/dashboard/item-master/goods?action=add',
-                            )
+                          ? router.push('/dashboard/inventory/goods?action=add')
                           : router.push(
-                              '/dashboard/item-master/services?action=add',
+                              '/dashboard/inventory/services?action=add',
                             );
 
                         LocalStorageService.set(

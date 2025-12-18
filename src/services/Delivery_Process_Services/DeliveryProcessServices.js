@@ -112,8 +112,18 @@ export const getDeliveryChallans = ({ page, limit }) => {
   );
 };
 
-export const getPOD = ({ id }) => {
-  return APIinstance.get(`${deliveryProcess.getPOD.endpoint}${id}`);
+export const getPODs = ({ page, limit }) => {
+  return APIinstance.get(
+    `${deliveryProcess.getPODs.endpoint}?page=${page}&limit=${limit}`,
+  );
+};
+
+export const getPODByChallan = ({ id }) => {
+  return APIinstance.get(`${deliveryProcess.getPODByChallan.endpoint}${id}`);
+};
+
+export const getPODByID = ({ id }) => {
+  return APIinstance.get(`${deliveryProcess.getPODbyId.endpoint}${id}`);
 };
 
 export const sendPOD = ({ data }) => {

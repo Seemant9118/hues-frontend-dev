@@ -1,36 +1,35 @@
 'use client';
 
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { LocalStorageService } from '@/lib/utils';
 import moment from 'moment';
 
-export const useGrnColumns = () => {
+export const usePODColumns = () => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
 
   return [
     {
       accessorKey: 'id',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GRN ID" />
+        <DataTableColumnHeader column={column} title="POD ID" />
       ),
       cell: ({ row }) => (
-        <span className="font-medium">{row.original.referenceNumber}</span>
+        <span className="font-medium">{row.original?.referenceNumber}</span>
       ),
     },
 
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GRN Date" />
+        <DataTableColumnHeader column={column} title="POD Date" />
       ),
-      cell: ({ row }) => moment(row.original.createdAt).format('DD MMM YYYY'),
+      cell: ({ row }) => moment(row.original?.createdAt).format('DD MMM YYYY'),
     },
 
     {
       accessorKey: 'vendorName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Vendor Name" />
+        <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => {
         // iamBuyer ?
@@ -49,20 +48,7 @@ export const useGrnColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Total Items" />
       ),
-      cell: ({ row }) => row.original.items?.length || 0,
-    },
-
-    {
-      accessorKey: 'flags',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Flags" />
-      ),
-      cell: ({ row }) => {
-        const { isShortQuantity } = row.original;
-
-        const status = isShortQuantity ? 'SHORT_QUANTITY' : null;
-        return <ConditionalRenderingStatus status={status} />;
-      },
+      cell: ({ row }) => row.original?.items?.length || 0,
     },
   ];
 };
