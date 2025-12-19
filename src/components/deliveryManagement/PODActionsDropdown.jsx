@@ -7,20 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  CheckCircle,
-  ChevronDown,
-  ChevronUp,
-  PencilLine,
-  X,
-} from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
 export default function PODActionsDropdown({
-  onAccept,
-  onModify,
-  onReject,
+  actions = [],
   disabled = false,
+  label = 'Actions',
 }) {
   const [open, setOpen] = useState(false);
 
@@ -33,7 +26,7 @@ export default function PODActionsDropdown({
           className="font-bold"
           disabled={disabled}
         >
-          Actions
+          {label}
           {open ? (
             <ChevronUp className="ml-1 h-4 w-4" />
           ) : (
@@ -43,29 +36,17 @@ export default function PODActionsDropdown({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem
-          className="flex gap-2 font-semibold text-green-600"
-          onClick={onAccept}
-        >
-          <CheckCircle size={16} />
-          Accept as Delivered
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          className="flex gap-2 font-semibold"
-          onClick={onModify}
-        >
-          <PencilLine size={16} />
-          Modify & Accept
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          className="flex gap-2 font-semibold text-red-600"
-          onClick={onReject}
-        >
-          <X size={16} />
-          Reject Delivery
-        </DropdownMenuItem>
+        {actions.map((action) => (
+          <DropdownMenuItem
+            key={action.key}
+            className={`flex gap-2 font-semibold ${action.className || ''}`}
+            onClick={action.onClick}
+            disabled={action.disabled}
+          >
+            {action.icon && <action.icon size={16} />}
+            {action.label}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

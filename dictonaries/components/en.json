@@ -484,7 +484,7 @@
             },
             "infoText": {
                 "title": "Enter PIN",
-                "pin_exist_info": "Enter your user PIN to generate an invoice",
+                "pin_exist_info": "Enter your user PIN to generate",
                 "pin_not_exist_info": "No PIN created yet! Go to PIN settings to create one",
                 "info2": "Click here"
             },
@@ -923,6 +923,16 @@
             "label_attachments": "Attachments",
             "label_comment": "Comment",
             "label_enterprise_icon": "Enterprise icon"
+        },
+        "remarksBox": {
+            "placeholder_remarks": "Type your remarks here...",
+            "tooltip_attach_file": "attach file",
+            "tooltip_send": "send",
+            "btn_send": "Send",
+            "label_attached_proofs": "Attached Proofs",
+            "label_file_attached": "File attached",
+            "toast_file_attached": "File attached successfully!",
+            "toast_general_error": "Oops! We hit a snag Try again?"
         },
         "memberInviteModal": {
             "dialogTrigger": {

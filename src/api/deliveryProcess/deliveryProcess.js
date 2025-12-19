@@ -76,7 +76,7 @@ export const deliveryProcess = {
     endpointKey: 'get_pods_list',
   },
   getPODByChallan: {
-    endpoint: `/pod/`,
+    endpoint: `/pod/list/`,
     endpointKey: 'get_pod_details',
   },
   getPODbyId: {

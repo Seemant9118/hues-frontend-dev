@@ -50,5 +50,33 @@ export const usePODColumnsItems = () => {
         return acceptQty + rejectQty;
       },
     },
+
+    {
+      id: 'qtyAccepted',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={t('header.qtyAccepted')}
+        />
+      ),
+      cell: ({ row }) => {
+        const acceptQty = row.original?.acceptQuantity || 0;
+        return acceptQty;
+      },
+    },
+
+    {
+      id: 'qtyRejected',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={t('header.qtyRejected')}
+        />
+      ),
+      cell: ({ row }) => {
+        const rejectQty = row.original?.rejectQuantity || 0;
+        return rejectQty;
+      },
+    },
   ];
 };

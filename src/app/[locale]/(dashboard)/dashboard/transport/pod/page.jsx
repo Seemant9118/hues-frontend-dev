@@ -2,6 +2,7 @@
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -16,11 +17,10 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { usePODColumns } from './PODColumns';
-import { PODSTable } from './PODSTable';
 
 const PAGE_LIMIT = 10;
 
-function GRN() {
+function PODs() {
   useMetaData('Hues! - PoD', 'HUES PoD');
 
   const translations = useTranslations('transport.pods');
@@ -107,8 +107,8 @@ function GRN() {
                     />
                   ) : (
                     // Case 2: data is available → Show Table
-                    <PODSTable
-                      id="grns-table"
+                    <InfiniteDataTable
+                      id="PODs-table"
                       columns={PODsColumns}
                       data={grns}
                       fetchNextPage={podsQuery.fetchNextPage}
@@ -128,4 +128,4 @@ function GRN() {
   );
 }
 
-export default GRN;
+export default PODs;

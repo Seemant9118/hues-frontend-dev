@@ -2,6 +2,7 @@
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -11,11 +12,10 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { SalesTable } from '../../sales/salestable/SalesTable';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
@@ -34,7 +34,6 @@ const DispatchedNotes = () => {
     'transport.dispatched-notes.emtpyStateComponent.subItems.subItem3',
     'transport.dispatched-notes.emtpyStateComponent.subItems.subItem4',
   ];
-
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
@@ -63,7 +62,9 @@ const DispatchedNotes = () => {
     },
     enabled: hasPermission('permission:sales-view'),
     refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
+    placeholderData: { pages: [], pageParams: [] }, // start fresh
+    staleTime: 0, // always fresh
+    cacheTime: 0, // no cache
   });
 
   // data flattening - formatting
@@ -121,8 +122,8 @@ const DispatchedNotes = () => {
 
           {isInvoiceLoading && <Loading />}
           {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-            <SalesTable
-              id="sale-invoices"
+            <InfiniteDataTable
+              id="dispatch-table"
               columns={dispatchedNotesColumns}
               data={dispatchedNotes}
               fetchNextPage={fetchNextPage}

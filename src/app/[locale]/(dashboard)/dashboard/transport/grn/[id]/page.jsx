@@ -1,6 +1,7 @@
 'use client';
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -14,7 +15,7 @@ import {
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ExternalLink, Eye } from 'lucide-react';
+import { Eye, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -27,6 +28,7 @@ export default function QC() {
   const router = useRouter();
   const params = useParams();
   const [tabs, setTabs] = useState('overview');
+  const enterpriseId = getEnterpriseId();
 
   const grnsBreadCrumbs = [
     {
@@ -53,16 +55,29 @@ export default function QC() {
     select: (data) => data.data.data,
   });
 
+  const isSeller = grnDetails?.metaData?.sellerEnterpriseId === enterpriseId;
+
+  // iamSeller -> show my vendorname
+  const iamSeller = isSeller;
+  const buyerName = grnDetails?.metaData?.buyerDetails?.name;
+  const sellerName = grnDetails?.metaData?.sellerDetails?.name;
+
   const overviewData = {
     grnId: grnDetails?.referenceNumber,
+    vendorName: iamSeller ? buyerName : sellerName,
     grnDate: moment(grnDetails?.createdAt).format('DD/MM/YYYY'),
+    status: grnDetails?.status || '-',
     podId: grnDetails?.podReferenceNumber,
     deliveryDate: '-',
     EWB: grnDetails?.metaData?.invoiceDetails?.eWayBillId || '-',
   };
   const overviewLabels = {
     grnId: translations('overview_labels.grnId'),
+    ...(!isSeller
+      ? { vendorName: translations('overview_labels.vendorName') }
+      : { vendorName: translations('overview_labels.clientName') }),
     grnDate: translations('overview_labels.grnDate'),
+    status: translations('overview_labels.status'),
     podId: translations('overview_labels.podId'),
     deliveryDate: translations('overview_labels.deliveryDate'),
     EWB: translations('overview_labels.EWB'),
@@ -89,7 +104,7 @@ export default function QC() {
           {podRef ? (
             <>
               {podRef}
-              <ExternalLink size={14} />
+              <MoveUpRight size={14} />
             </>
           ) : (
             '--'

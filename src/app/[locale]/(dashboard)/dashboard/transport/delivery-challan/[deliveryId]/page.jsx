@@ -265,8 +265,7 @@ const ViewDelivery = () => {
       queryFn: () => getDeliveryChallan(params.deliveryId),
       select: (data) => data.data.data,
     });
-
-  const isSellerEnterprise =
+  const isSeller =
     dispatchDetails?.metaData?.sellerEnterpriseId === enterpriseId;
 
   // formated dispatched items for table
@@ -310,17 +309,17 @@ const ViewDelivery = () => {
   const totalAmount = Number(dispatchDetails?.metaData?.totalAmount || 0);
   const totalGstAmount = Number(dispatchDetails?.metaData?.totalGstAmount || 0);
   const overviewData = {
-    ...(isSellerEnterprise && {
-      dispatchId: dispatchDetails?.dispatchNote?.referenceNumber || '-',
-    }),
+    deliveryChallanNo: dispatchDetails?.referenceNumber || '-',
 
     consignor: dispatchDetails?.metaData?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.metaData?.buyerName || '-',
     supply: dispatchDetails?.metaData?.supply || 'Outward Supply',
-    deliveryChallanNo: dispatchDetails?.referenceNumber || '-',
+    ...(isSeller && {
+      dispatchId: dispatchDetails?.dispatchNote?.referenceNumber || '-',
+    }),
+    invoiceId: dispatchDetails?.metaData?.invoice?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
     EWB: dispatchDetails?.metaData?.ewb || '-',
-
     dispatchFrom:
       dispatchDetails?.metaData?.dispatchFromAddress?.address || '-',
     billingFrom: dispatchDetails?.metaData?.billingFromAddress?.address || '-',
@@ -330,17 +329,16 @@ const ViewDelivery = () => {
       capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
-    ...(isSellerEnterprise && {
-      dispatchId: translations('overview_labels.dispatchId'),
-    }),
-
+    deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
     consignor: translations('overview_labels.consignor'),
     consignee: translations('overview_labels.consignee'),
     supply: translations('overview_labels.supply'),
-    deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
+    ...(isSeller && {
+      dispatchId: translations('overview_labels.dispatchId'),
+    }),
+    invoiceId: translations('overview_labels.invoiceId'),
     totalAmount: translations('overview_labels.totalAmount'),
     EWB: translations('overview_labels.ewb'),
-
     dispatchFrom: translations('overview_labels.dispatch_from'),
     billingFrom: translations('overview_labels.billing_from'),
     billingAddress: translations('overview_labels.billing_address'),
@@ -447,7 +445,7 @@ const ViewDelivery = () => {
   // overview custom render
   const customRender = {
     dispatchId: () => {
-      if (!isSellerEnterprise) return null;
+      if (!isSeller) return null;
 
       return (
         <p
@@ -460,6 +458,25 @@ const ViewDelivery = () => {
         >
           {dispatchDetails?.dispatchNote?.referenceNumber}
           <MoveUpRight size={12} />
+        </p>
+      );
+    },
+    invoiceId: () => {
+      const invoice = dispatchDetails?.metaData?.invoice;
+
+      if (!invoice?.id || !invoice?.referenceNumber) return '-';
+
+      const path = isSeller
+        ? `/dashboard/sales/sales-invoices/${invoice.id}`
+        : `/dashboard/purchases/purchase-invoices/${invoice.id}`;
+
+      return (
+        <p
+          className="flex cursor-pointer items-center gap-1 hover:text-primary hover:underline"
+          onClick={() => router.push(path)}
+        >
+          {invoice.referenceNumber}
+          <MoveUpRight size={14} />
         </p>
       );
     },
@@ -815,6 +832,7 @@ const ViewDelivery = () => {
         },
 
         invoiceDetails: {
+          id: invoice?.id || '',
           referenceNumber: invoice?.referenceNumber || '',
           invoiceDate: invoice?.createdAt || '',
           eWayBillId: meta.ewb || '',
@@ -859,6 +877,10 @@ const ViewDelivery = () => {
     select: (data) => data?.data?.data,
     enabled: tab === 'pod',
   });
+
+  const isPODsRejected =
+    podDetails?.length > 0 &&
+    podDetails.every((pod) => pod.status === 'REJECTED');
 
   const previewPODMutation = useMutation({
     mutationFn: previewPOD,
@@ -952,12 +974,16 @@ const ViewDelivery = () => {
     dispatchDetails?.transportBookings?.length > 0 &&
     dispatchDetails?.isEWBRequired &&
     !dispatchDetails?.metaData?.ewb;
-  const isSeller =
-    dispatchDetails?.metaData?.sellerEnterpriseId === enterpriseId;
   const showAddBookingCTA =
     tab !== 'ewb' && tab !== 'pod' && tab !== 'items' && isSeller;
-  const showSendPODCTA =
-    tab !== 'ewb' && tab !== 'transports' && tab !== 'items' && isSeller;
+  const showRequestPODCTA =
+    tab !== 'ewb' &&
+    tab !== 'transports' &&
+    tab !== 'items' &&
+    isSeller &&
+    (!dispatchDetails?.isPodCreated ||
+      (dispatchDetails?.isPodCreated && isPODsRejected));
+
   const showGenerateEWBCTA =
     tab !== 'transports' && tab !== 'pod' && tab !== 'items' && isSeller;
 
@@ -1025,15 +1051,15 @@ const ViewDelivery = () => {
                 </TabsList>
                 {/* ctas - tab based */}
                 <div className="flex items-center gap-2">
-                  {/* send POD */}
-                  {showSendPODCTA && !dispatchDetails?.isPodCreated && (
+                  {/* request POD */}
+                  {showRequestPODCTA && (
                     <Button
                       variant="blue_outline"
                       size="sm"
                       onClick={handleSendPOD}
                     >
                       <Send size={14} />
-                      {translations('overview_inputs.ctas.sendPOD')}
+                      {translations('overview_inputs.ctas.requestPOD')}
                     </Button>
                   )}
 
@@ -1196,14 +1222,14 @@ const ViewDelivery = () => {
                 {/* Content */}
                 {!isPODsLoading &&
                   !isPODsFetching &&
-                  (podDetails?.id ? (
+                  (podDetails?.length > 0 ? (
                     <div className="flex h-full flex-col gap-2">
                       {/* Scrollable table area */}
                       <div className="flex-1 overflow-auto">
                         <DataTable
                           id="pods"
                           columns={podsColumns}
-                          data={[podDetails]}
+                          data={podDetails}
                           onRowClick={onPoDRowClick}
                         />
                       </div>

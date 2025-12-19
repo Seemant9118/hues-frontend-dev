@@ -268,7 +268,7 @@
                     "dispatchId": "Dispatch ID",
                     "transporter": "Transporter",
                     "delivery_challan_no": "Delivery challan no.",
-                    "ewb": "EWB",
+                    "ewb": "E-way bill",
                     "dispatch_from": "Dispatch From",
                     "billing_from": "Billing From",
                     "billing_address": "Billing Address",
@@ -287,7 +287,7 @@
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
                         "generateDC": "Generate Delivery Challan",
-                        "sendPOD": "Send POD",
+                        "requestPOD": "Request POD",
                         "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",
@@ -451,7 +451,7 @@
             }
         },
         "grns": {
-            "title": "GRNs (Goods Recieved Note)",
+            "title": "Goods Recieved Notes",
             "emptyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
@@ -470,16 +470,19 @@
                 }
             },
             "grnsDetails": {
-                "title1": "GRNs (Goods Recieved Note)",
-                "title2": "GRNs (Goods Recieved Note) Details",
+                "title1": "Goods Recieved Notes",
+                "title2": "Details",
                 "overview_labels": {
                     "grnId": "GRN ID",
+                    "clientName":"Client Name",
+                    "vendorName":"Vendor Name",
                     "grnDate": "GRN Date",
+                    "status": "Status",
                     "podId": "PoD ID",
                     "invoiceId": "Invoice ID",
                     "invoiceDate": "Invoice Date",
                     "deliveryDate": "Delivery  Date",
-                    "EWB": "eWay Bill ID"
+                    "EWB": "E-Way Bill ID"
                 },
                 "tabs": {
                     "tab1": {
@@ -488,7 +491,10 @@
                             "header":{
                                 "skuId": "SKU ID",
                                 "itemName":"Item name",
-                                "qtyReceived" :"Qty. Recieved"
+                                "qtyReceived" :"Qty. Recieved",
+                                "qtyAccepted" :"Qty. Accepted",
+                                "qtyRejected" :"Qty. Rejected"
+
                             }
                         }
                     }
@@ -496,7 +502,7 @@
             }
         },
         "pods": {
-            "title": "PoDs (Proof of Deliveries)",
+            "title": "Proof of Delivery",
             "emtpyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
@@ -515,20 +521,21 @@
                 }
             },
             "podsDetails": {
-                "title1": "PoDs (Proof of Deliveries)",
-                "title2": "PoD Details",
+                "title1": "Proof of Delivery",
+                "title2": "Details",
                 "overview_labels": {
                     "clientName":"Client Name",
                     "vendorName" : "Vendor Name",
-                    "podId": "PoD ID",
+                    "podId": "ID",
                     "podDate":"PoD Date",
                     "invoiceId": "Invoice ID",
                     "invoiceDate": "Invoice Date",
                     "grnId": "GRN ID",
                     "grnDate": "GRN Date",
-                    "deliveryId":"Delivery ID",
+                    "deliveryId":"Delivery Challan ID",
                     "deliveryDate": "Delivery  Date",
-                    "EWB": "eWay Bill ID",
+                    "EWB": "E-Way Bill ID",
+                    "attachements": "Attachments",
                     "status":"Status"
                 },
                 "tabs": {
@@ -538,7 +545,9 @@
                             "header":{
                                 "skuId": "SKU ID",
                                 "itemName":"Item name",
-                                "qtyReceived" :"Qty. Recieved"
+                                "qtyReceived" :"Qty. Recieved",
+                                "qtyAccepted" :"Qty. Accepted",
+                                "qtyRejected" :"Qty. Rejected"
                             }
                         }
                     }

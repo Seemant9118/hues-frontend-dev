@@ -1,5 +1,6 @@
 'use client';
 
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { LocalStorageService } from '@/lib/utils';
 import moment from 'moment';
@@ -21,15 +22,19 @@ export const usePODColumns = () => {
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="POD Date" />
+        <DataTableColumnHeader
+          column={column}
+          title="POD Date"
+          className="min-w-fit"
+        />
       ),
-      cell: ({ row }) => moment(row.original?.createdAt).format('DD MMM YYYY'),
+      cell: ({ row }) => moment(row.original?.createdAt).format('DD/MM/YYYY'),
     },
 
     {
       accessorKey: 'vendorName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Name" />
+        <DataTableColumnHeader column={column} title="Client/Vendor Name" />
       ),
       cell: ({ row }) => {
         // iamBuyer ?
@@ -46,9 +51,36 @@ export const usePODColumns = () => {
     {
       accessorKey: 'totalItems',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Total Items" />
+        <DataTableColumnHeader
+          column={column}
+          title="Total Items"
+          className="min-w-fit"
+        />
       ),
       cell: ({ row }) => row.original?.items?.length || 0,
+    },
+
+    /* Status */
+    {
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={'Status'}
+          className="min-w-fit"
+        />
+      ),
+      cell: ({ row }) => {
+        const isSeller =
+          row.original?.metaData?.sellerEnterpriseId === enterpriseId;
+        return (
+          <ConditionalRenderingStatus
+            isSeller={isSeller}
+            isPOD
+            status={row.original?.status}
+          />
+        );
+      },
     },
   ];
 };

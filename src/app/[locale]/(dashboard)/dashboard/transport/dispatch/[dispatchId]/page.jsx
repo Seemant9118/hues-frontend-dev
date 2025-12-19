@@ -272,13 +272,13 @@ const ViewDispatchNote = () => {
   const totalAmount = Number(dispatchDetails?.totalAmount || 0);
   const totalGstAmount = Number(dispatchDetails?.totalGstAmount || 0);
   const overviewData = {
-    invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
+    dispatchId: dispatchDetails?.referenceNumber || '-',
     consignor: dispatchDetails?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.buyerName || '-',
     supply: dispatchDetails?.supply || 'Outward Supply',
-    dispatchId: dispatchDetails?.referenceNumber || '-',
-    totalAmount: formattedAmount(totalAmount + totalGstAmount),
     deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
+    invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
+    totalAmount: formattedAmount(totalAmount + totalGstAmount),
     // EWB: dispatchDetails?.ewb || '-',
     // transporter: dispatchDetails?.transporterName || '-',
     dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
@@ -288,13 +288,13 @@ const ViewDispatchNote = () => {
       capitalize(dispatchDetails?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
-    invoiceId: translations('overview_labels.invoiceId'),
+    dispatchId: translations('overview_labels.dispatchId'),
     consignor: translations('overview_labels.consignor'),
     consignee: translations('overview_labels.consignee'),
     supply: translations('overview_labels.supply'),
-    dispatchId: translations('overview_labels.dispatchId'),
-    totalAmount: translations('overview_labels.totalAmount'),
     deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
+    invoiceId: translations('overview_labels.invoiceId'),
+    totalAmount: translations('overview_labels.totalAmount'),
     // EWB: translations('overview_labels.ewb'),
     // transporter: translations('overview_labels.transporter'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
@@ -736,19 +736,6 @@ const ViewDispatchNote = () => {
     },
   };
 
-  const previewDispatchNoteMutation = useMutation({
-    mutationFn: previewDispatchNote,
-    onSuccess: async (data) => {
-      toast.success('Document Generated Successfully');
-      const pdfSlug = data?.data?.data?.dispatchDocumentSlug;
-
-      viewPdfInNewTab(pdfSlug);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
   const formatDispatchPreviewPayload = (d) => {
     return {
       referenceNumber: d?.deliveryChallanNo || '',
@@ -770,6 +757,7 @@ const ViewDispatchNote = () => {
       },
 
       invoice: {
+        id: d?.invoice?.id || '',
         referenceNumber: d?.invoice?.referenceNumber || '',
         createdAt: d?.invoice?.createdAt?.split('T')[0] || '',
       },
@@ -801,6 +789,19 @@ const ViewDispatchNote = () => {
       ).toFixed(2),
     };
   };
+
+  const previewDispatchNoteMutation = useMutation({
+    mutationFn: previewDispatchNote,
+    onSuccess: async (data) => {
+      toast.success('Document Generated Successfully');
+      const pdfSlug = data?.data?.data?.dispatchDocumentSlug;
+
+      viewPdfInNewTab(pdfSlug);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
 
   const handlePreview = () => {
     if (dispatchDetails?.dispatchDocumentSlug) {
