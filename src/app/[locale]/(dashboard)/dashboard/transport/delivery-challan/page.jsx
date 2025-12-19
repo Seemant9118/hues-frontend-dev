@@ -2,6 +2,7 @@
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -15,7 +16,6 @@ import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { SalesTable } from '../../sales/salestable/SalesTable';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -120,8 +120,8 @@ const DeliveryChallan = () => {
 
           {isInvoiceLoading && <Loading />}
           {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-            <SalesTable
-              id="sale-invoices"
+            <InfiniteDataTable
+              id="delivery-challan-table"
               columns={dispatchedNotesColumns}
               data={dispatchedNotes}
               fetchNextPage={fetchNextPage}

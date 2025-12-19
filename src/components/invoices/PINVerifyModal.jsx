@@ -315,22 +315,22 @@ const PINVerifyModal = ({
             >
               {isPendingInvoice ? <Loading /> : translations('ctas.verify')}
             </Button>
-
-            {isPINError && (
-              <button
-                className="cursor-pointer text-sm font-semibold hover:underline"
-                onClick={() => {
-                  generateOtpMutation.mutate();
-                }}
-              >
-                {translations('errorMsg.pin_error')}
-              </button>
-            )}
-
-            {updateSuccessMessage && (
-              <p className="text-sm font-semibold">{updateSuccessMessage}</p>
-            )}
           </form>
+
+          {isPINError && (
+            <button
+              className="cursor-pointer text-sm font-semibold hover:underline"
+              onClick={() => {
+                generateOtpMutation.mutate();
+              }}
+            >
+              {translations('errorMsg.pin_error')}
+            </button>
+          )}
+
+          {updateSuccessMessage && (
+            <p className="text-sm font-semibold">{updateSuccessMessage}</p>
+          )}
         </DialogContent>
       )}
 

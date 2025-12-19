@@ -22,7 +22,7 @@
             "debitNotes": "Debit Notes",
             "dispatch": "Dispatch Notes",
             "deliveryChallan":"Delivery Challans",
-            "pod":"PoDs",
+            "pod":"Proof of Delivery",
             "grn":"GRNs",
             "clients": "Clients",
             "vendors": "Vendors",

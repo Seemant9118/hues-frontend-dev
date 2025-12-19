@@ -900,6 +900,16 @@
             "toast_file_attached": "फ़ाइल सफलतापूर्वक संलग्न की गई!",
             "toast_general_error": "कुछ गलत हो गया"
         },
+        "remarksBox": {
+            "placeholder_remarks": "यहाँ अपनी टिप्पणी लिखें...",
+            "tooltip_attach_file": "फ़ाइल संलग्न करें",
+            "tooltip_send": "भेजें",
+            "btn_send": "भेजें",
+            "label_attached_proofs": "संलग्न प्रमाण",
+            "label_file_attached": "फ़ाइल संलग्न की गई",
+            "toast_file_attached": "फ़ाइल सफलतापूर्वक संलग्न हो गई!",
+            "toast_general_error": "ओह! कुछ गड़बड़ हो गई। कृपया फिर से प्रयास करें।"
+        },
         "comment": {
             "edit": "संपादित करें",
             "edited": "(संशोधित)",

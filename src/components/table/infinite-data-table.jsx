@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import {
   flexRender,
   getCoreRowModel,
@@ -16,174 +17,118 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { usePathname } from 'next/navigation';
-import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-export function InfiniteDataTable({
+export default function InfiniteDataTable({
+  id,
   columns,
   data,
-  onRowClick,
-  id,
   fetchNextPage,
   isFetching,
-  paginationData,
+  totalPages,
+  currFetchedPage,
+  onRowClick,
 }) {
-  const pathName = usePathname();
-  const isSales = pathName.includes('sales');
-  const [showLoadingState, setShowLoadingState] = React.useState(false);
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const containerRef = React.useRef(null);
+  const tableContainerRef = useRef();
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+
+  useEffect(() => {
+    tableContainerRef.current?.scrollTo({ top: 0, behavior: 'auto' });
+  }, [data]);
+
+  const hasNextPage =
+    totalPages && currFetchedPage ? currFetchedPage < totalPages : false;
+
+  const loadMoreRef = useInfiniteScroll(() => {
+    if (!isFetching && hasNextPage) {
+      fetchNextPage();
+    }
+  }, hasNextPage);
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
-    manualPagination: true,
     state: {
       sorting,
       columnFilters,
     },
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-  });
-
-  // handleScroll fn
-  const handleScroll = React.useCallback(() => {
-    if (!containerRef.current || isFetching || !paginationData) return;
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-
-    const bottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-
-    // Check if we're at the bottom of the container
-    if (bottom) {
-      if (paginationData.currentPage < paginationData.totalPages) {
-        setShowLoadingState(true);
-        fetchNextPage(); // Fetch the next page if available
-      }
-    }
-  }, [isFetching, paginationData, fetchNextPage]);
-
-  // Attach and detach the scroll event listener
-  React.useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [handleScroll]);
-
-  // Hide the loading state after data is fetched
-  React.useEffect(() => {
-    if (!isFetching) {
-      setShowLoadingState(false);
-    }
-  }, [isFetching]);
-
-  // take rows
-  const { rows } = table.getRowModel();
-
-  // row virtualizer fn
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    estimateSize: () => 48, // estimate row height for accurate scrollbar dragging
-    getScrollElement: () => containerRef.current,
-    // measure dynamic row height, except in firefox because it measures table border height incorrectly
-    measureElement:
-      typeof window !== 'undefined' &&
-      navigator.userAgent.indexOf('Firefox') === -1
-        ? (element) => element?.getBoundingClientRect().height
-        : undefined,
-    overscan: 21,
   });
 
   return (
     <div>
       <div
-        ref={containerRef}
-        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[565px] overflow-y-auto rounded-[6px]"
+        ref={tableContainerRef}
+        id={id}
+        className="scrollBarStyles h-[80vh] overflow-auto"
       >
-        <Table id={id}>
+        <Table className="w-full">
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead className="shrink-0" key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const row = rows[virtualRow.index];
-              let isRead;
-              if (row.original?.readTracker) {
-                if (isSales) {
-                  isRead = row.original?.readTracker?.sellerIsRead;
-                } else {
-                  isRead = row.original?.readTracker?.buyerIsRead;
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                onClick={() => onRowClick?.(row.original)}
+                className={
+                  'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
                 }
-              }
-              return (
-                <TableRow
-                  data-index={virtualRow.index} // needed for dynamic row height measurement
-                  ref={(node) => rowVirtualizer.measureElement(node)} // measure dynamic row height
-                  key={row.id}
-                  className={
-                    isRead
-                      ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700 hover:text-black'
-                      : 'hover:text-text-gray-700 cursor-pointer border-y border-[#A5ABBD33] font-semibold text-black'
-                  }
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : () => {}
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-xl shrink-0">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              );
-            })}
-            {/* Loading bar at the last row */}
-            {showLoadingState && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="py-2 text-center"
-                >
-                  Loading...
-                </TableCell>
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="border-b">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
               </TableRow>
-            )}
+            ))}
+
+            {/* Infinite scroll trigger */}
+            <TableRow>
+              {hasNextPage && (
+                <TableCell colSpan={columns.length}>
+                  <div
+                    ref={loadMoreRef}
+                    className="py-4 text-center text-sm text-muted-foreground"
+                  >
+                    {isFetching
+                      ? 'Loading more data...'
+                      : hasNextPage
+                        ? 'Scroll to load more'
+                        : 'No more data'}
+                  </div>
+                </TableCell>
+              )}
+            </TableRow>
           </TableBody>
         </Table>
       </div>
-
-      {/* Render Pagination only if there's data */}
-      {data?.length > 0 && <DataTablePagination table={table} />}
+      {/* ✅ Pagination footer */}
+      {!isFetching && data?.length > 0 && (
+        <DataTablePagination
+          table={table}
+          currFetchedPage={currFetchedPage}
+          totalPages={totalPages}
+          totalRows={data.length}
+        />
+      )}
     </div>
   );
 }

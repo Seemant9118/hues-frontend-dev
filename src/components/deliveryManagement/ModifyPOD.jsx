@@ -1,34 +1,44 @@
 'use client';
 
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
+import { formattedAmount } from '@/appUtils/helperFunctions';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Package } from 'lucide-react';
-import { useState, useMemo } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { modifyAndAcceptPOD } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Package } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
-import { formattedAmount } from '@/appUtils/helperFunctions';
-import { DeliveryResultDialog } from './DeliveryResultDialog';
 import PINVerifyModal from '../invoices/PINVerifyModal';
+import RemarkBox from '../remarks/RemarkBox';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../ui/table';
+import { DeliveryResultDialog } from './DeliveryResultDialog';
 
-export const ModifyPOD = ({ open, onOpenChange, data = [], podId }) => {
+export const ModifyPOD = ({ open, onOpenChange, data = [], podId, type }) => {
+  const router = useRouter();
+
   const queryClient = useQueryClient();
-
   const [isOpenPinVerifyModal, setIsOpenPinVerifyModal] = useState(false);
   const [deliveryResultType, setDeliveryResultType] = useState(null);
   const [openDeliveryResult, setOpenDeliveryResult] = useState(false);
   const [isPINError, setIsPINError] = useState(false);
-
   const [remarks, setRemarks] = useState('');
+  const [attachedFiles, setAttachedFiles] = useState([]);
 
   /* Normalize API Data */
   const [items, setItems] = useState(
@@ -46,41 +56,52 @@ export const ModifyPOD = ({ open, onOpenChange, data = [], podId }) => {
         price: Number(product.salesPrice || 0),
         deliveredQty,
         acceptedQty: item.acceptQuantity || 0,
+        rejectedQty: item.rejectQuantity || 0,
       };
     }),
   );
+
+  const updateItemQty = (index, value) => {
+    setItems((prev) =>
+      prev.map((item, i) => {
+        if (i !== index) return item;
+
+        const accepted = Math.max(
+          0,
+          Math.min(Number(value) || 0, item.deliveredQty),
+        );
+        return {
+          ...item,
+          acceptedQty: accepted,
+          rejectedQty: item.deliveredQty - accepted, // auto-calculate
+        };
+      }),
+    );
+  };
 
   /* Derived Total */
   const totalAmount = useMemo(() => {
     return items.reduce((sum, item) => sum + item.price * item.acceptedQty, 0);
   }, [items]);
 
-  /* Qty Change */
-  const handleQtyChange = (index, value) => {
-    const updated = [...items];
-    const qty = Number(value);
-
-    updated[index] = {
-      ...updated[index],
-      acceptedQty: qty < 0 ? 0 : qty,
-    };
-
-    setItems(updated);
-  };
-
-  /* Mutation */
+  /* Mutation - modify and accept (Buyer) */
   const modifyAndAcceptPODMutation = useMutation({
     mutationFn: modifyAndAcceptPOD,
 
-    onSuccess: () => {
-      toast.success('POD modified and accepted successfully');
+    onSuccess: (data) => {
+      setIsOpenPinVerifyModal(false);
+      if (type === 'MARK_AS_DELIVERED') {
+        toast.success('Marked as Delivered successfully');
 
-      queryClient.invalidateQueries({
-        queryKey: [deliveryProcess.getPOD.endpoint],
-      });
+        queryClient.invalidateQueries([deliveryProcess.getPODbyId.endpointKey]);
+      } else {
+        toast.success('POD modified and accepted successfully');
+        router.push(`/dashboard/transport/grn/${data?.data?.data?.grn?.id}`);
 
-      setDeliveryResultType('MODIFY');
-      setOpenDeliveryResult(true);
+        setDeliveryResultType('MODIFY');
+        setOpenDeliveryResult(true);
+      }
+
       onOpenChange(false);
     },
 
@@ -91,28 +112,40 @@ export const ModifyPOD = ({ open, onOpenChange, data = [], podId }) => {
   });
 
   /* Submit */
-  const handleModifyAndAcceptPODs = () => {
-    setIsOpenPinVerifyModal(false);
+  const handleModifyAndAcceptPODs = (data) => {
+    const formData = new FormData();
+
+    // primitive fields
+    formData.append('pin', data.pin);
+    formData.append('receiverRemarks', remarks?.trim() || '');
+    formData.append('isSellerEnterprise', String(type === 'MARK_AS_DELIVERED'));
+
+    // items as JSON array
+    const itemsPayload = items.map((item) => ({
+      dispatchNoteItemId: item.dispatchNoteItemId,
+      acceptQuantity: item.acceptedQty,
+      rejectQuantity: item.deliveredQty - item.acceptedQty,
+      amount: item.price * item.acceptedQty,
+    }));
+
+    formData.append('items', JSON.stringify(itemsPayload));
+
+    // files
+    if (attachedFiles?.length) {
+      attachedFiles.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
 
     modifyAndAcceptPODMutation.mutate({
       podId,
-      data: {
-        updateData: {
-          receiverRemarks: remarks.trim(),
-          items: items.map((item) => ({
-            dispatchNoteItemId: item.dispatchNoteItemId,
-            acceptQuantity: item.acceptedQty,
-            rejectQuantity: item.deliveredQty - item.acceptedQty,
-            amount: item.price * item.acceptedQty,
-          })),
-        },
-      },
+      data: formData,
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl p-0">
+      <DialogContent className="flex h-[80vh] max-w-4xl flex-col p-0">
         {/* Header */}
         <DialogHeader className="border-b p-4">
           <DialogTitle className="text-lg font-semibold">
@@ -123,50 +156,94 @@ export const ModifyPOD = ({ open, onOpenChange, data = [], podId }) => {
           </p>
         </DialogHeader>
 
-        {/* Items Table */}
-        <div className="p-4">
+        {/* Scrollable Content */}
+        <div className="scrollBarStyles flex-1 overflow-auto p-2">
+          {/* Items Table */}
           <div className="rounded-sm border">
             <div className="flex items-center gap-2 border-b p-4 font-semibold">
               <Package size={18} />
               Items Delivered
             </div>
 
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-left">
-                <tr>
-                  <th className="p-3">Sr.</th>
-                  <th className="p-3">SKU ID</th>
-                  <th className="p-3">Item Name</th>
-                  <th className="p-3">Qty Accepted</th>
-                  <th className="p-3">Price</th>
-                  <th className="p-3 text-right">Amount</th>
-                </tr>
-              </thead>
+            <Table className="w-full text-sm">
+              <TableHeader className="sticky top-0 bg-muted/40 text-left">
+                <TableRow>
+                  <TableHead className="p-3">Sr.</TableHead>
+                  <TableHead className="p-3">SKU ID</TableHead>
+                  <TableHead className="p-3">Item Name</TableHead>
+                  <TableHead className="p-3">Qty Recieved</TableHead>
+                  <TableHead className="p-3">Qty Accepted</TableHead>
+                  <TableHead className="p-3">Qty Rejected</TableHead>
+                  <TableHead className="p-3">Price</TableHead>
+                  <TableHead className="p-3 text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
 
-              <tbody>
+              <TableBody>
                 {items.map((item, index) => (
-                  <tr key={item.dispatchNoteItemId} className="border-t">
-                    <td className="p-3">{index + 1}</td>
-                    <td className="p-3">{item.skuId}</td>
-                    <td className="p-3 font-medium">{item.itemName}</td>
-                    <td className="p-3">
+                  <TableRow key={item.dispatchNoteItemId} className="border-t">
+                    <TableCell className="p-3">{index + 1}</TableCell>
+                    <TableCell className="p-3">{item.skuId}</TableCell>
+                    <TableCell className="p-3 font-medium">
+                      {item.itemName}
+                    </TableCell>
+                    <TableCell className="p-3 font-medium">
+                      {item.deliveredQty}
+                    </TableCell>
+                    <TableCell className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          debounceTime={0}
+                          disabled={item.acceptedQty <= 0}
+                          onClick={() =>
+                            updateItemQty(index, item.acceptedQty - 1)
+                          }
+                        >
+                          −
+                        </Button>
+
+                        <Input
+                          type="number"
+                          className="w-20 text-center"
+                          min={0}
+                          max={item.deliveredQty}
+                          value={item.acceptedQty}
+                          onChange={(e) => updateItemQty(index, e.target.value)}
+                        />
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          debounceTime={0}
+                          disabled={item.acceptedQty >= item.deliveredQty}
+                          onClick={() =>
+                            updateItemQty(index, item.acceptedQty + 1)
+                          }
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="p-3">
                       <Input
                         type="number"
-                        className="w-20"
-                        min={0}
-                        max={item.deliveredQty}
-                        value={item.acceptedQty}
-                        onChange={(e) => handleQtyChange(index, e.target.value)}
+                        className="w-20 text-center"
+                        value={item.rejectedQty}
+                        disabled
                       />
-                    </td>
-                    <td className="p-3">₹{item.price}</td>
-                    <td className="p-3 text-right font-semibold">
+                    </TableCell>
+
+                    <TableCell className="p-3">₹{item.price}</TableCell>
+                    <TableCell className="p-3 text-right font-semibold">
                       ₹{(item.price * item.acceptedQty).toLocaleString('en-IN')}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
 
             {/* Total */}
             <div className="flex items-center justify-end gap-2 border-t p-4 text-sm">
@@ -177,21 +254,17 @@ export const ModifyPOD = ({ open, onOpenChange, data = [], podId }) => {
             </div>
           </div>
 
-          {/* Remarks */}
-          <div className="mt-6">
-            <label className="mb-2 block text-sm font-medium">
-              Remarks (Optional)
-            </label>
-            <Textarea
-              placeholder="Add any remarks..."
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </div>
+          {/* remarks with attachments */}
+          <RemarkBox
+            remarks={remarks}
+            setRemarks={setRemarks}
+            attachedFiles={attachedFiles}
+            setAttachedFiles={setAttachedFiles}
+          />
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t p-6">
+        <DialogFooter className="border-t p-4">
           <Button
             size="sm"
             variant="outline"

@@ -2,6 +2,7 @@
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -13,10 +14,9 @@ import { LocalStorageService } from '@/lib/utils';
 import { getGRNs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useGrnColumns } from './GRNColumns';
-import { GRNSTable } from './GRNSTable';
 
 const PAGE_LIMIT = 10;
 
@@ -69,8 +69,8 @@ function GRN() {
     setGrns(uniqueGRNSData);
     const lastPage = source.pages[source.pages.length - 1]?.data?.data;
     setPaginationData({
-      totalPages: lastPage?.totalPages,
-      currFetchedPage: Number(lastPage?.currentPage),
+      totalPages: Number(lastPage?.totalPages),
+      currFetchedPage: Number(lastPage?.page),
     });
   }, [grnsQuery.data]);
 
@@ -105,7 +105,7 @@ function GRN() {
                     />
                   ) : (
                     // Case 2: data is available → Show Table
-                    <GRNSTable
+                    <InfiniteDataTable
                       id="grns-table"
                       columns={GRNsColumns}
                       data={grns}

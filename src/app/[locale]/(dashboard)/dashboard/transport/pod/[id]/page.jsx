@@ -3,6 +3,8 @@
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import CommentBox from '@/components/comments/CommentBox';
+import DeliveryAttachments from '@/components/deliveryManagement/DeliveryAttachements';
 import { DeliveryResultDialog } from '@/components/deliveryManagement/DeliveryResultDialog';
 import { ModifyPOD } from '@/components/deliveryManagement/ModifyPOD';
 import PODActionsDropdown from '@/components/deliveryManagement/PODActionsDropdown';
@@ -22,7 +24,7 @@ import {
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Eye } from 'lucide-react';
+import { CheckCircle, Eye, MoveUpRight, PencilLine, X } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -78,41 +80,43 @@ const ViewPOD = () => {
   const sellerName = podDetails?.metaData?.sellerDetails?.name;
 
   const overviewData = {
-    vendorName: iamSeller ? buyerName : sellerName,
     podId: podDetails?.referenceNumber || '-',
+    vendorName: iamSeller ? buyerName : sellerName,
     podDate: podDetails?.createdAt
       ? moment(podDetails.createdAt).format('DD/MM/YYYY')
       : '-',
+    status: podDetails?.status || '-',
 
     // Only for buyer (not seller)
     ...(!isSeller && {
       grnId: podDetails?.grn?.referenceNumber || '-',
-      grnDate: '-',
+      // grnDate: '-',
     }),
 
     deliveryId: podDetails?.voucherReferenceNumber || '-',
-    deliveryDate: '-',
+    invoiceId: podDetails?.metaData?.invoiceDetails?.referenceNumber || '-',
     EWB: podDetails?.metaData?.invoiceDetails?.eWayBillId || '-',
-    status: podDetails?.status || '-',
+    attachements: '-',
   };
 
   const overviewLabels = {
+    podId: translations('overview_labels.podId'),
     ...(!isSeller
       ? { vendorName: translations('overview_labels.vendorName') }
       : { vendorName: translations('overview_labels.clientName') }),
-    podId: translations('overview_labels.podId'),
     podDate: translations('overview_labels.podDate'),
+    status: translations('overview_labels.status'),
 
     // Only for buyer (not seller)
     ...(!isSeller && {
       grnId: translations('overview_labels.grnId'),
-      grnDate: translations('overview_labels.grnDate'),
+      // grnDate: translations('overview_labels.grnDate'),
     }),
 
     deliveryId: translations('overview_labels.deliveryId'),
-    deliveryDate: translations('overview_labels.deliveryDate'),
+    invoiceId: translations('overview_labels.invoiceId'),
     EWB: translations('overview_labels.EWB'),
-    status: translations('overview_labels.status'),
+    attachements: translations('overview_labels.attachements'),
   };
 
   const customRender = {
@@ -136,7 +140,7 @@ const ViewPOD = () => {
           {grnRef ? (
             <>
               {grnRef}
-              <ExternalLink size={14} />
+              <MoveUpRight size={14} />
             </>
           ) : (
             '--'
@@ -154,10 +158,32 @@ const ViewPOD = () => {
             )
           }
         >
-          {podDetails?.voucherReferenceNumber} <ExternalLink size={14} />
+          {podDetails?.voucherReferenceNumber} <MoveUpRight size={14} />
         </p>
       );
     },
+    invoiceId: () => {
+      const invoice = podDetails?.metaData?.invoiceDetails;
+
+      if (!invoice?.id || !invoice?.referenceNumber) return '-';
+
+      const path = isSeller
+        ? `/dashboard/sales/sales-invoices/${invoice.id}`
+        : `/dashboard/purchases/purchase-invoices/${invoice.id}`;
+
+      return (
+        <p
+          className="flex cursor-pointer items-center gap-1 hover:text-primary hover:underline"
+          onClick={() => router.push(path)}
+        >
+          {invoice.referenceNumber}
+          <MoveUpRight size={14} />
+        </p>
+      );
+    },
+    attachements: () => (
+      <DeliveryAttachments attachments={podDetails?.proofOfDeliveryImages} />
+    ),
   };
 
   const previewPODMutation = useMutation({
@@ -186,6 +212,7 @@ const ViewPOD = () => {
   const acceptPODMutation = useMutation({
     mutationFn: acceptPOD,
     onSuccess: (data) => {
+      setIsOpenPinVerifyModal(false);
       toast.success('PIN verified & POD accepted');
 
       router.push(`/dashboard/transport/grn/${data?.data?.data?.grn?.id}`);
@@ -202,6 +229,7 @@ const ViewPOD = () => {
   const rejectPODMutation = useMutation({
     mutationFn: rejectPOD,
     onSuccess: () => {
+      setIsOpenPinVerifyModal(false);
       toast.success('PIN verified & POD rejected');
 
       queryClient.invalidateQueries([deliveryProcess.getPODbyId.endpoint]);
@@ -215,22 +243,26 @@ const ViewPOD = () => {
     },
   });
 
-  const handleAcceptOrRejectPODs = () => {
-    setIsOpenPinVerifyModal(false);
-
+  const handleAcceptOrRejectPODs = (data) => {
     if (type === 'ACCEPTED') {
       const payload = {
         podId: params?.id,
+        data: {
+          type: data.type,
+          pin: data.pin,
+        },
       };
-
       acceptPODMutation.mutate(payload);
       // eslint-disable-next-line no-useless-return
       return;
     } else {
-      const rejectionReason = type === 'REJECTED' ? rejectReason : undefined;
       const payload = {
         podId: params?.id,
-        data: { rejectionReason },
+        data: {
+          type: data.type,
+          pin: data.pin,
+          rejectionReason: rejectReason,
+        },
       };
 
       rejectPODMutation.mutate(payload);
@@ -271,23 +303,60 @@ const ViewPOD = () => {
             </TabsTrigger>
           </TabsList>
           {/* ctas */}
-          {/* ctas */}
           {!isSeller && podDetails?.status === 'PENDING' && (
             <PODActionsDropdown
-              onAccept={() => {
-                setType('ACCEPTED');
-                setIsOpenPinVerifyModal(true);
-              }}
-              onModify={() => {
-                setOpenModify(true);
-              }}
-              onReject={() => {
-                setType('REJECTED');
-                setOpenRejectReasonModal(true);
-              }}
               disabled={
                 acceptPODMutation.isLoading || rejectPODMutation.isLoading
               }
+              actions={[
+                {
+                  key: 'accept',
+                  label: 'Accept as Delivered',
+                  icon: CheckCircle,
+                  className: 'text-green-600',
+                  onClick: () => {
+                    setType('ACCEPTED');
+                    setIsOpenPinVerifyModal(true);
+                  },
+                },
+                {
+                  key: 'modify',
+                  label: 'Modify & Accept',
+                  icon: PencilLine,
+                  onClick: () => {
+                    setOpenModify(true);
+                  },
+                },
+                {
+                  key: 'reject',
+                  label: 'Reject Delivery',
+                  icon: X,
+                  className: 'text-red-600',
+                  onClick: () => {
+                    setType('REJECTED');
+                    setOpenRejectReasonModal(true);
+                  },
+                },
+              ]}
+            />
+          )}
+
+          {isSeller && podDetails?.status === 'PENDING' && (
+            <PODActionsDropdown
+              disabled={
+                acceptPODMutation.isLoading || rejectPODMutation.isLoading
+              }
+              actions={[
+                {
+                  key: 'markedAsRecieved',
+                  label: 'Marked as Recieved',
+                  icon: CheckCircle,
+                  className: 'text-green-600',
+                  onClick: () => {
+                    setOpenModify(true);
+                  },
+                },
+              ]}
             />
           )}
         </section>
@@ -302,8 +371,10 @@ const ViewPOD = () => {
             isPOD={true}
           />
 
+          <CommentBox contextId={params.id} context={'POD'} />
+
           {/* Table + CTA Wrapper */}
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className="mt-4 flex min-h-0 flex-1 flex-col">
             {/* Scrollable table area */}
             <div className="flex-1 overflow-auto">
               <DataTable
@@ -322,6 +393,7 @@ const ViewPOD = () => {
           onOpenChange={() => setOpenModify(false)}
           data={podDetails?.items}
           podId={params?.id}
+          type={isSeller ? 'MARK_AS_DELIVERED' : 'MODIFY_AND_ACCEPT'}
         />
       )}
       {/* Reject Reason Modal */}
@@ -342,7 +414,7 @@ const ViewPOD = () => {
           open={isOpenPinVerifyModal}
           setOpen={setIsOpenPinVerifyModal}
           order={{ type }}
-          handleCreateFn={handleAcceptOrRejectPODs}
+          handleCreateFn={(data) => handleAcceptOrRejectPODs(data)}
           isPINError={isPINError}
           setIsPINError={setIsPINError}
         />
