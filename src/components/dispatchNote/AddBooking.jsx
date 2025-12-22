@@ -61,10 +61,9 @@ const AddBooking = ({
   const router = useRouter();
   const [files, setFiles] = useState([]);
   const [bookingData, setBookingData] = useState({
-    movementType: bookingDraftData?.movementType || '',
     legFrom: bookingDraftData?.legFrom || null,
     legTo: bookingDraftData?.legTo || null,
-    transMode: bookingDraftData?.transMode || '',
+    modeOfTransport: bookingDraftData?.modeOfTransport || '',
     transporterEnterpriseId: bookingDraftData?.transporterEnterpriseId || null,
     transporterId: bookingDraftData?.transporterId || '',
     bookingType: bookingDraftData?.bookingType || '',
@@ -163,11 +162,10 @@ const AddBooking = ({
   // VALIDATION
   const validation = (data) => {
     const errors = {};
-
-    if (!data.movementType) errors.movementType = 'Movement type is required';
     if (!data.legFrom) errors.legFrom = 'Leg from is required';
     if (!data.legTo) errors.legTo = 'Leg to is required';
-    if (!data.transMode) errors.transMode = 'Transport mode is required';
+    if (!data.modeOfTransport)
+      errors.modeOfTransport = 'Transport mode is required';
     if (!data.transporterEnterpriseId)
       errors.transporterEnterpriseId = 'Transporter is required';
     if (!data.transporterId?.trim())
@@ -221,10 +219,9 @@ const AddBooking = ({
         formData.append('files', file);
       });
     }
-    formData.append('movementType', bookingData.movementType);
     formData.append('legFrom', bookingData.legFrom);
     formData.append('legTo', bookingData.legTo);
-    formData.append('transMode', bookingData.transMode);
+    formData.append('modeOfTransport', bookingData.modeOfTransport);
     formData.append(
       'transporterEnterpriseId',
       bookingData.transporterEnterpriseId,
@@ -267,42 +264,6 @@ const AddBooking = ({
           />
 
           <div className="flex flex-col gap-4">
-            <section className="flex flex-col gap-4 rounded-md border p-4">
-              <h1 className="text-sm font-bold">
-                Movement Type <span className="text-red-500">*</span>
-              </h1>
-
-              <div className="mt-1 flex flex-col gap-3">
-                {[
-                  'Internal logistics (stock transfer / repositioning)',
-                  'Supply for sale (final delivery to customer)',
-                ].map((option) => (
-                  <label
-                    key={option}
-                    className="flex cursor-pointer items-center gap-2 text-sm"
-                  >
-                    <input
-                      type="radio"
-                      name="movementType"
-                      value={option}
-                      checked={bookingData.movementType === option}
-                      onChange={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          movementType: option,
-                        }))
-                      }
-                      className="accent-primary"
-                    />
-                    <span>{option}</span>
-                  </label>
-                ))}
-                {errorMsg?.movementType && (
-                  <ErrorBox msg={errorMsg?.movementType} />
-                )}
-              </div>
-            </section>
-
             <section className="flex flex-col gap-4 rounded-md border p-4">
               <h1 className="text-sm font-bold">
                 Leg Details <span className="text-red-500">*</span>
@@ -411,19 +372,19 @@ const AddBooking = ({
                   </div>
                   <div className="flex flex-col gap-4">
                     <Select
-                      value={bookingData?.transMode}
+                      value={bookingData?.modeOfTransport}
                       onValueChange={(value) => {
                         // Check if a booking type is selected (non-empty value)
                         if (value) {
                           setErrorMsg((prevMsg) => ({
                             ...prevMsg,
-                            transMode: '', // Clear the booking type error message
+                            modeOfTransport: '', // Clear the booking type error message
                           }));
                         }
 
                         const updatedBookingData = {
                           ...bookingData,
-                          transMode: value,
+                          modeOfTransport: value,
                         };
                         setBookingData(updatedBookingData);
 
@@ -444,8 +405,8 @@ const AddBooking = ({
                       </SelectContent>
                     </Select>
 
-                    {errorMsg?.transMode && (
-                      <ErrorBox msg={errorMsg?.transMode} />
+                    {errorMsg?.modeOfTransport && (
+                      <ErrorBox msg={errorMsg?.modeOfTransport} />
                     )}
                   </div>
                 </div>

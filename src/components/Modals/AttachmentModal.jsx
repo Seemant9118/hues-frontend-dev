@@ -1,10 +1,12 @@
+/* eslint-disable jsx-a11y/alt-text */
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { File } from 'lucide-react';
+import { Image } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const AttachmentsModal = ({ open, onClose, attachments, onSelect }) => {
@@ -15,8 +17,8 @@ const AttachmentsModal = ({ open, onClose, attachments, onSelect }) => {
           <DialogTitle>View Attachments</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-3 border">
-          {attachments.map((item) => (
+        <div className="flex flex-col gap-3">
+          {attachments?.map((item) => (
             <Button
               key={item.id}
               onClick={() => {
@@ -27,8 +29,8 @@ const AttachmentsModal = ({ open, onClose, attachments, onSelect }) => {
               size="sm"
               className="max-w-sm"
             >
-              <File size={15} />
-              <span className="truncate">{item.name}</span>
+              <Image size={15} />
+              <span className="truncate">{item.displayName}</span>
             </Button>
           ))}
         </div>

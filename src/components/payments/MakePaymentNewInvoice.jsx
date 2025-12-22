@@ -45,6 +45,7 @@ const MakePaymentNewInvoice = ({
   invoiceDetails,
   setIsRecordingPayment,
   paymentStatus,
+  hasDebitNote,
   debitNoteStatus,
   contextType,
 }) => {
@@ -319,6 +320,7 @@ const MakePaymentNewInvoice = ({
           orderRefId={invoiceDetails?.orderReferenceNumber}
           paymentStatus={paymentStatus}
           debitNoteStatus={debitNoteStatus}
+          hasDebitNote={hasDebitNote}
           Name={`${invoiceDetails?.customerName} (${invoiceDetails?.clientType})`}
           type={invoiceDetails?.invoiceType}
           date={invoiceDetails?.createdAt}

@@ -37,22 +37,6 @@ export const FormSchema = [
       { label: 'No', value: 'false' },
     ],
   },
-
-  {
-    type: 'radio',
-    label: 'Movement type',
-    name: 'movementType',
-    options: [
-      {
-        label: 'Internal logistics (stock transfer / repositioning)',
-        value: 'Internal logistics (stock transfer / repositioning)',
-      },
-      {
-        label: 'Supply for sale (final delivery to customer)',
-        value: 'Supply for sale (final delivery to customer)',
-      },
-    ],
-  },
   { headLabel: 'Leg Details' },
   {
     type: 'select',
@@ -82,7 +66,7 @@ export const FormSchema = [
   {
     type: 'select',
     label: 'Mode of transport',
-    name: 'transMode',
+    name: 'modeOfTransport',
     placeholder: 'Select mode',
     options: [
       { label: 'Road', value: 'ROAD' },
@@ -274,7 +258,7 @@ export default function GenerateDCPreviewForm({
         bookingDate: prev.bookingDate,
         legFrom: prev.legFrom,
         legTo: prev.legTo,
-        transMode: prev.transMode,
+        modeOfTransport: prev.modeOfTransport,
         transporterEnterpriseId: prev.transporterEnterpriseId,
         transporterId: prev.transporterId,
         remarks: prev.remarks || '',
@@ -290,7 +274,7 @@ export default function GenerateDCPreviewForm({
         bookingDate: '',
         legFrom: '',
         legTo: '',
-        transMode: '',
+        modeOfTransport: '',
         transporterEnterpriseId: '',
         transporterId: '',
         remarks: '',
@@ -356,7 +340,6 @@ export default function GenerateDCPreviewForm({
     // Prepare safe structured payload
     const updatedFormData = {
       dispatchNoteId: Number(dispatchNoteId),
-      movementType: formData?.movementType,
       isEWBRequired: formData?.isEWBRequired === 'true',
       buyerId: dispatchDetails?.buyerId,
       buyerType: dispatchDetails?.buyerType,

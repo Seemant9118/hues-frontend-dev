@@ -12,7 +12,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getDeliveryChallans } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -61,8 +61,9 @@ const DeliveryChallan = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     enabled: hasPermission('permission:sales-view'),
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
+    staleTime: Infinity, // data never becomes stale
+    refetchOnMount: false, // don’t refetch on remount
+    refetchOnWindowFocus: false, // already correct
   });
 
   // data flattening - formatting

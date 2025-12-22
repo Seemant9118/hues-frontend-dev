@@ -36,11 +36,11 @@ const InvoiceMediaViewModal = ({
     const fileExt = Url?.split('?')[0].toLowerCase();
     setIsPDF(fileExt?.endsWith('.pdf'));
     setIsImage(
-      fileExt.endsWith('.png') ||
-        fileExt.endsWith('.jpg') ||
-        fileExt.endsWith('.jpeg') ||
-        fileExt.endsWith('.gif') ||
-        fileExt.endsWith('.webp'),
+      fileExt?.endsWith('.png') ||
+        fileExt?.endsWith('.jpg') ||
+        fileExt?.endsWith('.jpeg') ||
+        fileExt?.endsWith('.gif') ||
+        fileExt?.endsWith('.webp'),
     );
   }, [Url]);
 

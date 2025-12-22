@@ -11,4 +11,12 @@ export const qcApis = {
     endpoint: `/inventory/qc/update/`,
     endpointKey: 'update_QC',
   },
+  getQCDetailsWithGRNs: {
+    endpoint: `/inventory/qc/grn/`,
+    endpointKey: 'get_qc_details_with_grns',
+  },
+  updateBulkQc: {
+    enpoint: `/inventory/qc/bulk-update`,
+    endpointKey: 'update_bulk_qc',
+  },
 };
