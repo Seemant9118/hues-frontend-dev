@@ -169,7 +169,7 @@ export default function QC() {
           <Button
             size="sm"
             onClick={() => {
-              router.push(`/dashboard/inventory/qc`);
+              router.push(`/dashboard/inventory/qc/${params.id}`);
             }}
           >
             Update QC
