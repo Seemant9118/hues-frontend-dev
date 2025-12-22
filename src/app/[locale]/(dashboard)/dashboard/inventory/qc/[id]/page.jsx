@@ -21,7 +21,7 @@ import {
   updateBulkQc,
 } from '@/services/Inventories_Services/QC_Services/QC_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -63,7 +63,7 @@ const ViewQC = () => {
   });
 
   const overviewData = {
-    grnID: qcDetails?.items?.[0]?.grn?.referenceNumber || '-',
+    grnId: qcDetails?.items?.[0]?.grn?.referenceNumber || '-',
     invoiceId:
       qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.referenceNumber ||
       '-',
@@ -72,10 +72,46 @@ const ViewQC = () => {
     status: qcDetails?.parentStatus || '-',
   };
   const overviewLabels = {
-    grnID: translations('overview.labels.grnId'),
+    grnId: translations('overview.labels.grnId'),
     invoiceId: translations('overview.labels.invoiceId'),
     vendorName: translations('overview.labels.vendorName'),
     status: translations('overview.labels.status'),
+  };
+
+  const customRender = {
+    grnId: () => {
+      return (
+        <p
+          className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+          onClick={() => {
+            router.push(
+              `/dashboard/transport/grn/${qcDetails?.items?.[0]?.grn?.id}`,
+            );
+          }}
+        >
+          {qcDetails?.items?.[0]?.grn?.referenceNumber}
+          <MoveUpRight size={12} />
+        </p>
+      );
+    },
+    invoiceId: () => {
+      return (
+        <p
+          className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+          onClick={() => {
+            router.push(
+              `/dashboard/purchases/purchase-invoices/${qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.id}`,
+            );
+          }}
+        >
+          {
+            qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails
+              ?.referenceNumber
+          }
+          <MoveUpRight size={12} />
+        </p>
+      );
+    },
   };
 
   useEffect(() => {
@@ -184,7 +220,7 @@ const ViewQC = () => {
 
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
-      <Wrapper className="h-full py-2">
+      <Wrapper className="flex min-h-screen flex-col py-2">
         {/* Headers */}
         <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
           <div className="flex items-center gap-1">
@@ -206,11 +242,15 @@ const ViewQC = () => {
               {translations('tabs.tab1.title')}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="overview">
+          <TabsContent
+            value="overview"
+            className="flex flex-1 flex-col overflow-hidden"
+          >
             <Overview
               collapsible={tab !== 'overview'}
               data={overviewData}
               labelMap={overviewLabels}
+              customRender={customRender}
               isQC={true}
             />
 
@@ -380,7 +420,7 @@ const ViewQC = () => {
               </Table>
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end gap-3 border-t bg-white px-4 py-3">
               <Button
                 size="sm"
                 variant="outline"
