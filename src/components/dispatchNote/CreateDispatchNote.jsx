@@ -50,6 +50,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [selectBilling, setSelectBilling] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
+    movementType: '',
     dispatchFromAddressId: '',
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
@@ -275,6 +276,9 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const validations = (disptachedData) => {
     const error = {};
 
+    if (!disptachedData.movementType)
+      error.movementType = 'Movement type is required';
+
     if (!dispatchedData?.dispatchFromAddressId) {
       error.dispatchFrom = 'Please select an dispatch address';
     }
@@ -394,7 +398,41 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
         />
         <section className="mt-2 flex h-full flex-col justify-between">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2 rounded-sm border p-4">
+            <div className="flex flex-col gap-3 rounded-sm border p-4">
+              <h1 className="font-semibold">
+                Movement Type <span className="text-red-500">*</span>
+              </h1>
+              <section className="flex flex-col gap-4">
+                <div className="mt-1 flex flex-col gap-3">
+                  {[
+                    'Internal logistics (stock transfer / repositioning)',
+                    'Supply for sale (final delivery to customer)',
+                  ].map((option) => (
+                    <label
+                      key={option}
+                      className="flex cursor-pointer items-center gap-2 text-sm"
+                    >
+                      <input
+                        type="radio"
+                        name="movementType"
+                        value={option}
+                        checked={dispatchedData.movementType === option}
+                        onChange={() =>
+                          setDispatchedData((prev) => ({
+                            ...prev,
+                            movementType: option,
+                          }))
+                        }
+                        className="accent-primary"
+                      />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                  {errorMsg?.movementType && (
+                    <ErrorBox msg={errorMsg?.movementType} />
+                  )}
+                </div>
+              </section>
               {/* form - transporter, dispatch from, billing from */}
               <h1 className="font-semibold">Dispatch Details</h1>
               <div className="grid grid-cols-2 gap-2 rounded-sm">

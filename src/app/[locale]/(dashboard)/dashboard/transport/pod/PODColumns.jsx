@@ -22,11 +22,7 @@ export const usePODColumns = () => {
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title="POD Date"
-          className="min-w-fit"
-        />
+        <DataTableColumnHeader column={column} title="POD Date" />
       ),
       cell: ({ row }) => moment(row.original?.createdAt).format('DD/MM/YYYY'),
     },
@@ -51,11 +47,7 @@ export const usePODColumns = () => {
     {
       accessorKey: 'totalItems',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title="Total Items"
-          className="min-w-fit"
-        />
+        <DataTableColumnHeader column={column} title="Total Items" />
       ),
       cell: ({ row }) => row.original?.items?.length || 0,
     },
@@ -64,11 +56,7 @@ export const usePODColumns = () => {
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={'Status'}
-          className="min-w-fit"
-        />
+        <DataTableColumnHeader column={column} title={'Status'} />
       ),
       cell: ({ row }) => {
         const isSeller =

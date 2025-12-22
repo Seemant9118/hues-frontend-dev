@@ -12,7 +12,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getGRNs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -53,8 +53,9 @@ function GRN() {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
+    staleTime: Infinity, // data never becomes stale
+    refetchOnMount: false, // don’t refetch on remount
+    refetchOnWindowFocus: false, // already correct
   });
 
   useEffect(() => {

@@ -17,7 +17,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 export default function InfiniteDataTable({
   id,
@@ -32,10 +32,6 @@ export default function InfiniteDataTable({
   const tableContainerRef = useRef();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
-
-  useEffect(() => {
-    tableContainerRef.current?.scrollTo({ top: 0, behavior: 'auto' });
-  }, [data]);
 
   const hasNextPage =
     totalPages && currFetchedPage ? currFetchedPage < totalPages : false;
@@ -61,66 +57,74 @@ export default function InfiniteDataTable({
   });
 
   return (
-    <div>
+    <div className="overflow-hidden">
       <div
         ref={tableContainerRef}
         id={id}
-        className="scrollBarStyles h-[80vh] overflow-auto"
+        className="scrollBarStyles h-[80vh] overflow-auto rounded-sm"
       >
-        <Table className="w-full">
-          <TableHeader>
-            {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
-                {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
+        <div className="inline-block min-w-full align-middle">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <TableHead
+                      className="shrink-0 whitespace-nowrap"
+                      key={header.id}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
 
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                onClick={() => onRowClick?.(row.original)}
-                className={
-                  'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
-                }
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="border-b">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={
+                    'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
+                  }
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="border-b">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+
+              {/* Infinite scroll trigger */}
+              <TableRow>
+                {hasNextPage && (
+                  <TableCell colSpan={columns.length}>
+                    <div
+                      ref={loadMoreRef}
+                      className="py-4 text-center text-sm text-muted-foreground"
+                    >
+                      {isFetching
+                        ? 'Loading more data...'
+                        : hasNextPage
+                          ? 'Scroll to load more'
+                          : 'No more data'}
+                    </div>
                   </TableCell>
-                ))}
+                )}
               </TableRow>
-            ))}
-
-            {/* Infinite scroll trigger */}
-            <TableRow>
-              {hasNextPage && (
-                <TableCell colSpan={columns.length}>
-                  <div
-                    ref={loadMoreRef}
-                    className="py-4 text-center text-sm text-muted-foreground"
-                  >
-                    {isFetching
-                      ? 'Loading more data...'
-                      : hasNextPage
-                        ? 'Scroll to load more'
-                        : 'No more data'}
-                  </div>
-                </TableCell>
-              )}
-            </TableRow>
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+        </div>
       </div>
-      {/* ✅ Pagination footer */}
+      {/* Pagination footer */}
       {!isFetching && data?.length > 0 && (
         <DataTablePagination
           table={table}

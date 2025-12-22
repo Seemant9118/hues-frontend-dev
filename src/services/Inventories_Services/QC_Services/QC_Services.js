@@ -14,3 +14,11 @@ export const getQCDetails = ({ id }) => {
 export const updateQC = ({ id, data }) => {
   return APIinstance.put(`${qcApis.updateQC.endpoint}${id}`, data);
 };
+
+export const getQCDetailsWithGRNs = ({ id }) => {
+  return APIinstance.get(`${qcApis.getQCDetailsWithGRNs.endpoint}${id}`);
+};
+
+export const updateBulkQc = ({ data }) => {
+  return APIinstance.put(`${qcApis.updateBulkQc.enpoint}`, data);
+};

@@ -148,9 +148,13 @@ const ViewInvoice = () => {
   const paymentStatus = ConditionalRenderingStatus({
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
-  const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
-  });
+  const debitNoteRawStatus =
+    invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status;
+  const hasDebitNote =
+    debitNoteRawStatus && debitNoteRawStatus !== 'NOT_RAISED';
+  const debitNoteStatus = hasDebitNote ? (
+    <ConditionalRenderingStatus status={debitNoteRawStatus} />
+  ) : null;
 
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
@@ -284,6 +288,7 @@ const ViewInvoice = () => {
                         }
                         paymentStatus={paymentStatus}
                         debitNoteStatus={debitNoteStatus}
+                        hasDebitNote={hasDebitNote}
                         Name={`${invoiceDetails?.invoiceDetails?.vendorName} (${invoiceDetails?.invoiceDetails?.clientType})`}
                         type={invoiceDetails?.invoiceDetails?.invoiceType}
                         date={invoiceDetails?.invoiceDetails?.createdAt}
@@ -431,6 +436,7 @@ const ViewInvoice = () => {
             {isPaymentAdvicing && (
               <MakePaymentNewInvoice
                 paymentStatus={paymentStatus}
+                hasDebitNote={hasDebitNote}
                 debitNoteStatus={debitNoteStatus}
                 invoiceDetails={invoiceDetails?.invoiceDetails}
                 setIsRecordingPayment={setIsPaymentAdvicing}

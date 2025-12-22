@@ -21,6 +21,7 @@ const InvoiceOverview = ({
   Name,
   paymentStatus,
   debitNoteStatus,
+  hasDebitNote,
   type,
   date,
   amount,
@@ -92,7 +93,7 @@ const InvoiceOverview = ({
               <p className="text-sm font-bold">{capitalize(type)}</p>
             </section>
 
-            {debitNoteStatus && (
+            {hasDebitNote && (
               <section className="flex w-fit flex-col gap-2">
                 <p className="text-xs font-bold">
                   {translations('label.debit_notes')}
@@ -204,92 +205,85 @@ const InvoiceOverview = ({
           </div>
 
           <CollapsibleContent className="animate-fadeInUp space-y-2">
-            <section className="flex h-52 rounded-md p-5">
-              {/* first column */}
-              <div className="flex w-full flex-col justify-between">
-                <section className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">
-                    {translations('label.invoice_id')}
-                  </p>
-                  <p className="text-sm font-bold">{invoiceId}</p>
-                </section>
+            <section className="grid grid-cols-3 gap-2 p-5">
+              <section className="flex flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {translations('label.invoice_id')}
+                </p>
+                <p className="text-sm font-bold">{invoiceId}</p>
+              </section>
 
-                <section className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">
-                    {isSalesDetailPage
-                      ? translations('label.client_name')
-                      : translations('label.vendor_name')}
-                  </p>
-                  <p className="text-sm font-bold">{Name}</p>
-                </section>
+              <section className="flex flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {isSalesDetailPage
+                    ? translations('label.client_name')
+                    : translations('label.vendor_name')}
+                </p>
+                <p className="text-sm font-bold">{Name}</p>
+              </section>
 
-                <section className="flex w-1/4 flex-col gap-2">
-                  <p className="text-xs font-bold">
-                    {translations('label.payment_status')}
-                  </p>
-                  <div>{paymentStatus}</div>
-                </section>
-              </div>
+              <section className="flex w-1/4 flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {translations('label.payment_status')}
+                </p>
+                <div>{paymentStatus}</div>
+              </section>
 
-              {/* second column */}
-              <div className="flex w-full flex-col justify-between">
-                <section className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">
-                    {translations('label.order_id')}
-                  </p>
-                  <p className="text-sm font-bold">{orderRefId}</p>
-                </section>
+              <section className="flex flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {translations('label.order_id')}
+                </p>
+                <p className="text-sm font-bold">{orderRefId}</p>
+              </section>
 
-                <section className="flex flex-col gap-2">
-                  <p className="text-xs font-bold">
-                    {translations('label.type')}
-                  </p>
-                  <p className="text-sm font-bold">{capitalize(type)}</p>
-                </section>
+              <section className="flex flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {translations('label.type')}
+                </p>
+                <p className="text-sm font-bold">{capitalize(type)}</p>
+              </section>
 
-                <section className="flex w-1/4 flex-col gap-2">
+              {hasDebitNote && (
+                <section className="flex w-fit flex-col gap-2">
                   <p className="text-xs font-bold">
                     {translations('label.debit_notes')}
                   </p>
-                  <div>{debitNoteStatus}</div>
+                  <div className="w-full">{debitNoteStatus}</div>
                 </section>
-              </div>
+              )}
 
-              {/* third column */}
-              <div className="flex w-full flex-col gap-3">
-                <section className="flex flex-col gap-2">
+              <section className="flex flex-col gap-2">
+                <p className="text-xs font-bold">
+                  {translations('label.date')}
+                </p>
+                <p className="text-sm font-bold">
+                  {moment(date).format('DD/MM/YYYY')}
+                </p>
+              </section>
+
+              {invoiceDetails?.invoiceMetaData?.payment?.status ===
+                'PARTIAL_PAID' ||
+              invoiceDetails?.invoiceMetaData?.payment?.status === 'PAID' ? (
+                <section className="flex flex-col gap-5">
                   <p className="text-xs font-bold">
-                    {translations('label.date')}
+                    {translations('label.payment_status')}
+                  </p>
+                  <Progress
+                    className="w-1/2 bg-[#F3F3F3]"
+                    value={paymentProgressPercent}
+                  />
+                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
+                </section>
+              ) : (
+                <section className="flex flex-col gap-3">
+                  <p className="text-xs font-bold">
+                    {translations('label.total_amount')}
                   </p>
                   <p className="text-sm font-bold">
-                    {moment(date).format('DD/MM/YYYY')}
+                    {`${formattedAmount(amount)}`}
                   </p>
                 </section>
-
-                {invoiceDetails?.invoiceMetaData?.payment?.status ===
-                  'PARTIAL_PAID' ||
-                invoiceDetails?.invoiceMetaData?.payment?.status === 'PAID' ? (
-                  <section className="flex flex-col gap-5">
-                    <p className="text-xs font-bold">
-                      {translations('label.payment_status')}
-                    </p>
-                    <Progress
-                      className="w-1/2 bg-[#F3F3F3]"
-                      value={paymentProgressPercent}
-                    />
-                    <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
-                  </section>
-                ) : (
-                  <section className="flex flex-col gap-3">
-                    <p className="text-xs font-bold">
-                      {translations('label.total_amount')}
-                    </p>
-                    <p className="text-sm font-bold">
-                      {`${formattedAmount(amount)}`}
-                    </p>
-                  </section>
-                )}
-              </div>
+              )}
             </section>
           </CollapsibleContent>
         </Collapsible>

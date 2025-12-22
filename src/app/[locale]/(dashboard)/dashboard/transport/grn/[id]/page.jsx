@@ -66,7 +66,6 @@ export default function QC() {
     grnId: grnDetails?.referenceNumber,
     vendorName: iamSeller ? buyerName : sellerName,
     grnDate: moment(grnDetails?.createdAt).format('DD/MM/YYYY'),
-    status: grnDetails?.status || '-',
     podId: grnDetails?.podReferenceNumber,
     deliveryDate: '-',
     EWB: grnDetails?.metaData?.invoiceDetails?.eWayBillId || '-',
@@ -77,7 +76,6 @@ export default function QC() {
       ? { vendorName: translations('overview_labels.vendorName') }
       : { vendorName: translations('overview_labels.clientName') }),
     grnDate: translations('overview_labels.grnDate'),
-    status: translations('overview_labels.status'),
     podId: translations('overview_labels.podId'),
     deliveryDate: translations('overview_labels.deliveryDate'),
     EWB: translations('overview_labels.EWB'),
@@ -185,6 +183,7 @@ export default function QC() {
             data={overviewData}
             labelMap={overviewLabels}
             customRender={customRender}
+            sectionClass="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full"
           />
 
           {/* Scrollable table area */}

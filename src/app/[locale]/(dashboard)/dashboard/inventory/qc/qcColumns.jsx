@@ -5,59 +5,72 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 
 export const useQCColumns = () => {
   return [
-    /* Sr No */
+    /* GRN ID */
     {
-      id: 'srNo',
+      accessorKey: 'grnId',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Sr." />
+        <DataTableColumnHeader column={column} title="GRN ID" />
       ),
-      cell: ({ row }) => row.index + 1,
+      cell: ({ row }) => row.original?.referenceNumber || '--',
     },
 
-    /* SKU ID */
+    /* Invoice ID */
     {
-      accessorKey: 'skuId',
+      accessorKey: 'invoiceId',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SKU ID" />
-      ),
-      cell: ({ row }) => row.original?.metaData?.productDetails?.skuId || '--',
-    },
-
-    /* Item Name */
-    {
-      accessorKey: 'itemName',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Item Name" />
+        <DataTableColumnHeader column={column} title="Invoice ID" />
       ),
       cell: ({ row }) =>
-        row.original?.metaData?.productDetails?.productName || '--',
+        row.original?.metaData?.invoiceDetails?.referenceNumber || '--',
     },
 
-    /* Qty Received */
+    /* QC Received */
     {
-      accessorKey: 'totalQuantity',
+      accessorKey: 'totalQC',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Qty Received" />
+        <DataTableColumnHeader column={column} title="Total QC" />
       ),
-      cell: ({ row }) => row.original?.totalQuantity ?? 0,
+      cell: ({ row }) => row.original?.qcSummary?.totalItems ?? 0,
     },
 
-    /* Qty Accepted */
+    /* QC Pending */
     {
-      accessorKey: 'qcPassedQuantity',
+      accessorKey: 'pendingQC',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Qty Accepted" />
+        <DataTableColumnHeader column={column} title="Pending QC" />
       ),
-      cell: ({ row }) => row.original?.qcPassedQuantity ?? 0,
+      cell: ({ row }) => row.original?.qcSummary?.pendingItems ?? 0,
     },
 
-    /* Qty Rejected */
+    /* QC Accepted */
     {
-      accessorKey: 'qcFailedQuantity',
+      accessorKey: 'acceptedQC',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Qty Rejected" />
+        <DataTableColumnHeader column={column} title="QC Accepted" />
       ),
-      cell: ({ row }) => row.original?.qcFailedQuantity ?? 0,
+      cell: ({ row }) => row.original?.qcSummary?.acceptedQuantity ?? 0,
+    },
+
+    /* QC Rejected */
+    {
+      accessorKey: 'rejectedQC',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="QC Rejected" />
+      ),
+      cell: ({ row }) => row.original?.qcSummary?.rejectedQuantity ?? 0,
+    },
+
+    /* Flags */
+    {
+      accessorKey: 'flags',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Flags" />
+      ),
+      cell: ({ row }) => {
+        const status = row.original?.flags;
+
+        return <ConditionalRenderingStatus status={status} />;
+      },
     },
 
     /* QC Status */
@@ -67,9 +80,9 @@ export const useQCColumns = () => {
         <DataTableColumnHeader column={column} title="QC Status" />
       ),
       cell: ({ row }) => {
-        const status = row.original?.qcStatus;
+        const status = row.original?.qcSummary?.parentStatus;
 
-        return <ConditionalRenderingStatus status={status} />;
+        return <ConditionalRenderingStatus status={status} isQC />;
       },
     },
   ];

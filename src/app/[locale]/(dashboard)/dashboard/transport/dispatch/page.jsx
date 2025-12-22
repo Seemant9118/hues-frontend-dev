@@ -22,11 +22,11 @@ import { useDispatchedNotes } from './useDispatchedNotes';
 const PAGE_LIMIT = 10;
 
 const DispatchedNotes = () => {
-  const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
   const translations = useTranslations('transport.dispatched-notes');
+  const enterpriseId = getEnterpriseId();
 
   const keys = [
     'transport.dispatched-notes.emtpyStateComponent.subItems.subItem1',
@@ -48,12 +48,11 @@ const DispatchedNotes = () => {
   } = useInfiniteQuery({
     queryKey: [deliveryProcess.getDispatchNotes.endpointKey, enterpriseId],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await getDispatchNotes({
+      return getDispatchNotes({
         enterpriseId,
         page: pageParam,
         limit: PAGE_LIMIT,
       });
-      return response;
     },
     initialPageParam: 1,
     getNextPageParam: (_lastGroup, groups) => {
@@ -61,10 +60,9 @@ const DispatchedNotes = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     enabled: hasPermission('permission:sales-view'),
-    refetchOnWindowFocus: false,
-    placeholderData: { pages: [], pageParams: [] }, // start fresh
-    staleTime: 0, // always fresh
-    cacheTime: 0, // no cache
+    staleTime: Infinity, // data never becomes stale
+    refetchOnMount: false, // don’t refetch on remount
+    refetchOnWindowFocus: false, // already correct
   });
 
   // data flattening - formatting

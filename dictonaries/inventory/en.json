@@ -288,11 +288,19 @@
             }
         },
         "qcDetails": {
-            "title1":"Quality Checks",
+            "title1": "Quality Checks",
             "title2": "Quality Check Item",
-            "tabs":{
-                "tab1":{
-                    "title":"QC Item"
+            "overview": {
+                "labels": {
+                    "grnId": "GRN ID",
+                    "invoiceId": "Invoice ID",
+                    "vendorName": "Vendor Name",
+                    "status": "Staus"
+                }
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "Overview"
                 }
             }
         }

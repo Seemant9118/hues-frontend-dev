@@ -9,10 +9,10 @@ const Attachments = ({ attachments }) => {
   const [selectedAttachment, setSelectedAttachment] = useState(null);
   const [open, setOpen] = useState(false);
 
-  if (!attachments || attachments.length === 0) return '--';
+  if (!attachments || attachments?.length === 0) return '--';
 
   // Direct open if only ONE attachment
-  if (attachments.length === 1) {
+  if (attachments?.length === 1) {
     const attachment = attachments[0];
     return (
       <InvoicePDFViewModal
@@ -22,8 +22,8 @@ const Attachments = ({ attachments }) => {
             <span className="truncate">Attachment</span>
           </div>
         }
-        Url={attachment.url}
-        name={attachment.name}
+        Url={attachment?.documentSlug}
+        name={attachment?.displayName}
       />
     );
   }
@@ -36,7 +36,7 @@ const Attachments = ({ attachments }) => {
         onClick={() => setOpen(true)}
       >
         <PaperclipIcon size={14} className="shrink-0" />
-        <span className="truncate">Attachments ({attachments.length})</span>
+        <span className="truncate">Attachments ({attachments?.length})</span>
       </div>
 
       <AttachmentsModal
@@ -51,8 +51,8 @@ const Attachments = ({ attachments }) => {
           open={!!selectedAttachment}
           onOpenChange={() => setSelectedAttachment(null)}
           cta={<></>} // cta not needed here
-          Url={selectedAttachment.url}
-          name={selectedAttachment.name}
+          Url={selectedAttachment?.documentSlug}
+          name={selectedAttachment?.displayName}
         />
       )}
     </>
