@@ -48,7 +48,7 @@ export const useQCColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="QC Accepted" />
       ),
-      cell: ({ row }) => row.original?.qcSummary?.acceptedQuantity ?? 0,
+      cell: ({ row }) => row.original?.qcSummary?.completedItems ?? 0,
     },
 
     /* QC Rejected */

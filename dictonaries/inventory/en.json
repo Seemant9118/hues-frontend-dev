@@ -304,5 +304,77 @@
                 }
             }
         }
+    },
+     "stocks": {
+        "title": "Transactions",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Bulk upload and tweak your product info with ease"
+                },
+                "subItem2": {
+                    "value": "Add fresh items for a squeaky-clean inventory"
+                },
+                "subItem3": {
+                    "value": "Digitally sign your stock to keep things secure and compliant"
+                },
+                "subItem4": {
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                }
+            }
+        },
+        "tabs": {
+            "tab1": {
+                "title": "All"
+            },
+            "tab2": {
+                "title": "Inward"
+            },
+            "tab3": {
+                "title": "Outward"
+            }
+        },
+        "table": {
+            "header": {
+                "product": "Product",
+                "manufacturer": "Manufacturer",
+                "hsnCode": "HSN Code",
+                "rate": "Rate",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
+                "gst": "GST (%)",
+                "addedOn": "Added On"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
+                    "successMsg": "Deleted successfully"
+                }
+            }
+        },
+        "stockDetails": {
+            "title1": "Transactions",
+            "title2": "Itemized Stock Details",
+            "overview": {
+                "labels": {
+                    "stockId": "Stock ID",
+                    "docType":"Doc Type",
+                    "grnId": "GRN ID",
+                    "invoiceId": "Invoice ID",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name"
+                }
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "Overview"
+                }
+            }
+        }
     }
 }

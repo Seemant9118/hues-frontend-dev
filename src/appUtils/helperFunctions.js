@@ -212,3 +212,14 @@ export const toDisplayDate = (dateStr) => {
   const [yyyy, mm, dd] = dateStr.split('-');
   return `${dd}/${mm}/${yyyy}`;
 };
+
+export const getValueForMovementType = (movementType) => {
+  switch (movementType) {
+    case 'Internal logistics (stock transfer / repositioning)':
+      return 'Dispatch';
+    case 'Supply for sale (final delivery to customer)':
+      return 'GRN';
+    default:
+      return '-';
+  }
+};

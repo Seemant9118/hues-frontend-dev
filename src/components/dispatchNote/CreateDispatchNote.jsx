@@ -50,7 +50,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [selectBilling, setSelectBilling] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
-    movementType: '',
+    movementType: 'Supply for sale (final delivery to customer)',
     dispatchFromAddressId: '',
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),

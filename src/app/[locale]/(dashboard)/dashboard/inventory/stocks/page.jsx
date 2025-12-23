@@ -1,13 +1,177 @@
-import ComingSoon from '@/components/ui/ComingSoon';
-import Wrapper from '@/components/wrappers/Wrapper';
-import React from 'react';
+'use client';
 
-const page = () => {
+import { stockApis } from '@/api/inventories/stocks/stocksApi';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import Loading from '@/components/ui/Loading';
+import RestrictedComponent from '@/components/ui/RestrictedComponent';
+import SubHeader from '@/components/ui/Sub-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
+import { LocalStorageService } from '@/lib/utils';
+import { getMaterialMovementStocks } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useStocksColumns } from './stocksColumns';
+
+const PAGE_LIMIT = 10;
+
+const Stocks = () => {
+  useMetaData('Hues! - STOCKS', 'HUES Stocks');
+
+  const enterpriseId = getEnterpriseId();
+  const isEnterpriseOnboardingComplete = LocalStorageService.get(
+    'isEnterpriseOnboardingComplete',
+  );
+
+  const translations = useTranslations('stocks');
+  const keys = [
+    'stocks.emptyStateComponent.subItems.subItem1',
+    'stocks.emptyStateComponent.subItems.subItem2',
+    'stocks.emptyStateComponent.subItems.subItem3',
+    'stocks.emptyStateComponent.subItems.subItem4',
+  ];
+  const { hasPermission } = usePermission();
+  const router = useRouter();
+  const [stocksList, setStocksList] = useState(null);
+  const [paginationData, setPaginationData] = useState(null);
+  const [filter, setFilter] = useState(null);
+  const [tab, setTab] = useState('overview');
+  const onTabChange = (tab) => {
+    setTab(tab);
+    setFilter(tab);
+  };
+
+  const stocksQuery = useInfiniteQuery({
+    queryKey: [stockApis.getMaterialMovementStocks.endpointKey, filter],
+    queryFn: async ({ pageParam = 1 }) => {
+      return getMaterialMovementStocks({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        filter,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    enabled: hasPermission('permission:item-masters-view'),
+    staleTime: Infinity, // data never becomes stale
+    refetchOnMount: false, // don’t refetch on remount
+    refetchOnWindowFocus: false, // already correct
+  });
+
+  useEffect(() => {
+    const source = stocksQuery.data;
+    if (!source?.pages?.length) return;
+
+    // flatten items from all pages
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.data || [],
+    );
+
+    // remove duplicates by id
+    const uniqueStocksListData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+
+    setStocksList(uniqueStocksListData);
+    // pagination from last page
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+
+    setPaginationData({
+      totalPages: Number(lastPage?.totalPages ?? 0),
+      currFetchedPage: Number(lastPage?.page ?? 0),
+    });
+  }, [stocksQuery.data]);
+
+  const stocksColumns = useStocksColumns();
+
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/stocks/${row.id}`);
+  };
+
   return (
-    <Wrapper className="flex h-full flex-col py-2">
-      <ComingSoon />
-    </Wrapper>
+    <ProtectedWrapper permissionCode="permission:item-masters-view">
+      {!enterpriseId || !isEnterpriseOnboardingComplete ? (
+        <>
+          <SubHeader name={translations('title')} />
+          <RestrictedComponent />
+        </>
+      ) : (
+        <Wrapper className="h-screen">
+          <SubHeader name={translations('title')}></SubHeader>
+
+          <Tabs
+            value={tab}
+            onValueChange={onTabChange}
+            defaultValue={'overview'}
+          >
+            <TabsList className="border">
+              <TabsTrigger value="overview">
+                {translations('tabs.tab1.title')}
+              </TabsTrigger>
+              <TabsTrigger value="inward">
+                {translations('tabs.tab2.title')}
+              </TabsTrigger>
+              <TabsTrigger value="outward">
+                {translations('tabs.tab3.title')}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="overview"
+              className="flex flex-1 flex-col overflow-hidden"
+            >
+              {stocksQuery.isLoading ? (
+                <Loading />
+              ) : (
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {stocksList?.length === 0 ? (
+                    <EmptyStageComponent
+                      heading={translations('emptyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: data is available → Show Table
+                    <InfiniteDataTable
+                      id="qc-table"
+                      columns={stocksColumns}
+                      data={stocksList}
+                      fetchNextPage={stocksQuery.fetchNextPage}
+                      isFetching={stocksQuery.isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
+              )}
+            </TabsContent>
+            <TabsContent value="inward">
+              <EmptyStageComponent
+                heading={translations('emptyStateComponent.heading')}
+                subItems={keys}
+              />
+            </TabsContent>
+            <TabsContent value="outward">
+              <EmptyStageComponent
+                heading={translations('emptyStateComponent.heading')}
+                subItems={keys}
+              />
+            </TabsContent>
+          </Tabs>
+        </Wrapper>
+      )}
+    </ProtectedWrapper>
   );
 };
 
-export default page;
+export default Stocks;

@@ -12,6 +12,7 @@ const RemarkBox = ({
   setRemarks,
   attachedFiles,
   setAttachedFiles,
+  isAttachmentDisabled = false,
 }) => {
   const translations = useTranslations('components.remarksBox');
 
@@ -46,30 +47,32 @@ const RemarkBox = ({
         />
 
         {/* 3 */}
-        <div className="absolute right-5 top-[25px] flex items-center gap-4 text-[#A5ABBD]">
-          <Tooltips
-            trigger={
-              <label htmlFor="fileAttached">
-                <Paperclip
-                  size={20}
-                  className="cursor-pointer hover:text-black"
-                />
-              </label>
-            }
-            content={translations('tooltip_attach_file')}
-          />
-
-          <input
-            type="file"
-            id="fileAttached"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              if (e.target.files[0]) {
-                uploadMedia(e.target.files[0]);
+        {!isAttachmentDisabled && (
+          <div className="absolute right-5 top-[25px] flex items-center gap-4 text-[#A5ABBD]">
+            <Tooltips
+              trigger={
+                <label htmlFor="fileAttached">
+                  <Paperclip
+                    size={20}
+                    className="cursor-pointer hover:text-black"
+                  />
+                </label>
               }
-            }}
-          />
-        </div>
+              content={translations('tooltip_attach_file')}
+            />
+
+            <input
+              type="file"
+              id="fileAttached"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files[0]) {
+                  uploadMedia(e.target.files[0]);
+                }
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* upload files */}

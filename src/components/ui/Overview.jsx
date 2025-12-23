@@ -41,7 +41,7 @@ export default function Overview({
   };
 
   return (
-    <section className="mb-4 w-full rounded-md border p-4">
+    <section className="mb-2 w-full rounded-md border p-4">
       {/* Collapsible Header */}
       {collapsible && (
         <div className="mb-3 flex items-center justify-between">

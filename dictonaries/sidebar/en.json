@@ -14,7 +14,7 @@
         "subTabs": {
             "goods": "Goods master",
             "services": "Services master",
-            "stocks" : "Stocks",
+            "stocks" : "Transactions",
             "qc":"Quality Check",
             "orders": "Orders",
             "invoices": "Invoices",

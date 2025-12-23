@@ -70,14 +70,26 @@ const qcStatusResolver = ({ status }) => {
 
     case 'PARTIALLY_COMPLETED':
       return {
-        text: 'QC Completed with Issues',
+        text: 'QC ongoing',
         ...STATUS_UI.INFO,
+      };
+
+    case 'PARTIALLY_COMPLETED_WITH_ISSUES':
+      return {
+        text: 'QC Completed with Issues',
+        ...STATUS_UI.ERROR,
       };
 
     case 'REJECTED':
       return {
         text: 'QC Rejected',
         ...STATUS_UI.ERROR,
+      };
+
+    case 'STOCK_IN':
+      return {
+        text: 'Stocked In',
+        ...STATUS_UI.INFO,
       };
 
     default:

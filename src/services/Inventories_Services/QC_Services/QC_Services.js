@@ -22,3 +22,7 @@ export const getQCDetailsWithGRNs = ({ id }) => {
 export const updateBulkQc = ({ data }) => {
   return APIinstance.put(`${qcApis.updateBulkQc.enpoint}`, data);
 };
+
+export const stockInFromQC = ({ data }) => {
+  return APIinstance.put(`${qcApis.stockInQc.endpoint}`, data);
+};

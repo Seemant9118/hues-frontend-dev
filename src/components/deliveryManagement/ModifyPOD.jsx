@@ -91,7 +91,7 @@ export const ModifyPOD = ({ open, onOpenChange, data = [], podId, type }) => {
     onSuccess: (data) => {
       setIsOpenPinVerifyModal(false);
       if (type === 'MARK_AS_DELIVERED') {
-        toast.success('Marked as Delivered successfully');
+        toast.success('Marked as Recieved successfully');
 
         queryClient.invalidateQueries([deliveryProcess.getPODbyId.endpointKey]);
       } else {
