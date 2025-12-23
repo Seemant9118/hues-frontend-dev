@@ -275,7 +275,7 @@ const ViewDispatchNote = () => {
     dispatchId: dispatchDetails?.referenceNumber || '-',
     consignor: dispatchDetails?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.buyerName || '-',
-    supply: dispatchDetails?.supply || 'Outward Supply',
+    supply: dispatchDetails?.movementType || 'Outward Supply',
     deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
     invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
     totalAmount: formattedAmount(totalAmount + totalGstAmount),

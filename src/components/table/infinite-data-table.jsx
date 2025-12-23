@@ -61,7 +61,7 @@ export default function InfiniteDataTable({
       <div
         ref={tableContainerRef}
         id={id}
-        className="scrollBarStyles h-[80vh] overflow-auto rounded-sm"
+        className="scrollBarStyles h-[80dvh] overflow-auto rounded-sm"
       >
         <div className="inline-block min-w-full align-middle">
           <Table>

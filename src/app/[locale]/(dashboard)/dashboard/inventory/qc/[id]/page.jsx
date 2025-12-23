@@ -2,30 +2,25 @@
 
 import { qcApis } from '@/api/inventories/qc/qc';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import QCItemsDialog from '@/components/qc/QCItemDialog';
+import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import Overview from '@/components/ui/Overview';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import {
   getQCDetailsWithGRNs,
-  updateBulkQc,
+  stockInFromQC,
 } from '@/services/Inventories_Services/QC_Services/QC_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
+import CommentBox from '@/components/comments/CommentBox';
+import { useQCItemsColumns } from './qcItemColumns';
 
 const ViewQC = () => {
   const translations = useTranslations('qc.qcDetails');
@@ -33,7 +28,7 @@ const ViewQC = () => {
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
-  const [items, setItems] = useState(null);
+  const [isQCDialogOpen, setIsQCDialogOpen] = useState(false);
 
   const itemsBreadCrumbs = [
     {
@@ -114,63 +109,10 @@ const ViewQC = () => {
     },
   };
 
-  useEffect(() => {
-    if (!qcDetails?.items?.length) return;
-
-    const mappedItems = qcDetails.items.map((item) => ({
-      id: item.id,
-      skuId: item.metaData?.productDetails?.skuId,
-      productName: item.metaData?.productDetails?.productName,
-      totalQuantity: item.totalQuantity,
-      qcStatus: item.qcStatus || 'QC_PENDING',
-      qcResult: item.qcResult,
-      remarks: item.qcRemarks || '',
-      acceptedQty: item.qcPassedQuantity || 0,
-      rejectedQty: item.qcFailedQuantity || 0,
-      pendingQty: item.qcPendingQuantity || 0,
-      isShortQuantity: item.qcStatus === 'SHORT_QUANTITY',
-    }));
-
-    setItems(mappedItems);
-  }, [qcDetails]);
-
-  const updateItemField = (itemId, field, value) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id !== itemId) return item;
-
-        // TEXT FIELD (remarks)
-        if (field === 'remarks') {
-          return {
-            ...item,
-            remarks: value,
-          };
-        }
-
-        // NUMBER FIELDS (acceptedQty / rejectedQty)
-        const numericValue = Math.max(0, Number(value) || 0);
-
-        const otherQty =
-          field === 'acceptedQty'
-            ? item.rejectedQty || 0
-            : item.acceptedQty || 0;
-
-        const maxAllowed = Math.max(0, (item.totalQuantity || 0) - otherQty);
-
-        const finalValue = Math.min(numericValue, maxAllowed);
-
-        return {
-          ...item,
-          [field]: finalValue,
-        };
-      }),
-    );
-  };
-
-  const updateQCMutation = useMutation({
-    mutationFn: updateBulkQc,
+  const stockInQCMutation = useMutation({
+    mutationFn: stockInFromQC,
     onSuccess: () => {
-      toast.success('QC updated successfully');
+      toast.success('Stock-In successful');
       queryClient.invalidateQueries([
         qcApis.getQCDetailsWithGRNs.endpointKey,
         params.id,
@@ -181,42 +123,27 @@ const ViewQC = () => {
     },
   });
 
-  const handleUpdateInventory = () => {
-    if (!items.length) {
-      toast.info('No data to update');
-      return;
-    }
-
-    const hasInvalidQuantity = items.some((item) => {
-      const qcCompletedQuantity =
-        Number(item.acceptedQty || 0) + Number(item.rejectedQty || 0);
-
-      return qcCompletedQuantity > item.totalQuantity;
-    });
-
-    if (hasInvalidQuantity) {
-      toast.error('Accepted + rejected quantity exceeds received quantity');
-      return;
-    }
-
+  const handleStockIn = () => {
+    const items = qcDetails?.items || [];
     const payload = items.map((item) => {
       const qcCompletedQuantity =
-        Number(item.acceptedQty || 0) + Number(item.rejectedQty || 0);
+        Number(item.qcPassedQuantity || 0) + Number(item.qcFailedQuantity || 0);
 
       return {
         id: item.id,
         qcCompletedQuantity,
-        qcPassedQuantity: Number(item.acceptedQty || 0),
-        qcFailedQuantity: Number(item.rejectedQty || 0),
-        qcRemarks: item.remarks || '',
+        qcPassedQuantity: Number(item.qcPassedQuantity || 0),
+        qcFailedQuantity: Number(item.qcFailedQuantity || 0),
+        qcRemarks: item.qcRemarks || '',
       };
     });
 
-    updateQCMutation.mutate({
-      id: params.id,
-      data: { items: payload }, // ✅ array of objects
+    stockInQCMutation.mutate({
+      data: { items: payload },
     });
   };
+
+  const qcItemsColumns = useQCItemsColumns();
 
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
@@ -233,6 +160,34 @@ const ViewQC = () => {
             {/* breadcrumbs */}
             <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
           </div>
+
+          {/* ctas */}
+          {qcDetails?.parentStatus !== 'STOCK_IN' && (
+            <div className="flex items-center gap-2">
+              {qcDetails?.parentStatus !== 'COMPLETED' && (
+                <Button
+                  size="sm"
+                  variant="blue_outline"
+                  onClick={() => {
+                    setIsQCDialogOpen(true);
+                  }}
+                >
+                  Add QC
+                </Button>
+              )}
+
+              <Button
+                size="sm"
+                onClick={handleStockIn}
+                disabled={
+                  stockInQCMutation.isLoading ||
+                  qcDetails?.parentStatus !== 'COMPLETED'
+                }
+              >
+                Stock-In
+              </Button>
+            </div>
+          )}
         </section>
 
         {/* Content */}
@@ -244,7 +199,7 @@ const ViewQC = () => {
           </TabsList>
           <TabsContent
             value="overview"
-            className="flex flex-1 flex-col overflow-hidden"
+            className="flex flex-1 flex-col gap-4 overflow-hidden"
           >
             <Overview
               collapsible={tab !== 'overview'}
@@ -254,192 +209,25 @@ const ViewQC = () => {
               isQC={true}
             />
 
-            {/* Table */}
-            <h1 className="font-semibold">Items</h1>
-            <div className="overflow-x-auto">
-              <Table className="w-full text-sm">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>SKU ID</TableHead>
-                    <TableHead>Item Name</TableHead>
-                    <TableHead>Qty Received</TableHead>
-                    <TableHead>Qty Accepted</TableHead>
-                    <TableHead>Qty Rejected</TableHead>
-                    <TableHead>Remark</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {!items?.length ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center">
-                        No data available
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    items?.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          {item.skuId || '-'}
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium">
-                              {item.productName || '-'}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>{item.totalQuantity ?? '-'}</TableCell>
-
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              debounceTime={0}
-                              disabled={item.acceptedQty <= 0}
-                              onClick={() =>
-                                updateItemField(
-                                  item.id,
-                                  'acceptedQty',
-                                  item.acceptedQty - 1,
-                                )
-                              }
-                            >
-                              −
-                            </Button>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={item.totalQuantity}
-                              value={item.acceptedQty}
-                              onChange={(e) =>
-                                updateItemField(
-                                  item.id,
-                                  'acceptedQty',
-                                  Number(e.target.value),
-                                )
-                              }
-                              className="w-[100px]"
-                            />
-
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              debounceTime={0}
-                              disabled={
-                                item.acceptedQty + item.rejectedQty >=
-                                item.totalQuantity
-                              }
-                              onClick={() =>
-                                updateItemField(
-                                  item.id,
-                                  'acceptedQty',
-                                  item.acceptedQty + 1,
-                                )
-                              }
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              debounceTime={0}
-                              disabled={item.rejectedQty <= 0}
-                              onClick={() =>
-                                updateItemField(
-                                  item.id,
-                                  'rejectedQty',
-                                  item.rejectedQty - 1,
-                                )
-                              }
-                            >
-                              −
-                            </Button>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={item.totalQuantity}
-                              value={item.rejectedQty}
-                              onChange={(e) =>
-                                updateItemField(
-                                  item.id,
-                                  'rejectedQty',
-                                  Number(e.target.value),
-                                )
-                              }
-                              className="w-[100px]"
-                            />
-
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              debounceTime={0}
-                              disabled={
-                                item.acceptedQty + item.rejectedQty >=
-                                item.totalQuantity
-                              }
-                              onClick={() =>
-                                updateItemField(
-                                  item.id,
-                                  'rejectedQty',
-                                  item.rejectedQty + 1,
-                                )
-                              }
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          <Input
-                            placeholder="Add remark..."
-                            value={item.remarks}
-                            onChange={(e) =>
-                              updateItemField(
-                                item.id,
-                                'remarks',
-                                e.target.value,
-                              )
-                            }
-                            className="max-w-[220px]"
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+            {/* comment */}
+            <div>
+              <CommentBox context={'QC'} contextId={params.id} />
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t bg-white px-4 py-3">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setItems(null);
-                  router.push('/dashboard/inventory/qc');
-                }}
-              >
-                Cancel
-              </Button>
+            {qcDetails?.items?.length > 0 && (
+              <>
+                <DataTable
+                  data={qcDetails?.items || []}
+                  columns={qcItemsColumns}
+                />
+              </>
+            )}
 
-              <Button
-                size="sm"
-                onClick={handleUpdateInventory}
-                disabled={updateQCMutation.isLoading}
-              >
-                Update Inventory
-              </Button>
-            </div>
+            <QCItemsDialog
+              open={isQCDialogOpen}
+              onClose={() => setIsQCDialogOpen(false)}
+              qcDetails={qcDetails}
+            />
           </TabsContent>
         </Tabs>
       </Wrapper>

@@ -19,4 +19,8 @@ export const qcApis = {
     enpoint: `/inventory/qc/bulk-update`,
     endpointKey: 'update_bulk_qc',
   },
+  stockInQc: {
+    endpoint: `/inventory/qc/stock-in/`,
+    endpointKey: 'stock_in_qc',
+  },
 };
