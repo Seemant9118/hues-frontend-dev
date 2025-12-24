@@ -477,6 +477,7 @@
                     "clientName":"Client Name",
                     "vendorName":"Vendor Name",
                     "grnDate": "GRN Date",
+                    "defects": "QC Issues",
                     "status": "Status",
                     "podId": "PoD ID",
                     "invoiceId": "Invoice ID",

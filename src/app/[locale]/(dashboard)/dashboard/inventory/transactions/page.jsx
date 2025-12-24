@@ -13,48 +13,48 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
-import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
+import { getMaterialMovementStocks } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { useStocksColumns } from './stockColumns';
+import { useTrasnsactionsColumns } from './transactionColumns';
 
 const PAGE_LIMIT = 10;
 
-const Stocks = () => {
-  useMetaData('Hues! - Stocks', 'HUES Stocks');
+const Transactions = () => {
+  useMetaData('Hues! - Transactions', 'HUES Transactions');
 
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
 
-  const translations = useTranslations('stocks');
+  const translations = useTranslations('transactions');
   const keys = [
-    'stocks.emptyStateComponent.subItems.subItem1',
-    'stocks.emptyStateComponent.subItems.subItem2',
-    'stocks.emptyStateComponent.subItems.subItem3',
-    'stocks.emptyStateComponent.subItems.subItem4',
+    'transactions.emptyStateComponent.subItems.subItem1',
+    'transactions.emptyStateComponent.subItems.subItem2',
+    'transactions.emptyStateComponent.subItems.subItem3',
+    'transactions.emptyStateComponent.subItems.subItem4',
   ];
   const { hasPermission } = usePermission();
+  const router = useRouter();
   const [stocksList, setStocksList] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
   const [filter, setFilter] = useState(null);
-  const [tab, setTab] = useState('ALL');
-
+  const [tab, setTab] = useState('All');
   const onTabChange = (tab) => {
     setTab(tab);
     setFilter(tab);
   };
 
   const stocksQuery = useInfiniteQuery({
-    queryKey: [stockApis.getStocksItems.endpointKey, filter],
+    queryKey: [stockApis.getMaterialMovementStocks.endpointKey, filter],
     queryFn: async ({ pageParam = 1 }) => {
-      return getStocksItems({
-        enterpriseId,
-        filter,
+      return getMaterialMovementStocks({
         page: pageParam,
         limit: PAGE_LIMIT,
+        filter,
       });
     },
     initialPageParam: 1,
@@ -72,31 +72,31 @@ const Stocks = () => {
     const source = stocksQuery.data;
     if (!source?.pages?.length) return;
 
-    // Flatten all pages
+    // flatten items from all pages
     const flattened = source.pages.flatMap(
       (page) => page?.data?.data?.data || [],
     );
 
-    // Remove duplicates using inventoryid + bucketid
-    // (same inventory can exist in multiple buckets)
+    // remove duplicates by id
     const uniqueStocksListData = Array.from(
-      new Map(
-        flattened.map((item) => [`${item.inventoryid}-${item.bucketid}`, item]),
-      ).values(),
+      new Map(flattened.map((item) => [item.id, item])).values(),
     );
 
     setStocksList(uniqueStocksListData);
-
-    // Pagination info from last page
+    // pagination from last page
     const lastPage = source.pages[source.pages.length - 1]?.data?.data;
 
     setPaginationData({
       totalPages: Number(lastPage?.totalPages ?? 0),
-      currFetchedPage: Number(lastPage?.currentPage ?? 0),
+      currFetchedPage: Number(lastPage?.page ?? 0),
     });
   }, [stocksQuery.data]);
 
-  const stocksColumns = useStocksColumns();
+  const stocksColumns = useTrasnsactionsColumns();
+
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/transactions/${row.id}`);
+  };
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -111,27 +111,18 @@ const Stocks = () => {
 
           <Tabs value={tab} onValueChange={onTabChange} defaultValue={'All'}>
             <TabsList className="border">
-              <TabsTrigger value="ALL">
+              <TabsTrigger value="All">
                 {translations('tabs.tab1.title')}
               </TabsTrigger>
-              <TabsTrigger value="RAW_MATERIALS">
+              <TabsTrigger value="inward">
                 {translations('tabs.tab2.title')}
               </TabsTrigger>
-              <TabsTrigger value="INTERMEDIATE_GOODS">
+              <TabsTrigger value="outward">
                 {translations('tabs.tab3.title')}
-              </TabsTrigger>
-              <TabsTrigger value="FINISHED_GOODS">
-                {translations('tabs.tab4.title')}
-              </TabsTrigger>
-              <TabsTrigger value="QC">
-                {translations('tabs.tab5.title')}
-              </TabsTrigger>
-              <TabsTrigger value="REJECTED">
-                {translations('tabs.tab6.title')}
               </TabsTrigger>
             </TabsList>
             <TabsContent
-              value="ALL"
+              value="All"
               className="flex flex-1 flex-col overflow-hidden"
             >
               {stocksQuery.isLoading ? (
@@ -154,12 +145,13 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
               )}
             </TabsContent>
-            <TabsContent value="RAW_MATERIALS">
+            <TabsContent value="inward">
               {stocksQuery.isLoading ? (
                 <Loading />
               ) : (
@@ -180,12 +172,13 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
               )}
             </TabsContent>
-            <TabsContent value="INTERMEDIATE_GOODS">
+            <TabsContent value="outward">
               {stocksQuery.isLoading ? (
                 <Loading />
               ) : (
@@ -206,84 +199,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
-                    />
-                  )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="FINISHED_GOODS">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
-                  ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={stocksList}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                    />
-                  )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="QC">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
-                  ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={stocksList}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                    />
-                  )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="REJECTED">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
-                  ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={stocksList}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
@@ -296,4 +212,4 @@ const Stocks = () => {
   );
 };
 
-export default Stocks;
+export default Transactions;

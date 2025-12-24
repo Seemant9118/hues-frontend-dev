@@ -3,7 +3,7 @@
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Badge } from '@/components/ui/badge';
 
-export const useStockItemsColumns = () => {
+export const useTransactionItemsColumns = () => {
   return [
     /* SKU ID */
     {

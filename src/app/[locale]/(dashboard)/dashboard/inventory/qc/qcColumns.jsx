@@ -1,5 +1,6 @@
 'use client';
 
+import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 
@@ -60,16 +61,27 @@ export const useQCColumns = () => {
       cell: ({ row }) => row.original?.qcSummary?.rejectedQuantity ?? 0,
     },
 
-    /* Flags */
     {
       accessorKey: 'flags',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Flags" />
+        <DataTableColumnHeader
+          className="w-36"
+          column={column}
+          title="QC Issues"
+        />
       ),
       cell: ({ row }) => {
-        const status = row.original?.flags;
+        const statuses = getQCDefectStatuses(row.original);
 
-        return <ConditionalRenderingStatus status={status} />;
+        if (!statuses.length) return '-';
+
+        return (
+          <div className="flex flex-col gap-2">
+            {statuses.map((status) => (
+              <ConditionalRenderingStatus key={status} status={status} isQC />
+            ))}
+          </div>
+        );
       },
     },
 

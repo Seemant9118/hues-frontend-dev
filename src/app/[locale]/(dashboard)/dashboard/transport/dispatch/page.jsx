@@ -9,6 +9,7 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
@@ -22,6 +23,7 @@ import { useDispatchedNotes } from './useDispatchedNotes';
 const PAGE_LIMIT = 10;
 
 const DispatchedNotes = () => {
+  useMetaData('Hues! - Dispatch Notes', 'HUES Dispatch Notes');
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { LocalStorageService } from '@/lib/utils';
@@ -51,17 +52,23 @@ export const useGrnColumns = () => {
       ),
       cell: ({ row }) => row.original.items?.length || 0,
     },
-
     {
       accessorKey: 'flags',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Flags" />
+        <DataTableColumnHeader column={column} title="QC Issues" />
       ),
       cell: ({ row }) => {
-        const { isShortQuantity } = row.original;
+        const statuses = getQCDefectStatuses(row.original);
 
-        const status = isShortQuantity ? 'SHORT_QUANTITY' : null;
-        return <ConditionalRenderingStatus status={status} />;
+        if (!statuses.length) return '-';
+
+        return (
+          <div className="flex flex-col gap-2">
+            {statuses.map((status) => (
+              <ConditionalRenderingStatus key={status} status={status} isQC />
+            ))}
+          </div>
+        );
       },
     },
   ];

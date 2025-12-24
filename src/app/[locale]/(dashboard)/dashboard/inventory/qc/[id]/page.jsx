@@ -1,6 +1,7 @@
 'use client';
 
 import { qcApis } from '@/api/inventories/qc/qc';
+import CommentBox from '@/components/comments/CommentBox';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import QCItemsDialog from '@/components/qc/QCItemDialog';
 import { DataTable } from '@/components/table/data-table';
@@ -13,18 +14,16 @@ import {
   getQCDetailsWithGRNs,
   stockInFromQC,
 } from '@/services/Inventories_Services/QC_Services/QC_Services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import CommentBox from '@/components/comments/CommentBox';
 import { useQCItemsColumns } from './qcItemColumns';
 
 const ViewQC = () => {
   const translations = useTranslations('qc.qcDetails');
-  const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
@@ -111,12 +110,11 @@ const ViewQC = () => {
 
   const stockInQCMutation = useMutation({
     mutationFn: stockInFromQC,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Stock-In successful');
-      queryClient.invalidateQueries([
-        qcApis.getQCDetailsWithGRNs.endpointKey,
-        params.id,
-      ]);
+      router.push(
+        `/dashboard/inventory/transactions/${data?.data?.data?.stockInId}`,
+      );
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');

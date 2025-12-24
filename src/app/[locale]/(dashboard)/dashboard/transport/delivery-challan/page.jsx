@@ -16,12 +16,14 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import useMetaData from '@/hooks/useMetaData';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
 const PAGE_LIMIT = 10;
 
 const DeliveryChallan = () => {
+  useMetaData('Hues! - Delivery Challans', 'HUES Delivery Challans');
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',

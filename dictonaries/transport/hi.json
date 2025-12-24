@@ -475,6 +475,7 @@
           "vendorName": "विक्रेता नाम",
           "grnDate": "GRN तिथि",
           "status": "स्थिति",
+          "defects": "क्वालिटी जांच समस्याएं",
           "podId": "POD आईडी",
           "invoiceId": "इनवॉइस आईडी",
           "invoiceDate": "इनवॉइस तिथि",

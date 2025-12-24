@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import {
   DeleteProductServices,
   GetProductServices,
@@ -40,6 +41,7 @@ const EditService = dynamic(() => import('@/components/inventory/AddService'), {
 });
 
 const ViewService = () => {
+  useMetaData('Hues! - Services Details', 'HUES Services Details');
   const translations = useTranslations('services.serviceDetails');
   const queryClient = useQueryClient();
   const router = useRouter();

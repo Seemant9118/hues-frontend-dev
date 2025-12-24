@@ -44,9 +44,11 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import useMetaData from '@/hooks/useMetaData';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 
 const ViewDispatchNote = () => {
+  useMetaData('Hues! - Dispatch Notes Details', 'HUES Dispatch Notes Details');
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations(
     'transport.dispatched-notes.dispatch_details',

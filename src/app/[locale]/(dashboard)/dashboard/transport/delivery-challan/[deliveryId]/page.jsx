@@ -65,6 +65,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import useMetaData from '@/hooks/useMetaData';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
@@ -73,6 +74,10 @@ import { useEWBsColumns } from './useEWBsColumns';
 import { usePODColumns } from './usePODColumns';
 
 const ViewDelivery = () => {
+  useMetaData(
+    'Hues! - Delivery Challan Details',
+    'HUES Delivery Challan Details',
+  );
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations(
     'transport.delivery-challan.delivery_challan_details',
