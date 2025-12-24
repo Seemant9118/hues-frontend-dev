@@ -359,7 +359,7 @@
         },
         "stockDetails": {
             "title1": "Transactions",
-            "title2": "Itemized Stock Details",
+            "title2": "Transaction Details",
             "overview": {
                 "labels": {
                     "stockId": "Stock ID",

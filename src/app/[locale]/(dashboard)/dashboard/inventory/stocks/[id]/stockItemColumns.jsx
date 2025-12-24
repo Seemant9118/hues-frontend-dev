@@ -38,7 +38,8 @@ export const useStockItemsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Opening Stock" />
       ),
-      cell: ({ row }) => row.original?.movements?.[0]?.openingBalance ?? 0,
+      cell: ({ row }) =>
+        Math.round(Number(row.original?.movements?.[0]?.openingBalance ?? 0)),
     },
 
     /* Closing Stock */
@@ -47,7 +48,8 @@ export const useStockItemsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Closing Stock" />
       ),
-      cell: ({ row }) => row.original?.movements?.[0]?.closingBalance ?? 0,
+      cell: ({ row }) =>
+        Math.round(Number(row.original?.movements?.[0]?.closingBalance ?? 0)),
     },
 
     /* Bucket */
