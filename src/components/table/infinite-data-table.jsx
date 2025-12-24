@@ -17,6 +17,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import clsx from 'clsx';
 import { useRef, useState } from 'react';
 
 export default function InfiniteDataTable({
@@ -88,9 +89,10 @@ export default function InfiniteDataTable({
                 <TableRow
                   key={row.id}
                   onClick={() => onRowClick?.(row.original)}
-                  className={
-                    'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
-                  }
+                  className={clsx(
+                    'border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700',
+                    { 'cursor-pointer': onRowClick },
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="border-b">

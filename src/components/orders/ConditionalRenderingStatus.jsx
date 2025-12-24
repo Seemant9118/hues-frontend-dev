@@ -92,6 +92,18 @@ const qcStatusResolver = ({ status }) => {
         ...STATUS_UI.INFO,
       };
 
+    case 'SHORT_QUANTITY':
+      return {
+        text: 'Short Delivery',
+        ...STATUS_UI.WARNING,
+      };
+
+    case 'UNSATISFACTORY':
+      return {
+        text: 'Unsatisfactory Quality',
+        ...STATUS_UI.ERROR,
+      };
+
     default:
       return null;
   }

@@ -14,7 +14,8 @@
     "subTabs": {
       "goods": "गुड्स मास्टर",
       "services": "सेवाएँ मास्टर",
-      "stocks": "लेन-देन",
+      "transactions": "लेन-देन",
+      "stocks": "स्टॉक",
       "qc": "गुणवत्ता जाँच",
       "orders": "ऑर्डर",
       "invoices": "इनवॉइस",

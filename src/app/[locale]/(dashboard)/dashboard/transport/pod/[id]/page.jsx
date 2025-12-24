@@ -30,9 +30,11 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import useMetaData from '@/hooks/useMetaData';
 import { usePODColumnsItems } from './usePODColumnsItems';
 
 const ViewPOD = () => {
+  useMetaData('Hues! - PoD Details', 'HUES PoD Details');
   const translations = useTranslations('transport.pods.podsDetails');
   const queryClient = useQueryClient();
   const router = useRouter();

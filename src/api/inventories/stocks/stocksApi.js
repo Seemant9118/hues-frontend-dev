@@ -7,4 +7,9 @@ export const stockApis = {
     endpoint: `/inventory/qc/stock-in/`,
     endpointKey: 'get_material_movement_stock',
   },
+
+  getStocksItems: {
+    endpoint: `/inventory/:enterpriseId/inventory-items`,
+    endpointKey: 'get_stocks_items',
+  },
 };

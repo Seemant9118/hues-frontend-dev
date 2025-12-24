@@ -9,6 +9,7 @@ import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
   ArchiveRestore,
+  ArrowRightLeft,
   Bell,
   Boxes,
   ClipboardList,
@@ -115,6 +116,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.services',
           icon: <HandPlatter size={16} />,
           path: '/dashboard/inventory/services',
+        },
+        {
+          name: 'sidebar.subTabs.transactions',
+          icon: <ArrowRightLeft size={16} />,
+          path: '/dashboard/inventory/transactions',
         },
         {
           name: 'sidebar.subTabs.stocks',

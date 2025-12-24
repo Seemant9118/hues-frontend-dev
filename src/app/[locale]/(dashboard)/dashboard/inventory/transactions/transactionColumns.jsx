@@ -4,7 +4,7 @@ import { getValueForMovementType } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 
-export const useStocksColumns = () => {
+export const useTrasnsactionsColumns = () => {
   return [
     /* Stock ID */
     {

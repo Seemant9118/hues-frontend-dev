@@ -10,3 +10,18 @@ export const getMaterialMovementStocks = ({ page, limit, filter }) => {
 export const getMaterialMovementStock = ({ id }) => {
   return APIinstance.get(`${stockApis.getMaterialMovmentStock.endpoint}${id}`);
 };
+
+export const getStocksItems = ({ enterpriseId, filter, page, limit }) => {
+  const endpoint = stockApis.getStocksItems.endpoint.replace(
+    ':enterpriseId',
+    enterpriseId,
+  );
+
+  const params = {
+    page,
+    limit,
+    ...(filter ? { bucketName: filter } : {}),
+  };
+
+  return APIinstance.get(endpoint, { params });
+};

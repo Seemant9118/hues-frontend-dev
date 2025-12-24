@@ -223,3 +223,13 @@ export const getValueForMovementType = (movementType) => {
       return '-';
   }
 };
+
+export const getQCDefectStatuses = ({
+  isShortQuantity = false,
+  isUnsatisfactory = false,
+} = {}) => {
+  return [
+    isShortQuantity && 'SHORT_QUANTITY',
+    isUnsatisfactory && 'UNSATISFACTORY',
+  ].filter(Boolean);
+};

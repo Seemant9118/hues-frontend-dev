@@ -10,6 +10,7 @@ import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import {
   DeleteProductGoods,
   GetProductGoods,
@@ -27,6 +28,7 @@ const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
 });
 
 const ViewItem = () => {
+  useMetaData('Hues! - Goods Details', 'HUES Goods Details');
   const translations = useTranslations('goods.goodDetails');
   const router = useRouter();
   const params = useParams();

@@ -15,10 +15,12 @@ import { ArrowLeft, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { useStockItemsColumns } from './stockItemColumns';
+import useMetaData from '@/hooks/useMetaData';
+import { useTransactionItemsColumns } from './transactionItemColumns';
 
 const ViewStock = () => {
-  const translations = useTranslations('stocks.stockDetails');
+  useMetaData('Hues! - Transaction Details', 'HUES Transactions Details');
+  const translations = useTranslations('transactions.transactionDetails');
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
@@ -42,7 +44,6 @@ const ViewStock = () => {
     setTab(tab);
   };
 
-  // TODO: item details fetching
   const { data: stockDetails } = useQuery({
     queryKey: [stockApis.getMaterialMovmentStock.endpointKey, params.id],
     queryFn: () => getMaterialMovementStock({ id: params.id }),
@@ -50,7 +51,6 @@ const ViewStock = () => {
     enabled: true,
   });
 
-  //   TODO: if we have grnID then show , if we have clientName then show etc
   const overviewData = {
     stockId: stockDetails?.referenceNumber || '-',
     docType: getValueForMovementType(stockDetails?.grns?.[0]?.movementType),
@@ -108,7 +108,7 @@ const ViewStock = () => {
     },
   };
 
-  const stockItemsColumns = useStockItemsColumns();
+  const stockItemsColumns = useTransactionItemsColumns();
 
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
@@ -117,7 +117,7 @@ const ViewStock = () => {
         <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
           <div className="flex items-center gap-1">
             <button
-              onClick={() => router.push(`/dashboard/inventory/stocks`)}
+              onClick={() => router.push(`/dashboard/inventory/transactions`)}
               className="rounded-sm p-2 hover:bg-gray-100"
             >
               <ArrowLeft size={16} />

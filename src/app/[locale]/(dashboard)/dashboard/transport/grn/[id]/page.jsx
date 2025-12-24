@@ -1,14 +1,19 @@
 'use client';
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
-import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import {
+  getEnterpriseId,
+  getQCDefectStatuses,
+} from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import {
   getGRN,
   previewGRN,
@@ -24,6 +29,7 @@ import { toast } from 'sonner';
 import { useGRNColumnsItems } from './useGRNColumnsItems';
 
 export default function QC() {
+  useMetaData('Hues! - GRN Details', 'HUES GRN Details');
   const translations = useTranslations('transport.grns.grnsDetails');
   const router = useRouter();
   const params = useParams();
@@ -66,6 +72,7 @@ export default function QC() {
     grnId: grnDetails?.referenceNumber,
     vendorName: iamSeller ? buyerName : sellerName,
     grnDate: moment(grnDetails?.createdAt).format('DD/MM/YYYY'),
+    defects: '',
     podId: grnDetails?.podReferenceNumber,
     deliveryDate: '-',
     EWB: grnDetails?.metaData?.invoiceDetails?.eWayBillId || '-',
@@ -76,6 +83,7 @@ export default function QC() {
       ? { vendorName: translations('overview_labels.vendorName') }
       : { vendorName: translations('overview_labels.clientName') }),
     grnDate: translations('overview_labels.grnDate'),
+    defects: translations('overview_labels.defects'),
     podId: translations('overview_labels.podId'),
     deliveryDate: translations('overview_labels.deliveryDate'),
     EWB: translations('overview_labels.EWB'),
@@ -108,6 +116,20 @@ export default function QC() {
             '--'
           )}
         </p>
+      );
+    },
+    defects: () => {
+      const statuses = getQCDefectStatuses(
+        grnDetails?.isShortQuantity,
+        grnDetails?.isUnsatisfactory,
+      );
+      if (!statuses.length) return '-';
+      return (
+        <div className="flex flex-wrap gap-2">
+          {statuses.map((status) => (
+            <ConditionalRenderingStatus key={status} status={status} isQC />
+          ))}
+        </div>
       );
     },
   };
@@ -166,14 +188,16 @@ export default function QC() {
               {translations('tabs.tab1.title')}
             </TabsTrigger>
           </TabsList>
-          <Button
-            size="sm"
-            onClick={() => {
-              router.push(`/dashboard/inventory/qc/${params.id}`);
-            }}
-          >
-            Update QC
-          </Button>
+          {!grnDetails?.isQcCompleted && (
+            <Button
+              size="sm"
+              onClick={() => {
+                router.push(`/dashboard/inventory/qc/${params.id}`);
+              }}
+            >
+              Update QC
+            </Button>
+          )}
         </section>
 
         <TabsContent value="overview">
@@ -183,7 +207,6 @@ export default function QC() {
             data={overviewData}
             labelMap={overviewLabels}
             customRender={customRender}
-            sectionClass="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full"
           />
 
           {/* Scrollable table area */}
