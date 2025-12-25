@@ -17,7 +17,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import clsx from 'clsx';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef, useState } from 'react';
 
 export default function InfiniteDataTable({
@@ -30,7 +30,7 @@ export default function InfiniteDataTable({
   currFetchedPage,
   onRowClick,
 }) {
-  const tableContainerRef = useRef();
+  const tableContainerRef = useRef(null);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
 
@@ -46,23 +46,30 @@ export default function InfiniteDataTable({
   const table = useReactTable({
     data: data || [],
     columns,
-    state: {
-      sorting,
-      columnFilters,
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    state: { sorting, columnFilters },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  const { rows } = table.getRowModel();
+
+  // Virtualizer
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 44, // fixed row height
+    overscan: 6,
+  });
+
   return (
-    <div className="overflow-hidden">
+    <div>
       <div
         ref={tableContainerRef}
         id={id}
-        className="scrollBarStyles h-[80dvh] overflow-auto rounded-sm"
+        className="infinite-datatable-scrollable-body scrollBarStyles h-[80dvh] overflow-auto rounded-sm"
       >
         <div className="inline-block min-w-full align-middle">
           <Table>
@@ -71,8 +78,8 @@ export default function InfiniteDataTable({
                 <TableRow key={hg.id}>
                   {hg.headers.map((header) => (
                     <TableHead
-                      className="shrink-0 whitespace-nowrap"
                       key={header.id}
+                      className="shrink-0 whitespace-nowrap"
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -85,29 +92,68 @@ export default function InfiniteDataTable({
             </TableHeader>
 
             <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  onClick={() => onRowClick?.(row.original)}
-                  className={clsx(
-                    'border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700',
-                    { 'cursor-pointer': onRowClick },
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="border-b">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {/* Top spacer */}
+              <TableRow aria-hidden className="pointer-events-none">
+                <TableCell
+                  colSpan={columns.length}
+                  className="border-0 bg-transparent p-0"
+                  style={{
+                    height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
+                  }}
+                />
+              </TableRow>
+
+              {/* Virtual rows */}
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const row = rows[virtualRow.index];
+                const isRead =
+                  row.original?.readTracker?.sellerIsRead ||
+                  row.original?.sellerIsRead;
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    // ref={rowVirtualizer.measureElement}
+                    className={
+                      isRead
+                        ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 hover:text-black'
+                        : 'cursor-pointer border-y border-[#A5ABBD33] bg-white font-semibold text-black hover:text-black'
+                    }
+                    onClick={
+                      onRowClick ? () => onRowClick(row.original) : undefined
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className="max-w-xl shrink-0 whitespace-nowrap px-4"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
+
+              {/* Bottom spacer */}
+              <TableRow aria-hidden className="pointer-events-none">
+                <TableCell
+                  colSpan={columns.length}
+                  className="border-0 bg-transparent p-0"
+                  style={{
+                    height:
+                      rowVirtualizer.getTotalSize() -
+                      (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                  }}
+                />
+              </TableRow>
 
               {/* Infinite scroll trigger */}
-              <TableRow>
-                {hasNextPage && (
+              {hasNextPage && (
+                <TableRow>
                   <TableCell colSpan={columns.length}>
                     <div
                       ref={loadMoreRef}
@@ -115,18 +161,16 @@ export default function InfiniteDataTable({
                     >
                       {isFetching
                         ? 'Loading more data...'
-                        : hasNextPage
-                          ? 'Scroll to load more'
-                          : 'No more data'}
+                        : 'Scroll to load more'}
                     </div>
                   </TableCell>
-                )}
-              </TableRow>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
       </div>
-      {/* Pagination footer */}
+
       {!isFetching && data?.length > 0 && (
         <DataTablePagination
           table={table}

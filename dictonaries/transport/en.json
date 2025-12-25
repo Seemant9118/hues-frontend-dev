@@ -504,7 +504,7 @@
         },
         "pods": {
             "title": "Proof of Delivery",
-            "emtpyStateComponent": {
+            "emptyStateComponent": {
                 "heading": "Manage bids, deals, and invoices—securely and digitally",
                 "subItems": {
                     "subItem1": {
