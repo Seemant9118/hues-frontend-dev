@@ -500,7 +500,7 @@
     },
     "pods": {
       "title": "डिलीवरी प्रमाण",
-      "emtpyStateComponent": {
+      "emptyStateComponent": {
         "heading": "बोली, डील और इनवॉइस को सुरक्षित और डिजिटल तरीके से प्रबंधित करें",
         "subItems": {
           "subItem1": {

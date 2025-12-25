@@ -37,7 +37,7 @@ function PODs() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const [grns, setGrns] = useState([]);
+  const [pods, setPods] = useState([]);
   const [paginationData, setPaginationData] = useState({});
 
   const podsQuery = useInfiniteQuery({
@@ -64,10 +64,10 @@ function PODs() {
     const flattened = source.pages.flatMap(
       (page) => page?.data?.data?.data || [],
     );
-    const uniqueGRNSData = Array.from(
+    const uniquePODSData = Array.from(
       new Map(flattened.map((item) => [item.id, item])).values(),
     );
-    setGrns(uniqueGRNSData);
+    setPods(uniquePODSData);
     const lastPage = source.pages[source.pages.length - 1]?.data?.data;
     setPaginationData({
       totalPages: lastPage?.totalPages,
@@ -101,7 +101,7 @@ function PODs() {
               ) : (
                 <>
                   {/* Case 1: no data → Empty stage */}
-                  {grns?.length === 0 ? (
+                  {pods?.length === 0 ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -111,7 +111,7 @@ function PODs() {
                     <InfiniteDataTable
                       id="PODs-table"
                       columns={PODsColumns}
-                      data={grns}
+                      data={pods}
                       fetchNextPage={podsQuery.fetchNextPage}
                       isFetching={podsQuery.isFetching}
                       totalPages={paginationData?.totalPages}
