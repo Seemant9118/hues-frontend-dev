@@ -301,23 +301,42 @@
             "tabs": {
                 "label": {
                     "tab1": "All",
-                    "tab2": "Accepted",
-                    "tab3": "Rejected"
+                    "tab2": "Draft",
+                    "tab3": "Posted"
                 }
             },
             "table": {
                 "header": {
+                    "debitNote_Id": "Debit Note ID",
+                    "vendors": "Vendor Name",
                     "invoice_id": "Invoice ID",
-                    "date": "Date",
-                    "vendors": "Vendors",
-                    "total_amount": "Total Amount",
-                    "status": "Status"
+                    "flags": "Issues",
+                    "claimed_amount": "Claimed Amount",
+                    "setteled_amount": "Setteled Amount",
+                    "status": "Status",
+                    "createdOn": "Created On"
                 }
             },
             "debit_notes_details": {
                 "title": {
                     "debit_notes": "Debit notes",
                     "debit_note_details": "Debit note details"
+                },
+                "overview_labels": {
+                    "debitNoteId": "Debit Note ID",
+                    "vendorName": "Vendor Name",
+                    "grnId": "GRN ID",
+                    "defects": "Defects",
+                    "invoiceId": "Invoice ID",
+                    "claimedAmount": "Claimed Amount",
+                    "setteledAmount": "Setteled Amount",
+                    "createdOn": "Created On",
+                    "status": "Status"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    }
                 },
                 "label": {
                     "date": "Date",

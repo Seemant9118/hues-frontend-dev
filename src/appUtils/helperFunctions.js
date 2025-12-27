@@ -80,12 +80,16 @@ export const getStylesForSelectComponent = () => {
 };
 
 // formatAmount in Indian Rupee currency
-export const formattedAmount = (amount) => {
-  const formattedAmount = new Intl.NumberFormat('en-IN', {
+export const formattedAmount = (amount, fallback = '-') => {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) return fallback;
+
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-  }).format(amount);
-  return formattedAmount;
+    maximumFractionDigits: 2,
+  }).format(value);
 };
 
 // fn for capitalization
@@ -224,11 +228,15 @@ export const getValueForMovementType = (movementType) => {
   }
 };
 
-export const getQCDefectStatuses = ({
-  isShortQuantity = false,
-  isUnsatisfactory = false,
-} = {}) => {
+export const getQCDefectStatuses = (data) => {
+  const {
+    isShortQuantity = false,
+    isUnsatisfactory = false,
+    isShortDelivery = false,
+  } = data || {};
+
   return [
+    isShortDelivery && 'SHORT_QUANTITY',
     isShortQuantity && 'SHORT_QUANTITY',
     isUnsatisfactory && 'UNSATISFACTORY',
   ].filter(Boolean);

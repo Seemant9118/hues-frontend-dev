@@ -17,6 +17,7 @@ import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useStocksColumns } from './stockColumns';
 
 const PAGE_LIMIT = 10;
@@ -28,7 +29,7 @@ const Stocks = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-
+  const router = useRouter();
   const translations = useTranslations('stocks');
   const keys = [
     'stocks.emptyStateComponent.subItems.subItem1',
@@ -98,6 +99,10 @@ const Stocks = () => {
 
   const stocksColumns = useStocksColumns();
 
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/stocks/${row.inventoryid}`);
+  };
+
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (
@@ -154,6 +159,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
@@ -180,6 +186,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
@@ -206,6 +213,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
@@ -232,6 +240,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
@@ -258,6 +267,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>
@@ -284,6 +294,7 @@ const Stocks = () => {
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>

@@ -483,7 +483,8 @@
                     "invoiceId": "Invoice ID",
                     "invoiceDate": "Invoice Date",
                     "deliveryDate": "Delivery  Date",
-                    "EWB": "E-Way Bill ID"
+                    "EWB": "E-Way Bill ID",
+                    "debitNote":"Debit Note ID"
                 },
                 "tabs": {
                     "tab1": {

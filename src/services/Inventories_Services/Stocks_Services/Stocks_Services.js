@@ -25,3 +25,21 @@ export const getStocksItems = ({ enterpriseId, filter, page, limit }) => {
 
   return APIinstance.get(endpoint, { params });
 };
+
+export const getStockDetails = ({
+  enterpriseId,
+  inventoryItemId,
+  page,
+  limit,
+}) => {
+  const endpoint = stockApis.getStockDetails.endpoint
+    .replace(':enterpriseId', enterpriseId)
+    .replace(':inventoryItemId', inventoryItemId);
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+  };
+
+  return APIinstance.get(endpoint, { params });
+};

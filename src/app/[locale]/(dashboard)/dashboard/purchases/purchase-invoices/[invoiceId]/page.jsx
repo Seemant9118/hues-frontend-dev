@@ -4,8 +4,6 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
-import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
-import RaisedDebitNoteModal from '@/components/Modals/RaisedDebitNoteModal';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
@@ -30,13 +28,13 @@ import {
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Eye, MoveUpRight } from 'lucide-react';
-import moment from 'moment';
+import { Download, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import emptyImg from '../../../../../../../../public/Empty.png';
+import { debitNoteColumns } from './debitNoteColumns';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
 
 const ViewInvoice = () => {
@@ -156,11 +154,16 @@ const ViewInvoice = () => {
     <ConditionalRenderingStatus status={debitNoteRawStatus} />
   ) : null;
 
-  const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
+  const paymentsColumns = usePaymentColumns();
+  const debitNColumns = debitNoteColumns();
 
   const onRowClick = (row) => {
     router.push(`/dashboard/purchases/purchase-payments/${row.paymentId}`);
+  };
+
+  const onDebitNoteClick = (row) => {
+    router.push(`/dashboard/purchases/purchase-debitNotes/${row.id}`);
   };
 
   return (
@@ -180,7 +183,7 @@ const ViewInvoice = () => {
               </div>
               <div className="flex gap-2">
                 {/* raised debit note CTA */}
-                <ProtectedWrapper
+                {/* <ProtectedWrapper
                   permissionCode={'permission:purchase-debit-note-action'}
                 >
                   {!isPaymentAdvicing && (
@@ -190,7 +193,7 @@ const ViewInvoice = () => {
                       totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
                     />
                   )}
-                </ProtectedWrapper>
+                </ProtectedWrapper> */}
 
                 {!isPaymentAdvicing &&
                   (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -332,86 +335,13 @@ const ViewInvoice = () => {
                 <TabsContent value="debitNotes">
                   <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
                     {isDebitNoteLoading && <Loading />}
-                    {!isDebitNoteLoading &&
-                      debitNotes?.length > 0 &&
-                      debitNotes?.map((debitNote) => {
-                        return (
-                          <div
-                            key={debitNote?.id}
-                            className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-customShadow"
-                          >
-                            <section className="flex items-center justify-between">
-                              <div className="flex w-full flex-col gap-4">
-                                <div className="flex justify-between">
-                                  <h1 className="flex items-center gap-4">
-                                    <span className="text-sm font-bold">
-                                      {debitNote?.referenceNumber}
-                                    </span>
-                                    <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
-                                      {capitalize(debitNote?.status)}
-                                    </span>
-                                  </h1>
-
-                                  <p
-                                    onClick={() => {
-                                      router.push(
-                                        `/dashboard/purchases/purchase-debitNotes/${debitNote?.id}`,
-                                      );
-                                    }}
-                                    className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline"
-                                  >
-                                    {translations(
-                                      'tabs.content.tab3.label.view_debit_notes',
-                                    )}
-                                    <MoveUpRight size={12} />
-                                  </p>
-                                </div>
-
-                                <div className="flex gap-10">
-                                  <h1 className="text-sm">
-                                    <span className="font-bold text-[#ABB0C1]">
-                                      {translations(
-                                        'tabs.content.tab3.label.date',
-                                      )}{' '}
-                                      :{' '}
-                                    </span>
-                                    <span className="text-[#363940]">
-                                      {moment(debitNote?.createdAt).format(
-                                        'DD-MM-YYYY',
-                                      )}
-                                    </span>
-                                  </h1>
-                                  <h1 className="text-sm">
-                                    <span className="font-bold text-[#ABB0C1]">
-                                      {translations(
-                                        'tabs.content.tab3.label.total_amount',
-                                      )}
-                                      :{' '}
-                                    </span>
-                                    <span className="font-bold text-[#363940]">
-                                      {formattedAmount(debitNote?.amount)}
-                                    </span>
-                                    <span> (inc. GST)</span>
-                                  </h1>
-                                </div>
-                                <div className="flex gap-2">
-                                  <h1 className="text-sm">
-                                    <span className="font-bold text-[#ABB0C1]">
-                                      {translations(
-                                        'tabs.content.tab3.label.reason',
-                                      )}
-                                      :{' '}
-                                    </span>
-                                    <span className="font-bold text-[#363940]">
-                                      {debitNote?.remark}
-                                    </span>
-                                  </h1>
-                                </div>
-                              </div>
-                            </section>
-                          </div>
-                        );
-                      })}
+                    {!isDebitNoteLoading && debitNotes?.length > 0 && (
+                      <DataTable
+                        columns={debitNColumns}
+                        data={debitNotes || []}
+                        onRowClick={onDebitNoteClick}
+                      />
+                    )}
                   </div>
                   {!isDebitNoteLoading && debitNotes?.length === 0 && (
                     <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">

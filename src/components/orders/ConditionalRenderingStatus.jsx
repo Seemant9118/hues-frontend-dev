@@ -141,6 +141,8 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
     case 'NOT_RAISED':
     case 'DRAFT':
       return { text: t(status), ...STATUS_UI.WARNING };
+    case 'SENT':
+      return { text: t(status), ...STATUS_UI.INFO };
 
     case 'OFFER_SENT':
     case 'OFFER_RECEIVED':
@@ -165,6 +167,10 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
 
     case 'READY_FOR_DISPATCH':
       return { text: t(status), ...STATUS_UI.INFO };
+    case 'DEBIT':
+      return { text: t(status), ...STATUS_UI.ERROR };
+    case 'CREDIT':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
 
     case true:
       return { text: 'Active', ...STATUS_UI.SUCCESS };
