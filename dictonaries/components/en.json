@@ -1155,6 +1155,9 @@
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
             "DRAFT": "Draft",
+            "DEBIT":"Debit",
+            "CREDIT":"Credit",
+            "SENT": "Sent",
             "IN_TRANSIT": "In Transit",
             "READY_FOR_DISPATCH": " Ready for Dispatch"
         }

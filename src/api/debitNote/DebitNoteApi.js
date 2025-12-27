@@ -27,6 +27,10 @@ export const DebitNoteApi = {
     endpoint: `/order/debitnote/getdebitnotesbyinvoiceid/`,
     endpointKey: 'get_debit_note_by_invoiceId',
   },
+  updateDebitNote: {
+    endpoint: `/order/debitnote/update/`,
+    endpointKey: 'update_debit_note',
+  },
 
   // comments
   createComments: {

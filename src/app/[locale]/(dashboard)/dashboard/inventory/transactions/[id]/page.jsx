@@ -18,7 +18,7 @@ import React, { useState } from 'react';
 import useMetaData from '@/hooks/useMetaData';
 import { useTransactionItemsColumns } from './transactionItemColumns';
 
-const ViewStock = () => {
+const ViewTransaction = () => {
   useMetaData('Hues! - Transaction Details', 'HUES Transactions Details');
   const translations = useTranslations('transactions.transactionDetails');
   const router = useRouter();
@@ -29,13 +29,13 @@ const ViewStock = () => {
     {
       id: 1,
       name: translations('title1'),
-      path: '/dashboard/inventory/stocks',
+      path: '/dashboard/inventory/transactions',
       show: true, // Always show
     },
     {
       id: 2,
       name: translations('title2'),
-      path: `/dashboard/inventory/stocks/${params.id}`,
+      path: `/dashboard/inventory/transactions/${params.id}`,
       show: true, // Always show
     },
   ];
@@ -167,4 +167,4 @@ const ViewStock = () => {
   );
 };
 
-export default ViewStock;
+export default ViewTransaction;

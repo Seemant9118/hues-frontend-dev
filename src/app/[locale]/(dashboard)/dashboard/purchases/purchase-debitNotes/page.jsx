@@ -63,10 +63,10 @@ const PurchaseDebitNotes = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = {};
-    if (tab === 'accepted') {
-      newFilterData = { status: 'ACCEPTED' };
-    } else if (tab === 'rejected') {
-      newFilterData = { status: 'REJECTED' };
+    if (tab === 'draft') {
+      newFilterData = { status: 'DRAFT' };
+    } else if (tab === 'posted') {
+      newFilterData = { status: 'POSTED' };
     }
 
     setFilterData(newFilterData);
@@ -235,10 +235,10 @@ const PurchaseDebitNotes = () => {
                   <TabsTrigger value="all">
                     {translations('tabs.label.tab1')}
                   </TabsTrigger>
-                  <TabsTrigger value="accepted">
+                  <TabsTrigger value="draft">
                     {translations('tabs.label.tab2')}
                   </TabsTrigger>
-                  <TabsTrigger value="rejected">
+                  <TabsTrigger value="posted">
                     {translations('tabs.label.tab3')}
                   </TabsTrigger>
                 </TabsList>
@@ -267,14 +267,11 @@ const PurchaseDebitNotes = () => {
                 )}
               </TabsContent>
 
-              <TabsContent
-                value="accepted"
-                className="flex-grow overflow-hidden"
-              >
+              <TabsContent value="draft" className="flex-grow overflow-hidden">
                 {isDebitNotesLoading && <Loading />}
                 {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
                   <PurchaseTable
-                    id="purchase-debit-note-accepted"
+                    id="purchase-debit-note-draft"
                     columns={debitNotesColumns}
                     data={debitNotesListing}
                     fetchNextPage={fetchNextPage}
@@ -293,14 +290,11 @@ const PurchaseDebitNotes = () => {
                 )}
               </TabsContent>
 
-              <TabsContent
-                value="rejected"
-                className="flex-grow overflow-hidden"
-              >
+              <TabsContent value="posted" className="flex-grow overflow-hidden">
                 {isDebitNotesLoading && <Loading />}
                 {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
                   <PurchaseTable
-                    id="purchase-debit-note-rejected"
+                    id="purchase-debit-note-posted"
                     columns={debitNotesColumns}
                     data={debitNotesListing}
                     fetchNextPage={fetchNextPage}
