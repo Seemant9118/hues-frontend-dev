@@ -126,9 +126,12 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
     },
 
     {
-      accessorKey: 'flags',
+      accessorKey: 'defects',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('flags')} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('defects')}
+        />
       ),
       cell: ({ row }) => {
         const statuses = getQCDefectStatuses(row.original);

@@ -142,6 +142,7 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
     case 'DRAFT':
       return { text: t(status), ...STATUS_UI.WARNING };
     case 'SENT':
+    case 'RAISED':
       return { text: t(status), ...STATUS_UI.INFO };
 
     case 'OFFER_SENT':

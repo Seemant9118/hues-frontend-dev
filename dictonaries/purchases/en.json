@@ -209,7 +209,9 @@
                     "label": {
                         "tab1": "Overview",
                         "tab2": "Payment Advices",
-                        "tab3": "Debit Notes"
+                        "tab3": "GRNs",
+                        "tab4": "Debit Notes"
+
                     },
                     "content": {
                         "tab1": {
@@ -237,6 +239,12 @@
                             }
                         },
                         "tab3": {
+                            "emtpyStateComponent": {
+                                "title": "No GRNs yet",
+                                "para": "Looks like you haven’t get any GRNs yet"
+                            }
+                        },
+                        "tab4": {
                             "label": {
                                 "view_debit_notes": "View Debit Note",
                                 "date": "Date",
@@ -310,9 +318,9 @@
                     "debitNote_Id": "Debit Note ID",
                     "vendors": "Vendor Name",
                     "invoice_id": "Invoice ID",
-                    "flags": "Issues",
+                    "defects": "Defects",
                     "claimed_amount": "Claimed Amount",
-                    "setteled_amount": "Setteled Amount",
+                    "setteled_amount": "Settled Amount",
                     "status": "Status",
                     "createdOn": "Created On"
                 }
@@ -329,7 +337,7 @@
                     "defects": "Defects",
                     "invoiceId": "Invoice ID",
                     "claimedAmount": "Claimed Amount",
-                    "setteledAmount": "Setteled Amount",
+                    "setteledAmount": "Settled Amount",
                     "createdOn": "Created On",
                     "status": "Status"
                 },
