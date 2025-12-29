@@ -420,7 +420,8 @@
                 "type": "प्रकार",
                 "payment_status": "भुगतान स्थिति",
                 "total_amount": "कुल राशि",
-                "debit_notes": "डेबिट नोट्स"
+                "debit_notes": "डेबिट नोट्स",
+                "defects": "खामियाँ"
             }
         },
         "past_invoices": {

@@ -242,13 +242,14 @@ export default function EditDebitNoteItem({
             <div>
               <p className="text-sm text-muted-foreground">SKU ID</p>
               <p className="font-medium">
-                {item?.metaData?.productDetails?.skuId || '-'}
+                {item?.invoiceItem?.orderItemId?.productDetails?.skuId || '-'}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Item Name</p>
               <p className="font-medium">
-                {item?.metaData?.productDetails?.productName || '-'}
+                {item?.invoiceItem?.orderItemId?.productDetails?.productName ||
+                  '-'}
               </p>
             </div>
           </div>

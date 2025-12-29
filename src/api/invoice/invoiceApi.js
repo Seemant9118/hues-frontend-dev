@@ -59,4 +59,9 @@ export const invoiceApi = {
     endpoint: `/order/accept`,
     endpointKey: 'accept_order',
   },
+  // 13.  getItemsToCreateDebitNote
+  getItemsToCreateDebitNote: {
+    endpoint: `/order/invoice/defective-items/`,
+    endpointKey: 'get_items_to_create_debit_note',
+  },
 };

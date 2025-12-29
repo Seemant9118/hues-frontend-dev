@@ -83,9 +83,8 @@ const ViewDebitNote = () => {
   const overviewData = {
     debitNoteId: debitNoteDetails?.referenceNumber,
     vendorName: debitNoteDetails?.toEnterprise?.name,
-    grnId: debitNoteDetails?.grn?.referenceNumber,
-    defects: '',
     invoiceId: debitNoteDetails?.invoice.referenceNumber,
+    defects: '',
     claimedAmount: formattedAmount(debitNoteDetails?.amount),
     setteledAmount: formattedAmount(debitNoteDetails?.setteledAmount),
     createdOn: moment(debitNoteDetails?.createdAt).format('DD/MM/YYYY'),
@@ -96,9 +95,8 @@ const ViewDebitNote = () => {
     ...(!isSeller
       ? { vendorName: translations('overview_labels.vendorName') }
       : { vendorName: translations('overview_labels.clientName') }),
-    grnId: translations('overview_labels.grnId'),
-    defects: translations('overview_labels.defects'),
     invoiceId: translations('overview_labels.invoiceId'),
+    defects: translations('overview_labels.defects'),
     claimedAmount: translations('overview_labels.claimedAmount'),
     setteledAmount: translations('overview_labels.setteledAmount'),
     createdOn: translations('overview_labels.createdOn'),
@@ -106,34 +104,6 @@ const ViewDebitNote = () => {
   };
 
   const customRender = {
-    grnId: () => {
-      const grnId = debitNoteDetails?.grn?.id;
-      const grnRef = debitNoteDetails?.grn?.referenceNumber;
-
-      return (
-        <p
-          className={`flex items-center gap-1 ${
-            grnId
-              ? 'cursor-pointer hover:text-primary hover:underline'
-              : 'cursor-default text-muted-foreground'
-          }`}
-          onClick={() => {
-            if (grnId) {
-              router.push(`/dashboard/transport/grn/${grnId}`);
-            }
-          }}
-        >
-          {grnRef ? (
-            <>
-              {grnRef}
-              <MoveUpRight size={14} />
-            </>
-          ) : (
-            '--'
-          )}
-        </p>
-      );
-    },
     defects: () => {
       const statuses = getQCDefectStatuses(debitNoteDetails);
 

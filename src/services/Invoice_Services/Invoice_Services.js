@@ -65,3 +65,9 @@ export const previewDirectInvoice = (data) => {
 export const acceptOrder = (data) => {
   return APIinstance.put(invoiceApi.acceptOrder.endpoint, data);
 };
+
+export const getItemsToCreateDebitNote = ({ id }) => {
+  return APIinstance.get(
+    `${invoiceApi.getItemsToCreateDebitNote.endpoint}${id}`,
+  );
+};
