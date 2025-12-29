@@ -10,13 +10,6 @@ import { SquarePen } from 'lucide-react';
 
 export const useDebitNoteColumns = ({ onEditLine, isDebitNotePosted }) => {
   return [
-    /* Sr. */
-    {
-      id: 'sr',
-      header: () => <span>Sr.</span>,
-      cell: ({ row }) => row.index + 1,
-    },
-
     /* Item / Service */
     {
       accessorKey: 'itemName',
@@ -51,14 +44,40 @@ export const useDebitNoteColumns = ({ onEditLine, isDebitNotePosted }) => {
 
     /* Quantity */
     {
-      accessorKey: 'quantity',
+      accessorKey: 'refundQuantity',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Quantity" />
+        <DataTableColumnHeader column={column} title="Refund Qty" />
       ),
-      // eslint-disable-next-line consistent-return
       cell: ({ row }) => {
-        const { replacementQuantity } = row.original;
-        return replacementQuantity || '-';
+        const { buyerExpectation, refundQuantity } = row.original;
+
+        if (
+          buyerExpectation === 'REQUEST_REFUND' ||
+          buyerExpectation === 'REQUEST_BOTH'
+        ) {
+          return refundQuantity || '-';
+        }
+
+        return '-';
+      },
+    },
+
+    {
+      accessorKey: 'replacementQuantity',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Replacement Qty" />
+      ),
+      cell: ({ row }) => {
+        const { buyerExpectation, replacementQuantity } = row.original;
+
+        if (
+          buyerExpectation === 'REQUEST_REPLACEMENT' ||
+          buyerExpectation === 'REQUEST_BOTH'
+        ) {
+          return replacementQuantity || '-';
+        }
+
+        return '-';
       },
     },
 

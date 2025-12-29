@@ -6,6 +6,7 @@ import {
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import CreateDebitNote from '@/components/debitNote/CreateDebitNote';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -16,6 +17,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import {
   getGRN,
+  getItemsToCreateDebitNote,
   previewGRN,
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
@@ -26,7 +28,6 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { raisedDebitNote } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { useGRNColumnsItems } from './useGRNColumnsItems';
 
 export default function GRN() {
@@ -34,8 +35,10 @@ export default function GRN() {
   const translations = useTranslations('transport.grns.grnsDetails');
   const router = useRouter();
   const params = useParams();
-  const [tabs, setTabs] = useState('overview');
   const enterpriseId = getEnterpriseId();
+  const [tabs, setTabs] = useState('overview');
+  const [isCreatingDebitNote, setIsCreatingDebitNote] = useState(false);
+  const [showAllDebitNotes, setShowAllDebitNotes] = useState(false);
 
   const grnsBreadCrumbs = [
     {
@@ -56,6 +59,15 @@ export default function GRN() {
     setTabs(tab);
   };
 
+  // fetch items to create debit note
+  const { data: itemsToCreateDebitNote } = useQuery({
+    queryKey: [deliveryProcess.getItemsToCreateDebitNote.endpointKey],
+    queryFn: () => getItemsToCreateDebitNote({ id: params.id }),
+    select: (data) => data.data.data,
+    enabled: isCreatingDebitNote,
+  });
+
+  // fetch grnDetails
   const { data: grnDetails } = useQuery({
     queryKey: [deliveryProcess.getGRN.endpointKey],
     queryFn: () => getGRN({ id: params.id }),
@@ -75,7 +87,7 @@ export default function GRN() {
     grnDate: moment(grnDetails?.createdAt).format('DD/MM/YYYY'),
     defects: '',
     podId: grnDetails?.podReferenceNumber,
-    deliveryDate: '-',
+    invoiceId: grnDetails?.metaData?.invoiceDetails?.referenceNumber || '-',
     EWB: grnDetails?.metaData?.invoiceDetails?.eWayBillId || '-',
     debitNote: grnDetails?.metaData?.debitNoteDetails?.referenceNumber || '-',
   };
@@ -87,7 +99,7 @@ export default function GRN() {
     grnDate: translations('overview_labels.grnDate'),
     defects: translations('overview_labels.defects'),
     podId: translations('overview_labels.podId'),
-    deliveryDate: translations('overview_labels.deliveryDate'),
+    invoiceId: translations('overview_labels.invoiceId'),
     EWB: translations('overview_labels.EWB'),
     debitNote: translations('overview_labels.debitNote'),
   };
@@ -121,6 +133,36 @@ export default function GRN() {
         </p>
       );
     },
+    invoiceId: () => {
+      const invoiceId = grnDetails?.metaData?.invoiceDetails?.id;
+      const invoiceRef = grnDetails?.metaData?.invoiceDetails?.referenceNumber;
+
+      return (
+        <p
+          className={`flex items-center gap-1 ${
+            invoiceId
+              ? 'cursor-pointer hover:text-primary hover:underline'
+              : 'cursor-default text-muted-foreground'
+          }`}
+          onClick={() => {
+            if (invoiceId) {
+              router.push(
+                `/dashboard/purchases/purchase-invoices/${invoiceId}`,
+              );
+            }
+          }}
+        >
+          {invoiceRef ? (
+            <>
+              {invoiceRef}
+              <MoveUpRight size={14} />
+            </>
+          ) : (
+            '--'
+          )}
+        </p>
+      );
+    },
     defects: () => {
       const statuses = getQCDefectStatuses(grnDetails);
       if (!statuses.length) return '-';
@@ -133,34 +175,60 @@ export default function GRN() {
       );
     },
     debitNote: () => {
-      const debitNoteId = grnDetails?.metaData?.debitNoteDetails?.id;
-      const debitNoteRef =
-        grnDetails?.metaData?.debitNoteDetails?.referenceNumber;
+      const debitNotes = grnDetails?.debitNotes || [];
+
+      if (!debitNotes.length) {
+        return <span className="text-muted-foreground">--</span>;
+      }
+
+      const firstNote = debitNotes[0];
+      const remainingNotes = debitNotes.slice(1);
 
       return (
-        <p
-          className={`flex items-center gap-1 ${
-            debitNoteId
-              ? 'cursor-pointer hover:text-primary hover:underline'
-              : 'cursor-default text-muted-foreground'
-          }`}
-          onClick={() => {
-            if (debitNoteId) {
+        <div className="flex flex-col gap-1">
+          {/* First debit note (always visible) */}
+          <p
+            className="flex cursor-pointer items-center gap-1 hover:text-primary hover:underline"
+            onClick={() =>
               router.push(
-                `/dashboard/purchases/purchase-debitNotes/${debitNoteId}`,
-              );
+                `/dashboard/purchases/purchase-debitNotes/${firstNote.id}`,
+              )
             }
-          }}
-        >
-          {debitNoteRef ? (
-            <>
-              {debitNoteRef}
-              <MoveUpRight size={14} />
-            </>
-          ) : (
-            '--'
+          >
+            {firstNote.referenceNumber}
+            <MoveUpRight size={14} />
+          </p>
+
+          {/* Remaining debit notes (conditionally rendered) */}
+          {showAllDebitNotes &&
+            remainingNotes.map((note) => (
+              <p
+                key={note.id}
+                className="flex cursor-pointer items-center gap-1 text-muted-foreground hover:text-primary hover:underline"
+                onClick={() =>
+                  router.push(
+                    `/dashboard/purchases/purchase-debitNotes/${note.id}`,
+                  )
+                }
+              >
+                {note.referenceNumber}
+                <MoveUpRight size={12} />
+              </p>
+            ))}
+
+          {/* Show more / Show less toggle */}
+          {remainingNotes.length > 0 && (
+            <button
+              type="button"
+              className="w-fit text-xs text-primary underline"
+              onClick={() => setShowAllDebitNotes((prev) => !prev)}
+            >
+              {showAllDebitNotes
+                ? 'Show less'
+                : `+${remainingNotes.length} more`}
+            </button>
           )}
-        </p>
+        </div>
       );
     },
   };
@@ -186,30 +254,6 @@ export default function GRN() {
         id: params.id,
       });
     }
-  };
-
-  // create debit note mutation
-  const createDebitNoteMutation = useMutation({
-    mutationFn: raisedDebitNote,
-    onSuccess: (res) => {
-      toast.success('Debit Note Created');
-      router.push(
-        `/dashboard/purchases/purchase-debitNotes/${res.data.data.debitNote.id}`,
-      );
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
-
-  const handleCreateDebitNote = () => {
-    // 1. payload
-    const payload = {
-      grnId: grnDetails.id,
-    };
-
-    // 2. call create debit note API here
-    createDebitNoteMutation.mutate(payload);
   };
 
   const grnItemsColumns = useGRNColumnsItems();
@@ -255,10 +299,10 @@ export default function GRN() {
                 Update QC
               </Button>
             )}
-            {grnDetails?.isQcCompleted &&
-              (grnDetails?.isShortQuantity || grnDetails?.isUnsatisfactory) &&
-              !grnDetails?.metaData?.debitNoteDetails?.referenceNumber && (
-                <Button size="sm" onClick={handleCreateDebitNote}>
+
+            {!grnDetails?.creditDebitNoteCreated &&
+              (grnDetails?.isShortQuantity || grnDetails?.isUnsatisfactory) && (
+                <Button size="sm" onClick={() => setIsCreatingDebitNote(true)}>
                   Create Debit Note
                 </Button>
               )}
@@ -282,6 +326,14 @@ export default function GRN() {
               data={grnDetails?.id ? grnDetails?.items : []}
             />
           </div>
+
+          {/* Create debit note modal */}
+          <CreateDebitNote
+            open={isCreatingDebitNote}
+            onOpenChange={setIsCreatingDebitNote}
+            data={itemsToCreateDebitNote || []}
+            id={params.id}
+          />
         </TabsContent>
       </Tabs>
     </Wrapper>

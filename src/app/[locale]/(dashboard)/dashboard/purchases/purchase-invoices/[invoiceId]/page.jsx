@@ -1,6 +1,7 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
@@ -12,6 +13,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNewInvoice from '@/components/payments/MakePaymentNewInvoice';
 import { usePaymentColumns } from '@/components/payments/paymentColumns';
 import { DataTable } from '@/components/table/data-table';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,13 +23,14 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { getGRNs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import {
   getDocument,
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Download, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -36,6 +39,9 @@ import { useEffect, useState } from 'react';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { debitNoteColumns } from './debitNoteColumns';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
+import { useGrnColumns } from '../../../transport/grn/GRNColumns';
+
+const PAGE_LIMIT = 10;
 
 const ViewInvoice = () => {
   useMetaData('Hues! - Purchase Invoice Details', 'HUES INVOICES'); // dynamic title
@@ -49,7 +55,8 @@ const ViewInvoice = () => {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
   const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
-
+  const [grns, setGrns] = useState(null);
+  const [paginationData, setPaginationData] = useState(false);
   const invoiceOrdersBreadCrumbs = [
     {
       id: 1,
@@ -132,6 +139,44 @@ const ViewInvoice = () => {
     enabled: tab === 'payment',
   });
 
+  // fetch grns for invoice
+  const grnsQuery = useInfiniteQuery({
+    queryKey: [deliveryProcess.getGRNs.endpointKey],
+    queryFn: async ({ pageParam = 1 }) => {
+      return getGRNs({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        invoiceId: params.invoiceId,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    staleTime: Infinity, // data never becomes stale
+    refetchOnMount: false, // don’t refetch on remount
+    refetchOnWindowFocus: false, // already correct
+    enabled: tab === 'grns',
+  });
+
+  useEffect(() => {
+    const source = grnsQuery.data;
+    if (!source) return;
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.data || [],
+    );
+    const uniqueGRNSData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+    setGrns(uniqueGRNSData);
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: Number(lastPage?.totalPages),
+      currFetchedPage: Number(lastPage?.page),
+    });
+  }, [grnsQuery.data]);
+
   // fetch debitNotes of invoice
   const { isLoading: isDebitNoteLoading, data: debitNotes } = useQuery({
     queryKey: [
@@ -156,6 +201,7 @@ const ViewInvoice = () => {
 
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
   const paymentsColumns = usePaymentColumns();
+  const GRNColumns = useGrnColumns();
   const debitNColumns = debitNoteColumns();
 
   const onRowClick = (row) => {
@@ -164,6 +210,10 @@ const ViewInvoice = () => {
 
   const onDebitNoteClick = (row) => {
     router.push(`/dashboard/purchases/purchase-debitNotes/${row.id}`);
+  };
+
+  const onGRNClick = (row) => {
+    router.push(`/dashboard/transport/grn/${row.id}`);
   };
 
   return (
@@ -270,8 +320,11 @@ const ViewInvoice = () => {
                   <TabsTrigger value="payment">
                     {translations('tabs.label.tab2')}
                   </TabsTrigger>
-                  <TabsTrigger value="debitNotes">
+                  <TabsTrigger value="grns">
                     {translations('tabs.label.tab3')}
+                  </TabsTrigger>
+                  <TabsTrigger value="debitNotes">
+                    {translations('tabs.label.tab4')}
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview">
@@ -332,8 +385,40 @@ const ViewInvoice = () => {
                     </div>
                   )}
                 </TabsContent>
+                <TabsContent value="grns">
+                  <div className="scrollBarStyles flex flex-col gap-4 overflow-auto">
+                    {grnsQuery?.isLoading && <Loading />}
+                    {!grnsQuery?.isLoading && grns?.length > 0 && (
+                      <InfiniteDataTable
+                        id="grns-table-for-invoice"
+                        columns={GRNColumns}
+                        data={grns}
+                        fetchNextPage={grnsQuery.fetchNextPage}
+                        isFetching={grnsQuery.isFetching}
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onGRNClick}
+                      />
+                    )}
+                  </div>
+                  {!grnsQuery?.isLoading && grns?.length === 0 && (
+                    <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                      <Image src={emptyImg} alt="emptyIcon" />
+                      <p className="font-bold">
+                        {translations(
+                          'tabs.content.tab3.emtpyStateComponent.title',
+                        )}
+                      </p>
+                      <p className="max-w-96 text-center">
+                        {translations(
+                          'tabs.content.tab3.emtpyStateComponent.para',
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
                 <TabsContent value="debitNotes">
-                  <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
+                  <div className="scrollBarStyles flex flex-col gap-4 overflow-auto">
                     {isDebitNoteLoading && <Loading />}
                     {!isDebitNoteLoading && debitNotes?.length > 0 && (
                       <DataTable
@@ -348,12 +433,12 @@ const ViewInvoice = () => {
                       <Image src={emptyImg} alt="emptyIcon" />
                       <p className="font-bold">
                         {translations(
-                          'tabs.content.tab3.emtpyStateComponent.title',
+                          'tabs.content.tab4.emtpyStateComponent.title',
                         )}
                       </p>
                       <p className="max-w-96 text-center">
                         {translations(
-                          'tabs.content.tab3.emtpyStateComponent.para',
+                          'tabs.content.tab4.emtpyStateComponent.para',
                         )}
                       </p>
                     </div>

@@ -55,7 +55,7 @@ export const useGrnColumns = () => {
     {
       accessorKey: 'flags',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="QC Issues" />
+        <DataTableColumnHeader column={column} title="Defects" />
       ),
       cell: ({ row }) => {
         const statuses = getQCDefectStatuses(row.original);

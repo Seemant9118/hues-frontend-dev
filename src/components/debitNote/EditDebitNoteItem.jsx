@@ -41,7 +41,7 @@ const SEVERITY_INDICATOR = {
 
 const DEFAULT_STATE = {
   buyerExpectation: EXPECTATIONS.REFUND,
-  severityIndicator: SEVERITY_INDICATOR.MINOR,
+  refundQuantity: 0,
   refundAmount: 0,
   replacementQty: 0,
   internalRemark: '',
@@ -68,6 +68,9 @@ export default function EditDebitNoteItem({
 
   const statuses = item ? getQCDefectStatuses(item) : [];
 
+  const unitPrice = Number(item?.unitPrice || 0);
+  const maxQuantity = Number(item?.maxQuantity || 0);
+  const totalDefectQty = maxQuantity;
   // amount calculation
   const refundAmount = toNumber(form.refundAmount);
   const cgstRate = toNumber(item?.cgstDetails?.rate);
@@ -79,13 +82,65 @@ export default function EditDebitNoteItem({
 
   const totalClaimed = refundAmount + cgst + sgst + igst;
 
-  const handleReplacementQtyChange = (value) => {
-    const qty = Number(value) || 0;
-    const maxQty = Number(item?.maxQuantity || 0);
+  const handleRefundQtyChange = (value) => {
+    const qty = Math.max(0, Number(value) || 0);
+    const cappedQty = Math.min(qty, totalDefectQty);
 
-    setForm((p) => ({
-      ...p,
-      replacementQty: Math.min(qty, maxQty),
+    if (form.buyerExpectation === EXPECTATIONS.REFUND) {
+      setForm((prev) => ({
+        ...prev,
+        refundQuantity: cappedQty,
+        refundAmount: cappedQty * unitPrice,
+        replacementQty: 0,
+      }));
+      return;
+    }
+
+    if (form.buyerExpectation === EXPECTATIONS.BOTH) {
+      const remaining = totalDefectQty - cappedQty;
+
+      setForm((prev) => ({
+        ...prev,
+        refundQuantity: cappedQty,
+        replacementQty: remaining,
+        refundAmount: cappedQty * unitPrice,
+      }));
+    }
+  };
+
+  const handleReplacementQtyChange = (value) => {
+    const qty = Math.max(0, Number(value) || 0);
+    const cappedQty = Math.min(qty, totalDefectQty);
+
+    if (form.buyerExpectation === EXPECTATIONS.REPLACEMENT) {
+      setForm((prev) => ({
+        ...prev,
+        replacementQty: cappedQty,
+        refundQuantity: 0,
+        refundAmount: 0,
+      }));
+      return;
+    }
+
+    if (form.buyerExpectation === EXPECTATIONS.BOTH) {
+      const remaining = totalDefectQty - cappedQty;
+
+      setForm((prev) => ({
+        ...prev,
+        replacementQty: cappedQty,
+        refundQuantity: remaining,
+        refundAmount: remaining * unitPrice,
+      }));
+    }
+  };
+
+  const handleRefundAmountChange = (value) => {
+    const amount = Math.max(0, Number(value) || 0);
+    const maxAmount = form.refundQuantity * unitPrice;
+
+    setForm((prev) => ({
+      ...prev,
+      refundAmount: Math.min(amount, maxAmount),
     }));
   };
 
@@ -100,17 +155,17 @@ export default function EditDebitNoteItem({
     if (open && item) {
       setForm({
         buyerExpectation: item?.buyerExpectation || EXPECTATIONS.REFUND,
-        severityIndicator:
-          item?.metaData?.severityIndicator || SEVERITY_INDICATOR.MINOR,
+        severityIndicator: item?.metaData?.severityIndicator || '',
+        refundQuantity: item?.refundQuantity || 0,
         refundAmount: item?.amount || 0,
-        replacementQty: item?.replacementQuantity,
+        replacementQty: item?.replacementQuantity || 0,
         internalRemark: item?.metaData?.internalRemark || '',
       });
     }
   }, [open, item]);
 
   const isSaveDisabled =
-    !form.refundAmount && !form.replacementQuantity && !form.internalRemark;
+    !form.refundQuantity && !form.replacementQty && !form.internalRemark;
 
   const updateDebitNoteMutation = useMutation({
     mutationFn: updateDebitNote,
@@ -135,15 +190,19 @@ export default function EditDebitNoteItem({
 
           ...(form.buyerExpectation === EXPECTATIONS.REFUND && {
             refundAmount: Number(refundAmount),
+            refundQuantity: Number(form.refundQuantity),
+            replacementQuantity: 0,
           }),
 
           ...(form.buyerExpectation === EXPECTATIONS.REPLACEMENT && {
             refundAmount: 0,
+            refundQuantity: 0,
             replacementQuantity: Number(form.replacementQty),
           }),
 
           ...(form.buyerExpectation === EXPECTATIONS.BOTH && {
             refundAmount: Number(refundAmount),
+            refundQuantity: Number(form.refundQuantity),
             replacementQuantity: Number(form.replacementQty),
           }),
 
@@ -252,7 +311,13 @@ export default function EditDebitNoteItem({
             <Select
               value={form.buyerExpectation}
               onValueChange={(value) =>
-                setForm((p) => ({ ...p, buyerExpectation: value }))
+                setForm((prev) => ({
+                  ...prev,
+                  buyerExpectation: value,
+                  refundQuantity: 0,
+                  refundAmount: 0,
+                  replacementQty: 0,
+                }))
               }
             >
               <SelectTrigger>
@@ -272,77 +337,96 @@ export default function EditDebitNoteItem({
             </Select>
           </div>
 
-          {isRefund && (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Refund Amount (₹)</label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={item?.maxAmount}
-                  value={form.refundAmount}
-                  onChange={(e) => {
-                    const value = toNumber(e.target.value);
-                    const maxAmount = Number(item?.maxAmount || 0);
+          <div className="relative my-6 grid grid-cols-2 gap-2">
+            {isRefund && (
+              <section className="rounded-sm border p-2">
+                <h2 className="absolute top-[-10px] bg-white px-2 text-sm font-semibold">
+                  Refund
+                </h2>
 
-                    setForm((p) => ({
-                      ...p,
-                      refundAmount: Math.min(value, maxAmount),
-                    }));
-                  }}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Max amount: ₹{Number(item?.maxAmount || 0)}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 rounded-lg bg-muted/40 p-4">
-                {item?.cgstDetails && (
-                  <Stat
-                    label={`CGST (${cgstRate}%)`}
-                    value={`₹${cgst.toFixed(2)}`}
+                {/* Refund Quantity */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Quantity</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={maxQuantity}
+                    value={form.refundQuantity}
+                    onChange={(e) => handleRefundQtyChange(e.target.value)}
                   />
-                )}
-                {item?.sgstDetails && (
-                  <Stat
-                    label={`SGST (${sgstRate}%)`}
-                    value={`₹${sgst.toFixed(2)}`}
-                  />
-                )}
-                {item?.igstDetails && (
-                  <Stat
-                    label={`IGST (${igstRate}%)`}
-                    value={`₹${igst.toFixed(2)}`}
-                  />
-                )}
-                <Stat
-                  label="Claimed Amount"
-                  value={`₹${totalClaimed.toFixed(2)}`}
-                  bold
-                />
-              </div>
-            </>
-          )}
+                  <p className="text-xs text-muted-foreground">
+                    Max Quantity: {maxQuantity}
+                  </p>
+                </div>
 
-          {isReplacement && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Replacement Qty Expected
-              </label>
+                {/* Refund Amount */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Amount (₹)</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={form.refundQuantity * unitPrice}
+                    value={form.refundAmount}
+                    disabled={!form.refundQuantity}
+                    onChange={(e) => handleRefundAmountChange(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Max Amount: ₹
+                    {(form.refundQuantity * unitPrice).toLocaleString('en-IN')}
+                  </p>
+                </div>
+              </section>
+            )}
 
-              <Input
-                type="number"
-                min={0}
-                max={item.maxQuantity}
-                value={form.replacementQty}
-                onChange={(e) => handleReplacementQtyChange(e.target.value)}
+            {isReplacement && (
+              <section className="rounded-sm border p-2">
+                <h2 className="absolute top-[-10px] bg-white px-2 text-sm font-semibold">
+                  Replacement
+                </h2>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Qty Expected</label>
+
+                  <Input
+                    type="number"
+                    min={0}
+                    max={item.maxQuantity}
+                    value={form.replacementQty}
+                    onChange={(e) => handleReplacementQtyChange(e.target.value)}
+                  />
+
+                  <p className="text-xs text-muted-foreground">
+                    Max Quantity: {item.maxQuantity}
+                  </p>
+                </div>
+              </section>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 rounded-lg bg-muted/40 p-4">
+            {item?.cgstDetails && (
+              <Stat
+                label={`CGST (${cgstRate}%)`}
+                value={`₹${cgst.toFixed(2)}`}
               />
-
-              <p className="text-xs text-muted-foreground">
-                Max: {item.maxQuantity} units
-              </p>
-            </div>
-          )}
+            )}
+            {item?.sgstDetails && (
+              <Stat
+                label={`SGST (${sgstRate}%)`}
+                value={`₹${sgst.toFixed(2)}`}
+              />
+            )}
+            {item?.igstDetails && (
+              <Stat
+                label={`IGST (${igstRate}%)`}
+                value={`₹${igst.toFixed(2)}`}
+              />
+            )}
+            <Stat
+              label="Claimed Amount"
+              value={`₹${totalClaimed.toFixed(2)}`}
+              bold
+            />
+          </div>
 
           {/* Remark */}
           <div className="space-y-2">

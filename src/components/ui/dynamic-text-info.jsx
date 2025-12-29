@@ -42,7 +42,7 @@ export function DynamicTextInfo({
   return (
     <div
       className={cn(
-        'my-3 flex w-full items-center gap-3 rounded-sm border px-4 py-2',
+        'my-2 flex w-full items-center gap-3 rounded-sm border px-4 py-2',
         style.bg,
         style.border,
         className,
