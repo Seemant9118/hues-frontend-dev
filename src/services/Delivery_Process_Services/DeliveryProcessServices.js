@@ -153,8 +153,17 @@ export const previewPOD = ({ id }) => {
 };
 
 export const getGRNs = ({ page, limit, invoiceId }) => {
+  const params = new URLSearchParams({
+    page,
+    limit,
+  });
+
+  if (invoiceId) {
+    params.append('invoiceId', invoiceId);
+  }
+
   return APIinstance.get(
-    `${deliveryProcess.getGRNs.endpoint}?page=${page}&limit=${limit}&invoiceId=${invoiceId}`,
+    `${deliveryProcess.getGRNs.endpoint}?${params.toString()}`,
   );
 };
 
@@ -166,11 +175,11 @@ export const previewGRN = ({ id }) => {
   return APIinstance.post(`${deliveryProcess.previewGRN.endpoint}${id}`);
 };
 
-export const getItemsToCreateDebitNote = ({ id }) => {
-  return APIinstance.get(
-    `${deliveryProcess.getItemsToCreateDebitNote.endpoint}${id}`,
-  );
-};
+// export const getItemsToCreateDebitNote = ({ id }) => {
+//   return APIinstance.get(
+//     `${deliveryProcess.getItemsToCreateDebitNote.endpoint}${id}`,
+//   );
+// };
 
 export const updateStatusForQC = ({ id, data }) => {
   return APIinstance.put(

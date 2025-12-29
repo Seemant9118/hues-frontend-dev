@@ -18,7 +18,8 @@ export const useDebitNoteColumns = ({ onEditLine, isDebitNotePosted }) => {
       ),
       cell: ({ row }) => (
         <span className="font-medium">
-          {row.original?.metaData?.productDetails?.productName || '-'}
+          {row.original?.invoiceItem?.orderItemId?.productDetails
+            ?.productName || '-'}
         </span>
       ),
     },

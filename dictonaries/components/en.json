@@ -424,7 +424,8 @@
                 "type": "Type",
                 "payment_status": "Payment status",
                 "total_amount": "Total amount",
-                "debit_notes": "Debit notes"
+                "debit_notes": "Debit notes",
+                "defects":"Defects"
             }
         },
         "past_invoices": {

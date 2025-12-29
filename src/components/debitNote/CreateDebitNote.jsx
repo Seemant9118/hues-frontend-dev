@@ -32,23 +32,20 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
     data.map((item) => {
       const product = item.metaData?.productDetails || {};
 
-      const shortQty = item.rejectedQuantity || 0;
-      const qcRejectedQty = item.qcRejectedQuantity || 0;
-
-      const defectQty =
-        item.issueType === 'UNSATISFACTORY' ? qcRejectedQty : shortQty;
+      const defectQty = item.defectedQuantity;
+      const remainingDefectedQty = item.remainingDefectedQuantity;
       const isUnsatisfactory = item.issueType === 'UNSATISFACTORY';
       const isShortQuantity = item.issueType === 'SHORT_QUANTITY';
 
       return {
-        id: item.id,
+        id: item?.invoiceItem?.id,
         skuId: product.skuId,
         itemName: product.productName,
         price: Number(product.salesPrice || 0),
         isUnsatisfactory,
         isShortQuantity,
-        defectQty,
-        quantity: defectQty,
+        defectQty: remainingDefectedQty || defectQty,
+        quantity: remainingDefectedQty || defectQty,
         issueType: item.issueType, // SHORT_QUANTITY | UNSATISFACTORY
         isSelected: false,
       };
@@ -131,7 +128,7 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
     setErrorMsg(null);
 
     const payload = {
-      grnId: id,
+      invoiceId: id,
       items: selectedItems,
     };
 
@@ -149,11 +146,11 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
           <p className="text-sm text-muted-foreground">
             Adjust the items to Create Debit Note as per your preference.
           </p>
+          {errorMsg && <DynamicTextInfo variant="danger" title={errorMsg} />}
         </DialogHeader>
 
         {/* Scrollable Content */}
         <div className="scrollBarStyles flex-1 overflow-auto p-2">
-          {errorMsg && <DynamicTextInfo variant="danger" title={errorMsg} />}
           {/* Items Table */}
           <div className="rounded-sm border">
             <div className="flex items-center gap-2 border-b p-4 font-semibold">

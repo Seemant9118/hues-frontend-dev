@@ -6,7 +6,6 @@ import {
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import CreateDebitNote from '@/components/debitNote/CreateDebitNote';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -17,7 +16,6 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import {
   getGRN,
-  getItemsToCreateDebitNote,
   previewGRN,
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
@@ -37,8 +35,7 @@ export default function GRN() {
   const params = useParams();
   const enterpriseId = getEnterpriseId();
   const [tabs, setTabs] = useState('overview');
-  const [isCreatingDebitNote, setIsCreatingDebitNote] = useState(false);
-  const [showAllDebitNotes, setShowAllDebitNotes] = useState(false);
+  // const [showAllDebitNotes, setShowAllDebitNotes] = useState(false);
 
   const grnsBreadCrumbs = [
     {
@@ -58,14 +55,6 @@ export default function GRN() {
   const onTabChange = (tab) => {
     setTabs(tab);
   };
-
-  // fetch items to create debit note
-  const { data: itemsToCreateDebitNote } = useQuery({
-    queryKey: [deliveryProcess.getItemsToCreateDebitNote.endpointKey],
-    queryFn: () => getItemsToCreateDebitNote({ id: params.id }),
-    select: (data) => data.data.data,
-    enabled: isCreatingDebitNote,
-  });
 
   // fetch grnDetails
   const { data: grnDetails } = useQuery({
@@ -89,7 +78,7 @@ export default function GRN() {
     podId: grnDetails?.podReferenceNumber,
     invoiceId: grnDetails?.metaData?.invoiceDetails?.referenceNumber || '-',
     EWB: grnDetails?.metaData?.invoiceDetails?.eWayBillId || '-',
-    debitNote: grnDetails?.metaData?.debitNoteDetails?.referenceNumber || '-',
+    // debitNote: grnDetails?.metaData?.debitNoteDetails?.referenceNumber || '-',
   };
   const overviewLabels = {
     grnId: translations('overview_labels.grnId'),
@@ -101,7 +90,7 @@ export default function GRN() {
     podId: translations('overview_labels.podId'),
     invoiceId: translations('overview_labels.invoiceId'),
     EWB: translations('overview_labels.EWB'),
-    debitNote: translations('overview_labels.debitNote'),
+    // debitNote: translations('overview_labels.debitNote'),
   };
 
   const customRender = {
@@ -174,63 +163,63 @@ export default function GRN() {
         </div>
       );
     },
-    debitNote: () => {
-      const debitNotes = grnDetails?.debitNotes || [];
+    // debitNote: () => {
+    //   const debitNotes = grnDetails?.debitNotes || [];
 
-      if (!debitNotes.length) {
-        return <span className="text-muted-foreground">--</span>;
-      }
+    //   if (!debitNotes.length) {
+    //     return <span className="text-muted-foreground">--</span>;
+    //   }
 
-      const firstNote = debitNotes[0];
-      const remainingNotes = debitNotes.slice(1);
+    //   const firstNote = debitNotes[0];
+    //   const remainingNotes = debitNotes.slice(1);
 
-      return (
-        <div className="flex flex-col gap-1">
-          {/* First debit note (always visible) */}
-          <p
-            className="flex cursor-pointer items-center gap-1 hover:text-primary hover:underline"
-            onClick={() =>
-              router.push(
-                `/dashboard/purchases/purchase-debitNotes/${firstNote.id}`,
-              )
-            }
-          >
-            {firstNote.referenceNumber}
-            <MoveUpRight size={14} />
-          </p>
+    //   return (
+    //     <div className="flex flex-col gap-1">
+    //       {/* First debit note (always visible) */}
+    //       <p
+    //         className="flex cursor-pointer items-center gap-1 hover:text-primary hover:underline"
+    //         onClick={() =>
+    //           router.push(
+    //             `/dashboard/purchases/purchase-debitNotes/${firstNote.id}`,
+    //           )
+    //         }
+    //       >
+    //         {firstNote.referenceNumber}
+    //         <MoveUpRight size={14} />
+    //       </p>
 
-          {/* Remaining debit notes (conditionally rendered) */}
-          {showAllDebitNotes &&
-            remainingNotes.map((note) => (
-              <p
-                key={note.id}
-                className="flex cursor-pointer items-center gap-1 text-muted-foreground hover:text-primary hover:underline"
-                onClick={() =>
-                  router.push(
-                    `/dashboard/purchases/purchase-debitNotes/${note.id}`,
-                  )
-                }
-              >
-                {note.referenceNumber}
-                <MoveUpRight size={12} />
-              </p>
-            ))}
+    //       {/* Remaining debit notes (conditionally rendered) */}
+    //       {showAllDebitNotes &&
+    //         remainingNotes.map((note) => (
+    //           <p
+    //             key={note.id}
+    //             className="flex cursor-pointer items-center gap-1 text-muted-foreground hover:text-primary hover:underline"
+    //             onClick={() =>
+    //               router.push(
+    //                 `/dashboard/purchases/purchase-debitNotes/${note.id}`,
+    //               )
+    //             }
+    //           >
+    //             {note.referenceNumber}
+    //             <MoveUpRight size={12} />
+    //           </p>
+    //         ))}
 
-          {/* Show more / Show less toggle */}
-          {remainingNotes.length > 0 && (
-            <button
-              type="button"
-              className="w-fit text-xs text-primary underline"
-              onClick={() => setShowAllDebitNotes((prev) => !prev)}
-            >
-              {showAllDebitNotes
-                ? 'Show less'
-                : `+${remainingNotes.length} more`}
-            </button>
-          )}
-        </div>
-      );
-    },
+    //       {/* Show more / Show less toggle */}
+    //       {remainingNotes.length > 0 && (
+    //         <button
+    //           type="button"
+    //           className="w-fit text-xs text-primary underline"
+    //           onClick={() => setShowAllDebitNotes((prev) => !prev)}
+    //         >
+    //           {showAllDebitNotes
+    //             ? 'Show less'
+    //             : `+${remainingNotes.length} more`}
+    //         </button>
+    //       )}
+    //     </div>
+    //   );
+    // },
   };
 
   const previewGRNMutation = useMutation({
@@ -299,13 +288,6 @@ export default function GRN() {
                 Update QC
               </Button>
             )}
-
-            {!grnDetails?.creditDebitNoteCreated &&
-              (grnDetails?.isShortQuantity || grnDetails?.isUnsatisfactory) && (
-                <Button size="sm" onClick={() => setIsCreatingDebitNote(true)}>
-                  Create Debit Note
-                </Button>
-              )}
           </div>
         </section>
 
@@ -326,14 +308,6 @@ export default function GRN() {
               data={grnDetails?.id ? grnDetails?.items : []}
             />
           </div>
-
-          {/* Create debit note modal */}
-          <CreateDebitNote
-            open={isCreatingDebitNote}
-            onOpenChange={setIsCreatingDebitNote}
-            data={itemsToCreateDebitNote || []}
-            id={params.id}
-          />
         </TabsContent>
       </Tabs>
     </Wrapper>

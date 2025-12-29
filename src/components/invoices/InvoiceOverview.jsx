@@ -21,6 +21,7 @@ const InvoiceOverview = ({
   Name,
   paymentStatus,
   debitNoteStatus,
+  defectsStatus,
   hasDebitNote,
   type,
   date,
@@ -94,7 +95,7 @@ const InvoiceOverview = ({
               <p className="text-sm text-gray-600">
                 {translations('label.debit_notes')}
               </p>
-              <div className="w-full">{debitNoteStatus}</div>
+              <>{debitNoteStatus}</>
             </section>
           )}
 
@@ -126,6 +127,13 @@ const InvoiceOverview = ({
               <p className="font-bold">{`${formattedAmount(amount)}`}</p>
             </section>
           )}
+
+          <section className="flex w-fit flex-col">
+            <p className="text-sm text-gray-600">
+              {translations('label.defects')}
+            </p>
+            <>{defectsStatus}</>
+          </section>
         </section>
       )}
 
@@ -270,6 +278,13 @@ const InvoiceOverview = ({
                   <p className="font-bold">{`${formattedAmount(amount)}`}</p>
                 </section>
               )}
+
+              <section className="flex w-fit flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.defects')}
+                </p>
+                <>{defectsStatus}</>
+              </section>
             </section>
           </CollapsibleContent>
         </Collapsible>

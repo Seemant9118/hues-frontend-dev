@@ -5,8 +5,10 @@ import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
+import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import CreateDebitNote from '@/components/debitNote/CreateDebitNote';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -24,22 +26,25 @@ import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getGRNs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import {
+  getInvoice,
+  getItemsToCreateDebitNote,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import {
   getDocument,
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { Download, Eye } from 'lucide-react';
+import { Download, Eye, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import emptyImg from '../../../../../../../../public/Empty.png';
+import { useGrnColumns } from '../../../transport/grn/GRNColumns';
 import { debitNoteColumns } from './debitNoteColumns';
 import { usePurchaseInvoiceColumns } from './usePurchaseInvoiceColumns';
-import { useGrnColumns } from '../../../transport/grn/GRNColumns';
 
 const PAGE_LIMIT = 10;
 
@@ -57,6 +62,9 @@ const ViewInvoice = () => {
   const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
   const [grns, setGrns] = useState(null);
   const [paginationData, setPaginationData] = useState(false);
+  const [isCreatingDebitNote, setIsCreatingDebitNote] = useState(false);
+  const [showAllDebitNotes, setShowAllDebitNotes] = useState(false);
+
   const invoiceOrdersBreadCrumbs = [
     {
       id: 1,
@@ -131,6 +139,17 @@ const ViewInvoice = () => {
     totalAmount: invoice?.totalAmount,
   }));
 
+  // fetch items to create debit note
+  const { data: itemsToCreateDebitNote } = useQuery({
+    queryKey: [
+      invoiceApi.getItemsToCreateDebitNote.endpointKey,
+      params.invoiceId,
+    ],
+    queryFn: () => getItemsToCreateDebitNote({ id: params.invoiceId }),
+    select: (data) => data.data.data,
+    enabled: isCreatingDebitNote,
+  });
+
   // fetch payment details
   const { isLoading: isPaymentsLoading, data: paymentsListing } = useQuery({
     queryKey: [paymentApi.getPaymentsByInvoiceId.endpointKey, params.invoiceId],
@@ -188,6 +207,7 @@ const ViewInvoice = () => {
     enabled: tab === 'debitNotes',
   });
 
+  // Statuses
   const paymentStatus = ConditionalRenderingStatus({
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
@@ -195,9 +215,77 @@ const ViewInvoice = () => {
     invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status;
   const hasDebitNote =
     debitNoteRawStatus && debitNoteRawStatus !== 'NOT_RAISED';
-  const debitNoteStatus = hasDebitNote ? (
-    <ConditionalRenderingStatus status={debitNoteRawStatus} />
-  ) : null;
+  const debitNotesIds = () => {
+    const debitNotes = invoiceDetails?.debitNotes || [];
+
+    if (!debitNotes.length) {
+      return <span className="text-muted-foreground">--</span>;
+    }
+
+    const firstNote = debitNotes[0];
+    const remainingNotes = debitNotes.slice(1);
+
+    return (
+      <div className="flex flex-col gap-1">
+        {/* First debit note (always visible) */}
+        <p
+          className="flex cursor-pointer items-center gap-1 hover:text-primary hover:underline"
+          onClick={() =>
+            router.push(
+              `/dashboard/purchases/purchase-debitNotes/${firstNote?.id}`,
+            )
+          }
+        >
+          {firstNote?.referenceNumber}
+          <MoveUpRight size={14} />
+        </p>
+
+        {/* Remaining debit notes (conditionally rendered) */}
+        {showAllDebitNotes &&
+          remainingNotes?.map((note) => (
+            <p
+              key={note.id}
+              className="flex cursor-pointer items-center gap-1 text-muted-foreground hover:text-primary hover:underline"
+              onClick={() =>
+                router.push(
+                  `/dashboard/purchases/purchase-debitNotes/${note?.id}`,
+                )
+              }
+            >
+              {note?.referenceNumber}
+              <MoveUpRight size={12} />
+            </p>
+          ))}
+
+        {/* Show more / Show less toggle */}
+        {remainingNotes?.length > 0 && (
+          <button
+            type="button"
+            className="w-fit text-xs text-primary underline"
+            onClick={() => setShowAllDebitNotes((prev) => !prev)}
+          >
+            {showAllDebitNotes
+              ? 'Show less'
+              : `+${remainingNotes?.length} more`}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const defects = () => {
+    const statuses = getQCDefectStatuses(invoiceDetails?.invoiceDetails);
+
+    if (!statuses?.length) return '-';
+
+    return (
+      <div className="flex flex-wrap gap-2">
+        {statuses.map((status) => (
+          <ConditionalRenderingStatus key={status} status={status} isQC />
+        ))}
+      </div>
+    );
+  };
 
   const invoiceItemsColumns = usePurchaseInvoiceColumns();
   const paymentsColumns = usePaymentColumns();
@@ -232,18 +320,22 @@ const ViewInvoice = () => {
                 />
               </div>
               <div className="flex gap-2">
-                {/* raised debit note CTA */}
-                {/* <ProtectedWrapper
-                  permissionCode={'permission:purchase-debit-note-action'}
-                >
-                  {!isPaymentAdvicing && (
-                    <RaisedDebitNoteModal
-                      orderId={invoiceDetails?.invoiceDetails?.orderId}
-                      invoiceId={invoiceDetails?.invoiceDetails?.invoiceId}
-                      totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
-                    />
-                  )}
-                </ProtectedWrapper> */}
+                {/* create debit note */}
+                {!invoiceDetails?.invoiceDetails
+                  ?.debitNoteCreationCompleted && (
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-debit-note-action'}
+                  >
+                    <Button
+                      size="sm"
+                      variant="blue_outline"
+                      onClick={() => setIsCreatingDebitNote(true)}
+                      className="font-bold"
+                    >
+                      Create Debit Note
+                    </Button>
+                  </ProtectedWrapper>
+                )}
 
                 {!isPaymentAdvicing &&
                   (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -343,7 +435,8 @@ const ViewInvoice = () => {
                           invoiceDetails?.invoiceDetails?.orderReferenceNumber
                         }
                         paymentStatus={paymentStatus}
-                        debitNoteStatus={debitNoteStatus}
+                        debitNoteStatus={debitNotesIds()}
+                        defectsStatus={defects()}
                         hasDebitNote={hasDebitNote}
                         Name={`${invoiceDetails?.invoiceDetails?.vendorName} (${invoiceDetails?.invoiceDetails?.clientType})`}
                         type={invoiceDetails?.invoiceDetails?.invoiceType}
@@ -452,12 +545,21 @@ const ViewInvoice = () => {
               <MakePaymentNewInvoice
                 paymentStatus={paymentStatus}
                 hasDebitNote={hasDebitNote}
-                debitNoteStatus={debitNoteStatus}
+                debitNoteStatus={debitNotesIds()}
+                defectsStatus={defects()}
                 invoiceDetails={invoiceDetails?.invoiceDetails}
                 setIsRecordingPayment={setIsPaymentAdvicing}
                 contextType={'PAYMENT_ADVICE'}
               />
             )}
+
+            {/* Create debit note modal */}
+            <CreateDebitNote
+              open={isCreatingDebitNote}
+              onOpenChange={setIsCreatingDebitNote}
+              data={itemsToCreateDebitNote || []}
+              id={params.invoiceId}
+            />
           </>
         )}
       </Wrapper>
