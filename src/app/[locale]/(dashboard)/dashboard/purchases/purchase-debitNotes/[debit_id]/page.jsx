@@ -5,7 +5,6 @@
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import {
   formattedAmount,
-  getEnterpriseId,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
 import CommentBox from '@/components/comments/CommentBox';
@@ -44,7 +43,6 @@ const ViewDebitNote = () => {
   const router = useRouter();
   const params = useParams();
   const debitNoteId = params.debit_id;
-  const enterpriseId = getEnterpriseId();
   const [editOpen, setEditOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [tabs, setTabs] = useState('overview');
@@ -77,9 +75,6 @@ const ViewDebitNote = () => {
     enabled: hasPermission('permission:purchase-view'),
   });
 
-  const isSeller =
-    debitNoteDetails?.metaData?.sellerEnterpriseId === enterpriseId;
-
   const overviewData = {
     debitNoteId: debitNoteDetails?.referenceNumber,
     vendorName: debitNoteDetails?.toEnterprise?.name,
@@ -92,9 +87,7 @@ const ViewDebitNote = () => {
   };
   const overviewLabels = {
     debitNoteId: translations('overview_labels.debitNoteId'),
-    ...(!isSeller
-      ? { vendorName: translations('overview_labels.vendorName') }
-      : { vendorName: translations('overview_labels.clientName') }),
+    vendorName: translations('overview_labels.vendorName'),
     invoiceId: translations('overview_labels.invoiceId'),
     defects: translations('overview_labels.defects'),
     claimedAmount: translations('overview_labels.claimedAmount'),

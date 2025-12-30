@@ -46,6 +46,13 @@ export const updateDebitNote = ({ id, data }) => {
   return APIinstance.put(`${DebitNoteApi.updateDebitNote.endpoint}${id}`, data);
 };
 
+export const sellerResponseDebitNote = ({ id, data }) => {
+  return APIinstance.post(
+    `${DebitNoteApi.sellerRespondDebitNote.endpoint}${id}`,
+    data,
+  );
+};
+
 export const createComments = (data) => {
   return APIinstance.post(DebitNoteApi.createComments.endpoint, data);
 };

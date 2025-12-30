@@ -320,7 +320,7 @@
             }
         },
         "sales-debit_notes": {
-            "title": "Debit notes",
+            "title": "Recieved Debit notes",
             "emtpyStateComponent": {
                 "heading": "No debit notes yet"
             },
@@ -340,17 +340,36 @@
             },
             "table": {
                 "header": {
+                    "debitNote_Id": "Debit Note ID",
+                    "clients": "Buyer Name",
                     "invoice_id": "Invoice ID",
-                    "date": "Date",
-                    "customers": "Name",
-                    "total_amount": "Total Amount",
-                    "status": "Status"
+                    "defects": "Defects",
+                    "claimed_amount": "Claimed Amount",
+                    "setteled_amount": "Settled Amount",
+                    "status": "Status",
+                    "createdOn": "Created On"
                 }
             },
             "debit_notes_details": {
                 "title": {
-                    "debit_notes": "Debit notes",
+                    "debit_notes": "Recieved Debit notes",
                     "debit_note_details": "Debit note details"
+                },
+                "overview_labels": {
+                    "debitNoteId": "Debit Note ID",
+                    "clientName": "Client Name",
+                    "grnId": "GRN ID",
+                    "defects": "Defects",
+                    "invoiceId": "Invoice ID",
+                    "claimedAmount": "Claimed Amount",
+                    "setteledAmount": "Settled Amount",
+                    "createdOn": "Created On",
+                    "status": "Status"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    }
                 },
                 "label": {
                     "date": "Date",

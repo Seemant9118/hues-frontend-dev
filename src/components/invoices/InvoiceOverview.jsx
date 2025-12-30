@@ -128,7 +128,7 @@ const InvoiceOverview = ({
             </section>
           )}
 
-          <section className="flex w-fit flex-col">
+          <section className="flex flex-col">
             <p className="text-sm text-gray-600">
               {translations('label.defects')}
             </p>
@@ -279,7 +279,7 @@ const InvoiceOverview = ({
                 </section>
               )}
 
-              <section className="flex w-fit flex-col">
+              <section className="flex flex-col">
                 <p className="text-sm text-gray-600">
                   {translations('label.defects')}
                 </p>
