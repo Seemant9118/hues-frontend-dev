@@ -353,7 +353,8 @@
             "debit_notes_details": {
                 "title": {
                     "debit_notes": "Recieved Debit notes",
-                    "debit_note_details": "Debit note details"
+                    "debit_note_details": "Debit note details",
+                    "adding_response" :"Adding Response"
                 },
                 "overview_labels": {
                     "debitNoteId": "Debit Note ID",
