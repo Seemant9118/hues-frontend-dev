@@ -6,10 +6,10 @@ import {
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
 import CommentBox from '@/components/comments/CommentBox';
-import CreateResponse from '@/components/debitNote/CreateResponse';
+import CreateResponseD from '@/components/debitNote/CreateResponseD';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
-import { DataTable } from '@/components/table/data-table';
+import { MergerDataTable } from '@/components/table/merger-data-table';
 import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,18 +18,15 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
-import {
-  getDebitNote,
-  updateDebitNote,
-} from '@/services/Debit_Note_Services/DebitNoteServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, MoveUpRight, PlusCircle, Save } from 'lucide-react';
+import { getDebitNote } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { useQuery } from '@tanstack/react-query';
+import { MoveUpRight, PlusCircle } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
-import { useParams, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
-import { toast } from 'sonner';
-import { useDebitNoteColumns } from './debitnoteColumns';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+import { buildBuyerSellerRows } from './buildBuyerSellerTableRows';
+import { useBuyerSellerColumns } from './useBuyerSellerMergedColumns';
 
 const ViewDebitNote = () => {
   useMetaData('Hues! - Debit Notes Details', 'HUES DEBITNOTES'); // dynamic title
@@ -41,11 +38,12 @@ const ViewDebitNote = () => {
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const params = useParams();
   const debitNoteId = params.debit_id;
-  const [isAddingResponse, setIsAddingResponse] = useState(false);
   const [tabs, setTabs] = useState('overview');
+
+  const isAddingResponse = searchParams.get('action') === 'adding-response';
 
   const debitNoteBreadCrumbs = [
     {
@@ -61,6 +59,13 @@ const ViewDebitNote = () => {
       path: `/dashboard/sales/sales-debitNotes/${debitNoteId}`,
       show: true, // Always show
     },
+
+    {
+      id: 3,
+      name: translations('title.adding_response'),
+      path: `/dashboard/sales/sales-debitNotes/${debitNoteId}?action=adding-response`,
+      show: isAddingResponse,
+    },
   ];
 
   const onTabChange = (tab) => {
@@ -74,6 +79,84 @@ const ViewDebitNote = () => {
     select: (debitNote) => debitNote.data.data,
     enabled: hasPermission('permission:sales-view'),
   });
+
+  const getDraftResponses = (item) => {
+    const draft = item?.metaData?.creditNoteDraftResponse;
+
+    if (!draft) return [];
+
+    return Array.isArray(draft) ? draft : [draft];
+  };
+
+  const getRespondedQty = (item) => {
+    const responses = getDraftResponses(item);
+
+    return responses.reduce(
+      (sum, r) =>
+        sum +
+        (Number(r.approvedQuantity) || 0) +
+        (Number(r.rejectedQuantity) || 0),
+      0,
+    );
+  };
+
+  const itemsToCreateResponse = (debitNoteDetails?.debitNoteItems || [])
+    .filter((item) => {
+      const expectedQty =
+        (item.refundQuantity ?? 0) + (item.replacementQuantity ?? 0);
+
+      const respondedQty = getRespondedQty(item);
+
+      // keep only items NOT fully fulfilled
+      return respondedQty < expectedQty;
+    })
+    .map((item) => {
+      const responses = getDraftResponses(item);
+
+      const approvedQuantity = responses.reduce(
+        (sum, r) => sum + (r.approvedQuantity || 0),
+        0,
+      );
+
+      const approvedAmount = responses.reduce(
+        (sum, r) => sum + (r.approvedAmount || 0),
+        0,
+      );
+
+      const respondedQty = getRespondedQty(item);
+
+      return {
+        debitNoteItemId: item.id,
+        invoiceItemId: item.invoiceItemId,
+
+        productName:
+          item?.invoiceItem?.orderItemId?.productDetails?.productName || '-',
+
+        skuId: item?.invoiceItem?.orderItemId?.productDetails?.skuId || '-',
+
+        unitPrice: item.unitPrice,
+
+        refundQuantity: item.refundQuantity,
+        replacementQuantity: item.replacementQuantity,
+        maxQuantity: item.maxQuantity,
+        respondedQty,
+
+        approvedQuantity,
+        approvedAmount,
+
+        buyerExpectation: item.buyerExpectation,
+
+        taxAmount: item.taxAmount,
+
+        cgstDetails: item.cgstDetails,
+        sgstDetails: item.sgstDetails,
+        igstDetails: item.igstDetails,
+
+        qcFailedQty: item?.metaData?.qcFailedQty ?? 0,
+        severityIndicator: item?.metaData?.severityIndicator ?? '',
+        internalRemark: item?.metaData?.internalRemark ?? '',
+      };
+    });
 
   const overviewData = {
     debitNoteId: debitNoteDetails?.referenceNumber,
@@ -140,61 +223,12 @@ const ViewDebitNote = () => {
     },
   };
 
-  // TODO: api change for raise credit note and saved draft
-  const updateDebitNoteMutation = useMutation({
-    mutationFn: updateDebitNote,
-    onSuccess: () => {
-      toast.success('Debit Note updated Successfully');
-      queryClient.invalidateQueries([DebitNoteApi.getDebitNote.endpointKey]);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'something went wrong');
-    },
-  });
+  const mergedRows = useMemo(
+    () => buildBuyerSellerRows(debitNoteDetails?.debitNoteItems || []),
+    [debitNoteDetails],
+  );
 
-  const handleSubmit = (type = 'DRAFT') => {
-    if (!debitNoteDetails?.debitNoteItems?.length) return;
-
-    const payload = {
-      status: type, // 'DRAFT' | 'SENT'
-      items: debitNoteDetails.debitNoteItems.map((item) => {
-        const { buyerExpectation } = item;
-
-        return {
-          debitNoteItemId: item.id,
-          buyerExpectation,
-
-          ...(buyerExpectation === 'REQUEST_REFUND' && {
-            refundAmount: Number(item.amount || 0),
-          }),
-
-          ...(buyerExpectation === 'REQUEST_REPLACEMENT' && {
-            refundAmount: 0,
-            replacementQuantity: Number(item.replacementQuantity || 0),
-          }),
-
-          ...(buyerExpectation === 'REQUEST_BOTH' && {
-            refundAmount: Number(item.amount || 0),
-            replacementQuantity: Number(item.replacementQuantity || 0),
-          }),
-
-          metaData: {
-            internalRemark: item?.metaData?.internalRemark || '',
-            severityIndicator: item?.metaData?.severityIndicator || '',
-          },
-        };
-      }),
-    };
-
-    updateDebitNoteMutation.mutate({
-      id: debitNoteId,
-      data: payload,
-    });
-  };
-
-  const debitNoteColumns = useDebitNoteColumns({
-    isDebitNotePosted: debitNoteDetails?.status === 'SENT',
-  });
+  const buyerSellerColumns = useBuyerSellerColumns();
 
   if (!permissions || permissions.length === 0) {
     return null; // or <Loading />
@@ -214,74 +248,79 @@ const ViewDebitNote = () => {
           <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
         </section>
 
-        <Tabs
-          value={tabs}
-          onValueChange={onTabChange}
-          defaultValue={'overview'}
-        >
-          <section className="flex items-center justify-between gap-2">
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-            </TabsList>
+        {!isAddingResponse && (
+          <Tabs
+            value={tabs}
+            onValueChange={onTabChange}
+            defaultValue={'overview'}
+          >
+            <section className="flex items-center justify-between gap-2">
+              <TabsList className="border">
+                <TabsTrigger value="overview">
+                  {translations('tabs.tab1.title')}
+                </TabsTrigger>
+              </TabsList>
 
-            {/* TODO: ctas hide logic */}
-            <div className="flex items-center gap-2">
-              <Button
-                disabled={updateDebitNoteMutation?.isPending}
-                size="sm"
-                onClick={() => setIsAddingResponse(true)}
-              >
-                <PlusCircle size={14} /> Add Response
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={true}
-                onClick={() => handleSubmit('DRAFT')}
-              >
-                <Save size={14} /> Save as Draft
-              </Button>
-              <Button
-                disabled={true}
-                size="sm"
-                onClick={() => handleSubmit('SENT')}
-              >
-                <BookOpen size={14} /> Finalize & Post Credit Note
-              </Button>
-            </div>
-          </section>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/sales/sales-debitNotes/${debitNoteId}?action=adding-response`,
+                    )
+                  }
+                >
+                  <PlusCircle size={14} /> Add Response
+                </Button>
 
-          <TabsContent value="overview">
-            <div className="flex flex-col gap-4">
-              {/* OVERVIEW SECTION */}
-              <Overview
-                collapsible={false}
-                data={overviewData}
-                labelMap={overviewLabels}
-                customRender={customRender}
-              />
+                {/* <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={true}
+                  onClick={() => handleSubmit('DRAFT')}
+                >
+                  <Save size={14} /> Save as Draft
+                </Button>
+                <Button
+                  disabled={true}
+                  size="sm"
+                  onClick={() => handleSubmit('SENT')}
+                >
+                  <BookOpen size={14} /> Finalize & Post Credit Note
+                </Button> */}
+              </div>
+            </section>
 
-              {/* comment */}
-              <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
+            <TabsContent value="overview">
+              <div className="flex flex-col gap-4">
+                {/* OVERVIEW SECTION */}
+                <Overview
+                  collapsible={false}
+                  data={overviewData}
+                  labelMap={overviewLabels}
+                  customRender={customRender}
+                />
 
-              <DataTable
-                id="grns"
-                columns={debitNoteColumns}
-                data={debitNoteDetails?.debitNoteItems || []}
-              />
+                {/* comment */}
+                <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
 
-              {/* Create Response comopnent */}
-              <CreateResponse
-                open={isAddingResponse}
-                onOpenChange={setIsAddingResponse}
-                data={debitNoteDetails?.debitNoteItems || []}
-                id={debitNoteId}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+                <MergerDataTable
+                  id="buyer-seller-table"
+                  columns={buyerSellerColumns}
+                  data={mergedRows}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Create Response comopnent */}
+        {isAddingResponse && (
+          <CreateResponseD
+            items={itemsToCreateResponse || []}
+            debitNoteId={debitNoteId}
+          />
+        )}
       </Wrapper>
     </ProtectedWrapper>
   );
