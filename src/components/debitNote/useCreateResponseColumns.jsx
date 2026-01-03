@@ -52,12 +52,16 @@ export const useCreateResponseColumns = ({ onDelete }) => {
     {
       accessorKey: 'quantity',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Approved/Rejected Qty" />
+        <DataTableColumnHeader
+          column={column}
+          title="Approved/Replacement/ Rejected Qty"
+        />
       ),
       cell: ({ row }) => {
-        const { approvedQuantity, rejectedQuantity } = row.original;
+        const { approvedQuantity, replacementQty, rejectedQuantity } =
+          row.original;
 
-        return approvedQuantity || rejectedQuantity;
+        return approvedQuantity || replacementQty || rejectedQuantity;
       },
     },
     {
@@ -69,9 +73,12 @@ export const useCreateResponseColumns = ({ onDelete }) => {
         />
       ),
       cell: ({ row }) => {
-        const { approvedAmount, rejectedAmount } = row.original;
+        const { approvedAmount } = row.original;
 
-        return formattedAmount(approvedAmount || rejectedAmount);
+        if (approvedAmount) {
+          return formattedAmount(approvedAmount);
+        }
+        return '-';
       },
     },
     {
@@ -86,7 +93,7 @@ export const useCreateResponseColumns = ({ onDelete }) => {
       },
     },
 
-    // 🔴 ACTION COLUMN
+    // ACTION COLUMN
     {
       id: 'actions',
       header: 'Actions',

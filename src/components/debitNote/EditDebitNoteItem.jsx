@@ -403,31 +403,34 @@ export default function EditDebitNoteItem({
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4 rounded-lg bg-muted/40 p-4">
-            {item?.cgstDetails && (
+          {(form.buyerExpectation === EXPECTATIONS.BOTH ||
+            form.buyerExpectation === EXPECTATIONS.REFUND) && (
+            <div className="grid grid-cols-3 gap-4 rounded-lg bg-muted/40 p-4">
+              {item?.cgstDetails && (
+                <Stat
+                  label={`CGST (${cgstRate}%)`}
+                  value={`₹${cgst.toFixed(2)}`}
+                />
+              )}
+              {item?.sgstDetails && (
+                <Stat
+                  label={`SGST (${sgstRate}%)`}
+                  value={`₹${sgst.toFixed(2)}`}
+                />
+              )}
+              {item?.igstDetails && (
+                <Stat
+                  label={`IGST (${igstRate}%)`}
+                  value={`₹${igst.toFixed(2)}`}
+                />
+              )}
               <Stat
-                label={`CGST (${cgstRate}%)`}
-                value={`₹${cgst.toFixed(2)}`}
+                label="Claimed Amount"
+                value={`₹${totalClaimed.toFixed(2)}`}
+                bold
               />
-            )}
-            {item?.sgstDetails && (
-              <Stat
-                label={`SGST (${sgstRate}%)`}
-                value={`₹${sgst.toFixed(2)}`}
-              />
-            )}
-            {item?.igstDetails && (
-              <Stat
-                label={`IGST (${igstRate}%)`}
-                value={`₹${igst.toFixed(2)}`}
-              />
-            )}
-            <Stat
-              label="Claimed Amount"
-              value={`₹${totalClaimed.toFixed(2)}`}
-              bold
-            />
-          </div>
+            </div>
+          )}
 
           {/* Remark */}
           <div className="space-y-2">

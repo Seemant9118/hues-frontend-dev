@@ -13,24 +13,38 @@ import ConditionalRenderingStatus from '@/components/orders/ConditionalRendering
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
+import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
 import {
   getDebitNote,
   updateDebitNote,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { BookOpen, MoveUpRight, Save } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import emptyImg from '../../../../../../../../public/Empty.png';
+import { useCreditNotesColumns } from '../../purchase-creditNotes/useCreditNotesColumns';
+import { PurchaseTable } from '../../purchasetable/PurchaseTable';
 import { useDebitNoteColumns } from './debitnoteColumns';
+
+const PAGE_LIMIT = 10;
 
 const ViewDebitNote = () => {
   useMetaData('Hues! - Debit Notes Details', 'HUES DEBITNOTES'); // dynamic title
@@ -45,6 +59,8 @@ const ViewDebitNote = () => {
   const debitNoteId = params.debit_id;
   const [editOpen, setEditOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [creditNotesListing, setCreditNotesListing] = useState([]); // debitNotes
+  const [paginationData, setPaginationData] = useState({});
   const [tabs, setTabs] = useState('overview');
 
   const debitNoteBreadCrumbs = [
@@ -65,6 +81,66 @@ const ViewDebitNote = () => {
 
   const onTabChange = (tab) => {
     setTabs(tab);
+  };
+
+  // Fetch creditNotes data with infinite scroll
+  const {
+    data,
+    fetchNextPage,
+    isFetching,
+    isLoading: isCreditNotesLoading,
+  } = useInfiniteQuery({
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getAllCreditNotes({
+        context: 'DEBITNOTE',
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        debitNoteId,
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
+    enabled: tabs === 'creditNotes' && hasPermission('permission:sales-view'),
+    placeholderData: keepPreviousData,
+  });
+
+  // data flattening - formatting
+  useEffect(() => {
+    if (!data) return;
+
+    // Flatten sales cebitnotes data from all pages
+    const flattenedSalesCreditNotesData = data.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales invoices data is nested in `data.data.data`
+      .flat();
+
+    // Deduplicate sales data based on unique `id`
+    const uniqueSalesCebitNotesData = Array.from(
+      new Map(
+        flattenedSalesCreditNotesData.map((sale) => [
+          sale.id, // Assuming `id` is the unique identifier for each sale debit note
+          sale,
+        ]),
+      ).values(),
+    );
+
+    // Update state with deduplicated sales invoices data
+    setCreditNotesListing(uniqueSalesCebitNotesData);
+
+    // Calculate pagination data using the last page's information
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
+    });
+  }, [data]);
+
+  const onRowClick = (row) => {
+    router.push(`/dashboard/purchases/purchase-creditNotes/${row.id}`);
   };
 
   // get debitNote
@@ -157,7 +233,6 @@ const ViewDebitNote = () => {
       toast.error(error.response.data.message || 'something went wrong');
     },
   });
-
   const handleSubmit = (type = 'DRAFT') => {
     if (!debitNoteDetails?.debitNoteItems?.length) return;
 
@@ -198,6 +273,7 @@ const ViewDebitNote = () => {
     });
   };
 
+  const creditNotesColumns = useCreditNotesColumns();
   const debitNoteColumns = useDebitNoteColumns({
     onEditLine: handleEditLine,
     isDebitNotePosted: debitNoteDetails?.status === 'SENT',
@@ -221,6 +297,9 @@ const ViewDebitNote = () => {
             <TabsList className="border">
               <TabsTrigger value="overview">
                 {translations('tabs.tab1.title')}
+              </TabsTrigger>
+              <TabsTrigger value="creditNotes">
+                {translations('tabs.tab2.title')}
               </TabsTrigger>
             </TabsList>
 
@@ -271,25 +350,33 @@ const ViewDebitNote = () => {
                 item={selectedItem}
                 debitNoteId={debitNoteId}
               />
-
-              {/* totalAmount taxAmount */}
-              {/* <div className="flex items-center gap-2">
-                <span className="font-bold">
-                  {translations('form.footer.gross_amount')} :
-                </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {grossAmt.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold">
-                  {translations('form.footer.tax_amount')} :{' '}
-                </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalGstAmt.toFixed(2)}
-                </span>
-              </div> */}
             </div>
+          </TabsContent>
+
+          <TabsContent
+            value="creditNotes"
+            className="flex-grow overflow-hidden"
+          >
+            {isCreditNotesLoading && <Loading />}
+            {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
+              <PurchaseTable
+                id={'purchase-debits-credits'}
+                columns={creditNotesColumns}
+                data={creditNotesListing}
+                fetchNextPage={fetchNextPage}
+                isFetching={isFetching}
+                totalPages={paginationData?.totalPages}
+                currFetchedPage={paginationData?.currFetchedPage}
+                onRowClick={onRowClick}
+              />
+            )}
+
+            {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
+              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                <Image src={emptyImg} alt="emptyIcon" />
+                <p>{translations('emtpyStateComponent.heading')}</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </Wrapper>

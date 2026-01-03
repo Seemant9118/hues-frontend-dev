@@ -283,12 +283,13 @@ const SalesOrder = () => {
     },
   });
   const onRowClick = (row) => {
-    const isSalesOrderRead = row?.readTracker?.sellerIsRead;
+    const isSalesOrderRead = row?.readTracker?.sellerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
 
     if (isSalesOrderRead) {
       router.push(`/dashboard/sales/sales-orders/${row.id}`);
     } else {
-      updateReadTrackerMutation.mutate(row.id);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/sales/sales-orders/${row.id}`);
     }
   };

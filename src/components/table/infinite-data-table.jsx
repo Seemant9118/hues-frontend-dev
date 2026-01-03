@@ -106,9 +106,7 @@ export default function InfiniteDataTable({
               {/* Virtual rows */}
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = rows[virtualRow.index];
-                const isRead =
-                  row.original?.readTracker?.sellerIsRead ||
-                  row.original?.sellerIsRead;
+                const isRead = row.original?.readTracker?.isRead || true;
 
                 return (
                   <TableRow

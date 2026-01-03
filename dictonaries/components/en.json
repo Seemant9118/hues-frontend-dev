@@ -1158,6 +1158,8 @@
             "DRAFT": "Draft",
             "DEBIT":"Debit",
             "CREDIT":"Credit",
+            "FULLFILLED": "Fullfilled",
+            "RECIEVED": "Recieved",
             "SENT": "Sent",
             "IN_TRANSIT": "In Transit",
             "READY_FOR_DISPATCH": " Ready for Dispatch"

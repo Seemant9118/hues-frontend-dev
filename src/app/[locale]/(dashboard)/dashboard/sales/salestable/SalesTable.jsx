@@ -146,7 +146,8 @@ export function SalesTable({
                 const row = rows[virtualRow.index];
                 const isRead =
                   row.original?.readTracker?.sellerIsRead ||
-                  row.original?.sellerIsRead;
+                  row.original?.sellerIsRead ||
+                  true;
 
                 return (
                   <TableRow

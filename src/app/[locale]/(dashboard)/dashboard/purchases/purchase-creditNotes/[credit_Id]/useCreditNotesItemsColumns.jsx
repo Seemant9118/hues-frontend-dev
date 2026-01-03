@@ -1,14 +1,11 @@
 import {
   capitalize,
-  convertSnakeToTitleCase,
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { CheckCheck, Pencil, Trash2 } from 'lucide-react';
 
 const renderBuyerCell = (row, renderFn) => {
   if (!row.original._isFirstRow) return null;
@@ -16,11 +13,7 @@ const renderBuyerCell = (row, renderFn) => {
   return renderFn();
 };
 
-export const useBuyerSellerColumns = ({
-  onEditLine = null,
-  onDeleteLine = null,
-  canShowSellerAction = null,
-} = {}) => {
+export const useCreditNotesItemsColumns = () => {
   return [
     {
       accessorKey: 'skuId',
@@ -55,24 +48,24 @@ export const useBuyerSellerColumns = ({
           );
         }),
     },
-    {
-      accessorKey: 'buyerQty',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Qty." />
-      ),
-      cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
-    },
-    {
-      accessorKey: 'expectation',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Buyer Expectation" />
-      ),
-      cell: ({ row }) =>
-        renderBuyerCell(row, () => {
-          const { expectation } = row.original;
-          return convertSnakeToTitleCase(expectation) || '-';
-        }),
-    },
+    // {
+    //   accessorKey: 'buyerQty',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title="Qty." />
+    //   ),
+    //   cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
+    // },
+    // {
+    //   accessorKey: 'expectation',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title="Buyer Expectation" />
+    //   ),
+    //   cell: ({ row }) =>
+    //     renderBuyerCell(row, () => {
+    //       const { expectation } = row.original;
+    //       return convertSnakeToTitleCase(expectation) || '-';
+    //     }),
+    // },
 
     // -------- SELLER --------
     {
@@ -116,48 +109,6 @@ export const useBuyerSellerColumns = ({
         typeof getValue() === 'number'
           ? formattedAmount(getValue())
           : getValue(),
-    },
-    // -------- ACTIONS --------
-    {
-      accessorKey: 'actions',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Actions" />
-      ),
-      cell: ({ row }) => {
-        const { isCreditNoteCreated } = row.original;
-        if (!canShowSellerAction) return '-';
-        else if (canShowSellerAction && !canShowSellerAction(row)) return '-';
-
-        return (
-          <div className="flex items-center gap-1">
-            {isCreditNoteCreated ? (
-              <button
-                className="flex items-center gap-1 text-xs hover:underline"
-                // TODO: onClick={() => onDeleteLine(row.original)} redirect to credit note
-              >
-                <CheckCheck size={14} /> Credit Note
-              </button>
-            ) : (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onEditLine(row.original)}
-                >
-                  <Pencil size={14} />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onDeleteLine(row.original)}
-                >
-                  <Trash2 size={16} className="text-red-500" />
-                </Button>
-              </>
-            )}
-          </div>
-        );
-      },
     },
   ];
 };

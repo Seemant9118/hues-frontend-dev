@@ -1,6 +1,9 @@
 'use client';
 
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import {
+  formattedAmount,
+  getQCDefectStatuses,
+} from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,16 +11,16 @@ import { Dot } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
-export const useSalesInvoicesColumns = (setSelectedInvoices) => {
-  const translations = useTranslations('sales.sales-invoices.table.header');
+export const useCreditNotesColumns = (setSelectedDebit) => {
+  const translations = useTranslations('sales.sales-credit_notes.table.header');
   // Function to handle row selection
   const handleRowSelection = (isSelected, row) => {
-    const orderWithCustomer = { ...row.original };
+    const debits = { ...row.original };
 
     if (isSelected) {
-      setSelectedInvoices((prev) => [...prev, orderWithCustomer]);
+      setSelectedDebit((prev) => [...prev, debits]);
     } else {
-      setSelectedInvoices((prev) =>
+      setSelectedDebit((prev) =>
         prev.filter((order) => order.id !== row.original.id),
       );
     }
@@ -29,9 +32,9 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
       const allOrders = rows.map((row) => {
         return { ...row.original };
       });
-      setSelectedInvoices(allOrders);
+      setSelectedDebit(allOrders);
     } else {
-      setSelectedInvoices([]); // Clear all selections
+      setSelectedDebit([]); // Clear all selections
     }
   };
   return [
@@ -70,6 +73,39 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
       enableHiding: false,
     },
     {
+      accessorKey: 'referenceNumber',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('debitNote_Id')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isSellerRead = row.original?.readTracker?.sellerIsRead || true;
+        return (
+          <div className="flex items-center">
+            {!isSellerRead && <Dot size={32} className="text-[#3288ED]" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'enterprise',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('clients')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { toEnterprise } = row.original;
+
+        return <div>{toEnterprise?.name}</div>;
+      },
+    },
+    {
       accessorKey: 'invoiceReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader
@@ -78,100 +114,81 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
         />
       ),
       cell: ({ row }) => {
-        const { invoiceReferenceNumber } = row.original;
-        const isSaleRead = row.original?.readTracker?.sellerIsRead || true;
+        const invoiceReferenceNumber = row.original?.invoice?.referenceNumber;
         return (
           <div className="flex items-center">
-            {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
-            <span>{invoiceReferenceNumber}</span>
+            <span>{invoiceReferenceNumber || '-'}</span>
           </div>
         );
       },
     },
 
     {
-      accessorKey: 'invoiceDate',
+      accessorKey: 'defects',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('date')} />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('defects')}
+        />
       ),
       cell: ({ row }) => {
-        const { invoiceDate } = row.original;
+        const statuses = getQCDefectStatuses(row.original);
+
+        if (!statuses.length) return '-';
+
+        return (
+          <div className="flex flex-col gap-2">
+            {statuses?.map((status) => (
+              <ConditionalRenderingStatus key={status} status={status} isQC />
+            ))}
+          </div>
+        );
+      },
+    },
+
+    {
+      accessorKey: 'claimedAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('claimed_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const claimedAmount = row.original?.debitNote?.amount;
+        return formattedAmount(claimedAmount);
+      },
+    },
+
+    {
+      accessorKey: 'setteledAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('setteled_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { approvedAmount } = row.original;
+        return formattedAmount(approvedAmount);
+      },
+    },
+
+    {
+      accessorKey: 'createdOn',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('createdOn')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { createdAt } = row.original;
         return (
           <div className="text-[#A5ABBD]">
-            {moment(invoiceDate).format('DD-MM-YYYY')}
+            {moment(createdAt).format('DD-MM-YYYY')}
           </div>
         );
-      },
-    },
-    {
-      accessorKey: 'clientType',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('customers_type')}
-        />
-      ),
-    },
-    {
-      accessorKey: 'customerName',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('customers')}
-        />
-      ),
-    },
-    {
-      accessorKey: 'status',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('status')} />
-      ),
-      cell: ({ row }) => {
-        const paymentStatus = row.original?.invoiceMetaData?.payment?.status;
-        const debitNoteStatus =
-          row.original?.invoiceMetaData?.debitNote?.status === 'NOT_RAISED'
-            ? ''
-            : row.original?.invoiceMetaData?.debitNote?.status;
-
-        return (
-          <div className="flex items-start gap-2">
-            <ConditionalRenderingStatus status={paymentStatus} />
-            {debitNoteStatus !== '' && (
-              <ConditionalRenderingStatus status={debitNoteStatus} />
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'orderReferenceNumber',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('order_id')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { orderReferenceNumber } = row.original;
-        return (
-          <div className="w-48 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
-            {orderReferenceNumber}
-          </div>
-        );
-      },
-    },
-
-    {
-      accessorKey: 'totalAmount',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('total_amount')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { totalAmount } = row.original;
-        return formattedAmount(totalAmount);
       },
     },
   ];

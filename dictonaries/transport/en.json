@@ -19,6 +19,17 @@
                     }
                 }
             },
+            "tabs": {
+                "tab1": {
+                    "label": "All"
+                },
+                "tab2": {
+                    "label": "Inward"
+                },
+                "tab3": {
+                    "label": "Outward"
+                }
+            },
             "table": {
                 "header": {
                     "dispatch_id": "Dispatch ID",
@@ -469,13 +480,21 @@
                     }
                 }
             },
+            "tabs": {
+                "tab1": {
+                    "label": "All"
+                },
+                "tab2": {
+                    "label": "Defects"
+                }
+            },
             "grnsDetails": {
                 "title1": "Goods Recieved Notes",
                 "title2": "Details",
                 "overview_labels": {
                     "grnId": "GRN ID",
-                    "clientName":"Client Name",
-                    "vendorName":"Vendor Name",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name",
                     "grnDate": "GRN Date",
                     "defects": "Defects",
                     "status": "Status",
@@ -484,19 +503,18 @@
                     "invoiceDate": "Invoice Date",
                     "deliveryDate": "Delivery  Date",
                     "EWB": "E-Way Bill ID",
-                    "debitNote":"Debit Note ID"
+                    "debitNote": "Debit Note ID"
                 },
                 "tabs": {
                     "tab1": {
                         "title": "Overview",
-                        "table":{
-                            "header":{
+                        "table": {
+                            "header": {
                                 "skuId": "SKU ID",
-                                "itemName":"Item name",
-                                "qtyReceived" :"Qty. Recieved",
-                                "qtyAccepted" :"Qty. Accepted",
-                                "qtyRejected" :"Qty. Rejected"
-
+                                "itemName": "Item name",
+                                "qtyReceived": "Qty. Recieved",
+                                "qtyAccepted": "Qty. Accepted",
+                                "qtyRejected": "Qty. Rejected"
                             }
                         }
                     }
@@ -522,34 +540,48 @@
                     }
                 }
             },
+            "tabs": {
+                "tab1": {
+                    "label": "All"
+                },
+                "tab2": {
+                    "label": "PoD Pending"
+                },
+                "tab3": {
+                    "label": "PoD Accepted"
+                },
+                "tab4": {
+                    "label": "PoD Rejected"
+                }
+            },
             "podsDetails": {
                 "title1": "Proof of Delivery",
                 "title2": "Details",
                 "overview_labels": {
-                    "clientName":"Client Name",
-                    "vendorName" : "Vendor Name",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name",
                     "podId": "ID",
-                    "podDate":"PoD Date",
+                    "podDate": "PoD Date",
                     "invoiceId": "Invoice ID",
                     "invoiceDate": "Invoice Date",
                     "grnId": "GRN ID",
                     "grnDate": "GRN Date",
-                    "deliveryId":"Delivery Challan ID",
+                    "deliveryId": "Delivery Challan ID",
                     "deliveryDate": "Delivery  Date",
                     "EWB": "E-Way Bill ID",
                     "attachements": "Attachments",
-                    "status":"Status"
+                    "status": "Status"
                 },
                 "tabs": {
                     "tab1": {
                         "title": "Overview",
-                        "table":{
-                            "header":{
+                        "table": {
+                            "header": {
                                 "skuId": "SKU ID",
-                                "itemName":"Item name",
-                                "qtyReceived" :"Qty. Recieved",
-                                "qtyAccepted" :"Qty. Accepted",
-                                "qtyRejected" :"Qty. Rejected"
+                                "itemName": "Item name",
+                                "qtyReceived": "Qty. Recieved",
+                                "qtyAccepted": "Qty. Accepted",
+                                "qtyRejected": "Qty. Rejected"
                             }
                         }
                     }

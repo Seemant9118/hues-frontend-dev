@@ -2,6 +2,7 @@
 
 import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
@@ -10,66 +11,7 @@ export const useDispatchedNotes = () => {
     'transport.dispatched-notes.table.header',
   );
 
-  // Function to handle row selection
-  //   const handleRowSelection = (isSelected, row) => {
-  //     const orderWithCustomer = { ...row.original };
-
-  //     if (isSelected) {
-  //       setSelectedInvoices((prev) => [...prev, orderWithCustomer]);
-  //     } else {
-  //       setSelectedInvoices((prev) =>
-  //         prev.filter((order) => order.id !== row.original.id),
-  //       );
-  //     }
-  //   };
-
-  //   // Function to handle "Select All" functionality
-  //   const handleSelectAll = (isAllSelected, rows) => {
-  //     if (isAllSelected) {
-  //       const allOrders = rows.map((row) => {
-  //         return { ...row.original };
-  //       });
-  //       setSelectedInvoices(allOrders);
-  //     } else {
-  //       setSelectedInvoices([]); // Clear all selections
-  //     }
-  //   };
-
   return [
-    // {
-    //   id: 'select',
-    //   header: ({ table }) => (
-    //     <Checkbox
-    //       checked={
-    //         table.getIsAllPageRowsSelected() ||
-    //         (table.getIsSomePageRowsSelected() && 'indeterminate')
-    //       }
-    //       onCheckedChange={(value) => {
-    //         table.toggleAllPageRowsSelected(!!value);
-    //         handleSelectAll(!!value, table.getRowModel().rows);
-    //       }}
-    //       aria-label="Select all"
-    //     />
-    //   ),
-    //   cell: ({ row }) => (
-    //     <div
-    //       onClick={(e) => {
-    //         e.stopPropagation(); // Prevent row click from being triggered
-    //       }}
-    //     >
-    //       <Checkbox
-    //         checked={row.getIsSelected()}
-    //         onCheckedChange={(value) => {
-    //           row.toggleSelected(!!value);
-    //           handleRowSelection(!!value, row);
-    //         }}
-    //         aria-label="Select row"
-    //       />
-    //     </div>
-    //   ),
-    //   enableSorting: false,
-    //   enableHiding: false,
-    // },
     {
       accessorKey: 'referenceNumber',
       header: ({ column }) => (
@@ -80,8 +22,11 @@ export const useDispatchedNotes = () => {
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
+        const isRead = row.original?.readTracker?.sellerIsRead || true;
+
         return (
           <div className="flex items-center">
+            {!isRead && <Dot size={32} className="text-primary" />}
             <span>{referenceNumber}</span>
           </div>
         );

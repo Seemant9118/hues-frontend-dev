@@ -269,7 +269,7 @@
                                 "header": {
                                     "dispatchId": "Dispatch ID",
                                     "status": "Status",
-                                    "supply":"Movement",
+                                    "supply": "Movement",
                                     "createdAt": "Created At",
                                     "items": "Items"
                                 }
@@ -289,6 +289,17 @@
             "emptyStateComponent": {
                 "heading": "No payments yet",
                 "description": "Start by adding your first payment"
+            },
+            "tabs": {
+                "tab1": {
+                    "label": "All"
+                },
+                "tab2": {
+                    "label": "Under review"
+                },
+                "tab3": {
+                    "label": "Acknowledged"
+                }
             },
             "payment-details": {
                 "title": "Payments details"
@@ -334,7 +345,7 @@
             "tabs": {
                 "label": {
                     "tab1": "All",
-                    "tab2": "Accepted",
+                    "tab2": "Recieved",
                     "tab3": "Rejected"
                 }
             },
@@ -354,11 +365,113 @@
                 "title": {
                     "debit_notes": "Recieved Debit notes",
                     "debit_note_details": "Debit note details",
-                    "adding_response" :"Adding Response"
+                    "adding_response": "Adding Response",
+                    "editing_response": "Editing Response Line Item",
+                    "create_credit_note": "Create Credit Note"
                 },
                 "overview_labels": {
                     "debitNoteId": "Debit Note ID",
                     "clientName": "Client Name",
+                    "grnId": "GRN ID",
+                    "defects": "Defects",
+                    "invoiceId": "Invoice ID",
+                    "claimedAmount": "Claimed Amount",
+                    "setteledAmount": "Settled Amount",
+                    "createdOn": "Created On",
+                    "status": "Status"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    },
+                    "tab2": {
+                        "title": "Credit Notes"
+                    }
+                },
+                "label": {
+                    "date": "Date",
+                    "total_amount": "Total Amount",
+                    "type": "Type",
+                    "reason": "Reason"
+                },
+                "emtpyStateComponent": {
+                    "title": "No debit notes yet",
+                    "para": "No debit notes yet"
+                },
+                "comments": {
+                    "title": "Comments",
+                    "attached_files_heading": "Attached Files",
+                    "input": {
+                        "placeholder": "Type your comment here"
+                    },
+                    "ctas": {
+                        "attach_file": {
+                            "placeholder": "Attach file"
+                        },
+                        "send": {
+                            "placeholder": "Send"
+                        }
+                    },
+                    "emtpyStateComponent": {
+                        "title": "All quiet here",
+                        "para": "Break the silence, drop a comment"
+                    }
+                },
+                "successMsg": {
+                    "file_attached_success": "File added",
+                    "comment_success": "Comment posted!"
+                },
+                "errorMsg": {
+                    "comment_error_emtpy": "Can’t post a blank comment",
+                    "common": "Uh-oh, we hit a snag. Try again?"
+                },
+                "ctas": {
+                    "accept": "Accept",
+                    "reject": "Reject"
+                }
+            }
+        },
+        "sales-credit_notes": {
+            "title": "Credit Notes",
+            "emtpyStateComponent": {
+                "heading": "No credit notes yet"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Download selected notes",
+                    "successMsg": "Done! Your notes are downloading",
+                    "errorMsg": "Uh-oh, we hit a snag. Try again?"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Accepted",
+                    "tab3": "Rejected"
+                }
+            },
+            "table": {
+                "header": {
+                    "debitNote_Id": "Credit Note ID",
+                    "clients": "Client's Name",
+                    "invoice_id": "Invoice ID",
+                    "defects": "Defects",
+                    "claimed_amount": "Claimed Amount",
+                    "setteled_amount": "Settled Amount",
+                    "status": "Status",
+                    "createdOn": "Created On"
+                }
+            },
+            "credit_notes_details": {
+                "title": {
+                    "credit_notes": "Credit notes",
+                    "credit_notes_details": "Credit note details"
+                },
+                "overview_labels": {
+                    "creditNoteId": "Credit Note ID",
+                    "debitNoteId": "Debit Note ID",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name",
                     "grnId": "GRN ID",
                     "defects": "Defects",
                     "invoiceId": "Invoice ID",
