@@ -324,12 +324,13 @@ const PurchaseOrders = () => {
     },
   });
   const onRowClick = (row) => {
-    const isPurchaseOrderRead = row?.readTracker?.buyerIsRead;
+    const isPurchaseOrderRead = row?.readTracker?.buyerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
 
     if (isPurchaseOrderRead) {
       router.push(`/dashboard/purchases/purchase-orders/${row.id}`);
     } else {
-      updateReadTrackerMutation.mutate(row.id);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/purchases/purchase-orders/${row.id}`);
     }
   };

@@ -2,21 +2,31 @@
 
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
-import { LocalStorageService } from '@/lib/utils';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 
-export const usePODColumns = () => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-
+export const usePODColumns = ({ enterpriseId }) => {
   return [
     {
       accessorKey: 'id',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="POD ID" />
       ),
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original?.referenceNumber}</span>
-      ),
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isSeller =
+          row.original.readTracker?.sellerEnterpriseId === enterpriseId;
+        const isRead = isSeller
+          ? row.original?.readTracker?.sellerIsRead
+          : row.original?.readTracker?.buyerIsRead || true;
+
+        return (
+          <div className="flex items-center">
+            {!isRead && <Dot size={32} className="text-primary" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
     },
 
     {

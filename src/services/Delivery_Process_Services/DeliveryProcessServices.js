@@ -8,7 +8,13 @@ export const createDispatchNote = ({ id, data }) => {
   );
 };
 
-export const getDispatchNotes = ({ invoiceId, enterpriseId, page, limit }) => {
+export const getDispatchNotes = ({
+  invoiceId,
+  enterpriseId,
+  page,
+  limit,
+  movement,
+}) => {
   const baseUrl = deliveryProcess.getDispatchNotes.endpoint;
 
   // If invoiceId exists → fetch by invoice
@@ -17,7 +23,7 @@ export const getDispatchNotes = ({ invoiceId, enterpriseId, page, limit }) => {
   }
 
   return APIinstance.get(
-    `${baseUrl}?enterpriseId=${enterpriseId}&page=${page}&limit=${limit}`,
+    `${baseUrl}?enterpriseId=${enterpriseId}&page=${page}&limit=${limit}&movement=${movement}`,
   );
 };
 
@@ -112,9 +118,9 @@ export const getDeliveryChallans = ({ page, limit }) => {
   );
 };
 
-export const getPODs = ({ page, limit }) => {
+export const getPODs = ({ page, limit, status }) => {
   return APIinstance.get(
-    `${deliveryProcess.getPODs.endpoint}?page=${page}&limit=${limit}`,
+    `${deliveryProcess.getPODs.endpoint}?page=${page}&limit=${limit}&status=${status}`,
   );
 };
 
@@ -152,12 +158,24 @@ export const previewPOD = ({ id }) => {
   return APIinstance.post(`${deliveryProcess.previewPOD.endpoint}${id}`);
 };
 
-export const getGRNs = ({ page, limit, invoiceId }) => {
+export const getGRNs = ({
+  page,
+  limit,
+  invoiceId,
+  parentQcStatus,
+  grnStatus,
+}) => {
   const params = new URLSearchParams({
     page,
     limit,
   });
 
+  if (parentQcStatus) {
+    params.append('parentQcStatus', parentQcStatus);
+  }
+  if (grnStatus) {
+    params.append('grnStatus', grnStatus);
+  }
   if (invoiceId) {
     params.append('invoiceId', invoiceId);
   }

@@ -3,11 +3,10 @@
 import { paymentApi } from '@/api/payments/payment_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import Tooltips from '@/components/auth/Tooltips';
-import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
@@ -20,7 +19,6 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -43,6 +41,12 @@ const SalesPayments = () => {
   const router = useRouter();
   const [paymentsListing, setPaymentsListing] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
+  const [tab, setTab] = useState('ALL');
+
+  // Function to handle tab change
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   const {
     data,
@@ -50,12 +54,13 @@ const SalesPayments = () => {
     isFetching,
     isLoading: isPaymentsLoading,
   } = useInfiniteQuery({
-    queryKey: [paymentApi.getPaymentsList.endpointKey],
+    queryKey: [paymentApi.getPaymentsList.endpointKey, tab],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getPaymentsList({
         page: pageParam,
         limit: PAGE_LIMIT,
         context: 'SELLER',
+        status: tab,
       });
       return response;
     },
@@ -109,11 +114,13 @@ const SalesPayments = () => {
   });
 
   const onRowClick = (row) => {
-    const isSellerRead = row?.sellerIsRead;
+    const isSellerRead = row?.sellerIsRead || true;
+    const readTrackerId = row?.rereadTrackerId;
+
     if (isSellerRead) {
       router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
     } else {
-      updateReadTrackerMutation.mutate(row.paymentId);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
     }
   };
@@ -135,57 +142,138 @@ const SalesPayments = () => {
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex w-full items-center justify-between gap-2">
               <SubHeader name={translations('title')} />
-              <Tooltips
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                    size="sm"
-                  >
-                    <Download size={14} />
-                  </Button>
-                }
-                content={'Coming Soon...'}
-              />
             </div>
           </section>
 
-          <section className="flex-grow overflow-hidden">
-            {/* Loading state */}
-            {isPaymentsLoading && <Loading />}
+          <Tabs
+            value={tab}
+            onValueChange={onTabChange}
+            defaultValue={'ALL'}
+            className="flex flex-grow flex-col overflow-hidden"
+          >
+            <section className="flex w-full justify-between py-2">
+              <TabsList className="border">
+                <TabsTrigger value="ALL">
+                  {translations('tabs.tab1.label')}
+                </TabsTrigger>
+                <TabsTrigger value="PENDING">
+                  {translations('tabs.tab2.label')}
+                </TabsTrigger>
+                <TabsTrigger value="ACCEPTED">
+                  {translations('tabs.tab3.label')}
+                </TabsTrigger>
+              </TabsList>
+            </section>
 
-            {/* Table when data is available */}
-            {!isPaymentsLoading && paymentsListing?.length > 0 && (
-              <SalesTable
-                id="sales-payments-listing"
-                columns={paymentColumns}
-                data={paymentsListing}
-                fetchNextPage={fetchNextPage}
-                isFetching={isFetching}
-                totalPages={paginationData?.totalPages}
-                currFetchedPage={paginationData?.currFetchedPage}
-                onRowClick={onRowClick}
-              />
-            )}
+            <TabsContent value="ALL" className="flex-grow overflow-hidden">
+              {/* Loading state */}
+              {isPaymentsLoading && <Loading />}
 
-            {/* Empty state */}
-            {!isPaymentsLoading && paymentsListing?.length === 0 && (
-              <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                <Image
-                  src={'/Empty.png'}
-                  alt="emptyIcon"
-                  width={100}
-                  height={100}
+              {/* Table when data is available */}
+              {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                <SalesTable
+                  id="sales-payments-listing"
+                  columns={paymentColumns}
+                  data={paymentsListing}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
                 />
-                <p className="text-lg font-bold text-black">
-                  {translations('emptyStateComponent.heading')}
-                </p>
-                <p className="w-1/3 text-center">
-                  {translations('emptyStateComponent.description')}
-                </p>
-              </div>
-            )}
-          </section>
+              )}
+
+              {/* Empty state */}
+              {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image
+                    src={'/Empty.png'}
+                    alt="emptyIcon"
+                    width={100}
+                    height={100}
+                  />
+                  <p className="text-lg font-bold text-black">
+                    {translations('emptyStateComponent.heading')}
+                  </p>
+                  <p className="w-1/3 text-center">
+                    {translations('emptyStateComponent.description')}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="PENDING" className="flex-grow overflow-hidden">
+              {/* Loading state */}
+              {isPaymentsLoading && <Loading />}
+
+              {/* Table when data is available */}
+              {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                <SalesTable
+                  id="sales-payments-listing"
+                  columns={paymentColumns}
+                  data={paymentsListing}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              )}
+
+              {/* Empty state */}
+              {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image
+                    src={'/Empty.png'}
+                    alt="emptyIcon"
+                    width={100}
+                    height={100}
+                  />
+                  <p className="text-lg font-bold text-black">
+                    {translations('emptyStateComponent.heading')}
+                  </p>
+                  <p className="w-1/3 text-center">
+                    {translations('emptyStateComponent.description')}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="ACCEPTED" className="flex-grow overflow-hidden">
+              {/* Loading state */}
+              {isPaymentsLoading && <Loading />}
+
+              {/* Table when data is available */}
+              {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                <SalesTable
+                  id="sales-payments-listing"
+                  columns={paymentColumns}
+                  data={paymentsListing}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              )}
+
+              {/* Empty state */}
+              {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                <div className="flex h-[38rem] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image
+                    src={'/Empty.png'}
+                    alt="emptyIcon"
+                    width={100}
+                    height={100}
+                  />
+                  <p className="text-lg font-bold text-black">
+                    {translations('emptyStateComponent.heading')}
+                  </p>
+                  <p className="w-1/3 text-center">
+                    {translations('emptyStateComponent.description')}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </Wrapper>
       )}
     </ProtectedWrapper>

@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import {
   flexRender,
@@ -15,12 +16,45 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-export function MergerDataTable({ columns, data, id }) {
+export function MergerDataTable({
+  columns,
+  data,
+  id,
+
+  enableSelection = false,
+  selectedRowIds = [],
+  onSelectionChange,
+  rowIdKey = 'rowId',
+}) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const buyerRowIds = data
+    .filter((row) => row._isFirstRow)
+    .map((row) => row[rowIdKey]);
+
+  const isAllSelected =
+    buyerRowIds.length > 0 &&
+    buyerRowIds.every((id) => selectedRowIds.includes(id));
+
+  const toggleSelectAll = () => {
+    if (!onSelectionChange) return;
+
+    onSelectionChange(isAllSelected ? [] : buyerRowIds);
+  };
+
+  const toggleRow = (rowId) => {
+    if (!onSelectionChange) return;
+
+    onSelectionChange(
+      selectedRowIds.includes(rowId)
+        ? selectedRowIds.filter((id) => id !== rowId)
+        : [...selectedRowIds, rowId],
+    );
+  };
 
   return (
     <div className="rounded-[6px] border border-[#A5ABBD33]">
@@ -28,6 +62,17 @@ export function MergerDataTable({ columns, data, id }) {
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
+              {enableSelection && (
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={isAllSelected}
+                    disabled={!buyerRowIds.length}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+              )}
+
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
                   {flexRender(
@@ -43,6 +88,8 @@ export function MergerDataTable({ columns, data, id }) {
         <TableBody>
           {table.getRowModel().rows.map((row) => {
             const isBuyerRow = row.original._isFirstRow;
+            const rowKey = row.original[rowIdKey];
+            const isChecked = selectedRowIds.includes(rowKey);
 
             return (
               <TableRow
@@ -52,11 +99,27 @@ export function MergerDataTable({ columns, data, id }) {
                   isBuyerRow ? 'border-t bg-white' : 'border-t-0 bg-white',
                 )}
               >
+                {enableSelection && (
+                  <TableCell className="align-top">
+                    {isBuyerRow ? (
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() => toggleRow(rowKey)}
+                        aria-label="Select row"
+                      />
+                    ) : (
+                      // placeholder keeps column alignment
+                      <span className="invisible">x</span>
+                    )}
+                  </TableCell>
+                )}
+
                 {row.getVisibleCells().map((cell) => {
                   const isSellerColumn =
                     cell.column.id === 'sellerResponse' ||
                     cell.column.id === 'sellerQty' ||
-                    cell.column.id === 'sellerAmount';
+                    cell.column.id === 'sellerAmount' ||
+                    cell.column.id === 'actions';
 
                   return (
                     <TableCell
@@ -64,11 +127,11 @@ export function MergerDataTable({ columns, data, id }) {
                       className={cn(
                         'align-top',
 
-                        // visual merge
+                        // seller columns keep border + padding
                         isSellerColumn && 'border-l border-t pl-4',
 
-                        // hide buyer cells on seller rows
-                        !isBuyerRow && !isSellerColumn && 'p-0',
+                        // buyer columns on seller rows stay invisible but keep width
+                        !isBuyerRow && !isSellerColumn && 'invisible',
                       )}
                     >
                       {flexRender(

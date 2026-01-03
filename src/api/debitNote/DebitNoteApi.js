@@ -35,6 +35,10 @@ export const DebitNoteApi = {
     endpoint: `/order/creditnote/draft/respond/`,
     endpointKey: 'seller_response_debit_note',
   },
+  sellerResponseUpdate: {
+    endpoint: `/order/creditnote/update/draft/respond/`,
+    endpointKey: 'seller_response_update',
+  },
 
   // comments
   createComments: {

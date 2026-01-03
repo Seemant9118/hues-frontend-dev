@@ -2,9 +2,9 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { APIinstance } from '@/services';
 
 // 1. get all debit notes
-export const getAllSalesDebitNotes = ({ id, data }) => {
+export const getAllSalesDebitNotes = ({ id, context, data }) => {
   return APIinstance.post(
-    `${DebitNoteApi.getAllSalesDebitNotes.endpoint}${id}`,
+    `${DebitNoteApi.getAllSalesDebitNotes.endpoint}${id}?context=${context}`,
     data,
   );
 };
@@ -49,6 +49,13 @@ export const updateDebitNote = ({ id, data }) => {
 export const sellerResponseDebitNote = ({ id, data }) => {
   return APIinstance.post(
     `${DebitNoteApi.sellerRespondDebitNote.endpoint}${id}`,
+    data,
+  );
+};
+
+export const sellerResponseUpdate = ({ id, data }) => {
+  return APIinstance.put(
+    `${DebitNoteApi.sellerResponseUpdate.endpoint}${id}`,
     data,
   );
 };

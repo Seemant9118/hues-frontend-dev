@@ -101,7 +101,7 @@ export const usePurchaseColumns = (
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-        const isPurchaseRead = row.original?.readTracker?.buyerIsRead;
+        const isPurchaseRead = row.original?.readTracker?.buyerIsRead || true;
         return (
           <div className="flex items-center">
             {!isPurchaseRead && <Dot size={32} className="text-[#3288ED]" />}

@@ -84,7 +84,7 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-        const isBuyerRead = row.original?.readTracker?.buyerIsRead;
+        const isBuyerRead = row.original?.readTracker?.buyerIsRead || true;
         return (
           <div className="flex items-center">
             {!isBuyerRead && <Dot size={32} className="text-[#3288ED]" />}

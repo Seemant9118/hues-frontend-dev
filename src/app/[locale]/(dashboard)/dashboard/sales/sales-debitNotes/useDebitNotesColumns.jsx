@@ -82,10 +82,10 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-        const isBuyerRead = row.original?.readTracker?.buyerIsRead;
+        const isSellerRead = row.original?.readTracker?.sellerIsRead || true;
         return (
           <div className="flex items-center">
-            {!isBuyerRead && <Dot size={32} className="text-[#3288ED]" />}
+            {!isSellerRead && <Dot size={32} className="text-[#3288ED]" />}
             <span>{referenceNumber}</span>
           </div>
         );
@@ -182,7 +182,11 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       cell: ({ row }) => {
         const { status } = row.original;
 
-        return <ConditionalRenderingStatus status={status} />;
+        return (
+          <ConditionalRenderingStatus
+            status={status === 'SENT' ? 'RECIEVED' : status}
+          />
+        );
       },
     },
 

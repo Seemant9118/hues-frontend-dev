@@ -84,6 +84,12 @@ const ViewInvoice = () => {
       path: `/dashboard/purchases/purchase-invoices/${params.invoiceId}`,
       show: isPaymentAdvicing, // Show only if isPaymentAdvicing is true
     },
+    {
+      id: 3,
+      name: translations('title.creating_debit_note'),
+      path: `/dashboard/purchases/purchase-invoices/${params.invoiceId}`,
+      show: isCreatingDebitNote, // Show only if isCreatingDebitNote is true
+    },
   ];
 
   useEffect(() => {
@@ -91,6 +97,7 @@ const ViewInvoice = () => {
     const state = searchParams.get('state');
 
     setIsPaymentAdvicing(state === 'payment_advice');
+    setIsCreatingDebitNote(state === 'creating_debit_note');
   }, [searchParams]);
 
   useEffect(() => {
@@ -99,12 +106,14 @@ const ViewInvoice = () => {
 
     if (isPaymentAdvicing) {
       newPath += '?state=payment_advice';
+    } else if (isCreatingDebitNote) {
+      newPath += '?state=creating_debit_note';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.invoiceId, isPaymentAdvicing, router]);
+  }, [params.invoiceId, isPaymentAdvicing, isCreatingDebitNote, router]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -321,23 +330,25 @@ const ViewInvoice = () => {
               </div>
               <div className="flex gap-2">
                 {/* create debit note */}
-                {!invoiceDetails?.invoiceDetails
-                  ?.debitNoteCreationCompleted && (
-                  <ProtectedWrapper
-                    permissionCode={'permission:purchase-debit-note-action'}
-                  >
-                    <Button
-                      size="sm"
-                      variant="blue_outline"
-                      onClick={() => setIsCreatingDebitNote(true)}
-                      className="font-bold"
+                {!invoiceDetails?.invoiceDetails?.debitNoteCreationCompleted &&
+                  !isCreatingDebitNote &&
+                  !isPaymentAdvicing && (
+                    <ProtectedWrapper
+                      permissionCode={'permission:purchase-debit-note-action'}
                     >
-                      Create Debit Note
-                    </Button>
-                  </ProtectedWrapper>
-                )}
+                      <Button
+                        size="sm"
+                        variant="blue_outline"
+                        onClick={() => setIsCreatingDebitNote(true)}
+                        className="font-bold"
+                      >
+                        Create Debit Note
+                      </Button>
+                    </ProtectedWrapper>
+                  )}
 
                 {!isPaymentAdvicing &&
+                  !isCreatingDebitNote &&
                   (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                     ?.status === 'NOT_PAID' ||
                     invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -360,7 +371,7 @@ const ViewInvoice = () => {
                   permissionCode={'permission:purchase-document'}
                 >
                   {/* View CTA modal */}
-                  {!isPaymentAdvicing && (
+                  {!isPaymentAdvicing && !isCreatingDebitNote && (
                     <Tooltips
                       trigger={
                         <Button
@@ -376,7 +387,7 @@ const ViewInvoice = () => {
                   )}
 
                   {/* download CTA */}
-                  {!isPaymentAdvicing && (
+                  {!isPaymentAdvicing && !isCreatingDebitNote && (
                     <Tooltips
                       trigger={
                         <Button
@@ -399,7 +410,7 @@ const ViewInvoice = () => {
                 </ProtectedWrapper>
               </div>
             </section>
-            {!isPaymentAdvicing && (
+            {!isPaymentAdvicing && !isCreatingDebitNote && (
               <Tabs
                 value={tab}
                 onValueChange={onTabChange}
@@ -541,7 +552,7 @@ const ViewInvoice = () => {
             )}
 
             {/* recordPayment component */}
-            {isPaymentAdvicing && (
+            {isPaymentAdvicing && !isCreatingDebitNote && (
               <MakePaymentNewInvoice
                 paymentStatus={paymentStatus}
                 hasDebitNote={hasDebitNote}
@@ -554,12 +565,14 @@ const ViewInvoice = () => {
             )}
 
             {/* Create debit note modal */}
-            <CreateDebitNote
-              open={isCreatingDebitNote}
-              onOpenChange={setIsCreatingDebitNote}
-              data={itemsToCreateDebitNote || []}
-              id={params.invoiceId}
-            />
+            {isCreatingDebitNote && !isPaymentAdvicing && (
+              <CreateDebitNote
+                isCreatingDebitNote={isCreatingDebitNote}
+                setIsCreatingDebitNote={setIsCreatingDebitNote}
+                data={itemsToCreateDebitNote || []}
+                id={params.invoiceId}
+              />
+            )}
           </>
         )}
       </Wrapper>

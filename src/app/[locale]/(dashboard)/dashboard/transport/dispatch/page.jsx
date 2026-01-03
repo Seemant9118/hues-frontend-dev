@@ -7,16 +7,20 @@ import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
@@ -40,6 +44,12 @@ const DispatchedNotes = () => {
   const router = useRouter();
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
+  const [tab, setTab] = useState('ALL');
+
+  // Function to handle tab change
+  const onTabChange = (value) => {
+    setTab(value);
+  };
 
   // Fetch dispatched notes data with infinite scroll
   const {
@@ -48,12 +58,13 @@ const DispatchedNotes = () => {
     isFetching,
     isLoading: isInvoiceLoading,
   } = useInfiniteQuery({
-    queryKey: [deliveryProcess.getDispatchNotes.endpointKey, enterpriseId],
+    queryKey: [deliveryProcess.getDispatchNotes.endpointKey, enterpriseId, tab],
     queryFn: async ({ pageParam = 1 }) => {
       return getDispatchNotes({
         enterpriseId,
         page: pageParam,
         limit: PAGE_LIMIT,
+        movement: tab,
       });
     },
     initialPageParam: 1,
@@ -97,8 +108,24 @@ const DispatchedNotes = () => {
     });
   }, [data]);
 
+  // [updateReadTracker Mutation : onRowClick]
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
   const onRowClick = (row) => {
-    router.push(`/dashboard/transport/dispatch/${row.id}`);
+    const isRead = row?.readTracker?.sellerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
+
+    if (isRead) {
+      router.push(`/dashboard/transport/dispatch/${row.id}`);
+    } else {
+      updateReadTrackerMutation.mutate(readTrackerId);
+      router.push(`/dashboard/transport/dispatch/${row.id}`);
+    }
   };
 
   const dispatchedNotesColumns = useDispatchedNotes();
@@ -119,25 +146,89 @@ const DispatchedNotes = () => {
             name={translations('title')}
             className="sticky top-0 z-10 flex items-center justify-between bg-white"
           ></SubHeader>
+          <Tabs
+            value={tab}
+            onValueChange={onTabChange}
+            defaultValue={'ALL'}
+            className="flex flex-grow flex-col overflow-hidden"
+          >
+            <section className="flex w-full justify-between py-2">
+              <TabsList className="border">
+                <TabsTrigger value="ALL">
+                  {translations('tabs.tab1.label')}
+                </TabsTrigger>
+                <TabsTrigger value="INWARD">
+                  {translations('tabs.tab2.label')}
+                </TabsTrigger>
+                <TabsTrigger value="OUTWARD">
+                  {translations('tabs.tab3.label')}
+                </TabsTrigger>
+              </TabsList>
+            </section>
 
-          {isInvoiceLoading && <Loading />}
-          {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-            <InfiniteDataTable
-              id="dispatch-table"
-              columns={dispatchedNotesColumns}
-              data={dispatchedNotes}
-              fetchNextPage={fetchNextPage}
-              isFetching={isFetching}
-              totalPages={paginationData?.totalPages}
-              currFetchedPage={paginationData?.currFetchedPage}
-              onRowClick={onRowClick}
-            />
-          ) : (
-            <EmptyStageComponent
-              heading={translations('emtpyStateComponent.heading')}
-              subItems={keys}
-            />
-          )}
+            <TabsContent value="ALL" className="flex-grow overflow-hidden">
+              {isInvoiceLoading && <Loading />}
+              {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
+                <InfiniteDataTable
+                  id="dispatch-table"
+                  columns={dispatchedNotesColumns}
+                  data={dispatchedNotes}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              ) : (
+                <EmptyStageComponent
+                  heading={translations('emtpyStateComponent.heading')}
+                  subItems={keys}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="INWARD" className="flex-grow overflow-hidden">
+              {isInvoiceLoading && <Loading />}
+              {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
+                <InfiniteDataTable
+                  id="dispatch-table"
+                  columns={dispatchedNotesColumns}
+                  data={dispatchedNotes}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              ) : (
+                <EmptyStageComponent
+                  heading={translations('emtpyStateComponent.heading')}
+                  subItems={keys}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="OUTWARD" className="flex-grow overflow-hidden">
+              {isInvoiceLoading && <Loading />}
+              {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
+                <InfiniteDataTable
+                  id="dispatch-table"
+                  columns={dispatchedNotesColumns}
+                  data={dispatchedNotes}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              ) : (
+                <EmptyStageComponent
+                  heading={translations('emtpyStateComponent.heading')}
+                  subItems={keys}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
         </Wrapper>
       )}
     </ProtectedWrapper>

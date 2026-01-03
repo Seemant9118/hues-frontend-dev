@@ -287,6 +287,20 @@
                 }
             }
         },
+        "tabs": {
+            "tab1": {
+                "label":"All"
+            },
+            "tab2": {
+                "label":"QC Ongoing"
+            },
+            "tab3": {
+                "label":"QC Okay"
+            },
+            "tab4": {
+                "label":"QC Pending"
+            }
+        },
         "qcDetails": {
             "title1": "Quality Checks",
             "title2": "Quality Check Item",

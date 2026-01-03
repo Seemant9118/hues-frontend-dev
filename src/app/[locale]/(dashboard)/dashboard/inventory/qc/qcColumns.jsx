@@ -3,8 +3,9 @@
 import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Dot } from 'lucide-react';
 
-export const useQCColumns = () => {
+export const useQCColumns = ({ enterpriseId }) => {
   return [
     /* GRN ID */
     {
@@ -12,7 +13,21 @@ export const useQCColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GRN ID" />
       ),
-      cell: ({ row }) => row.original?.referenceNumber || '--',
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isSeller =
+          row.original.readTracker?.sellerEnterpriseId === enterpriseId;
+        const isRead = isSeller
+          ? row.original?.readTracker?.sellerIsRead
+          : row.original?.readTracker?.buyerIsRead || true;
+
+        return (
+          <div className="flex items-center">
+            {!isRead && <Dot size={32} className="text-primary" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
     },
 
     /* Invoice ID */

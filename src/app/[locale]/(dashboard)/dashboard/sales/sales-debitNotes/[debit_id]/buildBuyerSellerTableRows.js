@@ -12,6 +12,7 @@ export const buildBuyerSellerRows = (debitNoteItems = []) => {
       ? sellerResponses
       : [
           {
+            id: null,
             responseType: '-',
             approvedQuantity: '-',
             approvedAmount: '-',
@@ -20,6 +21,8 @@ export const buildBuyerSellerRows = (debitNoteItems = []) => {
 
     return rows.map((resp, index) => ({
       rowId: `${item.id}-${index}`,
+      id: resp.id,
+      debitNoteItemId: item.id,
 
       // control flags
       _isFirstRow: index === 0,
@@ -30,15 +33,22 @@ export const buildBuyerSellerRows = (debitNoteItems = []) => {
       productName: product.productName || '-',
       isUnsatisfactory: item.isUnsatisfactory,
       isShortDelivery: item.isShortDelivery,
+      isCreditNoteCreated: item.isCreditNoteCreated,
+      price: item.unitPrice,
       buyerQty,
-      expectation: 'Refund',
+      expectation: item.buyerExpectation || '-',
       internalRemark: item.metaData?.internalRemark || '-',
 
       // -------- SELLER --------
       sellerResponse: resp.responseType,
 
-      sellerQty: resp.approvedQuantity || resp.rejectedQuantity || '-',
-      sellerAmount: resp.approvedAmount || resp.rejectedAmount || '-',
+      sellerQty:
+        resp.approvedQuantity ||
+        resp.replacementQty ||
+        resp.rejectedQuantity ||
+        '-',
+      sellerAmount:
+        resp.responseType === 'ACCEPTED' ? resp.approvedAmount : '-',
     }));
   });
 };

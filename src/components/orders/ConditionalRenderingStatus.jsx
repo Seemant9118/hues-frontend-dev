@@ -173,6 +173,11 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
     case 'CREDIT':
       return { text: t(status), ...STATUS_UI.SUCCESS };
 
+    case 'FULLFILLED':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+    case 'RECIEVED':
+      return { text: t(status), ...STATUS_UI.INFO };
+
     case true:
       return { text: 'Active', ...STATUS_UI.SUCCESS };
 

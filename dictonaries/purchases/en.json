@@ -191,7 +191,8 @@
                 "title": {
                     "invoices": "Invoices",
                     "invoice_details": "Invoice details",
-                    "payment_advice": "Payment advice"
+                    "payment_advice": "Payment advice",
+                    "creating_debit_note": "Create Debit note"
                 },
                 "ctas": {
                     "payment_advice": "Send payment advice",
@@ -211,7 +212,6 @@
                         "tab2": "Payment Advices",
                         "tab3": "GRNs",
                         "tab4": "Debit Notes"
-
                     },
                     "content": {
                         "tab1": {
@@ -267,6 +267,17 @@
             "emptyStateComponent": {
                 "heading": "No payments yet",
                 "description": "You haven’t added a payment advice yet. Tap 'Create Payment Advice' to get started."
+            },
+            "tabs": {
+                "tab1": {
+                    "label": "All"
+                },
+                "tab2": {
+                    "label": "Under review"
+                },
+                "tab3": {
+                    "label": "Acknowledged"
+                }
             },
             "ctas": {
                 "export": {
@@ -344,6 +355,9 @@
                 "tabs": {
                     "tab1": {
                         "title": "Overview"
+                    },
+                    "tab2": {
+                        "title": "Credit Notes"
                     }
                 },
                 "label": {
@@ -382,6 +396,104 @@
                 "errorMsg": {
                     "comment_error_emtpy": "Can’t post a blank comment",
                     "common": "Uh-oh, we hit a snag. Retry?"
+                },
+                "ctas": {
+                    "accept": "Accept",
+                    "reject": "Reject"
+                }
+            }
+        },
+        "purchase-credit_notes": {
+            "title": "Recieved Credit Notes",
+            "emtpyStateComponent": {
+                "heading": "No credit notes yet"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Download selected notes",
+                    "successMsg": "Done! Your notes are downloading",
+                    "errorMsg": "Uh-oh, we hit a snag. Try again?"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Accepted",
+                    "tab3": "Rejected"
+                }
+            },
+            "table": {
+                "header": {
+                    "debitNote_Id": "Credit Note ID",
+                    "clients": "Client Name",
+                    "vendors": "Vendor's Name",
+                    "invoice_id": "Invoice ID",
+                    "defects": "Defects",
+                    "claimed_amount": "Claimed Amount",
+                    "setteled_amount": "Settled Amount",
+                    "status": "Status",
+                    "createdOn": "Created On"
+                }
+            },
+            "credit_notes_details": {
+                "title": {
+                    "credit_notes": "Recieved Credit notes",
+                    "credit_notes_details": "Credit note details"
+                },
+                "overview_labels": {
+                    "creditNoteId": "Credit Note ID",
+                    "debitNoteId": "Debit Note ID",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name",
+                    "grnId": "GRN ID",
+                    "defects": "Defects",
+                    "invoiceId": "Invoice ID",
+                    "claimedAmount": "Claimed Amount",
+                    "setteledAmount": "Settled Amount",
+                    "createdOn": "Created On",
+                    "status": "Status"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    }
+                },
+                "label": {
+                    "date": "Date",
+                    "total_amount": "Total Amount",
+                    "type": "Type",
+                    "reason": "Reason"
+                },
+                "emtpyStateComponent": {
+                    "title": "No debit notes yet",
+                    "para": "No debit notes yet"
+                },
+                "comments": {
+                    "title": "Comments",
+                    "attached_files_heading": "Attached Files",
+                    "input": {
+                        "placeholder": "Type your comment here"
+                    },
+                    "ctas": {
+                        "attach_file": {
+                            "placeholder": "Attach file"
+                        },
+                        "send": {
+                            "placeholder": "Send"
+                        }
+                    },
+                    "emtpyStateComponent": {
+                        "title": "All quiet here",
+                        "para": "Break the silence, drop a comment"
+                    }
+                },
+                "successMsg": {
+                    "file_attached_success": "File added",
+                    "comment_success": "Comment posted!"
+                },
+                "errorMsg": {
+                    "comment_error_emtpy": "Can’t post a blank comment",
+                    "common": "Uh-oh, we hit a snag. Try again?"
                 },
                 "ctas": {
                     "accept": "Accept",

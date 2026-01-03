@@ -1,16 +1,20 @@
 /* eslint-disable no-unsafe-optional-chaining */
-import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
+import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import {
+  getQCDefectStatuses,
+  getStylesForSelectComponent,
+} from '@/appUtils/helperFunctions';
+import { sellerResponseDebitNote } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import ReactSelect from 'react-select';
-import { useRouter } from 'next/navigation';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { sellerResponseDebitNote } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { toast } from 'sonner';
-import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import Loading from '../ui/Loading';
 import {
   Select,
   SelectContent,
@@ -20,10 +24,8 @@ import {
 } from '../ui/select';
 import Wrapper from '../wrappers/Wrapper';
 import { useCreateResponseColumns } from './useCreateResponseColumns';
-import Loading from '../ui/Loading';
 
-const CreateResponseD = ({ items = [], debitNoteId }) => {
-  const router = useRouter();
+const CreateResponseD = ({ items = [], debitNoteId, onClose }) => {
   const queryClient = useQueryClient();
   const [selectedItem, setSelectedItem] = useState(null);
   const [responseData, setResponseData] = useState({ items: [] });
@@ -38,7 +40,11 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
     return responseData.items
       .filter((i) => i.debitNoteItemId === debitNoteItemId)
       .reduce(
-        (sum, i) => sum + (i.approvedQuantity ?? 0) + (i.rejectedQuantity ?? 0),
+        (sum, i) =>
+          sum +
+          (i.approvedQuantity ?? 0) +
+          (i.rejectedQuantity ?? 0) +
+          (i.replacementQty ?? 0), // ✅ FIX
         0,
       );
   };
@@ -46,18 +52,39 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
   const getRemainingQty = (item) => {
     const buyerQty =
       item?.respondedQty ||
-      (item.refundQuantity ?? 0) + (item.replacementQuantity ?? 0);
+      (item?.refundQuantity ?? 0) + (item?.replacementQuantity ?? 0);
 
-    const usedQty = getUsedQty(item.debitNoteItemId);
+    const usedQty = getUsedQty(item?.debitNoteItemId);
 
     return Math.max(buyerQty - usedQty, 0);
   };
 
   /* Options */
+  const defects = (item) => {
+    const statuses = getQCDefectStatuses(item);
+
+    if (!statuses?.length) return '-';
+
+    return (
+      <div className="flex flex-wrap gap-2">
+        {statuses.map((status) => (
+          <ConditionalRenderingStatus key={status} status={status} isQC />
+        ))}
+      </div>
+    );
+  };
+
   const itemsOptions = useMemo(() => {
     return items.map((item) => ({
       value: item.debitNoteItemId,
-      label: `${item.productName} (${item.skuId})`,
+      label: (
+        <div className="flex items-center gap-1">
+          <span>
+            {item.productName} ({item.skuId})
+          </span>
+          {defects(item)}
+        </div>
+      ),
       disabled: getRemainingQty(item) <= 0,
     }));
   }, [items, responseData.items]);
@@ -139,12 +166,8 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
       approvedQuantity: rowItem.approvedQuantity,
       approvedAmount: rowItem.approvedAmount,
       rejectedQuantity: rowItem.rejectedQuantity,
-      rejectedAmount: rowItem.rejectedAmount,
+      replacementQty: rowItem.replacementQty,
     });
-  };
-
-  const onCancel = () => {
-    router.push(`/dashboard/sales/sales-debitNotes/${debitNoteId}`);
   };
 
   const sellerResponseDebitNoteMutation = useMutation({
@@ -152,7 +175,7 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
     onSuccess: () => {
       toast.success('Response added Successfully');
       queryClient.invalidateQueries([DebitNoteApi.getDebitNote.endpointKey]);
-      onCancel();
+      onClose();
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
@@ -160,24 +183,26 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
   });
 
   const normalizeItemForPayload = (item) => {
+    const isAccepted = item.responseType === 'ACCEPTED';
     const isRejected = item.responseType === 'REJECTED';
+    const isReplacement = item.responseType === 'REPLACEMENT';
 
     return {
       debitNoteItemId: item.debitNoteItemId,
       unitPrice: item.unitPrice,
       responseType: item.responseType,
 
-      approvedQuantity: isRejected ? 0 : item.approvedQuantity,
-      approvedAmount: isRejected ? 0 : item.approvedAmount,
+      approvedQuantity: isAccepted ? item.approvedQuantity : 0,
+      approvedAmount: isAccepted ? item.approvedAmount : 0,
+      taxAmount: isAccepted ? item.taxAmount : 0,
       rejectedQuantity: isRejected ? item.rejectedQuantity : 0,
-      rejectedAmount: isRejected ? item.rejectedAmount : 0,
-      taxAmount: item.taxAmount,
+      replacementQty: isReplacement ? item.replacementQty : 0,
 
-      cgstDetails: item.cgstDetails ? item.cgstDetails : null,
+      cgstDetails: isAccepted ? item.cgstDetails : null,
 
-      sgstDetails: item.sgstDetails ? item.sgstDetails : null,
+      sgstDetails: isAccepted ? item.sgstDetails : null,
 
-      igstDetails: item.igstDetails ? item.igstDetails : null,
+      igstDetails: isAccepted ? item.igstDetails : null,
 
       remarks: item.remarks || '',
     };
@@ -223,10 +248,10 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
     <Wrapper className="relative flex h-full flex-col">
       {/* SCROLLABLE CONTENT */}
       <div className="flex-1 overflow-y-auto pb-20">
-        <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
+        <div className="mb-4 flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
           <div className="grid grid-cols-3 gap-4">
             {/* Item select */}
-            <div className="flex flex-col gap-1">
+            <div className="col-span-3 flex flex-col gap-1 text-sm">
               <Label>
                 Items <span className="text-red-600">*</span>
               </Label>
@@ -322,8 +347,8 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
               <Input disabled value={selectedItem?.unitPrice ?? 0} />
             </div>
 
-            {/* Approved - only visible when responseType is ACCEPTED/REPLACEMENT */}
-            {selectedItem?.responseType !== 'REJECTED' && (
+            {/* Approved - only visible when responseType is ACCEPTED */}
+            {selectedItem?.responseType === 'ACCEPTED' && (
               <>
                 <div className="flex flex-col gap-1">
                   <Label>
@@ -403,75 +428,65 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
 
             {/* Rejected - only visible when responseType is REJECTED */}
             {selectedItem?.responseType === 'REJECTED' && (
-              <>
-                <div className="flex flex-col gap-1">
-                  <Label>
-                    Rejected Quantity <span className="text-red-600">*</span>
-                  </Label>
-                  <Input
-                    type="number"
-                    value={selectedItem?.rejectedQuantity ?? ''}
-                    disabled={selectedItem?.responseType !== 'REJECTED'}
-                    onChange={(e) => {
-                      const value = Number(e.target.value);
-                      if (value < 0) return;
+              <div className="flex flex-col gap-1">
+                <Label>
+                  Rejected Quantity <span className="text-red-600">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  value={selectedItem?.rejectedQuantity ?? ''}
+                  disabled={selectedItem?.responseType !== 'REJECTED'}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value < 0) return;
 
-                      const remainingQty = getRemainingQty(selectedItem);
-                      if (value > remainingQty) return;
+                    const remainingQty = getRemainingQty(selectedItem);
+                    if (value > remainingQty) return;
 
-                      setSelectedItem((prev) => ({
-                        ...prev,
-                        rejectedQuantity: value,
-                        rejectedAmount: value * prev.unitPrice,
-                        taxAmount: 0,
-                      }));
-                    }}
-                  />
-                  {selectedItem && (
-                    <p className="text-xs text-gray-500">
-                      Remaining Quantity: {getRemainingQty(selectedItem)}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label>
-                    Rejected Amount <span className="text-red-600">*</span>
-                  </Label>
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      rejectedQuantity: value,
+                      rejectedAmount: value * prev.unitPrice,
+                      taxAmount: 0,
+                    }));
+                  }}
+                />
+                {selectedItem && (
+                  <p className="text-xs text-gray-500">
+                    Remaining Quantity: {getRemainingQty(selectedItem)}
+                  </p>
+                )}
+              </div>
+            )}
 
-                  <Input
-                    type="number"
-                    value={selectedItem?.rejectedAmount ?? ''}
-                    disabled={selectedItem?.responseType !== 'REJECTED'}
-                    onChange={(e) => {
-                      const value = Number(e.target.value);
+            {/* Replacement - only visible when responseType is REPLACEMENT */}
+            {selectedItem?.responseType === 'REPLACEMENT' && (
+              <div className="flex flex-col gap-1">
+                <Label>
+                  Replacement Quantity <span className="text-red-600">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  value={selectedItem?.replacementQty ?? ''}
+                  disabled={selectedItem?.responseType !== 'REPLACEMENT'}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value < 0) return;
 
-                      if (value < 0) return;
+                    const remainingQty = getRemainingQty(selectedItem);
+                    if (value > remainingQty) return;
 
-                      const maxAmount =
-                        (selectedItem?.rejectedQuantity ?? 0) *
-                        (selectedItem?.unitPrice ?? 0);
-
-                      if (value > maxAmount) return;
-
-                      const taxData = calculateTax(value, selectedItem);
-
-                      setSelectedItem((prev) => ({
-                        ...prev,
-                        rejectedAmount: value,
-                        ...taxData,
-                      }));
-                    }}
-                  />
-
-                  <span className="text-xs text-gray-500">
-                    Max allowed: ₹
-                    {(
-                      (selectedItem?.rejectedQuantity ?? 0) *
-                      (selectedItem?.unitPrice ?? 0)
-                    ).toFixed(2)}
-                  </span>
-                </div>
-              </>
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      replacementQty: value,
+                      taxAmount: 0, // replacement has no tax
+                    }));
+                  }}
+                />
+                <p className="text-xs text-gray-500">
+                  Remaining Quantity: {getRemainingQty(selectedItem)}
+                </p>
+              </div>
             )}
           </div>
 
@@ -491,9 +506,12 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
               disabled={
                 !selectedItem?.debitNoteItemId ||
                 !selectedItem?.responseType ||
-                (selectedItem.responseType !== 'REJECTED' &&
+                (selectedItem.responseType === 'ACCEPTED' &&
                   (!selectedItem?.approvedQuantity ||
-                    selectedItem.approvedQuantity <= 0))
+                    selectedItem.approvedQuantity <= 0)) ||
+                (selectedItem.responseType === 'REPLACEMENT' &&
+                  (!selectedItem?.replacementQty ||
+                    selectedItem.replacementQty <= 0))
               }
               onClick={() => {
                 setResponseData((prev) => ({
@@ -510,9 +528,8 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
 
                       approvedQuantity: selectedItem.approvedQuantity,
                       approvedAmount: selectedItem.approvedAmount,
-
                       rejectedQuantity: selectedItem.rejectedQuantity,
-                      rejectedAmount: selectedItem.rejectedAmount,
+                      replacementQty: selectedItem.replacementQty,
 
                       unitPrice: selectedItem.unitPrice,
 
@@ -542,7 +559,7 @@ const CreateResponseD = ({ items = [], debitNoteId }) => {
       {/* STICKY FOOTER */}
       <div className="sticky bottom-0 z-20 border-t border-neutral-200 bg-white px-4 py-3">
         <div className="flex items-center justify-end gap-2">
-          <Button size="sm" onClick={onCancel} variant="outline">
+          <Button size="sm" onClick={onClose} variant="outline">
             Cancel
           </Button>
           <Button

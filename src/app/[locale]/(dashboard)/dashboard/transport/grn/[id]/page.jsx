@@ -92,7 +92,23 @@ export default function GRN() {
     EWB: translations('overview_labels.EWB'),
     // debitNote: translations('overview_labels.debitNote'),
   };
-
+  const customLabelRender = {
+    defects: () => (
+      <div className="flex items-center gap-1">
+        <span>{translations('overview_labels.defects')}</span>
+        {grnDetails?.isQcCompleted && (
+          <button
+            onClick={() => {
+              router.push(`/dashboard/inventory/qc/${params.id}`);
+            }}
+            className="cursor-pointer text-sm font-semibold text-primary hover:text-black hover:underline"
+          >
+            (QC)
+          </button>
+        )}
+      </div>
+    ),
+  };
   const customRender = {
     podId: () => {
       const podId = grnDetails?.podId;
@@ -298,6 +314,7 @@ export default function GRN() {
             data={overviewData}
             labelMap={overviewLabels}
             customRender={customRender}
+            customLabelRender={customLabelRender}
           />
 
           {/* Scrollable table area */}

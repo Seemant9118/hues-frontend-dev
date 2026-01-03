@@ -1,0 +1,234 @@
+'use client';
+
+import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
+import {
+  formattedAmount,
+  getQCDefectStatuses,
+} from '@/appUtils/helperFunctions';
+import CommentBox from '@/components/comments/CommentBox';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { MergerDataTable } from '@/components/table/merger-data-table';
+import Overview from '@/components/ui/Overview';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { useAuth } from '@/context/AuthContext';
+import useMetaData from '@/hooks/useMetaData';
+import { usePermission } from '@/hooks/usePermissions';
+import { getCreditNote } from '@/services/Credit_Note_Services/CreditNoteServices';
+import { useQuery } from '@tanstack/react-query';
+import { MoveUpRight } from 'lucide-react';
+import moment from 'moment';
+import { useTranslations } from 'next-intl';
+import { useParams, useRouter } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+import { buildBuyerSellerRowsForCredits } from './buildBuyerSellerRowsForCredits';
+import { useCreditNotesItemsColumns } from './useCreditNotesItemsColumns';
+
+const ViewCreditNote = () => {
+  useMetaData('Hues! - Credit Notes Details', 'HUES CREDITNOTES'); // dynamic title
+
+  const translations = useTranslations(
+    'purchases.purchase-credit_notes.credit_notes_details',
+  );
+
+  const { permissions } = useAuth();
+  const { hasPermission } = usePermission();
+  const router = useRouter();
+  const params = useParams();
+  const creditNoteId = params.credit_Id;
+  const [tabs, setTabs] = useState('overview');
+
+  const debitNoteBreadCrumbs = [
+    {
+      id: 1,
+      name: translations('title.credit_notes'),
+      path: `/dashboard/purchases/purchase-creditNotes/`,
+      show: true, // Always show
+    },
+
+    {
+      id: 2,
+      name: translations('title.credit_notes_details'),
+      path: `/dashboard/purchases/purchase-creditNotes/${creditNoteId}`,
+      show: true, // Always show
+    },
+  ];
+  const onTabChange = (tab) => {
+    setTabs(tab);
+  };
+
+  // get creditNote
+  const { data: creditNoteDetails } = useQuery({
+    queryKey: [CreditNoteApi.getCreditNote.endpointKey, creditNoteId],
+    queryFn: () => getCreditNote({ id: creditNoteId }),
+    select: (creditNote) => creditNote.data.data,
+    enabled: hasPermission('permission:sales-view'),
+  });
+
+  // overviw component data
+  const overviewData = {
+    creditNoteId: creditNoteDetails?.referenceNumber,
+    clientName: creditNoteDetails?.fromEnterprise?.name,
+    createdOn: moment(creditNoteDetails?.createdAt).format('DD/MM/YYYY'),
+    defects: '',
+    debitNoteId: creditNoteDetails?.debitNote?.referenceNumber,
+    invoiceId: creditNoteDetails?.invoice?.referenceNumber,
+    claimedAmount: formattedAmount(creditNoteDetails?.debitNote?.amount),
+    setteledAmount: formattedAmount(creditNoteDetails?.approvedAmount),
+  };
+  const overviewLabels = {
+    creditNoteId: translations('overview_labels.creditNoteId'),
+    clientName: translations('overview_labels.clientName'),
+    createdOn: translations('overview_labels.createdOn'),
+    defects: translations('overview_labels.defects'),
+    debitNoteId: translations('overview_labels.debitNoteId'),
+    invoiceId: translations('overview_labels.invoiceId'),
+    claimedAmount: translations('overview_labels.claimedAmount'),
+    setteledAmount: translations('overview_labels.setteledAmount'),
+  };
+  const customRender = {
+    defects: () => {
+      const statuses = getQCDefectStatuses(creditNoteDetails);
+
+      if (!statuses?.length) return '-';
+
+      return (
+        <div className="flex flex-wrap gap-2">
+          {statuses.map((status) => (
+            <ConditionalRenderingStatus key={status} status={status} isQC />
+          ))}
+        </div>
+      );
+    },
+    debitNoteId: () => {
+      const debitNoteId = creditNoteDetails?.debitNote?.id;
+      const debitNoteRef = creditNoteDetails?.debitNote?.referenceNumber;
+
+      return (
+        <p
+          className={`flex items-center gap-1 ${
+            debitNoteId
+              ? 'cursor-pointer hover:text-primary hover:underline'
+              : 'cursor-default text-muted-foreground'
+          }`}
+          onClick={() => {
+            if (debitNoteId) {
+              router.push(
+                `/dashboard/purchases/purchase-debitNotes/${debitNoteId}`,
+              );
+            }
+          }}
+        >
+          {debitNoteRef ? (
+            <>
+              {debitNoteRef}
+              <MoveUpRight size={14} />
+            </>
+          ) : (
+            '--'
+          )}
+        </p>
+      );
+    },
+    invoiceId: () => {
+      const invoiceId = creditNoteDetails?.invoice?.id;
+      const invoiceRef = creditNoteDetails?.invoice?.referenceNumber;
+
+      return (
+        <p
+          className={`flex items-center gap-1 ${
+            invoiceId
+              ? 'cursor-pointer hover:text-primary hover:underline'
+              : 'cursor-default text-muted-foreground'
+          }`}
+          onClick={() => {
+            if (invoiceId) {
+              router.push(
+                `/dashboard/purchases/purchase-invoices/${invoiceId}`,
+              );
+            }
+          }}
+        >
+          {invoiceRef ? (
+            <>
+              {invoiceRef}
+              <MoveUpRight size={14} />
+            </>
+          ) : (
+            '--'
+          )}
+        </p>
+      );
+    },
+  };
+
+  // Data to rendered in - recon (merged) table
+  const mergedRows = useMemo(
+    () =>
+      buildBuyerSellerRowsForCredits(creditNoteDetails?.creditNoteItems || []),
+    [creditNoteDetails],
+  );
+
+  // columns
+  const creditNoteItemsColumns = useCreditNotesItemsColumns();
+
+  if (!permissions || permissions.length === 0) {
+    return null; // or <Loading />
+  }
+
+  if (!hasPermission('permission:sales-view')) {
+    router.replace('/dashboard/unauthorized');
+    return null;
+  }
+
+  return (
+    <ProtectedWrapper permissionCode="permission:sales-view">
+      <Wrapper className="h-full py-2">
+        {/* Header */}
+        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+          {/* breadcrumbs */}
+          <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+        </section>
+
+        <Tabs
+          value={tabs}
+          onValueChange={onTabChange}
+          defaultValue={'overview'}
+        >
+          <section className="flex items-center justify-between gap-2">
+            <TabsList className="border">
+              <TabsTrigger value="overview">
+                {translations('tabs.tab1.title')}
+              </TabsTrigger>
+            </TabsList>
+          </section>
+
+          <TabsContent value="overview">
+            <div className="flex flex-col gap-4">
+              {/* OVERVIEW SECTION */}
+              <Overview
+                collapsible={false}
+                data={overviewData}
+                labelMap={overviewLabels}
+                customRender={customRender}
+              />
+
+              {/* comment */}
+              <CommentBox contextId={creditNoteId} context={'CREDIT_NOTE'} />
+
+              <MergerDataTable
+                id="buyer-seller-table"
+                columns={creditNoteItemsColumns}
+                data={mergedRows}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </Wrapper>
+    </ProtectedWrapper>
+  );
+};
+
+export default ViewCreditNote;

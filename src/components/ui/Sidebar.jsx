@@ -14,6 +14,7 @@ import {
   Boxes,
   ClipboardList,
   Database,
+  FileCheck,
   FileSignature,
   FileSymlink,
   Gauge,
@@ -186,6 +187,11 @@ const Sidebar = () => {
           icon: <FileSymlink size={16} />,
           path: '/dashboard/sales/sales-debitNotes',
         },
+        {
+          name: 'sidebar.subTabs.creditNotes',
+          icon: <FileCheck size={16} />,
+          path: '/dashboard/sales/sales-creditNotes',
+        },
       ],
     },
     hasPermission('permission:purchase-view') && {
@@ -212,6 +218,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/dashboard/purchases/purchase-debitNotes',
+        },
+        {
+          name: 'sidebar.subTabs.creditNotes',
+          icon: <FileCheck size={16} />,
+          path: '/dashboard/purchases/purchase-creditNotes',
         },
       ],
     },

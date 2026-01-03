@@ -325,12 +325,13 @@ const SalesInvoices = () => {
     },
   });
   const onRowClick = (row) => {
-    const isSaleInvoiceRead = row?.readTracker?.sellerIsRead;
+    const isSaleInvoiceRead = row?.readTracker?.sellerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
 
     if (isSaleInvoiceRead) {
       router.push(`/dashboard/sales/sales-invoices/${row.invoiceId}`);
     } else {
-      updateReadTrackerMutation.mutate(row.invoiceId);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/sales/sales-invoices/${row.invoiceId}`);
     }
   };

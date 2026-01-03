@@ -12,11 +12,14 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getDeliveryChallans } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import useMetaData from '@/hooks/useMetaData';
+import { toast } from 'sonner';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -98,11 +101,30 @@ const DeliveryChallan = () => {
     });
   }, [data]);
 
+  // [updateReadTracker Mutation : onRowClick]
+  const updateReadTrackerMutation = useMutation({
+    mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
+    mutationFn: updateReadTracker,
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
   const onRowClick = (row) => {
-    router.push(`/dashboard/transport/delivery-challan/${row.id}`);
+    const isSeller = row.enterpriseId === enterpriseId;
+    const isRead = isSeller
+      ? row?.readTracker?.sellerIsRead
+      : row?.readTracker?.buyerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
+
+    if (isRead) {
+      router.push(`/dashboard/transport/delivery-challan/${row.id}`);
+    } else {
+      updateReadTrackerMutation.mutate(readTrackerId);
+      router.push(`/dashboard/transport/delivery-challan/${row.id}`);
+    }
   };
 
-  const dispatchedNotesColumns = useDeliveryChallanColumns();
+  const dispatchedNotesColumns = useDeliveryChallanColumns(enterpriseId);
 
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>

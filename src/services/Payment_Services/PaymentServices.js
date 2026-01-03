@@ -11,9 +11,9 @@ export const getPaymentsFromOrder = (id) => {
 };
 
 // 2.get payments list
-export const getPaymentsList = ({ page, limit, context }) => {
+export const getPaymentsList = ({ page, limit, context, status }) => {
   return APIinstance.get(
-    `${paymentApi.getPaymentsList.endpoint}?page=${page}&limit=${limit}&context=${context}`,
+    `${paymentApi.getPaymentsList.endpoint}?page=${page}&limit=${limit}&context=${context}&status=${status}`,
   );
 };
 

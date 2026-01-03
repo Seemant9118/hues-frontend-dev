@@ -4,6 +4,7 @@ import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { LocalStorageService } from '@/lib/utils';
+import { Dot } from 'lucide-react';
 import moment from 'moment';
 
 export const useGrnColumns = () => {
@@ -15,9 +16,21 @@ export const useGrnColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="GRN ID" />
       ),
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.referenceNumber}</span>
-      ),
+      cell: ({ row }) => {
+        const { referenceNumber } = row.original;
+        const isSeller =
+          row.original.readTracker?.sellerEnterpriseId === enterpriseId;
+        const isRead = isSeller
+          ? row.original?.readTracker?.sellerIsRead
+          : row.original?.readTracker?.buyerIsRead || true;
+
+        return (
+          <div className="flex items-center">
+            {!isRead && <Dot size={32} className="text-primary" />}
+            <span>{referenceNumber}</span>
+          </div>
+        );
+      },
     },
 
     {

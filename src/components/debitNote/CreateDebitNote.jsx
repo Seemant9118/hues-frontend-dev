@@ -1,18 +1,15 @@
-import { Package } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { raisedDebitNote } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
+import { Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
+import { Checkbox } from '../ui/checkbox';
+import { DynamicTextInfo } from '../ui/dynamic-text-info';
 import { Input } from '../ui/input';
+import Loading from '../ui/Loading';
 import {
   Table,
   TableBody,
@@ -21,11 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import { Checkbox } from '../ui/checkbox';
-import { DynamicTextInfo } from '../ui/dynamic-text-info';
-import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
+import Wrapper from '../wrappers/Wrapper';
 
-const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
+const CreateDebitNote = ({
+  isCreatingDebitNote,
+  setIsCreatingDebitNote,
+  data = [],
+  id,
+}) => {
   const router = useRouter();
 
   const normalizeItems = (data = []) =>
@@ -55,11 +55,11 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!isCreatingDebitNote) return;
 
     setErrorMsg(null);
     setItems(normalizeItems(data));
-  }, [open, data]);
+  }, [isCreatingDebitNote, data]);
 
   const isAllSelected = items.every((item) => item.isSelected);
 
@@ -121,7 +121,7 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
       }));
 
     if (!selectedItems.length) {
-      setErrorMsg('Please select at least 1 item to proceed');
+      setErrorMsg('Please select atleast 1 item to proceed');
       return;
     }
 
@@ -136,27 +136,17 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[80vh] max-w-4xl flex-col p-0">
-        {/* Header */}
-        <DialogHeader className="border-b p-4">
-          <DialogTitle className="text-lg font-semibold">
-            Create Debit Note
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground">
-            Adjust the items to Create Debit Note as per your preference.
-          </p>
-          {errorMsg && <DynamicTextInfo variant="danger" title={errorMsg} />}
-        </DialogHeader>
-
+    <Wrapper className="flex h-screen flex-col">
+      <section className="flex flex-1 flex-col overflow-hidden">
         {/* Scrollable Content */}
-        <div className="scrollBarStyles flex-1 overflow-auto p-2">
+        <div className="scrollBarStyles flex-1 overflow-auto">
           {/* Items Table */}
-          <div className="rounded-sm border">
-            <div className="flex items-center gap-2 border-b p-4 font-semibold">
+          <div className="rounded-sm p-2">
+            <div className="flex items-center gap-2 border-b pb-2 font-semibold">
               <Package size={18} />
-              Select Items
+              Select Items to Create Debit note
             </div>
+            {errorMsg && <DynamicTextInfo variant="danger" title={errorMsg} />}
 
             <Table className="w-full text-sm">
               <TableHeader className="sticky top-0 bg-muted/40 text-left">
@@ -179,7 +169,7 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
 
               <TableBody>
                 {items.map((item, index) => (
-                  <TableRow key={item.id} className="border-t">
+                  <TableRow key={item.id} className="border-b">
                     <TableCell className="p-3">
                       <Checkbox
                         checked={item.isSelected}
@@ -245,22 +235,29 @@ const CreateDebitNote = ({ open, onOpenChange, data = [], id }) => {
             </Table>
           </div>
         </div>
-
-        {/* Footer */}
-        <DialogFooter className="border-t p-4">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button size="sm" onClick={handleCreateDebitNote}>
-            Confirm & Create Debit Note
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </section>
+      {/* Footer */}
+      <div className="sticky bottom-0 z-20 flex w-full justify-end gap-2 border-t-2 bg-white p-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setIsCreatingDebitNote(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          onClick={handleCreateDebitNote}
+          disabled={createDebitNoteMutation?.isPending}
+        >
+          {createDebitNoteMutation?.isPending ? (
+            <Loading />
+          ) : (
+            'Confirm & Create Debit Note'
+          )}
+        </Button>
+      </div>
+    </Wrapper>
   );
 };
 
