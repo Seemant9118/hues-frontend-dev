@@ -10,11 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCheck, Pencil, Trash2 } from 'lucide-react';
 
-const renderBuyerCell = (row, renderFn) => {
-  if (!row.original._isFirstRow) return null;
+// const renderBuyerCell = (row, renderFn) => {
+//   if (!row.original._isFirstRow) return null;
 
-  return renderFn();
-};
+//   return renderFn();
+// };
 
 export const useBuyerSellerColumns = ({
   onEditLine = null,
@@ -27,51 +27,46 @@ export const useBuyerSellerColumns = ({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="SKU ID" />
       ),
-      cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
     },
     {
       accessorKey: 'productName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Items" />
       ),
-      cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
     },
     {
       accessorKey: 'defect',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Defects" />
       ),
-      cell: ({ row }) =>
-        renderBuyerCell(row, () => {
-          const statuses = getQCDefectStatuses(row.original);
-          if (!statuses?.length) return '-';
+      cell: ({ row }) => {
+        const statuses = getQCDefectStatuses(row.original);
+        if (!statuses?.length) return '-';
 
-          return (
-            <div className="flex flex-wrap gap-1">
-              {statuses.map((status) => (
-                <ConditionalRenderingStatus key={status} status={status} isQC />
-              ))}
-            </div>
-          );
-        }),
+        return (
+          <div className="flex flex-wrap gap-1">
+            {statuses.map((status) => (
+              <ConditionalRenderingStatus key={status} status={status} isQC />
+            ))}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'buyerQty',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Qty." />
       ),
-      cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
     },
     {
       accessorKey: 'expectation',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Buyer Expectation" />
       ),
-      cell: ({ row }) =>
-        renderBuyerCell(row, () => {
-          const { expectation } = row.original;
-          return convertSnakeToTitleCase(expectation) || '-';
-        }),
+      cell: ({ row }) => {
+        const { expectation } = row.original;
+        return convertSnakeToTitleCase(expectation) || '-';
+      },
     },
 
     // -------- SELLER --------
@@ -131,12 +126,9 @@ export const useBuyerSellerColumns = ({
         return (
           <div className="flex items-center gap-1">
             {isCreditNoteCreated ? (
-              <button
-                className="flex items-center gap-1 text-xs hover:underline"
-                // TODO: onClick={() => onDeleteLine(row.original)} redirect to credit note
-              >
+              <span className="flex items-center gap-1 text-xs">
                 <CheckCheck size={14} /> Credit Note
-              </button>
+              </span>
             ) : (
               <>
                 <Button
