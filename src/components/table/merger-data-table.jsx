@@ -95,7 +95,7 @@ export function MergerDataTable({
               <TableRow
                 key={row.id}
                 className={cn(
-                  'font-medium hover:bg-white',
+                  'border-b font-medium hover:bg-white',
                   isBuyerRow ? 'border-t bg-white' : 'border-t-0 bg-white',
                 )}
               >
@@ -121,17 +121,25 @@ export function MergerDataTable({
                     cell.column.id === 'sellerAmount' ||
                     cell.column.id === 'actions';
 
+                  const isBuyerColumn = !isSellerColumn;
+                  const isBuyerRow = row.original._isFirstRow;
+
+                  // Do NOT render buyer cells on non-first rows
+                  if (!isBuyerRow && isBuyerColumn) {
+                    return null;
+                  }
+
                   return (
                     <TableCell
                       key={cell.id}
+                      rowSpan={
+                        isBuyerRow && isBuyerColumn
+                          ? row.original._rowSpanCount || 1
+                          : undefined
+                      }
                       className={cn(
-                        'align-top',
-
-                        // seller columns keep border + padding
+                        'align-middle',
                         isSellerColumn && 'border-l border-t pl-4',
-
-                        // buyer columns on seller rows stay invisible but keep width
-                        !isBuyerRow && !isSellerColumn && 'invisible',
                       )}
                     >
                       {flexRender(

@@ -7,11 +7,11 @@ import ConditionalRenderingStatus from '@/components/orders/ConditionalRendering
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Badge } from '@/components/ui/badge';
 
-const renderBuyerCell = (row, renderFn) => {
-  if (!row.original._isFirstRow) return null;
+// const renderBuyerCell = (row, renderFn) => {
+//   if (!row.original._isFirstRow) return null;
 
-  return renderFn();
-};
+//   return renderFn();
+// };
 
 export const useCreditNotesItemsColumns = () => {
   return [
@@ -20,33 +20,30 @@ export const useCreditNotesItemsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="SKU ID" />
       ),
-      cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
     },
     {
       accessorKey: 'productName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Items" />
       ),
-      cell: ({ row, getValue }) => renderBuyerCell(row, () => getValue()),
     },
     {
       accessorKey: 'defect',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Defects" />
       ),
-      cell: ({ row }) =>
-        renderBuyerCell(row, () => {
-          const statuses = getQCDefectStatuses(row.original);
-          if (!statuses?.length) return '-';
+      cell: ({ row }) => {
+        const statuses = getQCDefectStatuses(row.original);
+        if (!statuses?.length) return '-';
 
-          return (
-            <div className="flex flex-wrap gap-1">
-              {statuses.map((status) => (
-                <ConditionalRenderingStatus key={status} status={status} isQC />
-              ))}
-            </div>
-          );
-        }),
+        return (
+          <div className="flex flex-wrap gap-1">
+            {statuses.map((status) => (
+              <ConditionalRenderingStatus key={status} status={status} isQC />
+            ))}
+          </div>
+        );
+      },
     },
     // {
     //   accessorKey: 'buyerQty',
