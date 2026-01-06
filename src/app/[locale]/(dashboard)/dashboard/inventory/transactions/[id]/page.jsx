@@ -1,21 +1,22 @@
 'use client';
 
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
-import { getValueForMovementType } from '@/appUtils/helperFunctions';
+import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import CommentBox from '@/components/comments/CommentBox';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
+import { Badge } from '@/components/ui/badge';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import { getMaterialMovementStock } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import useMetaData from '@/hooks/useMetaData';
 import { useTransactionItemsColumns } from './transactionItemColumns';
 
 const ViewTransaction = () => {
@@ -50,58 +51,97 @@ const ViewTransaction = () => {
     select: (res) => res.data.data,
     enabled: true,
   });
+  const isStockOut = stockDetails?.transactionType === 'STOCK_OUT';
 
   const overviewData = {
     stockId: stockDetails?.referenceNumber || '-',
-    docType: getValueForMovementType(stockDetails?.grns?.[0]?.movementType),
-    ...(stockDetails?.grns?.[0]?.referenceNumber && {
-      grnId: stockDetails.grns[0].referenceNumber,
+    docType: stockDetails?.docType || '-',
+    ...((stockDetails?.grns?.[0]?.referenceNumber ||
+      stockDetails?.dispatchNote?.dispatchReferenceNumber) && {
+      docId:
+        stockDetails.grns?.[0].referenceNumber ||
+        stockDetails?.dispatchNote?.dispatchReferenceNumber ||
+        '-',
     }),
     invoiceId:
-      stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber || '-',
-    clientName: stockDetails?.grns?.[0]?.metaData?.buyerDetails?.name || '-',
-    vendorName: stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name || '-',
+      stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber ||
+      stockDetails?.dispatchNote?.invoiceReferenceNumber ||
+      '-',
+    ...(isStockOut && {
+      clientName: stockDetails?.dispatchNote?.clientName || '-',
+    }),
+    ...(!isStockOut && {
+      vendorName: stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name || '-',
+    }),
   };
   const overviewLabels = {
     stockId: translations('overview.labels.transactionId'),
     docType: translations('overview.labels.docType'),
-    ...(stockDetails?.grns?.[0]?.referenceNumber && {
-      grnId: translations('overview.labels.docId'),
+    ...((stockDetails?.grns?.[0]?.referenceNumber ||
+      stockDetails?.dispatchNote?.dispatchReferenceNumber) && {
+      docId: translations('overview.labels.docId'),
     }),
     invoiceId: translations('overview.labels.invoiceId'),
-    clientName: translations('overview.labels.clientName'),
-    vendorName: translations('overview.labels.vendorName'),
-    status: translations('overview.labels.status'),
+    ...(isStockOut && {
+      clientName: translations('overview.labels.clientName'),
+    }),
+    ...(!isStockOut && {
+      vendorName: translations('overview.labels.vendorName'),
+    }),
   };
 
   const customRender = {
-    grnId: () => {
+    docType: () => {
+      return (
+        <Badge variant="secondary">
+          {convertSnakeToTitleCase(stockDetails?.docType || '-').toUpperCase()}
+        </Badge>
+      );
+    },
+    docId: () => {
+      const docId = isStockOut
+        ? stockDetails?.dispatchNote?.dispatchNoteId
+        : stockDetails?.grns?.[0]?.id;
+      const docRef = isStockOut
+        ? stockDetails?.dispatchNote?.dispatchReferenceNumber
+        : stockDetails?.grns?.[0]?.referenceNumber;
+
+      const path = isStockOut
+        ? `/dashboard/transport/dispatch/${docId}`
+        : `/dashboard/transport/grn/${docId}`;
       return (
         <p
           className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
           onClick={() => {
-            router.push(
-              `/dashboard/transport/grn/${stockDetails?.grns?.[0]?.id}`,
-            );
+            router.push(path);
           }}
         >
-          {stockDetails?.grns?.[0]?.referenceNumber}
+          {docRef}
           <MoveUpRight size={12} />
         </p>
       );
     },
     // invoiceId
     invoiceId: () => {
+      const invoiceId = isStockOut
+        ? stockDetails?.dispatchNote?.invoiceId
+        : stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.id;
+      const invoiceRef = isStockOut
+        ? stockDetails?.dispatchNote?.invoiceReferenceNumber
+        : stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber;
+
+      const path = isStockOut
+        ? `/dashboard/sales/sales-invoices/${invoiceId}`
+        : `/dashboard/purchases/purchase-invoices/${invoiceId}`;
+
       return (
         <p
           className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
           onClick={() => {
-            router.push(
-              `/dashboard/purchases/purchase-invoices/${stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.id}`,
-            );
+            router.push(path);
           }}
         >
-          {stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber}
+          {invoiceRef}
           <MoveUpRight size={12} />
         </p>
       );
