@@ -376,9 +376,9 @@
             "title2": "Transaction Details",
             "overview": {
                 "labels": {
-                    "stockId": "Stock ID",
+                    "transactionId": "Transaction ID",
                     "docType": "Doc Type",
-                    "grnId": "GRN ID",
+                    "docId": "Doc ID",
                     "invoiceId": "Invoice ID",
                     "clientName": "Client Name",
                     "vendorName": "Vendor Name"

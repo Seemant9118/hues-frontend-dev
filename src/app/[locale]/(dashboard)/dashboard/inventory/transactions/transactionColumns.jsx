@@ -10,7 +10,7 @@ export const useTrasnsactionsColumns = () => {
     {
       accessorKey: 'stockId',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Stock ID" />
+        <DataTableColumnHeader column={column} title="Transaction ID" />
       ),
       cell: ({ row }) => row.original?.referenceNumber || '--',
     },
@@ -19,7 +19,7 @@ export const useTrasnsactionsColumns = () => {
     {
       accessorKey: 'grnId',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="GRN ID" />
+        <DataTableColumnHeader column={column} title="Doc ID" />
       ),
       cell: ({ row }) => row.original?.grns?.[0]?.referenceNumber || '--',
     },
@@ -38,7 +38,7 @@ export const useTrasnsactionsColumns = () => {
     {
       accessorKey: 'name',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Vendor Name" />
+        <DataTableColumnHeader column={column} title="Client/Vendor Name" />
       ),
       cell: ({ row }) =>
         row.original?.grns?.[0]?.metaData?.sellerDetails?.name ?? 0,
@@ -48,7 +48,7 @@ export const useTrasnsactionsColumns = () => {
     {
       accessorKey: 'total',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Total" />
+        <DataTableColumnHeader column={column} title="Total Item(s)" />
       ),
       cell: ({ row }) => row.original?.totalItems ?? 0,
     },

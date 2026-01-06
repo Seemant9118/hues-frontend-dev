@@ -6,10 +6,10 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
-import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -50,8 +50,6 @@ const UploadItems = dynamic(
 
 // MACROS
 const PAGE_LIMIT = 10;
-// Debounce delay in milliseconds
-const DEBOUNCE_DELAY = 500;
 
 const VendorsPage = () => {
   useMetaData('Hues! - Vendors', 'HUES VENDORS'); // dynamic title
@@ -79,11 +77,10 @@ const VendorsPage = () => {
   const [editingVendor, setEditingVendor] = useState();
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [vendors, setVendors] = useState(null);
   const [paginationData, setPaginationData] = useState({});
 
-  // 🧩 Vendors Query (default list)
+  // Vendors Query (default list)
   const {
     data: vendorsQuery,
     isLoading: isVendorsQueryLoading,
@@ -127,7 +124,7 @@ const VendorsPage = () => {
     placeholderData: keepPreviousData,
   });
 
-  // 🧩 Vendors Search Query
+  // Vendors Search Query
   const {
     data: searchQuery,
     isLoading: isSearchQueryLoading,
@@ -136,19 +133,19 @@ const VendorsPage = () => {
   } = useInfiniteQuery({
     queryKey: [
       vendorEnterprise.searchedVendors.endpointKey,
-      debouncedSearchTerm,
+      searchTerm,
       enterpriseId,
     ],
 
     queryFn: async ({ pageParam = 1 }) => {
-      if (!debouncedSearchTerm?.trim()) {
+      if (!searchTerm?.trim()) {
         return { data: { data: { users: [], totalPages: 0, currentPage: 1 } } };
       }
 
       const response = await searchedVendors({
         page: pageParam,
         limit: PAGE_LIMIT,
-        data: { searchString: debouncedSearchTerm },
+        data: { searchString: searchTerm },
       });
 
       return (
@@ -166,25 +163,17 @@ const VendorsPage = () => {
       return nextPage <= totalPages ? nextPage : undefined;
     },
 
-    enabled: Boolean(debouncedSearchTerm?.trim()?.length > 0),
+    enabled: Boolean(searchTerm?.trim()?.length > 0),
 
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
-  // 🕓 Debounce search term
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, DEBOUNCE_DELAY);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  // 🧩 Handle combined vendor data safely
+  // Handle combined vendor data safely
   useEffect(() => {
     try {
       // Pick source depending on search mode
-      const isSearching = Boolean(debouncedSearchTerm?.trim());
+      const isSearching = Boolean(searchTerm?.trim());
       const source =
         isSearching && searchQuery?.pages?.length ? searchQuery : vendorsQuery;
 
@@ -226,7 +215,7 @@ const VendorsPage = () => {
       setVendors([]);
       setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }
-  }, [debouncedSearchTerm, vendorsQuery, searchQuery]);
+  }, [searchTerm, vendorsQuery, searchQuery]);
 
   // handle upload file fn
   const uploadFile = async (file) => {
@@ -308,11 +297,12 @@ const VendorsPage = () => {
             {!isUploading && (
               <>
                 <SubHeader name={translations('title')}>
-                  <div className="flex items-center justify-center gap-4">
-                    <SearchInput
-                      searchPlaceholder={translations('ctas.searchPlaceHolder')}
-                      toSearchTerm={searchTerm}
-                      setToSearchTerm={setSearchTerm}
+                  <div className="flex items-center justify-center gap-2">
+                    <DebouncedInput
+                      value={searchTerm}
+                      delay={400}
+                      onDebouncedChange={setSearchTerm}
+                      placeholder="Search Vendors"
                     />
 
                     <ProtectedWrapper
@@ -380,7 +370,7 @@ const VendorsPage = () => {
                   ) : (
                     <>
                       {/* Case 1: No search term, and no data → Empty stage */}
-                      {!debouncedSearchTerm && vendors?.length === 0 ? (
+                      {!searchTerm && vendors?.length === 0 ? (
                         <EmptyStageComponent
                           heading={translations('emptyStateComponent.heading')}
                           subItems={keys}
@@ -392,12 +382,12 @@ const VendorsPage = () => {
                           columns={VendorsColumns}
                           data={vendors || []}
                           fetchNextPage={
-                            debouncedSearchTerm
+                            searchTerm
                               ? searchFetchNextPage
                               : vendorFetchNextPage
                           }
                           isFetching={
-                            debouncedSearchTerm
+                            searchTerm
                               ? isSearchQueryFetching
                               : isVendorsQueryFetching
                           }

@@ -3,6 +3,7 @@
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -16,8 +17,8 @@ import { LocalStorageService } from '@/lib/utils';
 import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { useStocksColumns } from './stockColumns';
 
 const PAGE_LIMIT = 10;
@@ -38,6 +39,7 @@ const Stocks = () => {
     'stocks.emptyStateComponent.subItems.subItem4',
   ];
   const { hasPermission } = usePermission();
+  const [searchTerm, setSearchTerm] = useState('');
   const [stocksList, setStocksList] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
   const [filter, setFilter] = useState(null);
@@ -112,7 +114,16 @@ const Stocks = () => {
         </>
       ) : (
         <Wrapper className="h-screen">
-          <SubHeader name={translations('title')}></SubHeader>
+          <SubHeader name={translations('title')}>
+            <div className="flex items-center justify-center gap-2">
+              <DebouncedInput
+                value={searchTerm}
+                delay={400}
+                onDebouncedChange={setSearchTerm}
+                placeholder="Search Stocks"
+              />
+            </div>
+          </SubHeader>
 
           <Tabs value={tab} onValueChange={onTabChange} defaultValue={'All'}>
             <TabsList className="border">

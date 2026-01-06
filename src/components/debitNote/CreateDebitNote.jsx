@@ -47,7 +47,7 @@ const CreateDebitNote = ({
         defectQty: remainingDefectedQty || defectQty,
         quantity: remainingDefectedQty || defectQty,
         issueType: item.issueType, // SHORT_QUANTITY | UNSATISFACTORY
-        isSelected: false,
+        isSelected: true,
       };
     });
   /* Normalize API Data */

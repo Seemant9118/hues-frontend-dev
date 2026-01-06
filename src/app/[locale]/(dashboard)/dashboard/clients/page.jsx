@@ -8,10 +8,10 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import EditModal from '@/components/Modals/EditModal';
 import Tooltips from '@/components/auth/Tooltips';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
-import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -53,8 +53,6 @@ const UploadItems = dynamic(
 
 // MACROS
 const PAGE_LIMIT = 10;
-// Debounce delay in milliseconds
-const DEBOUNCE_DELAY = 500;
 
 const ClientPage = () => {
   useMetaData('Hues! - Clients', 'HUES CLIENTS'); // dynamic title
@@ -81,7 +79,6 @@ const ClientPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [clients, setClients] = useState([]);
   const [paginationData, setPaginationData] = useState({
     totalPages: 0,
@@ -127,15 +124,15 @@ const ClientPage = () => {
     fetchNextPage: searchFetchNextPage,
     isFetching: isSearchQueryFetching,
   } = useInfiniteQuery({
-    queryKey: [clientEnterprise.searchClients.endpointKey, debouncedSearchTerm],
+    queryKey: [clientEnterprise.searchClients.endpointKey, searchTerm],
     queryFn: async ({ pageParam = 1 }) => {
-      if (!debouncedSearchTerm?.trim()) {
+      if (!searchTerm?.trim()) {
         return { data: { data: { users: [], totalPages: 0, currentPage: 1 } } };
       }
       const response = await searchedClients({
         page: pageParam,
         limit: PAGE_LIMIT,
-        data: { searchString: debouncedSearchTerm },
+        data: { searchString: searchTerm },
       });
       return (
         response ?? {
@@ -149,23 +146,15 @@ const ClientPage = () => {
       const nextPage = (Array.isArray(allPages) ? allPages.length : 0) + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: Boolean(debouncedSearchTerm?.trim()?.length > 0),
+    enabled: Boolean(searchTerm?.trim()?.length > 0),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
-  // ✅ Debounce search term
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, DEBOUNCE_DELAY);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  // ✅ Merge search & normal query data safely
+  // Merge search & normal query data safely
   useEffect(() => {
     try {
-      const isSearchMode = Boolean(debouncedSearchTerm?.trim());
+      const isSearchMode = Boolean(searchTerm?.trim());
       const source = isSearchMode ? searchQuery : clientsQuery;
 
       if (!source?.pages?.length) {
@@ -202,7 +191,7 @@ const ClientPage = () => {
       setClients([]);
       setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }
-  }, [debouncedSearchTerm, clientsQuery, searchQuery]);
+  }, [searchTerm, clientsQuery, searchQuery]);
 
   // handleFile fn
   const uploadFile = async (file) => {
@@ -284,11 +273,12 @@ const ClientPage = () => {
             {!isUploading && (
               <>
                 <SubHeader name={translations('title')}>
-                  <div className="flex items-center justify-center gap-4">
-                    <SearchInput
-                      searchPlaceholder={translations('ctas.searchPlaceHolder')}
-                      toSearchTerm={searchTerm}
-                      setToSearchTerm={setSearchTerm}
+                  <div className="flex items-center justify-center gap-2">
+                    <DebouncedInput
+                      value={searchTerm}
+                      delay={400}
+                      onDebouncedChange={setSearchTerm}
+                      placeholder="Search Clients"
                     />
                     <ProtectedWrapper
                       permissionCode={'permission:clients-download'}
@@ -357,7 +347,7 @@ const ClientPage = () => {
                   ) : (
                     <>
                       {/* Case 1: No search term, and no data → Empty stage */}
-                      {!debouncedSearchTerm && clients?.length === 0 ? (
+                      {!searchTerm && clients?.length === 0 ? (
                         <EmptyStageComponent
                           heading={translations('emptyStateComponent.heading')}
                           subItems={keys}
@@ -369,12 +359,12 @@ const ClientPage = () => {
                           columns={ClientsColumns}
                           data={clients || []}
                           fetchNextPage={
-                            debouncedSearchTerm
+                            searchTerm
                               ? searchFetchNextPage
                               : clientFetchNextPage
                           }
                           isFetching={
-                            debouncedSearchTerm
+                            searchTerm
                               ? isSearchQueryFetching
                               : isClientQueryFetching
                           }

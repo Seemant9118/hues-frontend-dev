@@ -119,32 +119,35 @@ const ViewItem = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  setIsEditing((prev) => !prev);
-                  e.stopPropagation();
-                  setGoodsToEdit(itemDetails);
-                }}
-              >
-                <Pencil size={12} />
-                {translations('ctas.edit')}
-              </Button>
-
-              <ConfirmAction
-                deleteCta={translations('ctas.delete')}
-                infoText={translations('ctas.infoText', {
-                  name: itemDetails?.productName,
-                })}
-                cancelCta={translations('ctas.cancel')}
-                id={itemDetails?.id}
-                mutationKey={goodsApi.getAllProductGoods.endpointKey}
-                mutationFunc={DeleteProductGoods}
-                successMsg={translations('ctas.successMsg')}
-                invalidateKey={goodsApi.getAllProductGoods.endpointKey}
-                redirectedTo={() => router.push('/dashboard/inventory/goods')}
-              />
+              <ProtectedWrapper permissionCode="permission:item-masters-edit">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    setIsEditing((prev) => !prev);
+                    e.stopPropagation();
+                    setGoodsToEdit(itemDetails);
+                  }}
+                >
+                  <Pencil size={12} />
+                  {translations('ctas.edit')}
+                </Button>
+              </ProtectedWrapper>
+              <ProtectedWrapper permissionCode="permission:item-masters-delete">
+                <ConfirmAction
+                  deleteCta={translations('ctas.delete')}
+                  infoText={translations('ctas.infoText', {
+                    name: itemDetails?.productName,
+                  })}
+                  cancelCta={translations('ctas.cancel')}
+                  id={itemDetails?.id}
+                  mutationKey={goodsApi.getAllProductGoods.endpointKey}
+                  mutationFunc={DeleteProductGoods}
+                  successMsg={translations('ctas.successMsg')}
+                  invalidateKey={goodsApi.getAllProductGoods.endpointKey}
+                  redirectedTo={() => router.push('/dashboard/inventory/goods')}
+                />
+              </ProtectedWrapper>
             </div>
           </section>
 

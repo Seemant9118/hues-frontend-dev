@@ -13,17 +13,23 @@ import Wrapper from '../wrappers/Wrapper';
 
 const CreateCreditNote = ({ isCreatingCreditNote, data = [], id, onClose }) => {
   const router = useRouter();
-  const [selectedRowIds, setSelectedRowIds] = useState([]);
   const normalizeItems = (data = []) =>
     data.map((item) => {
       return {
         ...item,
-        isSelected: false,
+        isSelected: true,
       };
     });
   /* Normalize API Data */
   const [items, setItems] = useState(() => normalizeItems(data));
   const [errorMsg, setErrorMsg] = useState(null);
+
+  const getBuyerRowIds = (data = []) =>
+    data.filter((item) => item._isFirstRow).map((item) => item.rowId);
+
+  const [selectedRowIds, setSelectedRowIds] = useState(() =>
+    getBuyerRowIds(data),
+  );
 
   //   helper fn
   const groupByDebitNoteItemId = (items = []) => {
@@ -39,7 +45,12 @@ const CreateCreditNote = ({ isCreatingCreditNote, data = [], id, onClose }) => {
     if (!isCreatingCreditNote) return;
 
     setErrorMsg(null);
-    setItems(normalizeItems(data));
+
+    const normalized = normalizeItems(data);
+    setItems(normalized);
+
+    // auto select all buyer rows
+    setSelectedRowIds(getBuyerRowIds(normalized));
   }, [isCreatingCreditNote, data]);
 
   // create debit note mutation
@@ -135,7 +146,7 @@ const CreateCreditNote = ({ isCreatingCreditNote, data = [], id, onClose }) => {
           <div className="rounded-sm p-2">
             <div className="flex items-center gap-2 border-b pb-2 font-semibold">
               <Package size={18} />
-              Select Items to Create Debit note
+              Select Items to Create Credit note
             </div>
             {errorMsg && <DynamicTextInfo variant="danger" title={errorMsg} />}
 

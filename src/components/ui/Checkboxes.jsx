@@ -1,36 +1,35 @@
 import React from 'react';
-import { Input } from './input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
-const Checkboxes = ({
+const CheckboxOption = ({
   checked,
-  checkBoxName,
+  name,
   value,
-  handleChange,
-  option,
-  disabled,
+  onChange,
+  label,
+  disabled = false,
 }) => {
   return (
-    <div className="relative">
-      <Input
+    <label
+      className={cn(
+        'flex items-center gap-2 rounded-md border p-2 text-sm transition-colors',
+        checked && 'border-primary bg-primary/10',
+        disabled
+          ? 'cursor-not-allowed opacity-50'
+          : 'cursor-pointer hover:bg-primary hover:text-white',
+      )}
+    >
+      <Checkbox
         checked={checked}
-        type="checkbox"
-        id={option}
-        name={checkBoxName}
         disabled={disabled}
-        value={value}
-        onChange={() => handleChange(value)}
-        className={`${checked ? 'absolute right-0 top-0 w-4' : 'hidden'}`}
+        onCheckedChange={() => onChange(value)}
+        name={name}
       />
-      <label
-        htmlFor={option}
-        className={`rounded-md border border-gray-400 bg-gray-100 p-2 text-slate-700 hover:bg-blue-500 hover:text-white ${
-          disabled ? 'cursor-not-allowed' : 'cursor-pointer'
-        }`}
-      >
-        {option}
-      </label>
-    </div>
+
+      <span>{label}</span>
+    </label>
   );
 };
 
-export default Checkboxes;
+export default CheckboxOption;
