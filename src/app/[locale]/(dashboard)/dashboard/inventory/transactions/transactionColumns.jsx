@@ -1,8 +1,9 @@
 'use client';
 
-import { getValueForMovementType } from '@/appUtils/helperFunctions';
+import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Badge } from '@/components/ui/badge';
 
 export const useTrasnsactionsColumns = () => {
   return [
@@ -21,17 +22,27 @@ export const useTrasnsactionsColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Doc ID" />
       ),
-      cell: ({ row }) => row.original?.grns?.[0]?.referenceNumber || '--',
+      cell: ({ row }) =>
+        row.original?.grns?.[0]?.referenceNumber ||
+        row.original?.dispatchnotes?.[0]?.referenceNumber ||
+        '--',
     },
 
     /* Doc Type */
     {
-      accessorKey: 'documentType',
+      accessorKey: 'docType',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Doc Type" />
       ),
-      cell: ({ row }) =>
-        getValueForMovementType(row.original?.grns?.[0]?.movementType),
+      cell: ({ row }) => {
+        return (
+          <Badge variant="secondary">
+            {convertSnakeToTitleCase(
+              row.original?.docType || '-',
+            ).toUpperCase()}
+          </Badge>
+        );
+      },
     },
 
     /* Client/Vendor name */
@@ -41,7 +52,9 @@ export const useTrasnsactionsColumns = () => {
         <DataTableColumnHeader column={column} title="Client/Vendor Name" />
       ),
       cell: ({ row }) =>
-        row.original?.grns?.[0]?.metaData?.sellerDetails?.name ?? 0,
+        row.original?.grns?.[0]?.metaData?.sellerDetails?.name ||
+        row.original?.dispatchnotes?.[0]?.dispatchBuyerName ||
+        0,
     },
 
     /* Total */
