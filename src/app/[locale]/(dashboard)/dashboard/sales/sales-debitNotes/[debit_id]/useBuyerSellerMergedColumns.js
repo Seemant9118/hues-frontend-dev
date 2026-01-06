@@ -8,7 +8,13 @@ import ConditionalRenderingStatus from '@/components/orders/ConditionalRendering
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCheck, Pencil, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { CheckCheck, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 
 // const renderBuyerCell = (row, renderFn) => {
 //   if (!row.original._isFirstRow) return null;
@@ -130,22 +136,35 @@ export const useBuyerSellerColumns = ({
                 <CheckCheck size={14} /> Credit Note
               </span>
             ) : (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onEditLine(row.original)}
-                >
-                  <Pencil size={14} />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onDeleteLine(row.original)}
-                >
-                  <Trash2 size={16} className="text-red-500" />
-                </Button>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-w-fit">
+                  <DropdownMenuItem
+                    className="flex items-center justify-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditLine(row.original);
+                    }}
+                  >
+                    <Pencil size={14} /> Edit
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    className="flex items-center justify-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteLine(row.original);
+                    }}
+                  >
+                    <Trash2 size={16} className="text-red-500" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         );

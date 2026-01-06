@@ -156,20 +156,22 @@ const ViewService = () => {
             </div>
 
             <div className="flex gap-2">
-              <ConfirmAction
-                deleteCta={translations('ctas.delete')}
-                infoText={translations('ctas.infoText', {
-                  name: itemDetails?.serviceName,
-                })}
-                cancelCta={translations('ctas.cancel')}
-                id={itemDetails?.id}
-                mutationFunc={DeleteProductServices}
-                successMsg={translations('ctas.successMsg')}
-                invalidateKey={servicesApi.getAllProductServices.endpointKey}
-                redirectedTo={() =>
-                  router.push('/dashboard/inventory/services')
-                }
-              />
+              <ProtectedWrapper permissionCode="permission:item-masters-delete">
+                <ConfirmAction
+                  deleteCta={translations('ctas.delete')}
+                  infoText={translations('ctas.infoText', {
+                    name: itemDetails?.serviceName,
+                  })}
+                  cancelCta={translations('ctas.cancel')}
+                  id={itemDetails?.id}
+                  mutationFunc={DeleteProductServices}
+                  successMsg={translations('ctas.successMsg')}
+                  invalidateKey={servicesApi.getAllProductServices.endpointKey}
+                  redirectedTo={() =>
+                    router.push('/dashboard/inventory/services')
+                  }
+                />
+              </ProtectedWrapper>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">

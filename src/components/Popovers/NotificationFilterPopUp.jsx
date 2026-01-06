@@ -10,7 +10,7 @@ import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
-import Checkboxes from '../ui/Checkboxes';
+import CheckboxOption from '../ui/Checkboxes';
 import DatePickers from '../ui/DatePickers';
 import { Label } from '../ui/label';
 
@@ -67,7 +67,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" debounceTime={500}>
           <SlidersHorizontal size={16} />
           {translations('cta')}
         </Button>
@@ -120,22 +120,24 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
               {translations('form.label.chooseType')}:
             </span>
 
-            <div className="flex flex-wrap gap-5 px-2 py-4">
+            <div className="flex flex-wrap gap-3 px-2 py-4">
               {notificationTypes.map(({ key, value }) => {
                 const translatedLabel = translations(
                   `form.label.types_available.${key}.value`,
                 );
+
+                const backendValue = value.toUpperCase();
+
                 return (
-                  <Checkboxes
+                  <CheckboxOption
                     key={key}
                     name="notificationType"
-                    option={translatedLabel} // Show Hindi
-                    value={value.toUpperCase()} // Store English in state
-                    checkBoxName={translatedLabel}
+                    label={translatedLabel} // UI (Hindi / localized)
+                    value={backendValue} // Backend value
                     checked={dataForFilter.notificationType.includes(
-                      value.toUpperCase(),
+                      backendValue,
                     )}
-                    handleChange={() => handleTypesFilter(value.toUpperCase())}
+                    onChange={handleTypesFilter} // receives value
                   />
                 );
               })}
@@ -145,6 +147,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
 
         <div className="flex gap-2">
           <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               setSelectedFromDate(null);
@@ -165,6 +168,7 @@ function NotificationFilterPopUp({ setFilteredNotification }) {
             {translations('form.ctas.clear')}
           </Button>
           <Button
+            size="sm"
             variant="blue_outline"
             onClick={() => {
               setFilteredNotification(dataForFilter);

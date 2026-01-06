@@ -95,7 +95,7 @@ export function MergerDataTable({
               <TableRow
                 key={row.id}
                 className={cn(
-                  'border-b font-medium hover:bg-white',
+                  'border-b font-medium',
                   isBuyerRow ? 'border-t bg-white' : 'border-t-0 bg-white',
                 )}
               >

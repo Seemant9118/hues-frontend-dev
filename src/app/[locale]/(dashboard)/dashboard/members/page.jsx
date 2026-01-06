@@ -72,7 +72,7 @@ const MembersPage = () => {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-screen">
           <SubHeader name={translation('header')} className="z-10 bg-white">
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-2">
               <ProtectedWrapper permissionCode={'permission:members-create'}>
                 <Button onClick={() => setIsInvitingMembers(true)} size="sm">
                   <UserPlus size={16} />
@@ -97,7 +97,7 @@ const MembersPage = () => {
                   <Button
                     variant="export"
                     onClick={() => {}}
-                    className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                    disabled
                     size="sm"
                   >
                     <Upload size={16} />

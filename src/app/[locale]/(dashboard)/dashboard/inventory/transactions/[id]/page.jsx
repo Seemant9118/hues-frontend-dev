@@ -63,10 +63,10 @@ const ViewTransaction = () => {
     vendorName: stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name || '-',
   };
   const overviewLabels = {
-    stockId: translations('overview.labels.stockId'),
+    stockId: translations('overview.labels.transactionId'),
     docType: translations('overview.labels.docType'),
     ...(stockDetails?.grns?.[0]?.referenceNumber && {
-      grnId: translations('overview.labels.grnId'),
+      grnId: translations('overview.labels.docId'),
     }),
     invoiceId: translations('overview.labels.invoiceId'),
     clientName: translations('overview.labels.clientName'),

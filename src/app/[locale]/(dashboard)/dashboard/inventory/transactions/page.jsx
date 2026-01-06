@@ -18,6 +18,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import { useTrasnsactionsColumns } from './transactionColumns';
 
 const PAGE_LIMIT = 10;
@@ -39,6 +40,7 @@ const Transactions = () => {
   ];
   const { hasPermission } = usePermission();
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
   const [stocksList, setStocksList] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
   const [filter, setFilter] = useState(null);
@@ -92,11 +94,11 @@ const Transactions = () => {
     });
   }, [stocksQuery.data]);
 
-  const stocksColumns = useTrasnsactionsColumns();
-
   const onRowClick = (row) => {
     return router.push(`/dashboard/inventory/transactions/${row.id}`);
   };
+
+  const stocksColumns = useTrasnsactionsColumns();
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -107,7 +109,16 @@ const Transactions = () => {
         </>
       ) : (
         <Wrapper className="h-screen">
-          <SubHeader name={translations('title')}></SubHeader>
+          <SubHeader name={translations('title')}>
+            <div className="flex items-center justify-center gap-2">
+              <DebouncedInput
+                value={searchTerm}
+                delay={400}
+                onDebouncedChange={setSearchTerm}
+                placeholder="Search Transactions"
+              />
+            </div>
+          </SubHeader>
 
           <Tabs value={tab} onValueChange={onTabChange} defaultValue={'All'}>
             <TabsList className="border">

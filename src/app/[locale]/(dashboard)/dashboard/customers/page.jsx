@@ -3,10 +3,10 @@
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
-import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -25,16 +25,8 @@ import { useEffect, useState } from 'react';
 import { CustomersTable } from './CustomersTable';
 import { useCustomersColumns } from './useCustomersColumns';
 
-// dynamic imports
-// const UploadItems = dynamic(
-//   () => import('@/components/inventory/UploadItems'),
-//   { loading: () => <Loading /> },
-// );
-
 // MACROS
 const PAGE_LIMIT = 10;
-// Debounce delay in milliseconds
-const DEBOUNCE_DELAY = 500;
 
 const CustomerPage = () => {
   useMetaData('Hues! - Customers', 'HUES CUSTOMERS'); // dynamic title
@@ -54,11 +46,7 @@ const CustomerPage = () => {
   );
 
   const { hasPermission } = usePermission();
-  //   const queryClient = useQueryClient();
-  //   const [isUploading, setIsUploading] = useState(false);
-  //   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
   const [customers, setCustomers] = useState(null);
   const [paginationData, setPaginationData] = useState({});
 
@@ -96,15 +84,12 @@ const CustomerPage = () => {
     fetchNextPage: searchFetchNextPage,
     isFetching: isSearchQueryFetching,
   } = useInfiniteQuery({
-    queryKey: [
-      customerApis.getSearchedCustomers.endpointKey,
-      debouncedSearchTerm,
-    ],
+    queryKey: [customerApis.getSearchedCustomers.endpointKey, searchTerm],
     queryFn: async ({ pageParam = 1 }) => {
       return getSearchedCustomers({
         page: pageParam,
         limit: PAGE_LIMIT,
-        data: { searchString: debouncedSearchTerm },
+        data: { searchString: searchTerm },
       });
     },
     initialPageParam: 1,
@@ -114,27 +99,18 @@ const CustomerPage = () => {
 
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: !!debouncedSearchTerm,
+    enabled: !!searchTerm,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, DEBOUNCE_DELAY);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  useEffect(() => {
     try {
-      // 🧭 Determine which query to use safely
+      // Determine which query to use safely
       const source =
-        debouncedSearchTerm && searchQuery?.pages?.length
-          ? searchQuery
-          : customersQuery;
+        searchTerm && searchQuery?.pages?.length ? searchQuery : customersQuery;
 
-      // 🛡️ Guard clause — invalid, empty, or not yet loaded
+      // Guard clause — invalid, empty, or not yet loaded
       if (
         !source ||
         !Array.isArray(source.pages) ||
@@ -145,14 +121,14 @@ const CustomerPage = () => {
         return;
       }
 
-      // 🧩 Flatten all customers safely from pages
+      // Flatten all customers safely from pages
       const flattened = source.pages.flatMap((page) =>
         Array.isArray(page?.data?.data?.customers)
           ? page.data.data.customers
           : [],
       );
 
-      // 🧠 Deduplicate customers by ID and filter out invalid entries
+      // Deduplicate customers by ID and filter out invalid entries
       const uniqueCustomersData = Array.from(
         new Map(
           flattened
@@ -161,10 +137,10 @@ const CustomerPage = () => {
         ).values(),
       );
 
-      // ✅ Safely update customers list
+      // Safely update customers list
       setCustomers(uniqueCustomersData || []);
 
-      // 📄 Extract pagination safely
+      // Extract pagination safely
       const lastPage = source.pages[source.pages.length - 1];
       const lastPageData = lastPage?.data?.data || {};
 
@@ -174,27 +150,11 @@ const CustomerPage = () => {
       });
     } catch (error) {
       // console.error('Error processing customers data:', error);
-      // 🧯 Prevent frontend break
+      // Prevent frontend break
       setCustomers([]);
       setPaginationData({ totalPages: 0, currFetchedPage: 1 });
     }
-  }, [debouncedSearchTerm, customersQuery, searchQuery]);
-
-  // handleFile fn
-  //   const uploadFile = async (file) => {
-  //     const formData = new FormData();
-  //     formData.append('file', file);
-  //     formData.append('enterpriseId', enterpriseId);
-
-  //     try {
-  //       await bulkUploadClients(formData);
-  //       toast.success('Upload Successfully');
-  //       setFiles((prev) => [...prev, file]);
-  //       queryClient.invalidateQueries([customerApis.getCustomers.endpointKey]);
-  //     } catch (error) {
-  //       toast.error(error.response.data.message || 'Something went wrong');
-  //     }
-  //   };
+  }, [searchTerm, customersQuery, searchQuery]);
 
   // columns
   const CustomersColumns = useCustomersColumns();
@@ -211,11 +171,12 @@ const CustomerPage = () => {
         <div>
           <Wrapper className="h-screen">
             <SubHeader name={translations('title')}>
-              <div className="flex items-center justify-center gap-4">
-                <SearchInput
-                  searchPlaceholder={translations('ctas.searchPlaceHolder')}
-                  toSearchTerm={searchTerm}
-                  setToSearchTerm={setSearchTerm}
+              <div className="flex items-center justify-center gap-2">
+                <DebouncedInput
+                  value={searchTerm}
+                  delay={400}
+                  onDebouncedChange={setSearchTerm}
+                  placeholder="Search Customers"
                 />
                 <ProtectedWrapper
                   permissionCode={'permission:customers-download'}
@@ -252,7 +213,7 @@ const CustomerPage = () => {
                       <Button
                         variant="blue_outline"
                         size="sm"
-                        className="cursor-not-allowed"
+                        disabled
                         // onClick={() => setIsUploading(true)}
                       >
                         <Upload size={14} />
@@ -268,10 +229,7 @@ const CustomerPage = () => {
                 >
                   <Tooltips
                     trigger={
-                      <Button
-                        size="sm"
-                        className="flex cursor-not-allowed items-center"
-                      >
+                      <Button size="sm" disabled className="flex items-center">
                         <PlusCircle size={14} />
                         {translations('ctas.add')}
                       </Button>
@@ -288,7 +246,7 @@ const CustomerPage = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {!debouncedSearchTerm && customers?.length === 0 ? (
+                  {!searchTerm && customers?.length === 0 ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -300,12 +258,10 @@ const CustomerPage = () => {
                       columns={CustomersColumns}
                       data={customers || []}
                       fetchNextPage={
-                        debouncedSearchTerm
-                          ? searchFetchNextPage
-                          : customerFetchNextPage
+                        searchTerm ? searchFetchNextPage : customerFetchNextPage
                       }
                       isFetching={
-                        debouncedSearchTerm
+                        searchTerm
                           ? isSearchQueryFetching
                           : isCustomerQueryFetching
                       }

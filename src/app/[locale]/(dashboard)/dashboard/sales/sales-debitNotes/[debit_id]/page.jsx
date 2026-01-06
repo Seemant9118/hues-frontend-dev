@@ -553,9 +553,9 @@ const ViewDebitNote = () => {
               )}
 
               {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
-                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                <div className="flex h-[80dvh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
-                  <p>{translations('emtpyStateComponent.heading')}</p>
+                  <p>No credit notes found for this debit note.</p>
                 </div>
               )}
             </TabsContent>
