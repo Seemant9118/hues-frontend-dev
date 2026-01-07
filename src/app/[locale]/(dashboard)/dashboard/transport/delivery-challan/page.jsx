@@ -20,6 +20,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { toast } from 'sonner';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -42,21 +43,41 @@ const DeliveryChallan = () => {
 
   const { hasPermission } = usePermission();
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchCycle, setSearchCycle] = useState(0);
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
+
+  const isSearching = searchTerm?.length > 0;
+  const hasData = dispatchedNotes?.length > 0;
+
+  const handleSearchChange = (val) => {
+    setSearchTerm(val.trim() ?? '');
+
+    // increment when clearing
+    if (val === '') {
+      setSearchCycle((prev) => prev + 1);
+    }
+  };
 
   // Fetch dispatched notes data with infinite scroll
   const {
     data,
     fetchNextPage,
     isFetching,
-    isLoading: isInvoiceLoading,
+    isLoading: isDeliveryChallanLoading,
   } = useInfiniteQuery({
-    queryKey: [deliveryProcess.getDeliveryChallans.endpointKey, enterpriseId],
+    queryKey: [
+      deliveryProcess.getDeliveryChallans.endpointKey,
+      enterpriseId,
+      searchTerm,
+      searchCycle,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getDeliveryChallans({
         page: pageParam,
         limit: PAGE_LIMIT,
+        searchString: searchTerm,
       });
       return response;
     },
@@ -141,25 +162,42 @@ const DeliveryChallan = () => {
           <SubHeader
             name={translations('title')}
             className="sticky top-0 z-10 flex items-center justify-between bg-white"
-          ></SubHeader>
+          >
+            {' '}
+            <div className="flex items-center justify-center gap-2">
+              <DebouncedInput
+                value={searchTerm}
+                delay={400}
+                onDebouncedChange={handleSearchChange}
+                placeholder="Search Delivery Challan"
+              />
+            </div>
+          </SubHeader>
 
-          {isInvoiceLoading && <Loading />}
-          {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-            <InfiniteDataTable
-              id="delivery-challan-table"
-              columns={dispatchedNotesColumns}
-              data={dispatchedNotes}
-              fetchNextPage={fetchNextPage}
-              isFetching={isFetching}
-              totalPages={paginationData?.totalPages}
-              currFetchedPage={paginationData?.currFetchedPage}
-              onRowClick={onRowClick}
-            />
+          {isDeliveryChallanLoading ? (
+            <Loading />
           ) : (
-            <EmptyStageComponent
-              heading={translations('emtpyStateComponent.heading')}
-              subItems={keys}
-            />
+            <>
+              {/* Case 1: No search term, and no data → Empty stage */}
+              {!hasData && !isSearching ? (
+                <EmptyStageComponent
+                  heading={translations('emtpyStateComponent.heading')}
+                  subItems={keys}
+                />
+              ) : (
+                // Case 2: data is available → Show Table
+                <InfiniteDataTable
+                  id="delivery-challan-table"
+                  columns={dispatchedNotesColumns}
+                  data={hasData ? dispatchedNotes : []}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              )}
+            </>
           )}
         </Wrapper>
       )}

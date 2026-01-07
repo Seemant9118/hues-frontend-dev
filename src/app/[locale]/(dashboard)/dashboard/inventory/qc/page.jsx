@@ -1,5 +1,6 @@
 'use client';
 
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
@@ -20,8 +21,6 @@ import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
-import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import { useQCColumns } from './qcColumns';
 
 const PAGE_LIMIT = 10;
@@ -44,7 +43,7 @@ function QC() {
   );
   const { hasPermission } = usePermission();
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
+  // const [searchTerm, setSearchTerm] = useState('');
   const [qcList, setQCList] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [tab, setTab] = useState('ALL');
@@ -135,12 +134,12 @@ function QC() {
         <Wrapper className="h-screen">
           <SubHeader name={translations('title')}>
             <div className="flex items-center justify-center gap-2">
-              <DebouncedInput
+              {/* <DebouncedInput
                 value={searchTerm}
                 delay={400}
                 onDebouncedChange={setSearchTerm}
                 placeholder="Search QC(s)"
-              />
+              /> */}
             </div>
           </SubHeader>
 

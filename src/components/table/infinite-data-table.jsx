@@ -92,65 +92,83 @@ export default function InfiniteDataTable({
             </TableHeader>
 
             <TableBody>
-              {/* Top spacer */}
-              <TableRow aria-hidden className="pointer-events-none">
-                <TableCell
-                  colSpan={columns.length}
-                  className="border-0 bg-transparent p-0"
-                  style={{
-                    height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
-                  }}
-                />
-              </TableRow>
-
-              {/* Virtual rows */}
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index];
-                const isRead = row.original?.readTracker?.isRead || true;
-
-                return (
-                  <TableRow
-                    key={row.id}
-                    // ref={rowVirtualizer.measureElement}
-                    className={
-                      isRead
-                        ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 hover:text-black'
-                        : 'cursor-pointer border-y border-[#A5ABBD33] bg-white font-semibold text-black hover:text-black'
-                    }
-                    onClick={
-                      onRowClick ? () => onRowClick(row.original) : undefined
-                    }
+              {/* No results */}
+              {rows.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-32 text-center text-sm text-muted-foreground"
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="max-w-xl shrink-0 whitespace-nowrap px-4"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })}
+                    No results found
+                  </TableCell>
+                </TableRow>
+              )}
 
-              {/* Bottom spacer */}
-              <TableRow aria-hidden className="pointer-events-none">
-                <TableCell
-                  colSpan={columns.length}
-                  className="border-0 bg-transparent p-0"
-                  style={{
-                    height:
-                      rowVirtualizer.getTotalSize() -
-                      (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
-                  }}
-                />
-              </TableRow>
+              {/* Only render virtual rows if data exists */}
+              {rows.length > 0 && (
+                <>
+                  {/* Top spacer */}
+                  <TableRow aria-hidden className="pointer-events-none">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="border-0 bg-transparent p-0"
+                      style={{
+                        height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
+                      }}
+                    />
+                  </TableRow>
+
+                  {/* Virtual rows */}
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const row = rows[virtualRow.index];
+                    const isRead = row.original?.readTracker?.isRead || true;
+
+                    return (
+                      <TableRow
+                        key={row.id}
+                        className={
+                          isRead
+                            ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 hover:text-black'
+                            : 'cursor-pointer border-y border-[#A5ABBD33] bg-white font-semibold text-black hover:text-black'
+                        }
+                        onClick={
+                          onRowClick
+                            ? () => onRowClick(row.original)
+                            : undefined
+                        }
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="max-w-xl shrink-0 whitespace-nowrap px-4"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
+
+                  {/* Bottom spacer */}
+                  <TableRow aria-hidden className="pointer-events-none">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="border-0 bg-transparent p-0"
+                      style={{
+                        height:
+                          rowVirtualizer.getTotalSize() -
+                          (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                      }}
+                    />
+                  </TableRow>
+                </>
+              )}
 
               {/* Infinite scroll trigger */}
-              {hasNextPage && (
+              {rows.length > 0 && hasNextPage && (
                 <TableRow>
                   <TableCell colSpan={columns.length}>
                     <div

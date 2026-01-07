@@ -4,6 +4,7 @@ import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -42,21 +43,41 @@ function PODs() {
     'isEnterpriseOnboardingComplete',
   );
   const [pods, setPods] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchCycle, setSearchCycle] = useState(0);
   const [paginationData, setPaginationData] = useState({});
   const [tab, setTab] = useState('ALL');
+
+  const isSearching = searchTerm?.length > 0;
+  const hasData = pods?.length > 0;
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
   };
 
+  const handleSearchChange = (val) => {
+    setSearchTerm(val.trim() ?? '');
+
+    // increment when clearing
+    if (val === '') {
+      setSearchCycle((prev) => prev + 1);
+    }
+  };
+
   const podsQuery = useInfiniteQuery({
-    queryKey: [deliveryProcess.getPODs.endpointKey, tab],
+    queryKey: [
+      deliveryProcess.getPODs.endpointKey,
+      tab,
+      searchTerm,
+      searchCycle,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       return getPODs({
         page: pageParam,
         limit: PAGE_LIMIT,
         status: tab,
+        searchString: searchTerm,
       });
     },
     initialPageParam: 1,
@@ -122,7 +143,16 @@ function PODs() {
       ) : (
         <div>
           <Wrapper className="h-screen">
-            <SubHeader name={translations('title')}></SubHeader>
+            <SubHeader name={translations('title')}>
+              <div className="flex items-center justify-center gap-2">
+                <DebouncedInput
+                  value={searchTerm}
+                  delay={400}
+                  onDebouncedChange={handleSearchChange}
+                  placeholder="Search PoD(s)"
+                />
+              </div>
+            </SubHeader>
             <Tabs
               value={tab}
               onValueChange={onTabChange}
@@ -152,7 +182,7 @@ function PODs() {
                 ) : (
                   <>
                     {/* Case 1: no data → Empty stage */}
-                    {pods?.length === 0 ? (
+                    {!hasData && !isSearching ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -162,7 +192,7 @@ function PODs() {
                       <InfiniteDataTable
                         id="PODs-table"
                         columns={PODsColumns}
-                        data={pods}
+                        data={hasData ? pods : []}
                         fetchNextPage={podsQuery.fetchNextPage}
                         isFetching={podsQuery.isFetching}
                         totalPages={paginationData?.totalPages}
@@ -183,7 +213,7 @@ function PODs() {
                 ) : (
                   <>
                     {/* Case 1: no data → Empty stage */}
-                    {pods?.length === 0 ? (
+                    {!hasData && !isSearching ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -193,7 +223,7 @@ function PODs() {
                       <InfiniteDataTable
                         id="PODs-table"
                         columns={PODsColumns}
-                        data={pods}
+                        data={hasData ? pods : []}
                         fetchNextPage={podsQuery.fetchNextPage}
                         isFetching={podsQuery.isFetching}
                         totalPages={paginationData?.totalPages}
@@ -214,7 +244,7 @@ function PODs() {
                 ) : (
                   <>
                     {/* Case 1: no data → Empty stage */}
-                    {pods?.length === 0 ? (
+                    {!hasData && !isSearching ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -224,7 +254,7 @@ function PODs() {
                       <InfiniteDataTable
                         id="PODs-table"
                         columns={PODsColumns}
-                        data={pods}
+                        data={hasData ? pods : []}
                         fetchNextPage={podsQuery.fetchNextPage}
                         isFetching={podsQuery.isFetching}
                         totalPages={paginationData?.totalPages}
@@ -245,7 +275,7 @@ function PODs() {
                 ) : (
                   <>
                     {/* Case 1: no data → Empty stage */}
-                    {pods?.length === 0 ? (
+                    {!hasData && !isSearching ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -255,7 +285,7 @@ function PODs() {
                       <InfiniteDataTable
                         id="PODs-table"
                         columns={PODsColumns}
-                        data={pods}
+                        data={hasData ? pods : []}
                         fetchNextPage={podsQuery.fetchNextPage}
                         isFetching={podsQuery.isFetching}
                         totalPages={paginationData?.totalPages}
