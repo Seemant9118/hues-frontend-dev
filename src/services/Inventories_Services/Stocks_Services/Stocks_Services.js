@@ -60,3 +60,17 @@ export const getStockDetails = ({
 
   return APIinstance.get(endpoint, { params });
 };
+
+export const adHocStockIn = ({ enterpriseId, data }) => {
+  return APIinstance.post(
+    `${stockApis.adHocStockIn.endpoint}${enterpriseId}`,
+    data,
+  );
+};
+
+export const adHocStockOut = ({ enterpriseId, data }) => {
+  return APIinstance.post(
+    `${stockApis.adHocStockOut.endpoint}${enterpriseId}`,
+    data,
+  );
+};

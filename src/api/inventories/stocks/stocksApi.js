@@ -16,4 +16,12 @@ export const stockApis = {
     endpoint: `/inventory/:enterpriseId/inventory/:inventoryItemId/ledger`,
     endpointKey: 'getStockDetails',
   },
+  adHocStockIn: {
+    endpoint: `/inventory/adhoc/stock-in/`,
+    endpointKey: 'adHoc_stock_in',
+  },
+  adHocStockOut: {
+    endpoint: `/inventory/adhoc/stock-out/`,
+    endpointKey: 'adHoc_stock_out',
+  },
 };

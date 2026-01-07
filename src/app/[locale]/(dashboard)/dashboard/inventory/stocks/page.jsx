@@ -2,6 +2,8 @@
 
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
+import AdHocStock from '@/components/inventory/AdHocStock';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -15,7 +17,8 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle, PencilLine } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -25,11 +28,11 @@ const PAGE_LIMIT = 10;
 
 const Stocks = () => {
   useMetaData('Hues! - Stocks', 'HUES Stocks');
-
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const queryClient = useQueryClient();
   const router = useRouter();
   const translations = useTranslations('stocks');
   const keys = [
@@ -45,6 +48,8 @@ const Stocks = () => {
   const [paginationData, setPaginationData] = useState(null);
   const [filter, setFilter] = useState(null);
   const [tab, setTab] = useState('ALL');
+  const [isAddingAdHocStockIn, setIsAddingAdHocStockIn] = useState(false);
+  const [isAddingAdHocStockOut, setIsAddingAdHocStockOut] = useState(false);
 
   const isSearching = searchTerm?.length > 0;
   const hasData = stocksList?.length > 0;
@@ -132,206 +137,263 @@ const Stocks = () => {
           <RestrictedComponent />
         </>
       ) : (
-        <Wrapper className="h-screen">
-          <SubHeader name={translations('title')}>
-            <div className="flex items-center justify-center gap-2">
-              <DebouncedInput
-                value={searchTerm}
-                delay={400}
-                onDebouncedChange={handleSearchChange}
-                placeholder="Search Stocks"
-              />
-            </div>
-          </SubHeader>
+        <>
+          {!isAddingAdHocStockIn && !isAddingAdHocStockOut && (
+            <Wrapper className="h-screen">
+              <SubHeader name={translations('title')}>
+                <div className="flex items-center justify-center gap-2">
+                  <DebouncedInput
+                    value={searchTerm}
+                    delay={400}
+                    onDebouncedChange={handleSearchChange}
+                    placeholder="Search Stocks"
+                  />
 
-          <Tabs value={tab} onValueChange={onTabChange} defaultValue={'All'}>
-            <TabsList className="border">
-              <TabsTrigger value="ALL">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-              <TabsTrigger value="RAW_MATERIALS">
-                {translations('tabs.tab2.title')}
-              </TabsTrigger>
-              <TabsTrigger value="INTERMEDIATE_GOODS">
-                {translations('tabs.tab3.title')}
-              </TabsTrigger>
-              <TabsTrigger value="FINISHED_GOODS">
-                {translations('tabs.tab4.title')}
-              </TabsTrigger>
-              <TabsTrigger value="QC">
-                {translations('tabs.tab5.title')}
-              </TabsTrigger>
-              <TabsTrigger value="REJECTED">
-                {translations('tabs.tab6.title')}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent
-              value="ALL"
-              className="flex flex-1 flex-col overflow-hidden"
-            >
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                  <ActionsDropdown
+                    label={'Ad-Hoc'}
+                    actions={[
+                      {
+                        key: 'stockIn',
+                        label: 'Stock In',
+                        icon: CheckCircle,
+                        className: 'text-green-600',
+                        onClick: () => {
+                          setIsAddingAdHocStockIn(true);
+                        },
+                      },
+                      {
+                        key: 'stockOut',
+                        label: 'Stock Out',
+                        icon: PencilLine,
+                        onClick: () => {
+                          setIsAddingAdHocStockOut(true);
+                        },
+                      },
+                    ]}
+                  />
+                </div>
+              </SubHeader>
+
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'All'}
+              >
+                <TabsList className="border">
+                  <TabsTrigger value="ALL">
+                    {translations('tabs.tab1.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="RAW_MATERIALS">
+                    {translations('tabs.tab2.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="INTERMEDIATE_GOODS">
+                    {translations('tabs.tab3.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="FINISHED_GOODS">
+                    {translations('tabs.tab4.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="QC">
+                    {translations('tabs.tab5.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="REJECTED">
+                    {translations('tabs.tab6.title')}
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent
+                  value="ALL"
+                  className="flex flex-1 flex-col overflow-hidden"
+                >
+                  {stocksQuery.isLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={hasData ? stocksList : []}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="qc-table"
+                          columns={stocksColumns}
+                          data={hasData ? stocksList : []}
+                          fetchNextPage={stocksQuery.fetchNextPage}
+                          isFetching={stocksQuery.isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="RAW_MATERIALS">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                </TabsContent>
+                <TabsContent value="RAW_MATERIALS">
+                  {stocksQuery.isLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={hasData ? stocksList : []}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="qc-table"
+                          columns={stocksColumns}
+                          data={hasData ? stocksList : []}
+                          fetchNextPage={stocksQuery.fetchNextPage}
+                          isFetching={stocksQuery.isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="INTERMEDIATE_GOODS">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                </TabsContent>
+                <TabsContent value="INTERMEDIATE_GOODS">
+                  {stocksQuery.isLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={hasData ? stocksList : []}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="qc-table"
+                          columns={stocksColumns}
+                          data={hasData ? stocksList : []}
+                          fetchNextPage={stocksQuery.fetchNextPage}
+                          isFetching={stocksQuery.isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="FINISHED_GOODS">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                </TabsContent>
+                <TabsContent value="FINISHED_GOODS">
+                  {stocksQuery.isLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={hasData ? stocksList : []}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="qc-table"
+                          columns={stocksColumns}
+                          data={hasData ? stocksList : []}
+                          fetchNextPage={stocksQuery.fetchNextPage}
+                          isFetching={stocksQuery.isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="QC">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                </TabsContent>
+                <TabsContent value="QC">
+                  {stocksQuery.isLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={hasData ? stocksList : []}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="qc-table"
+                          columns={stocksColumns}
+                          data={hasData ? stocksList : []}
+                          fetchNextPage={stocksQuery.fetchNextPage}
+                          isFetching={stocksQuery.isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
-            <TabsContent value="REJECTED">
-              {stocksQuery.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emptyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                </TabsContent>
+                <TabsContent value="REJECTED">
+                  {stocksQuery.isLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="qc-table"
-                      columns={stocksColumns}
-                      data={hasData ? stocksList : []}
-                      fetchNextPage={stocksQuery.fetchNextPage}
-                      isFetching={stocksQuery.isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="qc-table"
+                          columns={stocksColumns}
+                          data={hasData ? stocksList : []}
+                          fetchNextPage={stocksQuery.fetchNextPage}
+                          isFetching={stocksQuery.isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
-          </Tabs>
-        </Wrapper>
+                </TabsContent>
+              </Tabs>
+            </Wrapper>
+          )}
+
+          {isAddingAdHocStockIn && !isAddingAdHocStockOut && (
+            <AdHocStock
+              isStockIn={true}
+              name={'AdHoc - (Stock In)'}
+              onClose={() => {
+                setIsAddingAdHocStockIn((prev) => !prev);
+                queryClient.invalidateQueries([
+                  stockApis.getStocksItems.endpointKey,
+                ]);
+              }}
+            />
+          )}
+
+          {isAddingAdHocStockOut && !isAddingAdHocStockIn && (
+            <AdHocStock
+              isStockIn={false}
+              name={'AdHoc - (Stock Out)'}
+              onClose={() => {
+                setIsAddingAdHocStockOut((prev) => !prev);
+                queryClient.invalidateQueries([
+                  stockApis.getStocksItems.endpointKey,
+                ]);
+              }}
+            />
+          )}
+        </>
       )}
     </ProtectedWrapper>
   );

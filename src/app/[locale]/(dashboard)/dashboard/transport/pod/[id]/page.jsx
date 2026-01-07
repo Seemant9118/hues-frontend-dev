@@ -4,10 +4,10 @@ import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import DeliveryAttachments from '@/components/deliveryManagement/DeliveryAttachements';
 import { DeliveryResultDialog } from '@/components/deliveryManagement/DeliveryResultDialog';
 import { ModifyPOD } from '@/components/deliveryManagement/ModifyPOD';
-import PODActionsDropdown from '@/components/deliveryManagement/PODActionsDropdown';
 import RejectReasonModal from '@/components/deliveryManagement/RejectReasonModal';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import {
   acceptPOD,
   getPODByID,
@@ -30,7 +31,6 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import useMetaData from '@/hooks/useMetaData';
 import { usePODColumnsItems } from './usePODColumnsItems';
 
 const ViewPOD = () => {
@@ -306,7 +306,7 @@ const ViewPOD = () => {
           </TabsList>
           {/* ctas */}
           {!isSeller && podDetails?.status === 'PENDING' && (
-            <PODActionsDropdown
+            <ActionsDropdown
               disabled={
                 acceptPODMutation.isLoading || rejectPODMutation.isLoading
               }
@@ -344,7 +344,7 @@ const ViewPOD = () => {
           )}
 
           {isSeller && podDetails?.status === 'PENDING' && (
-            <PODActionsDropdown
+            <ActionsDropdown
               disabled={
                 acceptPODMutation.isLoading || rejectPODMutation.isLoading
               }

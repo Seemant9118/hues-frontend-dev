@@ -9,9 +9,13 @@ export const GetSearchedProductGoods = ({ page, limit, data }) => {
 };
 
 export const GetAllProductGoods = ({ id, page, limit }) => {
-  return APIinstance.get(
-    `${goodsApi.getAllProductGoods.endpoint}${id}?page=${page}&limit=${limit}`,
-  );
+  const { endpoint } = goodsApi.getAllProductGoods;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+  };
+  return APIinstance.get(`${endpoint}${id}`, { params });
 };
 
 export const GetProductGoods = (id) => {
