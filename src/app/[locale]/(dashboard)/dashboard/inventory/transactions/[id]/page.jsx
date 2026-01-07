@@ -63,16 +63,22 @@ const ViewTransaction = () => {
         stockDetails?.dispatchNote?.dispatchReferenceNumber ||
         '-',
     }),
-    invoiceId:
-      stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber ||
-      stockDetails?.dispatchNote?.invoiceReferenceNumber ||
-      '-',
-    ...(isStockOut && {
-      clientName: stockDetails?.dispatchNote?.clientName || '-',
+    ...((stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber ||
+      stockDetails?.dispatchNote?.invoiceReferenceNumber) && {
+      invoiceId:
+        stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber ||
+        stockDetails?.dispatchNote?.invoiceReferenceNumber ||
+        '-',
     }),
-    ...(!isStockOut && {
-      vendorName: stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name || '-',
-    }),
+    ...(isStockOut &&
+      stockDetails?.dispatchNote?.clientName && {
+        clientName: stockDetails?.dispatchNote?.clientName || '-',
+      }),
+    ...(!isStockOut &&
+      stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name && {
+        vendorName:
+          stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name || '-',
+      }),
   };
   const overviewLabels = {
     stockId: translations('overview.labels.transactionId'),
@@ -81,13 +87,18 @@ const ViewTransaction = () => {
       stockDetails?.dispatchNote?.dispatchReferenceNumber) && {
       docId: translations('overview.labels.docId'),
     }),
-    invoiceId: translations('overview.labels.invoiceId'),
-    ...(isStockOut && {
-      clientName: translations('overview.labels.clientName'),
+    ...((stockDetails?.grns?.[0]?.metaData?.invoiceDetails?.referenceNumber ||
+      stockDetails?.dispatchNote?.invoiceReferenceNumber) && {
+      invoiceId: translations('overview.labels.invoiceId'),
     }),
-    ...(!isStockOut && {
-      vendorName: translations('overview.labels.vendorName'),
-    }),
+    ...(isStockOut &&
+      stockDetails?.dispatchNote?.clientName && {
+        clientName: translations('overview.labels.clientName'),
+      }),
+    ...(!isStockOut &&
+      stockDetails?.grns?.[0]?.metaData?.sellerDetails?.name && {
+        vendorName: translations('overview.labels.vendorName'),
+      }),
   };
 
   const customRender = {
