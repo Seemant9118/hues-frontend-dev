@@ -10,7 +10,7 @@ import {
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
-export default function PODActionsDropdown({
+export default function ActionsDropdown({
   actions = [],
   disabled = false,
   label = 'Actions',
