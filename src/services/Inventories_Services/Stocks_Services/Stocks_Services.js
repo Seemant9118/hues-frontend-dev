@@ -1,17 +1,33 @@
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import { APIinstance } from '@/services';
 
-export const getMaterialMovementStocks = ({ page, limit, filter }) => {
-  return APIinstance.get(
-    `${stockApis.getMaterialMovementStocks.endpoint}?page=${page}&limit=${limit}&filter=${filter}`,
-  );
+export const getMaterialMovementStocks = ({
+  page,
+  limit,
+  filter,
+  searchString,
+}) => {
+  return APIinstance.get(stockApis.getMaterialMovementStocks.endpoint, {
+    params: {
+      page,
+      limit,
+      ...(filter && { filter }),
+      ...(searchString !== undefined && { searchString }),
+    },
+  });
 };
 
 export const getMaterialMovementStock = ({ id }) => {
   return APIinstance.get(`${stockApis.getMaterialMovmentStock.endpoint}${id}`);
 };
 
-export const getStocksItems = ({ enterpriseId, filter, page, limit }) => {
+export const getStocksItems = ({
+  enterpriseId,
+  page,
+  limit,
+  filter,
+  searchString,
+}) => {
   const endpoint = stockApis.getStocksItems.endpoint.replace(
     ':enterpriseId',
     enterpriseId,
@@ -21,6 +37,7 @@ export const getStocksItems = ({ enterpriseId, filter, page, limit }) => {
     page,
     limit,
     ...(filter ? { bucketName: filter } : {}),
+    ...(searchString !== undefined && { searchString }),
   };
 
   return APIinstance.get(endpoint, { params });

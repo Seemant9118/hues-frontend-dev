@@ -21,6 +21,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
@@ -43,12 +44,26 @@ const DispatchedNotes = () => {
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchCycle, setSearchCycle] = useState(0);
   const [paginationData, setPaginationData] = useState(null);
   const [tab, setTab] = useState('ALL');
+
+  const isSearching = searchTerm?.length > 0;
+  const hasData = dispatchedNotes?.length > 0;
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
+  };
+
+  const handleSearchChange = (val) => {
+    setSearchTerm(val.trim() ?? '');
+
+    // increment when clearing
+    if (val === '') {
+      setSearchCycle((prev) => prev + 1);
+    }
   };
 
   // Fetch dispatched notes data with infinite scroll
@@ -56,15 +71,22 @@ const DispatchedNotes = () => {
     data,
     fetchNextPage,
     isFetching,
-    isLoading: isInvoiceLoading,
+    isLoading: isDispatchLoading,
   } = useInfiniteQuery({
-    queryKey: [deliveryProcess.getDispatchNotes.endpointKey, enterpriseId, tab],
+    queryKey: [
+      deliveryProcess.getDispatchNotes.endpointKey,
+      enterpriseId,
+      tab,
+      searchTerm,
+      searchCycle,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       return getDispatchNotes({
         enterpriseId,
         page: pageParam,
         limit: PAGE_LIMIT,
         movement: tab,
+        searchString: searchTerm,
       });
     },
     initialPageParam: 1,
@@ -145,7 +167,16 @@ const DispatchedNotes = () => {
           <SubHeader
             name={translations('title')}
             className="sticky top-0 z-10 flex items-center justify-between bg-white"
-          ></SubHeader>
+          >
+            <div className="flex items-center justify-center gap-2">
+              <DebouncedInput
+                value={searchTerm}
+                delay={400}
+                onDebouncedChange={handleSearchChange}
+                placeholder="Search Dispatch note"
+              />
+            </div>
+          </SubHeader>
           <Tabs
             value={tab}
             onValueChange={onTabChange}
@@ -167,65 +198,86 @@ const DispatchedNotes = () => {
             </section>
 
             <TabsContent value="ALL" className="flex-grow overflow-hidden">
-              {isInvoiceLoading && <Loading />}
-              {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-                <InfiniteDataTable
-                  id="dispatch-table"
-                  columns={dispatchedNotesColumns}
-                  data={dispatchedNotes}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                />
+              {isDispatchLoading ? (
+                <Loading />
               ) : (
-                <EmptyStageComponent
-                  heading={translations('emtpyStateComponent.heading')}
-                  subItems={keys}
-                />
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!hasData && !isSearching ? (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: data is available → Show Table
+                    <InfiniteDataTable
+                      id="dispatch-table"
+                      columns={dispatchedNotesColumns}
+                      data={hasData ? dispatchedNotes : []}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
               )}
             </TabsContent>
 
             <TabsContent value="INWARD" className="flex-grow overflow-hidden">
-              {isInvoiceLoading && <Loading />}
-              {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-                <InfiniteDataTable
-                  id="dispatch-table"
-                  columns={dispatchedNotesColumns}
-                  data={dispatchedNotes}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                />
+              {isDispatchLoading ? (
+                <Loading />
               ) : (
-                <EmptyStageComponent
-                  heading={translations('emtpyStateComponent.heading')}
-                  subItems={keys}
-                />
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!hasData && !isSearching ? (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: data is available → Show Table
+                    <InfiniteDataTable
+                      id="dispatch-table"
+                      columns={dispatchedNotesColumns}
+                      data={hasData ? dispatchedNotes : []}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
               )}
             </TabsContent>
 
             <TabsContent value="OUTWARD" className="flex-grow overflow-hidden">
-              {isInvoiceLoading && <Loading />}
-              {!isInvoiceLoading && dispatchedNotes?.length > 0 ? (
-                <InfiniteDataTable
-                  id="dispatch-table"
-                  columns={dispatchedNotesColumns}
-                  data={dispatchedNotes}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                />
+              {isDispatchLoading ? (
+                <Loading />
               ) : (
-                <EmptyStageComponent
-                  heading={translations('emtpyStateComponent.heading')}
-                  subItems={keys}
-                />
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!hasData && !isSearching ? (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: data is available → Show Table
+                    <InfiniteDataTable
+                      id="dispatch-table"
+                      columns={dispatchedNotesColumns}
+                      data={hasData ? dispatchedNotes : []}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
               )}
             </TabsContent>
           </Tabs>

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
 import { debounce } from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
 import { Search, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from './input';
 
 const DebouncedInput = ({
@@ -16,30 +16,32 @@ const DebouncedInput = ({
 }) => {
   const [localValue, setLocalValue] = useState(value);
   const hasValue = Boolean(localValue?.length);
+  const debouncedRef = useRef(null);
 
-  // Sync external value (reset / clear from parent)
+  // Sync external value
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
-  // Stable debounced function
-  const debouncedChange = useMemo(
-    () =>
-      debounce((val) => {
-        onDebouncedChange?.(val.trim());
-      }, delay),
-    [onDebouncedChange, delay],
-  );
+  // Create debounced fn once
+  useEffect(() => {
+    debouncedRef.current = debounce((val) => {
+      onDebouncedChange?.(val);
+    }, delay);
+
+    return () => debouncedRef.current?.cancel?.();
+  }, [onDebouncedChange, delay]);
 
   const handleChange = (e) => {
     const val = e.target.value;
     setLocalValue(val);
-    debouncedChange(val); // typing + backspace
+    debouncedRef.current?.(val);
   };
 
   const handleClear = () => {
+    debouncedRef.current?.cancel?.(); // cancel pending debounce
     setLocalValue('');
-    debouncedChange(''); // important: notify parent
+    onDebouncedChange?.(''); // immediate clear
   };
 
   return (
@@ -51,19 +53,19 @@ const DebouncedInput = ({
         placeholder={placeholder}
         value={localValue}
         onChange={handleChange}
-        className={cn('pr-8', className)} // space for icon
+        className={cn('pr-8', className)}
       />
 
       {hasValue ? (
         <X
           size={16}
           onClick={handleClear}
-          className="absolute right-2 top-1/2 z-10 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-foreground"
+          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-foreground"
         />
       ) : (
         <Search
           size={16}
-          className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-muted-foreground"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
       )}
     </div>

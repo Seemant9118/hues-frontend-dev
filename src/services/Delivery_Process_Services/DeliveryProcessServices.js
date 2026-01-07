@@ -14,6 +14,7 @@ export const getDispatchNotes = ({
   page,
   limit,
   movement,
+  searchString,
 }) => {
   const baseUrl = deliveryProcess.getDispatchNotes.endpoint;
 
@@ -22,9 +23,14 @@ export const getDispatchNotes = ({
     return APIinstance.get(`${baseUrl}?invoiceId=${invoiceId}`);
   }
 
-  return APIinstance.get(
-    `${baseUrl}?enterpriseId=${enterpriseId}&page=${page}&limit=${limit}&movement=${movement}`,
-  );
+  const params = {
+    enterpriseId,
+    page,
+    limit,
+    ...(movement ? { movement } : {}),
+    ...(searchString !== undefined && { searchString }),
+  };
+  return APIinstance.get(baseUrl, { params });
 };
 
 export const getDispatchNote = (id) => {
@@ -112,16 +118,27 @@ export const getDeliveryChallan = (id) => {
   return APIinstance.get(`${deliveryProcess.getDeliveryChallan.endpoint}${id}`);
 };
 
-export const getDeliveryChallans = ({ page, limit }) => {
-  return APIinstance.get(
-    `${deliveryProcess.getDeliveryChallans.endpoint}?page=${page}&limit=${limit}`,
-  );
+export const getDeliveryChallans = ({ page, limit, searchString }) => {
+  const { endpoint } = deliveryProcess.getDeliveryChallans;
+  const params = {
+    page,
+    limit,
+    ...(searchString !== undefined && { searchString }),
+  };
+
+  return APIinstance.get(endpoint, { params });
 };
 
-export const getPODs = ({ page, limit, status }) => {
-  return APIinstance.get(
-    `${deliveryProcess.getPODs.endpoint}?page=${page}&limit=${limit}&status=${status}`,
-  );
+export const getPODs = ({ page, limit, status, searchString }) => {
+  const { endpoint } = deliveryProcess.getPODs;
+  const params = {
+    page,
+    limit,
+    ...(status && { status }),
+
+    ...(searchString !== undefined && { searchString }),
+  };
+  return APIinstance.get(endpoint, { params });
 };
 
 export const getPODByChallan = ({ id }) => {
@@ -164,25 +181,19 @@ export const getGRNs = ({
   invoiceId,
   parentQcStatus,
   grnStatus,
+  searchString,
 }) => {
-  const params = new URLSearchParams({
+  const { endpoint } = deliveryProcess.getGRNs;
+  const params = {
     page,
     limit,
-  });
+    ...(parentQcStatus && { parentQcStatus }),
+    ...(grnStatus && { grnStatus }),
+    ...(invoiceId && { invoiceId }),
+    ...(searchString !== undefined && { searchString }),
+  };
 
-  if (parentQcStatus) {
-    params.append('parentQcStatus', parentQcStatus);
-  }
-  if (grnStatus) {
-    params.append('grnStatus', grnStatus);
-  }
-  if (invoiceId) {
-    params.append('invoiceId', invoiceId);
-  }
-
-  return APIinstance.get(
-    `${deliveryProcess.getGRNs.endpoint}?${params.toString()}`,
-  );
+  return APIinstance.get(endpoint, { params });
 };
 
 export const getGRN = ({ id }) => {

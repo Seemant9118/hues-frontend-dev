@@ -40,24 +40,43 @@ const Stocks = () => {
   ];
   const { hasPermission } = usePermission();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchCycle, setSearchCycle] = useState(0);
   const [stocksList, setStocksList] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
   const [filter, setFilter] = useState(null);
   const [tab, setTab] = useState('ALL');
+
+  const isSearching = searchTerm?.length > 0;
+  const hasData = stocksList?.length > 0;
 
   const onTabChange = (tab) => {
     setTab(tab);
     setFilter(tab);
   };
 
+  const handleSearchChange = (val) => {
+    setSearchTerm(val.trim() ?? '');
+
+    // increment when clearing
+    if (val === '') {
+      setSearchCycle((prev) => prev + 1);
+    }
+  };
+
   const stocksQuery = useInfiniteQuery({
-    queryKey: [stockApis.getStocksItems.endpointKey, filter],
+    queryKey: [
+      stockApis.getStocksItems.endpointKey,
+      filter,
+      searchTerm,
+      searchCycle,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       return getStocksItems({
         enterpriseId,
-        filter,
         page: pageParam,
         limit: PAGE_LIMIT,
+        filter,
+        searchString: searchTerm,
       });
     },
     initialPageParam: 1,
@@ -119,7 +138,7 @@ const Stocks = () => {
               <DebouncedInput
                 value={searchTerm}
                 delay={400}
-                onDebouncedChange={setSearchTerm}
+                onDebouncedChange={handleSearchChange}
                 placeholder="Search Stocks"
               />
             </div>
@@ -155,7 +174,7 @@ const Stocks = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -165,7 +184,7 @@ const Stocks = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -182,7 +201,7 @@ const Stocks = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -192,7 +211,7 @@ const Stocks = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -209,7 +228,7 @@ const Stocks = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -219,7 +238,7 @@ const Stocks = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -236,7 +255,7 @@ const Stocks = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -246,7 +265,7 @@ const Stocks = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -263,7 +282,7 @@ const Stocks = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -273,7 +292,7 @@ const Stocks = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -290,7 +309,7 @@ const Stocks = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -300,7 +319,7 @@ const Stocks = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}

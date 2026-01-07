@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import { useGrnColumns } from './GRNColumns';
 
 const PAGE_LIMIT = 10;
@@ -41,22 +42,42 @@ function GRN() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchCycle, setSearchCycle] = useState(0);
   const [grns, setGrns] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [tab, setTab] = useState('ALL');
+
+  const isSearching = searchTerm?.length > 0;
+  const hasData = grns?.length > 0;
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
   };
 
+  const handleSearchChange = (val) => {
+    setSearchTerm(val.trim() ?? '');
+
+    // increment when clearing
+    if (val === '') {
+      setSearchCycle((prev) => prev + 1);
+    }
+  };
+
   const grnsQuery = useInfiniteQuery({
-    queryKey: [deliveryProcess.getGRNs.endpointKey, tab],
+    queryKey: [
+      deliveryProcess.getGRNs.endpointKey,
+      tab,
+      searchTerm,
+      searchCycle,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       return getGRNs({
         page: pageParam,
         limit: PAGE_LIMIT,
         grnStatus: tab,
+        searchString: searchTerm,
       });
     },
     initialPageParam: 1,
@@ -122,7 +143,16 @@ function GRN() {
       ) : (
         <div>
           <Wrapper className="h-screen">
-            <SubHeader name={translations('title')}></SubHeader>
+            <SubHeader name={translations('title')}>
+              <div className="flex items-center justify-center gap-2">
+                <DebouncedInput
+                  value={searchTerm}
+                  delay={400}
+                  onDebouncedChange={handleSearchChange}
+                  placeholder="Search GRN(s)"
+                />
+              </div>
+            </SubHeader>
             <Tabs
               value={tab}
               onValueChange={onTabChange}
@@ -146,7 +176,7 @@ function GRN() {
                 ) : (
                   <>
                     {/* Case 1: no data → Empty stage */}
-                    {grns?.length === 0 ? (
+                    {!hasData && !isSearching ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -156,7 +186,7 @@ function GRN() {
                       <InfiniteDataTable
                         id="grns-table"
                         columns={GRNsColumns}
-                        data={grns}
+                        data={hasData ? grns : []}
                         fetchNextPage={grnsQuery.fetchNextPage}
                         isFetching={grnsQuery.isFetching}
                         totalPages={paginationData?.totalPages}
@@ -176,7 +206,7 @@ function GRN() {
                 ) : (
                   <>
                     {/* Case 1: no data → Empty stage */}
-                    {grns?.length === 0 ? (
+                    {!hasData && !isSearching ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -186,7 +216,7 @@ function GRN() {
                       <InfiniteDataTable
                         id="grns-table"
                         columns={GRNsColumns}
-                        data={grns}
+                        data={hasData ? grns : []}
                         fetchNextPage={grnsQuery.fetchNextPage}
                         isFetching={grnsQuery.isFetching}
                         totalPages={paginationData?.totalPages}

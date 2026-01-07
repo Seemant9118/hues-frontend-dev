@@ -51,6 +51,22 @@ export const useDeliveryChallanColumns = (enterpriseId) => {
       },
     },
     {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Client/Vendor Name" />
+      ),
+      cell: ({ row }) => {
+        // iamBuyer ?
+        const iamSeller = row.original?.enterpriseId === enterpriseId;
+
+        const buyerName = row.original?.metaData?.buyerName;
+        const sellerName = row.original?.metaData?.sellerDetails?.name;
+
+        // if iamSeller then show my clientName (buyer) - recievedBy
+        return iamSeller ? buyerName : sellerName;
+      },
+    },
+    {
       accessorKey: 'dispatchReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader

@@ -3,6 +3,7 @@
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -18,7 +19,6 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import { useTrasnsactionsColumns } from './transactionColumns';
 
 const PAGE_LIMIT = 10;
@@ -41,21 +41,41 @@ const Transactions = () => {
   const { hasPermission } = usePermission();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchCycle, setSearchCycle] = useState(0);
   const [stocksList, setStocksList] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
   const [filter, setFilter] = useState(null);
   const [tab, setTab] = useState('All');
+
+  const isSearching = searchTerm?.length > 0;
+  const hasData = stocksList?.length > 0;
+
   const onTabChange = (tab) => {
     setTab(tab);
     setFilter(tab);
   };
 
+  const handleSearchChange = (val) => {
+    setSearchTerm(val.trim() ?? '');
+
+    // increment when clearing
+    if (val === '') {
+      setSearchCycle((prev) => prev + 1);
+    }
+  };
+
   const stocksQuery = useInfiniteQuery({
-    queryKey: [stockApis.getMaterialMovementStocks.endpointKey, filter],
+    queryKey: [
+      stockApis.getMaterialMovementStocks.endpointKey,
+      filter,
+      searchTerm,
+      searchCycle,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       return getMaterialMovementStocks({
         page: pageParam,
         limit: PAGE_LIMIT,
+        searchString: searchTerm,
         filter,
       });
     },
@@ -114,7 +134,7 @@ const Transactions = () => {
               <DebouncedInput
                 value={searchTerm}
                 delay={400}
-                onDebouncedChange={setSearchTerm}
+                onDebouncedChange={handleSearchChange}
                 placeholder="Search Transactions"
               />
             </div>
@@ -141,7 +161,7 @@ const Transactions = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -151,7 +171,7 @@ const Transactions = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -168,7 +188,7 @@ const Transactions = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -178,7 +198,7 @@ const Transactions = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
@@ -195,7 +215,7 @@ const Transactions = () => {
               ) : (
                 <>
                   {/* Case 1: No search term, and no data → Empty stage */}
-                  {stocksList?.length === 0 ? (
+                  {!hasData && !isSearching ? (
                     <EmptyStageComponent
                       heading={translations('emptyStateComponent.heading')}
                       subItems={keys}
@@ -205,7 +225,7 @@ const Transactions = () => {
                     <InfiniteDataTable
                       id="qc-table"
                       columns={stocksColumns}
-                      data={stocksList}
+                      data={hasData ? stocksList : []}
                       fetchNextPage={stocksQuery.fetchNextPage}
                       isFetching={stocksQuery.isFetching}
                       totalPages={paginationData?.totalPages}
