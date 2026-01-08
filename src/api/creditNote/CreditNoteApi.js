@@ -11,4 +11,8 @@ export const CreditNoteApi = {
     endpoint: `/order/creditnote/create/`,
     endpointKey: 'create_credit_note',
   },
+  previewCreditNote: {
+    endpoint: `/order/creditnote/document/`,
+    endpointKey: 'preview_credit_notes',
+  },
 };

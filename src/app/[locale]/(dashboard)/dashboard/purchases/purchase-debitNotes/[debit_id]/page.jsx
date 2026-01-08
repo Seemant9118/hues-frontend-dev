@@ -7,6 +7,7 @@ import {
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
+import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import EditDebitNoteItem from '@/components/debitNote/EditDebitNoteItem';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
@@ -23,8 +24,10 @@ import { usePermission } from '@/hooks/usePermissions';
 import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
 import {
   getDebitNote,
+  previewDebitNote,
   updateDebitNote,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import {
   keepPreviousData,
   useInfiniteQuery,
@@ -32,7 +35,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { BookOpen, MoveUpRight, Save } from 'lucide-react';
+import { BookOpen, Eye, MoveUpRight, Save } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -273,6 +276,119 @@ const ViewDebitNote = () => {
     });
   };
 
+  // helper to get REGISTER_ADDRESS or fallback
+  const getEnterpriseAddress = (enterprise) => {
+    if (!enterprise?.addresses?.length) return '';
+
+    const registeredAddress = enterprise.addresses.find(
+      (addr) => addr.type === 'REGISTER_ADDRESS',
+    );
+
+    return registeredAddress?.address || enterprise.addresses[0]?.address || '';
+  };
+
+  // helper to get GST from gsts[] or fallback
+  const getEnterpriseGst = (enterprise) => {
+    if (enterprise?.gsts?.length) {
+      return enterprise.gsts[0]?.gst;
+    }
+    return enterprise?.gstNumber || '';
+  };
+
+  // fn to format payload for preview
+  const formatPayloadForPreview = (debitNoteDetails) => {
+    if (!debitNoteDetails) return null;
+
+    const {
+      referenceNumber,
+      createdAt,
+      remark,
+      invoice,
+      fromEnterprise,
+      toEnterprise,
+      debitNoteItems = [],
+    } = debitNoteDetails;
+
+    const items = debitNoteItems.map((item) => {
+      const productName =
+        item?.invoiceItem?.orderItemId?.productDetails?.productName || '';
+      const issues = [
+        item?.isShortDelivery && 'Short Delivery',
+        item?.isUnsatisfactory && 'Short Quantity',
+      ]
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        name: productName,
+        refundQuantity: item.refundQuantity || 0,
+        replacementQuantity: item.replacementQuantity || 0,
+        amount: item.amount || 0,
+        taxAmount: item.taxAmount || 0,
+        cgstDetails: item.cgstDetails || null,
+        sgstDetails: item.sgstDetails || null,
+        igstDetails: item.igstDetails || null,
+        issue: issues,
+      };
+    });
+
+    const totalAmount = items.reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0,
+    );
+
+    const totalTaxAmount = items.reduce(
+      (sum, item) => sum + (item.taxAmount || 0),
+      0,
+    );
+
+    return {
+      sellerEnterprise: {
+        name: toEnterprise?.name || '',
+        gst: getEnterpriseGst(toEnterprise),
+        address: getEnterpriseAddress(toEnterprise),
+      },
+      buyerEnterprise: {
+        name: fromEnterprise?.name || '',
+        gst: getEnterpriseGst(fromEnterprise),
+        address: getEnterpriseAddress(fromEnterprise),
+      },
+      invoiceId: invoice?.referenceNumber || '',
+      debitNoteId: referenceNumber || '',
+      debitNoteCreationDate: moment(createdAt).format('DD/MM/YY') || '',
+      remarks: remark || '',
+      items,
+      totalAmount,
+      totalTaxAmount,
+    };
+  };
+
+  const previewDebitNoteMutation = useMutation({
+    mutationFn: previewDebitNote,
+    onSuccess: async (data) => {
+      toast.success('Document Generated Successfully');
+      const pdfSlug = data?.data?.data?.dispatchDocumentSlug;
+
+      viewPdfInNewTab(pdfSlug);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handlePreview = () => {
+    if (debitNoteDetails?.dispatchDocumentSlug) {
+      viewPdfInNewTab(debitNoteDetails?.dispatchDocumentSlug);
+    } else {
+      const formattedPayload = formatPayloadForPreview(debitNoteDetails);
+
+      previewDebitNoteMutation.mutate({
+        id: debitNoteId,
+        data: formattedPayload,
+      });
+    }
+  };
+
   const creditNotesColumns = useCreditNotesColumns();
   const debitNoteColumns = useDebitNoteColumns({
     onEditLine: handleEditLine,
@@ -286,6 +402,21 @@ const ViewDebitNote = () => {
         <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
           {/* breadcrumbs */}
           <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+
+          {/* preview */}
+          <Tooltips
+            trigger={
+              <Button
+                onClick={handlePreview}
+                size="sm"
+                variant="outline"
+                className="font-bold"
+              >
+                <Eye size={14} />
+              </Button>
+            }
+            content={translations('preview.tootips-content')}
+          />
         </section>
 
         <Tabs

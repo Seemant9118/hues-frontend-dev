@@ -352,6 +352,9 @@
                     "createdOn": "Created On",
                     "status": "Status"
                 },
+                "preview": {
+                    "tootips-content": "Preview Debit Note"
+                },
                 "tabs": {
                     "tab1": {
                         "title": "Overview"
@@ -452,6 +455,9 @@
                     "setteledAmount": "Settled Amount",
                     "createdOn": "Created On",
                     "status": "Status"
+                },
+                "preview": {
+                    "tootips-content": "Preview Credit Note"
                 },
                 "tabs": {
                     "tab1": {
