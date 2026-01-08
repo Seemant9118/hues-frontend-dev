@@ -5,10 +5,12 @@ import {
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
+import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { MergerDataTable } from '@/components/table/merger-data-table';
+import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -16,13 +18,18 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
-import { getCreditNote } from '@/services/Credit_Note_Services/CreditNoteServices';
-import { useQuery } from '@tanstack/react-query';
-import { MoveUpRight } from 'lucide-react';
+import {
+  getCreditNote,
+  previewCreditNote,
+} from '@/services/Credit_Note_Services/CreditNoteServices';
+import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Eye, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { buildBuyerSellerRowsForCredits } from './buildBuyerSellerRowsForCredits';
 import { useCreditNotesItemsColumns } from './useCreditNotesItemsColumns';
 
@@ -167,6 +174,127 @@ const ViewCreditNote = () => {
     [creditNoteDetails],
   );
 
+  // helper to get REGISTER_ADDRESS or fallback
+  const getEnterpriseAddress = (enterprise) => {
+    if (!enterprise?.addresses?.length) return '';
+
+    const registeredAddress = enterprise.addresses.find(
+      (addr) => addr.type === 'REGISTER_ADDRESS',
+    );
+
+    return registeredAddress?.address || enterprise.addresses[0]?.address || '';
+  };
+
+  // helper to get GST from gsts[] or fallback
+  const getEnterpriseGst = (enterprise) => {
+    if (enterprise?.gsts?.length) {
+      return enterprise.gsts[0]?.gst;
+    }
+    return enterprise?.gstNumber || '';
+  };
+
+  // fn to format payload for preview
+  const formatCreditNotePayloadForPreview = (creditNoteDetails) => {
+    if (!creditNoteDetails) return null;
+
+    const {
+      referenceNumber,
+      createdAt,
+      invoice,
+      debitNote,
+      fromEnterprise,
+      toEnterprise,
+      creditNoteItems = [],
+    } = creditNoteDetails;
+
+    const items = creditNoteItems.map((item) => {
+      const productName =
+        item?.debitNoteItem?.invoiceItem?.orderItemId?.productDetails
+          ?.productName || '';
+
+      const issue = [
+        item?.debitNoteItem?.isShortDelivery && 'Short Delivery',
+        item?.debitNoteItem?.isUnsatisfactory && 'Short Quantity',
+      ]
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        ...item, // keep full creditNoteItem
+        name: productName,
+        issue,
+      };
+    });
+
+    // totals only from ACCEPTED responses
+    const totalAmount = items.reduce(
+      (sum, item) =>
+        sum +
+        item.responseDetails.reduce(
+          (acc, res) => acc + (res.approvedAmount || 0),
+          0,
+        ),
+      0,
+    );
+
+    const totalTaxAmount = items.reduce(
+      (sum, item) =>
+        sum +
+        item.responseDetails.reduce(
+          (acc, res) => acc + (res.taxAmount || 0),
+          0,
+        ),
+      0,
+    );
+
+    return {
+      sellerEnterprise: {
+        name: fromEnterprise?.name || '',
+        gst: getEnterpriseGst(fromEnterprise),
+        address: getEnterpriseAddress(fromEnterprise),
+      },
+      buyerEnterprise: {
+        name: toEnterprise?.name || '',
+        gst: getEnterpriseGst(toEnterprise),
+        address: getEnterpriseAddress(toEnterprise),
+      },
+      invoiceId: invoice?.referenceNumber || '',
+      creditNoteId: referenceNumber || '',
+      debitNoteId: debitNote?.referenceNumber,
+      creditNoteCreationDate: moment(createdAt).format('DD/MM/YY') || '',
+      remarks: '',
+      items,
+      totalAmount,
+      totalTaxAmount,
+    };
+  };
+
+  const previewCreditNoteMutation = useMutation({
+    mutationFn: previewCreditNote,
+    onSuccess: async (data) => {
+      toast.success('Document Generated Successfully');
+      const pdfSlug = data?.data?.data?.dispatchDocumentSlug;
+
+      viewPdfInNewTab(pdfSlug);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handlePreview = () => {
+    if (creditNoteDetails?.dispatchDocumentSlug) {
+      viewPdfInNewTab(creditNoteDetails?.dispatchDocumentSlug);
+    } else {
+      const formattedPayload =
+        formatCreditNotePayloadForPreview(creditNoteDetails);
+      previewCreditNoteMutation.mutate({
+        id: creditNoteId,
+        data: formattedPayload,
+      });
+    }
+  };
+
   // columns
   const creditNoteItemsColumns = useCreditNotesItemsColumns();
 
@@ -186,6 +314,21 @@ const ViewCreditNote = () => {
         <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
           {/* breadcrumbs */}
           <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+
+          {/* preview */}
+          <Tooltips
+            trigger={
+              <Button
+                onClick={handlePreview}
+                size="sm"
+                variant="outline"
+                className="font-bold"
+              >
+                <Eye size={14} />
+              </Button>
+            }
+            content={translations('preview.tootips-content')}
+          />
         </section>
 
         <Tabs

@@ -369,6 +369,9 @@
                     "editing_response": "Editing Response Line Item",
                     "create_credit_note": "Create Credit Note"
                 },
+                "preview": {
+                    "tootips-content": "Preview Debit Note"
+                },
                 "overview_labels": {
                     "debitNoteId": "Debit Note ID",
                     "clientName": "Client Name",
@@ -479,6 +482,9 @@
                     "setteledAmount": "Settled Amount",
                     "createdOn": "Created On",
                     "status": "Status"
+                },
+                "preview": {
+                    "tootips-content": "Preview Credit Note"
                 },
                 "tabs": {
                     "tab1": {

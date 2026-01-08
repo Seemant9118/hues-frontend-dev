@@ -17,3 +17,10 @@ export const createCreditNote = ({ id, data }) => {
     data,
   );
 };
+
+export const previewCreditNote = ({ id, data }) => {
+  return APIinstance.post(
+    `${CreditNoteApi.previewCreditNote.endpoint}${id}`,
+    data,
+  );
+};

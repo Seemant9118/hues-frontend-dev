@@ -60,6 +60,13 @@ export const sellerResponseUpdate = ({ id, data }) => {
   );
 };
 
+export const previewDebitNote = ({ id, data }) => {
+  return APIinstance.post(
+    `${DebitNoteApi.previewDebitNote.endpoint}${id}`,
+    data,
+  );
+};
+
 export const createComments = (data) => {
   return APIinstance.post(DebitNoteApi.createComments.endpoint, data);
 };
