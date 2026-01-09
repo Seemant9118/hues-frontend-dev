@@ -13,6 +13,7 @@ import { createSettings } from '@/services/Settings_Services/SettingsService';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import ErrorBox from '../ui/ErrorBox';
 
 export default function AddEWBConfig({
   open,
@@ -21,28 +22,29 @@ export default function AddEWBConfig({
   editedEWBConfig,
   setEditedEWBConfig,
 }) {
-  const [showSecret, setShowSecret] = useState(false);
+  // const [showSecret, setShowSecret] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
-    clientId: '',
-    clientSecret: '',
+    // clientId: '',
+    // clientSecret: '',
     username: '',
     password: '',
     gstin: '',
     email: '',
   });
+  const [errors, setErrors] = useState({});
 
   const resetForm = () => {
     setForm({
-      clientId: '',
-      clientSecret: '',
+      // clientId: '',
+      // clientSecret: '',
       username: '',
       password: '',
       gstin: '',
       email: '',
     });
-    setShowSecret(false);
+    // setShowSecret(false);
     setShowPassword(false);
     setEditedEWBConfig(null);
   };
@@ -51,8 +53,8 @@ export default function AddEWBConfig({
     if (!editedEWBConfig) return;
 
     setForm({
-      clientId: editedEWBConfig.clientId || '',
-      clientSecret: editedEWBConfig.clientSecret || '',
+      // clientId: editedEWBConfig.clientId || '',
+      // clientSecret: editedEWBConfig.clientSecret || '',
       username: editedEWBConfig.username || '',
       password: editedEWBConfig.password || '',
       gstin: editedEWBConfig.gstin || '',
@@ -70,6 +72,30 @@ export default function AddEWBConfig({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.username?.trim()) {
+      newErrors.username = 'Username is required';
+    }
+
+    if (!form.password?.trim()) {
+      newErrors.password = 'Password is required';
+    }
+
+    if (!form.gstin?.trim()) {
+      newErrors.gstin = 'GSTIN is required';
+    }
+
+    if (!form.email?.trim()) {
+      newErrors.email = 'Email is required';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const createSettingMutation = useMutation({
     mutationFn: createSettings,
     onSuccess: () => {
@@ -84,6 +110,11 @@ export default function AddEWBConfig({
   });
 
   const handleSubmit = () => {
+    if (!validateForm()) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
     const payload = {
       contextKey: 'EWAYBILL_CREDS',
       settings: Object.entries(form).map(([key, value]) => ({
@@ -91,6 +122,7 @@ export default function AddEWBConfig({
         value,
       })),
     };
+
     createSettingMutation.mutate(payload);
   };
 
@@ -111,7 +143,7 @@ export default function AddEWBConfig({
         {/* Form Grid */}
         <div className="grid grid-cols-2 gap-4 pt-4">
           {/* Client ID */}
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <Label>E-Way Bill Client ID</Label>
             <Input
               placeholder="Enter your Client ID"
@@ -121,10 +153,10 @@ export default function AddEWBConfig({
             <p className="text-xs text-muted-foreground">
               Provided by the E-Way Bill portal
             </p>
-          </div>
+          </div> */}
 
           {/* Client Secret */}
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <Label>E-Way Bill Client Secret 🔐</Label>
             <div className="relative">
               <Input
@@ -144,11 +176,12 @@ export default function AddEWBConfig({
             <p className="text-xs text-muted-foreground">
               Encrypted and securely stored
             </p>
-          </div>
+          </div> */}
 
           {/* Username */}
           <div className="space-y-1">
-            <Label>E-Way Bill Username</Label>
+            <Label>E-Way Bill Username</Label>{' '}
+            <span className="text-red-500">*</span>
             <Input
               placeholder="Enter your username"
               value={form.username}
@@ -157,11 +190,13 @@ export default function AddEWBConfig({
             <p className="text-xs text-muted-foreground">
               Provided by the E-Way Bill portal
             </p>
+            {errors.username && <ErrorBox msg={errors.username} />}
           </div>
 
           {/* Password */}
           <div className="space-y-1">
-            <Label>E-Way Bill Password 🔒</Label>
+            <Label>E-Way Bill Password</Label>{' '}
+            <span className="text-red-500">*</span>
             <div className="relative">
               <Input
                 type={showPassword ? 'text' : 'password'}
@@ -180,11 +215,12 @@ export default function AddEWBConfig({
             <p className="text-xs text-muted-foreground">
               Never visible to other users
             </p>
+            {errors.password && <ErrorBox msg={errors.password} />}
           </div>
 
           {/* GSTIN */}
           <div className="space-y-1">
-            <Label>GSTIN</Label>
+            <Label>GSTIN</Label> <span className="text-red-500">*</span>
             <Input
               placeholder="e.g., 27ABCDE1234F2Z5"
               value={form.gstin}
@@ -193,11 +229,13 @@ export default function AddEWBConfig({
             <p className="text-xs text-muted-foreground">
               Used for document generation and compliance
             </p>
+            {errors.gstin && <ErrorBox msg={errors.gstin} />}
           </div>
 
           {/* Email */}
           <div className="space-y-1">
-            <Label>Registered Email ID</Label>
+            <Label>Registered Email ID</Label>{' '}
+            <span className="text-red-500">*</span>
             <Input
               placeholder="email@example.com"
               value={form.email}
@@ -206,6 +244,7 @@ export default function AddEWBConfig({
             <p className="text-xs text-muted-foreground">
               Linked with your E-Way Bill account
             </p>
+            {errors.email && <ErrorBox msg={errors.email} />}
           </div>
         </div>
 

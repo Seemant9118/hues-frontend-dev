@@ -1,4 +1,4 @@
-import { KeyRound, User, FileText, Mail, EyeOff, Pencil } from 'lucide-react';
+import { EyeOff, FileText, Mail, Pencil, User } from 'lucide-react';
 import React from 'react';
 
 /* Reusable row item */
@@ -30,7 +30,7 @@ const EwbConfigDetails = ({
             setIsEWBConfigAdded(true);
             setEditedEWBConfig(config);
           }}
-          className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500 hover:bg-black hover:text-white hover:underline"
+          className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-black hover:bg-black hover:text-white hover:underline"
         >
           <Pencil className="h-3.5 w-3.5" />
           Edit
@@ -39,9 +39,9 @@ const EwbConfigDetails = ({
 
       {/* Details */}
       <div className="space-y-3 text-sm text-gray-600">
-        <Item icon={KeyRound} label="Client ID" value={config.clientId} />
+        {/* <Item icon={KeyRound} label="Client ID" value={config.clientId} />
 
-        <Item icon={EyeOff} label="Client Secret" value="••••••••••" />
+        <Item icon={EyeOff} label="Client Secret" value="••••••••••" /> */}
 
         <Item icon={User} label="Username" value={config.username} />
 
