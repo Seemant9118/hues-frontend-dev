@@ -273,20 +273,28 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   });
 
   const handleSubmit = () => {
+    // reset previous errors
+    setErrors({});
+
     if (!formData.adjustmentReason) {
       setErrors({ adjustmentReason: 'Adjustment reason is required' });
       return;
     }
 
+    if (!formData?.items || formData.items.length === 0) {
+      setErrors({ items: 'Add at least 1 item to proceed' });
+      return;
+    }
+
     const payload = {
       adjustmentReason: formData.adjustmentReason,
-      items: formData?.items.map((item) => ({
+      items: formData.items.map((item) => ({
         itemId: item.itemId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        gstAmountPerUnit: item.gstPerUnit,
-        totalGstAmount: item.totalGstAmount,
-        totalAmount: item.totalAmount,
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+        gstAmountPerUnit: Number(item.gstPerUnit),
+        totalGstAmount: Number(item.totalGstAmount),
+        totalAmount: Number(item.totalAmount),
       })),
     };
 
