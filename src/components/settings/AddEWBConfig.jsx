@@ -31,7 +31,7 @@ export default function AddEWBConfig({
     username: '',
     password: '',
     gstin: '',
-    email: '',
+    // email: '',
   });
   const [errors, setErrors] = useState({});
 
@@ -42,7 +42,7 @@ export default function AddEWBConfig({
       username: '',
       password: '',
       gstin: '',
-      email: '',
+      // email: '',
     });
     // setShowSecret(false);
     setShowPassword(false);
@@ -58,7 +58,7 @@ export default function AddEWBConfig({
       username: editedEWBConfig.username || '',
       password: editedEWBConfig.password || '',
       gstin: editedEWBConfig.gstin || '',
-      email: editedEWBConfig.email || '',
+      // email: editedEWBConfig.email || '',
     });
   }, [editedEWBConfig]);
 
@@ -85,10 +85,6 @@ export default function AddEWBConfig({
 
     if (!form.gstin?.trim()) {
       newErrors.gstin = 'GSTIN is required';
-    }
-
-    if (!form.email?.trim()) {
-      newErrors.email = 'Email is required';
     }
 
     setErrors(newErrors);
@@ -233,7 +229,7 @@ export default function AddEWBConfig({
           </div>
 
           {/* Email */}
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <Label>Registered Email ID</Label>{' '}
             <span className="text-red-500">*</span>
             <Input
@@ -245,7 +241,7 @@ export default function AddEWBConfig({
               Linked with your E-Way Bill account
             </p>
             {errors.email && <ErrorBox msg={errors.email} />}
-          </div>
+          </div> */}
         </div>
 
         {/* Footer */}

@@ -1,4 +1,4 @@
-import { EyeOff, FileText, Mail, Pencil, User } from 'lucide-react';
+import { EyeOff, FileText, Pencil, User } from 'lucide-react';
 import React from 'react';
 
 /* Reusable row item */
@@ -49,7 +49,7 @@ const EwbConfigDetails = ({
 
         <Item icon={FileText} label="GSTIN" value={config.gstin} />
 
-        <Item icon={Mail} label="Registered Email" value={config.email} />
+        {/* <Item icon={Mail} label="Registered Email" value={config.email} /> */}
       </div>
     </div>
   );
