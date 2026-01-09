@@ -2,6 +2,20 @@
 
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 
+export const safeJsonParse = (value, fallback = []) => {
+  if (!value) return fallback;
+
+  // If already parsed
+  if (typeof value === 'object') return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (err) {
+    console.error('Invalid JSON in attributes:', value);
+    return fallback;
+  }
+};
+
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
   if (!name) return 'PR'; // Default initials

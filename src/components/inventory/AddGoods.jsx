@@ -1,5 +1,5 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { saveDraftToSession } from '@/appUtils/helperFunctions';
+import { safeJsonParse, saveDraftToSession } from '@/appUtils/helperFunctions';
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   CreateProductGoods,
@@ -97,17 +97,17 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
 
       // ARRAY → ARRAY
       offers:
-        Array.isArray(goodsToEdit.offers) && goodsToEdit.offers.length
-          ? goodsToEdit.offers
+        Array.isArray(goodsToEdit?.offers) && goodsToEdit?.offers.length
+          ? goodsToEdit?.offers
           : prev.offers,
 
       seo: {
         ...prev.seo,
-        ...(goodsToEdit.seo || {}),
+        ...(goodsToEdit?.seo || {}),
       },
 
-      attributes: goodsToEdit.attributes
-        ? JSON.parse(goodsToEdit.attributes)
+      attributes: goodsToEdit?.attributes
+        ? safeJsonParse(goodsToEdit?.attributes)
         : [],
 
       files: {

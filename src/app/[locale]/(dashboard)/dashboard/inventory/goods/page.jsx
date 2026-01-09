@@ -190,19 +190,6 @@ function Goods() {
                     onDebouncedChange={setSearchTerm}
                     placeholder="Search items"
                   />
-
-                  {/* <Tooltips
-                    trigger={
-                      <Button
-                        variant="export"
-                        size="sm"
-                        className="cursor-not-allowed"
-                      >
-                        <Share2 size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.comingSoon')}
-                  /> */}
                   <ProtectedWrapper permissionCode="permission:item-masters-download">
                     <Tooltips
                       trigger={

@@ -22,6 +22,7 @@ import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import { LocalStorageService } from '@/lib/utils';
 import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import {
@@ -39,12 +40,12 @@ import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, MoveUpRight, Pencil, Plus, X } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
-import useMetaData from '@/hooks/useMetaData';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 
 const ViewDispatchNote = () => {
@@ -740,8 +741,8 @@ const ViewDispatchNote = () => {
 
   const formatDispatchPreviewPayload = (d) => {
     return {
-      referenceNumber: d?.deliveryChallanNo || '',
-      createdAt: d?.createdAt?.split('T')[0] || '',
+      referenceNumber: d?.referenceNumber || '',
+      createdAt: moment(d?.createdAt).format('DD/MM/YYYY') || '',
       transporterName: d?.transporterName || '',
 
       buyerName: d?.buyerName || '',
@@ -761,7 +762,7 @@ const ViewDispatchNote = () => {
       invoice: {
         id: d?.invoice?.id || '',
         referenceNumber: d?.invoice?.referenceNumber || '',
-        createdAt: d?.invoice?.createdAt?.split('T')[0] || '',
+        createdAt: moment(d?.invoice?.createdAt).format('DD/MM/YYYY') || '',
       },
 
       items: d?.items?.map((item) => ({
