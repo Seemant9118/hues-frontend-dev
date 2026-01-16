@@ -12,13 +12,13 @@ export const stepsGoodsConfig = [
     validate: (form) => {
       const newErrors = {};
 
+      if (!form?.goodsTypeId)
+        newErrors.goodsTypeId = 'Product type is required';
       if (!form?.productName)
         newErrors.productName = 'Product name is required';
       if (!form?.categoryId) newErrors.categoryId = 'Category is required';
       if (!form?.subCategoryId)
         newErrors.subCategoryId = 'Sub Category is required';
-      if (!form?.manufacturerName)
-        newErrors.manufacturerName = `Manufacturer's name is required`;
       if (!form?.hsnCode) newErrors.hsnCode = `HSN Code is required`;
       if (!form?.gstPercentage) newErrors.gstPercentage = `GST(%) is required`;
       if (!form?.description) newErrors.description = `Description is required`;

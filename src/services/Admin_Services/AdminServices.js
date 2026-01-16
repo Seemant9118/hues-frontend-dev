@@ -124,8 +124,110 @@ export const switchEnterprise = ({ enterpriseId }) => {
 export const revertSwitchedEnterprise = () => {
   return APIinstance.get(AdminAPIs.revertSwitchedEnterprise.endpoint);
 };
+// goods type
+export const getGoodsType = ({ page, limit, searchString }) => {
+  const baseEndpoint = AdminAPIs.getProductGoodsType.endpoint;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+    ...(searchString && { searchString }),
+  };
+
+  return APIinstance.get(baseEndpoint, { params });
+};
 
 // goods categories
 export const getProductGoodsCategories = () => {
   return APIinstance.get(AdminAPIs.getProductGoodsCategories.endpoint);
+};
+
+// services type
+export const getServicesType = ({ page, limit, searchString }) => {
+  const baseEndpoint = AdminAPIs.getServicesType.endpoint;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+    ...(searchString && { searchString }),
+  };
+
+  return APIinstance.get(baseEndpoint, { params });
+};
+
+// admin-panel (masters)
+export const getGoodsMaster = ({ page, limit }) => {
+  const baseEndpoint = AdminAPIs.getGoodsMaster.endpoint;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+  };
+
+  return APIinstance.get(baseEndpoint, { params });
+};
+
+export const createGoodsMaster = ({ data }) => {
+  return APIinstance.post(AdminAPIs.createGoodsMaster.endpoint, data);
+};
+
+export const updateGoodsMaster = ({ data }) => {
+  return APIinstance.put(`${AdminAPIs.updateGoodsMaster.endpoint}`, data);
+};
+
+export const getServicesMaster = ({ page, limit }) => {
+  const baseEndpoint = AdminAPIs.getServicesMaster.endpoint;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+  };
+
+  return APIinstance.get(baseEndpoint, { params });
+};
+
+export const createServiceMaster = ({ data }) => {
+  return APIinstance.post(AdminAPIs.createServiceMaster.endpoint, data);
+};
+
+export const updateSerivceMaster = ({ data }) => {
+  return APIinstance.put(AdminAPIs.updateSerivceMaster.endpoint, data);
+};
+
+export const getCategories = ({ page, limit }) => {
+  const baseEndpoint = AdminAPIs.getCategories.endpoint;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+  };
+
+  return APIinstance.get(baseEndpoint, { params });
+};
+
+export const createCategory = ({ data }) => {
+  return APIinstance.post(AdminAPIs.createCategory.endpoint, data);
+};
+
+export const updateCategory = ({ id, data }) => {
+  return APIinstance.put(`${AdminAPIs.updateCategory.endpoint}${id}`, data);
+};
+
+export const getSubCategories = ({ page, limit }) => {
+  const baseEndpoint = AdminAPIs.getSubCategories.endpoint;
+
+  const params = {
+    ...(page && { page }),
+    ...(limit && { limit }),
+  };
+
+  return APIinstance.get(baseEndpoint, { params });
+};
+
+export const createSubCategory = ({ data }) => {
+  return APIinstance.post(AdminAPIs.createSubCategory.endpoint, data);
+};
+
+export const updateSubCategory = ({ id, data }) => {
+  return APIinstance.put(`${AdminAPIs.updateSubCategory.endpoint}${id}`, data);
 };
