@@ -106,9 +106,10 @@
             },
             "overview_labels": {
                 "id": "ID",
-                "productName": "Product Name",
+                "productName": "Product",
                 "manufacturerName": "Manufacturer Name",
                 "manufacturerGstId": "Manufacturer GST ID",
+                "huesId": "Hues ID",
                 "skuId": "SKU ID",
                 "hsnCode": "HSN Code",
                 "description": "Description",

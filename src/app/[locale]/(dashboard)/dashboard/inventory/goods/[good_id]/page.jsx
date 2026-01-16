@@ -64,12 +64,10 @@ const ViewItem = () => {
   });
 
   const overviewData = {
-    productName: itemDetails?.productName,
-    manufacturerName: itemDetails?.manufacturerName,
-    manufacturerGstId: itemDetails?.manufacturerGstId,
+    productName: `${itemDetails?.productName} (${itemDetails?.manufacturerName})`,
+    huesId: itemDetails?.huesId,
     skuId: itemDetails?.skuId || '--',
     hsnCode: itemDetails?.hsnCode,
-    description: itemDetails?.description,
     costPrice: formattedAmount(itemDetails?.costPrice),
     salesPrice: formattedAmount(itemDetails?.salesPrice),
     mrp: formattedAmount(itemDetails?.mrp),
@@ -80,15 +78,14 @@ const ViewItem = () => {
     length: itemDetails?.length,
     breadth: itemDetails?.breadth,
     height: itemDetails?.height,
+    description: itemDetails?.description,
   };
 
   const overviewLabels = {
     productName: translations('overview_labels.productName'),
-    manufacturerName: translations('overview_labels.manufacturerName'),
-    manufacturerGstId: translations('overview_labels.manufacturerGstId'),
+    huesId: translations('overview_labels.huesId'),
     skuId: translations('overview_labels.skuId'),
     hsnCode: translations('overview_labels.hsnCode'),
-    description: translations('overview_labels.description'),
     costPrice: translations('overview_labels.costPrice'),
     salesPrice: translations('overview_labels.salesPrice'),
     mrp: translations('overview_labels.mrp'),
@@ -99,6 +96,7 @@ const ViewItem = () => {
     length: translations('overview_labels.length'), // todo : with units
     breadth: translations('overview_labels.breadth'), // todo : with units
     height: translations('overview_labels.height'), // todo :with units
+    description: translations('overview_labels.description'),
   };
 
   return (

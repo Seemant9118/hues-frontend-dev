@@ -62,11 +62,33 @@ const Sidebar = () => {
           icon: <Database size={16} />,
           path: `/dashboard/admin/data`,
         },
-        // {
-        //   name: 'Enterprise List',
-        //   icon: <List size={16} />,
-        //   path: `/admin/enterprises`,
-        // },
+        {
+          name: 'sidebar.master',
+          icon: <Package size={16} />,
+          path: '/dashboard/admin/master/goods-master',
+          subTab: [
+            {
+              name: 'sidebar.subTabs.goods-master',
+              icon: <Boxes size={16} />,
+              path: '/dashboard/admin/master/goods-master',
+            },
+            {
+              name: 'sidebar.subTabs.services-master',
+              icon: <HandPlatter size={16} />,
+              path: '/dashboard/admin/master/service-master',
+            },
+            {
+              name: 'sidebar.subTabs.category',
+              icon: <ArrowRightLeft size={16} />,
+              path: '/dashboard/admin/master/category',
+            },
+            {
+              name: 'sidebar.subTabs.subCategory',
+              icon: <Warehouse size={16} />,
+              path: '/dashboard/admin/master/sub-category',
+            },
+          ],
+        },
       ]
     : [];
 

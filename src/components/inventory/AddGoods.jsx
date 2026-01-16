@@ -20,6 +20,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
   const queryClient = useQueryClient();
   const hasRestoredDraftRef = useRef(false);
   const [goods, setGoods] = useState({
+    productType: '',
     productName: '',
     manufacturerName: '',
     description: '',
@@ -50,7 +51,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
       seoMetaDescription: null,
     },
 
-    // ⚠️ files NEVER come from draft
+    // files NEVER come from draft
     files: {
       images: [],
       videos: [],
@@ -59,13 +60,13 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
   const [errors, setErrors] = useState(null);
 
   useEffect(() => {
+    if (goodsToEdit) return; // no draft restore in edit
     if (!draftData || hasRestoredDraftRef.current) return;
 
     setGoods((prev) => ({
       ...prev,
       ...draftData,
 
-      // ARRAY → ARRAY (no object spread)
       offers:
         Array.isArray(draftData.offers) && draftData.offers.length
           ? draftData.offers
@@ -85,7 +86,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     }));
 
     hasRestoredDraftRef.current = true;
-  }, []);
+  }, [draftData, goodsToEdit]);
 
   // Prefill when editing an existing service
   useEffect(() => {

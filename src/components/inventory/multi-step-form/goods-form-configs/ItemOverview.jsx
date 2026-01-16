@@ -1,9 +1,11 @@
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
-import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
+import {
+  capitalize,
+  getStylesForSelectComponent,
+} from '@/appUtils/helperFunctions';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import ReactSelect from 'react-select';
 import {
   Select,
   SelectContent,
@@ -13,9 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { getProductGoodsCategories } from '@/services/Admin_Services/AdminServices';
+import {
+  getGoodsType,
+  getProductGoodsCategories,
+} from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
+import AsyncSelect from 'react-select/async';
+import { toast } from 'sonner';
 
 export default function ItemOverview({
   formData,
@@ -23,7 +30,51 @@ export default function ItemOverview({
   errors,
   translation,
 }) {
-  // TODO: add api for item type and make options
+  // api call for search & get
+  const loadProductTypeOptions = async (inputValue) => {
+    // No API call for empty / short input
+    if (!inputValue || inputValue.trim().length < 3) {
+      return [];
+    }
+
+    try {
+      const res = await getGoodsType({ searchString: inputValue });
+
+      // Correct list extraction
+      const list = res?.data?.data?.data || [];
+
+      // Map to react-select format
+      return list.map((item) => ({
+        label: `${capitalize(item.item)}`,
+        value: item.id,
+
+        // optional: keep full object for later use
+        meta: {
+          huesItemId: item.huesItemId,
+          gstRate: item.gstRate,
+          hsnCode: item.hsnCode,
+          categoryId: item.categoryId,
+          subCategoryId: item.subCategoryId,
+          categoryName: item.category?.categoryName,
+          subCategoryName: item.subCategory?.subCategoryName,
+          description: item.description,
+        },
+      }));
+    } catch (error) {
+      toast.error('Failed to fetch product types');
+      return [];
+    }
+  };
+  // selectedOptions - good type
+  const selectedProductTypeOption = React.useMemo(() => {
+    if (!formData?.goodsTypeId) return null;
+
+    return {
+      label: formData.productTypeLabel,
+      value: formData.goodsTypeId,
+    };
+  }, [formData?.goodsTypeId, formData?.productTypeLabel]);
+
   /* Fetch categories */
   const { data: categories = [] } = useQuery({
     queryKey: [AdminAPIs.getProductGoodsCategories.endpointKey],
@@ -84,29 +135,45 @@ export default function ItemOverview({
           <Label>
             Product Type <span className="text-red-600">*</span>
           </Label>
-          <ReactSelect
-            name="Product Type"
-            placeholder={'Select Product Type'}
-            options={categoryOptions}
-            styles={getStylesForSelectComponent()}
-            className="text-sm"
-            classNamePrefix="select"
-            value={
-              categoryOptions?.find(
-                (option) => option.value === formData?.productType,
-              ) || null
-            }
-            onChange={(selectedOption) => {
-              if (!selectedOption) return; // Guard clause
-              const { value } = selectedOption;
+          {formData?.goodsType?.item ? (
+            <Input
+              disabled
+              placeholder="Enter  Product Type"
+              value={formData?.goodsType?.item}
+            />
+          ) : (
+            <AsyncSelect
+              cacheOptions
+              defaultOptions={false}
+              loadOptions={loadProductTypeOptions}
+              placeholder="Search Product Type"
+              styles={getStylesForSelectComponent()}
+              className="text-sm"
+              classNamePrefix="select"
+              value={selectedProductTypeOption}
+              filterOption={null}
+              noOptionsMessage={() => 'Type at least 3 characters'}
+              onChange={(selectedOption) => {
+                if (!selectedOption) return;
 
-              setFormData((prev) => ({
-                ...prev,
-                productType: value, // TODO: reset rest fields
-              }));
-            }}
-          />
-          {errors?.productName && <ErrorBox msg={errors.productName} />}
+                setFormData((prev) => ({
+                  ...prev,
+                  goodsTypeId: selectedOption.value,
+                  productTypeLabel: selectedOption.label,
+
+                  // optional auto-fill
+                  hsnCode: selectedOption.meta?.hsnCode,
+                  gstPercentage: selectedOption.meta?.gstRate,
+                  categoryId: selectedOption.meta?.categoryId,
+                  subCategoryId: selectedOption.meta?.subCategoryId,
+                  huesItemId: selectedOption.meta?.huesItemId,
+                  description: selectedOption.meta?.description,
+                }));
+              }}
+            />
+          )}
+
+          {errors?.goodsTypeId && <ErrorBox msg={errors.goodsTypeId} />}
         </div>
 
         {/* Product Name */}
@@ -120,6 +187,16 @@ export default function ItemOverview({
             onChange={handleChange('productName')}
           />
           {errors?.productName && <ErrorBox msg={errors.productName} />}
+        </div>
+
+        {/* SKU */}
+        <div>
+          <Label>SKU ID</Label>
+          <Input
+            placeholder="SKU ID"
+            value={formData?.skuId || ''}
+            onChange={handleChange('skuId')}
+          />
         </div>
 
         {/* Manufacturer */}
@@ -138,6 +215,7 @@ export default function ItemOverview({
             Category <span className="text-red-600">*</span>
           </Label>
           <Select
+            disabled
             value={String(formData?.categoryId || '')}
             onValueChange={handleCategoryChange}
           >
@@ -165,7 +243,7 @@ export default function ItemOverview({
           <Select
             value={String(formData?.subCategoryId || '')}
             onValueChange={handleChange('subCategoryId')}
-            disabled={!formData?.categoryId}
+            disabled
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select sub category" />
@@ -183,7 +261,6 @@ export default function ItemOverview({
           {errors?.subCategoryId && <ErrorBox msg={errors.subCategoryId} />}
         </div>
 
-        <div></div>
         {/* HSN */}
         <div>
           <Label>
@@ -197,20 +274,14 @@ export default function ItemOverview({
           {errors?.hsnCode && <ErrorBox msg={errors.hsnCode} />}
         </div>
 
-        {/* SKU */}
-        <div>
-          <Label>SKU ID</Label>
-          <Input
-            placeholder="SKU ID"
-            value={formData?.skuId || ''}
-            onChange={handleChange('skuId')}
-          />
-        </div>
-
         {/* HUES */}
         <div>
           <Label>HUES ID</Label>
-          <Input disabled placeholder="Auto-generated" />
+          <Input
+            disabled
+            placeholder="Auto-generated"
+            value={formData?.huesItemId || formData?.goodsType?.huesItemId}
+          />
         </div>
 
         {/* GST */}

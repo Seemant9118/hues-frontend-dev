@@ -13,8 +13,8 @@ export default function Tooltips({ trigger, content }) {
           <span className="inline-block cursor-pointer">{trigger}</span>
         </TooltipTrigger>
 
-        <TooltipContent>
-          <p className="max-w-sm">{content}</p>
+        <TooltipContent className="max-w-64 whitespace-normal break-words text-sm leading-relaxed">
+          {content}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

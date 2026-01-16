@@ -113,9 +113,79 @@ export const AdminAPIs = {
     endpointKey: 'revert_enterprise',
   },
 
+  // goods type
+  getProductGoodsType: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/search`,
+    endpointKey: 'get_products_type',
+  },
+
   // goods categories
   getProductGoodsCategories: {
-    endpoint: `/admin-panel/product-goods-category/categories`,
+    endpoint: `/admin-panel/hsn-master/categories`,
     endpointKey: 'get_product_goods-categories',
+  },
+
+  // services type
+  getServicesType: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/search`,
+    endpointKey: 'get_services_type',
+  },
+
+  // admin-panel (masters)
+  getGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/list`,
+    endpointKey: 'get_goods_master',
+  },
+
+  createGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/add-item`,
+    endpointKey: 'create_goods_master',
+  },
+
+  updateGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/update-item/`,
+    endpointKey: 'update_goods_master',
+  },
+
+  getServicesMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/list`,
+    endpointKey: 'get_goods_master',
+  },
+
+  createServiceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/add-item`,
+    endpointKey: 'get_goods_master',
+  },
+
+  updateSerivceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/update-item`,
+    endpointKey: 'update_service_master',
+  },
+
+  getCategories: {
+    endpoint: `/admin-panel/hsn-master/categories`,
+    endpointKey: 'get_categories',
+  },
+  createCategory: {
+    endpoint: `/admin-panel/hsn-master/categories`,
+    endpointKey: 'create_category',
+  },
+  updateCategory: {
+    endpoint: `/admin-panel/hsn-master/categories/`,
+    endpointKey: 'update_category',
+  },
+
+  getSubCategories: {
+    endpoint: `/admin-panel/hsn-master/sub-categories/category`,
+    endpointKey: 'get_sub_categories',
+  },
+
+  createSubCategory: {
+    endpoint: `/admin-panel/hsn-master/sub-categories`,
+    endpointKey: 'create_sub_category',
+  },
+  updateSubCategory: {
+    endpoint: `/admin-panel/hsn-master/sub-categories/`,
+    endpointKey: 'sub_Category_update',
   },
 };
