@@ -1,7 +1,9 @@
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import ReactSelect from 'react-select';
 import {
   Select,
   SelectContent,
@@ -21,6 +23,7 @@ export default function ItemOverview({
   errors,
   translation,
 }) {
+  // TODO: add api for item type and make options
   /* Fetch categories */
   const { data: categories = [] } = useQuery({
     queryKey: [AdminAPIs.getProductGoodsCategories.endpointKey],
@@ -76,8 +79,38 @@ export default function ItemOverview({
       </h2>
 
       <div className="grid grid-cols-3 gap-4">
+        {/* Product Type */}
+        <div>
+          <Label>
+            Product Type <span className="text-red-600">*</span>
+          </Label>
+          <ReactSelect
+            name="Product Type"
+            placeholder={'Select Product Type'}
+            options={categoryOptions}
+            styles={getStylesForSelectComponent()}
+            className="text-sm"
+            classNamePrefix="select"
+            value={
+              categoryOptions?.find(
+                (option) => option.value === formData?.productType,
+              ) || null
+            }
+            onChange={(selectedOption) => {
+              if (!selectedOption) return; // Guard clause
+              const { value } = selectedOption;
+
+              setFormData((prev) => ({
+                ...prev,
+                productType: value, // TODO: reset rest fields
+              }));
+            }}
+          />
+          {errors?.productName && <ErrorBox msg={errors.productName} />}
+        </div>
+
         {/* Product Name */}
-        <div className="col-span-3">
+        <div>
           <Label>
             Product Name <span className="text-red-600">*</span>
           </Label>
@@ -87,6 +120,16 @@ export default function ItemOverview({
             onChange={handleChange('productName')}
           />
           {errors?.productName && <ErrorBox msg={errors.productName} />}
+        </div>
+
+        {/* Manufacturer */}
+        <div>
+          <Label>Manufacturer&apos;s Name</Label>
+          <Input
+            placeholder="Manufacturer's name"
+            value={formData?.manufacturerName || ''}
+            onChange={handleChange('manufacturerName')}
+          />
         </div>
 
         {/* Category */}
@@ -140,21 +183,7 @@ export default function ItemOverview({
           {errors?.subCategoryId && <ErrorBox msg={errors.subCategoryId} />}
         </div>
 
-        {/* Manufacturer */}
-        <div>
-          <Label>
-            Manufacturer&apos;s Name <span className="text-red-600">*</span>
-          </Label>
-          <Input
-            placeholder="Manufacturer's name"
-            value={formData?.manufacturerName || ''}
-            onChange={handleChange('manufacturerName')}
-          />
-          {errors?.manufacturerName && (
-            <ErrorBox msg={errors.manufacturerName} />
-          )}
-        </div>
-
+        <div></div>
         {/* HSN */}
         <div>
           <Label>
@@ -166,20 +195,6 @@ export default function ItemOverview({
             onChange={handleChange('hsnCode')}
           />
           {errors?.hsnCode && <ErrorBox msg={errors.hsnCode} />}
-        </div>
-
-        {/* GST */}
-        <div>
-          <Label>
-            GST (%) <span className="text-red-600">*</span>
-          </Label>
-          <Input
-            type="number"
-            placeholder="00.00%"
-            value={formData?.gstPercentage || ''}
-            onChange={handleChange('gstPercentage')}
-          />
-          {errors?.gstPercentage && <ErrorBox msg={errors.gstPercentage} />}
         </div>
 
         {/* SKU */}
@@ -196,6 +211,20 @@ export default function ItemOverview({
         <div>
           <Label>HUES ID</Label>
           <Input disabled placeholder="Auto-generated" />
+        </div>
+
+        {/* GST */}
+        <div>
+          <Label>
+            GST (%) <span className="text-red-600">*</span>
+          </Label>
+          <Input
+            type="number"
+            placeholder="00.00%"
+            value={formData?.gstPercentage || ''}
+            onChange={handleChange('gstPercentage')}
+          />
+          {errors?.gstPercentage && <ErrorBox msg={errors.gstPercentage} />}
         </div>
 
         {/* Description */}
