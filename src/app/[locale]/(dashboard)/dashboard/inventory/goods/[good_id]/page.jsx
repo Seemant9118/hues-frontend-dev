@@ -2,27 +2,33 @@
 
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { formattedAmount } from '@/appUtils/helperFunctions';
-import EditItem from '@/components/inventory/EditItem';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import useMetaData from '@/hooks/useMetaData';
 import {
   DeleteProductGoods,
   GetProductGoods,
-  UpdateProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
+const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
+  loading: () => <Loading />,
+});
+
 const ViewItem = () => {
+  useMetaData('Hues! - Goods Details', 'HUES Goods Details');
   const translations = useTranslations('goods.goodDetails');
   const router = useRouter();
   const params = useParams();
@@ -58,47 +64,39 @@ const ViewItem = () => {
   });
 
   const overviewData = {
-    productName: itemDetails?.productName,
-    manufacturerName: itemDetails?.manufacturerName,
-    manufacturerGstId: itemDetails?.manufacturerGstId,
-    skuId: itemDetails?.skuId,
+    productName: `${itemDetails?.productName} (${itemDetails?.manufacturerName})`,
+    huesId: itemDetails?.huesId,
+    skuId: itemDetails?.skuId || '--',
     hsnCode: itemDetails?.hsnCode,
-    description: itemDetails?.description,
     costPrice: formattedAmount(itemDetails?.costPrice),
     salesPrice: formattedAmount(itemDetails?.salesPrice),
     mrp: formattedAmount(itemDetails?.mrp),
     gstPercentage: `${itemDetails?.gstPercentage}%`,
-    cgstPercentage: itemDetails?.cgstPercentage,
-    sgstPercentage: itemDetails?.sgstPercentage,
-    igstPercentage: itemDetails?.igstPercentage,
     createdAt: moment(itemDetails?.createdAt).format('DD-MM-YYYY'),
     updatedAt: moment(itemDetails?.updatedAt).format('DD-MM-YYYY'),
     weight: itemDetails?.weight,
     length: itemDetails?.length,
     breadth: itemDetails?.breadth,
     height: itemDetails?.height,
+    description: itemDetails?.description,
   };
 
   const overviewLabels = {
     productName: translations('overview_labels.productName'),
-    manufacturerName: translations('overview_labels.manufacturerName'),
-    manufacturerGstId: translations('overview_labels.manufacturerGstId'),
+    huesId: translations('overview_labels.huesId'),
     skuId: translations('overview_labels.skuId'),
     hsnCode: translations('overview_labels.hsnCode'),
-    description: translations('overview_labels.description'),
     costPrice: translations('overview_labels.costPrice'),
     salesPrice: translations('overview_labels.salesPrice'),
     mrp: translations('overview_labels.mrp'),
     gstPercentage: translations('overview_labels.gstPercentage'),
-    cgstPercentage: translations('overview_labels.cgstPercentage'),
-    sgstPercentage: translations('overview_labels.sgstPercentage'),
-    igstPercentage: translations('overview_labels.igstPercentage'),
     createdAt: translations('overview_labels.createdAt'),
     updatedAt: translations('overview_labels.updatedAt'),
     weight: translations('overview_labels.weight'), // todo : with units
     length: translations('overview_labels.length'), // todo : with units
     breadth: translations('overview_labels.breadth'), // todo : with units
     height: translations('overview_labels.height'), // todo :with units
+    description: translations('overview_labels.description'),
   };
 
   return (
@@ -119,32 +117,35 @@ const ViewItem = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  setIsEditing((prev) => !prev);
-                  e.stopPropagation();
-                  setGoodsToEdit(itemDetails);
-                }}
-              >
-                <Pencil size={12} />
-                {translations('ctas.edit')}
-              </Button>
-
-              <ConfirmAction
-                deleteCta={translations('ctas.delete')}
-                infoText={translations('ctas.infoText', {
-                  name: itemDetails?.productName,
-                })}
-                cancelCta={translations('ctas.cancel')}
-                id={itemDetails?.id}
-                mutationKey={goodsApi.getAllProductGoods.endpointKey}
-                mutationFunc={DeleteProductGoods}
-                successMsg={translations('ctas.successMsg')}
-                invalidateKey={goodsApi.getAllProductGoods.endpointKey}
-                redirectedTo={() => router.push('/dashboard/inventory/goods')}
-              />
+              <ProtectedWrapper permissionCode="permission:item-masters-edit">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    setIsEditing((prev) => !prev);
+                    e.stopPropagation();
+                    setGoodsToEdit(itemDetails);
+                  }}
+                >
+                  <Pencil size={12} />
+                  {translations('ctas.edit')}
+                </Button>
+              </ProtectedWrapper>
+              <ProtectedWrapper permissionCode="permission:item-masters-delete">
+                <ConfirmAction
+                  deleteCta={translations('ctas.delete')}
+                  infoText={translations('ctas.infoText', {
+                    name: itemDetails?.productName,
+                  })}
+                  cancelCta={translations('ctas.cancel')}
+                  id={itemDetails?.id}
+                  mutationKey={goodsApi.getAllProductGoods.endpointKey}
+                  mutationFunc={DeleteProductGoods}
+                  successMsg={translations('ctas.successMsg')}
+                  invalidateKey={goodsApi.getAllProductGoods.endpointKey}
+                  redirectedTo={() => router.push('/dashboard/inventory/goods')}
+                />
+              </ProtectedWrapper>
             </div>
           </section>
 
@@ -166,12 +167,9 @@ const ViewItem = () => {
         </Wrapper>
       )}
       {isEditing && (
-        <EditItem
-          setIsEditing={setIsEditing}
+        <EditGoods
+          setIsCreatingGoods={setIsEditing}
           goodsToEdit={goodsToEdit}
-          setGoodsToEdit={setGoodsToEdit}
-          mutationFunc={UpdateProductGoods}
-          queryKey={[goodsApi.getProductGoods.endpointKey, params.good_id]}
         />
       )}
     </ProtectedWrapper>

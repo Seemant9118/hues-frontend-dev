@@ -8,7 +8,8 @@
                 "tab3": "Invoices",
                 "tab4": "Payment Terms",
                 "tab5": "Offers",
-                "tab6": "PIN Settings"
+                "tab6": "E-way bill config",
+                "tab7": "PIN Settings"
             },
             "content": {
                 "tab1": {
@@ -43,11 +44,18 @@
                         "format": "JPEG and PNG format",
                         "ctas": {
                             "upload": "Upload",
+                            "update": "Update",
                             "delete": "Delete"
                         }
                     },
                     "heading1": "Enterprise Information",
-                    "heading2": "Business Identification"
+                    "heading2": "Business Identification",
+                    "toasts": {
+                        "logo": {
+                            "successMsg": "Logo Updated Successfully",
+                            "errorMsg": "Something went wrong while uploading logo"
+                        }
+                    }
                 },
                 "tab2": {
                     "bankAccount": {
@@ -69,6 +77,14 @@
                 },
                 "tab5": {
                     "coming_soon": "Coming Soon..."
+                },
+                "tab6": {
+                     "ewbConfig": {
+                        "add_ewbConfig_heading": "Add your E-Way Bill Configuration",
+                        "add_ewbConfig_subtitle": "Securely manage your E-Way Bill credentials. All data is encrypted and stored safely.",
+                        "add_ewbConfig_button": "Add E-Way Bill Configuration",
+                        "ewb_heading": "E-Way Bill Configuration"
+                    }
                 }
             }
         },

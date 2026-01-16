@@ -1,0 +1,132 @@
+'use client';
+
+import { formattedAmount } from '@/appUtils/helperFunctions';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+
+export const useEWBItemColumns = () => {
+  return [
+    // Product Name
+    {
+      accessorKey: 'productName',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Product Name" />
+      ),
+      cell: ({ row }) => {
+        const productName = row.original?.productName || '--';
+        return <span>{productName}</span>;
+      },
+    },
+
+    // Product Description
+    {
+      accessorKey: 'productDesc',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Description" />
+      ),
+      cell: ({ row }) => {
+        const productDesc = row.original?.productDesc || '--';
+        return (
+          <span className="line-clamp-2 text-muted-foreground">
+            {productDesc}
+          </span>
+        );
+      },
+    },
+
+    // HSN Code
+    {
+      accessorKey: 'hsnCode',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="HSN Code" />
+      ),
+      cell: ({ row }) => {
+        const hsnCode = row.original?.hsnCode || '--';
+        return <span>{hsnCode}</span>;
+      },
+    },
+
+    // Quantity
+    {
+      accessorKey: 'quantity',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Qty" />
+      ),
+      cell: ({ row }) => {
+        const quantity = row.original?.quantity || '--';
+        return <span>{quantity}</span>;
+      },
+    },
+
+    // quantity unit
+    {
+      accessorKey: 'qtyUnit',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Qty Unit" />
+      ),
+      cell: ({ row }) => {
+        const qtyUnit = row.original?.qtyUnit || '--';
+        return <span>{qtyUnit}</span>;
+      },
+    },
+
+    // Taxable Amount
+    {
+      accessorKey: 'taxableAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Taxable Value" />
+      ),
+      cell: ({ row }) => {
+        const taxableAmount = row.original?.taxableAmount || '--';
+        return <span>{formattedAmount(taxableAmount)}</span>;
+      },
+    },
+
+    // SGST
+    {
+      accessorKey: 'sgstRate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="SGST %" />
+      ),
+      cell: ({ row }) => {
+        const sgstRate = row.original?.sgstRate;
+        return <span>{sgstRate ? `${sgstRate}%` : '--'}</span>;
+      },
+    },
+
+    // CGST
+    {
+      accessorKey: 'cgstRate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="CGST %" />
+      ),
+      cell: ({ row }) => {
+        const cgstRate = row.original?.cgstRate;
+        return <span>{cgstRate ? `${cgstRate}%` : '--'}</span>;
+      },
+    },
+
+    // IGST
+    {
+      accessorKey: 'igstRate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="IGST %" />
+      ),
+      cell: ({ row }) => {
+        const igstRate = row.original?.igstRate;
+        return <span>{igstRate ? `${igstRate}%` : '--'}</span>;
+      },
+    },
+
+    // Cess
+    {
+      accessorKey: 'cessRate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Cess %" />
+      ),
+      cell: ({ row }) => {
+        const cessRate = row.original?.cessRate;
+        return <span>{cessRate ? `${cessRate}%` : '--'}</span>;
+      },
+    },
+  ];
+};

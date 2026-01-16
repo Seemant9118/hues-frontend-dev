@@ -219,6 +219,7 @@
                     "price": "Price",
                     "invoice_value": "Invoice Value",
                     "value": "Value",
+                    "discount": "Discount",
                     "gst": "GST",
                     "tax_amount": "Tax Amount",
                     "amount": "Amount"
@@ -271,6 +272,7 @@
                         "item": "Item",
                         "quantity": "Quantity",
                         "price": "Price",
+                        "discount": "Discount (%)",
                         "gst": "GST (%)",
                         "invoice_value": "Invoice Value",
                         "value": "Value",
@@ -289,6 +291,7 @@
                 "footer": {
                     "gross_amount": "Gross Amount",
                     "tax_amount": "Tax Amount",
+                    "discountAmount": "Discount",
                     "total_amount": "Total Amount"
                 }
             }
@@ -421,7 +424,8 @@
                 "type": "Type",
                 "payment_status": "Payment status",
                 "total_amount": "Total amount",
-                "debit_notes": "Debit notes"
+                "debit_notes": "Debit notes",
+                "defects":"Defects"
             }
         },
         "past_invoices": {
@@ -481,7 +485,7 @@
             },
             "infoText": {
                 "title": "Enter PIN",
-                "pin_exist_info": "Enter your user PIN to generate an invoice",
+                "pin_exist_info": "Enter your user PIN to generate",
                 "pin_not_exist_info": "No PIN created yet! Go to PIN settings to create one",
                 "info2": "Click here"
             },
@@ -921,6 +925,16 @@
             "label_comment": "Comment",
             "label_enterprise_icon": "Enterprise icon"
         },
+        "remarksBox": {
+            "placeholder_remarks": "Type your remarks here...",
+            "tooltip_attach_file": "attach file",
+            "tooltip_send": "send",
+            "btn_send": "Send",
+            "label_attached_proofs": "Attached Proofs",
+            "label_file_attached": "File attached",
+            "toast_file_attached": "File attached successfully!",
+            "toast_general_error": "Oops! We hit a snag Try again?"
+        },
         "memberInviteModal": {
             "dialogTrigger": {
                 "button": "Invite members",
@@ -957,6 +971,158 @@
                 "error": "Something went wrong"
             }
         },
+        "createDispatchNote": {
+            "form": {
+                "transporter": {
+                    "label": "Transporter",
+                    "placeholder": "Select Transporter",
+                    "add-new-transport": "Add new Transport"
+                },
+                "dispatchFrom": {
+                    "label": "Dispatch From",
+                    "placeholder": "Select address",
+                    "add-new-address": "Add new address"
+                },
+                "billingFrom": {
+                    "label": "Billing From",
+                    "placeholder": "Select address",
+                    "add-new-address": "Add new address"
+                },
+                "table": {
+                    "header": {
+                        "item_name": "Item name",
+                        "invoice_qty": "Invoice Qty.",
+                        "dispatch_qty": "Dispatch Qty.",
+                        "unit_price": "Unit price",
+                        "total_amount": "Total Amount"
+                    }
+                },
+                "ctas": {
+                    "create": "Create",
+                    "discard": "Discard"
+                },
+                "successMsg": {
+                    "dispatach_created_success": "Dispatch note created Successfully"
+                },
+                "errorMsg": {
+                    "common": "Oops! We hit a snag Try again?"
+                }
+            }
+        },
+        "attachment_uploader": {
+            "label": "Attachments",
+            "toast": {
+                "fileAttached": "file attached successfully",
+                "fileRemoved": "file removed successfully"
+            },
+            "fileStatus": "File attached successfully",
+            "upload": {
+                "dropzoneTitle": "Drag & Drop or Select a File",
+                "supportedFormatsLabel": "Supported formats:",
+                "selectButton": "Select"
+            }
+        },
+        "addGoods": {
+            "title": "Add Goods",
+            "multiStepForm": {
+                "overview": {
+                    "section1": {
+                        "title": "Item Overview"
+                    }
+                },
+                "additionalInfo": {
+                    "section1": {
+                        "title": "Pricing"
+                    },
+                    "section2": {
+                        "title": "Dimensions"
+                    }
+                },
+                "tradePromotions": {
+                    "section1": {
+                        "title": "Trade Promotions and Offers"
+                    }
+                },
+                "promotionalContent": {
+                    "section1": {
+                        "title": "Product Media"
+                    },
+                    "section2": {
+                        "title": "SEO Information"
+                    }
+                }
+            }
+        },
+        "addService": {
+            "title": "Add Service",
+            "multiStepForm": {
+                "overview": {
+                    "section1": {
+                        "title": "Basic Information"
+                    },
+                    "section2": {
+                        "title": "Service Metrics"
+                    },
+                    "section3": {
+                        "title": "Tags & Keywords"
+                    }
+                },
+                "pricing": {
+                    "section1": {
+                        "title": "Base Pricing"
+                    },
+                    "section2": {
+                        "title": "Tax Information"
+                    }
+                },
+                "operations": {
+                    "section1": {
+                        "title": "Resource Requirements"
+                    },
+                    "section2": {
+                        "title": "Capacity Constraints"
+                    },
+                    "section3": {
+                        "title": "Required Inputs"
+                    }
+                },
+                "sla": {
+                    "section1": {
+                        "title": "Service Level Agreement"
+                    },
+                    "section2": {
+                        "title": "Revision & Warranty"
+                    },
+                    "section3": {
+                        "title": "Penalty & Credits"
+                    }
+                },
+                "description": {
+                    "section1": {
+                        "title": "Service Description"
+                    },
+                    "section2": {
+                        "title": "Inclusions & Exclusions"
+                    }
+                },
+                "addOns": {
+                    "section1": {
+                        "title": "Add-On Services"
+                    }
+                },
+                "contracts": {
+                    "section1": {
+                        "title": "Service Agreement"
+                    },
+                    "section2": {
+                        "title": "Required Consents"
+                    },
+                    "section3": {
+                        "title": "Compliance"
+                    }
+                }
+            }
+        },
         "conditionalRenderingStatus": {
             "ACCEPTED": {
                 "default": "Accepted",
@@ -965,8 +1131,13 @@
             "PENDING": {
                 "default": "Pending",
                 "isPayment_seller": "Not Acknowledged Yet",
-                "isPayment_buyer": "Not acknowledged by seller"
+                "isPayment_buyer": "Not acknowledged by seller",
+                "pod":{
+                    "podSeller": "PoD Sent",
+                    "podBuyer" : "PoD Pending"
+                }
             },
+            "COMPLETED":"Completed",
             "NEW": "New",
             "OFFER_SENT": "Offer sent",
             "OFFER_RECEIVED": "Offer received",
@@ -983,7 +1154,15 @@
             "NOT_RAISED": "-",
             "RAISED": "Debit Note Raised",
             "STOCK_OUT": "Stock Out",
-            "STOCK_IN": "Stock In"
+            "STOCK_IN": "Stock In",
+            "DRAFT": "Draft",
+            "DEBIT":"Debit",
+            "CREDIT":"Credit",
+            "FULLFILLED": "Fullfilled",
+            "RECIEVED": "Recieved",
+            "SENT": "Sent",
+            "IN_TRANSIT": "In Transit",
+            "READY_FOR_DISPATCH": " Ready for Dispatch"
         }
     }
 }

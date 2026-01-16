@@ -45,7 +45,9 @@ const MakePaymentNewInvoice = ({
   invoiceDetails,
   setIsRecordingPayment,
   paymentStatus,
+  hasDebitNote,
   debitNoteStatus,
+  defectsStatus,
   contextType,
 }) => {
   const translations = useTranslations('components.make_payment');
@@ -318,7 +320,9 @@ const MakePaymentNewInvoice = ({
           orderId={invoiceDetails?.orderId}
           orderRefId={invoiceDetails?.orderReferenceNumber}
           paymentStatus={paymentStatus}
+          hasDebitNote={hasDebitNote}
           debitNoteStatus={debitNoteStatus}
+          defectsStatus={defectsStatus}
           Name={`${invoiceDetails?.customerName} (${invoiceDetails?.clientType})`}
           type={invoiceDetails?.invoiceType}
           date={invoiceDetails?.createdAt}

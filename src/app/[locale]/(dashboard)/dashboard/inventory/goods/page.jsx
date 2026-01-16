@@ -3,10 +3,10 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
-import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -18,7 +18,6 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
   GetSearchedProductGoods,
-  UpdateProductGoods,
   UploadProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import {
@@ -26,7 +25,7 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { CircleFadingPlus, Download, Share2, Upload } from 'lucide-react';
+import { CircleFadingPlus, Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -35,10 +34,10 @@ import { toast } from 'sonner';
 import { useGoodsColumns } from './GoodsColumns';
 import { GoodsTable } from './GoodsTable';
 
-const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
+const AddGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
   loading: () => <Loading />,
 });
-const EditItem = dynamic(() => import('@/components/inventory/EditItem'), {
+const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
   loading: () => <Loading />,
 });
 const UploadItems = dynamic(
@@ -49,7 +48,6 @@ const UploadItems = dynamic(
 );
 
 const PAGE_LIMIT = 10;
-const DEBOUNCE_DELAY = 500;
 
 function Goods() {
   useMetaData('Hues! - Goods', 'HUES GOODS');
@@ -73,7 +71,6 @@ function Goods() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
@@ -118,15 +115,12 @@ function Goods() {
   });
 
   const searchQuery = useInfiniteQuery({
-    queryKey: [
-      goodsApi.getSearchedProductGoods.endpointKey,
-      debouncedSearchTerm,
-    ],
+    queryKey: [goodsApi.getSearchedProductGoods.endpointKey, searchTerm],
     queryFn: async ({ pageParam = 1 }) => {
       return GetSearchedProductGoods({
         page: pageParam,
         limit: PAGE_LIMIT,
-        data: { searchString: debouncedSearchTerm },
+        data: { searchString: searchTerm },
       });
     },
     initialPageParam: 1,
@@ -134,20 +128,13 @@ function Goods() {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    enabled: !!debouncedSearchTerm,
+    enabled: !!searchTerm,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, DEBOUNCE_DELAY);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery.data : goodsQuery.data;
+    const source = searchTerm ? searchQuery.data : goodsQuery.data;
     if (!source) return;
     const flattened = source.pages.flatMap(
       (page) => page?.data?.data?.data || [],
@@ -161,7 +148,7 @@ function Goods() {
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, goodsQuery.data, searchQuery.data]);
+  }, [searchTerm, goodsQuery.data, searchQuery.data]);
 
   const uploadFile = async (file) => {
     const formData = new FormData();
@@ -178,11 +165,11 @@ function Goods() {
     }
   };
 
-  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
-
   const onRowClick = (row) => {
     return router.push(`/dashboard/inventory/goods/${row.id}`);
   };
+
+  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -196,23 +183,12 @@ function Goods() {
           {!isAdding && !isUploading && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
-                <div className="flex items-center gap-4">
-                  <SearchInput
-                    searchPlaceholder={translations('ctas.searchPlaceholder')}
-                    toSearchTerm={searchTerm}
-                    setToSearchTerm={setSearchTerm}
-                  />
-                  <Tooltips
-                    trigger={
-                      <Button
-                        variant="export"
-                        size="sm"
-                        className="cursor-not-allowed"
-                      >
-                        <Share2 size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.comingSoon')}
+                <div className="flex items-center gap-2">
+                  <DebouncedInput
+                    value={searchTerm}
+                    delay={400}
+                    onDebouncedChange={setSearchTerm}
+                    placeholder="Search items"
                   />
                   <ProtectedWrapper permissionCode="permission:item-masters-download">
                     <Tooltips
@@ -266,7 +242,7 @@ function Goods() {
                 ) : (
                   <>
                     {/* Case 1: No search term, and no data → Empty stage */}
-                    {!debouncedSearchTerm && productGoods?.length === 0 ? (
+                    {!searchTerm && productGoods?.length === 0 ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -278,12 +254,12 @@ function Goods() {
                         columns={GoodsColumns}
                         data={productGoods}
                         fetchNextPage={
-                          debouncedSearchTerm
+                          searchTerm
                             ? searchQuery.fetchNextPage
                             : goodsQuery.fetchNextPage
                         }
                         isFetching={
-                          debouncedSearchTerm
+                          searchTerm
                             ? searchQuery.isFetching
                             : goodsQuery.isFetching
                         }
@@ -297,22 +273,12 @@ function Goods() {
               </div>
             </Wrapper>
           )}
-          {isAdding && (
-            <AddItem
-              setIsAdding={setIsAdding}
-              name={'Item'}
-              cta={'Item'}
-              onCancel={() => setIsAdding(false)}
-            />
-          )}
+          {isAdding && <AddGoods setIsCreatingGoods={setIsAdding} />}
 
           {isEditing && (
-            <EditItem
-              setIsEditing={setIsEditing}
+            <EditGoods
+              setIsCreatingGoods={setIsEditing}
               goodsToEdit={goodsToEdit}
-              setGoodsToEdit={setGoodsToEdit}
-              mutationFunc={UpdateProductGoods}
-              queryKey={[goodsApi.getAllProductGoods.endpointKey]}
             />
           )}
           {isUploading && (

@@ -4,11 +4,9 @@ import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import Tooltips from '@/components/auth/Tooltips';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
-import { Button } from '@/components/ui/button';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -25,7 +23,6 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
-import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -48,7 +45,7 @@ const SalesDebitNotes = () => {
   );
   const { hasPermission } = usePermission();
   const router = useRouter();
-  const [tab, setTab] = useState('all');
+  const [tab, setTab] = useState('ALL');
   const [debitNotesListing, setDebitNotesListing] = useState([]); // debitNotes
   const [selectedDebit, setSelectedDebit] = useState([]);
   const [paginationData, setPaginationData] = useState({});
@@ -62,10 +59,8 @@ const SalesDebitNotes = () => {
   useEffect(() => {
     // Apply filters based on the selected tab
     let newFilterData = {};
-    if (tab === 'accepted') {
-      newFilterData = { status: 'ACCEPTED' };
-    } else if (tab === 'rejected') {
-      newFilterData = { status: 'REJECTED' };
+    if (tab === 'SENT') {
+      newFilterData = { status: 'SENT' };
     }
     setFilterData(newFilterData);
   }, [tab]);
@@ -139,12 +134,13 @@ const SalesDebitNotes = () => {
     },
   });
   const onRowClick = (row) => {
-    const isSaleDebitRead = row?.readTracker?.sellerIsRead;
+    const isSaleDebitRead = row?.readTracker?.sellerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
 
     if (isSaleDebitRead) {
       router.push(`/dashboard/sales/sales-debitNotes/${row.id}`);
     } else {
-      updateReadTrackerMutation.mutate(row.id);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/sales/sales-debitNotes/${row.id}`);
     }
   };
@@ -198,50 +194,26 @@ const SalesDebitNotes = () => {
             <SubHeader
               name={translations('title')}
               className="sticky top-0 z-10 flex items-center justify-between bg-white"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <Tooltips
-                  trigger={
-                    <Button
-                      // disabled={
-                      //   selectedDebit?.length === 0 ||
-                      //   exportSelectedInvoiceMutation.isPending
-                      // }
-                      // onClick={handleExportDebitNotes}
-                      onClick={() => {}}
-                      variant="outline"
-                      className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                      size="sm"
-                    >
-                      <Upload size={14} />
-                    </Button>
-                  }
-                  content={'coming soon'}
-                />
-              </div>
-            </SubHeader>
+            ></SubHeader>
 
             <Tabs
               value={tab}
               onValueChange={onTabChange}
-              defaultValue={'all'}
+              defaultValue={'ALL'}
               className="flex flex-grow flex-col overflow-hidden"
             >
               <section className="flex w-full justify-between py-2">
                 <TabsList className="border">
-                  <TabsTrigger value="all">
+                  <TabsTrigger value="ALL">
                     {translations('tabs.label.tab1')}
                   </TabsTrigger>
-                  <TabsTrigger value="accepted">
+                  <TabsTrigger value="SENT">
                     {translations('tabs.label.tab2')}
-                  </TabsTrigger>
-                  <TabsTrigger value="rejected">
-                    {translations('tabs.label.tab3')}
                   </TabsTrigger>
                 </TabsList>
               </section>
 
-              <TabsContent value="all" className="flex-grow overflow-hidden">
+              <TabsContent value="ALL" className="flex-grow overflow-hidden">
                 {isDebitNotesLoading && <Loading />}
                 {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
                   <SalesTable
@@ -264,36 +236,7 @@ const SalesDebitNotes = () => {
                 )}
               </TabsContent>
 
-              <TabsContent
-                value="accepted"
-                className="flex-grow overflow-hidden"
-              >
-                {isDebitNotesLoading && <Loading />}
-                {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
-                  <SalesTable
-                    id={'sale-debits'}
-                    columns={debitNotesColumns}
-                    data={debitNotesListing}
-                    fetchNextPage={fetchNextPage}
-                    isFetching={isFetching}
-                    totalPages={paginationData?.totalPages}
-                    currFetchedPage={paginationData?.currFetchedPage}
-                    onRowClick={onRowClick}
-                  />
-                )}
-
-                {!isDebitNotesLoading && debitNotesListing?.length === 0 && (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                    <Image src={emptyImg} alt="emptyIcon" />
-                    <p>{translations('emtpyStateComponent.heading')}</p>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent
-                value="rejected"
-                className="flex-grow overflow-hidden"
-              >
+              <TabsContent value="SENT" className="flex-grow overflow-hidden">
                 {isDebitNotesLoading && <Loading />}
                 {!isDebitNotesLoading && debitNotesListing?.length > 0 && (
                   <SalesTable

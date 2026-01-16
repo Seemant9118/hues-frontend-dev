@@ -41,11 +41,11 @@ import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
 // dynamic imports
-const CreateOrder = dynamic(() => import('@/components/orders/CreateOrder'), {
+const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
   loading: () => <Loading />,
 });
 
-const EditOrder = dynamic(() => import('@/components/orders/EditOrder'), {
+const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });
 
@@ -283,12 +283,13 @@ const SalesOrder = () => {
     },
   });
   const onRowClick = (row) => {
-    const isSalesOrderRead = row?.readTracker?.sellerIsRead;
+    const isSalesOrderRead = row?.readTracker?.sellerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
 
     if (isSalesOrderRead) {
       router.push(`/dashboard/sales/sales-orders/${row.id}`);
     } else {
-      updateReadTrackerMutation.mutate(row.id);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/sales/sales-orders/${row.id}`);
     }
   };
@@ -553,12 +554,9 @@ const SalesOrder = () => {
           {/* editOrder Component */}
           {isEditingOrder && !isCreatingSales && (
             <EditOrder
-              type="sales"
-              name="Edit"
               cta="offer"
               isOrder="order"
               orderId={orderId}
-              isEditingOrder={isEditingOrder}
               onCancel={() => setIsEditingOrder(false)}
             />
           )}

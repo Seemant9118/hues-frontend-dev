@@ -12,6 +12,9 @@ export default function Overview({
   customRender = {}, // { orderStatus: (value)=> <CustomComponent /> }
   customLabelRender = {},
   collapsible = false,
+  isPOD = false,
+  isQC = false,
+  isSeller,
   sectionClass = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full',
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +41,7 @@ export default function Overview({
   };
 
   return (
-    <section className="mb-4 w-full rounded-md border p-4">
+    <section className="mb-2 w-full rounded-md border p-4">
       {/* Collapsible Header */}
       {collapsible && (
         <div className="mb-3 flex items-center justify-between">
@@ -62,7 +65,12 @@ export default function Overview({
                     <p className="text-base font-semibold">
                       {key !== 'status' && renderValue(key, data[key])}
                       {key === 'status' && (
-                        <ConditionalRenderingStatus status={data[key]} />
+                        <ConditionalRenderingStatus
+                          status={data[key]}
+                          isPOD={isPOD}
+                          isQC={isQC}
+                          isSeller={isSeller}
+                        />
                       )}
                     </p>
                   </div>
@@ -85,7 +93,12 @@ export default function Overview({
               <p className="text-base font-bold">
                 {key !== 'status' && renderValue(key, value)}
                 {key === 'status' && (
-                  <ConditionalRenderingStatus status={data[key]} />
+                  <ConditionalRenderingStatus
+                    status={data[key]}
+                    isPOD={isPOD}
+                    isQC={isQC}
+                    isSeller={isSeller}
+                  />
                 )}
               </p>
             </div>

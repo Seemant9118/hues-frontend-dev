@@ -1,4 +1,20 @@
-import { LocalStorageService } from '@/lib/utils';
+/* eslint-disable no-console */
+
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+
+export const safeJsonParse = (value, fallback = []) => {
+  if (!value) return fallback;
+
+  // If already parsed
+  if (typeof value === 'object') return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (err) {
+    console.error('Invalid JSON in attributes:', value);
+    return fallback;
+  }
+};
 
 // give first letter & last letter of name
 export const getInitialsNames = (name) => {
@@ -78,20 +94,25 @@ export const getStylesForSelectComponent = () => {
 };
 
 // formatAmount in Indian Rupee currency
-export const formattedAmount = (amount) => {
-  const formattedAmount = new Intl.NumberFormat('en-IN', {
+export const formattedAmount = (amount, fallback = '-') => {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) return fallback;
+
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-  }).format(amount);
-  return formattedAmount;
+    maximumFractionDigits: 2,
+  }).format(value);
 };
 
 // fn for capitalization
-export function capitalize(str) {
-  if (str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
-  return '';
+export function capitalize(str = '') {
+  return str
+    ?.split(' ')
+    ?.filter(Boolean)
+    ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    ?.join(' ');
 }
 
 export function convertSnakeToTitleCase(input) {
@@ -152,14 +173,85 @@ export const getEnterpriseId = () => {
   return switchedEnterpriseId || enterpriseId;
 };
 
-export const goToHomePage = () => {
-  const token = LocalStorageService.get('token');
+export const formatDate = (date) =>
+  date ? new Date(date).toLocaleDateString('en-IN') : '--';
 
-  const payload = token ? parseJwt(token) : null;
-
-  if (payload?.roles?.includes('ADMIN')) {
-    return '/dashboard/admin/reports';
-  } else {
-    return '/dashboard';
+// avatar color from name
+const avatarColors = [
+  'bg-blue-600',
+  'bg-red-600',
+  'bg-green-600',
+  'bg-purple-600',
+  'bg-indigo-600',
+  'bg-yellow-600',
+];
+export const getColorFromName = (name) => {
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) {
+    sum += name.charCodeAt(i);
   }
+  return avatarColors[sum % avatarColors.length];
+};
+
+export const roleColors = [
+  'bg-blue-500 text-white',
+  'bg-yellow-500 text-white',
+  'bg-green-500 text-white',
+  'bg-red-500 text-white',
+  'bg-cyan-500 text-white',
+  'bg-gray-500 text-white',
+];
+
+export function saveDraftToSession({ key, data }) {
+  SessionStorageService.set(key, data);
+}
+
+export const splitAddressAccordingToEWayBill = (address) => {
+  if (!address) return { addr1: '', addr2: '' };
+
+  const clean = address.trim();
+
+  const addr1 = clean.substring(0, 30);
+  const addr2 = clean.substring(30, 60); // next 30 chars
+
+  return { addr1, addr2 };
+};
+
+// Convert DD/MM/YYYY → YYYY-MM-DD
+export const toInputDate = (dateStr) => {
+  if (!dateStr) return '';
+  const [dd, mm, yyyy] = dateStr.split('/');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// Convert YYYY-MM-DD → DD/MM/YYYY
+export const toDisplayDate = (dateStr) => {
+  if (!dateStr) return '';
+  const [yyyy, mm, dd] = dateStr.split('-');
+  return `${dd}/${mm}/${yyyy}`;
+};
+
+export const getValueForMovementType = (movementType) => {
+  switch (movementType) {
+    case 'Internal logistics (stock transfer / repositioning)':
+      return 'Dispatch';
+    case 'Supply for sale (final delivery to customer)':
+      return 'GRN';
+    default:
+      return '-';
+  }
+};
+
+export const getQCDefectStatuses = (data) => {
+  const {
+    isShortQuantity = false,
+    isUnsatisfactory = false,
+    isShortDelivery = false,
+  } = data || {};
+
+  return [
+    isShortDelivery && 'SHORT_QUANTITY',
+    isShortQuantity && 'SHORT_QUANTITY',
+    isUnsatisfactory && 'UNSATISFACTORY',
+  ].filter(Boolean);
 };

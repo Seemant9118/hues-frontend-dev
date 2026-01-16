@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import {
   flexRender,
   getCoreRowModel,
@@ -17,173 +18,183 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { usePathname } from 'next/navigation';
-import * as React from 'react';
+import { useRef, useState } from 'react';
 
-export function InfiniteDataTable({
+export default function InfiniteDataTable({
+  id,
   columns,
   data,
-  onRowClick,
-  id,
   fetchNextPage,
   isFetching,
-  paginationData,
+  totalPages,
+  currFetchedPage,
+  onRowClick,
 }) {
-  const pathName = usePathname();
-  const isSales = pathName.includes('sales');
-  const [showLoadingState, setShowLoadingState] = React.useState(false);
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const containerRef = React.useRef(null);
+  const tableContainerRef = useRef(null);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+
+  const hasNextPage =
+    totalPages && currFetchedPage ? currFetchedPage < totalPages : false;
+
+  const loadMoreRef = useInfiniteScroll(() => {
+    if (!isFetching && hasNextPage) {
+      fetchNextPage();
+    }
+  }, hasNextPage);
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
-    manualPagination: true,
-    state: {
-      sorting,
-      columnFilters,
-    },
-    getCoreRowModel: getCoreRowModel(),
+    state: { sorting, columnFilters },
     onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // handleScroll fn
-  const handleScroll = React.useCallback(() => {
-    if (!containerRef.current || isFetching || !paginationData) return;
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-
-    const bottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-
-    // Check if we're at the bottom of the container
-    if (bottom) {
-      if (paginationData.currentPage < paginationData.totalPages) {
-        setShowLoadingState(true);
-        fetchNextPage(); // Fetch the next page if available
-      }
-    }
-  }, [isFetching, paginationData, fetchNextPage]);
-
-  // Attach and detach the scroll event listener
-  React.useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [handleScroll]);
-
-  // Hide the loading state after data is fetched
-  React.useEffect(() => {
-    if (!isFetching) {
-      setShowLoadingState(false);
-    }
-  }, [isFetching]);
-
-  // take rows
   const { rows } = table.getRowModel();
 
-  // row virtualizer fn
+  // Virtualizer
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: () => 48, // estimate row height for accurate scrollbar dragging
-    getScrollElement: () => containerRef.current,
-    // measure dynamic row height, except in firefox because it measures table border height incorrectly
-    measureElement:
-      typeof window !== 'undefined' &&
-      navigator.userAgent.indexOf('Firefox') === -1
-        ? (element) => element?.getBoundingClientRect().height
-        : undefined,
-    overscan: 21,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 44, // fixed row height
+    overscan: 6,
   });
 
   return (
     <div>
       <div
-        ref={containerRef}
-        className="infinite-datatable-scrollable-body scrollBarStyles max-h-[565px] overflow-y-auto rounded-[6px]"
+        ref={tableContainerRef}
+        id={id}
+        className="infinite-datatable-scrollable-body scrollBarStyles h-[80dvh] overflow-auto rounded-sm"
       >
-        <Table id={id}>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead className="shrink-0" key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const row = rows[virtualRow.index];
-              let isRead;
-              if (row.original?.readTracker) {
-                if (isSales) {
-                  isRead = row.original?.readTracker?.sellerIsRead;
-                } else {
-                  isRead = row.original?.readTracker?.buyerIsRead;
-                }
-              }
-              return (
-                <TableRow
-                  data-index={virtualRow.index} // needed for dynamic row height measurement
-                  ref={(node) => rowVirtualizer.measureElement(node)} // measure dynamic row height
-                  key={row.id}
-                  className={
-                    isRead
-                      ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#adaeb017] font-semibold text-gray-700 hover:text-black'
-                      : 'hover:text-text-gray-700 cursor-pointer border-y border-[#A5ABBD33] font-semibold text-black'
-                  }
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : () => {}
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-xl shrink-0">
+        <div className="inline-block min-w-full align-middle">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="shrink-0 whitespace-nowrap"
+                    >
                       {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
+                        header.column.columnDef.header,
+                        header.getContext(),
                       )}
-                    </TableCell>
+                    </TableHead>
                   ))}
                 </TableRow>
-              );
-            })}
-            {/* Loading bar at the last row */}
-            {showLoadingState && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="py-2 text-center"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+
+            <TableBody>
+              {/* No results */}
+              {rows.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-32 text-center text-sm text-muted-foreground"
+                  >
+                    No results found
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Only render virtual rows if data exists */}
+              {rows.length > 0 && (
+                <>
+                  {/* Top spacer */}
+                  <TableRow aria-hidden className="pointer-events-none">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="border-0 bg-transparent p-0"
+                      style={{
+                        height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
+                      }}
+                    />
+                  </TableRow>
+
+                  {/* Virtual rows */}
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const row = rows[virtualRow.index];
+                    const isRead = row.original?.readTracker?.isRead || true;
+
+                    return (
+                      <TableRow
+                        key={row.id}
+                        className={
+                          isRead
+                            ? 'cursor-pointer border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 hover:text-black'
+                            : 'cursor-pointer border-y border-[#A5ABBD33] bg-white font-semibold text-black hover:text-black'
+                        }
+                        onClick={
+                          onRowClick
+                            ? () => onRowClick(row.original)
+                            : undefined
+                        }
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="max-w-xl shrink-0 whitespace-nowrap px-4"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
+
+                  {/* Bottom spacer */}
+                  <TableRow aria-hidden className="pointer-events-none">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="border-0 bg-transparent p-0"
+                      style={{
+                        height:
+                          rowVirtualizer.getTotalSize() -
+                          (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                      }}
+                    />
+                  </TableRow>
+                </>
+              )}
+
+              {/* Infinite scroll trigger */}
+              {rows.length > 0 && hasNextPage && (
+                <TableRow>
+                  <TableCell colSpan={columns.length}>
+                    <div
+                      ref={loadMoreRef}
+                      className="py-4 text-center text-sm text-muted-foreground"
+                    >
+                      {isFetching
+                        ? 'Loading more data...'
+                        : 'Scroll to load more'}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      {/* Render Pagination only if there's data */}
-      {data?.length > 0 && <DataTablePagination table={table} />}
+      {!isFetching && data?.length > 0 && (
+        <DataTablePagination
+          table={table}
+          currFetchedPage={currFetchedPage}
+          totalPages={totalPages}
+          totalRows={data.length}
+        />
+      )}
     </div>
   );
 }

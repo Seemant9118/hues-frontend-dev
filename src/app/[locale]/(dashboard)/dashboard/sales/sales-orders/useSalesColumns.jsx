@@ -1,7 +1,7 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -101,13 +101,27 @@ export const useSalesColumns = (
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-        const isSaleRead = row.original?.readTracker?.sellerIsRead;
+        const isSaleRead = row.original?.readTracker?.sellerIsRead || true;
         return (
           <div className="flex items-center">
             {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
             <span>{referenceNumber}</span>
           </div>
         );
+      },
+    },
+    {
+      accessorKey: 'invoiceType',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('header.item_type')}
+          className="min-w-[50px]"
+        />
+      ),
+      cell: ({ row }) => {
+        const { invoiceType } = row.original;
+        return capitalize(invoiceType) || '--';
       },
     },
     {
@@ -130,6 +144,7 @@ export const useSalesColumns = (
         <DataTableColumnHeader
           column={column}
           title={translations('header.customers_type')}
+          className="min-w-[50px]"
         />
       ),
     },

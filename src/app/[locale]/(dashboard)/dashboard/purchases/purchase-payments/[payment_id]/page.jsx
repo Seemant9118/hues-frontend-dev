@@ -25,6 +25,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
   Check,
+  Eye,
   FileText,
   Image,
   MessageCircle,
@@ -146,27 +147,38 @@ const PaymentDetails = () => {
           />
           <div className="flex items-center gap-2">
             {paymentsDetails?.paymentAdviceAttachment && (
-              <Button
-                size="sm"
-                variant="blue_outline"
-                onClick={() =>
-                  viewPdfInNewTab(paymentsDetails?.paymentAdviceAttachment)
+              <Tooltips
+                trigger={
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      viewPdfInNewTab(paymentsDetails?.paymentAdviceAttachment)
+                    }
+                  >
+                    <Eye size={14} />
+                  </Button>
                 }
-              >
-                View Payment advice
-              </Button>
+                content={'View payment advice'}
+              />
             )}
 
             {paymentsDetails?.status === 'ACCEPTED' &&
               paymentsDetails?.receiptAttachment && (
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    viewPdfInNewTab(paymentsDetails?.receiptAttachment)
+                <Tooltips
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        viewPdfInNewTab(paymentsDetails?.receiptAttachment)
+                      }
+                    >
+                      <Eye size={14} />
+                    </Button>
                   }
-                >
-                  View Payment reciept
-                </Button>
+                  content={'View payment reciept'}
+                />
               )}
           </div>
         </section>

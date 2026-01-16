@@ -200,22 +200,28 @@
                 "title": {
                     "invoices": "चालान",
                     "invoice_details": "चालान विवरण",
-                    "record_payment": "भुगतान रिकॉर्ड करें"
+                    "record_payment": "भुगतान रसीद",
+                    "create_dispatch_note": "डिस्पैच"
                 },
                 "ctas": {
-                    "record_payment": "भुगतान रिकॉर्ड करें",
+                    "record_payment": "भुगतान रसीद",
+                    "create_dispatch_note": "डिस्पैच",
                     "share": {
                         "placeholder": "शीघ्र आ रहा है.."
                     },
+                    "view": {
+                        "placeholder": "इनवॉइस देखें"
+                    },
                     "download": {
-                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                        "placeholder": "इनवॉइस विवरण डाउनलोड करें"
                     }
                 },
                 "tabs": {
                     "label": {
                         "tab1": "सारांश",
                         "tab2": "भुगतान रसीदें",
-                        "tab3": "डेबिट नोट्स"
+                        "tab3": "डेबिट नोट्स",
+                        "tab4": "डिस्पैच नोट्स"
                     },
                     "content": {
                         "tab1": {
@@ -254,6 +260,20 @@
                             "emtpyStateComponent": {
                                 "title": "अभी तक कोई डेबिट नोट नहीं उठाया गया",
                                 "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
+                            }
+                        },
+                        "tab4": {
+                            "table": {
+                                "header": {
+                                    "dispatchId": "डिस्पैच आईडी",
+                                    "status": "स्थिति",
+                                    "createdAt": "बनाने की तिथि",
+                                    "items": "आइटम"
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "अभी तक कोई डिस्पैच नोट नहीं",
+                                "para": "लगता है अभी तक कोई डिस्पैच नोट उपलब्ध नहीं है"
                             }
                         }
                     }

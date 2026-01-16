@@ -79,7 +79,7 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
       ),
       cell: ({ row }) => {
         const { invoiceReferenceNumber } = row.original;
-        const isSaleRead = row.original?.readTracker?.sellerIsRead;
+        const isSaleRead = row.original?.readTracker?.sellerIsRead || true;
         return (
           <div className="flex items-center">
             {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}

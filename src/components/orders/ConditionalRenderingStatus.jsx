@@ -1,151 +1,242 @@
+import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 
-const ConditionalRenderingStatus = ({ status, isPayment, isSellerPage }) => {
-  const translations = useTranslations('components.conditionalRenderingStatus');
-  let statusText;
-  let statusColor;
-  let statusBG;
-  let statusBorder;
+const STATUS_UI = {
+  SUCCESS: {
+    color: '#39C06F',
+    bg: '#39C06F1A',
+    border: '#39C06F',
+  },
+  WARNING: {
+    color: '#F8BA05',
+    bg: '#F8BA051A',
+    border: '#F8BA05',
+  },
+  INFO: {
+    color: '#288AF9',
+    bg: '#288AF91A',
+    border: '#288AF9',
+  },
+  ERROR: {
+    color: '#F16B6B',
+    bg: '#F16B6B1A',
+    border: '#F16B6B',
+  },
+  NEUTRAL: {
+    color: '#DD9745',
+    bg: '#DD97451A',
+    border: '#DD9745',
+  },
+};
 
+const podStatusResolver = ({ status, isSeller, t }) => {
   switch (status) {
-    case 'ACCEPTED':
-      statusText = isPayment
-        ? translations('ACCEPTED.isPayment')
-        : translations('ACCEPTED.default');
-      statusColor = '#39C06F';
-      statusBG = '#39C06F1A';
-      statusBorder = '#39C06F';
-      break;
     case 'PENDING':
-      statusText = isPayment
-        ? isSellerPage
-          ? translations('PENDING.isPayment_seller')
-          : translations('PENDING.isPayment_buyer')
-        : translations('PENDING.default');
-      statusColor = '#F8BA05';
-      statusBG = '#F8BA051A';
-      statusBorder = '#F8BA05';
-      break;
-    case 'NEW':
-      statusText = translations('NEW');
-      statusColor = '#288AF9';
-      statusBG = '#288AF91A';
-      statusBorder = '#288AF9';
-      break;
-    case 'OFFER_SENT':
-      statusText = translations('OFFER_SENT');
-      statusColor = '#DD9745';
-      statusBG = '#DD97451A';
-      statusBorder = '#DD9745';
-      break;
-    case 'OFFER_RECEIVED':
-      statusText = translations('OFFER_RECEIVED');
-      statusColor = '#DD9745';
-      statusBG = '#DD97451A';
-      statusBorder = '#DD9745';
-      break;
-    case 'BID_SENT':
-      statusText = translations('BID_SENT');
-      statusColor = '#DD9745';
-      statusBG = '#DD97451A';
-      statusBorder = '#DD9745';
-      break;
-    case 'BID_RECEIVED':
-      statusText = translations('BID_RECEIVED');
-      statusColor = '#DD9745';
-      statusBG = '#DD97451A';
-      statusBorder = '#DD9745';
-      break;
-    case 'NEGOTIATION':
-      statusText = translations('NEGOTIATION');
-      statusColor = '#F8BA05';
-      statusBG = '#F8BA051A';
-      statusBorder = '#F8BA05';
-      break;
-    case 'INVOICED':
-      statusText = translations('INVOICED');
-      statusColor = '#6EAFFC';
-      statusBG = '#6EAFFC1A';
-      statusBorder = '#6EAFFC';
-      break;
-    case 'PARTIAL_INVOICED':
-      statusText = translations('PARTIAL_INVOICED');
-      statusColor = '#6EAFFC';
-      statusBG = '#6EAFFC1A';
-      statusBorder = '#6EAFFC';
-      break;
-    case 'WITHDRAWN':
-      statusText = translations('WITHDRAWN');
-      statusColor = '#F16B6B';
-      statusBG = '#F16B6B1A';
-      statusBorder = '#F16B6B';
-      break;
+      return {
+        text: isSeller ? t('PENDING.pod.podSeller') : t('PENDING.pod.podBuyer'),
+        ...STATUS_UI.INFO,
+      };
+
+    case 'ACCEPTED':
+      return { text: t('ACCEPTED.default'), ...STATUS_UI.SUCCESS };
+
     case 'REJECTED':
-      statusText = translations('REJECTED');
-      statusColor = '#F16B6B';
-      statusBG = '#F16B6B1A';
-      statusBorder = '#F16B6B';
-      break;
-
-    // paymentStatus
-    case 'PAID':
-      statusText = translations('PAID');
-      statusColor = '#39C06F';
-      statusBG = '#39C06F1A';
-      statusBorder = '#39C06F';
-      break;
-    case 'PARTIAL_PAID':
-      statusText = translations('PARTIAL_PAID');
-      statusColor = '#288AF9';
-      statusBG = '#288AF91A';
-      statusBorder = '#288AF9';
-      break;
-    case 'NOT_PAID':
-      statusText = translations('NOT_PAID');
-      statusColor = '#F8BA05';
-      statusBG = '#F8BA051A';
-      statusBorder = '#F8BA05';
-      break;
-
-    // debit/credit note status
-    case 'NOT_RAISED':
-      statusText = translations('NOT_RAISED');
-      break;
-    case 'RAISED':
-      statusText = translations('RAISED');
-      statusColor = '#DD9745';
-      statusBG = '#DD97451A';
-      statusBorder = '#DD9745';
-      break;
-
-    // stock status
-    case 'STOCK_OUT':
-      statusText = translations('STOCK_OUT');
-      statusColor = '#F16B6B';
-      statusBG = '#F16B6B1A';
-      statusBorder = '#F16B6B';
-      break;
-    case 'STOCK_IN':
-      statusText = translations('STOCK_IN');
-      statusColor = '#39C06F';
-      statusBG = '#39C06F1A';
-      statusBorder = '#39C06F';
-      break;
+      return { text: t('REJECTED'), ...STATUS_UI.ERROR };
 
     default:
       return null;
   }
+};
+
+const qcStatusResolver = ({ status }) => {
+  switch (status) {
+    case 'PENDING':
+      return {
+        text: 'QC Pending',
+        ...STATUS_UI.WARNING,
+      };
+
+    case 'IN_PROGRESS':
+      return {
+        text: 'QC ongoing',
+        ...STATUS_UI.INFO,
+      };
+
+    case 'COMPLETED':
+      return {
+        text: 'QC Okay',
+        ...STATUS_UI.SUCCESS,
+      };
+
+    case 'PARTIALLY_COMPLETED':
+      return {
+        text: 'QC ongoing',
+        ...STATUS_UI.INFO,
+      };
+
+    case 'PARTIALLY_COMPLETED_WITH_ISSUES':
+      return {
+        text: 'QC Completed with Issues',
+        ...STATUS_UI.ERROR,
+      };
+
+    case 'REJECTED':
+      return {
+        text: 'QC Rejected',
+        ...STATUS_UI.ERROR,
+      };
+
+    case 'STOCK_IN':
+      return {
+        text: 'Stocked In',
+        ...STATUS_UI.INFO,
+      };
+
+    case 'SHORT_QUANTITY':
+      return {
+        text: 'Short Delivery',
+        ...STATUS_UI.WARNING,
+      };
+
+    case 'UNSATISFACTORY':
+      return {
+        text: 'Unsatisfactory Quality',
+        ...STATUS_UI.ERROR,
+      };
+
+    default:
+      return null;
+  }
+};
+
+const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
+  switch (status) {
+    case 'ACCEPTED':
+      return {
+        text: isPayment ? t('ACCEPTED.isPayment') : t('ACCEPTED.default'),
+        ...STATUS_UI.SUCCESS,
+      };
+
+    case 'PENDING':
+      return {
+        text: isPayment
+          ? isSellerPage
+            ? t('PENDING.isPayment_seller')
+            : t('PENDING.isPayment_buyer')
+          : t('PENDING.default'),
+        ...STATUS_UI.WARNING,
+      };
+
+    case 'NEW':
+      return { text: t('NEW'), ...STATUS_UI.INFO };
+
+    case 'COMPLETED':
+    case 'PAID':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+
+    case 'PARTIAL_PAID':
+      return { text: t('PARTIAL_PAID'), ...STATUS_UI.INFO };
+
+    case 'NOT_PAID':
+    case 'NOT_RAISED':
+    case 'DRAFT':
+      return { text: t(status), ...STATUS_UI.WARNING };
+    case 'SENT':
+    case 'RAISED':
+      return { text: t(status), ...STATUS_UI.INFO };
+
+    case 'OFFER_SENT':
+    case 'OFFER_RECEIVED':
+    case 'BID_SENT':
+    case 'BID_RECEIVED':
+      return { text: t(status), ...STATUS_UI.NEUTRAL };
+
+    case 'NEGOTIATION':
+      return { text: t(status), ...STATUS_UI.NEUTRAL };
+
+    case 'INVOICED':
+    case 'PARTIAL_INVOICED':
+      return { text: t(status), ...STATUS_UI.INFO };
+
+    case 'REJECTED':
+    case 'WITHDRAWN':
+    case 'STOCK_OUT':
+      return { text: t(status), ...STATUS_UI.ERROR };
+
+    case 'STOCK_IN':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+
+    case 'READY_FOR_DISPATCH':
+      return { text: t(status), ...STATUS_UI.INFO };
+    case 'DEBIT':
+      return { text: t(status), ...STATUS_UI.ERROR };
+    case 'CREDIT':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+
+    case 'FULLFILLED':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+    case 'RECIEVED':
+      return { text: t(status), ...STATUS_UI.INFO };
+
+    case true:
+      return { text: 'Active', ...STATUS_UI.SUCCESS };
+
+    case false:
+      return { text: 'Inactive', ...STATUS_UI.ERROR };
+
+    default:
+      return null;
+  }
+};
+
+const resolveStatus = (props) => {
+  if (props.isPOD) return podStatusResolver(props);
+  if (props.isQC) return qcStatusResolver(props);
+
+  // future flags:
+  // if (props.isXYZ) return xyzStatusResolver(props);
+
+  return defaultStatusResolver(props);
+};
+
+const ConditionalRenderingStatus = ({
+  status,
+  isPayment = false,
+  isSellerPage = false,
+  className,
+  isSeller = false,
+  isPOD = false,
+  isQC = false,
+}) => {
+  const t = useTranslations('components.conditionalRenderingStatus');
+
+  const resolved = resolveStatus({
+    status,
+    isPayment,
+    isSellerPage,
+    isSeller,
+    isPOD,
+    isQC,
+    t,
+  });
+
+  if (!resolved) return null;
+
+  const { text, color, bg, border } = resolved;
 
   return (
     <p
-      className="flex items-center justify-center gap-1 rounded border px-1.5 py-1 text-xs font-bold"
+      className={clsx(
+        'flex w-fit items-center justify-center rounded border px-1.5 py-1 text-xs font-bold',
+        className,
+      )}
       style={{
-        color: statusColor,
-        backgroundColor: statusBG,
-        borderColor: statusBorder,
+        color,
+        backgroundColor: bg,
+        borderColor: border,
       }}
     >
-      {statusText}
+      {text}
     </p>
   );
 };

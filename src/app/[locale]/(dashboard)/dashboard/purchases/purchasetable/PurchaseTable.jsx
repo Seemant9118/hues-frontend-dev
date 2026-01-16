@@ -150,7 +150,8 @@ export function PurchaseTable({
                 if (row.original?.readTracker || row.original.buyerIsRead) {
                   isRead =
                     row.original?.readTracker?.buyerIsRead ||
-                    row.original.buyerIsRead;
+                    row.original.buyerIsRead ||
+                    true;
                 }
                 return (
                   <TableRow

@@ -2,34 +2,49 @@
 
 import React from 'react';
 
-import { goToHomePage } from '@/appUtils/helperFunctions';
+import { capitalize, roleColors } from '@/appUtils/helperFunctions';
+import { goToHomePage } from '@/appUtils/redirectionUtilFn';
+import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
+  ArchiveRestore,
+  ArrowRightLeft,
   Bell,
   Boxes,
   ClipboardList,
   Database,
+  FileCheck,
+  FileSignature,
   FileSymlink,
   Gauge,
+  HandPlatter,
   IndianRupee,
   NotebookTabs,
+  NotepadText,
   Package,
   ReceiptText,
   ScrollText,
   Settings,
+  ShieldCheck,
   ShoppingCart,
   SquareKanban,
   Store,
+  Truck,
   UserRound,
   Users,
+  Warehouse,
 } from 'lucide-react';
 import Image from 'next/image';
 import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
+import Avatar from './Avatar';
 import StyledLinks from './StyledLinks';
+import { Badge } from './badge';
 
 const Sidebar = () => {
+  const { name, roles } = useAuth();
+
   const { hasPermission } = usePermission();
   const isEnterpriseSwitched = Boolean(
     localStorage.getItem('switchedEnterpriseId'),
@@ -47,11 +62,33 @@ const Sidebar = () => {
           icon: <Database size={16} />,
           path: `/dashboard/admin/data`,
         },
-        // {
-        //   name: 'Enterprise List',
-        //   icon: <List size={16} />,
-        //   path: `/admin/enterprises`,
-        // },
+        {
+          name: 'sidebar.master',
+          icon: <Package size={16} />,
+          path: '/dashboard/admin/master/goods-master',
+          subTab: [
+            {
+              name: 'sidebar.subTabs.goods-master',
+              icon: <Boxes size={16} />,
+              path: '/dashboard/admin/master/goods-master',
+            },
+            {
+              name: 'sidebar.subTabs.services-master',
+              icon: <HandPlatter size={16} />,
+              path: '/dashboard/admin/master/service-master',
+            },
+            {
+              name: 'sidebar.subTabs.category',
+              icon: <ArrowRightLeft size={16} />,
+              path: '/dashboard/admin/master/category',
+            },
+            {
+              name: 'sidebar.subTabs.subCategory',
+              icon: <Warehouse size={16} />,
+              path: '/dashboard/admin/master/sub-category',
+            },
+          ],
+        },
       ]
     : [];
 
@@ -98,11 +135,53 @@ const Sidebar = () => {
           icon: <Boxes size={16} />,
           path: '/dashboard/inventory/goods',
         },
-        // {
-        //   name: 'sidebar.subTabs.services',
-        //   icon: <HandPlatter size={16} />,
-        //   path: '/dashboard/inventory/services',
-        // },
+        {
+          name: 'sidebar.subTabs.services',
+          icon: <HandPlatter size={16} />,
+          path: '/dashboard/inventory/services',
+        },
+        {
+          name: 'sidebar.subTabs.transactions',
+          icon: <ArrowRightLeft size={16} />,
+          path: '/dashboard/inventory/transactions',
+        },
+        {
+          name: 'sidebar.subTabs.stocks',
+          icon: <Warehouse size={16} />,
+          path: '/dashboard/inventory/stocks',
+        },
+        {
+          name: 'sidebar.subTabs.qc',
+          icon: <ShieldCheck size={16} />,
+          path: '/dashboard/inventory/qc',
+        },
+      ],
+    },
+    hasPermission('permission:sales-view') && {
+      name: 'sidebar.transport',
+      icon: <Truck size={16} />,
+      path: '/dashboard/transport/dispatch',
+      subTab: [
+        {
+          name: 'sidebar.subTabs.dispatch',
+          icon: <ArchiveRestore size={16} />,
+          path: '/dashboard/transport/dispatch',
+        },
+        {
+          name: 'sidebar.subTabs.deliveryChallan',
+          icon: <ReceiptText size={16} />,
+          path: '/dashboard/transport/delivery-challan',
+        },
+        {
+          name: 'sidebar.subTabs.pod',
+          icon: <FileSignature size={16} />,
+          path: '/dashboard/transport/pod',
+        },
+        {
+          name: 'sidebar.subTabs.grn',
+          icon: <NotepadText size={16} />,
+          path: '/dashboard/transport/grn',
+        },
       ],
     },
     hasPermission('permission:sales-view') && {
@@ -129,6 +208,11 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.debitNotes',
           icon: <FileSymlink size={16} />,
           path: '/dashboard/sales/sales-debitNotes',
+        },
+        {
+          name: 'sidebar.subTabs.creditNotes',
+          icon: <FileCheck size={16} />,
+          path: '/dashboard/sales/sales-creditNotes',
         },
       ],
     },
@@ -157,6 +241,11 @@ const Sidebar = () => {
           icon: <FileSymlink size={16} />,
           path: '/dashboard/purchases/purchase-debitNotes',
         },
+        {
+          name: 'sidebar.subTabs.creditNotes',
+          icon: <FileCheck size={16} />,
+          path: '/dashboard/purchases/purchase-creditNotes',
+        },
       ],
     },
     contactSubTabs.length > 0 && contactsLink,
@@ -181,8 +270,8 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="flex flex-col gap-10 overflow-hidden bg-[#F6F9FF] pb-3 pl-3 pt-3">
-      <Link href={goToHomePage()}>
+    <aside className="flex flex-col justify-between overflow-hidden bg-[#F6F9FF] pb-0 pt-3">
+      <Link href={goToHomePage()} className="pl-3">
         <Image
           src="/hues_logo.png"
           height={25}
@@ -193,9 +282,7 @@ const Sidebar = () => {
         />
       </Link>
 
-      {/* <div className="navScrollBarStyles flex h-full flex-col justify-between overflow-y-scroll pr-1"> */}
-
-      <div className="navScrollBarStyles flex h-full flex-col justify-between gap-2 overflow-y-scroll pr-1">
+      <div className="navScrollBarStyles mt-6 flex h-full flex-col justify-between gap-2 overflow-y-scroll pb-1 pl-3 pr-1">
         <div className="flex flex-col gap-2">
           {/* admin Navigation Links */}
           {adminLinks?.length > 0 && (
@@ -240,6 +327,31 @@ const Sidebar = () => {
             logoutCta="components.profilePopUpInfo.logoutCta"
             accessDeniedCta="components.profilePopUpInfo.accessDeniedCta"
           />
+        </div>
+      </div>
+
+      {/* User + Roles */}
+      <div className="flex w-full items-center gap-2 bg-gray-200 p-2 text-xs">
+        {/* Avatar Circle */}
+        <Avatar name={name} />
+
+        {/* Name + Roles */}
+        <div className="flex flex-1 flex-col flex-wrap gap-1">
+          <p className="truncate text-sm font-semibold leading-tight">
+            {capitalize(name)}
+          </p>
+
+          <div className="flex flex-wrap gap-1">
+            {roles?.length > 0 &&
+              roles.map((role, index) => {
+                const color = roleColors[index % roleColors.length];
+                return (
+                  <Badge key={role} className={color}>
+                    {role}
+                  </Badge>
+                );
+              })}
+          </div>
         </div>
       </div>
     </aside>

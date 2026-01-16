@@ -45,8 +45,9 @@
             "table": {
                 "header": {
                     "order_id": "Order ID",
+                    "item_type": "Type",
                     "date": "Date",
-                    "customers_type": "Type",
+                    "customers_type": "Customer Type",
                     "customers": "Name",
                     "status": "Status",
                     "total_amount": "Total Amount"
@@ -81,7 +82,7 @@
                     "upload_attachements": "Upload Document",
                     "record_payment": "Log payment",
                     "generate_invoice": "Invoice",
-                    "stock-out":"Stock out",
+                    "stock-out": "Stock out",
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -132,7 +133,7 @@
                 },
                 "successMsg": {
                     "order_accepted": "Order Accepted",
-                    "stock_out" : "Stock out successfully",
+                    "stock_out": "Stock out successfully",
                     "invoice_generate_success": "Order recreated for invoice processing"
                 },
                 "errorMsg": {
@@ -201,22 +202,28 @@
                 "title": {
                     "invoices": "Invoices",
                     "invoice_details": "Invoice details",
-                    "record_payment": "Record a payment"
+                    "record_payment": "Payment Receipt",
+                    "create_dispatch_note": "Create Dispatch Note"
                 },
                 "ctas": {
-                    "record_payment": "Record a payment",
+                    "record_payment": "Payment Receipt",
+                    "create_dispatch_note": "Dispatch",
                     "share": {
                         "placeholder": "Coming Soon.."
                     },
+                    "view": {
+                        "placeholder": "Preview Invoice"
+                    },
                     "download": {
-                        "placeholder": "Download order details"
+                        "placeholder": "Download invoice details"
                     }
                 },
                 "tabs": {
                     "label": {
                         "tab1": "Overview",
                         "tab2": "Payment Receipts",
-                        "tab3": "Debit Notes"
+                        "tab3": "Debit Notes",
+                        "tab4": "Dispatch Notes"
                     },
                     "content": {
                         "tab1": {
@@ -256,6 +263,21 @@
                                 "title": "No debit notes yet",
                                 "para": "Looks like no debit notes yet"
                             }
+                        },
+                        "tab4": {
+                            "table": {
+                                "header": {
+                                    "dispatchId": "Dispatch ID",
+                                    "status": "Status",
+                                    "supply": "Movement",
+                                    "createdAt": "Created At",
+                                    "items": "Items"
+                                }
+                            },
+                            "emtpyStateComponent": {
+                                "title": "No dispatch notes yet",
+                                "para": "Looks like no dispatch notes yet"
+                            }
                         }
                     }
                 }
@@ -267,6 +289,17 @@
             "emptyStateComponent": {
                 "heading": "No payments yet",
                 "description": "Start by adding your first payment"
+            },
+            "tabs": {
+                "tab1": {
+                    "label": "All"
+                },
+                "tab2": {
+                    "label": "Under review"
+                },
+                "tab3": {
+                    "label": "Acknowledged"
+                }
             },
             "payment-details": {
                 "title": "Payments details"
@@ -298,9 +331,113 @@
             }
         },
         "sales-debit_notes": {
-            "title": "Debit notes",
+            "title": "Recieved Debit notes",
             "emtpyStateComponent": {
                 "heading": "No debit notes yet"
+            },
+            "ctas": {
+                "export": {
+                    "placeholder": "Download selected notes",
+                    "successMsg": "Done! Your notes are downloading",
+                    "errorMsg": "Uh-oh, we hit a snag. Try again?"
+                }
+            },
+            "tabs": {
+                "label": {
+                    "tab1": "All",
+                    "tab2": "Recieved",
+                    "tab3": "Rejected"
+                }
+            },
+            "table": {
+                "header": {
+                    "debitNote_Id": "Debit Note ID",
+                    "clients": "Buyer Name",
+                    "invoice_id": "Invoice ID",
+                    "defects": "Defects",
+                    "claimed_amount": "Claimed Amount",
+                    "setteled_amount": "Settled Amount",
+                    "status": "Status",
+                    "createdOn": "Created On"
+                }
+            },
+            "debit_notes_details": {
+                "title": {
+                    "debit_notes": "Recieved Debit notes",
+                    "debit_note_details": "Debit note details",
+                    "adding_response": "Adding Response",
+                    "editing_response": "Editing Response Line Item",
+                    "create_credit_note": "Create Credit Note"
+                },
+                "preview": {
+                    "tootips-content": "Preview Debit Note"
+                },
+                "overview_labels": {
+                    "debitNoteId": "Debit Note ID",
+                    "clientName": "Client Name",
+                    "grnId": "GRN ID",
+                    "defects": "Defects",
+                    "invoiceId": "Invoice ID",
+                    "claimedAmount": "Claimed Amount",
+                    "setteledAmount": "Settled Amount",
+                    "createdOn": "Created On",
+                    "status": "Status"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    },
+                    "tab2": {
+                        "title": "Credit Notes"
+                    }
+                },
+                "label": {
+                    "date": "Date",
+                    "total_amount": "Total Amount",
+                    "type": "Type",
+                    "reason": "Reason"
+                },
+                "emtpyStateComponent": {
+                    "title": "No debit notes yet",
+                    "para": "No debit notes yet"
+                },
+                "comments": {
+                    "title": "Comments",
+                    "attached_files_heading": "Attached Files",
+                    "input": {
+                        "placeholder": "Type your comment here"
+                    },
+                    "ctas": {
+                        "attach_file": {
+                            "placeholder": "Attach file"
+                        },
+                        "send": {
+                            "placeholder": "Send"
+                        }
+                    },
+                    "emtpyStateComponent": {
+                        "title": "All quiet here",
+                        "para": "Break the silence, drop a comment"
+                    }
+                },
+                "successMsg": {
+                    "file_attached_success": "File added",
+                    "comment_success": "Comment posted!"
+                },
+                "errorMsg": {
+                    "comment_error_emtpy": "Can’t post a blank comment",
+                    "common": "Uh-oh, we hit a snag. Try again?"
+                },
+                "ctas": {
+                    "accept": "Accept",
+                    "reject": "Reject"
+                }
+            }
+        },
+        "sales-credit_notes": {
+            "title": "Credit Notes",
+            "emtpyStateComponent": {
+                "heading": "No credit notes yet"
             },
             "ctas": {
                 "export": {
@@ -318,17 +455,41 @@
             },
             "table": {
                 "header": {
+                    "debitNote_Id": "Credit Note ID",
+                    "clients": "Client's Name",
                     "invoice_id": "Invoice ID",
-                    "date": "Date",
-                    "customers": "Name",
-                    "total_amount": "Total Amount",
-                    "status": "Status"
+                    "defects": "Defects",
+                    "claimed_amount": "Claimed Amount",
+                    "setteled_amount": "Settled Amount",
+                    "status": "Status",
+                    "createdOn": "Created On"
                 }
             },
-            "debit_notes_details": {
+            "credit_notes_details": {
                 "title": {
-                    "debit_notes": "Debit notes",
-                    "debit_note_details": "Debit note details"
+                    "credit_notes": "Credit notes",
+                    "credit_notes_details": "Credit note details"
+                },
+                "overview_labels": {
+                    "creditNoteId": "Credit Note ID",
+                    "debitNoteId": "Debit Note ID",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name",
+                    "grnId": "GRN ID",
+                    "defects": "Defects",
+                    "invoiceId": "Invoice ID",
+                    "claimedAmount": "Claimed Amount",
+                    "setteledAmount": "Settled Amount",
+                    "createdOn": "Created On",
+                    "status": "Status"
+                },
+                "preview": {
+                    "tootips-content": "Preview Credit Note"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "Overview"
+                    }
                 },
                 "label": {
                     "date": "Date",

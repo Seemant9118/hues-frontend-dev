@@ -1,41 +1,55 @@
-/* eslint-disable import/no-unresolved */
-
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
-import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
+import {
+  formattedAmount,
+  getQCDefectStatuses,
+} from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import Comment from '@/components/comments/Comment';
-import DebitNoteModal from '@/components/Modals/DebitNoteModal';
+import CommentBox from '@/components/comments/CommentBox';
+import CreateCreditNote from '@/components/credtiNote/CreateCreditNote';
+import CreateResponseD from '@/components/debitNote/CreateResponseD';
+import EditResponse from '@/components/debitNote/EditResponse';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { MergerDataTable } from '@/components/table/merger-data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
-import { Textarea } from '@/components/ui/textarea';
+import Overview from '@/components/ui/Overview';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { useAuth } from '@/context/AuthContext';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
+import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
 import {
-  createComments,
-  getComments,
   getDebitNote,
+  previewDebitNote,
+  sellerResponseUpdate,
 } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import {
-  Building2,
-  Check,
-  FileText,
-  Image,
-  MessageCircle,
-  Paperclip,
-  X,
-} from 'lucide-react';
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { BookOpen, Eye, MoveUpRight, PlusCircle } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import emptyImg from '../../../../../../../../public/Empty.png';
+import { useCreditNotesColumns } from '../../sales-creditNotes/useCreditNotesColumns';
+import { SalesTable } from '../../salestable/SalesTable';
+import { buildBuyerSellerRows } from './buildBuyerSellerTableRows';
+import { useBuyerSellerColumns } from './useBuyerSellerMergedColumns';
+
+const PAGE_LIMIT = 10;
 
 const ViewDebitNote = () => {
   useMetaData('Hues! - Debit Notes Details', 'HUES DEBITNOTES'); // dynamic title
@@ -44,19 +58,19 @@ const ViewDebitNote = () => {
     'sales.sales-debit_notes.debit_notes_details',
   );
 
+  const queryClient = useQueryClient();
   const { permissions } = useAuth();
   const { hasPermission } = usePermission();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const params = useParams();
   const debitNoteId = params.debit_id;
-  const [files, setFiles] = useState([]);
-  const [comment, setComment] = useState({
-    files: [],
-    contextType: '',
-    contextId: null,
-    text: '',
-  });
+  const [tabs, setTabs] = useState('overview');
+  const [isAddingResponse, setIsAddingResponse] = useState(false);
+  const [isEditingResponse, setIsEditingRespoonse] = useState(false);
+  const [isCreatingCreditNote, setIsCreatingCreditNote] = useState(false);
+  const [selectedItemToEdit, setSelectedItemToEdit] = useState(null);
+  const [creditNotesListing, setCreditNotesListing] = useState([]); // debitNotes
+  const [paginationData, setPaginationData] = useState({});
 
   const debitNoteBreadCrumbs = [
     {
@@ -72,76 +86,494 @@ const ViewDebitNote = () => {
       path: `/dashboard/sales/sales-debitNotes/${debitNoteId}`,
       show: true, // Always show
     },
+
+    {
+      id: 3,
+      name: translations('title.adding_response'),
+      path: `/dashboard/sales/sales-debitNotes/${debitNoteId}`,
+      show: isAddingResponse,
+    },
+
+    {
+      id: 4,
+      name: translations('title.editing_response'),
+      path: `/dashboard/sales/sales-debitNotes/${debitNoteId}`,
+      show: isEditingResponse,
+    },
+
+    {
+      id: 5,
+      name: translations('title.create_credit_note'),
+      path: `/dashboard/sales/sales-debitNotes/${debitNoteId}`,
+      show: isCreatingCreditNote,
+    },
   ];
 
+  const onTabChange = (tab) => {
+    setTabs(tab);
+  };
+
+  // Fetch creditNotes data with infinite scroll
+  const {
+    data,
+    fetchNextPage,
+    isFetching,
+    isLoading: isCreditNotesLoading,
+  } = useInfiniteQuery({
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await getAllCreditNotes({
+        context: 'DEBITNOTE',
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        debitNoteId,
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
+    enabled: tabs === 'creditNotes' && hasPermission('permission:sales-view'),
+    placeholderData: keepPreviousData,
+  });
+
+  // data flattening - formatting
+  useEffect(() => {
+    if (!data) return;
+
+    // Flatten sales cebitnotes data from all pages
+    const flattenedSalesCreditNotesData = data.pages
+      .map((page) => page?.data?.data?.data) // Assuming sales invoices data is nested in `data.data.data`
+      .flat();
+
+    // Deduplicate sales data based on unique `id`
+    const uniqueSalesCebitNotesData = Array.from(
+      new Map(
+        flattenedSalesCreditNotesData.map((sale) => [
+          sale.id, // Assuming `id` is the unique identifier for each sale debit note
+          sale,
+        ]),
+      ).values(),
+    );
+
+    // Update state with deduplicated sales invoices data
+    setCreditNotesListing(uniqueSalesCebitNotesData);
+
+    // Calculate pagination data using the last page's information
+    const lastPage = data.pages[data.pages.length - 1]?.data?.data;
+    setPaginationData({
+      totalPages: lastPage?.totalPages,
+      currFetchedPage: lastPage?.currentPage,
+    });
+  }, [data]);
+
+  const onRowClick = (row) => {
+    router.push(`/dashboard/sales/sales-creditNotes/${row.id}`);
+  };
+
+  // side effect to clear data for edit
+  useEffect(() => {
+    if (!isAddingResponse) {
+      setSelectedItemToEdit(null);
+    }
+  }, [isAddingResponse]);
+
   // get debitNote
-  const { data: debitNote, isLoading } = useQuery({
+  const { data: debitNoteDetails } = useQuery({
     queryKey: [DebitNoteApi.getDebitNote.endpointKey, debitNoteId],
     queryFn: () => getDebitNote(debitNoteId),
     select: (debitNote) => debitNote.data.data,
     enabled: hasPermission('permission:sales-view'),
   });
 
-  // get comments
-  const { data: comments, isLoading: isCommentLoading } = useQuery({
-    queryKey: [DebitNoteApi.getComments.endpointKey, debitNoteId],
-    queryFn: () => getComments(debitNoteId, 'DEBIT_NOTE'),
-    select: (comments) => comments.data.data,
-  });
-
-  const uploadMedia = async (file) => {
-    setFiles((prev) => [...prev, file]);
-    toast.success('File attached successfully!');
+  // overviw component data
+  const overviewData = {
+    debitNoteId: debitNoteDetails?.referenceNumber,
+    clientName: debitNoteDetails?.fromEnterprise?.name,
+    invoiceId: debitNoteDetails?.invoice.referenceNumber,
+    defects: '',
+    claimedAmount: formattedAmount(debitNoteDetails?.amount),
+    setteledAmount: formattedAmount(debitNoteDetails?.setteledAmount),
+    createdOn: moment(debitNoteDetails?.createdAt).format('DD/MM/YYYY'),
+    status: debitNoteDetails?.creditNoteCompletedForAllItems
+      ? 'FULLFILLED'
+      : debitNoteDetails?.status
+        ? 'RECIEVED'
+        : '',
   };
-
-  const handleFileRemove = (file) => {
-    setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+  const overviewLabels = {
+    debitNoteId: translations('overview_labels.debitNoteId'),
+    clientName: translations('overview_labels.clientName'),
+    invoiceId: translations('overview_labels.invoiceId'),
+    defects: translations('overview_labels.defects'),
+    claimedAmount: translations('overview_labels.claimedAmount'),
+    setteledAmount: translations('overview_labels.setteledAmount'),
+    createdOn: translations('overview_labels.createdOn'),
+    status: translations('overview_labels.status'),
   };
+  const customRender = {
+    defects: () => {
+      const statuses = getQCDefectStatuses(debitNoteDetails);
 
-  const createCommentMutation = useMutation({
-    mutationKey: [DebitNoteApi.createComments.endpointKey],
-    mutationFn: createComments,
-    onSuccess: () => {
-      toast.success('Comment added successfully!');
-      queryClient.invalidateQueries([
-        DebitNoteApi.getComments.endpointKey,
-        debitNoteId,
-      ]);
-      setComment({
-        files: [],
-        contextType: '',
-        contextId: null,
-        text: '',
-      });
-      setFiles([]);
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
+      if (!statuses?.length) return '-';
+
+      return (
+        <div className="flex flex-wrap gap-2">
+          {statuses.map((status) => (
+            <ConditionalRenderingStatus key={status} status={status} isQC />
+          ))}
+        </div>
       );
     },
-  });
+    invoiceId: () => {
+      const invoiceId = debitNoteDetails?.invoice.id;
+      const invoiceRef = debitNoteDetails?.invoice.referenceNumber;
 
-  const handleSubmitComment = () => {
-    if (!comment.text.trim()) {
-      toast.error('Comment cannot be empty!');
+      return (
+        <p
+          className={`flex items-center gap-1 ${
+            invoiceId
+              ? 'cursor-pointer hover:text-primary hover:underline'
+              : 'cursor-default text-muted-foreground'
+          }`}
+          onClick={() => {
+            if (invoiceId) {
+              router.push(`/dashboard/sales/sales-invoices/${invoiceId}`);
+            }
+          }}
+        >
+          {invoiceRef ? (
+            <>
+              {invoiceRef}
+              <MoveUpRight size={14} />
+            </>
+          ) : (
+            '--'
+          )}
+        </p>
+      );
+    },
+  };
+
+  // util fn to get only seller responses correspoding each buyer expectation
+  const getDraftResponses = (item) => {
+    const draft = item?.metaData?.creditNoteDraftResponse;
+
+    if (!draft) return [];
+
+    return Array.isArray(draft) ? draft : [draft];
+  };
+  // util fn to calculate responded qty
+  const getRespondedQty = (item) => {
+    const responses = getDraftResponses(item);
+
+    return responses.reduce(
+      (sum, r) =>
+        sum +
+        (Number(r.approvedQuantity) || 0) +
+        (Number(r.rejectedQuantity) || 0) +
+        (Number(r.replacementQty) || 0),
+      0,
+    );
+  };
+  // Data to create response
+  const itemsToCreateResponse = (debitNoteDetails?.debitNoteItems || [])
+    .filter((item) => {
+      const expectedQty =
+        (item.refundQuantity ?? 0) + (item.replacementQuantity ?? 0);
+
+      const respondedQty = getRespondedQty(item);
+
+      // keep only items NOT fully fulfilled
+      return respondedQty < expectedQty;
+    })
+    .map((item) => {
+      const responses = getDraftResponses(item);
+
+      const approvedQuantity = responses.reduce(
+        (sum, r) => sum + (r.approvedQuantity || 0),
+        0,
+      );
+
+      const approvedAmount = responses.reduce(
+        (sum, r) => sum + (r.approvedAmount || 0),
+        0,
+      );
+
+      const respondedQty = getRespondedQty(item);
+
+      return {
+        debitNoteItemId: item.id,
+        invoiceItemId: item.invoiceItemId,
+
+        productName:
+          item?.invoiceItem?.orderItemId?.productDetails?.productName || '-',
+
+        skuId: item?.invoiceItem?.orderItemId?.productDetails?.skuId || '-',
+
+        unitPrice: item.unitPrice,
+
+        refundQuantity: item.refundQuantity,
+        replacementQuantity: item.replacementQuantity,
+        maxQuantity: item.maxQuantity,
+        respondedQty,
+
+        approvedQuantity,
+        approvedAmount,
+
+        buyerExpectation: item.buyerExpectation,
+
+        taxAmount: item.taxAmount,
+
+        cgstDetails: item.cgstDetails,
+        sgstDetails: item.sgstDetails,
+        igstDetails: item.igstDetails,
+
+        qcFailedQty: item?.metaData?.qcFailedQty ?? 0,
+        severityIndicator: item?.metaData?.severityIndicator ?? '',
+        internalRemark: item?.metaData?.internalRemark ?? '',
+        isShortDelivery: item.isShortDelivery,
+        isUnsatisfactory: item.isUnsatisfactory,
+      };
+    });
+
+  // Data to rendered in - recon (merged) table
+  const mergedRows = useMemo(
+    () => buildBuyerSellerRows(debitNoteDetails?.debitNoteItems || []),
+    [debitNoteDetails],
+  );
+
+  // condition to render action for seller response - onEdit, onDelete
+  const canShowSellerAction = (row) => {
+    const { rowId, sellerResponse } = row.original || {};
+
+    // no seller response yet
+    if (!sellerResponse || sellerResponse === '-') return false;
+
+    // seller rows like "77-1", "77-2"
+    return typeof rowId === 'string' && rowId.includes('-');
+  };
+  const findDebitNoteItemById = (debitNoteItemId) => {
+    return debitNoteDetails?.debitNoteItems?.find(
+      (i) => i.id === debitNoteItemId,
+    );
+  };
+  // onEdit
+  const onEditLine = (row) => {
+    // rowId format: "71-0"
+    const debitNoteItemId = Number(row.rowId.split('-')[0]);
+
+    const originalItem = findDebitNoteItemById(debitNoteItemId);
+
+    if (!originalItem) {
+      // eslint-disable-next-line no-console
+      console.error('DebitNote item not found for edit', debitNoteItemId);
       return;
     }
 
-    const formData = new FormData();
-    formData.append('contextType', 'DEBIT_NOTE'); // assuming fixed or dynamic context
-    formData.append('contextId', debitNoteId); // use actual ID here
-    formData.append('text', comment.text);
+    // Merge seller response + debitNoteItem
+    const editPayload = {
+      ...originalItem, // source of truth
+      ...row, // seller response / UI data
+      id: row.id,
+      debitNoteItemId, // normalized id
+      sellerResponse: row.sellerResponse,
+      sellerQty: row.sellerQty,
+      sellerAmount: row.sellerAmount,
+      draftResponses: getDraftResponses(originalItem), // ✅ REQUIRED
+    };
 
-    // handle files if any
-    if (files.length > 0) {
-      files.forEach((file) => {
-        formData.append('files', file);
+    setSelectedItemToEdit(editPayload);
+    setIsEditingRespoonse(true);
+  };
+
+  // onDelete
+  const sellerResponseUpdateMutation = useMutation({
+    mutationFn: sellerResponseUpdate,
+    onSuccess: () => {
+      toast.success('Response deleted successfully');
+      queryClient.invalidateQueries([DebitNoteApi.getDebitNote.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    },
+  });
+  const onDeleteLine = (row) => {
+    const payload = {
+      itemsToDelete: [
+        {
+          debitNoteItemId: row?.debitNoteItemId,
+          id: row.id,
+        },
+      ],
+    };
+    sellerResponseUpdateMutation.mutate({
+      id: debitNoteId,
+      data: payload,
+    });
+  };
+
+  // Data to create credit note
+  const groupByDebitNoteItemId = (data = []) => {
+    return data.reduce((acc, row) => {
+      const key = row.debitNoteItemId;
+
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(row);
+
+      return acc;
+    }, {});
+  };
+  const filterFullyFulfilledItems = (data = []) => {
+    const grouped = groupByDebitNoteItemId(data);
+
+    return Object.values(grouped)
+      .filter((rows) => {
+        if (!rows.length) return false;
+
+        const { buyerQty } = rows[0];
+
+        // If credit note already created for this item → exclude
+        const isCreditNoteAlreadyCreated = rows.some(
+          (r) => r.isCreditNoteCreated === true || r.creditNoteId,
+        );
+
+        if (isCreditNoteAlreadyCreated) return false;
+
+        // Check full fulfillment
+        const totalSellerQty = rows.reduce(
+          (sum, r) => sum + (Number(r.sellerQty) || 0),
+          0,
+        );
+
+        return totalSellerQty === buyerQty;
+      })
+      .flat(); // flatten back to rows
+  };
+  const filteredDataToCreateCreditNotes = filterFullyFulfilledItems(mergedRows);
+
+  // helper to get REGISTER_ADDRESS or fallback
+  const getEnterpriseAddress = (enterprise) => {
+    if (!enterprise?.addresses?.length) return '';
+
+    const registeredAddress = enterprise.addresses.find(
+      (addr) => addr.type === 'REGISTER_ADDRESS',
+    );
+
+    return registeredAddress?.address || enterprise.addresses[0]?.address || '';
+  };
+
+  // helper to get GST from gsts[] or fallback
+  const getEnterpriseGst = (enterprise) => {
+    if (enterprise?.gsts?.length) {
+      return enterprise.gsts[0]?.gst;
+    }
+    return enterprise?.gstNumber || '';
+  };
+
+  // fn to format payload for preview
+  const formatPayloadForPreview = (debitNoteDetails) => {
+    if (!debitNoteDetails) return null;
+
+    const {
+      referenceNumber,
+      createdAt,
+      remark,
+      invoice,
+      fromEnterprise,
+      toEnterprise,
+      debitNoteItems = [],
+    } = debitNoteDetails;
+
+    const items = debitNoteItems.map((item) => {
+      const productName =
+        item?.invoiceItem?.orderItemId?.productDetails?.productName || '';
+      const issues = [
+        item?.isShortDelivery && 'Short Delivery',
+        item?.isUnsatisfactory && 'Short Quantity',
+      ]
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        name: productName,
+        refundQuantity: item.refundQuantity || 0,
+        replacementQuantity: item.replacementQuantity || 0,
+        amount: item.amount || 0,
+        taxAmount: item.taxAmount || 0,
+        cgstDetails: item.cgstDetails || null,
+        sgstDetails: item.sgstDetails || null,
+        igstDetails: item.igstDetails || null,
+        issue: issues,
+      };
+    });
+
+    const totalAmount = items.reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0,
+    );
+
+    const totalTaxAmount = items.reduce(
+      (sum, item) => sum + (item.taxAmount || 0),
+      0,
+    );
+
+    return {
+      sellerEnterprise: {
+        name: toEnterprise?.name || '',
+        gst: getEnterpriseGst(toEnterprise),
+        address: getEnterpriseAddress(toEnterprise),
+      },
+      buyerEnterprise: {
+        name: fromEnterprise?.name || '',
+        gst: getEnterpriseGst(fromEnterprise),
+        address: getEnterpriseAddress(fromEnterprise),
+      },
+      invoiceId: invoice?.referenceNumber || '',
+      debitNoteId: referenceNumber || '',
+      debitNoteCreationDate: moment(createdAt).format('DD/MM/YY') || '',
+      remarks: remark || '',
+      items,
+      totalAmount,
+      totalTaxAmount,
+    };
+  };
+
+  const previewDebitNoteMutation = useMutation({
+    mutationFn: previewDebitNote,
+    onSuccess: async (data) => {
+      toast.success('Document Generated Successfully');
+      const pdfSlug = data?.data?.data?.dispatchDocumentSlug;
+
+      viewPdfInNewTab(pdfSlug);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handlePreview = () => {
+    if (debitNoteDetails?.dispatchDocumentSlug) {
+      viewPdfInNewTab(debitNoteDetails?.dispatchDocumentSlug);
+    } else {
+      const formattedPayload = formatPayloadForPreview(debitNoteDetails);
+
+      previewDebitNoteMutation.mutate({
+        id: debitNoteId,
+        data: formattedPayload,
       });
     }
-
-    createCommentMutation.mutate(formData);
   };
+
+  // columns
+  const buyerSellerColumns = useBuyerSellerColumns({
+    onEditLine,
+    onDeleteLine,
+    canShowSellerAction,
+  });
+  const creditNotesColumns = useCreditNotesColumns();
 
   if (!permissions || permissions.length === 0) {
     return null; // or <Loading />
@@ -155,206 +587,143 @@ const ViewDebitNote = () => {
   return (
     <ProtectedWrapper permissionCode="permission:sales-view">
       <Wrapper className="h-full py-2">
-        <div className="sticky top-0 z-10 flex gap-2 bg-white pt-2">
+        {/* Header */}
+        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
           {/* breadcrumbs */}
           <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
-        </div>
 
-        {isLoading && <Loading />}
-        <section className="scrollBarStyles relative flex h-full w-full flex-col gap-4 overflow-y-auto">
-          {/* debitNote overview */}
-          {!isLoading && debitNote && (
-            <div className="sticky top-0 z-10 flex flex-col gap-8 rounded-lg border bg-white px-8 py-4 shadow-customShadow">
-              <section className="flex items-center justify-between">
-                <div className="flex flex-col gap-8">
-                  <h1 className="flex items-center gap-2 text-sm">
-                    <span className="font-bold">
-                      {debitNote.referenceNumber}
-                    </span>
-                    <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
-                      {capitalize(debitNote?.status)}
-                    </span>
-                  </h1>
-                  <div className="flex gap-10">
-                    <h1 className="text-sm">
-                      <span className="font-bold text-[#ABB0C1]">
-                        {translations('label.date')}:{' '}
-                      </span>
-                      <span className="text-[#363940]">
-                        {moment(debitNote.createdAt).format('DD/MM/YYYY')}
-                      </span>
-                    </h1>
-                    <h1 className="text-sm">
-                      <span className="font-bold text-[#ABB0C1]">
-                        {translations('label.total_amount')} :{' '}
-                      </span>
-                      <span className="font-bold text-[#363940]">
-                        {formattedAmount(debitNote.amount)}
-                      </span>
-                      <span> (inc. GST)</span>
-                    </h1>
-                  </div>
-                </div>
-              </section>
-
-              <h1 className="text-sm">
-                <span className="font-bold text-[#ABB0C1]">
-                  {translations('label.reason')} :{' '}
-                </span>
-                <span className="text-[#363940]">{debitNote.remark}</span>
-              </h1>
-            </div>
-          )}
-
-          {/* comments  */}
-          <div className="flex h-full flex-col gap-4 p-2">
-            <section className="flex w-full items-center gap-2">
-              <MessageCircle size={16} />
-              <h1 className="text-sm font-bold">
-                {translations('comments.title')}
-              </h1>
-            </section>
-
-            <div className="relative">
-              {/* 1 */}
-              <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full border bg-[#A5ABBD]">
-                <Building2 size={20} />
-              </div>
-
-              {/* 2 */}
-              <Textarea
-                name="comment"
-                value={comment.text}
-                onChange={(e) => {
-                  setComment((prev) => ({ ...prev, text: e.target.value }));
-                }}
-                className="px-20 pt-[20px]"
-                placeholder={translations('comments.input.placeholder')}
-              />
-
-              {/* 3 */}
-              <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
-                <Tooltips
-                  trigger={
-                    <label htmlFor="fileUpload">
-                      <Paperclip
-                        size={20}
-                        className="cursor-pointer hover:text-black"
-                      />
-                    </label>
-                  }
-                  content={translations(
-                    'comments.ctas.attach_file.placeholder',
-                  )}
-                />
-
-                <input
-                  type="file"
-                  id="fileUpload"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files[0]) {
-                      uploadMedia(e.target.files[0]);
-                    }
-                  }}
-                />
-
-                <Tooltips
-                  trigger={
-                    createCommentMutation.isPending ? (
-                      <Loading />
-                    ) : (
-                      <Button size="sm" onClick={handleSubmitComment}>
-                        Send
-                      </Button>
-                    )
-                  }
-                  content={translations('comments.ctas.send.placeholder')}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              {/* attached files */}
-              {files?.length > 0 && (
-                <span className="text-xs font-bold">
-                  {translations('comments.attached_files_heading')}
-                </span>
-              )}
-              <div className="flex flex-wrap gap-4">
-                {files?.map((file) => (
-                  <div
-                    key={file.name}
-                    className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
-                  >
-                    {/* Remove Button */}
-                    <X
-                      size={16}
-                      onClick={() => handleFileRemove(file)}
-                      className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
-                    />
-
-                    {/* File icon */}
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
-                      {file.name.split('.').pop() === 'pdf' ? (
-                        <FileText size={16} className="text-red-600" />
-                      ) : (
-                        // eslint-disable-next-line jsx-a11y/alt-text
-                        <Image size={16} className="text-primary" />
-                      )}
-                    </div>
-
-                    {/* File name */}
-                    <p className="truncate text-sm font-medium text-neutral-800">
-                      {file.name}
-                    </p>
-
-                    {/* Success message */}
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
-                        <Check size={12} />
-                      </div>
-                      <p className="text-xs font-medium text-green-600">
-                        {'File attached'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* comments lists */}
-            <section className="flex flex-col gap-2">
-              {isCommentLoading && <Loading />}
-              {!isCommentLoading &&
-                comments?.length > 0 &&
-                comments?.map((comment) => (
-                  <Comment
-                    key={comment?.id}
-                    invalidateId={debitNoteId}
-                    comment={comment}
-                  />
-                ))}
-
-              {!isCommentLoading && comments?.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
-                  <h1>{translations('comments.emtpyStateComponent.title')}</h1>
-                  <p>{translations('comments.emtpyStateComponent.para')}</p>
-                </div>
-              )}
-            </section>
-          </div>
+          {/* preview */}
+          <Tooltips
+            trigger={
+              <Button
+                onClick={handlePreview}
+                size="sm"
+                variant="outline"
+                className="font-bold"
+              >
+                <Eye size={14} />
+              </Button>
+            }
+            content={translations('preview.tootips-content')}
+          />
         </section>
 
-        <ProtectedWrapper permissionCode={'permission:sales-debit-note-action'}>
-          {/* cta's for accept/reject debit note */}
-          {debitNote?.status === 'PENDING' && (
-            <div className="sticky bottom-0 z-10 flex w-full justify-end gap-2 bg-white">
-              <DebitNoteModal cta="reject" debitNote={debitNote} />
-              <DebitNoteModal cta="accept" debitNote={debitNote} />
-            </div>
+        {!isAddingResponse && !isCreatingCreditNote && !isEditingResponse && (
+          <Tabs
+            value={tabs}
+            onValueChange={onTabChange}
+            defaultValue={'overview'}
+          >
+            <section className="flex items-center justify-between gap-2">
+              <TabsList className="border">
+                <TabsTrigger value="overview">
+                  {translations('tabs.tab1.title')}
+                </TabsTrigger>
+                <TabsTrigger value="creditNotes">
+                  {translations('tabs.tab2.title')}
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="flex items-center gap-2">
+                {/* if all items response added then hide it */}
+                {itemsToCreateResponse?.length > 0 && (
+                  <Button size="sm" onClick={() => setIsAddingResponse(true)}>
+                    <PlusCircle size={14} /> Add Response
+                  </Button>
+                )}
+
+                {itemsToCreateResponse?.length === 0 &&
+                  !debitNoteDetails?.creditNoteCompletedForAllItems && (
+                    <Button
+                      size="sm"
+                      onClick={() => setIsCreatingCreditNote(true)}
+                    >
+                      <BookOpen size={14} /> Finalize & Post Credit Note
+                    </Button>
+                  )}
+              </div>
+            </section>
+
+            <TabsContent value="overview">
+              <div className="flex flex-col gap-4">
+                {/* OVERVIEW SECTION */}
+                <Overview
+                  collapsible={false}
+                  data={overviewData}
+                  labelMap={overviewLabels}
+                  customRender={customRender}
+                />
+
+                {/* comment */}
+                <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
+
+                <MergerDataTable
+                  id="buyer-seller-table"
+                  columns={buyerSellerColumns}
+                  data={mergedRows}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="creditNotes"
+              className="flex-grow overflow-hidden"
+            >
+              {isCreditNotesLoading && <Loading />}
+              {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
+                <SalesTable
+                  id={'purchase-debits-credits'}
+                  columns={creditNotesColumns}
+                  data={creditNotesListing}
+                  fetchNextPage={fetchNextPage}
+                  isFetching={isFetching}
+                  totalPages={paginationData?.totalPages}
+                  currFetchedPage={paginationData?.currFetchedPage}
+                  onRowClick={onRowClick}
+                />
+              )}
+
+              {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
+                <div className="flex h-[80dvh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p>No credit notes found for this debit note.</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* add response */}
+        {isAddingResponse && !isCreatingCreditNote && !isEditingResponse && (
+          <CreateResponseD
+            items={itemsToCreateResponse || []}
+            debitNoteId={debitNoteId}
+            onClose={() => setIsAddingResponse(false)}
+          />
+        )}
+
+        {/* edit a response */}
+        {isEditingResponse &&
+          !isCreatingCreditNote &&
+          !isAddingResponse &&
+          selectedItemToEdit && (
+            <EditResponse
+              item={selectedItemToEdit}
+              debitNoteId={debitNoteId}
+              onClose={() => setIsEditingRespoonse(false)}
+            />
           )}
-        </ProtectedWrapper>
+
+        {/* create a credit note */}
+        {isCreatingCreditNote && !isAddingResponse && !isEditingResponse && (
+          <CreateCreditNote
+            isCreatingCreditNote={isCreatingCreditNote}
+            setIsCreatingCreditNote={setIsCreatingCreditNote}
+            data={filteredDataToCreateCreditNotes}
+            id={debitNoteId}
+            onClose={() => setIsCreatingCreditNote(false)}
+          />
+        )}
       </Wrapper>
     </ProtectedWrapper>
   );

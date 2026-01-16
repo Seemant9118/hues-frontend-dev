@@ -7,7 +7,7 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
-import EditOrder from '@/components/orders/EditOrder';
+import EditOrder from '@/components/orders/EditOrderS';
 import NegotiationHistory from '@/components/orders/NegotiationHistory';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNew from '@/components/payments/MakePaymentNew';
@@ -31,10 +31,11 @@ import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
+  viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { stockIn } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Pencil } from 'lucide-react';
+import { Eye, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -288,13 +289,10 @@ const ViewOrder = () => {
         {/* editOrder Component */}
         {isEditingOrder && (
           <EditOrder
-            type="sales"
-            name="Edit"
             cta="bid"
             isOrder="order"
             orderId={params.order_id}
             onCancel={() => setIsEditingOrder(false)}
-            isEditingOrder={isEditingOrder}
           />
         )}
         {!isEditingOrder && !isLoading && orderDetails && (
@@ -310,7 +308,26 @@ const ViewOrder = () => {
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-1">
+                {/* view CTA */}
+                {!isPaymentAdvicing &&
+                  !isNegotiation &&
+                  !viewNegotiationHistory &&
+                  orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => viewOrderinNewTab(params.order_id)}
+                          size="sm"
+                          variant="outline"
+                          className="font-bold"
+                        >
+                          <Eye size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.view.placeholder')}
+                    />
+                  )}
                 {/* negotiation ctas */}
                 {!isNegotiation && !viewNegotiationHistory && (
                   <ProtectedWrapper
@@ -399,6 +416,7 @@ const ViewOrder = () => {
                 )}
                 {/* send payment advice CTA */}
                 {!isPaymentAdvicing &&
+                  !viewNegotiationHistory &&
                   (orderDetails.negotiationStatus === 'INVOICED' ||
                     orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
                   orderDetails?.metaData?.payment?.status !== 'PAID' && (
@@ -418,6 +436,7 @@ const ViewOrder = () => {
 
                 {/* stock-in CTA */}
                 {!isPaymentAdvicing &&
+                  !viewNegotiationHistory &&
                   !orderDetails?.invoiceGenerationCompleted &&
                   orderDetails?.negotiationStatus === 'ACCEPTED' &&
                   orderDetails?.metaData?.buyerData?.stockIn !== 'STOCK_IN' && (
@@ -444,6 +463,7 @@ const ViewOrder = () => {
                 <ProtectedWrapper permissionCode={'permission:purchase-edit'}>
                   {orderDetails.negotiationStatus === 'NEW' &&
                     orderDetails.orderType === 'PURCHASE' &&
+                    !viewNegotiationHistory &&
                     enterpriseId.toString() ===
                       orderDetails.buyerId.toString() && (
                       <DropdownMenu>

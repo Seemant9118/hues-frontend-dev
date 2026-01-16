@@ -11,11 +11,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { MoreVertical, Pencil } from 'lucide-react';
+import { Info, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { usePermission } from '@/hooks/usePermissions';
+import Tooltips from '@/components/auth/Tooltips';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 
 export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
   const translations = useTranslations('services');
@@ -30,9 +32,20 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
           title={translations('table.header.serviceName')}
         />
       ),
+      cell: ({ row }) => {
+        const { shortDescription, serviceName } = row.original;
+        return (
+          <div className="flex items-center gap-1">
+            <span className="hover:text-primary hover:underline">
+              {serviceName}
+            </span>
+            <Tooltips trigger={<Info size={14} />} content={shortDescription} />
+          </div>
+        );
+      },
     },
     {
-      accessorKey: 'sac',
+      accessorKey: 'sacCode',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -41,7 +54,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
       ),
     },
     {
-      accessorKey: 'description',
+      accessorKey: 'shortDescription',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -49,18 +62,22 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
         />
       ),
       cell: ({ row }) => {
-        const { description } = row.original;
-        return <p className="truncate">{description}</p>;
+        const { shortDescription } = row.original;
+        return <p className="truncate">{shortDescription}</p>;
       },
     },
     {
-      accessorKey: 'rate',
+      accessorKey: 'basePrice',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
           title={translations('table.header.rate')}
         />
       ),
+      cell: ({ row }) => {
+        const value = row.getValue('basePrice');
+        return formattedAmount(value);
+      },
     },
     {
       accessorKey: 'gstPercentage',
@@ -113,8 +130,9 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
               <ProtectedWrapper permissionCode="permission:item-masters-edit">
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
-                  onClick={() => {
-                    setIsEditing((prev) => !prev);
+                  onClick={(e) => {
+                    setIsEditing(true);
+                    e.stopPropagation();
                     setServicesToEdit(row.original);
                   }}
                 >

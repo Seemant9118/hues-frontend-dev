@@ -52,6 +52,10 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
           title={translations('table.header.manufacturer')}
         />
       ),
+      cell: ({ row }) => {
+        const { manufacturerName } = row.original;
+        return manufacturerName || '-';
+      },
     },
     {
       accessorKey: 'hsnCode',

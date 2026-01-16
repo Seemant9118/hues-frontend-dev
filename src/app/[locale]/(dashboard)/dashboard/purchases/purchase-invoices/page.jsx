@@ -247,7 +247,7 @@ const PurchaseInvoices = () => {
     });
   };
 
-  // [updateReadTracker Mutation : onRowClick] ✅
+  // [updateReadTracker Mutation : onRowClick]
   const updateReadTrackerMutation = useMutation({
     mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
     mutationFn: updateReadTracker,
@@ -256,12 +256,13 @@ const PurchaseInvoices = () => {
     },
   });
   const onRowClick = (row) => {
-    const isPurchaseOrderRead = row?.readTracker?.buyerIsRead;
+    const isPurchaseOrderRead = row?.readTracker?.buyerIsRead || true;
+    const readTrackerId = row?.readTracker?.id;
 
     if (isPurchaseOrderRead) {
       router.push(`/dashboard/purchases/purchase-invoices/${row.invoiceId}`);
     } else {
-      updateReadTrackerMutation.mutate(row.invoiceId);
+      updateReadTrackerMutation.mutate(readTrackerId);
       router.push(`/dashboard/purchases/purchase-invoices/${row.invoiceId}`);
     }
   };

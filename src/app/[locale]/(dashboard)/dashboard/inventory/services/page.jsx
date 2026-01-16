@@ -3,10 +3,10 @@
 import { servicesApi } from '@/api/inventories/services/services';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
-import SearchInput from '@/components/ui/SearchInput';
 import SubHeader from '@/components/ui/Sub-header';
 import { Button } from '@/components/ui/button';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -18,7 +18,6 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductServices,
   GetSearchedServices,
-  UpdateProductServices,
   UploadProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import {
@@ -26,7 +25,7 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { CircleFadingPlus, Download, Share2, Upload } from 'lucide-react';
+import { CircleFadingPlus, Download, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -36,10 +35,10 @@ import { useServicesColumns } from './ServicesColumns';
 import { ServicesTable } from './ServicesTable';
 
 // dynamic imports
-const AddItem = dynamic(() => import('@/components/inventory/AddItem'), {
+const AddService = dynamic(() => import('@/components/inventory/AddService'), {
   loading: () => <Loading />,
 });
-const EditItem = dynamic(() => import('@/components/inventory/EditItem'), {
+const EditService = dynamic(() => import('@/components/inventory/AddService'), {
   loading: () => <Loading />,
 });
 const UploadItems = dynamic(
@@ -49,8 +48,6 @@ const UploadItems = dynamic(
 
 // MACROS
 const PAGE_LIMIT = 10;
-// Debounce delay in milliseconds
-const DEBOUNCE_DELAY = 500;
 
 function Services() {
   useMetaData('Hues! - Services', 'HUES SERVICES'); // dynamic title
@@ -75,8 +72,7 @@ function Services() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // debounce search term
-  const [isAdding, setIsAdding] = useState(false);
+  const [isCreatingService, setIsCreatingService] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -87,14 +83,14 @@ function Services() {
   useEffect(() => {
     // Read the state from the query parameters
     const state = searchParams.get('action');
-    setIsAdding(state === 'add');
+    setIsCreatingService(state === 'add');
     setIsEditing(state === 'edit');
     setIsUploading(state === 'upload');
   }, [searchParams]);
 
   useEffect(() => {
     let newPath = `/dashboard/inventory/services`;
-    if (isAdding) {
+    if (isCreatingService) {
       newPath += `?action=add`;
     } else if (isEditing) {
       newPath += `?action=edit`;
@@ -105,7 +101,7 @@ function Services() {
     }
 
     router.push(newPath);
-  }, [router, isAdding, isEditing, isUploading]);
+  }, [router, isCreatingService, isEditing, isUploading]);
 
   const servicesQuery = useInfiniteQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
@@ -128,15 +124,12 @@ function Services() {
   });
 
   const searchQuery = useInfiniteQuery({
-    queryKey: [
-      servicesApi.getSearchedServices.endpointKey,
-      debouncedSearchTerm,
-    ],
+    queryKey: [servicesApi.getSearchedServices.endpointKey, searchTerm],
     queryFn: async ({ pageParam = 1 }) => {
       return GetSearchedServices({
         page: pageParam,
         limit: PAGE_LIMIT,
-        data: { searchString: debouncedSearchTerm },
+        data: { searchString: searchTerm },
       });
     },
     initialPageParam: 1,
@@ -144,20 +137,13 @@ function Services() {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    enabled: !!debouncedSearchTerm,
+    enabled: !!searchTerm,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, DEBOUNCE_DELAY);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const source = debouncedSearchTerm ? searchQuery.data : servicesQuery.data;
+    const source = searchTerm ? searchQuery.data : servicesQuery.data;
     if (!source) return;
     const flattened = source.pages.flatMap(
       (page) => page?.data?.data?.data || [],
@@ -171,7 +157,7 @@ function Services() {
       totalPages: lastPage?.totalPages,
       currFetchedPage: Number(lastPage?.currentPage),
     });
-  }, [debouncedSearchTerm, servicesQuery.data, searchQuery.data]);
+  }, [searchTerm, servicesQuery.data, searchQuery.data]);
 
   // handleUploadfile
   const uploadFile = async (file) => {
@@ -192,6 +178,10 @@ function Services() {
     }
   };
 
+  const onRowClick = (row) => {
+    return router.push(`/dashboard/inventory/services/${row.id}`);
+  };
+
   // columns
   const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
 
@@ -205,17 +195,18 @@ function Services() {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
-          {!isAdding && !isUploading && !isEditing && (
+          {!isCreatingService && !isUploading && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
-                <div className="flex items-center justify-center gap-4">
-                  <SearchInput
-                    searchPlaceholder={translations('ctas.searchPlaceholder')}
-                    toSearchTerm={searchTerm}
-                    setToSearchTerm={setSearchTerm}
+                <div className="flex items-center justify-center gap-2">
+                  <DebouncedInput
+                    value={searchTerm}
+                    delay={400}
+                    onDebouncedChange={setSearchTerm}
+                    placeholder="Search items"
                   />
                   {/* coming soon */}
-                  <Tooltips
+                  {/* <Tooltips
                     trigger={
                       <Button
                         variant={'export'}
@@ -226,7 +217,7 @@ function Services() {
                       </Button>
                     }
                     content={translations('ctas.comingSoon')}
-                  />
+                  /> */}
                   <ProtectedWrapper permissionCode="permission:item-masters-download">
                     <Tooltips
                       trigger={
@@ -265,7 +256,10 @@ function Services() {
                   </ProtectedWrapper>
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
-                    <Button onClick={() => setIsAdding(true)} size="sm">
+                    <Button
+                      onClick={() => setIsCreatingService(true)}
+                      size="sm"
+                    >
                       <CircleFadingPlus size={14} />
                       {translations('ctas.add')}
                     </Button>
@@ -278,7 +272,7 @@ function Services() {
                 ) : (
                   <>
                     {/* Case 1: No search term, and no data → Empty stage */}
-                    {!debouncedSearchTerm && services?.length === 0 ? (
+                    {!searchTerm && services?.length === 0 ? (
                       <EmptyStageComponent
                         heading={translations('emptyStateComponent.heading')}
                         subItems={keys}
@@ -290,17 +284,18 @@ function Services() {
                         columns={ServicesColumns}
                         data={services}
                         fetchNextPage={
-                          debouncedSearchTerm
+                          searchTerm
                             ? searchQuery.fetchNextPage
                             : servicesQuery.fetchNextPage
                         }
                         isFetching={
-                          debouncedSearchTerm
+                          searchTerm
                             ? searchQuery.isFetching
                             : servicesQuery.isFetching
                         }
                         totalPages={paginationData?.totalPages}
                         currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
                       />
                     )}
                   </>
@@ -308,21 +303,13 @@ function Services() {
               </div>
             </Wrapper>
           )}
-          {isAdding && (
-            <AddItem
-              setIsAdding={setIsAdding}
-              name={'Item'}
-              cta={'Item'}
-              onCancel={() => setIsAdding(false)}
-            />
+          {isCreatingService && (
+            <AddService setIsCreatingService={setIsCreatingService} />
           )}
           {isEditing && (
-            <EditItem
-              setIsEditing={setIsEditing}
+            <EditService
+              setIsCreatingService={setIsEditing}
               servicesToEdit={servicesToEdit}
-              setServicesToEdit={setServicesToEdit}
-              mutationFunc={UpdateProductServices}
-              queryKey={[servicesApi.getAllProductServices.endpointKey]}
             />
           )}
           {isUploading && (

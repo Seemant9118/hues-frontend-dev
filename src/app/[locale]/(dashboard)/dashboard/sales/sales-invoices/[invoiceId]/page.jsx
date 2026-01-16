@@ -1,12 +1,15 @@
 'use client';
 
 import { DebitNoteApi } from '@/api/debitNote/DebitNoteApi';
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import CreateDispatchNote from '@/components/dispatchNote/CreateDispatchNote';
+import { useDispatchNoteColumns } from '@/components/dispatchNote/dispatchNotesColumns';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -22,6 +25,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
+import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import {
@@ -29,13 +33,13 @@ import {
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Eye, MoveUpRight } from 'lucide-react';
-import moment from 'moment';
+import { Download, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import emptyImg from '../../../../../../../../public/Empty.png';
+import { debitNoteColumns } from './debitNoteColumns';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
 
 const ViewInvoice = () => {
@@ -48,6 +52,7 @@ const ViewInvoice = () => {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+  const [isCreatingDispatchNote, setIsCreatingDispatchNote] = useState(false);
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -68,6 +73,12 @@ const ViewInvoice = () => {
       path: `/dashboard/sales/sales-invoices/${params.invoiceId}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true
     },
+    {
+      id: 4,
+      name: translations('title.create_dispatch_note'),
+      path: `/dashboard/sales/sales-invoices/${params.invoiceId}`,
+      show: isCreatingDispatchNote, // Show only if isCreatingDispatchNote is true
+    },
   ];
 
   useEffect(() => {
@@ -75,6 +86,7 @@ const ViewInvoice = () => {
     const state = searchParams.get('state');
 
     setIsRecordingPayment(state === 'recordPayment');
+    setIsCreatingDispatchNote(state === 'createDispatchNote');
   }, [searchParams]);
 
   useEffect(() => {
@@ -83,12 +95,14 @@ const ViewInvoice = () => {
 
     if (isRecordingPayment) {
       newPath += '?state=recordPayment';
+    } else if (isCreatingDispatchNote) {
+      newPath += '?state=createDispatchNote';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.invoiceId, isRecordingPayment, router]);
+  }, [params.invoiceId, isRecordingPayment, isCreatingDispatchNote, router]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -143,23 +157,54 @@ const ViewInvoice = () => {
     enabled: tab === 'debitNotes',
   });
 
+  // fetch dispatch notes of invoice
+  const { isLoading: isDispatchNotesLoading, data: dispatchNotes } = useQuery({
+    queryKey: [deliveryProcess.getDispatchNotes.endpointKey],
+    queryFn: () => getDispatchNotes({ invoiceId: params?.invoiceId }),
+    select: (data) => data.data.data,
+    enabled: tab === 'dispatchNote' && !!params?.invoiceId,
+  });
+
   const paymentStatus = ConditionalRenderingStatus({
     status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
   });
-  const debitNoteStatus = ConditionalRenderingStatus({
-    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status,
-  });
 
+  const debitNoteRawStatus =
+    invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status !==
+    'NOT_RAISED';
+  const debitNoteStatus = debitNoteRawStatus ? (
+    <ConditionalRenderingStatus status={debitNoteRawStatus} />
+  ) : null;
+
+  const defectsStatus = () => {
+    const statuses = getQCDefectStatuses(invoiceDetails?.invoiceDetails);
+
+    if (!statuses?.length) return '-';
+
+    return (
+      <div className="flex flex-wrap gap-2">
+        {statuses.map((status) => (
+          <ConditionalRenderingStatus key={status} status={status} isQC />
+        ))}
+      </div>
+    );
+  };
+
+  const dispatchNoteColumns = useDispatchNoteColumns();
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = useSalesInvoiceColumns();
-
-  // fn for capitalization
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
+  const debitNColumns = debitNoteColumns();
 
   const onRowClick = (row) => {
-    router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
+    return router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
+  };
+
+  const onDebitNoteClick = (row) => {
+    router.push(`/dashboard/sales/sales-debitNotes/${row.id}`);
+  };
+
+  const onDispatchedNoteRowClick = (row) => {
+    return router.push(`/dashboard/transport/dispatch/${row.id}`);
   };
 
   return (
@@ -174,7 +219,9 @@ const ViewInvoice = () => {
             />
           </div>
           <div className="flex gap-2">
+            {/* recording payment cta */}
             {!isRecordingPayment &&
+              !isCreatingDispatchNote &&
               (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
                 ?.status === 'NOT_PAID' ||
                 invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
@@ -193,36 +240,43 @@ const ViewInvoice = () => {
                 </ProtectedWrapper>
               )}
 
-            {/* share CTA */}
-            {/* {!isRecordingPayment && (
-            <Tooltips
-              trigger={
-                <Button
-                  disabled
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center justify-center"
-                >
-                  <Share2 size={14} />
-                </Button>
-              }
-              content={translations('ctas.share.placeholder')}
-            />
-          )} */}
+            {/* Create dispatch note cta */}
+            <ProtectedWrapper
+              permissionCode={'permission:sales-create-payment'}
+            >
+              {!isRecordingPayment &&
+                !isCreatingDispatchNote &&
+                !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
+                  <Button
+                    variant="blue_outline"
+                    size="sm"
+                    onClick={() => setIsCreatingDispatchNote(true)}
+                    className="font-bold"
+                  >
+                    {translations('ctas.create_dispatch_note')}
+                  </Button>
+                )}
+            </ProtectedWrapper>
+
             {/* View CTA modal */}
             <ProtectedWrapper permissionCode={'permission:sales-document'}>
               {!isRecordingPayment && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => viewPdfInNewTab(pvtUrl)}
-                >
-                  <Eye size={14} />
-                </Button>
+                <Tooltips
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => viewPdfInNewTab(pvtUrl)}
+                    >
+                      <Eye size={14} />
+                    </Button>
+                  }
+                  content={translations('ctas.view.placeholder')}
+                />
               )}
 
               {/* download CTA */}
-              {!isRecordingPayment && (
+              {!isRecordingPayment && !isCreatingDispatchNote && (
                 <Tooltips
                   trigger={
                     <Button
@@ -242,7 +296,7 @@ const ViewInvoice = () => {
             </ProtectedWrapper>
           </div>
         </section>
-        {!isRecordingPayment && (
+        {!isRecordingPayment && !isCreatingDispatchNote && (
           <Tabs
             value={tab}
             onValueChange={onTabChange}
@@ -257,6 +311,9 @@ const ViewInvoice = () => {
               </TabsTrigger>
               <TabsTrigger value="debitNotes">
                 {translations('tabs.label.tab3')}
+              </TabsTrigger>
+              <TabsTrigger value="dispatchNote">
+                {translations('tabs.label.tab4')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
@@ -275,10 +332,11 @@ const ViewInvoice = () => {
                       invoiceDetails?.invoiceDetails?.orderReferenceNumber
                     }
                     paymentStatus={paymentStatus}
-                    debitNoteStatus={debitNoteStatus}
+                    {...(debitNoteStatus && { debitNoteStatus })}
                     Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
                     type={invoiceDetails?.invoiceDetails?.invoiceType}
                     date={invoiceDetails?.invoiceDetails?.createdAt}
+                    defectsStatus={defectsStatus()}
                     amount={invoiceDetails?.invoiceDetails?.totalAmount}
                     amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
                   />
@@ -339,98 +397,56 @@ const ViewInvoice = () => {
               )}
             </TabsContent>
             <TabsContent value="debitNotes">
-              <div className="scrollBarStyles flex max-h-[55vh] flex-col gap-4 overflow-auto">
+              <div className="scrollBarStyles flex flex-col gap-4 overflow-auto">
                 {isDebitNoteLoading && <Loading />}
-                {!isDebitNoteLoading &&
-                  debitNotes?.length > 0 &&
-                  debitNotes?.map((debitNote) => {
-                    return (
-                      <div
-                        key={debitNote?.id}
-                        className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-customShadow"
-                      >
-                        <section className="flex items-center justify-between">
-                          <div className="flex w-full flex-col gap-4">
-                            <div className="flex justify-between">
-                              <h1 className="flex items-center gap-4">
-                                <span className="text-sm font-bold">
-                                  {debitNote?.referenceNumber}
-                                </span>
-                                <span className="rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1.5 text-xs">
-                                  {capitalize(debitNote?.status)}
-                                </span>
-                              </h1>
-
-                              <p
-                                onClick={() => {
-                                  router.push(
-                                    `/dashboard/sales/sales-debitNotes/${debitNote?.id}`,
-                                  );
-                                }}
-                                className="flex cursor-pointer items-center gap-1 text-xs font-bold text-[#288AF9] hover:underline"
-                              >
-                                {translations(
-                                  'tabs.content.tab3.label.view_debit_notes',
-                                )}
-                                <MoveUpRight size={12} />
-                              </p>
-                            </div>
-
-                            <div className="flex gap-10">
-                              <h1 className="text-sm">
-                                <span className="font-bold text-[#ABB0C1]">
-                                  {translations('tabs.content.tab3.label.date')}
-                                  :
-                                </span>
-                                <span className="text-[#363940]">
-                                  {moment(debitNote?.createdAt).format(
-                                    'DD-MM-YYYY',
-                                  )}
-                                </span>
-                              </h1>
-                              <h1 className="text-sm">
-                                <span className="font-bold text-[#ABB0C1]">
-                                  {translations(
-                                    'tabs.content.tab3.label.total_amount',
-                                  )}
-                                  :
-                                </span>
-                                <span className="font-bold text-[#363940]">
-                                  {formattedAmount(debitNote?.amount)}
-                                </span>
-                                <span> (inc. GST)</span>
-                              </h1>
-                            </div>
-                            <div className="flex gap-2">
-                              <h1 className="text-sm">
-                                <span className="font-bold text-[#ABB0C1]">
-                                  {translations(
-                                    'tabs.content.tab3.label.reason',
-                                  )}
-                                  :{' '}
-                                </span>
-                                <span className="font-bold text-[#363940]">
-                                  {debitNote?.remark}
-                                </span>
-                              </h1>
-                            </div>
-                          </div>
-                        </section>
-                      </div>
-                    );
-                  })}
+                {!isDebitNoteLoading && debitNotes?.length > 0 && (
+                  <DataTable
+                    columns={debitNColumns}
+                    data={debitNotes || []}
+                    onRowClick={onDebitNoteClick}
+                  />
+                )}
               </div>
               {!isDebitNoteLoading && debitNotes?.length === 0 && (
                 <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
                   <Image src={emptyImg} alt="emptyIcon" />
                   <p className="font-bold">
                     {translations(
-                      'tabs.content.tab3.emtpyStateComponent.title',
+                      'tabs.content.tab4.emtpyStateComponent.title',
                     )}
                   </p>
                   <p className="max-w-96 text-center">
-                    {translations('tabs.content.tab3.emtpyStateComponent.para')}
+                    {translations('tabs.content.tab4.emtpyStateComponent.para')}
                   </p>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="dispatchNote">
+              {isDispatchNotesLoading && <Loading />}
+              {!isDispatchNotesLoading && dispatchNotes?.length > 0 && (
+                <DataTable
+                  onRowClick={onDispatchedNoteRowClick}
+                  data={dispatchNotes}
+                  columns={dispatchNoteColumns}
+                />
+              )}
+              {!isDispatchNotesLoading && dispatchNotes?.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                  <Image src={emptyImg} alt="emptyIcon" />
+                  <p className="font-bold">
+                    {translations(
+                      'tabs.content.tab4.emtpyStateComponent.title',
+                    )}
+                  </p>
+                  <ProtectedWrapper
+                    permissionCode={'permission:sales-create-payment'}
+                  >
+                    <p className="max-w-96 text-center">
+                      {translations(
+                        'tabs.content.tab4.emtpyStateComponent.para',
+                      )}
+                    </p>
+                  </ProtectedWrapper>
                 </div>
               )}
             </TabsContent>
@@ -438,13 +454,21 @@ const ViewInvoice = () => {
         )}
 
         {/* recordPayment component */}
-        {isRecordingPayment && (
+        {isRecordingPayment && !isCreatingDispatchNote && (
           <MakePaymentNewInvoice
             paymentStatus={paymentStatus}
             debitNoteStatus={debitNoteStatus}
             invoiceDetails={invoiceDetails?.invoiceDetails}
             setIsRecordingPayment={setIsRecordingPayment}
             contextType={'PAYMENT'}
+          />
+        )}
+
+        {isCreatingDispatchNote && (
+          <CreateDispatchNote
+            invoiceDetails={invoiceDetails}
+            isCreatingDispatchNote={isCreatingDispatchNote}
+            setIsCreatingDispatchNote={setIsCreatingDispatchNote}
           />
         )}
       </Wrapper>

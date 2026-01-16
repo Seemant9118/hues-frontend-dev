@@ -197,15 +197,19 @@
                     "share": {
                         "placeholder": "शीघ्र आ रहा है.."
                     },
+                    "view": {
+                        "placeholder": "इनवॉइस देखें"
+                    },
                     "download": {
-                        "placeholder": "ऑर्डर विवरण डाउनलोड करें"
+                        "placeholder": "इनवॉइस विवरण डाउनलोड करें"
                     }
                 },
                 "tabs": {
                     "label": {
                         "tab1": "सारांश",
                         "tab2": "भुगतान सलाह",
-                        "tab3": "डेबिट नोट्स"
+                        "tab3": "GRNs",
+                        "tab4": "डेबिट नोट्स"
                     },
                     "content": {
                         "tab1": {
@@ -233,6 +237,12 @@
                             }
                         },
                         "tab3": {
+                            "emtpyStateComponent": {
+                                "title": "अभी तक कोई GRN नहीं है",
+                                "para": "लगता है आपको अभी तक कोई भी GRN प्राप्त नहीं हुआ है"
+                            }
+                        },
+                        "tab4": {
                             "label": {
                                 "view_debit_notes": "डेबिट नोट देखें",
                                 "date": "तारीख",
@@ -285,29 +295,32 @@
         "purchase-debit_notes": {
             "title": "डेबिट नोट्स",
             "emptyStateComponent": {
-                "heading": "कोई डेबिट नोट जारी नहीं किया गया"
+                "heading": "अभी तक कोई डेबिट नोट नहीं है"
             },
             "ctas": {
                 "export": {
                     "placeholder": "चयनित डेबिट नोट्स निर्यात करें",
-                    "successMsg": "डेबिट नोट निर्यात किया गया और डाउनलोड स्वचालित रूप से शुरू हो गया",
-                    "errorMsg": "कुछ गलत हो गया"
+                    "successMsg": "डेबिट नोट निर्यात हो गया — आपकी डाउनलोड प्रक्रिया शुरू हो गई है",
+                    "errorMsg": "ओह! कुछ गड़बड़ हो गई। दोबारा प्रयास करें?"
                 }
             },
             "tabs": {
                 "label": {
                     "tab1": "सभी",
-                    "tab2": "स्वीकृत",
-                    "tab3": "अस्वीकृत"
+                    "tab2": "ड्राफ्ट",
+                    "tab3": "पोस्टेड"
                 }
             },
             "table": {
                 "header": {
-                    "invoice_id": "चालान आईडी",
-                    "date": "तारीख़",
-                    "vendors": "विक्रेता",
-                    "total_amount": "कुल राशि",
-                    "status": "स्थिति"
+                    "debitNote_Id": "डेबिट नोट आईडी",
+                    "vendors": "विक्रेता का नाम",
+                    "invoice_id": "इनवॉइस आईडी",
+                    "flags": "समस्याएँ",
+                    "claimed_amount": "दावा की गई राशि",
+                    "setteled_amount": "निपटाई गई राशि",
+                    "status": "स्थिति",
+                    "createdOn": "बनाने की तिथि"
                 }
             },
             "debit_notes_details": {
@@ -315,21 +328,37 @@
                     "debit_notes": "डेबिट नोट्स",
                     "debit_note_details": "डेबिट नोट विवरण"
                 },
+                "overview_labels": {
+                    "debitNoteId": "डेबिट नोट आईडी",
+                    "vendorName": "विक्रेता का नाम",
+                    "grnId": "जीआरएन आईडी",
+                    "defects": "दोष",
+                    "invoiceId": "इनवॉइस आईडी",
+                    "claimedAmount": "दावा की गई राशि",
+                    "setteledAmount": "निपटाई गई राशि",
+                    "createdOn": "बनाने की तिथि",
+                    "status": "स्थिति"
+                },
+                "tabs": {
+                    "tab1": {
+                        "title": "सारांश"
+                    }
+                },
                 "label": {
-                    "date": "तारीख",
+                    "date": "तिथि",
                     "total_amount": "कुल राशि",
                     "type": "प्रकार",
                     "reason": "कारण"
                 },
                 "emtpyStateComponent": {
-                    "title": "अभी तक कोई डेबिट नोट नहीं उठाया गया",
-                    "para": "आपके पास अभी तक कोई डेबिट नोट नहीं है।"
+                    "title": "कोई डेबिट नोट दर्ज नहीं है",
+                    "para": "आपके पास अभी कोई डेबिट नोट नहीं है"
                 },
                 "comments": {
                     "title": "टिप्पणियाँ",
-                    "attached_files_heading": "संलग्न फ़ाइलें",
+                    "attached_files_heading": "सब तैयार — फ़ाइल संलग्न है",
                     "input": {
-                        "placeholder": "अपनी टिप्पणी यहाँ लिखें..."
+                        "placeholder": "एक टिप्पणी लिखें"
                     },
                     "ctas": {
                         "attach_file": {
@@ -340,17 +369,17 @@
                         }
                     },
                     "emtpyStateComponent": {
-                        "title": "अभी तक कोई टिप्पणी नहीं",
-                        "para": "बातचीत शुरू करने के लिए कुछ कहें"
+                        "title": "यहाँ अभी शांति है",
+                        "para": "शुरुआत करें, एक टिप्पणी जोड़ें"
                     }
                 },
                 "successMsg": {
-                    "file_attached_success": "फ़ाइल सफलतापूर्वक संलग्न की गई",
-                    "comment_success": "टिप्पणी सफलतापूर्वक की गई"
+                    "file_attached_success": "सब तैयार — फ़ाइल संलग्न है",
+                    "comment_success": "टिप्पणी सफलतापूर्वक पोस्ट की गई!"
                 },
                 "errorMsg": {
-                    "comment_error_emtpy": "टिप्पणी खाली नहीं हो सकती",
-                    "common": "कुछ गलत हो गया"
+                    "comment_error_emtpy": "खाली टिप्पणी पोस्ट नहीं की जा सकती",
+                    "common": "ओह! कुछ गड़बड़ हो गई। दोबारा प्रयास करें?"
                 },
                 "ctas": {
                     "accept": "स्वीकार करें",

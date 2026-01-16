@@ -1,6 +1,10 @@
 'use client';
 
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import {
+  formattedAmount,
+  getQCDefectStatuses,
+} from '@/appUtils/helperFunctions';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dot } from 'lucide-react';
@@ -73,31 +77,16 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('invoice_id')}
+          title={translations('debitNote_Id')}
         />
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-        const isSaleRead = row.original?.readTracker?.sellerIsRead;
+        const isSellerRead = row.original?.readTracker?.sellerIsRead || true;
         return (
           <div className="flex items-center">
-            {!isSaleRead && <Dot size={32} className="text-[#3288ED]" />}
+            {!isSellerRead && <Dot size={32} className="text-[#3288ED]" />}
             <span>{referenceNumber}</span>
-          </div>
-        );
-      },
-    },
-
-    {
-      accessorKey: 'invoiceDate',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={translations('date')} />
-      ),
-      cell: ({ row }) => {
-        const { invoiceDate } = row.original;
-        return (
-          <div className="text-[#A5ABBD]">
-            {moment(invoiceDate).format('DD-MM-YYYY')}
           </div>
         );
       },
@@ -107,21 +96,62 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('customers')}
+          title={translations('clients')}
         />
       ),
       cell: ({ row }) => {
-        const { toEnterprise } = row.original;
+        const { fromEnterprise } = row.original;
 
-        return <div>{toEnterprise.name}</div>;
+        return <div>{fromEnterprise.name}</div>;
       },
     },
     {
-      accessorKey: 'amount',
+      accessorKey: 'invoiceReferenceNumber',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('total_amount')}
+          title={translations('invoice_id')}
+        />
+      ),
+      cell: ({ row }) => {
+        const invoiceReferenceNumber = row.original?.invoice?.referenceNumber;
+        return (
+          <div className="flex items-center">
+            <span>{invoiceReferenceNumber || '-'}</span>
+          </div>
+        );
+      },
+    },
+
+    {
+      accessorKey: 'defects',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('defects')}
+        />
+      ),
+      cell: ({ row }) => {
+        const statuses = getQCDefectStatuses(row.original);
+
+        if (!statuses.length) return '-';
+
+        return (
+          <div className="flex flex-col gap-2">
+            {statuses.map((status) => (
+              <ConditionalRenderingStatus key={status} status={status} isQC />
+            ))}
+          </div>
+        );
+      },
+    },
+
+    {
+      accessorKey: 'claimedAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('claimed_amount')}
         />
       ),
       cell: ({ row }) => {
@@ -129,6 +159,21 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
         return formattedAmount(amount);
       },
     },
+
+    {
+      accessorKey: 'setteledAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('setteled_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { setteledAmount } = row.original;
+        return formattedAmount(setteledAmount);
+      },
+    },
+
     {
       accessorKey: 'status',
       header: ({ column }) => (
@@ -136,13 +181,28 @@ export const useDebitNotesColumns = (setSelectedDebit) => {
       ),
       cell: ({ row }) => {
         const { status } = row.original;
-        // fn for capitalization
-        function capitalize(str) {
-          return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-        }
+
         return (
-          <div className="w-fit rounded-[5px] border border-[#EDEEF2] bg-[#F6F7F9] p-1 text-sm">
-            {capitalize(status)}
+          <ConditionalRenderingStatus
+            status={status === 'SENT' ? 'RECIEVED' : status}
+          />
+        );
+      },
+    },
+
+    {
+      accessorKey: 'createdOn',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('createdOn')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { createdAt } = row.original;
+        return (
+          <div className="text-[#A5ABBD]">
+            {moment(createdAt).format('DD-MM-YYYY')}
           </div>
         );
       },

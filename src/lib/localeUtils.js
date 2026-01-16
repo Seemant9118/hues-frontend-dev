@@ -21,6 +21,7 @@ export const DICTIONARY_MODULES = [
   'settings',
   'profile',
   'components',
+  'transport',
 ];
 
 /**

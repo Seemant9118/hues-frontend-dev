@@ -75,9 +75,9 @@ function InputWithSelect({
               <SelectValue placeholder={unitPlaceholder || 'select'} />
             </SelectTrigger>
             <SelectContent className="h-36 overflow-y-auto border">
-              {units.map((u) => (
-                <SelectItem key={u.id} value={u.id.toString()}>
-                  {u.abbreviation}
+              {units?.map((u) => (
+                <SelectItem key={u?.id} value={u?.id?.toString()}>
+                  {u?.abbreviation}
                 </SelectItem>
               ))}
             </SelectContent>

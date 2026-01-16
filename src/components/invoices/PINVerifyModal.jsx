@@ -178,10 +178,10 @@ const PINVerifyModal = ({
 
   const handleVerifiyOTP = (e) => {
     e.preventDefault();
-    if (pin.length < 4) {
+    if (pin?.length < 4) {
       toast.error('Enter a valid PIN');
     } else {
-      const formatDate = moment(dueDate).format('DD-MM-yyyy');
+      const formatDate = moment(dueDate)?.format('DD-MM-yyyy');
       const updatedOrder = {
         ...order,
         remarks: customerRemarks,
@@ -315,22 +315,22 @@ const PINVerifyModal = ({
             >
               {isPendingInvoice ? <Loading /> : translations('ctas.verify')}
             </Button>
-
-            {isPINError && (
-              <button
-                className="cursor-pointer text-sm font-semibold hover:underline"
-                onClick={() => {
-                  generateOtpMutation.mutate();
-                }}
-              >
-                {translations('errorMsg.pin_error')}
-              </button>
-            )}
-
-            {updateSuccessMessage && (
-              <p className="text-sm font-semibold">{updateSuccessMessage}</p>
-            )}
           </form>
+
+          {isPINError && (
+            <button
+              className="cursor-pointer text-sm font-semibold hover:underline"
+              onClick={() => {
+                generateOtpMutation.mutate();
+              }}
+            >
+              {translations('errorMsg.pin_error')}
+            </button>
+          )}
+
+          {updateSuccessMessage && (
+            <p className="text-sm font-semibold">{updateSuccessMessage}</p>
+          )}
         </DialogContent>
       )}
 
