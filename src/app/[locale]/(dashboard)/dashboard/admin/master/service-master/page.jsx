@@ -9,14 +9,19 @@ import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
-import { getServicesMaster } from '@/services/Admin_Services/AdminServices';
+import {
+  downloadSampleFileSerivceMaster,
+  getServicesMaster,
+  uploadSerivceMaster,
+} from '@/services/Admin_Services/AdminServices';
 import {
   keepPreviousData,
   useInfiniteQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { CircleFadingPlus, ServerOff } from 'lucide-react';
+import { CircleFadingPlus, ServerOff, Upload } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import FileUploadBox from '@/components/upload/UploaderBox';
 import { useServiceMasterColumns } from './useServiceMasterColumns';
 
 // macros
@@ -27,9 +32,11 @@ const SerivceMasterPage = () => {
   const { hasPermission } = usePermission();
   const [isAddingServiceMaster, setIsAddingServiceMaster] = useState(false);
   const [serviceMaster, setServiceMasterData] = useState([]);
+  const [paginationData, setPaginationData] = useState({});
   const [isEditingServiceMaster, setIsEditingServiceMaster] = useState(false);
   const [serviceMasterToEdit, setServiceMasterToEdit] = useState(null);
-  const [paginationData, setPaginationData] = useState({});
+  const [isUploadingServiceMaster, setIsUploadingServiceMaster] =
+    useState(false);
 
   // fetch service data
   const {
@@ -82,38 +89,53 @@ const SerivceMasterPage = () => {
   return (
     <ProtectedWrapper permissionCode={'permission:admin-dashboard-view'}>
       <Wrapper className="scrollBarStyles flex h-screen flex-col">
-        {!isAddingServiceMaster && !isEditingServiceMaster && (
-          <>
-            {/* headers */}
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
-              <SubHeader name="Service Master" />
-              <Button onClick={() => setIsAddingServiceMaster(true)} size="sm">
-                <CircleFadingPlus size={14} />
-                Add
-              </Button>
-            </div>
-            <div className="h-full overflow-y-auto">
-              {isServiceQueryLoading && <Loading />}
-
-              {!isServiceQueryLoading && serviceMaster?.length > 0 ? (
-                <InfiniteDataTable
-                  id="categories-table"
-                  columns={ServiceMasterColumns}
-                  data={serviceMaster}
-                  fetchNextPage={ServiceQueryFetchNextPage}
-                  isFetching={isServiceQueryFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
-                  <ServerOff size={24} />
-                  No Data Available
+        {!isAddingServiceMaster &&
+          !isEditingServiceMaster &&
+          !isUploadingServiceMaster && (
+            <>
+              {/* headers */}
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
+                <SubHeader name="Service Master" />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="blue_outline"
+                    onClick={() => setIsUploadingServiceMaster(true)}
+                    size="sm"
+                  >
+                    <Upload size={14} />
+                    Upload
+                  </Button>
+                  <Button
+                    onClick={() => setIsAddingServiceMaster(true)}
+                    size="sm"
+                  >
+                    <CircleFadingPlus size={14} />
+                    Add
+                  </Button>
                 </div>
-              )}
-            </div>
-          </>
-        )}
+              </div>
+              <div className="h-full overflow-y-auto">
+                {isServiceQueryLoading && <Loading />}
+
+                {!isServiceQueryLoading && serviceMaster?.length > 0 ? (
+                  <InfiniteDataTable
+                    id="categories-table"
+                    columns={ServiceMasterColumns}
+                    data={serviceMaster}
+                    fetchNextPage={ServiceQueryFetchNextPage}
+                    isFetching={isServiceQueryFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
+                    <ServerOff size={24} />
+                    No Data Available
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
         {isAddingServiceMaster && (
           <AddServiceMaster
@@ -137,6 +159,22 @@ const SerivceMasterPage = () => {
             }}
             setIsAddingServiceMaster={setIsEditingServiceMaster}
             serviceMasterToEdit={serviceMasterToEdit}
+          />
+        )}
+
+        {isUploadingServiceMaster && (
+          <FileUploadBox
+            name="Upload Service Master"
+            onClose={() => {
+              setIsUploadingServiceMaster(false);
+            }}
+            sampleDownloadFn={downloadSampleFileSerivceMaster}
+            uploadDocFn={uploadSerivceMaster}
+            queryClient={() => {
+              queryClient.invalidateQueries([
+                AdminAPIs.getServicesMaster.endpointKey,
+              ]);
+            }}
           />
         )}
       </Wrapper>

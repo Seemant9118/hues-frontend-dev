@@ -175,6 +175,14 @@ export const updateGoodsMaster = ({ data }) => {
   return APIinstance.put(`${AdminAPIs.updateGoodsMaster.endpoint}`, data);
 };
 
+export const uploadGoodsMaster = ({ data }) => {
+  return APIinstance.post(AdminAPIs.uploadGoodsMaster.endpoint, data);
+};
+
+export const downloadSampleFileGoodsMaster = () => {
+  return APIinstance.get(AdminAPIs.downloadSampleFileGoodsMaster.endpoint);
+};
+
 export const getServicesMaster = ({ page, limit }) => {
   const baseEndpoint = AdminAPIs.getServicesMaster.endpoint;
 
@@ -192,6 +200,14 @@ export const createServiceMaster = ({ data }) => {
 
 export const updateSerivceMaster = ({ data }) => {
   return APIinstance.put(AdminAPIs.updateSerivceMaster.endpoint, data);
+};
+
+export const uploadSerivceMaster = ({ data }) => {
+  return APIinstance.post(AdminAPIs.uploadSerivceMaster.endpoint, data);
+};
+
+export const downloadSampleFileSerivceMaster = () => {
+  return APIinstance.get(AdminAPIs.downloadSampleFileSerivceMaster.endpoint);
 };
 
 export const getCategories = ({ page, limit }) => {

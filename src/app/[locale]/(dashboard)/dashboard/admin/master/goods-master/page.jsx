@@ -9,14 +9,19 @@ import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
-import { getGoodsMaster } from '@/services/Admin_Services/AdminServices';
+import {
+  downloadSampleFileGoodsMaster,
+  getGoodsMaster,
+  uploadGoodsMaster,
+} from '@/services/Admin_Services/AdminServices';
 import {
   keepPreviousData,
   useInfiniteQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { CircleFadingPlus, ServerOff } from 'lucide-react';
+import { CircleFadingPlus, ServerOff, Upload } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import FileUploadBox from '@/components/upload/UploaderBox';
 import { useGoodsMasterColumns } from './useGoodsMasterColumns';
 
 // macros
@@ -27,9 +32,10 @@ const GoodsMasterPage = () => {
   const { hasPermission } = usePermission();
   const [isAddingGoodsMaster, setIsAddingGoodsMaster] = useState(false);
   const [GoodsMaster, setGoodsMasterData] = useState([]);
+  const [paginationData, setPaginationData] = useState({});
   const [isEditingGoodsMaster, setIsEditingGoodsMaster] = useState(false);
   const [goodsMasterToEdit, setGoodsMasterToEdit] = useState(null);
-  const [paginationData, setPaginationData] = useState({});
+  const [isUploadingGoodsMaster, setIsUploadingGoodsMaster] = useState(false);
 
   // fetch goods data
   const {
@@ -82,38 +88,53 @@ const GoodsMasterPage = () => {
   return (
     <ProtectedWrapper permissionCode={'permission:admin-dashboard-view'}>
       <Wrapper className="scrollBarStyles flex h-screen flex-col">
-        {!isAddingGoodsMaster && !isEditingGoodsMaster && (
-          <>
-            {/* headers */}
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
-              <SubHeader name="Goods Master" />
-              <Button onClick={() => setIsAddingGoodsMaster(true)} size="sm">
-                <CircleFadingPlus size={14} />
-                Add
-              </Button>
-            </div>
-            <div className="h-full overflow-y-auto">
-              {isGoodsQueryLoading && <Loading />}
-
-              {!isGoodsQueryLoading && GoodsMaster?.length > 0 ? (
-                <InfiniteDataTable
-                  id="categories-table"
-                  columns={GoodsMasterColumns}
-                  data={GoodsMaster}
-                  fetchNextPage={GoodsQueryFetchNextPage}
-                  isFetching={isGoodsQueryFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
-                  <ServerOff size={24} />
-                  No Data Available
+        {!isAddingGoodsMaster &&
+          !isEditingGoodsMaster &&
+          !isUploadingGoodsMaster && (
+            <>
+              {/* headers */}
+              <section className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white p-1">
+                <SubHeader name="Goods Master" />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="blue_outline"
+                    onClick={() => setIsUploadingGoodsMaster(true)}
+                    size="sm"
+                  >
+                    <Upload size={14} />
+                    Upload
+                  </Button>
+                  <Button
+                    onClick={() => setIsAddingGoodsMaster(true)}
+                    size="sm"
+                  >
+                    <CircleFadingPlus size={14} />
+                    Add
+                  </Button>
                 </div>
-              )}
-            </div>
-          </>
-        )}
+              </section>
+              <div className="h-full overflow-y-auto">
+                {isGoodsQueryLoading && <Loading />}
+
+                {!isGoodsQueryLoading && GoodsMaster?.length > 0 ? (
+                  <InfiniteDataTable
+                    id="categories-table"
+                    columns={GoodsMasterColumns}
+                    data={GoodsMaster}
+                    fetchNextPage={GoodsQueryFetchNextPage}
+                    isFetching={isGoodsQueryFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">
+                    <ServerOff size={24} />
+                    No Data Available
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
         {isAddingGoodsMaster && (
           <AddGoodsMaster
@@ -137,6 +158,22 @@ const GoodsMasterPage = () => {
             }}
             setIsAddingGoodsMaster={setIsEditingGoodsMaster}
             goodsMasterToEdit={goodsMasterToEdit}
+          />
+        )}
+
+        {isUploadingGoodsMaster && (
+          <FileUploadBox
+            name="Upload Goods Master"
+            onClose={() => {
+              setIsUploadingGoodsMaster(false);
+            }}
+            sampleDownloadFn={downloadSampleFileGoodsMaster}
+            uploadDocFn={uploadGoodsMaster}
+            queryClient={() => {
+              queryClient.invalidateQueries([
+                AdminAPIs.getGoodsMaster.endpointKey,
+              ]);
+            }}
           />
         )}
       </Wrapper>
