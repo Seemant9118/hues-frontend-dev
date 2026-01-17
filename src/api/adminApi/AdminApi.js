@@ -147,6 +147,16 @@ export const AdminAPIs = {
     endpointKey: 'update_goods_master',
   },
 
+  uploadGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/upload-single`,
+    endpointKey: 'upload_goods_master',
+  },
+
+  downloadSampleFileGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/downloadsamplefile`,
+    endpointKey: 'download_goods_master_sample',
+  },
+
   getServicesMaster: {
     endpoint: `/admin-panel/hsn-master/services-sac-master/list`,
     endpointKey: 'get_goods_master',
@@ -160,6 +170,16 @@ export const AdminAPIs = {
   updateSerivceMaster: {
     endpoint: `/admin-panel/hsn-master/services-sac-master/update-item`,
     endpointKey: 'update_service_master',
+  },
+
+  uploadSerivceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/upload-single`,
+    endpointKey: 'upload_goods_master',
+  },
+
+  downloadSampleFileSerivceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/downloadsamplefile`,
+    endpointKey: 'download_goods_master_sample',
   },
 
   getCategories: {
