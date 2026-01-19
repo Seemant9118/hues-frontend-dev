@@ -2,7 +2,9 @@
 
 'use client';
 
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { capitalize } from '@/appUtils/helperFunctions';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { deleteServiceMaster } from '@/services/Admin_Services/AdminServices';
 import { MoreVertical, Pencil } from 'lucide-react';
 
 export const useServiceMasterColumns = ({
@@ -19,16 +22,9 @@ export const useServiceMasterColumns = ({
 }) => {
   return [
     {
-      accessorKey: 'id',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ID" />
-      ),
-    },
-
-    {
       accessorKey: 'huesItemCode',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Hues item" />
+        <DataTableColumnHeader column={column} title="Hues Item ID" />
       ),
       cell: ({ row }) => (
         <span className="font-medium">{row.original?.huesItemId || '-'}</span>
@@ -47,6 +43,9 @@ export const useServiceMasterColumns = ({
 
     {
       accessorKey: 'service',
+      size: 220,
+      minSize: 220,
+      maxSize: 220,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Service" />
       ),
@@ -61,6 +60,7 @@ export const useServiceMasterColumns = ({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
+        const { id } = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -81,6 +81,18 @@ export const useServiceMasterColumns = ({
                 <Pencil size={12} />
                 Edit
               </DropdownMenuItem>
+              <ConfirmAction
+                deleteCta={'Delete'}
+                infoText={
+                  'Are you sure you want to delete this service master record? This action cannot be undone.'
+                }
+                cancelCta={'Cancel'}
+                id={id}
+                invalidateKey={AdminAPIs.getServicesMaster.endpointKey}
+                mutationKey={AdminAPIs.deleteServiceMaster.endpointKey}
+                mutationFunc={deleteServiceMaster}
+                successMsg={'Deleted service master record successfully.'}
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         );
