@@ -2,65 +2,46 @@
 
 'use client';
 
+import { AdminAPIs } from '@/api/adminApi/AdminApi';
+import ConfirmAction from '@/components/Modals/ConfirmAction';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { deleteCategory } from '@/services/Admin_Services/AdminServices';
+import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
 import { MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 
-export const useSubCategoryColumns = ({
-  setIsEditingSubCategory,
-  setSubCategoryToEdit,
+export const useProductCategoryColumns = ({
+  setIsEditingCategory,
+  setCategoryToEdit,
 }) => {
   return [
     {
-      accessorKey: 'id',
+      accessorKey: 'categoryName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ID" />
+        <DataTableColumnHeader column={column} title="Category Name" />
       ),
       cell: ({ row }) => (
-        <span className="font-medium text-primary">#{row.original?.id}</span>
+        <Badge variant="secondary">{row.original?.categoryName || '-'}</Badge>
       ),
-      size: 80,
     },
 
-    // {
-    //   accessorKey: 'enterprise',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader column={column} title="Enterprise" />
-    //   ),
-    //   cell: ({ row }) =>
-    //     row.original?.enterprise?.name || '-',
-    // },
-
     {
-      accessorKey: 'subCategoryName',
+      accessorKey: 'description',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Sub Category Name" />
+        <DataTableColumnHeader column={column} title="Description" />
       ),
       cell: ({ row }) => (
-        <div className="max-w-[220px] truncate">
-          {row.original?.subCategoryName || '-'}
+        <div className="max-w-[280px] truncate">
+          {row.original?.description || '-'}
         </div>
       ),
-    },
-
-    {
-      accessorKey: 'isDeleted',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Is Deleted" />
-      ),
-      cell: ({ row }) =>
-        row.original?.isDeleted ? (
-          <span className="font-medium text-red-600">Yes</span>
-        ) : (
-          <span className="font-medium text-green-600">No</span>
-        ),
     },
 
     {
@@ -89,6 +70,7 @@ export const useSubCategoryColumns = ({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
+        const { id } = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -101,14 +83,26 @@ export const useSubCategoryColumns = ({
               <DropdownMenuItem
                 className="flex items-center justify-center gap-2"
                 onClick={(e) => {
-                  setIsEditingSubCategory((prev) => !prev);
+                  setIsEditingCategory((prev) => !prev);
                   e.stopPropagation();
-                  setSubCategoryToEdit(row.original);
+                  setCategoryToEdit(row.original);
                 }}
               >
                 <Pencil size={12} />
                 Edit
               </DropdownMenuItem>
+              <ConfirmAction
+                deleteCta={'Delete'}
+                infoText={
+                  'Are you sure you want to delete this category record? This action cannot be undone.'
+                }
+                cancelCta={'Cancel'}
+                id={id}
+                invalidateKey={AdminAPIs.getCategories.endpointKey}
+                mutationKey={AdminAPIs.deleteCategory.endpointKey}
+                mutationFunc={deleteCategory}
+                successMsg={'Deleted category successfully.'}
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         );

@@ -16,7 +16,7 @@ const FileUploadBox = ({
   sampleDownloadFn,
   uploadDocFn,
   queryClient,
-  acceptedTypes = ['xls', 'csv'],
+  acceptedTypes = ['xlsx', 'csv'],
   maxSizeText = 'Max 10MB',
   noteText = 'Trade Enabled for eSigned Inventories Only.',
   containerMinWidth = '700px',

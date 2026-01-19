@@ -179,6 +179,10 @@ export const uploadGoodsMaster = ({ data }) => {
   return APIinstance.post(AdminAPIs.uploadGoodsMaster.endpoint, data);
 };
 
+export const deleteGoodsMaster = ({ id }) => {
+  return APIinstance.delete(`${AdminAPIs.deleteGoodsMaster.endpoint}${id}`);
+};
+
 export const downloadSampleFileGoodsMaster = () => {
   return APIinstance.get(AdminAPIs.downloadSampleFileGoodsMaster.endpoint);
 };
@@ -198,16 +202,20 @@ export const createServiceMaster = ({ data }) => {
   return APIinstance.post(AdminAPIs.createServiceMaster.endpoint, data);
 };
 
-export const updateSerivceMaster = ({ data }) => {
-  return APIinstance.put(AdminAPIs.updateSerivceMaster.endpoint, data);
+export const updateServiceMaster = ({ data }) => {
+  return APIinstance.put(AdminAPIs.updateServiceMaster.endpoint, data);
 };
 
-export const uploadSerivceMaster = ({ data }) => {
-  return APIinstance.post(AdminAPIs.uploadSerivceMaster.endpoint, data);
+export const deleteServiceMaster = ({ id }) => {
+  return APIinstance.delete(`${AdminAPIs.deleteServiceMaster.endpoint}${id}`);
 };
 
-export const downloadSampleFileSerivceMaster = () => {
-  return APIinstance.get(AdminAPIs.downloadSampleFileSerivceMaster.endpoint);
+export const uploadServiceMaster = ({ data }) => {
+  return APIinstance.post(AdminAPIs.uploadServiceMaster.endpoint, data);
+};
+
+export const downloadSampleFileServiceMaster = () => {
+  return APIinstance.get(AdminAPIs.downloadSampleFileServiceMaster.endpoint);
 };
 
 export const getCategories = ({ page, limit }) => {
@@ -229,6 +237,10 @@ export const updateCategory = ({ id, data }) => {
   return APIinstance.put(`${AdminAPIs.updateCategory.endpoint}${id}`, data);
 };
 
+export const deleteCategory = ({ id }) => {
+  return APIinstance.delete(`${AdminAPIs.deleteCategory.endpoint}${id}`);
+};
+
 export const getSubCategories = ({ page, limit }) => {
   const baseEndpoint = AdminAPIs.getSubCategories.endpoint;
 
@@ -246,4 +258,8 @@ export const createSubCategory = ({ data }) => {
 
 export const updateSubCategory = ({ id, data }) => {
   return APIinstance.put(`${AdminAPIs.updateSubCategory.endpoint}${id}`, data);
+};
+
+export const deleteSubCategory = ({ id }) => {
+  return APIinstance.delete(`${AdminAPIs.deleteSubCategory.endpoint}${id}`);
 };

@@ -10,9 +10,9 @@ import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import {
-  downloadSampleFileSerivceMaster,
+  downloadSampleFileServiceMaster,
   getServicesMaster,
-  uploadSerivceMaster,
+  uploadServiceMaster,
 } from '@/services/Admin_Services/AdminServices';
 import {
   keepPreviousData,
@@ -168,8 +168,8 @@ const SerivceMasterPage = () => {
             onClose={() => {
               setIsUploadingServiceMaster(false);
             }}
-            sampleDownloadFn={downloadSampleFileSerivceMaster}
-            uploadDocFn={uploadSerivceMaster}
+            sampleDownloadFn={downloadSampleFileServiceMaster}
+            uploadDocFn={uploadServiceMaster}
             queryClient={() => {
               queryClient.invalidateQueries([
                 AdminAPIs.getServicesMaster.endpointKey,
