@@ -27,7 +27,7 @@ import { useStocksColumns } from './stockColumns';
 const PAGE_LIMIT = 10;
 
 const Stocks = () => {
-  useMetaData('Hues! - Stocks', 'HUES Stocks');
+  useMetaData('Hues! - Stock', 'HUES Stock');
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -146,7 +146,7 @@ const Stocks = () => {
                     value={searchTerm}
                     delay={400}
                     onDebouncedChange={handleSearchChange}
-                    placeholder="Search Stocks"
+                    placeholder="Search Stock..."
                   />
 
                   <ActionsDropdown
