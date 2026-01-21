@@ -151,6 +151,7 @@ const Stocks = () => {
 
                   <ActionsDropdown
                     label={'Ad-Hoc'}
+                    variant="default"
                     actions={[
                       {
                         key: 'stockIn',

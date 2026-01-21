@@ -53,6 +53,8 @@
             }
         },
         "clientDetails": {
+            "title1":"Clients",
+            "title2": "Client Details",
             "tabs":{
                 "tab1": {
                     "title":"Overview",
@@ -79,23 +81,7 @@
                         }
                     }
                 }
-            },
-            "title1":"Clients",
-            "title2": "Client Details",
-            "overview": "Overview",
-            "enterpriseName": "Enterprise name",
-            "enterpriseType": "Enterprise type",
-            "email": "Email",
-            "phone": "Phone",
-            "address": "Enterprise Address",
-            "documentDetails": "Document Details",
-            "gst": "GST",
-            "cin": "CIN",
-            "udyam": "UDYAM",
-            "pan": "PAN",
-            "directorDetails": "Director Details",
-            "directorName": "Director Name",
-            "loading": "Loading enterprise details..."
+            }
         }
     }
 }

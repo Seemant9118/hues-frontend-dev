@@ -14,6 +14,7 @@ export default function ActionsDropdown({
   actions = [],
   disabled = false,
   label = 'Actions',
+  variant = 'outline',
 }) {
   const [open, setOpen] = useState(false);
 
@@ -22,7 +23,7 @@ export default function ActionsDropdown({
       <DropdownMenuTrigger asChild>
         <Button
           size="sm"
-          variant="outline"
+          variant={variant}
           className="font-bold"
           disabled={disabled}
         >
@@ -35,11 +36,11 @@ export default function ActionsDropdown({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-fit">
         {actions.map((action) => (
           <DropdownMenuItem
             key={action.key}
-            className={`flex gap-2 font-semibold ${action.className || ''}`}
+            className={`flex items-center justify-center gap-2 font-semibold ${action.className || ''}`}
             onClick={action.onClick}
             disabled={action.disabled}
           >
