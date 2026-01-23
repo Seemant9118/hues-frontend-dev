@@ -13,6 +13,7 @@
         "profile": "Profile",
         "goods-master": "Goods Masters",
         "services-master": "Services Masters",
+        "statutory": "Statutory fillings",
         "subTabs": {
             "goods-master": "Goods Master",
             "services-master": "Service Master",
@@ -34,7 +35,8 @@
             "grn": "GRNs",
             "clients": "Clients",
             "vendors": "Vendors",
-            "customers": "Customers"
+            "customers": "Customers",
+            "gst":"GST"
         }
     }
 }
