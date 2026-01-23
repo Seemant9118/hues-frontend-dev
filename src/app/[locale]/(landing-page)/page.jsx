@@ -103,11 +103,19 @@ export default function HeroSection() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const token = LocalStorageService.get('token');
-    const userData = parseJwt(token);
+    try {
+      const token = LocalStorageService.get('token');
 
-    if (userData?.userId) {
-      window.location.href = goToHomePage();
+      if (!token) return;
+
+      const userData = parseJwt(token);
+
+      if (userData?.userId) {
+        window.location.href = goToHomePage();
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log('JWT parse failed:', err);
     }
   }, []);
 
@@ -297,7 +305,7 @@ export default function HeroSection() {
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => (
+          {features?.map((feature) => (
             <Card
               key={feature?.title}
               className="flex h-full flex-col items-start gap-4 rounded-xl border border-gray-200 px-6 py-6 shadow-sm transition hover:shadow-md"
@@ -381,7 +389,7 @@ export default function HeroSection() {
         </div>
 
         <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
-          {features1.map((feature) => (
+          {features1?.map((feature) => (
             <div
               key={feature}
               className="flex flex-col justify-end rounded-md bg-white p-6 shadow-sm transition hover:shadow-md"
@@ -449,7 +457,7 @@ export default function HeroSection() {
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-          {features2.map((feature) => (
+          {features2?.map((feature) => (
             <Card
               key={feature?.title}
               className="flex h-full flex-col items-start gap-4 rounded-xl border border-gray-200 px-6 py-6 shadow-sm transition hover:shadow-md"
