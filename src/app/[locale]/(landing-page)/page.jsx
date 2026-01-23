@@ -148,7 +148,7 @@ export default function HeroSection() {
           {/* Desktop Nav */}
           <NavigationMenu className="hidden md:block">
             <NavigationMenuList className="flex items-center gap-10 text-sm font-medium text-black">
-              <NavigationMenuItem>
+              {/* <NavigationMenuItem>
                 <Link href="#features">Features</Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
@@ -156,12 +156,12 @@ export default function HeroSection() {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="#faqs">FAQs</Link>
-              </NavigationMenuItem>
+              </NavigationMenuItem> */}
               <NavigationMenuItem>
-                <Link href="#contact">Contact</Link>
+                <Link href="#contact">Contacts</Link>
               </NavigationMenuItem>
               <Button size="sm" onClick={() => router.push('/login')}>
-                Sign In
+                Register
               </Button>
             </NavigationMenuList>
           </NavigationMenu>
@@ -170,7 +170,7 @@ export default function HeroSection() {
           {isOpen && (
             <div className="absolute left-0 top-full z-10 w-full rounded-md border bg-white px-4 py-4 shadow-md md:hidden">
               <ul className="flex flex-col gap-4 text-sm font-medium text-black">
-                <li>
+                {/* <li>
                   <Link href="#features" onClick={() => setIsOpen(false)}>
                     Features
                   </Link>
@@ -184,10 +184,10 @@ export default function HeroSection() {
                   <Link href="#faqs" onClick={() => setIsOpen(false)}>
                     FAQs
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link href="#contact" onClick={() => setIsOpen(false)}>
-                    Contact
+                    Contacts
                   </Link>
                 </li>
                 <li>
@@ -196,7 +196,7 @@ export default function HeroSection() {
                     className="w-full"
                     onClick={() => router.push('/login')}
                   >
-                    Open app
+                    Register
                   </Button>
                 </li>
               </ul>
@@ -256,9 +256,9 @@ export default function HeroSection() {
 
           {/* CTA */}
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
-            <Button variant="blue_outline" className="w-40 rounded-sm bg-white">
+            {/* <Button variant="blue_outline" className="w-40 rounded-sm bg-white">
               Watch demo
-            </Button>
+            </Button> */}
             <Button
               className="w-40 rounded-sm"
               onClick={() => router.push('/login')}
@@ -492,7 +492,7 @@ export default function HeroSection() {
             </p>
           </div>
 
-          <div className="mt-8">
+          {/* <div className="mt-8">
             <Button
               size="sm"
               onClick={() => {
@@ -501,7 +501,7 @@ export default function HeroSection() {
             >
               Start 14 days free trial →
             </Button>
-          </div>
+          </div> */}
 
           <div className="relative mt-14 flex justify-center">
             <figure className="mt-10 flex justify-center px-2">

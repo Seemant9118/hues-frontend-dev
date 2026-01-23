@@ -2,6 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
+import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -119,7 +120,7 @@ const GstVerificationPage = () => {
 
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
+      <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-4 rounded-md">
         <div className="flex flex-col gap-4">
           {gstData.length === 0 ? (
             <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
@@ -135,6 +136,8 @@ const GstVerificationPage = () => {
             {translations('subtitle')}
           </p>
         </div>
+
+        {gstVerifyMutation?.isError && <ErrorInfoBanner govermentDoc="GST" />}
 
         <form
           className="grid w-full items-center gap-5"
