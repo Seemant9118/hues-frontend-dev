@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable consistent-return */
+
 'use client';
 
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
@@ -40,64 +43,69 @@ export default function FCMProvider({ children }) {
   };
 
   useEffect(() => {
-    // Prevent double run under React Strict Mode
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
 
+    // ✅ Run only in browser
+    if (typeof window === 'undefined') return;
+
+    // ✅ If messaging is not available, don't setup listeners
+    if (!messaging) {
+      console.warn('Firebase messaging not supported. Skipping FCM setup.');
+      return;
+    }
+
     (async () => {
-      await initializeFcmToken();
+      try {
+        await initializeFcmToken();
+      } catch (e) {
+        console.warn('FCM init failed safely:', e);
+      }
     })();
 
-    // Foreground listener
-    const unsubscribe = onMessage(messaging, (payload) => {
-      isForegroundHandledRef.current = true; // mark foreground as handled
+    // ✅ Foreground listener
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = onMessage(messaging, (payload) => {
+        isForegroundHandledRef.current = true;
 
-      const { body, image, endpointKey } = payload.data || {};
+        const { body, image, endpointKey } = payload.data || {};
 
-      // Refetch queries for real-time data updates
-      if (endpointKey) refetchAPI(endpointKey);
+        if (endpointKey) refetchAPI(endpointKey);
 
-      // Show toast only once (foreground)
-      toast(body || 'New notification', {
-        icon: image || '🔔',
+        toast(body || 'New notification', {
+          icon: image || '🔔',
+        });
+
+        setTimeout(() => {
+          isForegroundHandledRef.current = false;
+        }, 1500);
       });
+    } catch (e) {
+      console.warn('onMessage listener setup failed:', e);
+    }
 
-      // Reset flag after a short delay (so BC message is ignored)
-      setTimeout(() => {
-        isForegroundHandledRef.current = false;
-      }, 1500);
-    });
+    // ✅ BroadcastChannel safe setup
+    let bc = null;
+    if ('BroadcastChannel' in window) {
+      bc = new BroadcastChannel('fcm_channel');
+      bc.onmessage = (event) => {
+        const { data } = event.data || {};
 
-    // Background listener via BroadcastChannel
-    const bc = new BroadcastChannel('fcm_channel');
-    bc.onmessage = (event) => {
-      const { data } = event.data || {};
-      // notification,
-      // Skip duplicate toast if handled in foreground
-      if (isForegroundHandledRef.current) {
-        // Still refetch silently (important)
-        if (data?.endpointKey) {
-          refetchAPI(data.endpointKey);
+        if (isForegroundHandledRef.current) {
+          if (data?.endpointKey) refetchAPI(data.endpointKey);
+          return;
         }
-        return;
-      }
 
-      // If not handled in foreground (e.g., inactive tab or delayed BC message)
-      if (data?.endpointKey) {
-        refetchAPI(data.endpointKey);
-      }
+        if (data?.endpointKey) refetchAPI(data.endpointKey);
+      };
+    } else {
+      console.warn('BroadcastChannel not supported in this browser.');
+    }
 
-      // Show toast only if foreground handler didn’t already do it
-      // toast(notification?.title || 'New notification', {
-      //   description: notification?.body,
-      //   icon: notification?.image || '🔔',
-      // });
-    };
-
-    // eslint-disable-next-line consistent-return
     return () => {
-      unsubscribe();
-      bc.close();
+      unsubscribe?.();
+      bc?.close?.();
     };
   }, []);
 
