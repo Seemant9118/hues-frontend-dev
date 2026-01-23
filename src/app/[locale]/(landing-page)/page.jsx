@@ -131,8 +131,8 @@ export default function HeroSection() {
               width={100}
               height={30}
               alt="HUES Logo"
-              placeholder="blur"
-              blurDataURL="/hues_logo.png"
+              // placeholder="blur"
+              // blurDataURL="/hues_logo.png"
             />
           </Link>
 
@@ -391,15 +391,15 @@ export default function HeroSection() {
         <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {features1?.map((feature) => (
             <div
-              key={feature}
+              key={feature?.title}
               className="flex flex-col justify-end rounded-md bg-white p-6 shadow-sm transition hover:shadow-md"
             >
               {feature?.icon}
               <h3 className="text-base font-semibold text-gray-900">
-                {feature.title}
+                {feature?.title}
               </h3>
               <p className="mt-1 text-sm text-gray-600">
-                {feature.description}
+                {feature?.description}
               </p>
             </div>
           ))}
@@ -431,8 +431,8 @@ export default function HeroSection() {
             </p>
             <ul className="mt-3 list-disc space-y-2 pl-5 font-semibold text-gray-600">
               <li>
-                Readable:onvert Excel, PDF, or image-based forms into structured
-                SKUs.
+                Readable: Convert Excel, PDF, or image-based forms into
+                structured SKUs.
               </li>
               <li>Verifiable: digital signature trails.</li>
             </ul>
@@ -562,8 +562,8 @@ export default function HeroSection() {
               width={100}
               height={30}
               alt="HUES Logo"
-              placeholder="blur"
-              blurDataURL="/hues_logo.png"
+              // placeholder="blur"
+              // blurDataURL="/hues_logo.png"
             />
           </Link>
 
