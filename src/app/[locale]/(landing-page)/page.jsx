@@ -556,7 +556,7 @@ export default function HeroSection() {
       {/* footer */}
       <footer id="contact" className="bg-gradient-bg px-4 pb-5 pt-16">
         <div className="mx-auto flex max-w-4xl flex-col items-center justify-center gap-2 space-y-6">
-          <Link href="/portfolio" aria-label="Go to homepage">
+          <Link href="/" aria-label="Go to homepage">
             <Image
               src="/hues_logo.png"
               width={100}
