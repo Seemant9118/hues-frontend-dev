@@ -9,12 +9,14 @@ import Loading from '@/components/ui/Loading';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
+import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
   loading,
+  isGettingError,
   validateAadharAndUpdateUser,
   translations,
 }) => {
@@ -60,7 +62,7 @@ const AadharNumberDetail = ({
   return (
     <form
       onSubmit={handleProceed}
-      className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
+      className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-6 rounded-md"
     >
       <div className="flex flex-col gap-3">
         <AuthProgress isCurrAuthStep={'isAadhaarVerificationStep'} />
@@ -71,6 +73,9 @@ const AadharNumberDetail = ({
           {translations('steps.aadharNum.subtitle')}
         </p>
       </div>
+
+      {/* show only when validateAadharAndUpdateUser is getting error */}
+      {isGettingError && <ErrorInfoBanner govermentDoc="Aadhaar" />}
 
       <div className="flex w-full flex-col gap-4">
         <div className="grid w-full items-center gap-1.5">

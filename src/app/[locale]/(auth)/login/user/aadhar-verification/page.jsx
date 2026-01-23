@@ -26,6 +26,7 @@ const AadharVerificationPage = () => {
   const [enterpriseDetails, setEnterpriseDetails] = useState(null);
   const [aadharNumber, setAadharNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isGettingError, setIsGettingError] = useState(false);
 
   useEffect(() => {
     setEnterpriseDetails(
@@ -88,6 +89,7 @@ const AadharVerificationPage = () => {
         await userUpdateMutation.mutateAsync(enterpriseDetails); // Await the mutation if needed
         router.push('/login/user/confirmation');
         updateAuthProgress('isAadhaarVerified', true);
+        setIsGettingError(false);
       } else {
         const customError = apiErrorHandler(response.error);
         toast.error(translationsAPIErrors(customError));
@@ -95,6 +97,7 @@ const AadharVerificationPage = () => {
     } catch (error) {
       const customError = apiErrorHandler(error);
       toast.error(translationsAPIErrors(customError));
+      setIsGettingError(true);
     } finally {
       setLoading(false); // Disable loading state
     }
@@ -107,6 +110,7 @@ const AadharVerificationPage = () => {
           aadharNumber={aadharNumber}
           setAadharNumber={setAadharNumber}
           loading={loading}
+          isGettingError={isGettingError}
           validateAadharAndUpdateUser={validateAadharAndUpdateUser}
           translations={translations}
         />

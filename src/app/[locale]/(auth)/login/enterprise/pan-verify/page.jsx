@@ -3,6 +3,7 @@
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { validatePan } from '@/appUtils/ValidationUtils';
+import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import ExplantoryText from '@/components/auth/ExplantoryText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,7 +140,7 @@ const EnterprisePANVerifyPage = () => {
   return (
     <UserProvider>
       <div className="flex h-full items-center justify-center">
-        <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
+        <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-6 rounded-md">
           {/* Header */}
           <div className="flex flex-col gap-4">
             <h1 className="text-center text-2xl font-bold text-[#121212]">
@@ -149,6 +150,10 @@ const EnterprisePANVerifyPage = () => {
               {translations('subtitle')}
             </p>
           </div>
+
+          {getDetailsByPanVerifiedMutation.isError && (
+            <ErrorInfoBanner govermentDoc="PAN" />
+          )}
 
           {/* Form */}
           <form
