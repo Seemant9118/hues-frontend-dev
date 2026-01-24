@@ -1,5 +1,6 @@
 import { validateAadhaar } from '@/appUtils/ValidationUtils';
 import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -9,8 +10,9 @@ import Loading from '@/components/ui/Loading';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
-import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import AuthProgress from '../../util-auth-components/AuthProgress';
+
+const INFO_BANNER_TEXT = `Verification of Aadhar using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
 
 const AadharNumberDetail = ({
   aadharNumber,
@@ -75,7 +77,9 @@ const AadharNumberDetail = ({
       </div>
 
       {/* show only when validateAadharAndUpdateUser is getting error */}
-      {isGettingError && <ErrorInfoBanner govermentDoc="Aadhaar" />}
+      {isGettingError && (
+        <InfoBanner text={INFO_BANNER_TEXT} variant="danger" showSupportLink />
+      )}
 
       <div className="flex w-full flex-col gap-4">
         <div className="grid w-full items-center gap-1.5">

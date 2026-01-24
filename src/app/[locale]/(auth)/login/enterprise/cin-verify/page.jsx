@@ -2,8 +2,8 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
-import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const INFO_BANNER_TEXT = `Verification of CIN using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
 
 const CINVerificationPage = () => {
   const translations = useTranslations('auth.enterprise.cinVerify');
@@ -124,7 +126,11 @@ const CINVerificationPage = () => {
         </div>
 
         {verifyPANCINMutation?.isError && (
-          <ErrorInfoBanner govermentDoc="CIN" />
+          <InfoBanner
+            text={INFO_BANNER_TEXT}
+            variant="danger"
+            showSupportLink
+          />
         )}
 
         <form

@@ -1,6 +1,7 @@
 'use client';
 
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
+import ImageCarousel from '@/components/ui/ImageCarousel';
 import { AuthProgressProvider } from '@/context/AuthProgressContext';
 import { UserDataProvider } from '@/context/UserDataContext';
 import useClarityTracking from '@/hooks/useClarityTracking';
@@ -9,6 +10,37 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import Select from 'react-select';
+
+const slidesData = [
+  {
+    id: 1,
+    src: '/vendor-management-image.png',
+    alt: 'Vendor Management',
+    title: 'Vendor Management',
+    description: 'From onboarding to e-invoicing — track every touchpoint.',
+  },
+  {
+    id: 2,
+    src: '/sales-purchase-image.png',
+    alt: 'Sales & Purchase Automation',
+    title: 'Sales & Purchase Automation',
+    description: 'Real-time negotiation tools, SKU sync, offer/bid sharing.',
+  },
+  {
+    id: 3,
+    src: '/tax-image.png',
+    alt: 'Tax & Legal Compliance',
+    title: 'Tax & Legal Compliance',
+    description: 'DPDP, PMLA, GST, MCA — done..',
+  },
+  {
+    id: 4,
+    src: '/built-in-bi-image.png',
+    alt: 'Built-in BI Tools',
+    title: 'Built-in BI Tools',
+    description: 'Live dashboards for Sales, Cash Flow, and Trial Balance',
+  },
+];
 
 export default function LoginLayout({ children }) {
   const pathname = usePathname(); // Get current route path
@@ -28,7 +60,7 @@ export default function LoginLayout({ children }) {
   const handleChange = (selectedOption) => {
     const newLocale = selectedOption.value;
 
-    // ✅ Set the cookie manually (expires in 1 year)
+    // Set the cookie manually (expires in 1 year)
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=${60 * 60 * 24 * 365}`;
 
     const currentPathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, '');
@@ -81,7 +113,7 @@ export default function LoginLayout({ children }) {
             </div>
           </div>
 
-          <div className="relative w-1/2 bg-custom-linear pl-24 pt-20">
+          <div className="relative w-1/2 bg-custom-linear pl-16 pt-16">
             {/* Language switcher */}
             <div className="absolute right-2 top-1 z-10 p-2">
               <Select
@@ -94,12 +126,13 @@ export default function LoginLayout({ children }) {
                 onChange={handleChange}
               />
             </div>
-            <Image
-              src="/posterImageLogin.png"
-              alt="bg-login"
-              width={678}
-              height={706}
-              className="-rotate-6 rounded-md border object-cover p-2 shadow-[0px_0px_20px_rgba(35,90,155,0.1)]"
+
+            <ImageCarousel
+              slidesData={slidesData}
+              autoPlay
+              interval={2500}
+              showArrows={false}
+              showDots={false}
             />
           </div>
         </div>

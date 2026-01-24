@@ -2,8 +2,8 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
-import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const INFO_BANNER_TEXT = `Verification of Udyam using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
 
 const UdyamVerify = () => {
   const translations = useTranslations('auth.enterprise.udyamVerify');
@@ -86,7 +88,11 @@ const UdyamVerify = () => {
         </div>
 
         {verifyUdyamMutation?.isError && (
-          <ErrorInfoBanner govermentDoc="UDYAM" />
+          <InfoBanner
+            text={INFO_BANNER_TEXT}
+            variant="danger"
+            showSupportLink
+          />
         )}
 
         <form
