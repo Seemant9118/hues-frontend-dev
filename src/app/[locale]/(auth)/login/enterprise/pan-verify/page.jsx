@@ -3,8 +3,8 @@
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { validatePan } from '@/appUtils/ValidationUtils';
-import ErrorInfoBanner from '@/components/auth/ErrorInfoBanner';
 import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const INFO_BANNER_TEXT = `Verification of PAN using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
 
 const EnterprisePANVerifyPage = () => {
   const translations = useTranslations('auth.enterprise.panVerify');
@@ -152,7 +154,11 @@ const EnterprisePANVerifyPage = () => {
           </div>
 
           {getDetailsByPanVerifiedMutation.isError && (
-            <ErrorInfoBanner govermentDoc="PAN" />
+            <InfoBanner
+              text={INFO_BANNER_TEXT}
+              variant="danger"
+              showSupportLink
+            />
           )}
 
           {/* Form */}

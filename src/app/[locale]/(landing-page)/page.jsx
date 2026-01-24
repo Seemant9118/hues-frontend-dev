@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJwt } from '@/appUtils/helperFunctions';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,14 +9,13 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu';
-import { Globe, Mail, Menu, Phone, X } from 'lucide-react';
+import { LocalStorageService } from '@/lib/utils';
+import { Globe, Mail, Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
-import { LocalStorageService } from '@/lib/utils';
-import { parseJwt } from '@/appUtils/helperFunctions';
 
 const features = [
   {
@@ -485,7 +485,7 @@ export default function HeroSection() {
               Pricing.
             </span>
             <br />
-            Start for ₹1,000/month.
+            Start for ₹ 999/- month.
           </h2>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-2 text-sm md:flex-row md:gap-6">
@@ -578,12 +578,12 @@ export default function HeroSection() {
           </p>
 
           <div className="mt-4 flex flex-wrap justify-center gap-4">
-            <a
+            {/* <a
               href="tel:+919869350874"
               className="flex items-center gap-2 rounded-full bg-[#1e2a3f] px-4 py-2 text-sm text-white hover:bg-[#28364e]"
             >
               <Phone size={16} /> +91 9869 350 874
-            </a>
+            </a> */}
             <a
               href="mailto:support@paraphernalia.in"
               className="flex items-center gap-2 rounded-full bg-[#1e2a3f] px-4 py-2 text-sm text-white hover:bg-[#28364e]"
