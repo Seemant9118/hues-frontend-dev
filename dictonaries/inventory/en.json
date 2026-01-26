@@ -320,8 +320,8 @@
             }
         }
     },
-    "transactions": {
-        "title": "Transactions",
+    "stockTracker": {
+        "title": "Stock Tracker",
         "emptyStateComponent": {
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
@@ -372,9 +372,9 @@
                 }
             }
         },
-        "transactionDetails": {
-            "title1": "Transactions",
-            "title2": "Transaction Details",
+        "stockDetails": {
+            "title1": "Stock Tracker",
+            "title2": "Stock Details",
             "overview": {
                 "labels": {
                     "transactionId": "Transaction ID",
@@ -393,7 +393,7 @@
         }
     },
     "stocks": {
-        "title": "Stocks",
+        "title": "Stock",
         "emptyStateComponent": {
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
@@ -454,7 +454,7 @@
             }
         },
         "stockDetails": {
-            "title1": "Stocks",
+            "title1": "Stock",
             "title2": "Stock Details",
             "overview": {
                 "labels": {

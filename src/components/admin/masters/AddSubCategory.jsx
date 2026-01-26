@@ -53,14 +53,16 @@ export default function AddSubCategory({
 
   /* 🔹 FIX: Sync edit data AFTER categories load */
   useEffect(() => {
-    if (!subCategoryToEdit || !categories.length) return;
+    if (!subCategoryToEdit) return;
 
     setFormData({
-      categoryId: String(subCategoryToEdit.categoryId),
+      categoryId: String(
+        subCategoryToEdit.category?.id ?? subCategoryToEdit.categoryId ?? '',
+      ),
       subCategoryName: subCategoryToEdit.subCategoryName || '',
       description: subCategoryToEdit.description || '',
     });
-  }, [subCategoryToEdit, categories]);
+  }, [subCategoryToEdit]);
 
   /* 🔹 Category options */
   const categoryOptions = useMemo(() => {
@@ -72,11 +74,13 @@ export default function AddSubCategory({
 
   /* RESET subCategoryName + description ONLY when user changes category */
   const handleCategoryChange = (value) => {
-    setFormData(() => ({
+    if (subCategoryToEdit) return; // hard stop in edit mode
+
+    setFormData({
       categoryId: value,
       subCategoryName: '',
       description: '',
-    }));
+    });
 
     if (errors.categoryId) {
       setErrors((prev) => ({ ...prev, categoryId: '' }));
@@ -170,14 +174,16 @@ export default function AddSubCategory({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Category */}
         <div>
-          <Label>Category</Label>
+          <Label>Category</Label> <span className="text-red-500">*</span>
           <Select
             value={formData.categoryId}
             onValueChange={handleCategoryChange}
+            disabled={!!subCategoryToEdit}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
+
             <SelectContent>
               <SelectGroup>
                 {categoryOptions.map((o) => (
@@ -188,15 +194,19 @@ export default function AddSubCategory({
               </SelectGroup>
             </SelectContent>
           </Select>
-          {errors.categoryId && <ErrorBox msg={errors.categoryId} />}
+          {!subCategoryToEdit && errors.categoryId && (
+            <ErrorBox msg={errors.categoryId} />
+          )}
         </div>
 
         {/* Sub Category Name */}
         <div>
-          <Label>Sub Category Name</Label>
+          <Label>Sub Category Name</Label>{' '}
+          <span className="text-red-500">*</span>
           <Input
             value={formData.subCategoryName}
             onChange={(e) => handleChange('subCategoryName', e.target.value)}
+            placeholder="Enter sub category name"
           />
           {errors.subCategoryName && <ErrorBox msg={errors.subCategoryName} />}
         </div>
@@ -208,6 +218,7 @@ export default function AddSubCategory({
             rows={4}
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
+            placeholder="Enter sub category description"
           />
         </div>
 
