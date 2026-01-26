@@ -28,7 +28,6 @@ import {
   PencilRuler,
   ReceiptText,
   ScrollText,
-  Settings,
   Shapes,
   ShieldCheck,
   ShoppingCart,
@@ -43,10 +42,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
+import Tooltips from '../auth/Tooltips';
 import Avatar from './Avatar';
 import StyledLinks from './StyledLinks';
 import { Badge } from './badge';
-import Tooltips from '../auth/Tooltips';
 
 const Sidebar = () => {
   const { name, roles } = useAuth();
