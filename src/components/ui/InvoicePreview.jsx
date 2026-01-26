@@ -483,13 +483,13 @@ const InvoicePreview = ({
         )}
 
         {/* Right side: PDF Preview */}
-        <div className="flex h-full w-2/3 items-center justify-center bg-[#F4F4F4]">
+        <div className="flex h-full w-full overflow-hidden bg-[#F4F4F4] md:w-2/3">
           <ViewPdf url={url} isPDF={isPDF} />
         </div>
       </div>
 
       {/* Footer CTA for downloading the PDF */}
-      <div className="mt-2 flex w-full items-center justify-end gap-2">
+      <div className="flex w-full items-center justify-end gap-2">
         <Button
           size="sm"
           variant="outline"

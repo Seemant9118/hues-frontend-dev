@@ -40,14 +40,17 @@ import {
   Warehouse,
 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import EnterpriseSelectorPopUp from '../Popovers/EnterpriseSelectorPopUp';
 import ProfileInfoPopUp from '../Popovers/ProfileInfoPopUp';
 import Avatar from './Avatar';
 import StyledLinks from './StyledLinks';
 import { Badge } from './badge';
+import Tooltips from '../auth/Tooltips';
 
 const Sidebar = () => {
   const { name, roles } = useAuth();
+  const router = useRouter();
 
   const { hasPermission } = usePermission();
   const isEnterpriseSwitched = Boolean(
@@ -273,11 +276,11 @@ const Sidebar = () => {
       icon: <Bell size={16} />,
       path: '/dashboard/notification',
     },
-    hasPermission('permission:view-dashboard') && {
-      name: 'sidebar.settings',
-      icon: <Settings size={16} />,
-      path: '/dashboard/settings',
-    },
+    // hasPermission('permission:view-dashboard') && {
+    //   name: 'sidebar.settings',
+    //   icon: <Settings size={16} />,
+    //   path: '/dashboard/settings',
+    // },
   ];
 
   return (
@@ -348,9 +351,19 @@ const Sidebar = () => {
 
         {/* Name + Roles */}
         <div className="flex flex-1 flex-col flex-wrap gap-1">
-          <p className="truncate text-sm font-semibold leading-tight">
-            {capitalize(name)}
-          </p>
+          <Tooltips
+            trigger={
+              <p
+                className="cursor-pointer truncate text-sm font-semibold leading-tight hover:underline"
+                onClick={() => {
+                  router.push('/dashboard/profile');
+                }}
+              >
+                {capitalize(name)}
+              </p>
+            }
+            content={'View User Profile'}
+          />
 
           <div className="flex flex-wrap gap-1">
             {roles?.length > 0 &&

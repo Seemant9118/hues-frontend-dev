@@ -18,7 +18,7 @@ import {
   switchAccount,
 } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ShieldBan, User } from 'lucide-react';
+import { Building2, ShieldBan } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -42,6 +42,7 @@ const ProfileInfoPopUp = ({
   const [bgColor, setBgColor] = useState('');
   const switchedEnterpriseId = LocalStorageService.get('switchedEnterpriseId');
 
+  const [activeEnterprise, setActiveEnterprise] = useState(null);
   const [userEnterprises, setUserEnterprises] = useState([]);
 
   const { data: userAccounts } = useQuery({
@@ -57,6 +58,10 @@ const ProfileInfoPopUp = ({
         (a, b) => Number(b.isActiveEnterprise) - Number(a.isActiveEnterprise),
       );
       setUserEnterprises(sortedEnterprises);
+      const activeEnt = userAccounts.find(
+        (account) => account.isActiveEnterprise,
+      );
+      setActiveEnterprise(activeEnt);
     }
   }, [userAccounts]);
 
@@ -187,37 +192,38 @@ const ProfileInfoPopUp = ({
           debounceTime={0}
           variant="ghost"
           className={cn(
-            'flex w-full justify-start gap-2.5 rounded-sm border-none px-3 py-5 text-sm font-normal',
-            open || pathName.includes('profile')
-              ? 'bg-[#288AF91A] text-primary hover:bg-[#288AF91A] hover:text-primary'
-              : 'bg-transparent text-gray-600',
+            'flex w-full justify-start gap-2.5 rounded-sm border px-3 py-5 text-sm font-normal transition',
+            open
+              ? 'border-black bg-gray-100 text-gray-900 hover:bg-gray-100'
+              : pathName.includes('enterprise-profile')
+                ? 'border-transparent bg-[#288AF91A] text-primary hover:bg-[#288AF91A] hover:text-primary'
+                : 'border-transparent bg-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900',
           )}
           size="sm"
         >
-          <User size={14} />
+          <Building2 size={14} />
           {translations(ctaName)}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="absolute bottom-2 left-28 flex max-h-[400px] w-[350px] flex-col gap-5">
-        {/* user information */}
+        {/* enterprise information */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
               className={`${bgColor} flex h-10 w-10 items-center justify-center rounded-full p-2 text-sm text-white`}
             >
-              {userAccounts?.length > 0 &&
-                getInitialsNames(userAccounts[0]?.user?.userName)}
+              {activeEnterprise?.enterprise?.enterpriseName &&
+                getInitialsNames(activeEnterprise?.enterprise?.enterpriseName)}
             </div>
 
             <span className="text-sm font-bold">
-              {(userAccounts?.length > 0 && userAccounts[0]?.user?.userName) ||
-                'Profile Not Completed'}
+              {activeEnterprise?.enterprise?.enterpriseName || '---------'}
             </span>
           </div>
 
           <div
             onClick={() => {
-              router.push('/dashboard/profile');
+              router.push('/dashboard/enterprise-profile');
               setOpen(false);
             }}
             className="cursor-pointer rounded-sm border border-primary p-1 text-xs font-semibold text-primary hover:bg-blue-500/10"

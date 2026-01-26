@@ -100,7 +100,11 @@ const InvoiceTypePopover = ({
             {translations('change_default_prefix')}
             <span
               className="cursor-pointer text-primary hover:underline"
-              onClick={() => router.push('/dashboard/settings?tab=invoice')}
+              onClick={() =>
+                router.push(
+                  '/dashboard/enterprise-profile/settings?tab=invoice',
+                )
+              }
             >
               {translations('change_default_link')}
             </span>
