@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable consistent-return */
 
 'use client';
@@ -14,45 +15,91 @@ export default function ImageCarousel({
   className = '',
 }) {
   const slides = useMemo(() => slidesData, [slidesData]);
+
+  // add clone slide at end (only if more than 1 slide)
+  const extendedSlides = useMemo(() => {
+    if (slides.length <= 1) return slides;
+    return [...slides, slides[0]];
+  }, [slides]);
+
   const [activeIndex, setActiveIndex] = useState(0);
+  const [enableTransition, setEnableTransition] = useState(true);
 
   useEffect(() => {
     if (!autoPlay || slides.length <= 1) return;
 
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % slides.length);
+      setActiveIndex((prev) => prev + 1);
     }, interval);
 
     return () => clearInterval(timer);
   }, [autoPlay, interval, slides.length]);
 
+  // when reach last clone slide, jump to real first without animation
+  useEffect(() => {
+    if (slides.length <= 1) return;
+
+    if (activeIndex === slides.length) {
+      const timeout = setTimeout(() => {
+        setEnableTransition(false); // disable animation
+        setActiveIndex(0); // jump to first
+      }, 500); // same as transition duration
+
+      return () => clearTimeout(timeout);
+    }
+
+    // enable animation normally
+    setEnableTransition(true);
+  }, [activeIndex, slides.length]);
+
   const prevSlide = () => {
     if (slides.length <= 1) return;
-    setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
+
+    // If we are at first slide and user clicks prev
+    if (activeIndex === 0) {
+      setEnableTransition(false);
+      setActiveIndex(slides.length - 1);
+
+      setTimeout(() => {
+        setEnableTransition(true);
+      }, 50);
+      return;
+    }
+
+    setActiveIndex((prev) => prev - 1);
   };
 
   const nextSlide = () => {
     if (slides.length <= 1) return;
-    setActiveIndex((prev) => (prev + 1) % slides.length);
+    setActiveIndex((prev) => prev + 1);
   };
 
   if (!slides.length) return null;
 
+  // for dots: real index only
+  const realIndex = activeIndex === slides.length ? 0 : activeIndex;
+
   return (
     <div className={`${className} relative w-full`}>
       {/* Card */}
-      <div className="mx-auto w-full max-w-[678px] -rotate-6 overflow-hidden rounded-md bg-white p-3 shadow-sm">
+      <div className="mx-auto w-full max-w-[678px] overflow-hidden rounded-md bg-white p-3 shadow-sm">
         {/* Slider Wrapper */}
         <div className="w-full overflow-hidden rounded-md bg-white">
           <div className="relative aspect-[12/10] w-full overflow-hidden rounded-md">
             {/* Sliding Track */}
             <div
-              className="flex h-full w-full transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+              className={`flex h-full w-full ${
+                enableTransition
+                  ? 'transition-transform duration-500 ease-in-out'
+                  : ''
+              }`}
+              style={{
+                transform: `translateX(-${activeIndex * 100}%)`,
+              }}
             >
-              {slides.map((slide) => (
+              {extendedSlides.map((slide, idx) => (
                 <div
-                  key={slide?.id || slide?.src}
+                  key={`${slide?.id || slide?.src}-${idx}`}
                   className="relative h-full w-full flex-shrink-0"
                 >
                   <Image
@@ -68,15 +115,19 @@ export default function ImageCarousel({
           </div>
         </div>
 
-        {/* Text Slider (same sliding animation as image) */}
+        {/* Text Slider */}
         <div className="mt-3 w-full overflow-hidden">
           <div
-            className="flex w-full transition-transform duration-500 ease-in-out"
+            className={`flex w-full ${
+              enableTransition
+                ? 'transition-transform duration-500 ease-in-out'
+                : ''
+            }`}
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
-            {slides.map((slide) => (
+            {extendedSlides.map((slide, idx) => (
               <div
-                key={slide?.id || slide?.src}
+                key={`${slide?.id || slide?.src}-text-${idx}`}
                 className="w-full flex-shrink-0"
               >
                 <h3 className="text-sm font-semibold text-gray-900 sm:text-base">
@@ -116,15 +167,13 @@ export default function ImageCarousel({
       {/* Dots */}
       {showDots && slides.length > 1 && (
         <div className="mx-auto mt-4 flex max-w-[678px] items-center justify-center gap-2">
-          {slides.map((slide) => (
+          {slides.map((slide, idx) => (
             <button
-              key={slide?.id}
+              key={slide?.id || idx}
               type="button"
-              onClick={() => setActiveIndex(slides.indexOf(slide))}
+              onClick={() => setActiveIndex(idx)}
               className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                slides.indexOf(slide) === activeIndex
-                  ? 'w-5 bg-primary'
-                  : 'bg-gray-300'
+                idx === realIndex ? 'w-5 bg-primary' : 'bg-gray-300'
               }`}
             />
           ))}

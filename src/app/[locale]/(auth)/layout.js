@@ -113,7 +113,7 @@ export default function LoginLayout({ children }) {
             </div>
           </div>
 
-          <div className="relative w-1/2 bg-custom-linear pl-16 pt-16">
+          <div className="relative w-1/2 bg-custom-linear p-5">
             {/* Language switcher */}
             <div className="absolute right-2 top-1 z-10 p-2">
               <Select

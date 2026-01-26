@@ -621,6 +621,7 @@
                 "invoices": "*Required! Please select invoice",
                 "payment_mode": "*Required! Please select payment mode",
                 "payment_date": "*Required! Please select payment date",
+                "transaction_id": "*Required! Please enter Transaction ID",
                 "amount_paid_required": "*Required! Please update Amount",
                 "amount_paid_empty": "Please enter an amount to proceed",
                 "amount_paid_exceed": "The amount paid can't be more than the balance amount. Please correct and retry",

@@ -9,8 +9,7 @@
         "contacts": "Contacts",
         "members": "Members",
         "notifications": "Notifications",
-        "settings": "Settings",
-        "profile": "Profile",
+        "profile": "Enterprise Profile",
         "master": "Masters",
         "subTabs": {
             "goods-master": "Goods Master",
