@@ -1,6 +1,7 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { userAuth } from '@/api/user_auth/Users';
 import { validatePhoneNumber } from '@/appUtils/ValidationUtils';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
@@ -112,7 +113,7 @@ const MobileLogin = ({
   };
 
   return (
-    <div className="flex w-full max-w-md flex-col items-center justify-start gap-8 sm:gap-10">
+    <div className="flex w-full max-w-md flex-col items-center justify-start gap-4 sm:gap-6">
       {/* Title and Subtitle */}
       <div className="flex w-full flex-col gap-4">
         <h1 className="text-center text-2xl font-bold text-[#121212]">
@@ -129,6 +130,10 @@ const MobileLogin = ({
             <Loading />
           </div>
         )}
+        <InfoBanner
+          showSupportLink={false}
+          text={<>{`You can sign-up or sign-in using this page`}</>}
+        />
       </div>
 
       {/* Login Form */}

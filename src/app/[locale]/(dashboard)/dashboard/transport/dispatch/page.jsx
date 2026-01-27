@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
@@ -177,6 +178,16 @@ const DispatchedNotes = () => {
               />
             </div>
           </SubHeader>
+          {/* Banner */}
+          <InfoBanner
+            showSupportLink={false}
+            text={
+              <>
+                {`To create a Dispatch Note, go to Sales > Invoices, and select
+                the appropriate Invoice.`}
+              </>
+            }
+          />
           <Tabs
             value={tab}
             onValueChange={onTabChange}

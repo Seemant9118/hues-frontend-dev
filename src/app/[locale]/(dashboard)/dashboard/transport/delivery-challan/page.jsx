@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -173,6 +174,15 @@ const DeliveryChallan = () => {
               />
             </div>
           </SubHeader>
+          {/* Banner */}
+          <InfoBanner
+            showSupportLink={false}
+            text={
+              <>
+                {`You can create multiple Delivery Challans against a single Dispatch Note.`}
+              </>
+            }
+          />
 
           {isDeliveryChallanLoading ? (
             <Loading />

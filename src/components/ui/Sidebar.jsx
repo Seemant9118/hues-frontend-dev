@@ -143,9 +143,9 @@ const Sidebar = () => {
       icon: <Gauge size={16} />,
       path: `/dashboard`,
     },
-    // inventory
+    // inventory - goods
     hasPermission('permission:item-masters-view') && {
-      name: 'sidebar.itemMaster',
+      name: 'sidebar.itemMaster-goods',
       icon: <Package size={16} />,
       path: '/dashboard/inventory/goods',
       subTab: [
@@ -153,11 +153,6 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.goods',
           icon: <Boxes size={16} />,
           path: '/dashboard/inventory/goods',
-        },
-        {
-          name: 'sidebar.subTabs.services',
-          icon: <HandPlatter size={16} />,
-          path: '/dashboard/inventory/services',
         },
         {
           name: 'sidebar.subTabs.transactions',
@@ -173,6 +168,19 @@ const Sidebar = () => {
           name: 'sidebar.subTabs.qc',
           icon: <ShieldCheck size={16} />,
           path: '/dashboard/inventory/qc',
+        },
+      ],
+    },
+    // inventory - services
+    hasPermission('permission:item-masters-view') && {
+      name: 'sidebar.itemMaster-services',
+      icon: <Package size={16} />,
+      path: '/dashboard/inventory/services',
+      subTab: [
+        {
+          name: 'sidebar.subTabs.services',
+          icon: <HandPlatter size={16} />,
+          path: '/dashboard/inventory/services',
         },
       ],
     },

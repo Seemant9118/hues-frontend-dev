@@ -28,7 +28,7 @@ const InfoBanner = ({
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm ${current.wrapper}`}
+      className={`flex items-center gap-3 rounded-lg border px-4 py-2 text-sm ${current.wrapper}`}
     >
       <Info className={`mt-0.5 h-4 w-4 shrink-0 ${current.icon}`} />
 
