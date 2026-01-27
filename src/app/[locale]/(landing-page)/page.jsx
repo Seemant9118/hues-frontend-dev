@@ -271,7 +271,7 @@ export default function HeroSection() {
               className="w-40 rounded-sm"
               onClick={() => router.push('/login')}
             >
-              Start using
+              Try for Free
             </Button>
           </div>
         </section>

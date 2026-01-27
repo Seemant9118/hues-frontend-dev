@@ -39,16 +39,10 @@ export const FormSchema = [
   },
   { headLabel: 'Leg Details' },
   {
-    type: 'select',
+    type: 'text',
     label: 'Leg from',
     name: 'legFrom',
-    placeholder: 'Select origin',
-    options: [
-      { label: 'LR', value: 'LR' },
-      { label: 'LB', value: 'LB' },
-      { label: 'Airway', value: 'AIRWAY' },
-      { label: 'Railway', value: 'RAILWAY' },
-    ],
+    disabled: true,
   },
   {
     type: 'select',
@@ -235,9 +229,10 @@ export default function GenerateDCPreviewForm({
       setFormData((prev) => ({
         ...prev,
         isEWBRequired: amount > 50000 ? 'true' : 'false',
+        legFrom: dispatchDetails?.dispatchFromAddress?.address || '',
       }));
     }
-  }, [dispatchDetails, formData?.isEWBRequired]);
+  }, [dispatchDetails, formData?.isEWBRequired, formData?.legFrom]);
 
   const handleAdd = () => {
     // Validate booking row

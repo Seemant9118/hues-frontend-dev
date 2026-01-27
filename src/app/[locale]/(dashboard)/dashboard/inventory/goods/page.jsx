@@ -87,12 +87,24 @@ function Goods() {
   }, [searchParams]);
 
   useEffect(() => {
-    let newPath = `/dashboard/inventory/goods`;
-    if (isAdding) newPath += `?action=add`;
-    else if (isEditing) newPath += `?action=edit`;
-    else if (isUploading) newPath += `?action=upload`;
-    router.push(newPath);
-  }, [router, isAdding, isEditing, isUploading]);
+    const currentAction = searchParams.get('action') || '';
+
+    const requiredAction = isAdding
+      ? 'add'
+      : isEditing
+        ? 'edit'
+        : isUploading
+          ? 'upload'
+          : '';
+
+    if (currentAction === requiredAction) return;
+
+    const newPath = requiredAction
+      ? `/dashboard/inventory/goods?action=${requiredAction}`
+      : `/dashboard/inventory/goods`;
+
+    router.replace(newPath);
+  }, [isAdding, isEditing, isUploading, router, searchParams]);
 
   const goodsQuery = useInfiniteQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
@@ -109,7 +121,8 @@ function Goods() {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     enabled:
-      searchTerm.length === 0 && hasPermission('permission:item-masters-view'),
+      searchTerm.trim().length === 0 &&
+      hasPermission('permission:item-masters-view'),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -128,7 +141,7 @@ function Goods() {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    enabled: !!searchTerm,
+    enabled: searchTerm.trim().length > 0,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -273,6 +286,7 @@ function Goods() {
               </div>
             </Wrapper>
           )}
+
           {isAdding && <AddGoods setIsCreatingGoods={setIsAdding} />}
 
           {isEditing && (
@@ -281,6 +295,7 @@ function Goods() {
               goodsToEdit={goodsToEdit}
             />
           )}
+
           {isUploading && (
             <UploadItems
               type="goods"

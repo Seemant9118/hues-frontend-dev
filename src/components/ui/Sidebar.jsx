@@ -55,12 +55,12 @@ const Sidebar = () => {
   const adminLinks = hasPermission('permission:admin-dashboard-view')
     ? [
         {
-          name: 'Reports',
+          name: 'sidebar.reports',
           icon: <SquareKanban size={16} />,
           path: `/dashboard/admin/reports`,
         },
         {
-          name: 'Data',
+          name: 'sidebar.data',
           icon: <Database size={16} />,
           path: `/dashboard/admin/data`,
         },
@@ -302,11 +302,11 @@ const Sidebar = () => {
           {((hasPermission('permission:admin-dashboard-view') &&
             isEnterpriseSwitched) ||
             !hasPermission('permission:admin-dashboard-view')) && (
-            <nav className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
               {links.map((link) => (
                 <StyledLinks key={link.name} link={link} />
               ))}
-            </nav>
+            </div>
           )}
         </div>
 
@@ -341,14 +341,17 @@ const Sidebar = () => {
         <div className="flex flex-1 flex-col flex-wrap gap-1">
           <Tooltips
             trigger={
-              <p
+              <span
+                role="button"
+                tabIndex={0}
                 className="cursor-pointer truncate text-sm font-semibold leading-tight hover:underline"
-                onClick={() => {
-                  router.push('/dashboard/profile');
+                onClick={() => router.push('/dashboard/profile')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') router.push('/dashboard/profile');
                 }}
               >
                 {capitalize(name)}
-              </p>
+              </span>
             }
             content={'View User Profile'}
           />

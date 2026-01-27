@@ -1,5 +1,7 @@
 {
   "sidebar": {
+    "reports": "रिपोर्ट्स",
+    "data": "डेटा",
     "dashboard": "डैशबोर्ड",
     "itemMaster": "इन्वेंट्री",
     "catalogue": "कैटलॉग",

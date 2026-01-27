@@ -54,10 +54,10 @@ const StyledLinks = ({ link }) => {
                 : 'flex w-full items-center justify-between gap-2'
             }
           >
-            <div className="flex items-center gap-2">
+            <span className="flex items-center gap-2">
               {link.icon}
               {translations(link.name)}
-            </div>
+            </span>
 
             {link.name === 'sidebar.notifications' &&
               totalUnreadNotifications > 0 && (
@@ -92,19 +92,20 @@ const StyledLinks = ({ link }) => {
       {isSubTabShow && isActive && link.subTab?.length > 0 && (
         <ul className="flex w-full flex-col gap-2 pl-10">
           {link.subTab.map((subtab) => (
-            <Link
-              href={subtab.path}
-              key={subtab.path}
-              className={cn(
-                'flex items-center gap-2 rounded-sm border-none p-3 text-sm',
-                pathname.startsWith(subtab.path)
-                  ? 'bg-[#288AF91A] text-[#288AF9]'
-                  : 'bg-transparent text-gray-600 hover:text-black',
-              )}
-            >
-              {subtab.icon}
-              {translations(subtab.name)}
-            </Link>
+            <li key={subtab.path}>
+              <Link
+                href={subtab.path}
+                className={cn(
+                  'flex items-center gap-2 rounded-sm border-none p-3 text-sm',
+                  pathname.startsWith(subtab.path)
+                    ? 'bg-[#288AF91A] text-[#288AF9]'
+                    : 'bg-transparent text-gray-600 hover:text-black',
+                )}
+              >
+                {subtab.icon}
+                {translations(subtab.name)}
+              </Link>
+            </li>
           ))}
         </ul>
       )}
