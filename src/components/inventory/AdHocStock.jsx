@@ -47,12 +47,13 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   });
   const [errors, setErrors] = useState({});
 
-  const reasonOptions = [
-    { label: 'Damage', value: 'DAMAGE' },
-    { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },
-    { label: 'Expiry', value: 'EXPIRY' },
-    { label: 'Manual Correction', value: 'MANUAL_CORRECTION' },
-  ];
+  const reasonOptions = isStockIn
+    ? [{ label: 'Manual Correction', value: 'MANUAL_CORRECTION' }]
+    : [
+        { label: 'Damage', value: 'DAMAGE' },
+        { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },
+        { label: 'Expiry', value: 'EXPIRY' },
+      ];
 
   const selectedReasonOption = useMemo(() => {
     return (
