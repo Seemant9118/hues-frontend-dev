@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import ViewPdf from './ViewPdf';
+import Loading from '../ui/Loading';
 
 export default function DynamicPdfPreviewLayout({
   schema,
@@ -9,7 +10,8 @@ export default function DynamicPdfPreviewLayout({
   pdfUrl,
   isPDF,
   onDiscard,
-  onAdd,
+  onApplyChanges,
+  isCreating,
   onCreate,
   FormComponent, // dynamic form engine
   onChange,
@@ -19,7 +21,7 @@ export default function DynamicPdfPreviewLayout({
       {/* Middle Section */}
       <div className="flex flex-1 justify-between gap-2 overflow-hidden">
         {/* Left Form Panel */}
-        <div className="navScrollBarStyles h-full w-1/3 gap-4 overflow-y-auto px-3">
+        <div className="navScrollBarStyles h-full w-1/3 gap-4 overflow-y-auto overflow-x-hidden px-3">
           <FormComponent
             schema={schema}
             formData={formData}
@@ -27,10 +29,11 @@ export default function DynamicPdfPreviewLayout({
             errors={errors}
             onChange={onChange}
           />
-
-          <Button className="sticky bottom-0 w-full" size="sm" onClick={onAdd}>
-            Add booking
-          </Button>
+          <div className="sticky bottom-0 flex w-full items-center bg-white pt-2">
+            <Button className="w-full" size="sm" onClick={onApplyChanges}>
+              Apply changes
+            </Button>
+          </div>
         </div>
 
         {/* Right PDF Preview */}
@@ -44,8 +47,8 @@ export default function DynamicPdfPreviewLayout({
         <Button variant="outline" size="sm" onClick={onDiscard}>
           Discard
         </Button>
-        <Button size="sm" onClick={onCreate}>
-          Create
+        <Button size="sm" onClick={onCreate} disabled={isCreating}>
+          {isCreating ? <Loading /> : `Create`}
         </Button>
       </div>
     </div>
