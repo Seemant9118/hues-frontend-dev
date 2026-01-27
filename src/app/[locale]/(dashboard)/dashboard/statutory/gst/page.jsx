@@ -217,8 +217,8 @@ const GST = () => {
               open={isPreparingGSTR1}
               onOpenChange={setIsPreparingGSTR1}
               filingPeriods={[
-                { label: 'Jan 2025', value: '012025' },
-                { label: 'Feb 2025', value: '022025' },
+                { label: 'Dec 2025', value: '122025' },
+                { label: 'Jan 2026', value: '012026' },
               ]}
               onPrepare={(period) => {
                 setIsPreparingGSTR1(false);

@@ -17,6 +17,7 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import {
   checkGSTAuth,
@@ -36,74 +37,11 @@ import {
 import { ArrowLeft, ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useInvoicesForGSTFilingColumns } from './useInvoicesForGSTFilingColumns';
 
 const PAGE_LIMIT = 10;
-
-// TODO: test apis, formatt payload, status handling
-const MOCK_DATA = {
-  data: [
-    {
-      invoiceId: 125,
-      invoiceReferenceNumber: 'INV/R7H3EI/2526/0001',
-      invoiceDate: '2026-01-07T18:30:00.000Z',
-      totalAmount: 281,
-      buyerId: 20,
-      clientType: 'B2B',
-      buyerType: 'ENTERPRISE',
-      vendorName: 'NEW INVENTORY TESTING',
-      orderId: 180,
-      orderReferenceNumber: 'ORD/R7H3EI/2526/0001',
-      metaData: {
-        invoice: {
-          status: 'PARTIAL_INVOICED',
-        },
-        payment: {
-          status: 'NOT_PAID',
-        },
-        buyerData: {
-          orderStatus: 'PARTIAL_INVOICED',
-        },
-        sellerData: {
-          orderStatus: 'PARTIAL_INVOICED',
-        },
-        debitNoteRaised: false,
-        creditNoteRaised: false,
-      },
-      isAcknowledgeMentNeeded: false,
-      orderType: 'SALES',
-      readTracker: {
-        id: 81,
-        sellerIsRead: true,
-        buyerIsRead: false,
-      },
-      invoiceMetaData: {
-        payment: {
-          status: 'NOT_PAID',
-        },
-        debitNote: {
-          status: 'NOT_RAISED',
-        },
-        creditNote: {
-          status: 'NOT_RAISED',
-        },
-      },
-      shippingPlace: 'null, null - null',
-      customerName: 'Suman LLP 99',
-      gstNumber: '77888HHHJJOO99',
-    },
-  ],
-  totalCount: 1,
-  currentPage: 1,
-  totalPages: 1,
-  returnPeriod: {
-    month: 1,
-    year: 2026,
-    displayFormat: '01/2026',
-  },
-};
 
 const GSTR1 = () => {
   const enterpriseId = getEnterpriseId();
@@ -115,14 +53,15 @@ const GSTR1 = () => {
   const queryClient = useQueryClient();
 
   const router = useRouter();
-  // const { hasPermission } = usePermission();
+  const { hasPermission } = usePermission();
   const searchParams = useSearchParams();
   const period = searchParams.get('period');
   const [tab, setTab] = useState('b2b');
   const [showOTPDialog, setShowOTPDialog] = useState(false);
-  const [b2bInvoices, setB2BInvoices] = useState(MOCK_DATA.data);
+  const [b2bInvoices, setB2BInvoices] = useState();
   const [paginationData, setPaginationData] = useState({});
   const [selectedInvoicesToFile, setSelectedInvoicesToFile] = useState([]);
+  const isFirstLoad = useRef(true);
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -174,14 +113,26 @@ const GSTR1 = () => {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    // enabled: hasPermission('permission:item-masters-view') && isAuthenticated,
-    enabled: false,
+    onSuccess: () => {
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false; // don't show toast on first load
+        return;
+      }
+      toast.success(`Data refetched successfully for period ${period}`);
+    },
+
+    onError: () => {
+      if (isFirstLoad.current) return;
+      toast.error('Failed to refetch data');
+    },
+    enabled: hasPermission('permission:item-masters-view') && isAuthenticated,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
   useEffect(() => {
     const source = invoicesForGstFilingQuery.data;
+
     if (!source?.pages?.length) return;
 
     // flatten items from pages
@@ -191,7 +142,7 @@ const GSTR1 = () => {
 
     // remove duplicates by id
     const uniqueInvoicesListData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
+      new Map(flattened.map((item) => [item.invoiceId, item])).values(),
     );
 
     setB2BInvoices(uniqueInvoicesListData);
@@ -201,7 +152,7 @@ const GSTR1 = () => {
 
     setPaginationData({
       totalPages: Number(lastPage?.totalPages ?? 0),
-      currFetchedPage: Number(lastPage?.page ?? 0),
+      currFetchedPage: Number(lastPage?.currentPage ?? 0),
     });
   }, [invoicesForGstFilingQuery.data]);
 
@@ -264,9 +215,11 @@ const GSTR1 = () => {
   });
   const handleSaveDraft = () => {
     const payload = {
-      period,
-      invoiceIds: selectedInvoicesToFile,
+      retPeriod: period,
+      invoiceIds: selectedInvoicesToFile?.map((item) => item.invoiceId),
     };
+
+    // console.log(payload);
     saveDraftMutation.mutate(payload);
   };
 
@@ -338,6 +291,7 @@ const GSTR1 = () => {
         <Button
           onClick={handleGenerateOTP}
           disabled={requestOTPMutation.isPending}
+          size="sm"
         >
           {requestOTPMutation.isPending ? 'Generating OTP...' : 'Generate OTP'}
         </Button>
@@ -419,33 +373,6 @@ const GSTR1 = () => {
               </Badge>
               {/* <Input disabled value={GSTIN} className="max-w-fit" /> */}
             </div>
-            <ActionsDropdown
-              label={'Fetch'}
-              variant="outline"
-              actions={[
-                {
-                  key: 'b2bInvoices',
-                  label: 'B2B Invoices',
-                  onClick: () => {
-                    //   TODO: handle prepare GSTR-1
-                  },
-                },
-                {
-                  key: 'b2cInvoices',
-                  label: 'B2C Invoices (coming soon)',
-                  className: 'cursor-not-allowed opacity-50',
-                  disabled: true,
-                  onClick: () => {},
-                },
-                {
-                  key: 'crn',
-                  label: 'Credit Notes (coming soon)',
-                  className: 'cursor-not-allowed opacity-50',
-                  disabled: true,
-                  onClick: () => {},
-                },
-              ]}
-            />
           </section>
           <RestrictedComponent />
         </>
@@ -476,8 +403,8 @@ const GSTR1 = () => {
                     {
                       key: 'b2bInvoices',
                       label: 'B2B Invoices',
-                      onClick: () => {
-                        //   TODO: handle prepare GSTR-1
+                      onClick: async () => {
+                        await invoicesForGstFilingQuery.refetch();
                       },
                     },
                     {
@@ -536,7 +463,8 @@ const GSTR1 = () => {
                 {!isAuthenticated || authError ? (
                   // Show authentication expired state
                   renderAuthExpiredState()
-                ) : invoicesForGstFilingQuery.isLoading ? (
+                ) : invoicesForGstFilingQuery.isLoading ||
+                  invoicesForGstFilingQuery.isFetching ? (
                   <Loading />
                 ) : (
                   <>
@@ -555,8 +483,8 @@ const GSTR1 = () => {
                               {
                                 key: 'b2bInvoices',
                                 label: 'B2B Invoices',
-                                onClick: () => {
-                                  //   TODO: handle prepare GSTR-1
+                                onClick: async () => {
+                                  await invoicesForGstFilingQuery.refetch();
                                 },
                               },
                               {
@@ -582,7 +510,7 @@ const GSTR1 = () => {
                       <InfiniteDataTable
                         id="gstr1-b2b-table"
                         columns={gstColumns}
-                        data={MOCK_DATA.data}
+                        data={b2bInvoices}
                         fetchNextPage={invoicesForGstFilingQuery.fetchNextPage}
                         isFetching={invoicesForGstFilingQuery.isFetching}
                         totalPages={paginationData?.totalPages}
