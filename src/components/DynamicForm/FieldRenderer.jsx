@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import DatePickers from '@/components/ui/DatePickers';
 import { DataTable } from '../table/data-table';
+import ErrorBox from '../ui/ErrorBox';
 
 const FieldRenderer = React.memo(function FieldRenderer({
   field,
@@ -20,6 +21,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
 }) {
   const {
     name,
+    disabled,
     headLabel,
     label,
     required,
@@ -47,6 +49,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         <Input
           placeholder={placeholder}
           value={value || ''}
+          disabled={disabled}
           onChange={(e) => onChange(name, e.target.value)}
         />
       )}
@@ -70,7 +73,11 @@ const FieldRenderer = React.memo(function FieldRenderer({
       )}
 
       {type === 'select' && (
-        <Select value={value} onValueChange={(v) => onChange(name, v)}>
+        <Select
+          value={value}
+          onValueChange={(v) => onChange(name, v)}
+          disabled={disabled}
+        >
           <SelectTrigger>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
@@ -134,7 +141,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
       )}
 
       {/* ERROR */}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <ErrorBox msg={error} />}
     </div>
   );
 });
