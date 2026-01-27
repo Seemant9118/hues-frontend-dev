@@ -21,6 +21,7 @@ import {
   FileSymlink,
   FileText,
   Gauge,
+  HandCoins,
   HandPlatter,
   IndianRupee,
   NotebookTabs,
@@ -174,7 +175,7 @@ const Sidebar = () => {
     // inventory - services
     hasPermission('permission:item-masters-view') && {
       name: 'sidebar.itemMaster-services',
-      icon: <Package size={16} />,
+      icon: <HandCoins size={16} />,
       path: '/dashboard/inventory/services',
       subTab: [
         {
