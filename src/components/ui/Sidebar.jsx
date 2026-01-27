@@ -19,6 +19,7 @@ import {
   FileCheck,
   FileSignature,
   FileSymlink,
+  FileText,
   Gauge,
   HandPlatter,
   IndianRupee,
@@ -26,6 +27,7 @@ import {
   NotepadText,
   Package,
   PencilRuler,
+  ReceiptIndianRupee,
   ReceiptText,
   ScrollText,
   Shapes,
@@ -56,6 +58,7 @@ const Sidebar = () => {
     localStorage.getItem('switchedEnterpriseId'),
   );
 
+  // admin tabs
   const adminLinks = hasPermission('permission:admin-dashboard-view')
     ? [
         {
@@ -132,12 +135,15 @@ const Sidebar = () => {
     subTab: contactSubTabs,
   };
 
+  // main tabs
   const links = [
+    // dashboard
     hasPermission('permission:view-dashboard') && {
       name: 'sidebar.dashboard',
       icon: <Gauge size={16} />,
       path: `/dashboard`,
     },
+    // inventory
     hasPermission('permission:item-masters-view') && {
       name: 'sidebar.itemMaster',
       icon: <Package size={16} />,
@@ -170,6 +176,7 @@ const Sidebar = () => {
         },
       ],
     },
+    // transport
     hasPermission('permission:sales-view') && {
       name: 'sidebar.transport',
       icon: <Truck size={16} />,
@@ -197,6 +204,20 @@ const Sidebar = () => {
         },
       ],
     },
+    // statutory
+    hasPermission('permission:sales-view') && {
+      name: 'sidebar.statutory',
+      icon: <ReceiptIndianRupee size={16} />,
+      path: '/dashboard/statutory/gst',
+      subTab: [
+        {
+          name: 'sidebar.subTabs.gst',
+          icon: <FileText size={16} />,
+          path: '/dashboard/statutory/gst',
+        },
+      ],
+    },
+    // sales
     hasPermission('permission:sales-view') && {
       name: 'sidebar.sales',
       icon: <ClipboardList size={16} />,
@@ -229,6 +250,7 @@ const Sidebar = () => {
         },
       ],
     },
+    // purchases
     hasPermission('permission:purchase-view') && {
       name: 'sidebar.purchases',
       icon: <ScrollText size={16} />,
@@ -261,6 +283,7 @@ const Sidebar = () => {
         },
       ],
     },
+    // contacts
     contactSubTabs.length > 0 && contactsLink,
     hasPermission('permission:members-view') && {
       name: 'sidebar.members',
@@ -269,6 +292,7 @@ const Sidebar = () => {
     },
   ].filter(Boolean); // this removes all falsy values
 
+  // notifications & settings - actions
   const actionLinks = [
     hasPermission('permission:view-dashboard') && {
       name: 'sidebar.notifications',

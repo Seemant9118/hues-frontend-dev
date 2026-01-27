@@ -1,0 +1,46 @@
+{
+    "gsts": {
+        "title": "GST",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Bulk upload and tweak your product info with ease"
+                },
+                "subItem2": {
+                    "value": "Add fresh items for a squeaky-clean inventory"
+                },
+                "subItem3": {
+                    "value": "Digitally sign your stock to keep things secure and compliant"
+                },
+                "subItem4": {
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                }
+            }
+        },
+        "tabs": {
+            "tab1": {
+                "label": "Returns in Progress"
+            },
+            "tab2": {
+                "label": "Filed Returns"
+            }
+        },
+        "gstr1": {
+            "title1": "GST",
+            "title2": "GSTR-1",
+            "emptyStateComponent": {
+                "heading": "No items saved to Draft for this period yet.",
+                "subHeading1": "Use Fetch to pull documents into a review list,  Select what to include and Save to Draft. Repeat as needed before Finalize."
+            },
+            "tabs": {
+                "tab1": {
+                    "label": "B2B Invoices"
+                },
+                "tab2": {
+                    "label": "Credit Notes (Registered)"
+                }
+            }
+        }
+    }
+}

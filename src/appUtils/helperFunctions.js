@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import moment from 'moment';
 
 export const safeJsonParse = (value, fallback = []) => {
   if (!value) return fallback;
@@ -254,4 +255,14 @@ export const getQCDefectStatuses = (data) => {
     isShortQuantity && 'SHORT_QUANTITY',
     isUnsatisfactory && 'UNSATISFACTORY',
   ].filter(Boolean);
+};
+
+export const formattedMonthDate = (period) => {
+  if (!period) return '-';
+
+  const formattedPeriod = moment(period, 'MMYYYY', true).isValid()
+    ? moment(period, 'MMYYYY').format('MMMM YYYY')
+    : '-';
+
+  return formattedPeriod;
 };
