@@ -18,6 +18,7 @@
                 }
             }
         },
+        "bannerText": "Stock in Hand for newly added Items is Zero initially. Manually Stock-in quantity before adding them to Offers.",
         "ctas": {
             "searchPlaceholder": "Search items",
             "export": "Export",

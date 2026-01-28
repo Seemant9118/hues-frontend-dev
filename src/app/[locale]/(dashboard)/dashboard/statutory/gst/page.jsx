@@ -22,7 +22,7 @@ import React, { useEffect, useState } from 'react';
 import { useGstColumns } from './useGstColumns';
 
 const PAGE_LIMIT = 10;
-// TODO: get dynamic GSTINs
+
 // const GSTIN = '29AADCB2230M1ZT';
 
 const GST = () => {
@@ -216,10 +216,6 @@ const GST = () => {
             <PrepareGstrModal
               open={isPreparingGSTR1}
               onOpenChange={setIsPreparingGSTR1}
-              filingPeriods={[
-                { label: 'Dec 2025', value: '122025' },
-                { label: 'Jan 2026', value: '012026' },
-              ]}
               onPrepare={(period) => {
                 setIsPreparingGSTR1(false);
                 router.push(

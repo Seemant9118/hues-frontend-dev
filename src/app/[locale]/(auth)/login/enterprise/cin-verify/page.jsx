@@ -2,7 +2,6 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
-import ExplantoryText from '@/components/auth/ExplantoryText';
 import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,8 +157,11 @@ const CINVerificationPage = () => {
             </div>
           </div>
 
-          {/* Explanatory Information */}
-          <ExplantoryText text={translations('information')} />
+          {/* banner */}
+          <InfoBanner
+            text={translations('information')}
+            showSupportLink={false}
+          />
 
           <Button
             size="sm"

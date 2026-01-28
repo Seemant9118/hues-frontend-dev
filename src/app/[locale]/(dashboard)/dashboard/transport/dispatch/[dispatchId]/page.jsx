@@ -46,6 +46,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import { useDeliveryChallansColumns } from './useDeliveryChallansColumns';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 
 const ViewDispatchNote = () => {
@@ -853,8 +854,13 @@ const ViewDispatchNote = () => {
     });
   };
 
+  const onDCclick = (row) => {
+    return router.push(`/dashboard/transport/delivery-challan/${row.id}`);
+  };
+
   // columns
   const dispatchedItemDetailsColumns = useDispatchedItemColumns();
+  const deliveryChallansColumns = useDeliveryChallansColumns();
 
   if (isDispatchDetailsLoading) {
     <Loading />;
@@ -892,11 +898,9 @@ const ViewDispatchNote = () => {
                     )}
                   />
                   {/* generateDC cta */}
-                  {dispatchDetails?.vouchers?.length === 0 && (
-                    <Button size="sm" onClick={generateDC}>
-                      {translations('overview_inputs.ctas.generateDC')}
-                    </Button>
-                  )}
+                  <Button size="sm" onClick={generateDC}>
+                    {translations('overview_inputs.ctas.generateDC')}
+                  </Button>
                 </div>
               </section>
 
@@ -912,6 +916,9 @@ const ViewDispatchNote = () => {
                     </TabsTrigger>
                     <TabsTrigger value="items">
                       {translations('tabs.tab2.title')}
+                    </TabsTrigger>
+                    <TabsTrigger value="dc">
+                      {translations('tabs.tab3.title')}
                     </TabsTrigger>
                   </TabsList>
                 </section>
@@ -945,6 +952,17 @@ const ViewDispatchNote = () => {
                     <DataTable
                       data={formattedDispatchedItems || []}
                       columns={dispatchedItemDetailsColumns}
+                    />
+                  </section>
+                </TabsContent>
+
+                <TabsContent value="dc">
+                  {/* DCs TABLE */}
+                  <section className="mt-2">
+                    <DataTable
+                      data={dispatchDetails?.vouchers || []}
+                      columns={deliveryChallansColumns}
+                      onRowClick={onDCclick}
                     />
                   </section>
                 </TabsContent>

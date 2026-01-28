@@ -1,5 +1,4 @@
 import { validateAadhaar } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
 import InfoBanner from '@/components/auth/InfoBanner';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
@@ -110,8 +109,11 @@ const AadharNumberDetail = ({
           )}
         </div>
 
-        {/* Explanatory Information */}
-        <ExplantoryText text={translations('steps.aadharNum.information')} />
+        {/* banner */}
+        <InfoBanner
+          text={translations('steps.aadharNum.information')}
+          showSupportLink={false}
+        />
 
         <Button type="submit" className="w-full" size="sm" disabled={loading}>
           {loading ? <Loading /> : translations('steps.aadharNum.button')}

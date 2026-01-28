@@ -48,7 +48,10 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const [errors, setErrors] = useState({});
 
   const reasonOptions = isStockIn
-    ? [{ label: 'Manual Correction', value: 'MANUAL_CORRECTION' }]
+    ? [
+        { label: 'Manual Correction', value: 'MANUAL_CORRECTION' },
+        { label: 'Initial Setup', value: 'INITIAL_SETUP' },
+      ]
     : [
         { label: 'Damage', value: 'DAMAGE' },
         { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },

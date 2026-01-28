@@ -429,13 +429,15 @@ export default function GenerateDCPreviewForm({
 
     if (Object.keys(validationErrors).length > 0) return;
 
+    const bookingPayload = formatBookingPayload();
+
     const updatedFormData = {
       dispatchNoteId: Number(dispatchNoteId),
       isEWBRequired: formData?.isEWBRequired === 'true',
       buyerId: dispatchDetails?.buyerId,
       buyerType: dispatchDetails?.buyerType,
       metaData: dispatchDetails || {},
-      bookings: [], // currently booking table removed
+      bookings: [bookingPayload], // currently booking table removed
     };
 
     generateDCMutation.mutate({ id: dispatchNoteId, data: updatedFormData });

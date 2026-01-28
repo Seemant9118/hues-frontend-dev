@@ -263,3 +263,17 @@ export const updateSubCategory = ({ id, data }) => {
 export const deleteSubCategory = ({ id }) => {
   return APIinstance.delete(`${AdminAPIs.deleteSubCategory.endpoint}${id}`);
 };
+
+export const sendMessage = ({ data }) => {
+  return APIinstance.post(AdminAPIs.sendMessage.endpoint, data);
+};
+
+export const getMessages = ({ page, limit }) => {
+  return APIinstance.get(
+    `${AdminAPIs.getContactedMessages.endpoint}?page=${page}&limit=${limit}`,
+  );
+};
+
+export const getMessage = ({ id }) => {
+  return APIinstance.get(`${AdminAPIs.getContactedMessage.endpoint}${id}`);
+};

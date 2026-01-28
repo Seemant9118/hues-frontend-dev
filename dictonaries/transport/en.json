@@ -80,7 +80,7 @@
                         "edit": "Edit",
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
-                        "generateDC": "Generate Delivery Challan",
+                        "generateDC": "Add Delivery Challan",
                         "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",
@@ -131,8 +131,8 @@
                         }
                     },
                     "tab3": {
-                        "title1": "Transport Booking",
-                        "title2": "No booking yet",
+                        "title": "Delivery Challans",
+                        "title2": "No Delivery Challans yet",
                         "table": {
                             "header": {
                                 "type": "Mode",
@@ -150,30 +150,6 @@
                         "emtpyStateComponent": {
                             "title": "No Trasnport booking yet",
                             "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
-                        }
-                    },
-                    "tab4": {
-                        "title": "E-way bills",
-                        "table": {
-                            "header": {
-                                "ewbNo": "EWB No",
-                                "ewayBillDate": "E-Way Bill Date",
-                                "from": "From Party",
-                                "to": "To Party",
-                                "totalValue": "Total Value",
-                                "invoiceValue": "Invoice Value",
-                                "transporter": "Transporter Name",
-                                "status": "Status",
-                                "noValidDays": "Valid Days",
-                                "vehicleType": "Vehicle Type"
-                            },
-                            "ctas": {
-                                "viewDetails": "View Details"
-                            }
-                        },
-                        "emtpyStateComponent": {
-                            "title": "No E-way bills generated yet",
-                            "para": "You haven't recorded any E-way bills yet. Start now to keep your E-way bills history up to date"
                         }
                     }
                 },

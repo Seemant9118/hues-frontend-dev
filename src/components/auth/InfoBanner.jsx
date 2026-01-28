@@ -28,9 +28,9 @@ const InfoBanner = ({
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border px-4 py-2 text-sm ${current.wrapper}`}
+      className={`flex items-start gap-2 rounded-sm border px-4 py-2 text-sm ${current.wrapper}`}
     >
-      <Info className={`mt-0.5 h-4 w-4 shrink-0 ${current.icon}`} />
+      <Info size={14} className={`mt-1 shrink-0 ${current.icon}`} />
 
       <p className="leading-relaxed">
         {text}{' '}
