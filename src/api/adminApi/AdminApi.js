@@ -226,4 +226,18 @@ export const AdminAPIs = {
     endpoint: `/admin-panel/hsn-master/sub-categories/`,
     endpointKey: 'delete_sub_category',
   },
+
+  // send message
+  sendMessage: {
+    endpoint: `/admin-panel/contact-us-messages/`,
+    endpointKey: 'send_message',
+  },
+  getContactedMessages: {
+    endpoint: `/admin-panel/contact-us-messages`,
+    endpointKey: 'get_messages',
+  },
+  getContactedMessage: {
+    endpoint: `/admin-panel/contact-us-messages/`,
+    endpointKey: 'get_message',
+  },
 };

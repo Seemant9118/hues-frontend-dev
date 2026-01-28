@@ -2,6 +2,7 @@
 
 import { goodsApi } from '@/api/inventories/goods/goods';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfoBanner from '@/components/auth/InfoBanner';
 import Tooltips from '@/components/auth/Tooltips';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -116,9 +117,12 @@ function Goods() {
       });
     },
     initialPageParam: 1,
-    getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = groups.length + 1;
-      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = lastPage?.data?.data?.totalPages;
+      if (!totalPages) return undefined;
+
+      const nextPage = allPages.length + 1;
+      return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled:
       searchTerm.trim().length === 0 &&
@@ -137,9 +141,12 @@ function Goods() {
       });
     },
     initialPageParam: 1,
-    getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = groups.length + 1;
-      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = lastPage?.data?.data?.totalPages;
+      if (!totalPages) return undefined;
+
+      const nextPage = allPages.length + 1;
+      return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled: searchTerm.trim().length > 0,
     refetchOnWindowFocus: false,
@@ -149,9 +156,9 @@ function Goods() {
   useEffect(() => {
     const source = searchTerm ? searchQuery.data : goodsQuery.data;
     if (!source) return;
-    const flattened = source.pages.flatMap(
-      (page) => page?.data?.data?.data || [],
-    );
+    const flattened =
+      source?.pages?.flatMap((page) => page?.data?.data?.data ?? []) ?? [];
+
     const uniqueGoodsData = Array.from(
       new Map(flattened.map((item) => [item.id, item])).values(),
     );
@@ -249,6 +256,12 @@ function Goods() {
                   </ProtectedWrapper>
                 </div>
               </SubHeader>
+
+              {/* banner */}
+              <InfoBanner
+                text={translations('bannerText')}
+                showSupportLink={false}
+              />
               <div className="flex-grow overflow-hidden">
                 {goodsQuery.isLoading || searchQuery.isLoading ? (
                   <Loading />

@@ -3,7 +3,6 @@
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { validatePan } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
 import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -197,8 +196,11 @@ const EnterprisePANVerifyPage = () => {
             </div>
 
             <div className="flex w-full flex-col gap-2">
-              {/* Explanatory Information */}
-              <ExplantoryText text={translations('information')} />
+              {/* banner */}
+              <InfoBanner
+                text={translations('information')}
+                showSupportLink={false}
+              />
               <Button
                 size="sm"
                 type="submit"

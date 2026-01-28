@@ -16,16 +16,18 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
+import { getCurrentFinancialYearPeriods } from '@/appUtils/helperFunctions';
 
 export function PrepareGstrModal({
   open,
   onOpenChange,
   // gstin,
   // businessName,
-  filingPeriods,
+  // filingPeriods,
   onPrepare,
 }) {
   const [selectedPeriod, setSelectedPeriod] = useState('');
+  const filingPeriods = getCurrentFinancialYearPeriods();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,7 +55,7 @@ export function PrepareGstrModal({
             <SelectTrigger>
               <SelectValue placeholder="Select filing period" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[180px]">
               {filingPeriods.map((period) => (
                 <SelectItem key={period.value} value={period.value}>
                   {period.label}

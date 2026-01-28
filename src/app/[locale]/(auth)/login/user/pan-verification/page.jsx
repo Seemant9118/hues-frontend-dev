@@ -13,11 +13,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Info, InfoIcon } from 'lucide-react';
 
 import { userAuth } from '@/api/user_auth/Users';
+import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import {
   validatePan,
   validateTermsAndConditions,
 } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import TermsAnsConditionModal from '@/components/Modals/TermsAndConditionModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthProgress } from '@/context/AuthProgressContext';
@@ -25,7 +26,6 @@ import { useUserData } from '@/context/UserDataContext';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
 const PanVerificationPage = () => {
@@ -234,8 +234,11 @@ const PanVerificationPage = () => {
               )}
             </div>
 
-            {/* Explanatory Information */}
-            <ExplantoryText text={translations('information')} />
+            {/* banner */}
+            <InfoBanner
+              text={translations('information')}
+              showSupportLink={false}
+            />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm">
                 <Checkbox

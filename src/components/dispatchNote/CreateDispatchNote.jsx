@@ -19,8 +19,8 @@ import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import AddNewAddress from '../enterprise/AddNewAddress';
+import InvoiceOverview from '../invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
-import OrdersOverview from '../orders/OrdersOverview';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import ErrorBox from '../ui/ErrorBox';
@@ -368,33 +368,26 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
     });
   };
 
-  // multiStatus components
-  const multiStatus = (
-    <div className="flex gap-2">
-      <ConditionalRenderingStatus
-        status={
-          invoiceDetails?.invoiceDetails?.metaData?.sellerData?.orderStatus
-        }
-      />
-      <ConditionalRenderingStatus
-        status={invoiceDetails?.invoiceDetails?.metaData?.payment?.status}
-      />
-    </div>
-  );
+  const paymentStatus = ConditionalRenderingStatus({
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
+  });
 
   return (
     <Wrapper className="h-full">
       <>
-        {/* Collapsable overview */}
-        <OrdersOverview
+        {/* Collapsible overview */}
+        <InvoiceOverview
           isCollapsableOverview={true}
-          orderDetails={invoiceDetails?.invoiceDetails}
-          orderId={invoiceDetails?.invoiceDetails?.invoiceReferenceNumber}
-          multiStatus={multiStatus}
+          invoiceDetails={invoiceDetails.invoiceDetails}
+          invoiceId={invoiceDetails?.invoiceDetails?.invoiceReferenceNumber}
+          orderId={invoiceDetails?.invoiceDetails?.orderId}
+          orderRefId={invoiceDetails?.invoiceDetails?.orderReferenceNumber}
+          paymentStatus={paymentStatus}
           Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
-          mobileNumber={invoiceDetails?.invoiceDetails?.mobileNumber}
-          amtPaid={invoiceDetails?.invoiceDetails?.amountPaid}
-          totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
+          type={invoiceDetails?.invoiceDetails?.invoiceType}
+          date={invoiceDetails?.invoiceDetails?.createdAt}
+          amount={invoiceDetails?.invoiceDetails?.totalAmount}
+          amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
         />
         <section className="mt-2 flex h-full flex-col justify-between">
           <div className="flex flex-col gap-4">

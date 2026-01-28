@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import '../globals.css';
+import GetInTouch from '@/components/landing-page/ContactUs';
 
 const features = [
   {
@@ -166,7 +167,7 @@ export default function HeroSection() {
                 <Link href="#faqs">FAQs</Link>
               </NavigationMenuItem> */}
               <NavigationMenuItem>
-                <Link href="#contact">Contacts</Link>
+                <Link href="#contact">Contact Us</Link>
               </NavigationMenuItem>
               <Button size="sm" onClick={() => router.push('/login')}>
                 Register
@@ -195,7 +196,7 @@ export default function HeroSection() {
                 </li> */}
                 <li>
                   <Link href="#contact" onClick={() => setIsOpen(false)}>
-                    Contacts
+                    Contact Us
                   </Link>
                 </li>
                 <li>
@@ -553,8 +554,13 @@ export default function HeroSection() {
         </div>
       </section>
 
+      {/* contact us */}
+      <section id="contact">
+        <GetInTouch />
+      </section>
+
       {/* footer */}
-      <footer id="contact" className="bg-gradient-bg px-4 pb-5 pt-16">
+      <footer className="bg-gradient-bg px-4 pb-5 pt-16">
         <div className="mx-auto flex max-w-4xl flex-col items-center justify-center gap-2 space-y-6">
           <Link href="/" aria-label="Go to homepage">
             <Image

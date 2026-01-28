@@ -2,9 +2,9 @@
 
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import AdHocStock from '@/components/inventory/AdHocStock';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
+import { Button } from '@/components/ui/button';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -18,7 +18,7 @@ import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, PencilLine } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -49,7 +49,7 @@ const Stocks = () => {
   const [filter, setFilter] = useState(null);
   const [tab, setTab] = useState('ALL');
   const [isAddingAdHocStockIn, setIsAddingAdHocStockIn] = useState(false);
-  const [isAddingAdHocStockOut, setIsAddingAdHocStockOut] = useState(false);
+  // const [isAddingAdHocStockOut, setIsAddingAdHocStockOut] = useState(false);
 
   const isSearching = searchTerm?.length > 0;
   const hasData = stocksList?.length > 0;
@@ -138,8 +138,8 @@ const Stocks = () => {
         </>
       ) : (
         <>
-          {!isAddingAdHocStockIn && !isAddingAdHocStockOut && (
-            <Wrapper className="h-screen">
+          {!isAddingAdHocStockIn && (
+            <Wrapper>
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-2">
                   <DebouncedInput
@@ -149,29 +149,14 @@ const Stocks = () => {
                     placeholder="Search Stock..."
                   />
 
-                  <ActionsDropdown
-                    label={'Ad-Hoc'}
-                    variant="default"
-                    actions={[
-                      {
-                        key: 'stockIn',
-                        label: 'Stock In',
-                        icon: CheckCircle,
-                        className: 'text-green-600',
-                        onClick: () => {
-                          setIsAddingAdHocStockIn(true);
-                        },
-                      },
-                      {
-                        key: 'stockOut',
-                        label: 'Stock Out',
-                        icon: PencilLine,
-                        onClick: () => {
-                          setIsAddingAdHocStockOut(true);
-                        },
-                      },
-                    ]}
-                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setIsAddingAdHocStockIn(true);
+                    }}
+                  >
+                    <CheckCircle size={14} /> Stock In
+                  </Button>
                 </div>
               </SubHeader>
 
@@ -369,7 +354,7 @@ const Stocks = () => {
             </Wrapper>
           )}
 
-          {isAddingAdHocStockIn && !isAddingAdHocStockOut && (
+          {isAddingAdHocStockIn && (
             <AdHocStock
               isStockIn={true}
               name={'AdHoc - (Stock In)'}
@@ -382,7 +367,7 @@ const Stocks = () => {
             />
           )}
 
-          {isAddingAdHocStockOut && !isAddingAdHocStockIn && (
+          {/* {isAddingAdHocStockOut && !isAddingAdHocStockIn && (
             <AdHocStock
               isStockIn={false}
               name={'AdHoc - (Stock Out)'}
@@ -393,7 +378,7 @@ const Stocks = () => {
                 ]);
               }}
             />
-          )}
+          )} */}
         </>
       )}
     </ProtectedWrapper>

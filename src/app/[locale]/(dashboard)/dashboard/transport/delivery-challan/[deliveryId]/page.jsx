@@ -980,7 +980,11 @@ const ViewDelivery = () => {
     dispatchDetails?.isEWBRequired &&
     !dispatchDetails?.metaData?.ewb;
   const showAddBookingCTA =
-    tab !== 'ewb' && tab !== 'pod' && tab !== 'items' && isSeller;
+    tab !== 'ewb' &&
+    tab !== 'pod' &&
+    tab !== 'items' &&
+    isSeller &&
+    formattedDispatchedTransporterBookings?.length === 0;
   const showRequestPODCTA =
     tab !== 'ewb' &&
     tab !== 'transports' &&

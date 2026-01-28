@@ -2,7 +2,6 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
-import ExplantoryText from '@/components/auth/ExplantoryText';
 import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -193,8 +192,12 @@ const GstVerificationPage = () => {
               />
             </div>
           </div>
-          {/* Explanatory Information */}
-          <ExplantoryText text={translations('information')} />
+
+          {/* banner */}
+          <InfoBanner
+            text={translations('information')}
+            showSupportLink={false}
+          />
 
           <div className="flex items-center gap-2 text-sm">
             <Checkbox

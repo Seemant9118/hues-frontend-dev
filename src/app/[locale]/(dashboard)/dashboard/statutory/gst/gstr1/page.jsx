@@ -6,6 +6,7 @@ import {
   getEnterpriseId,
 } from '@/appUtils/helperFunctions';
 import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
+import AuthenticationExpired from '@/components/gst/AuthenticationExpired';
 import GSTOTPDialog from '@/components/gst/GSTOTPDialog';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
@@ -34,7 +35,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { ArrowLeft, ShieldAlert } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
@@ -61,6 +62,7 @@ const GSTR1 = () => {
   const [b2bInvoices, setB2BInvoices] = useState();
   const [paginationData, setPaginationData] = useState({});
   const [selectedInvoicesToFile, setSelectedInvoicesToFile] = useState([]);
+  const [authExpiredModalOpen, setAuthExpiredModalOpen] = useState(false);
   const isFirstLoad = useRef(true);
 
   // Handle tab change
@@ -84,19 +86,13 @@ const GSTR1 = () => {
   ];
 
   // Check authentication api
-  const {
-    data: gstAuth,
-    isLoading: gstAuthLoading,
-    error: gstAuthError,
-  } = useQuery({
+  const { refetch: refetchGstAuth } = useQuery({
     queryKey: [gstAPIs.checkAuth.endpointKey],
     queryFn: checkGSTAuth,
-    enabled: !!enterpriseId,
+    enabled: false,
     select: (data) => data.data.data,
     retry: false,
   });
-  const isAuthenticated = gstAuth?.isAuthenticated === true;
-  const authError = gstAuthError?.response?.data?.statusCode >= 400;
 
   // Fetch invoices for GST Filing - only enabled when authenticated
   const invoicesForGstFilingQuery = useInfiniteQuery({
@@ -125,7 +121,7 @@ const GSTR1 = () => {
       if (isFirstLoad.current) return;
       toast.error('Failed to refetch data');
     },
-    enabled: hasPermission('permission:item-masters-view') && isAuthenticated,
+    enabled: hasPermission('permission:item-masters-view'),
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -161,6 +157,7 @@ const GSTR1 = () => {
     mutationFn: requestGSTOTP,
     onSuccess: () => {
       toast.success('OTP sent successfully to your registered contact');
+      setAuthExpiredModalOpen(false);
       setShowOTPDialog(true);
     },
     onError: (error) => {
@@ -213,14 +210,30 @@ const GSTR1 = () => {
       );
     },
   });
-  const handleSaveDraft = () => {
-    const payload = {
-      retPeriod: period,
-      invoiceIds: selectedInvoicesToFile?.map((item) => item.invoiceId),
-    };
+  const handleSaveDraft = async () => {
+    try {
+      const res = await refetchGstAuth();
+      const authData = res?.data;
 
-    // console.log(payload);
-    saveDraftMutation.mutate(payload);
+      const isAuthenticated = authData?.isAuthenticated === true;
+
+      if (!isAuthenticated) {
+        // show modal
+        setAuthExpiredModalOpen(true);
+        return;
+      }
+
+      // continue with next operation
+      const payload = {
+        retPeriod: period,
+        invoiceIds: selectedInvoicesToFile?.map((item) => item.invoiceId),
+      };
+
+      saveDraftMutation.mutate(payload);
+    } catch (error) {
+      // any API failure = treat as expired
+      setAuthExpiredModalOpen(true);
+    }
   };
 
   // finalize mutation
@@ -241,8 +254,22 @@ const GSTR1 = () => {
       );
     },
   });
-  const handleFinalize = () => {
-    finalizeMutation.mutate({ period });
+  const handleFinalize = async () => {
+    try {
+      const res = await refetchGstAuth();
+      const authData = res?.data;
+
+      const isAuthenticated = authData?.isAuthenticated === true;
+
+      if (!isAuthenticated) {
+        setAuthExpiredModalOpen(true);
+        return;
+      }
+
+      finalizeMutation.mutate({ period });
+    } catch (error) {
+      setAuthExpiredModalOpen(true);
+    }
   };
 
   // filing mutation
@@ -263,95 +290,30 @@ const GSTR1 = () => {
       );
     },
   });
-  const handleFile = () => {
-    filingMutation.mutate({
-      period,
-      data: b2bInvoices,
-    });
+  const handleFile = async () => {
+    try {
+      const res = await refetchGstAuth();
+      const authData = res?.data;
+
+      const isAuthenticated = authData?.isAuthenticated === true;
+
+      if (!isAuthenticated) {
+        setAuthExpiredModalOpen(true);
+        return;
+      }
+
+      filingMutation.mutate({
+        period,
+        data: b2bInvoices,
+      });
+    } catch (error) {
+      setAuthExpiredModalOpen(true);
+    }
   };
 
   const gstColumns = useInvoicesForGSTFilingColumns({
     setSelectedInvoicesToFile,
   });
-
-  // Render authentication expired state
-  const renderAuthExpiredState = () => (
-    <div className="flex h-[85vh] items-center justify-center rounded-md border bg-gray-50">
-      <div className="flex w-1/2 flex-col items-center gap-6 text-center">
-        <div className="rounded-full bg-red-100 p-4">
-          <ShieldAlert className="h-12 w-12 text-red-600" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-xl font-bold">Authentication Expired</h1>
-          <p className="text-sm text-muted-foreground">
-            Your GST authentication has expired. Please authenticate yourself to
-            access GSTR-1 data.
-          </p>
-        </div>
-        <Button
-          onClick={handleGenerateOTP}
-          disabled={requestOTPMutation.isPending}
-          size="sm"
-        >
-          {requestOTPMutation.isPending ? 'Generating OTP...' : 'Generate OTP'}
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Render loading state during authentication check
-  if (gstAuthLoading) {
-    return (
-      <ProtectedWrapper permissionCode="permission:sales-view">
-        {!enterpriseId || !isEnterpriseOnboardingComplete ? (
-          <>
-            <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => router.push(`/dashboard/statutory/gst/`)}
-                  className="rounded-sm p-2 hover:bg-gray-100"
-                >
-                  <ArrowLeft size={16} />
-                </button>
-                <OrderBreadCrumbs possiblePagesBreadcrumbs={gstBreadCrumbs} />
-                <Badge className="w-fit whitespace-nowrap">
-                  {period && formattedMonthDate(period)}{' '}
-                </Badge>
-                {/* <Input disabled value={GSTIN} className="max-w-fit" /> */}
-              </div>
-            </section>
-            <RestrictedComponent />
-          </>
-        ) : (
-          <Wrapper className="h-screen">
-            <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => router.push(`/dashboard/statutory/gst/`)}
-                  className="rounded-sm p-2 hover:bg-gray-100"
-                >
-                  <ArrowLeft size={16} />
-                </button>
-                <OrderBreadCrumbs possiblePagesBreadcrumbs={gstBreadCrumbs} />
-                <Badge className="w-fit whitespace-nowrap">
-                  {period && formattedMonthDate(period)}{' '}
-                </Badge>
-                {/* <Input disabled value={GSTIN} className="max-w-fit" /> */}
-              </div>
-            </section>
-            <div className="flex h-[85vh] items-center justify-center">
-              <div className="flex flex-col items-center gap-4">
-                <Loading />
-                <p className="text-sm text-muted-foreground">
-                  Checking authentication...
-                </p>
-              </div>
-            </div>
-          </Wrapper>
-        )}
-      </ProtectedWrapper>
-    );
-  }
 
   return (
     <ProtectedWrapper permissionCode="permission:sales-view">
@@ -394,52 +356,50 @@ const GSTR1 = () => {
               </Badge>
               {/* <Input disabled value={GSTIN} className="max-w-fit" /> */}
             </div>
-            {isAuthenticated && (
-              <div className="flex items-center gap-2">
-                <ActionsDropdown
-                  label={'Fetch'}
-                  variant="secondary"
-                  actions={[
-                    {
-                      key: 'b2bInvoices',
-                      label: 'B2B Invoices',
-                      onClick: async () => {
-                        await invoicesForGstFilingQuery.refetch();
-                      },
+            <div className="flex items-center gap-2">
+              <ActionsDropdown
+                label={'Fetch'}
+                variant="secondary"
+                actions={[
+                  {
+                    key: 'b2bInvoices',
+                    label: 'B2B Invoices',
+                    onClick: async () => {
+                      await invoicesForGstFilingQuery.refetch();
                     },
-                    {
-                      key: 'b2cInvoices',
-                      label: 'B2C Invoices (coming soon)',
-                      className: 'cursor-not-allowed opacity-50',
-                      disabled: true,
-                      onClick: () => {},
-                    },
-                    {
-                      key: 'crn',
-                      label: 'Credit Notes (coming soon)',
-                      className: 'cursor-not-allowed opacity-50',
-                      disabled: true,
-                      onClick: () => {},
-                    },
-                  ]}
-                />
+                  },
+                  {
+                    key: 'b2cInvoices',
+                    label: 'B2C Invoices (coming soon)',
+                    className: 'cursor-not-allowed opacity-50',
+                    disabled: true,
+                    onClick: () => {},
+                  },
+                  {
+                    key: 'crn',
+                    label: 'Credit Notes (coming soon)',
+                    className: 'cursor-not-allowed opacity-50',
+                    disabled: true,
+                    onClick: () => {},
+                  },
+                ]}
+              />
 
-                <Button
-                  size="sm"
-                  disabled={selectedInvoicesToFile.length === 0}
-                  onClick={handleSaveDraft}
-                >
-                  Save Draft {`(${selectedInvoicesToFile.length})`}
-                </Button>
+              <Button
+                size="sm"
+                disabled={selectedInvoicesToFile.length === 0}
+                onClick={handleSaveDraft}
+              >
+                Save Draft {`(${selectedInvoicesToFile.length})`}
+              </Button>
 
-                <Button size="sm" variant="secondary" onClick={handleFinalize}>
-                  Finalize
-                </Button>
-                <Button size="sm" onClick={handleFile}>
-                  File
-                </Button>
-              </div>
-            )}
+              <Button size="sm" variant="secondary" onClick={handleFinalize}>
+                Finalize
+              </Button>
+              <Button size="sm" onClick={handleFile}>
+                File
+              </Button>
+            </div>
           </section>
 
           <Tabs
@@ -460,11 +420,8 @@ const GSTR1 = () => {
             <TabsContent value="b2b">
               {/* body - content */}
               <div className="flex-grow overflow-hidden">
-                {!isAuthenticated || authError ? (
-                  // Show authentication expired state
-                  renderAuthExpiredState()
-                ) : invoicesForGstFilingQuery.isLoading ||
-                  invoicesForGstFilingQuery.isFetching ? (
+                {invoicesForGstFilingQuery.isLoading ||
+                invoicesForGstFilingQuery.isFetching ? (
                   <Loading />
                 ) : (
                   <>
@@ -532,6 +489,13 @@ const GSTR1 = () => {
             onOpenChange={setShowOTPDialog}
             onVerify={handleVerifyOTP}
             isVerifying={verifyOTPMutation.isPending}
+          />
+
+          <AuthenticationExpired
+            open={authExpiredModalOpen}
+            onClose={setAuthExpiredModalOpen}
+            handleGenerateOTP={handleGenerateOTP}
+            requestOTPMutation={requestOTPMutation}
           />
         </Wrapper>
       )}
