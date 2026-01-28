@@ -133,8 +133,10 @@ const GetInTouch = () => {
         {/* Heading */}
         <div className="mb-10 text-center">
           <p className="relative inline-block text-gray-900">
-            <span className="text-xl font-semibold md:text-4xl">GET IN</span>
-            <span className="ml-2 font-handwriting text-2xl text-gray-700 md:text-5xl">
+            <span className="text-xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl">
+              GET IN
+            </span>
+            <span className="lg:text-6x ml-2 font-handwriting text-2xl text-gray-700 sm:text-4xl md:text-5xl">
               TOUCH
             </span>
           </p>

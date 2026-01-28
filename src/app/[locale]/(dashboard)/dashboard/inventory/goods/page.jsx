@@ -19,19 +19,13 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductGoods,
   GetSearchedProductGoods,
-  UploadProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import {
-  keepPreviousData,
-  useInfiniteQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { CircleFadingPlus, Download, Upload } from 'lucide-react';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { CircleFadingPlus, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { useGoodsColumns } from './GoodsColumns';
 import { GoodsTable } from './GoodsTable';
 
@@ -41,12 +35,12 @@ const AddGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
 const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
   loading: () => <Loading />,
 });
-const UploadItems = dynamic(
-  () => import('@/components/inventory/UploadItems'),
-  {
-    loading: () => <Loading />,
-  },
-);
+// const UploadItems = dynamic(
+//   () => import('@/components/inventory/UploadItems'),
+//   {
+//     loading: () => <Loading />,
+//   },
+// );
 
 const PAGE_LIMIT = 10;
 
@@ -66,17 +60,17 @@ function Goods() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const templateId = 1;
+  // const templateId = 1;
   const { hasPermission } = usePermission();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [files, setFiles] = useState([]);
+  // const [isUploading, setIsUploading] = useState(false);
+  // const [files, setFiles] = useState([]);
   const [productGoods, setProductGoods] = useState([]);
   const [paginationData, setPaginationData] = useState({});
 
@@ -84,19 +78,13 @@ function Goods() {
     const state = searchParams.get('action');
     setIsAdding(state === 'add');
     setIsEditing(state === 'edit');
-    setIsUploading(state === 'upload');
+    // setIsUploading(state === 'upload');
   }, [searchParams]);
 
   useEffect(() => {
     const currentAction = searchParams.get('action') || '';
 
-    const requiredAction = isAdding
-      ? 'add'
-      : isEditing
-        ? 'edit'
-        : isUploading
-          ? 'upload'
-          : '';
+    const requiredAction = isAdding ? 'add' : isEditing ? 'edit' : '';
 
     if (currentAction === requiredAction) return;
 
@@ -105,7 +93,7 @@ function Goods() {
       : `/dashboard/inventory/goods`;
 
     router.replace(newPath);
-  }, [isAdding, isEditing, isUploading, router, searchParams]);
+  }, [isAdding, isEditing, router, searchParams]);
 
   const goodsQuery = useInfiniteQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
@@ -170,20 +158,20 @@ function Goods() {
     });
   }, [searchTerm, goodsQuery.data, searchQuery.data]);
 
-  const uploadFile = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('enterpriseId', enterpriseId);
-    formData.append('templateId', templateId);
-    try {
-      await UploadProductGoods(formData);
-      toast.success(translations('messages.uploadSuccessMsg'));
-      setFiles((prev) => [...prev, file]);
-      queryClient.invalidateQueries([goodsApi.getAllProductGoods.endpointKey]);
-    } catch (error) {
-      toast.error(error?.response?.data?.message || 'Something went wrong');
-    }
-  };
+  // const uploadFile = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   formData.append('enterpriseId', enterpriseId);
+  //   formData.append('templateId', templateId);
+  //   try {
+  //     await UploadProductGoods(formData);
+  //     toast.success(translations('messages.uploadSuccessMsg'));
+  //     setFiles((prev) => [...prev, file]);
+  //     queryClient.invalidateQueries([goodsApi.getAllProductGoods.endpointKey]);
+  //   } catch (error) {
+  //     toast.error(error?.response?.data?.message || 'Something went wrong');
+  //   }
+  // };
 
   const onRowClick = (row) => {
     return router.push(`/dashboard/inventory/goods/${row.id}`);
@@ -200,7 +188,7 @@ function Goods() {
         </>
       ) : (
         <div>
-          {!isAdding && !isUploading && !isEditing && (
+          {!isAdding && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center gap-2">
@@ -237,7 +225,7 @@ function Goods() {
                       content={translations('ctas.export')}
                     />
                   </ProtectedWrapper>
-                  <ProtectedWrapper permissionCode="permission:item-masters-upload">
+                  {/* <ProtectedWrapper permissionCode="permission:item-masters-upload">
                     <Button
                       onClick={() => setIsUploading(true)}
                       variant="blue_outline"
@@ -246,7 +234,7 @@ function Goods() {
                       <Upload size={14} />
                       {translations('ctas.upload')}
                     </Button>
-                  </ProtectedWrapper>
+                  </ProtectedWrapper> */}
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
                     <Button onClick={() => setIsAdding(true)} size="sm">
@@ -309,7 +297,7 @@ function Goods() {
             />
           )}
 
-          {isUploading && (
+          {/* {isUploading && (
             <UploadItems
               type="goods"
               uploadFile={uploadFile}
@@ -317,7 +305,7 @@ function Goods() {
               setisUploading={setIsUploading}
               setFiles={setFiles}
             />
-          )}
+          )} */}
         </div>
       )}
     </ProtectedWrapper>
