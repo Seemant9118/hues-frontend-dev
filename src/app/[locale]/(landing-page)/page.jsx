@@ -555,7 +555,7 @@ export default function HeroSection() {
       </section>
 
       {/* contact us */}
-      <section id="contact">
+      <section id="contact" className="bg-gradient-bg px-4 py-24 md:px-8">
         <GetInTouch />
       </section>
 
