@@ -120,7 +120,7 @@ export default function LoginLayout({ children }) {
                 name="language"
                 options={optionsOfLanguages}
                 styles={getStylesForSelectComponent()}
-                className="w-36 text-sm font-semibold"
+                className="w-36 rounded-[9px] text-sm font-semibold shadow-lg"
                 classNamePrefix="select"
                 value={selectedLanguage} // Maintain selected value
                 onChange={handleChange}
