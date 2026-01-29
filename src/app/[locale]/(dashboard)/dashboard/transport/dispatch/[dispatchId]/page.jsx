@@ -974,6 +974,9 @@ const ViewDispatchNote = () => {
           <GenerateDCPreviewForm
             dispatchNoteId={params.dispatchId}
             dispatchDetails={dispatchDetails}
+            isFirstDeliveryChallanCreated={
+              dispatchDetails?.vouchers?.length === 0
+            }
             url={dcPreviewUrl}
             breadcrumb={dispatchOrdersBreadCrumbs}
             onClose={() => setIsGeneratingDC(false)}

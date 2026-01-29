@@ -6,6 +6,7 @@ import {
   getEnterpriseId,
   getInitialsNames,
   getRandomBgColor,
+  maskPanNumber,
 } from '@/appUtils/helperFunctions';
 import {
   Dialog,
@@ -20,6 +21,8 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import AddEnterpriseAddressModal from '@/app/[locale]/(dashboard)/dashboard/enterprise-info/page';
 import { Button } from '../ui/button';
 
 const PendingInvitesModal = ({
@@ -38,6 +41,7 @@ const PendingInvitesModal = ({
 
   const queryClient = useQueryClient();
   const enterpriseId = getEnterpriseId();
+  const [isEnterpriseInfoOpen, setIsEnterpriseInfoOpen] = useState(false);
 
   const acceptInvitationMutation = useMutation({
     mutationFn: (data) => acceptInvitation(data),
@@ -106,13 +110,26 @@ const PendingInvitesModal = ({
                     {getInitialsNames(inviteItem?.name)}
                   </span>
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm font-bold">
-                      {`"${inviteItem?.name}" ${translations(invitesDetails, { type: capitalize(inviteItem?.type) })}`}
-                    </span>
-                    <span className="flex items-center gap-2 text-xs text-[#A5ABBD]">
-                      <p>+91 {inviteItem?.mobileNumber ?? '-'} |</p>
-                      <p>{inviteItem?.panNumber ?? '-'} </p>
-                    </span>
+                    <p className="text-sm font-bold">
+                      &quot;
+                      <span
+                        onClick={() => setIsEnterpriseInfoOpen(true)}
+                        className="tab-index-[0] cursor-pointer hover:text-primary hover:underline"
+                      >{`${inviteItem?.name}`}</span>
+                      &quot;
+                      <span>{` ${translations(invitesDetails, { type: capitalize(inviteItem?.type) })}`}</span>
+                    </p>
+                    <p className="flex items-center gap-2 text-xs text-[#A5ABBD]">
+                      <span>+91 {inviteItem?.mobileNumber || '-'}</span>
+
+                      {inviteItem?.panNumber ? (
+                        <span>| {maskPanNumber(inviteItem?.panNumber)}</span>
+                      ) : null}
+
+                      {inviteItem?.gstNumber ? (
+                        <span>| {inviteItem?.gstNumber}</span>
+                      ) : null}
+                    </p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -131,6 +148,13 @@ const PendingInvitesModal = ({
               </div>
             ))}
         </div>
+        {isEnterpriseInfoOpen && (
+          <AddEnterpriseAddressModal
+            open={isEnterpriseInfoOpen}
+            setOpen={setIsEnterpriseInfoOpen}
+            data={data}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
