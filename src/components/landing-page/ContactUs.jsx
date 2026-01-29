@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { sendMessage } from '@/services/Admin_Services/AdminServices';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -11,6 +12,8 @@ import ErrorBox from '../ui/ErrorBox';
 import Loading from '../ui/Loading';
 
 const GetInTouch = () => {
+  const t = useTranslations('landingPage.contact.contactForm');
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,22 +36,21 @@ const GetInTouch = () => {
 
     switch (name) {
       case 'name':
-        return trimmedValue ? '' : 'Name is required';
+        return trimmedValue ? '' : t('errors.nameRequired');
 
       case 'email':
-        if (!trimmedValue) return 'Email is required';
+        if (!trimmedValue) return t('errors.emailRequired');
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)
           ? ''
-          : 'Please enter a valid email';
+          : t('errors.emailInvalid');
 
       case 'mobileNumber':
-        if (!trimmedValue) return 'Phone number is required';
-        if (trimmedValue.length !== 10)
-          return 'Please enter a 10 - digit mobileNumber number';
+        if (!trimmedValue) return t('errors.phoneRequired');
+        if (trimmedValue.length !== 10) return t('errors.phoneInvalid');
         return '';
 
       case 'message':
-        return trimmedValue ? '' : 'Message is required';
+        return trimmedValue ? '' : t('errors.messageRequired');
 
       default:
         return '';
@@ -95,11 +97,13 @@ const GetInTouch = () => {
   const sendMessageMutation = useMutation({
     mutationFn: sendMessage,
     onSuccess: () => {
-      toast.success(`Message Send Successfully`);
+      toast.success(t('toast.success'));
+
       // reset after submit
       setFormData({
         name: '',
         email: '',
+        countryCode: '+91',
         mobileNumber: '',
         message: '',
       });
@@ -112,12 +116,10 @@ const GetInTouch = () => {
       });
     },
     onError: (error) => {
-      toast.error(
-        error.response.data.message ||
-          'We hit a snag! Please refresh or retry shortly',
-      );
+      toast.error(error?.response?.data?.message || t('toast.errorFallback'));
     },
   });
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -132,25 +134,25 @@ const GetInTouch = () => {
       {/* Heading */}
       <div className="px-6 pt-20 text-center sm:mx-10">
         <h2 className="text-xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
-          Get In
+          {t('title.getIn')}{' '}
           <span className="inline-block font-handwriting text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
-            Touch
+            {t('title.touch')}
           </span>
         </h2>
 
-        <p className="mt-4 text-gray-600">
-          Email:{' '}
+        <p className="mt-2 text-gray-600">
+          {t('emailLabel')}{' '}
           <a
-            href="mailto:support@hues.com"
+            href="mailto:support@paraphernalia.in"
             className="text-primary hover:underline"
           >
-            support@hues.com
+            support@paraphernalia.in
           </a>
         </p>
       </div>
 
       {/* Form Wrapper */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg md:p-10">
+      <div className="mt-4 rounded-xl border border-gray-200 bg-white p-6 shadow-lg md:p-10">
         <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
           {/* Left Side */}
           <div className="flex flex-col gap-6">
@@ -159,19 +161,19 @@ const GetInTouch = () => {
               <Input
                 type="text"
                 name="name"
-                placeholder="Your name"
+                placeholder={t('placeholders.name')}
                 value={formData.name}
                 onChange={handleChange}
               />
               {errors.name && <ErrorBox msg={errors.name} />}
             </div>
 
-            {/* Email (Optional) */}
+            {/* Email */}
             <div>
               <Input
                 type="text"
                 name="email"
-                placeholder="Your email"
+                placeholder={t('placeholders.email')}
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -182,16 +184,16 @@ const GetInTouch = () => {
             <div>
               <div className="relative flex items-center">
                 <span className="absolute left-2 text-sm text-gray-600">
-                  +91
+                  {formData.countryCode}
                 </span>
+
                 <Input
                   type="text"
                   name="mobileNumber"
-                  placeholder="Your phone"
+                  placeholder={t('placeholders.phone')}
                   className="w-full py-2 pl-10 pr-3"
                   value={formData.mobileNumber}
                   onChange={(e) => {
-                    // ✅ allow only numbers
                     const onlyNumbers = e.target.value.replace(/\D/g, '');
                     handleChange({
                       target: { name: 'mobileNumber', value: onlyNumbers },
@@ -208,7 +210,7 @@ const GetInTouch = () => {
           <div className="flex flex-col">
             <Textarea
               name="message"
-              placeholder="Your message"
+              placeholder={t('placeholders.message')}
               value={formData.message}
               onChange={handleChange}
               rows={7}
@@ -231,7 +233,11 @@ const GetInTouch = () => {
               className="px-10 py-3 font-semibold text-white shadow-sm transition"
               disabled={sendMessageMutation?.isPending}
             >
-              {sendMessageMutation?.isPending ? <Loading /> : `Send Message`}
+              {sendMessageMutation?.isPending ? (
+                <Loading />
+              ) : (
+                t('button.sendMessage')
+              )}
             </Button>
           </div>
         </form>

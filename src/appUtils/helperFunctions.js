@@ -325,3 +325,18 @@ export const getCurrentFinancialYearPeriods = (date = new Date()) => {
 
   return periods;
 };
+
+export const maskPanNumber = (pan = '') => {
+  if (!pan) return '-';
+
+  const value = String(pan).trim().toUpperCase();
+
+  // PAN format is usually 10 chars: AAAAA9999A
+  if (value.length < 6) return value; // fallback for invalid short input
+
+  const first3 = value.slice(0, 3);
+  const last1 = value.slice(-1);
+
+  const maskedMiddle = '*'.repeat(value.length - 4); // hide remaining middle chars
+  return `${first3}${maskedMiddle}${last1}`;
+};

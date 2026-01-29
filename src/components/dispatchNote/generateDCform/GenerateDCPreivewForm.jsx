@@ -44,10 +44,11 @@ export const FormSchema = [
   },
   { headLabel: 'Leg Details' },
   {
-    type: 'text',
+    type: 'select',
     label: 'Leg from',
     name: 'legFrom',
-    disabled: true,
+    placeholder: 'Select source address',
+    options: [], // ✅ inject dynamically
   },
   {
     type: 'select',
@@ -117,6 +118,7 @@ export const FormSchema = [
 export default function GenerateDCPreviewForm({
   dispatchNoteId,
   dispatchDetails,
+  isFirstDeliveryChallanCreated = true,
   url,
   breadcrumb,
 }) {
@@ -171,7 +173,8 @@ export default function GenerateDCPreviewForm({
 
   const { data: legAddress = [] } = useQuery({
     queryKey: [addressAPIs.getAddressByEnterprise.endpointKey, enterpriseId],
-    queryFn: () => getAddressByEnterprise(enterpriseId, addressContext),
+    queryFn: () =>
+      getAddressByEnterprise(dispatchDetails?.buyerId, addressContext),
     select: (res) => res.data.data,
     enabled: !!enterpriseId,
   });
@@ -270,18 +273,26 @@ export default function GenerateDCPreviewForm({
 
     const amount = totalAmount + totalGstAmount;
 
-    if (formData?.isEWBRequired === undefined && !Number.isNaN(amount)) {
-      setFormData((prev) => ({
-        ...prev,
-        isEWBRequired: amount > 50000 ? 'true' : 'false',
-        legFrom: dispatchDetails?.dispatchFromAddress?.address || '',
-      }));
-    }
-  }, [dispatchDetails, formData?.isEWBRequired]);
+    setFormData((prev) => {
+      const updated = { ...prev };
+
+      // only set isEWBRequired once
+      if (prev?.isEWBRequired === undefined && !Number.isNaN(amount)) {
+        updated.isEWBRequired = amount > 50000 ? 'true' : 'false';
+      }
+
+      // Auto-select legFrom only when first DC
+      if (isFirstDeliveryChallanCreated) {
+        updated.legFrom = dispatchDetails?.dispatchFromAddress?.address || '';
+      }
+
+      return updated;
+    });
+  }, [dispatchDetails, isFirstDeliveryChallanCreated]);
 
   // Inject data dynamically into schema
   const dynamicSchema = useMemo(() => {
-    return FormSchema.map((field) => {
+    const updatedSchema = FormSchema.map((field) => {
       if (field.name === 'transporterEnterpriseId') {
         return {
           ...field,
@@ -289,16 +300,30 @@ export default function GenerateDCPreviewForm({
         };
       }
 
-      if (field.name === 'legTo') {
+      if (field.name === 'legFrom' || field.name === 'legTo') {
         return {
           ...field,
           options: legAddressOptions,
+          disabled:
+            field.name === 'legFrom' ? isFirstDeliveryChallanCreated : false,
         };
       }
 
       return field;
     });
-  }, [transportOptions, legAddressOptions]);
+
+    // if transporter is Self, remove transporterId field
+    if (formData?.transporterEnterpriseId === null) {
+      return updatedSchema.filter((field) => field.name !== 'transporterId');
+    }
+
+    return updatedSchema;
+  }, [
+    transportOptions,
+    legAddressOptions,
+    isFirstDeliveryChallanCreated,
+    formData?.transporterEnterpriseId,
+  ]);
 
   const previewDCMutation = useMutation({
     mutationFn: previewDeliveryChallan,
@@ -391,8 +416,11 @@ export default function GenerateDCPreviewForm({
   };
 
   const onApplyChanges = () => {
-    // ✅ validate only booking fields
-    const bookingErrors = validateBookingPreview(formData);
+    // validate only booking fields
+    const bookingErrors = validateBookingPreview(
+      isFirstDeliveryChallanCreated,
+      formData,
+    );
     setErrors(bookingErrors);
 
     if (Object.keys(bookingErrors).length > 0) return;

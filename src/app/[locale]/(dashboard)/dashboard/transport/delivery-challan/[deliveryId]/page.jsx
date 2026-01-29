@@ -985,13 +985,17 @@ const ViewDelivery = () => {
     tab !== 'items' &&
     isSeller &&
     formattedDispatchedTransporterBookings?.length === 0;
+
+  const isRestrictedTabForRequestPODs = ['ewb', 'transports', 'items'].includes(
+    tab,
+  );
+  const canRequestPod =
+    !dispatchDetails?.isPodCreated && !!dispatchDetails?.enablePodCreation;
+  const canReRequestPod = !!dispatchDetails?.isPodCreated && !!isPODsRejected; // add enablePodCreation if needed
   const showRequestPODCTA =
-    tab !== 'ewb' &&
-    tab !== 'transports' &&
-    tab !== 'items' &&
+    !isRestrictedTabForRequestPODs &&
     isSeller &&
-    (!dispatchDetails?.isPodCreated ||
-      (dispatchDetails?.isPodCreated && isPODsRejected));
+    (canRequestPod || canReRequestPod);
 
   const showGenerateEWBCTA =
     tab !== 'transports' && tab !== 'pod' && tab !== 'items' && isSeller;
@@ -1100,10 +1104,15 @@ const ViewDelivery = () => {
                       </Button>
                     )}
                   {/* generate e-way bill cta */}
-                  {showGenerateEWBCTA && (
+                  {showGenerateEWBCTA && dispatchDetails?.isFirstVoucher ? (
                     <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
                       <PlusCircle size={14} />
                       {translations('overview_inputs.ctas.generateEWayBill')}
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={() => setIsCreatingEWBB(true)}>
+                      <PlusCircle size={14} />
+                      {translations('overview_inputs.ctas.updatePartB')}
                     </Button>
                   )}
                 </div>

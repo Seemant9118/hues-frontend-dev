@@ -1,7 +1,6 @@
 import { invitation } from '@/api/invitation/Invitation';
 import { userAuth } from '@/api/user_auth/Users';
 import { validatePhoneNumber } from '@/appUtils/ValidationUtils';
-import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
@@ -130,10 +129,6 @@ const MobileLogin = ({
             <Loading />
           </div>
         )}
-        <InfoBanner
-          showSupportLink={false}
-          text={<>{`You can sign-up or sign-in using this page`}</>}
-        />
       </div>
 
       {/* Login Form */}
