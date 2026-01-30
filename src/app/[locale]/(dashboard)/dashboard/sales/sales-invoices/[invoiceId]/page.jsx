@@ -335,7 +335,7 @@ const ViewInvoice = () => {
                     {...(debitNoteStatus && { debitNoteStatus })}
                     Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
                     type={invoiceDetails?.invoiceDetails?.invoiceType}
-                    date={invoiceDetails?.invoiceDetails?.createdAt}
+                    date={invoiceDetails?.invoiceDetails?.invoiceDate}
                     defectsStatus={defectsStatus()}
                     amount={invoiceDetails?.invoiceDetails?.totalAmount}
                     amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
