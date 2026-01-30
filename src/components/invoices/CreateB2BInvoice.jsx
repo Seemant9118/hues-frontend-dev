@@ -28,6 +28,7 @@ import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServi
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ChevronDown, Plus } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -35,6 +36,7 @@ import Select from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
+import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
 import InputWithSelect from '../ui/InputWithSelect';
@@ -69,19 +71,22 @@ const CreateB2BInvoice = ({
   const [isInvoicePreview, setIsInvoicePreview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState({});
+
   const [selectedItem, setSelectedItem] = useState({
     productName: b2bInvoiceDraft?.itemDraft?.productName || '',
     productType: b2bInvoiceDraft?.itemDraft?.productType || '',
-    sac: b2bInvoiceDraft?.itemDraft?.sacCode || '',
+    hsnCode: b2bInvoiceDraft?.itemDraft?.hsnCode || '',
+    sac: b2bInvoiceDraft?.itemDraft?.sac || '',
     serviceName: b2bInvoiceDraft?.itemDraft?.serviceName || '',
     productId: b2bInvoiceDraft?.itemDraft?.productId || null,
     quantity: b2bInvoiceDraft?.itemDraft?.quantity || null,
     unitId: b2bInvoiceDraft?.itemDraft?.unitId || null,
     unitPrice: b2bInvoiceDraft?.itemDraft?.unitPrice || null,
-    gstPerUnit: b2bInvoiceDraft?.itemDraft?.gstPerUnit || null,
+    gstPerUnit: b2bInvoiceDraft?.itemDraft?.gstPerUnit || 0,
     totalAmount: b2bInvoiceDraft?.itemDraft?.totalAmount || null,
     totalGstAmount: b2bInvoiceDraft?.itemDraft?.totalGstAmount || null,
   });
+
   const [order, setOrder] = useState({
     clientType: 'B2B',
     sellerEnterpriseId: enterpriseId,
@@ -100,7 +105,13 @@ const CreateB2BInvoice = ({
     selectedValue: b2bInvoiceDraft?.selectedValue || null,
     selectedGstNumber: null,
     getAddressRelatedData: b2bInvoiceDraft?.getAddressRelatedData || null,
+    invoiceDate: b2bInvoiceDraft?.invoiceDate || null,
   });
+
+  // save draft to session storage
+  function saveDraftToSession({ key, data }) {
+    SessionStorageService.set(key, data);
+  }
 
   // fetch units
   const { data: units } = useQuery({
@@ -110,41 +121,31 @@ const CreateB2BInvoice = ({
     enabled: !!enterpriseId,
   });
 
-  // save draft to session storage
-  function saveDraftToSession({ key, data }) {
-    SessionStorageService.set(key, data);
-  }
-
-  // [GST/NON-GST Checking]
-  // fetch profileDetails API
+  // profile details
   const { data: profileDetails } = useQuery({
     queryKey: [userAuth.getProfileDetails.endpointKey],
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
     enabled: !!isCreatingInvoice && isPurchasePage === false,
   });
-  // for sales-order gst/non-gst check
+
   const isGstApplicableForSalesOrders =
     isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
 
-  // [clients]
-  // clients[B2B] fetching
+  // clients
   const { data: customerData } = useQuery({
     queryKey: [clientEnterprise.getClients.endpointKey],
     queryFn: () => getClients({ id: enterpriseId, context: 'ORDER' }),
     select: (res) => res.data.data.users,
     enabled: order.clientType === 'B2B',
   });
-  // client options
+
   const clientOptions = [
     ...(customerData?.map((customer) => {
       const value = customer?.client?.id || customer?.id;
       const label =
         customer?.client?.name || customer.invitation?.userDetails?.name;
-      const isAccepted =
-        customer?.invitation === null || customer?.invitation === undefined
-          ? 'ACCEPTED'
-          : customer?.invitation?.status;
+
       const clientId = customer?.id;
       const clientEnterpriseId = customer?.client?.id;
       const isEnterpriseActive = !!customer?.client?.id;
@@ -152,82 +153,125 @@ const CreateB2BInvoice = ({
       return {
         value,
         label,
-        isAccepted,
         clientId,
         clientEnterpriseId,
         isEnterpriseActive,
       };
     }) ?? []),
     {
-      value: 'add-new-client', // Special value for "Add New Client"
+      value: 'add-new-client',
       label: (
         <span className="flex h-full w-full cursor-pointer items-center gap-2 text-xs font-semibold text-black">
           <Plus size={14} /> {translations('form.input.client.add_new_client')}
         </span>
       ),
-      isAccepted: 'ACCEPTED',
     },
   ];
 
-  // [item type]
   const itemTypeOptions = [
     {
       value: 'GOODS',
       label: translations('form.input.item_type.goods'),
     },
-    // {
-    //   value: 'SERVICE',
-    //   label: translations('form.input.item_type.services'),
-    // },
   ];
 
-  // Items fetching
-  // util fn to check it item is already present in orderItems or not?
   const isItemAlreadyAdded = (itemId) =>
     order.orderItems?.some((item) => item.productId === itemId);
 
-  // [Client's Goods and Services]
-  // client's catalogue's goods fetching
+  // goods
   const { data: goodsData } = useQuery({
     queryKey: [catalogueApis.getProductCatalogue.endpointKey, enterpriseId],
     queryFn: () => getProductCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'GOODS',
   });
-  // client's goods options
-  const clientsGoodsOptions = goodsData?.map((good) => {
-    const value = { ...good, productType: 'GOODS', productName: good.name };
-    const label = good.name;
-    const disabled = isItemAlreadyAdded(good.id); // disable if already added
 
-    return { value, label, disabled };
-  });
-  // client catalogue services fetching
+  const clientsGoodsOptions =
+    goodsData?.map((good) => {
+      const value = { ...good, productType: 'GOODS', productName: good.name };
+      const label = good.name;
+
+      return { value, label, disabled: isItemAlreadyAdded(good.id) };
+    }) ?? [];
+
+  // services (kept for future)
   const { data: servicesData } = useQuery({
     queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
     queryFn: () => getServiceCatalogue(enterpriseId),
     select: (res) => res.data.data,
     enabled: cta === 'offer' && order.invoiceType === 'SERVICE',
   });
-  // client's services options
-  const clientsServicesOptions = servicesData?.map((service) => {
-    const value = {
-      ...service,
-      productType: 'SERVICE',
-      serviceName: service.name,
-    };
-    const label = service.name;
-    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label, disabled };
-  });
-  // itemClientListingOptions on the basis of item type
+  const clientsServicesOptions =
+    servicesData?.map((service) => {
+      const value = {
+        ...service,
+        productType: 'SERVICE',
+        serviceName: service.name,
+      };
+      const label = service.name;
+
+      return { value, label, disabled: isItemAlreadyAdded(service.id) };
+    }) ?? [];
+
   const itemClientListingOptions =
     order.invoiceType === 'GOODS'
       ? clientsGoodsOptions
       : clientsServicesOptions;
 
-  // mutation - create invoice
+  // validations
+  const validation = ({ order }) => {
+    const errorObj = {};
+
+    if (order.clientType === 'B2B' && order?.buyerId == null) {
+      errorObj.buyerId = translations('form.errorMsg.client');
+    }
+
+    if (!order.invoiceType) {
+      errorObj.invoiceType = translations('form.errorMsg.item_type');
+    }
+
+    if (!order?.invoiceDate) {
+      errorObj.invoiceDate = translations('form.errorMsg.invoice_date');
+    }
+
+    if (!order?.orderItems || order.orderItems.length === 0) {
+      errorObj.orderItem =
+        isOrder === 'invoice'
+          ? translations('form.errorMsg.itemInvoice')
+          : translations('form.errorMsg.itemOrder');
+    }
+
+    return errorObj;
+  };
+
+  const handleSetTotalAmt = () => {
+    const totalAmount = order.orderItems.reduce(
+      (totalAmt, orderItem) => totalAmt + (Number(orderItem.totalAmount) || 0),
+      0,
+    );
+
+    const totalGstAmt = order.orderItems.reduce((totalGst, orderItem) => {
+      return (
+        totalGst +
+        (isGstApplicable(isGstApplicableForSalesOrders)
+          ? Number(orderItem.totalGstAmount) || 0
+          : 0)
+      );
+    }, 0);
+
+    return { totalAmount, totalGstAmt };
+  };
+
+  const grossAmt = order.orderItems.reduce(
+    (acc, orderItem) => acc + (Number(orderItem.totalAmount) || 0),
+    0,
+  );
+
+  const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+  const totalAmtWithGst = totalAmount + totalGstAmt;
+
+  // create invoice mutation
   const invoiceMutation = useMutation({
     mutationFn: createInvoice,
     onSuccess: (res) => {
@@ -248,85 +292,13 @@ const CreateB2BInvoice = ({
     },
   });
 
-  // validations
-  const validation = ({ order, selectedItem }) => {
-    const errorObj = {};
-    if (order.clientType === 'B2B' && order?.buyerId == null) {
-      errorObj.buyerId = translations('form.errorMsg.client');
-    }
-    if (order.invoiceType === '') {
-      errorObj.invoiceType = translations('form.errorMsg.item_type');
-    }
-    if (order?.orderItems?.length === 0) {
-      errorObj.orderItem =
-        isOrder === 'invoice'
-          ? translations('form.errorMsg.itemInvoice')
-          : translations('form.errorMsg.itemOrder');
-    }
-    if (order?.orderItems?.length < 0) {
-      if (selectedItem.quantity === null) {
-        errorObj.quantity = translations('form.errorMsg.quantity');
-      }
-      if (selectedItem.unitPrice === null) {
-        errorObj.unitPrice = translations('form.errorMsg.price');
-      }
-      if (selectedItem.gstPerUnit === null) {
-        errorObj.gstPerUnit = translations('form.errorMsg.gst');
-      }
-      if (selectedItem.totalGstAmount === null) {
-        errorObj.totalGstAmount = translations('form.errorMsg.tax_amount');
-      }
-      if (selectedItem.totalAmount === null) {
-        errorObj.totalAmount = translations('form.errorMsg.amount');
-      }
-    }
-
-    return errorObj;
-  };
-
-  const handleSetTotalAmt = () => {
-    const totalAmount = order.orderItems.reduce((totalAmt, orderItem) => {
-      return totalAmt + orderItem.totalAmount;
-    }, 0);
-
-    const totalGstAmt = order.orderItems.reduce((totalGst, orderItem) => {
-      return (
-        totalGst +
-        (isGstApplicable(isGstApplicableForSalesOrders)
-          ? orderItem.totalGstAmount
-          : 0)
-      );
-    }, 0);
-
-    return { totalAmount, totalGstAmt };
-  };
-
-  const handleCalculateGrossAmt = () => {
-    const grossAmount = order.orderItems.reduce((acc, orderItem) => {
-      return acc + orderItem.totalAmount;
-    }, 0);
-    return grossAmount;
-  };
-  const grossAmt = handleCalculateGrossAmt();
-
-  const handleCalculateTotalAmounts = () => {
-    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-
-    const totalAmountWithGST = totalAmount + totalGstAmt;
-    return totalAmountWithGST;
-  };
-  const totalAmtWithGst = handleCalculateTotalAmounts();
-  const { totalGstAmt } = handleSetTotalAmt();
-
-  // handling submit fn
-  const handleSubmit = (updateOrder) => {
-    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-    const isError = validation({ order, selectedItem });
+  const handleSubmit = (updatedOrder) => {
+    const isError = validation({ order: updatedOrder });
 
     if (Object.keys(isError).length === 0) {
       invoiceMutation.mutate({
-        ...updateOrder,
-        buyerId: Number(order.buyerId),
+        ...updatedOrder,
+        buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
       });
@@ -336,21 +308,16 @@ const CreateB2BInvoice = ({
     }
   };
 
+  // preview invoice
   const previewInvMutation = useMutation({
     mutationKey: [invoiceApi.previewDirectInvoice.endpointKey],
     mutationFn: previewDirectInvoice,
-    // eslint-disable-next-line consistent-return
     onSuccess: (data) => {
       if (data?.data?.data) {
         const base64StrToRenderPDF = data?.data?.data;
         const newUrl = `data:application/pdf;base64,${base64StrToRenderPDF}`;
         setUrl(newUrl);
         setIsInvoicePreview(true);
-
-        // // Clean up the blob URL when the component unmounts or the base64 string changes
-        return () => {
-          window.URL.revokeObjectURL(newUrl);
-        };
       }
     },
     onError: (error) =>
@@ -360,14 +327,14 @@ const CreateB2BInvoice = ({
   });
 
   const handlePreview = (updatedOrder) => {
-    const { totalAmount, totalGstAmt } = handleSetTotalAmt();
-    const isError = validation({ order, selectedItem });
+    const isError = validation({ order: updatedOrder });
+
     if (Object.keys(isError).length === 0) {
       setErrorMsg({});
       previewInvMutation.mutate({
         ...updatedOrder,
-        invoiceItems: order.orderItems,
-        buyerId: Number(order.buyerId),
+        invoiceItems: updatedOrder.orderItems,
+        buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
       });
@@ -376,7 +343,6 @@ const CreateB2BInvoice = ({
     }
   };
 
-  // columns
   const createSalesInvoiceColumns = useCreateSalesInvoiceColumns(
     isOrder,
     setOrder,
@@ -388,13 +354,16 @@ const CreateB2BInvoice = ({
   if (!enterpriseId) {
     return (
       <div className="flex flex-col justify-center">
-        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Order" />
+        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Invoice" />
         <Button variant="outline" onClick={onCancel}>
           Close
         </Button>
       </div>
     );
   }
+
+  const isItemInputsDisabled =
+    (cta === 'offer' && order.buyerId == null) || !order.invoiceType;
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
@@ -415,12 +384,13 @@ const CreateB2BInvoice = ({
 
       {!isInvoicePreview && (
         <>
-          <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-            <div className="flex w-1/2 flex-col gap-2">
+          <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
+            <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
                 {translations('form.label.client')}
                 <span className="text-red-600">*</span>
               </Label>
+
               <div className="flex w-full flex-col gap-1">
                 <Select
                   name="clients"
@@ -433,9 +403,9 @@ const CreateB2BInvoice = ({
                     clientOptions?.find(
                       (option) => option.value === order?.selectedValue?.value,
                     ) || null
-                  } // Match selected value
+                  }
                   onChange={(selectedOption) => {
-                    if (!selectedOption) return; // Guard clause for no selection
+                    if (!selectedOption) return;
 
                     const {
                       value: id,
@@ -445,39 +415,32 @@ const CreateB2BInvoice = ({
                     } = selectedOption;
 
                     if (id === 'add-new-client') {
-                      setIsModalOpen(true); // Open modal when "Add New Client" is selected
-                    } else {
-                      setOrder((prev) => ({
-                        ...prev,
-                        buyerId: id,
-                        selectedValue: selectedOption,
-                        buyerType: isEnterpriseActive
-                          ? 'ENTERPRISE'
-                          : 'UNCONFIRMED_ENTERPRISE',
-                        getAddressRelatedData: {
-                          clientId,
-                          clientEnterpriseId,
-                        },
-                      }));
-
-                      // Save the selected client to session storage
-                      saveDraftToSession({
-                        key: 'b2bInvoiceDraft',
-                        data: {
-                          ...order,
-                          buyerId: id,
-                          selectedValue: selectedOption,
-                          getAddressRelatedData: {
-                            clientId,
-                            clientEnterpriseId,
-                          },
-                        },
-                      });
+                      setIsModalOpen(true);
+                      return;
                     }
+
+                    const updatedOrder = {
+                      ...order,
+                      buyerId: id,
+                      selectedValue: selectedOption,
+                      buyerType: isEnterpriseActive
+                        ? 'ENTERPRISE'
+                        : 'UNCONFIRMED_ENTERPRISE',
+                      getAddressRelatedData: {
+                        clientId,
+                        clientEnterpriseId,
+                      },
+                    };
+
+                    setOrder(updatedOrder);
+
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: updatedOrder,
+                    });
                   }}
                 />
 
-                {/* Conditionally render the AddModal when "Add New Client" is selected */}
                 {isModalOpen && (
                   <AddModal
                     type="Add"
@@ -488,15 +451,17 @@ const CreateB2BInvoice = ({
                     setIsOpen={setIsModalOpen}
                   />
                 )}
+
                 {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
               </div>
             </div>
 
-            <div className="flex w-1/2 flex-col gap-2">
+            <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
                 {translations('form.label.item_type')}
                 <span className="text-red-600">*</span>
               </Label>
+
               <Select
                 name="itemType"
                 placeholder={translations('form.input.item_type.placeholder')}
@@ -508,45 +473,85 @@ const CreateB2BInvoice = ({
                   itemTypeOptions?.find(
                     (option) => option.value === order.invoiceType,
                   ) || null
-                } // Match selected value
+                }
                 onChange={(selectedOption) => {
-                  if (!selectedOption) return; // Guard clause for no selection
+                  if (!selectedOption) return;
 
-                  // Set the selected item type in the order state
-                  setSelectedItem((prev) => ({
-                    ...prev,
+                  const clearedItem = {
                     productName: '',
                     productType: '',
+                    hsnCode: '',
                     sac: '',
                     serviceName: '',
                     productId: null,
                     quantity: null,
+                    unitId: null,
                     unitPrice: null,
-                    gstPerUnit: null,
+                    gstPerUnit: 0,
                     totalAmount: null,
                     totalGstAmount: null,
-                  })); // Reset selected item
+                  };
 
-                  setOrder((prev) => ({
-                    ...prev,
+                  setSelectedItem(clearedItem);
+
+                  const updatedOrder = {
+                    ...order,
                     invoiceType: selectedOption.value,
-                  })); // Update state with the selected value
+                    orderItems: [],
+                  };
 
-                  // Save the selected item type to session storage
+                  setOrder(updatedOrder);
+
                   saveDraftToSession({
                     key: 'b2bInvoiceDraft',
-                    data: {
-                      ...order,
-                      invoiceType: selectedOption.value,
-                      itemDraft: null,
-                      orderItems: [],
-                    },
+                    data: { ...updatedOrder, itemDraft: clearedItem },
                   });
                 }}
               />
+
               {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
             </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.invoice_date')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <div className="relative flex items-center rounded-sm border p-2">
+                <DatePickers
+                  selected={
+                    order.invoiceDate ? new Date(order.invoiceDate) : null
+                  }
+                  onChange={(date) => {
+                    const formattedForAPI = date
+                      ? moment(date).format('YYYY-MM-DD')
+                      : null;
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      invoiceDate: formattedForAPI,
+                    }));
+
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: {
+                        ...order,
+                        invoiceDate: formattedForAPI,
+                      },
+                    });
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/mm/yyyy"
+                  className="w-full"
+                />
+              </div>
+
+              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
+            </div>
           </div>
+
+          {/* Item Add Form */}
           <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex w-full max-w-xs flex-col gap-2">
@@ -554,6 +559,7 @@ const CreateB2BInvoice = ({
                   {translations('form.label.item')}
                   <span className="text-red-600">*</span>
                 </Label>
+
                 <div className="flex flex-col gap-1">
                   <Select
                     name="items"
@@ -566,94 +572,65 @@ const CreateB2BInvoice = ({
                     options={itemClientListingOptions}
                     styles={getStylesForSelectComponent()}
                     isOptionDisabled={(option) => option.disabled}
-                    isDisabled={
-                      (cta === 'offer' && order.buyerId == null) ||
-                      (cta === 'bid' && order.sellerEnterpriseId == null) ||
-                      order.invoiceType === ''
-                    }
+                    isDisabled={isItemInputsDisabled}
                     onChange={(selectedOption) => {
                       const selectedItemData = itemClientListingOptions?.find(
                         (item) => item.value.id === selectedOption?.value?.id,
                       )?.value;
 
-                      if (selectedItemData) {
-                        const isGstApplicableForPage = isGstApplicable(
-                          isGstApplicableForSalesOrders,
-                        );
+                      if (!selectedItemData) return;
 
-                        const gstPerUnit = isGstApplicableForPage
-                          ? selectedItemData.gstPercentage
-                          : 0;
+                      const isGstApplicableForPage = isGstApplicable(
+                        isGstApplicableForSalesOrders,
+                      );
 
-                        if (selectedItemData.productType === 'GOODS') {
-                          setSelectedItem((prev) => ({
-                            ...prev,
-                            productId: selectedItemData.id,
-                            productType: selectedItemData.productType,
-                            hsnCode: selectedItemData.hsnCode,
-                            productName: selectedItemData.productName,
-                            unitPrice: selectedItemData.salesPrice,
-                            gstPerUnit,
-                          }));
+                      const gstPerUnit = isGstApplicableForPage
+                        ? selectedItemData.gstPercentage
+                        : 0;
 
-                          // Save the selected item to session storage
-                          saveDraftToSession({
-                            key: 'b2bInvoiceDraft',
-                            data: {
-                              ...order,
-                              itemDraft: {
-                                productId: selectedItemData.id,
-                                productType: selectedItemData.productType,
-                                hsnCode: selectedItemData.hsnCode,
-                                productName: selectedItemData.productName,
-                                unitPrice: selectedItemData.rate,
-                                gstPerUnit,
-                              },
-                            },
-                          });
-                        } else {
-                          setSelectedItem((prev) => ({
-                            ...prev,
-                            productId: selectedItemData.id,
-                            productType: selectedItemData.productType,
-                            sac: selectedItemData.sacCode,
-                            serviceName: selectedItemData.serviceName,
-                            unitPrice: selectedItemData.rate,
-                            gstPerUnit,
-                          }));
+                      const updatedItem =
+                        selectedItemData.productType === 'GOODS'
+                          ? {
+                              ...selectedItem,
+                              productId: selectedItemData.id,
+                              productType: selectedItemData.productType,
+                              hsnCode: selectedItemData.hsnCode,
+                              productName: selectedItemData.productName,
+                              unitPrice: selectedItemData.salesPrice,
+                              gstPerUnit,
+                            }
+                          : {
+                              ...selectedItem,
+                              productId: selectedItemData.id,
+                              productType: selectedItemData.productType,
+                              sac: selectedItemData.sacCode,
+                              serviceName: selectedItemData.serviceName,
+                              unitPrice: selectedItemData.rate,
+                              gstPerUnit,
+                            };
 
-                          // Save the selected item to session storage
-                          saveDraftToSession({
-                            key: 'b2bInvoiceDraft',
-                            data: {
-                              ...order,
-                              itemDraft: {
-                                productId: selectedItemData.id,
-                                productType: selectedItemData.productType,
-                                sac: selectedItemData.sacCode,
-                                serviceName: selectedItemData.serviceName,
-                                unitPrice: selectedItemData.rate,
-                                gstPerUnit,
-                              },
-                            },
-                          });
-                        }
-                      }
+                      setSelectedItem(updatedItem);
+
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: updatedItem,
+                        },
+                      });
                     }}
                   />
 
                   {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
                 </div>
               </div>
+
               <div className="flex flex-col gap-2">
                 <InputWithSelect
                   id="quantity"
                   name={translations('form.label.quantity')}
                   required={true}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
+                  disabled={isItemInputsDisabled}
                   value={
                     selectedItem.quantity == null || selectedItem.quantity === 0
                       ? ''
@@ -662,28 +639,33 @@ const CreateB2BInvoice = ({
                   onValueChange={(e) => {
                     const inputValue = e.target.value;
 
-                    // Allow user to clear input
                     if (inputValue === '') {
-                      setSelectedItem((prev) => ({
-                        ...prev,
+                      const updatedItem = {
+                        ...selectedItem,
                         quantity: 0,
                         totalAmount: 0,
                         totalGstAmount: 0,
-                      }));
+                      };
+                      setSelectedItem(updatedItem);
                       return;
                     }
 
-                    // Prevent non-integer or negative input
-                    const value = Number(inputValue);
+                    if (!/^\d+$/.test(inputValue)) return;
 
-                    // Reject if not a positive integer
-                    if (!/^\d+$/.test(inputValue) || value < 1) return;
+                    const value = Number(inputValue);
+                    if (value < 1) return;
 
                     const totalAmt = parseFloat(
-                      (value * selectedItem.unitPrice).toFixed(2),
+                      (value * (Number(selectedItem.unitPrice) || 0)).toFixed(
+                        2,
+                      ),
                     );
+
                     const gstAmt = parseFloat(
-                      (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                      (
+                        totalAmt *
+                        ((Number(selectedItem.gstPerUnit) || 0) / 100)
+                      ).toFixed(2),
                     );
 
                     const updatedItem = {
@@ -691,6 +673,23 @@ const CreateB2BInvoice = ({
                       quantity: value,
                       totalAmount: totalAmt,
                       totalGstAmount: gstAmt,
+                    };
+
+                    setSelectedItem(updatedItem);
+
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: {
+                        ...order,
+                        itemDraft: updatedItem,
+                      },
+                    });
+                  }}
+                  unit={selectedItem.unitId}
+                  onUnitChange={(val) => {
+                    const updatedItem = {
+                      ...selectedItem,
+                      unitId: Number(val),
                     };
                     setSelectedItem(updatedItem);
 
@@ -702,21 +701,7 @@ const CreateB2BInvoice = ({
                       },
                     });
                   }}
-                  unit={selectedItem.unitId} // unitId from state
-                  onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unitId: Number(val) }; // store ID
-                      saveDraftToSession({
-                        key: 'b2bInvoiceDraft',
-                        data: {
-                          ...order,
-                          itemDraft: updated,
-                        },
-                      });
-                      return updated;
-                    });
-                  }}
-                  units={units?.quantity} // pass the full object list
+                  units={units?.quantity}
                   unitPlaceholder="Select unit"
                 />
               </div>
@@ -726,13 +711,11 @@ const CreateB2BInvoice = ({
                   {translations('form.label.price')}
                   <span className="text-red-600">*</span>
                 </Label>
+
                 <div className="flex flex-col gap-1">
                   <Input
                     type="number"
-                    disabled={
-                      (cta === 'offer' && order.buyerId == null) ||
-                      order.sellerEnterpriseId == null
-                    }
+                    disabled={isItemInputsDisabled}
                     value={
                       selectedItem.unitPrice == null ||
                       selectedItem.unitPrice === 0
@@ -743,51 +726,52 @@ const CreateB2BInvoice = ({
                     onChange={(e) => {
                       const inputValue = e.target.value;
 
-                      // Allow user to clear input
                       if (inputValue === '') {
-                        setSelectedItem((prevValue) => ({
-                          ...prevValue,
+                        const updatedItem = {
+                          ...selectedItem,
                           unitPrice: 0,
                           totalAmount: 0,
                           totalGstAmount: 0,
-                        }));
+                        };
+                        setSelectedItem(updatedItem);
                         return;
                       }
 
                       const value = Number(inputValue);
-
-                      // Prevent negative
                       if (value < 0) return;
 
                       const totalAmt = parseFloat(
-                        (selectedItem.quantity * value).toFixed(2),
-                      );
-                      const gstAmt = parseFloat(
-                        (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
+                        ((Number(selectedItem.quantity) || 0) * value).toFixed(
+                          2,
+                        ),
                       );
 
-                      setSelectedItem((prevValue) => ({
-                        ...prevValue,
+                      const gstAmt = parseFloat(
+                        (
+                          totalAmt *
+                          ((Number(selectedItem.gstPerUnit) || 0) / 100)
+                        ).toFixed(2),
+                      );
+
+                      const updatedItem = {
+                        ...selectedItem,
                         unitPrice: value,
                         totalAmount: totalAmt,
                         totalGstAmount: gstAmt,
-                      }));
+                      };
 
-                      // Save the selected item to session storage
+                      setSelectedItem(updatedItem);
+
                       saveDraftToSession({
                         key: 'b2bInvoiceDraft',
                         data: {
                           ...order,
-                          itemDraft: {
-                            ...selectedItem,
-                            unitPrice: value,
-                            totalAmount: totalAmt,
-                            totalGstAmount: gstAmt,
-                          },
+                          itemDraft: updatedItem,
                         },
                       });
                     }}
                   />
+
                   {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
                 </div>
               </div>
@@ -799,15 +783,13 @@ const CreateB2BInvoice = ({
                     <span className="text-xs"> (%)</span>
                     <span className="text-red-600">*</span>
                   </Label>
+
                   <div className="flex flex-col gap-1">
                     <Input
                       disabled
                       value={selectedItem.gstPerUnit || ''}
                       className="max-w-14"
                     />
-                    {errorMsg.gstPerUnit && (
-                      <ErrorBox msg={errorMsg.gstPerUnit} />
-                    )}
                   </div>
                 </div>
               )}
@@ -819,16 +801,12 @@ const CreateB2BInvoice = ({
                     : translations('form.label.value')}
                   <span className="text-red-600">*</span>
                 </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem.totalAmount || ''}
-                    className="max-w-30"
-                  />
-                  {errorMsg.totalAmount && (
-                    <ErrorBox msg={errorMsg.totalAmount} />
-                  )}
-                </div>
+
+                <Input
+                  disabled
+                  value={selectedItem.totalAmount || ''}
+                  className="max-w-30"
+                />
               </div>
 
               {isGstApplicable(isGstApplicableForSalesOrders) && (
@@ -837,16 +815,12 @@ const CreateB2BInvoice = ({
                     {translations('form.label.tax_amount')}
                     <span className="text-red-600">*</span>
                   </Label>
-                  <div className="flex flex-col gap-1">
-                    <Input
-                      disabled
-                      value={selectedItem.totalGstAmount || ''}
-                      className="max-w-30"
-                    />
-                    {errorMsg.totalGstAmount && (
-                      <ErrorBox msg={errorMsg.totalGstAmount} />
-                    )}
-                  </div>
+
+                  <Input
+                    disabled
+                    value={selectedItem.totalGstAmount || ''}
+                    className="max-w-30"
+                  />
                 </div>
               )}
 
@@ -856,62 +830,50 @@ const CreateB2BInvoice = ({
                     {translations('form.label.amount')}
                     <span className="text-red-600">*</span>
                   </Label>
-                  <div className="flex flex-col gap-1">
-                    <Input
-                      disabled
-                      value={
-                        (
-                          (Number(selectedItem.totalAmount) || 0) +
-                          (Number(selectedItem.totalGstAmount) || 0)
-                        ).toFixed(2) || ''
-                      }
-                      className="max-w-30"
-                    />
-                    {errorMsg.totalAmount && (
-                      <ErrorBox msg={errorMsg.totalAmount} />
-                    )}
-                  </div>
+
+                  <Input
+                    disabled
+                    value={(
+                      (Number(selectedItem.totalAmount) || 0) +
+                      (Number(selectedItem.totalGstAmount) || 0)
+                    ).toFixed(2)}
+                    className="max-w-30"
+                  />
                 </div>
               )}
             </div>
+
             <div className="flex items-center justify-end gap-4">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  setSelectedItem((prev) => ({
-                    ...prev,
+                  const clearedItem = {
                     productName: '',
                     productType: '',
                     productId: null,
                     quantity: null,
+                    unitId: null,
                     unitPrice: null,
-                    gstPerUnit: null,
+                    gstPerUnit: 0,
                     totalAmount: null,
                     totalGstAmount: null,
-                  }));
+                  };
 
-                  // Clear the selected item in session storage
+                  setSelectedItem(clearedItem);
+
                   saveDraftToSession({
                     key: 'b2bInvoiceDraft',
                     data: {
                       ...order,
-                      itemDraft: {
-                        productName: '',
-                        productType: '',
-                        productId: null,
-                        quantity: null,
-                        unitPrice: null,
-                        gstPerUnit: null,
-                        totalAmount: null,
-                        totalGstAmount: null,
-                      },
+                      itemDraft: clearedItem,
                     },
                   });
                 }}
               >
                 {translations('form.ctas.cancel')}
               </Button>
+
               <Button
                 size="sm"
                 disabled={
@@ -934,20 +896,22 @@ const CreateB2BInvoice = ({
                     ...order,
                     orderItems: updatedOrderItems,
                   };
-                  setOrder(updatedOrder);
-                  // Clear the selected item (itemDraft in UI)
+
                   const clearedItem = {
                     productName: '',
                     productType: '',
                     productId: null,
                     quantity: null,
+                    unitId: null,
                     unitPrice: null,
                     gstPerUnit: 0,
                     totalAmount: null,
                     totalGstAmount: null,
                   };
+
+                  setOrder(updatedOrder);
                   setSelectedItem(clearedItem);
-                  // Save the updated order to session storage
+
                   saveDraftToSession({
                     key: 'b2bInvoiceDraft',
                     data: {
@@ -965,7 +929,7 @@ const CreateB2BInvoice = ({
             </div>
           </div>
 
-          {/* selected item table */}
+          {/* selected items table */}
           <DataTable
             data={order.orderItems}
             columns={createSalesInvoiceColumns}
@@ -985,9 +949,10 @@ const CreateB2BInvoice = ({
                       {grossAmt.toFixed(2)}
                     </span>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <span className="font-bold">
-                      {translations('form.footer.tax_amount')} :{' '}
+                      {translations('form.footer.tax_amount')} :
                     </span>
                     <span className="rounded-sm border bg-slate-100 p-2">
                       {totalGstAmt.toFixed(2)}
@@ -995,9 +960,10 @@ const CreateB2BInvoice = ({
                   </div>
                 </>
               )}
+
               <div className="flex items-center gap-2">
                 <span className="font-bold">
-                  {translations('form.footer.total_amount')} :{' '}
+                  {translations('form.footer.total_amount')} :
                 </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {totalAmtWithGst.toFixed(2)}
@@ -1009,12 +975,13 @@ const CreateB2BInvoice = ({
               <Button size="sm" onClick={onCancel} variant={'outline'}>
                 {translations('form.ctas.cancel')}
               </Button>
+
               <Button
                 size="sm"
                 onClick={() => {
                   isOrder === 'invoice'
                     ? handlePreview(order)
-                    : handleSubmit(order); // handlePreview for invoice and handleSubmit for order
+                    : handleSubmit(order);
                 }}
                 disabled={invoiceMutation.isPending}
               >

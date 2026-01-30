@@ -213,6 +213,7 @@
                     "client": "Client",
                     "customer": "Customer",
                     "vendor": "Vendor",
+                    "invoice_date": "Invoice Date",
                     "item_type": "Item Type",
                     "item": "Item",
                     "quantity": "Quantity",
@@ -228,6 +229,7 @@
                     "customer": "*Please select a customer or add a new one",
                     "client": "*Please select a client or add a new one",
                     "vendor": "*Please select a vendor or add a new one",
+                    "invoice_date": "*Please select Invoice Date",
                     "item_type": "*Please select an Item type",
                     "itemInvoice": "*Please select or add atleast one item to create invoice",
                     "itemOrder": "*Please select or add atleast one item to create order",
@@ -302,6 +304,7 @@
             },
             "form": {
                 "label": {
+                    "invoice_date": "Invoice Date",
                     "customer": "Customer number",
                     "customer_name": "Customer name",
                     "customer_address": "Customer address",
@@ -317,6 +320,7 @@
                     "amount": "Amount"
                 },
                 "errorMsg": {
+                    "invoice_date": "*Please select Invoice Date",
                     "customer": "*Please select a customer or add a new one",
                     "customer_name": "*Enter Customer name",
                     "customer_address": "*Enter Customer address",

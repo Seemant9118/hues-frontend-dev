@@ -1,6 +1,7 @@
 /* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { customerApis } from '@/api/enterprises_user/customers/customersApi';
+import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
   getEnterpriseId,
@@ -17,26 +18,27 @@ import {
 } from '@/services/Catalogue_Services/CatalogueServices';
 import { getCustomersByNumber } from '@/services/Enterprises_Users_Service/Customer_Services/Customer_Services';
 import { createInvoice } from '@/services/Orders_Services/Orders_Services';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ChevronDown } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
-import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
-import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
+import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
 import ErrorBox from '../ui/ErrorBox';
+import InputWithSelect from '../ui/InputWithSelect';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
 import Wrapper from '../wrappers/Wrapper';
 import InvoiceTypePopover from './InvoiceTypePopover';
-import InputWithSelect from '../ui/InputWithSelect';
 
 const CreateB2CInvoice = ({
   cta,
@@ -88,6 +90,7 @@ const CreateB2CInvoice = ({
     socialLinks: b2CInvoiceDraft?.socialLinks || null,
     remarks: b2CInvoiceDraft?.remarks || null,
     pin: b2CInvoiceDraft?.pin || null,
+    invoiceDate: b2CInvoiceDraft?.invoiceDate || null,
   });
 
   // fetch units
@@ -301,6 +304,10 @@ const CreateB2CInvoice = ({
   const validation = ({ order }) => {
     const errorObj = {};
 
+    if (!order?.invoiceDate) {
+      errorObj.invoiceDate = translations('form.errorMsg.invoice_date');
+    }
+
     // Buyer Details (for B2C only)
     if (!order?.buyerId) {
       errorObj.buyerId = translations('form.errorMsg.customer');
@@ -440,6 +447,46 @@ const CreateB2CInvoice = ({
         {/* Customer section */}
         <div className="rounded-sm border border-neutral-200 p-4">
           <div className="grid grid-cols-2 gap-4">
+            {/* Invoice Date */}
+            <div className="flex max-w-sm flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.invoice_date')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <div className="relative flex items-center rounded-sm border p-2">
+                <DatePickers
+                  selected={
+                    order.invoiceDate ? new Date(order.invoiceDate) : null
+                  }
+                  onChange={(date) => {
+                    const formattedForAPI = date
+                      ? moment(date).format('YYYY-MM-DD')
+                      : null;
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      invoiceDate: formattedForAPI,
+                    }));
+
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: {
+                        ...order,
+                        invoiceDate: formattedForAPI,
+                      },
+                    });
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/mm/yyyy"
+                  className="w-full"
+                  popperPlacement="end"
+                />
+              </div>
+
+              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
+            </div>
+
             {/* Customer Number */}
             <div className="flex w-full flex-col gap-2">
               <Label className="flex gap-1">
