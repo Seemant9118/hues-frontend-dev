@@ -64,10 +64,10 @@ export const FormSchema = [
     name: 'modeOfTransport',
     placeholder: 'Select mode',
     options: [
-      { label: 'Road', value: 'ROAD' },
-      { label: 'Ship', value: 'SHIP' },
-      { label: 'Air', value: 'AIR' },
-      { label: 'Rail', value: 'RAIL' },
+      { label: 'Road - LR', value: 'ROAD' },
+      { label: 'Ship - LB', value: 'SHIP' },
+      { label: 'Air - Airway', value: 'AIR' },
+      { label: 'Rail - Railway', value: 'RAIL' },
     ],
   },
   {
@@ -91,8 +91,8 @@ export const FormSchema = [
     name: 'bookingType',
     placeholder: 'Select booking type',
     options: [
-      { label: 'LR', value: 'LR' },
-      { label: 'LB', value: 'LB' },
+      { label: 'Lorry receipt', value: 'LR' },
+      { label: 'Lading Bill', value: 'LB' },
       { label: 'Airway', value: 'AIRWAY' },
       { label: 'Railway', value: 'RAILWAY' },
     ],

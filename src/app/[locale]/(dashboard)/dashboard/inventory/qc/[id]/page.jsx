@@ -1,6 +1,7 @@
 'use client';
 
 import { qcApis } from '@/api/inventories/qc/qc';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import CommentBox from '@/components/comments/CommentBox';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import QCItemsDialog from '@/components/qc/QCItemDialog';
@@ -24,6 +25,7 @@ import { useQCItemsColumns } from './qcItemColumns';
 
 const ViewQC = () => {
   const translations = useTranslations('qc.qcDetails');
+  const enterpriseId = getEnterpriseId();
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
@@ -222,6 +224,7 @@ const ViewQC = () => {
             )}
 
             <QCItemsDialog
+              enterpriseId={enterpriseId}
               open={isQCDialogOpen}
               onClose={() => setIsQCDialogOpen(false)}
               qcDetails={qcDetails}
