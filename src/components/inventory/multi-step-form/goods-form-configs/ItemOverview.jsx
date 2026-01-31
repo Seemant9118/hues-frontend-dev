@@ -20,9 +20,11 @@ import {
   getProductGoodsCategories,
 } from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { toast } from 'sonner';
+import { CustomMenuList } from '../components/AddProductCustomMenuList ';
+import AddProductTypeModal from '../components/AddProductTypeModal';
 
 export default function ItemOverview({
   formData,
@@ -30,6 +32,8 @@ export default function ItemOverview({
   errors,
   translation,
 }) {
+  const [isAddProductTypeOpen, setIsAddProductTypeOpen] = useState(false);
+
   // api call for search & get
   const loadProductTypeOptions = async (inputValue) => {
     // No API call for empty / short input
@@ -153,21 +157,40 @@ export default function ItemOverview({
               value={selectedProductTypeOption}
               filterOption={null}
               noOptionsMessage={() => 'Type at least 3 characters'}
+              components={{ MenuList: CustomMenuList }}
+              isClearable
+              onAddNewProductType={() => setIsAddProductTypeOpen(true)}
               onChange={(selectedOption) => {
-                if (!selectedOption) return;
+                // if user clears the select
+                if (!selectedOption) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    goodsTypeId: null,
+                    productTypeLabel: '',
+
+                    // remove prefilled data
+                    hsnCode: '',
+                    gstPercentage: '',
+                    categoryId: null,
+                    subCategoryId: null,
+                    huesItemId: null,
+                    description: '',
+                  }));
+                  return;
+                }
 
                 setFormData((prev) => ({
                   ...prev,
                   goodsTypeId: selectedOption.value,
                   productTypeLabel: selectedOption.label,
 
-                  // optional auto-fill
-                  hsnCode: selectedOption.meta?.hsnCode,
-                  gstPercentage: selectedOption.meta?.gstRate,
-                  categoryId: selectedOption.meta?.categoryId,
-                  subCategoryId: selectedOption.meta?.subCategoryId,
-                  huesItemId: selectedOption.meta?.huesItemId,
-                  description: selectedOption.meta?.description,
+                  // auto-fill new data
+                  hsnCode: selectedOption.meta?.hsnCode || '',
+                  gstPercentage: selectedOption.meta?.gstRate || '',
+                  categoryId: selectedOption.meta?.categoryId || null,
+                  subCategoryId: selectedOption.meta?.subCategoryId || null,
+                  huesItemId: selectedOption.meta?.huesItemId || null,
+                  description: selectedOption.meta?.description || '',
                 }));
               }}
             />
@@ -311,6 +334,11 @@ export default function ItemOverview({
           />
           {errors?.description && <ErrorBox msg={errors.description} />}
         </div>
+
+        <AddProductTypeModal
+          open={isAddProductTypeOpen}
+          onClose={() => setIsAddProductTypeOpen(false)}
+        />
       </div>
     </div>
   );

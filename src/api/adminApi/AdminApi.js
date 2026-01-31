@@ -137,6 +137,11 @@ export const AdminAPIs = {
     endpointKey: 'get_goods_master',
   },
 
+  addProductType: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/add-missing-item/`,
+    endpointKey: 'add_prduct_type',
+  },
+
   createGoodsMaster: {
     endpoint: `/admin-panel/hsn-master/goods-hsn-master/add-item`,
     endpointKey: 'create_goods_master',
@@ -160,6 +165,11 @@ export const AdminAPIs = {
   downloadSampleFileGoodsMaster: {
     endpoint: `/admin-panel/hsn-master/goods-hsn-master/downloadsamplefile`,
     endpointKey: 'download_goods_master_sample',
+  },
+
+  approvedRejectGoodsMasterReq: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/approve-reject`,
+    endpointKey: 'approved_goods_req',
   },
 
   getServicesMaster: {
