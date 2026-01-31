@@ -22,6 +22,7 @@ import {
 import { CircleFadingPlus, ServerOff, Upload } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import FileUploadBox from '@/components/upload/UploaderBox';
+import { useRouter } from 'next/navigation';
 import { useGoodsMasterColumns } from './useGoodsMasterColumns';
 
 // macros
@@ -29,6 +30,7 @@ const PAGE_LIMIT = 10;
 
 const GoodsMasterPage = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { hasPermission } = usePermission();
   const [isAddingGoodsMaster, setIsAddingGoodsMaster] = useState(false);
   const [GoodsMaster, setGoodsMasterData] = useState([]);
@@ -80,6 +82,12 @@ const GoodsMasterPage = () => {
     });
   }, [goodsQuery]);
 
+  const onRowClick = (row) => {
+    queryClient.setQueryData(['goods-master-details', row.id], row);
+
+    router.push(`/dashboard/admin/goods-master/goods-master/${row.id}`);
+  };
+
   const GoodsMasterColumns = useGoodsMasterColumns({
     setIsEditingGoodsMaster,
     setGoodsMasterToEdit,
@@ -125,6 +133,7 @@ const GoodsMasterPage = () => {
                     isFetching={isGoodsQueryFetching}
                     totalPages={paginationData?.totalPages}
                     currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
                   />
                 ) : (
                   <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-gray-50">

@@ -184,6 +184,12 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
     case false:
       return { text: 'Inactive', ...STATUS_UI.ERROR };
 
+    case 'APPROVED':
+      return {
+        text: 'Approved',
+        ...STATUS_UI.SUCCESS,
+      };
+
     default:
       return null;
   }

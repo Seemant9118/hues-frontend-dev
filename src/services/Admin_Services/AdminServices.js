@@ -167,6 +167,13 @@ export const getGoodsMaster = ({ page, limit }) => {
   return APIinstance.get(baseEndpoint, { params });
 };
 
+export const addProductType = ({ enterpriseId, data }) => {
+  return APIinstance.post(
+    `${AdminAPIs.addProductType.endpoint}${enterpriseId}`,
+    data,
+  );
+};
+
 export const createGoodsMaster = ({ data }) => {
   return APIinstance.post(AdminAPIs.createGoodsMaster.endpoint, data);
 };
@@ -185,6 +192,10 @@ export const deleteGoodsMaster = ({ id }) => {
 
 export const downloadSampleFileGoodsMaster = () => {
   return APIinstance.get(AdminAPIs.downloadSampleFileGoodsMaster.endpoint);
+};
+
+export const approvedRejectGoodsMasterReq = ({ data }) => {
+  return APIinstance.put(AdminAPIs.approvedRejectGoodsMasterReq.endpoint, data);
 };
 
 export const getServicesMaster = ({ page, limit }) => {

@@ -5,6 +5,7 @@
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { capitalize } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -82,6 +83,15 @@ export const useGoodsMasterColumns = ({
       ),
     },
 
+    {
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
+        <ConditionalRenderingStatus status={row.original.status} />
+      ),
+    },
     {
       id: 'actions',
       enableHiding: false,
