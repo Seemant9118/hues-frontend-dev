@@ -2,7 +2,7 @@ import { raisedDebitNote } from '@/services/Debit_Note_Services/DebitNoteService
 import { useMutation } from '@tanstack/react-query';
 import { Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 import { Button } from '../ui/button';
@@ -29,11 +29,12 @@ const CreateDebitNote = ({
   const router = useRouter();
 
   const normalizeItems = (data = []) =>
-    data.map((item) => {
+    (data || []).map((item) => {
       const product = item.metaData?.productDetails || {};
 
       const defectQty = item.defectedQuantity;
       const remainingDefectedQty = item.remainingDefectedQuantity;
+
       const isUnsatisfactory = item.issueType === 'UNSATISFACTORY';
       const isShortQuantity = item.issueType === 'SHORT_QUANTITY';
 
@@ -50,8 +51,11 @@ const CreateDebitNote = ({
         isSelected: true,
       };
     });
+
+  const normalizedItems = useMemo(() => normalizeItems(data), [data]);
+
   /* Normalize API Data */
-  const [items, setItems] = useState(() => normalizeItems(data));
+  const [items, setItems] = useState(normalizedItems);
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
@@ -60,6 +64,9 @@ const CreateDebitNote = ({
     setErrorMsg(null);
     setItems(normalizeItems(data));
   }, [isCreatingDebitNote, data]);
+
+  // ✅ Empty state condition: id missing OR no defective items
+  const shouldShowEmptyState = !id || !normalizedItems?.length;
 
   const isAllSelected = items.every((item) => item.isSelected);
 
@@ -106,7 +113,7 @@ const CreateDebitNote = ({
       );
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 
@@ -135,6 +142,41 @@ const CreateDebitNote = ({
     createDebitNoteMutation.mutate(payload);
   };
 
+  // ✅ Empty State Page
+  if (shouldShowEmptyState) {
+    return (
+      <Wrapper className="flex h-screen flex-col">
+        <section className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="rounded-full bg-muted p-3">
+              <Package size={22} />
+            </div>
+
+            <h2 className="text-base font-semibold">
+              No Debit Note Items Found
+            </h2>
+
+            <p className="max-w-xl text-sm text-muted-foreground">
+              All good — no defective or short-delivered items. Looks like this
+              GRN cleared QC without issues. Want to double-check? Open Quality
+              Certificates for the GRNs linked to this invoice.
+            </p>
+
+            <div className="mt-2 flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsCreatingDebitNote(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </section>
+      </Wrapper>
+    );
+  }
+
   return (
     <Wrapper className="flex h-screen flex-col">
       <section className="flex flex-1 flex-col overflow-hidden">
@@ -146,6 +188,7 @@ const CreateDebitNote = ({
               <Package size={18} />
               Select Items to Create Debit note
             </div>
+
             {errorMsg && <DynamicTextInfo variant="danger" title={errorMsg} />}
 
             <Table className="w-full text-sm">
@@ -176,22 +219,27 @@ const CreateDebitNote = ({
                         onCheckedChange={() => {
                           toggleItemSelection(index);
                         }}
-                        aria-label="Select all"
+                        aria-label="Select item"
                       />
                     </TableCell>
+
                     <TableCell className="p-3">{item.skuId}</TableCell>
+
                     <TableCell className="p-3 font-medium">
                       {item.itemName}
                     </TableCell>
+
                     <TableCell className="p-3">
                       <ConditionalRenderingStatus
                         status={item.issueType}
                         isQC
                       />
                     </TableCell>
+
                     <TableCell className="p-3 font-medium">
                       {item.defectQty}
                     </TableCell>
+
                     <TableCell className="p-3">
                       <div className="flex items-center gap-2">
                         <Button
@@ -228,6 +276,7 @@ const CreateDebitNote = ({
                         </Button>
                       </div>
                     </TableCell>
+
                     <TableCell className="p-3">₹{item.price}</TableCell>
                   </TableRow>
                 ))}
@@ -236,6 +285,7 @@ const CreateDebitNote = ({
           </div>
         </div>
       </section>
+
       {/* Footer */}
       <div className="sticky bottom-0 z-20 flex w-full justify-end gap-2 border-t-2 bg-white p-2">
         <Button
@@ -245,6 +295,7 @@ const CreateDebitNote = ({
         >
           Cancel
         </Button>
+
         <Button
           size="sm"
           onClick={handleCreateDebitNote}

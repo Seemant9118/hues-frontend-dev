@@ -282,10 +282,10 @@ const ViewInvoice = () => {
     );
   };
 
-  const isAnyDefects =
-    invoiceDetails?.invoiceDetails?.isShortQuantity ||
-    invoiceDetails?.invoiceDetails?.isUnsatisfactory ||
-    invoiceDetails?.invoiceDetails?.isShortDelivery;
+  // const isAnyDefects =
+  //   invoiceDetails?.invoiceDetails?.isShortQuantity ||
+  //   invoiceDetails?.invoiceDetails?.isUnsatisfactory ||
+  //   invoiceDetails?.invoiceDetails?.isShortDelivery;
 
   const defects = () => {
     const statuses = getQCDefectStatuses(invoiceDetails?.invoiceDetails);
@@ -341,22 +341,14 @@ const ViewInvoice = () => {
                     <ProtectedWrapper
                       permissionCode={'permission:purchase-debit-note-action'}
                     >
-                      <Tooltips
-                        trigger={
-                          <Button
-                            size="sm"
-                            variant="blue_outline"
-                            onClick={() => setIsCreatingDebitNote(true)}
-                            className="font-bold"
-                            disabled={!isAnyDefects}
-                          >
-                            Create Debit Note
-                          </Button>
-                        }
-                        content={
-                          'No defects reported yet. Once QC marks defects, you’ll be able to create the Debit Note.'
-                        }
-                      />
+                      <Button
+                        size="sm"
+                        variant="blue_outline"
+                        onClick={() => setIsCreatingDebitNote(true)}
+                        className="font-bold"
+                      >
+                        Create Debit Note
+                      </Button>
                     </ProtectedWrapper>
                   )}
 

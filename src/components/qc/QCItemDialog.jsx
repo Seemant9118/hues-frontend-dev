@@ -7,11 +7,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { updateBulkQc } from '@/services/Inventories_Services/QC_Services/QC_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  getBuckets,
+  updateBulkQc,
+} from '@/services/Inventories_Services/QC_Services/QC_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import RemarkBox from '../remarks/RemarkBox';
 import { Input } from '../ui/input';
 import {
   Table,
@@ -21,17 +32,33 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import RemarkBox from '../remarks/RemarkBox';
 
-export default function QCItemsDialog({ open, onClose, qcDetails }) {
+export default function QCItemsDialog({
+  enterpriseId,
+  open,
+  onClose,
+  qcDetails,
+}) {
   const queryClient = useQueryClient();
   const params = useSearchParams();
-  const [items, setItems] = useState(null);
+  const [items, setItems] = useState([]);
   const [remarks, setRemarks] = useState('');
   const [attachedFiles, setAttachedFiles] = useState([]);
 
+  // Fetch buckets using React Query
+  const { data: bucketOptions = [], isLoading: isBucketLoading } = useQuery({
+    queryKey: [qcApis.bucketOptions.endpointKey, enterpriseId],
+    queryFn: () => getBuckets({ enterpriseId }),
+    select: (res) => res?.data?.data || [],
+    enabled: !!enterpriseId,
+  });
+
+  // Map QC items
   useEffect(() => {
-    if (!qcDetails?.items?.length) return;
+    if (!qcDetails?.items?.length) {
+      setItems([]);
+      return;
+    }
 
     const mappedItems = qcDetails.items.map((item) => ({
       id: item.id,
@@ -45,6 +72,9 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
       rejectedQty: item.qcFailedQuantity || 0,
       pendingQty: item.qcPendingQuantity || 0,
       isShortQuantity: item.qcStatus === 'SHORT_QUANTITY',
+
+      // ✅ Bucket field
+      targetBucketId: item.targetBucketId ? String(item.targetBucketId) : '',
     }));
 
     setItems(mappedItems);
@@ -55,15 +85,17 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
       prev.map((item) => {
         if (item.id !== itemId) return item;
 
-        // TEXT FIELD (remarks)
+        // ✅ remarks
         if (field === 'remarks') {
-          return {
-            ...item,
-            remarks: value,
-          };
+          return { ...item, remarks: value };
         }
 
-        // NUMBER FIELDS (acceptedQty / rejectedQty)
+        // ✅ bucket
+        if (field === 'targetBucketId') {
+          return { ...item, targetBucketId: value };
+        }
+
+        // ✅ qty fields
         const numericValue = Math.max(0, Number(value) || 0);
 
         const otherQty =
@@ -88,6 +120,7 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
     onSuccess: () => {
       toast.success('QC added successfully');
       onClose();
+
       queryClient.invalidateQueries([
         qcApis.getQCDetailsWithGRNs.endpointKey,
         params.id,
@@ -99,7 +132,7 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
   });
 
   const handleSaveQC = () => {
-    if (!items.length) {
+    if (!items?.length) {
       toast.info('No data to update');
       return;
     }
@@ -126,6 +159,11 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
         qcPassedQuantity: Number(item.acceptedQty || 0),
         qcFailedQuantity: Number(item.rejectedQty || 0),
         qcRemarks: item.remarks || '',
+
+        // ✅ send bucket id
+        targetBucketId: item.targetBucketId
+          ? Number(item.targetBucketId)
+          : null,
       };
     });
 
@@ -142,7 +180,6 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
           <DialogTitle>Quality Check Items</DialogTitle>
         </DialogHeader>
 
-        {/* 👉 Your table goes here */}
         <div className="scrollBarStyles max-h-[70vh] overflow-auto">
           <div className="overflow-x-auto">
             <Table className="w-full text-sm">
@@ -153,19 +190,19 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                   <TableHead>QC Received</TableHead>
                   <TableHead>QC Accepted</TableHead>
                   <TableHead>QC Rejected</TableHead>
-                  {/* <TableHead>Remark</TableHead> */}
+                  <TableHead>Select Bucket</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {!items?.length ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={6} className="text-center">
                       No data available
                     </TableCell>
                   </TableRow>
                 ) : (
-                  items?.map((item) => (
+                  items.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">
                         {item.skuId || '-'}
@@ -198,6 +235,7 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                           >
                             −
                           </Button>
+
                           <Input
                             type="number"
                             min={0}
@@ -251,6 +289,7 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                           >
                             −
                           </Button>
+
                           <Input
                             type="number"
                             min={0}
@@ -287,16 +326,40 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                         </div>
                       </TableCell>
 
-                      {/* <TableCell>
-                        <Input
-                          placeholder="Add remark..."
-                          value={item.remarks}
-                          onChange={(e) =>
-                            updateItemField(item.id, 'remarks', e.target.value)
+                      <TableCell>
+                        <Select
+                          value={item.targetBucketId}
+                          onValueChange={(value) =>
+                            updateItemField(item.id, 'targetBucketId', value)
                           }
-                          className="max-w-[220px]"
-                        />
-                      </TableCell> */}
+                          disabled={isBucketLoading}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select Bucket" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {isBucketLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Loading buckets...
+                              </SelectItem>
+                            ) : !bucketOptions?.length ? (
+                              <SelectItem value="no-data" disabled>
+                                No buckets found
+                              </SelectItem>
+                            ) : (
+                              bucketOptions.map((bucket) => (
+                                <SelectItem
+                                  key={bucket.id}
+                                  value={String(bucket.id)}
+                                >
+                                  {bucket.displayName}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

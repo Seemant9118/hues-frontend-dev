@@ -90,21 +90,26 @@ const InvoicePreview = ({
     if (!invoicePreviewConfig) return;
 
     // remarks
-    setRemarks(invoicePreviewConfig?.defaultRemarks);
+    setRemarks(invoicePreviewConfig?.defaultRemarks || '');
 
     // due date (number of days)
-    const dueInDays = Number(invoicePreviewConfig?.dueDate);
+    const dueInDays = Number(invoicePreviewConfig?.dueDate || 0);
     setPaymentDueDate(dueInDays);
 
-    // Calculate selected date as today + dueDate days
-    const today = new Date();
-    const calculatedDate = new Date(today);
-    calculatedDate.setDate(today.getDate() + dueInDays);
+    // ✅ invoice date fallback
+    const baseInvoiceDate = order?.invoiceDate
+      ? new Date(order.invoiceDate)
+      : new Date();
+
+    // ✅ Calculate selected date as invoiceDate + dueDate days
+    const calculatedDate = new Date(baseInvoiceDate);
+    calculatedDate.setDate(calculatedDate.getDate() + dueInDays);
+
     setSelectedDate(calculatedDate);
 
     // payment terms
-    setPaymentTerms(invoicePreviewConfig.paymentTerms);
-  }, [invoicePreviewConfig]);
+    setPaymentTerms(invoicePreviewConfig?.paymentTerms || '');
+  }, [invoicePreviewConfig, order?.invoiceDate]);
 
   const { data: gstAddressesList, isLoading: isGstAddressLoading } = useQuery({
     queryKey: [
