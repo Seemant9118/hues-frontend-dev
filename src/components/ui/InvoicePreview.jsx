@@ -2,13 +2,20 @@
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
-import { getInvoicePreviewConfig } from '@/services/Settings_Services/SettingsService';
+import {
+  addUpdateAddress,
+  getInvoicePreviewConfig,
+} from '@/services/Settings_Services/SettingsService';
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { addressAPIs } from '@/api/addressApi/addressApis';
-import { getGstAddressesList } from '@/services/address_Services/AddressServices';
+import {
+  addClientAddress,
+  getGstAddressesList,
+} from '@/services/address_Services/AddressServices';
+import { usePathname } from 'next/navigation';
 import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
 import AddAddress from '../settings/AddAddress';
@@ -27,6 +34,7 @@ import {
   SelectValue,
 } from './select';
 import { Textarea } from './textarea';
+import AddNewAddress from '../enterprise/AddNewAddress';
 
 const InvoicePreview = ({
   order,
@@ -69,6 +77,8 @@ const InvoicePreview = ({
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
   const [isBiilingAddressAdding, setIsBillingAddressAdding] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const pathName = usePathname();
+  const isPurchasePage = pathName.includes('purchases');
 
   useEffect(() => {
     if (!url) return;
@@ -207,10 +217,18 @@ const InvoicePreview = ({
               <div>
                 {/* address */}
                 {isBiilingAddressAdding && (
-                  <AddAddress
-                    clientId={getAddressRelatedData?.clientId}
-                    isModalOpen={isBiilingAddressAdding}
-                    setIsModalOpen={setIsBillingAddressAdding}
+                  <AddNewAddress
+                    isAddressAdding={isBiilingAddressAdding}
+                    setIsAddressAdding={setIsBillingAddressAdding}
+                    mutationKey={
+                      isPurchasePage
+                        ? settingsAPI.addUpdateAddress.endpointKey
+                        : addressAPIs.addAddressClient?.endpointKey
+                    }
+                    mutationFn={
+                      isPurchasePage ? addUpdateAddress : addClientAddress
+                    }
+                    invalidateKey={addressAPIs.getAddresses.endpointKey}
                   />
                 )}
                 {isAddressAddable && (

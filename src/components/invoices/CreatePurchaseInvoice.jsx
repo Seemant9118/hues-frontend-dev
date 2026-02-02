@@ -8,6 +8,7 @@ import {
   getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
+  saveDraftToSession,
 } from '@/appUtils/helperFunctions';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
@@ -21,8 +22,8 @@ import {
   createVendor,
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import { previewDirectInvoice } from '@/services/Invoice_Services/Invoice_Services';
-import { createInvoice } from '@/services/Orders_Services/Orders_Services';
+import { previewDirectPurchaseInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import { createPurchaseInvoice } from '@/services/Orders_Services/Orders_Services';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -79,7 +80,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
   });
 
   const [order, setOrder] = useState({
-    vendorType: 'B2B',
+    clientType: 'B2B',
     sellerEnterpriseId: purchaseInvoiceDraft?.sellerEnterpriseId,
     buyerId: enterpriseId,
     gstAmount: purchaseInvoiceDraft?.gstAmount || null,
@@ -101,12 +102,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
   const [
     isGstApplicableForSelectedVendor,
     setIsGstApplicableForSelectedVendor,
-  ] = useState(false);
-
-  // save draft to session storage
-  function saveDraftToSession({ key, data }) {
-    SessionStorageService.set(key, data);
-  }
+  ] = useState(purchaseInvoiceDraft?.isGstApplicableForSelectedVendor || false);
 
   // fetch units
   const { data: units } = useQuery({
@@ -119,7 +115,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
   // vendors
   const { data: vendorData } = useQuery({
     queryKey: [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () => getVendors({ id: enterpriseId, context: 'ORDER' }), // TODO: context = 'PURCHASE
+    queryFn: () => getVendors({ id: enterpriseId, context: 'PURCHASE' }),
     select: (res) => res.data.data.users,
     enabled: !!enterpriseId,
   });
@@ -127,7 +123,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
   const vendorOptions = [
     ...(vendorData?.map((vendor) => {
       // Always unconfirmed vendor
-      const vendorId = vendor?.invitation?.id;
+      const vendorId = vendor?.id;
 
       // name can come from active enterprise or invitation userDetails
       const label = vendor?.invitation?.userDetails?.name || 'Unknown Vendor';
@@ -258,7 +254,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
   // create invoice mutation
   const invoiceMutation = useMutation({
-    mutationFn: createInvoice,
+    mutationFn: createPurchaseInvoice,
     onSuccess: (res) => {
       toast.success(
         translations('form.successMsg.invoice_created_successfully'),
@@ -299,8 +295,8 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
   // preview invoice
   const previewInvMutation = useMutation({
-    mutationKey: [invoiceApi.previewDirectInvoice.endpointKey],
-    mutationFn: previewDirectInvoice,
+    mutationKey: [invoiceApi.previewDirectPurchaseInvoice.endpointKey],
+    mutationFn: previewDirectPurchaseInvoice,
     onSuccess: (data) => {
       if (data?.data?.data) {
         const base64StrToRenderPDF = data?.data?.data;
@@ -392,7 +388,8 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                       return;
                     }
 
-                    setIsGstApplicableForSelectedVendor(!!gstNumber);
+                    const gstApplicable = !!gstNumber;
+                    setIsGstApplicableForSelectedVendor(gstApplicable);
 
                     const updatedOrder = {
                       ...order,
@@ -400,8 +397,8 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                       selectedValue: selectedOption,
                       buyerType: 'UNCONFIRMED_ENTERPRISE',
                       getAddressRelatedData: {
-                        vendorId: id,
-                        // vendorEnterpriseId,
+                        clientId: enterpriseId,
+                        clientEnterpriseId: enterpriseId,
                       },
                     };
 
@@ -409,7 +406,10 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
                     saveDraftToSession({
                       key: 'purchaseInvoiceDraft',
-                      data: updatedOrder,
+                      data: {
+                        ...updatedOrder,
+                        isGstApplicableForSelectedVendor: gstApplicable,
+                      },
                     });
                   }}
                 />
@@ -478,7 +478,11 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
                   saveDraftToSession({
                     key: 'purchaseInvoiceDraft',
-                    data: { ...updatedOrder, itemDraft: clearedItem },
+                    data: {
+                      ...updatedOrder,
+                      itemDraft: clearedItem,
+                      isGstApplicableForSelectedVendor,
+                    },
                   });
                 }}
               />
@@ -513,6 +517,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                       data: {
                         ...order,
                         invoiceDate: formattedForAPI,
+                        isGstApplicableForSelectedVendor,
                       },
                     });
                   }}
@@ -591,6 +596,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                         data: {
                           ...order,
                           itemDraft: updatedItem,
+                          isGstApplicableForSelectedVendor,
                         },
                       });
                     }}
@@ -657,6 +663,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                       data: {
                         ...order,
                         itemDraft: updatedItem,
+                        isGstApplicableForSelectedVendor,
                       },
                     });
                   }}
@@ -673,6 +680,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                       data: {
                         ...order,
                         itemDraft: updatedItem,
+                        isGstApplicableForSelectedVendor,
                       },
                     });
                   }}
@@ -742,6 +750,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                         data: {
                           ...order,
                           itemDraft: updatedItem,
+                          isGstApplicableForSelectedVendor,
                         },
                       });
                     }}
@@ -842,6 +851,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                     data: {
                       ...order,
                       itemDraft: clearedItem,
+                      isGstApplicableForSelectedVendor,
                     },
                   });
                 }}
@@ -892,6 +902,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                     data: {
                       ...updatedOrder,
                       itemDraft: clearedItem,
+                      isGstApplicableForSelectedVendor,
                     },
                   });
 
