@@ -166,6 +166,10 @@
                     "successMsg": "Invoice exported—your download’s starting now",
                     "errorMsg": "Uh-oh, we hit a snag. Retry?"
                 },
+                "invoice": {
+                    "cta":"Invoice",
+                    "tooltip": "Create a Purchase Invoice"
+                },
                 "search": {
                     "placeholder": "Search by Vendor..."
                 }
