@@ -21,7 +21,6 @@ export const useDeliveryChallansColumns = (enterpriseId) => {
       ),
       cell: ({ row }) => {
         const { referenceNumber } = row.original;
-
         return referenceNumber || '-';
       },
     },
@@ -40,22 +39,22 @@ export const useDeliveryChallansColumns = (enterpriseId) => {
         );
       },
     },
+
     {
       accessorKey: 'name',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Client/Vendor Name" />
       ),
       cell: ({ row }) => {
-        // iamBuyer ?
         const iamSeller = row.original?.enterpriseId === enterpriseId;
 
         const buyerName = row.original?.metaData?.buyerName;
         const sellerName = row.original?.metaData?.sellerDetails?.name;
 
-        // if iamSeller then show my clientName (buyer) - recievedBy
         return iamSeller ? buyerName : sellerName;
       },
     },
+
     {
       accessorKey: 'supply',
       header: ({ column }) => (
@@ -63,8 +62,28 @@ export const useDeliveryChallansColumns = (enterpriseId) => {
       ),
       cell: ({ row }) => {
         const supply = row.original?.supply;
-
         return supply || 'Outward Supply';
+      },
+    },
+
+    {
+      accessorKey: 'legFrom',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Leg From" />
+      ),
+      cell: ({ row }) => {
+        const legFrom = row.original?.legFrom;
+        return legFrom || '-';
+      },
+    },
+    {
+      accessorKey: 'legTo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Leg To" />
+      ),
+      cell: ({ row }) => {
+        const legTo = row.original?.legTo;
+        return legTo || '-';
       },
     },
 
