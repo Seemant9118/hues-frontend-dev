@@ -12,7 +12,7 @@ export const useCreateSalesInvoiceColumns = (
   setOrder,
   setSelectedItem,
   isB2BInvoice,
-  isGstApplicableForSalesOrders,
+  isGstApplicableForSelectedVendor,
 ) => {
   const translations = useTranslations(
     'components.create_edit_order.form.table.header',
@@ -48,7 +48,7 @@ export const useCreateSalesInvoiceColumns = (
         <DataTableColumnHeader column={column} title={translations('price')} />
       ),
     },
-    ...(isGstApplicable(isGstApplicableForSalesOrders)
+    ...(isGstApplicable(isGstApplicableForSelectedVendor)
       ? [
           {
             accessorKey: 'gstPerUnit',
@@ -81,7 +81,7 @@ export const useCreateSalesInvoiceColumns = (
         return formattedAmount(amount);
       },
     },
-    ...(isGstApplicable(isGstApplicableForSalesOrders)
+    ...(isGstApplicable(isGstApplicableForSelectedVendor)
       ? [
           {
             accessorKey: 'totalGstAmount',

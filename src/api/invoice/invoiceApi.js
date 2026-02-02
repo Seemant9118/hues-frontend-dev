@@ -54,6 +54,11 @@ export const invoiceApi = {
     endpoint: `/order/invoice/preview-invoice`,
     endpointKey: 'preview_direct_invoice',
   },
+  // 12. preview direct purchase invocie
+  previewDirectPurchaseInvoice: {
+    endpoint: `/order/invoice/purchase/preview-invoice`,
+    endpointKey: 'preview_direct_purchse_invoice',
+  },
   // 12. accept order
   acceptOrder: {
     endpoint: `/order/accept`,
