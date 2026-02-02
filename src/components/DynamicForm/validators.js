@@ -10,12 +10,8 @@ export const validateDynamicForm = (schema, data) => {
   return errors;
 };
 
-export const validateBookingPreview = (isFirstDeliveryChallanCreated, data) => {
+export const validateBookingPreview = (data) => {
   const errors = {};
-
-  if (!isFirstDeliveryChallanCreated && !data?.legFrom) {
-    errors.legFrom = 'Leg from is required';
-  }
 
   if (!data?.legTo) {
     errors.legTo = 'Leg To is required';

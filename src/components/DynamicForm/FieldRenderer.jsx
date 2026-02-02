@@ -81,7 +81,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
           <SelectTrigger>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-44">
             {options?.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}

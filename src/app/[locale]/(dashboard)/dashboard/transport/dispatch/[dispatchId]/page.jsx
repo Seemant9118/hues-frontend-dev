@@ -436,7 +436,8 @@ const ViewDispatchNote = () => {
                 )
               }
             >
-              {challan.referenceNumber} <MoveUpRight size={12} />
+              {`#${challan.sequenceNumber} ${challan.referenceNumber}`}{' '}
+              <MoveUpRight size={12} />
             </p>
           ));
         }
@@ -454,7 +455,8 @@ const ViewDispatchNote = () => {
                   )
                 }
               >
-                {challanData[0].referenceNumber} <MoveUpRight size={12} />
+                {`#${challanData[0].sequenceNumber} ${challanData[0].referenceNumber}`}{' '}
+                <MoveUpRight size={12} />
               </p>
 
               <button
@@ -480,7 +482,8 @@ const ViewDispatchNote = () => {
                 )
               }
             >
-              {challan.referenceNumber} <MoveUpRight size={12} />
+              {`#${challan.sequenceNumber} ${challan.referenceNumber}`}{' '}
+              <MoveUpRight size={12} />
             </p>
           );
         }
@@ -819,6 +822,14 @@ const ViewDispatchNote = () => {
     }
   };
 
+  const getLegFromAddress = () => {
+    const vouchers = dispatchDetails?.vouchers;
+
+    if (!Array.isArray(vouchers) || vouchers.length === 0) return null;
+
+    return vouchers[vouchers.length - 1]?.legTo ?? null;
+  };
+
   // updateStatus mutation
   const previewDCMutation = useMutation({
     mutationFn: previewDeliveryChallan,
@@ -974,12 +985,11 @@ const ViewDispatchNote = () => {
           <GenerateDCPreviewForm
             dispatchNoteId={params.dispatchId}
             dispatchDetails={dispatchDetails}
-            isFirstDeliveryChallanCreated={
-              dispatchDetails?.vouchers?.length === 0
-            }
             url={dcPreviewUrl}
             breadcrumb={dispatchOrdersBreadCrumbs}
             onClose={() => setIsGeneratingDC(false)}
+            legFrom={getLegFromAddress()}
+            creatingDCNo={dispatchDetails?.vouchers?.length}
           />
         )}
       </Wrapper>

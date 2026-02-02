@@ -118,9 +118,9 @@ export const FormSchema = [
 export default function GenerateDCPreviewForm({
   dispatchNoteId,
   dispatchDetails,
-  isFirstDeliveryChallanCreated = true,
   url,
   breadcrumb,
+  legFrom,
 }) {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const router = useRouter();
@@ -169,7 +169,7 @@ export default function GenerateDCPreviewForm({
   }, [transports]);
 
   // address list
-  const addressContext = 'legAddress';
+  const addressContext = 'LEG_ADDRESS';
 
   const { data: legAddress = [] } = useQuery({
     queryKey: [addressAPIs.getAddressByEnterprise.endpointKey, enterpriseId],
@@ -281,14 +281,16 @@ export default function GenerateDCPreviewForm({
         updated.isEWBRequired = amount > 50000 ? 'true' : 'false';
       }
 
-      // Auto-select legFrom only when first DC
-      if (isFirstDeliveryChallanCreated) {
+      // Auto-select legFrom, from last legTo , if firstDCCreating then select dispatchFromAddress
+      if (legFrom) {
+        updated.legFrom = legFrom;
+      } else {
         updated.legFrom = dispatchDetails?.dispatchFromAddress?.address || '';
       }
 
       return updated;
     });
-  }, [dispatchDetails, isFirstDeliveryChallanCreated]);
+  }, [dispatchDetails, legFrom]);
 
   // Inject data dynamically into schema
   const dynamicSchema = useMemo(() => {
@@ -304,8 +306,7 @@ export default function GenerateDCPreviewForm({
         return {
           ...field,
           options: legAddressOptions,
-          disabled:
-            field.name === 'legFrom' ? isFirstDeliveryChallanCreated : false,
+          disabled: field.name === 'legFrom',
         };
       }
 
@@ -318,12 +319,7 @@ export default function GenerateDCPreviewForm({
     }
 
     return updatedSchema;
-  }, [
-    transportOptions,
-    legAddressOptions,
-    isFirstDeliveryChallanCreated,
-    formData?.transporterEnterpriseId,
-  ]);
+  }, [transportOptions, legAddressOptions, formData?.transporterEnterpriseId]);
 
   const previewDCMutation = useMutation({
     mutationFn: previewDeliveryChallan,
@@ -417,10 +413,7 @@ export default function GenerateDCPreviewForm({
 
   const onApplyChanges = () => {
     // validate only booking fields
-    const bookingErrors = validateBookingPreview(
-      isFirstDeliveryChallanCreated,
-      formData,
-    );
+    const bookingErrors = validateBookingPreview(formData);
     setErrors(bookingErrors);
 
     if (Object.keys(bookingErrors).length > 0) return;
