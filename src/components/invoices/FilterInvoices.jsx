@@ -75,13 +75,16 @@ const FilterInvoices = ({
       clientIds: [],
       debitNoteStatus: '',
     });
-    setPaginationData((prev) => ({
-      totalPages: prev.totalPages,
-      currFetchedPage: 1,
-    }));
+
+    if (setPaginationData) {
+      setPaginationData((prev) => ({
+        totalPages: prev.totalPages,
+        currFetchedPage: 1,
+      }));
+    }
 
     // clear filterData
-    setFilterData(null);
+    setFilterData({});
 
     // setFilterData({
     //   page: 1,
