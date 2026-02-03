@@ -183,8 +183,7 @@ const DispatchedNotes = () => {
     }
   };
 
-  const dispatchedNotesColumns = useDispatchedNotes();
-
+  // create directe dispatch note
   const createDispatchNoteMutation = useMutation({
     mutationKey: [deliveryProcess.createDispatchNote.endpointKey],
     mutationFn: createDispatchNote,
@@ -246,6 +245,9 @@ const DispatchedNotes = () => {
     setErrors({});
     router.push('/dashboard/transport/dispatch');
   };
+
+  // columns
+  const dispatchedNotesColumns = useDispatchedNotes();
 
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
