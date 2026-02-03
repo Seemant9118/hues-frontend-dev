@@ -20,11 +20,23 @@ export default function AddressSelectionLayout({
   setFormData,
   sectionLabel = 'Addresses',
   errorMsg = {},
+
+  // dynamic configs
+  leftField = {
+    label: 'Dispatch From',
+    placeholder: 'Select dispatch from...',
+    keyName: 'dispatchFromAddressId',
+  },
+  rightField = {
+    label: 'Billing From',
+    placeholder: 'Select billing from...',
+    keyName: 'billingFromAddressId',
+  },
 }) {
   const enterpriseId = getEnterpriseId();
 
-  const [selectDispatcher, setSelectDispatcher] = useState(null);
-  const [selectBilling, setSelectBilling] = useState(null);
+  const [selectLeft, setSelectLeft] = useState(null);
+  const [selectRight, setSelectRight] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
 
   // ✅ fetch addresses
@@ -59,31 +71,17 @@ export default function AddressSelectionLayout({
   useEffect(() => {
     if (!addressesOptions?.length) return;
 
-    const dispatchOpt = addressesOptions.find(
-      (opt) => opt.value === formData?.dispatchFromAddressId,
-    );
-    const billingOpt = addressesOptions.find(
-      (opt) => opt.value === formData?.billingFromAddressId,
+    const leftOpt = addressesOptions.find(
+      (opt) => opt.value === formData?.[leftField.keyName],
     );
 
-    if (dispatchOpt) {
-      setSelectDispatcher({
-        selectedValue: dispatchOpt,
-        dispatchFrom: dispatchOpt.value,
-      });
-    }
+    const rightOpt = addressesOptions.find(
+      (opt) => opt.value === formData?.[rightField.keyName],
+    );
 
-    if (billingOpt) {
-      setSelectBilling({
-        selectedValue: billingOpt,
-        billingFrom: billingOpt.value,
-      });
-    }
-  }, [
-    formData?.dispatchFromAddressId,
-    formData?.billingFromAddressId,
-    addressesOptions,
-  ]);
+    setSelectLeft(leftOpt || null);
+    setSelectRight(rightOpt || null);
+  }, [formData, leftField.keyName, rightField.keyName, addressesOptions]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,28 +94,28 @@ export default function AddressSelectionLayout({
       )}
 
       <div className="grid grid-cols-1 gap-4 rounded-sm md:grid-cols-2">
-        {/* ✅ Dispatch From */}
+        {/* ✅ Left */}
         <div>
           <div className="flex items-center gap-1">
-            <Label>Dispatch From</Label>
+            <Label>{leftField.label}</Label>
             <span className="text-red-500">*</span>
           </div>
 
           <div className="flex flex-col gap-2">
             <Select
-              name="dispatchFrom"
-              placeholder="Select dispatch from..."
+              name={leftField.keyName}
+              placeholder={leftField.placeholder}
               options={addressesOptions}
               styles={getStylesForSelectComponent()}
               className="max-w-full text-sm"
               classNamePrefix="select"
-              value={selectDispatcher?.selectedValue || null}
+              value={selectLeft}
               onChange={(selectedOption) => {
                 if (!selectedOption) {
-                  setSelectDispatcher(null);
+                  setSelectLeft(null);
                   setFormData?.((prev) => ({
                     ...prev,
-                    dispatchFromAddressId: '',
+                    [leftField.keyName]: '',
                   }));
                   return;
                 }
@@ -127,47 +125,43 @@ export default function AddressSelectionLayout({
                   return;
                 }
 
-                setSelectDispatcher({
-                  dispatchFrom: selectedOption.value,
-                  selectedValue: selectedOption,
-                });
+                setSelectLeft(selectedOption);
 
-                // ✅ STORE IN formData
                 setFormData?.((prev) => ({
                   ...prev,
-                  dispatchFromAddressId: selectedOption.value,
+                  [leftField.keyName]: selectedOption.value,
                 }));
               }}
             />
 
-            {errorMsg?.dispatchFromAddressId && (
-              <ErrorBox msg={errorMsg.dispatchFromAddressId} />
+            {errorMsg?.[leftField.keyName] && (
+              <ErrorBox msg={errorMsg[leftField.keyName]} />
             )}
           </div>
         </div>
 
-        {/* ✅ Billing From */}
+        {/* ✅ Right */}
         <div>
           <div className="flex items-center gap-1">
-            <Label>Billing From</Label>
+            <Label>{rightField.label}</Label>
             <span className="text-red-500">*</span>
           </div>
 
           <div className="flex flex-col gap-2">
             <Select
-              name="billingFrom"
-              placeholder="Select billing from..."
+              name={rightField.keyName}
+              placeholder={rightField.placeholder}
               options={addressesOptions}
               styles={getStylesForSelectComponent()}
               className="max-w-full text-sm"
               classNamePrefix="select"
-              value={selectBilling?.selectedValue || null}
+              value={selectRight}
               onChange={(selectedOption) => {
                 if (!selectedOption) {
-                  setSelectBilling(null);
+                  setSelectRight(null);
                   setFormData?.((prev) => ({
                     ...prev,
-                    billingFromAddressId: '',
+                    [rightField.keyName]: '',
                   }));
                   return;
                 }
@@ -177,21 +171,17 @@ export default function AddressSelectionLayout({
                   return;
                 }
 
-                setSelectBilling({
-                  billingFrom: selectedOption.value,
-                  selectedValue: selectedOption,
-                });
+                setSelectRight(selectedOption);
 
-                // ✅ STORE IN formData
                 setFormData?.((prev) => ({
                   ...prev,
-                  billingFromAddressId: selectedOption.value,
+                  [rightField.keyName]: selectedOption.value,
                 }));
               }}
             />
 
-            {errorMsg?.billingFromAddressId && (
-              <ErrorBox msg={errorMsg.billingFromAddressId} />
+            {errorMsg?.[rightField.keyName] && (
+              <ErrorBox msg={errorMsg[rightField.keyName]} />
             )}
           </div>
         </div>

@@ -5,8 +5,7 @@ import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import InfoBanner from '@/components/auth/InfoBanner';
 import { MultiStepForm } from '@/components/shared/MultiStepForm';
-import { createDispatchSteps } from '@/components/shared/MultiStepForm/example-config';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { getCreateDispatchSteps } from '@/components/shared/MultiStepForm/example-config';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { Button } from '@/components/ui/button';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
@@ -28,6 +27,7 @@ import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -246,6 +246,8 @@ const DispatchedNotes = () => {
     router.push('/dashboard/transport/dispatch');
   };
 
+  const directDispatchSteps = getCreateDispatchSteps(formData);
+
   // columns
   const dispatchedNotesColumns = useDispatchedNotes();
 
@@ -409,7 +411,7 @@ const DispatchedNotes = () => {
           )}
           {isCreatingDispatch && (
             <MultiStepForm
-              steps={createDispatchSteps}
+              steps={directDispatchSteps}
               formData={formData}
               setFormData={setFormData}
               errors={errors}

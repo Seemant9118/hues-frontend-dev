@@ -10,11 +10,30 @@ export default function StepIndicator({ steps, currentStep, onStepClick }) {
         const isUpcoming = index > currentStep;
 
         return (
-          <div key={step.key} className="flex flex-1 items-center">
-            {/* Step Circle and Label */}
-            <div className="flex flex-col items-center gap-2">
-              {/* Circle with number/checkmark */}
+          <div
+            key={step.key}
+            className={cn(
+              'relative flex flex-1 flex-col items-center',
+              index !== steps.length - 1 && 'pr-6', // ✅ spacing so last one doesn't shrink
+            )}
+          >
+            {/* ✅ Line behind circles */}
+            {index < steps.length - 1 && (
+              <div className="absolute left-1/2 top-5 h-0.5 w-full -translate-y-1/2">
+                <div
+                  className={cn(
+                    'h-full w-full bg-gray-300',
+                    index < currentStep && 'bg-primary',
+                  )}
+                />
+              </div>
+            )}
+
+            {/* ✅ Circle + Text (always centered) */}
+            <div className="z-10 flex flex-col items-center gap-2">
+              {/* Circle */}
               <button
+                type="button"
                 onClick={() => onStepClick?.(index)}
                 disabled={!onStepClick}
                 className={cn(
@@ -35,7 +54,7 @@ export default function StepIndicator({ steps, currentStep, onStepClick }) {
                 )}
               </button>
 
-              {/* Step Label */}
+              {/* Label */}
               <div className="flex flex-col items-center gap-0.5 text-center">
                 <span
                   className={cn(
@@ -46,6 +65,7 @@ export default function StepIndicator({ steps, currentStep, onStepClick }) {
                 >
                   {step.label}
                 </span>
+
                 {step.description && (
                   <span className="text-xs text-muted-foreground">
                     {step.description}
@@ -53,18 +73,6 @@ export default function StepIndicator({ steps, currentStep, onStepClick }) {
                 )}
               </div>
             </div>
-
-            {/* Connecting Line (not shown for last step) */}
-            {index < steps.length - 1 && (
-              <div className="mt-5 flex-1 px-2">
-                <div
-                  className={cn(
-                    'h-0.5 w-full transition-all',
-                    index < currentStep ? 'bg-primary' : 'bg-gray-300',
-                  )}
-                />
-              </div>
-            )}
           </div>
         );
       })}
