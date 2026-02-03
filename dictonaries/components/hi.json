@@ -214,6 +214,7 @@
                     "customer": "ग्राहक",
                     "vendor": "विक्रेता",
                     "invoice_date": "चालान तिथि",
+                    "invoiceNo": "चालान संख्या",
                     "item_type": "आइटम प्रकार",
                     "item": "आइटम",
                     "quantity": "मात्रा",

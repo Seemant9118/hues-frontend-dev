@@ -213,6 +213,7 @@
                     "client": "Client",
                     "customer": "Customer",
                     "vendor": "Vendor",
+                    "invoiceNo":"Invoice No.",
                     "invoice_date": "Invoice Date",
                     "item_type": "Item Type",
                     "item": "Item",
