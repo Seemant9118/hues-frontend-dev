@@ -56,6 +56,9 @@ export default function TableSummaryLayout({
         quantity: invoiceQty,
         unitPrice,
         gstPerUnit, // ✅ percent
+
+        // ✅ IMPORTANT: disabled if fully dispatched
+        isFullyDispatched: Boolean(it?.isFullyDispatched),
       };
     });
   }, [invoiceDetails]);
@@ -92,17 +95,23 @@ export default function TableSummaryLayout({
     },
   ];
 
-  const allSelected = totalItemsCount > 0 && selectedCount === totalItemsCount;
+  const selectableItems = useMemo(() => {
+    return tableItems.filter((x) => !x.isFullyDispatched);
+  }, [tableItems]);
+
+  const allSelected =
+    selectableItems.length > 0 && selectedCount === selectableItems.length;
+
   const someSelected = selectedCount > 0 && !allSelected;
 
-  // ✅ Select all items
+  // ✅ Select all items (ONLY selectable ones)
   const handleSelectAll = () => {
     if (allSelected) {
       onSelectedItemsChange?.([]);
       return;
     }
 
-    const all = tableItems.map((item) => {
+    const all = selectableItems.map((item) => {
       const dispatchQty = item.quantity;
 
       // ✅ SAME AS OLD COMPONENT
@@ -128,8 +137,10 @@ export default function TableSummaryLayout({
     onSelectedItemsChange?.(all);
   };
 
-  // ✅ Select single item
+  // ✅ Select single item (blocked if fully dispatched)
   const handleToggleItem = (item) => {
+    if (item?.isFullyDispatched) return;
+
     const exists = isSelected(item.id);
 
     if (exists) {
@@ -163,6 +174,8 @@ export default function TableSummaryLayout({
 
   // ✅ Qty update
   const updateQty = (item, newQty) => {
+    if (item?.isFullyDispatched) return;
+
     const safeQty = Math.max(0, Math.min(item.quantity, Number(newQty || 0)));
 
     const updated = selectedItems.map((x) => {
@@ -184,9 +197,11 @@ export default function TableSummaryLayout({
 
   // ✅ Qty adjust
   const handleQtyAdjust = (item, delta) => {
+    if (item?.isFullyDispatched) return;
+
     const selectedItem = getSelectedItem(item.id);
 
-    // ✅ auto-select when user clicks +/-
+    // ✅ auto-select when user clicks +/- (blocked if fully dispatched)
     if (!selectedItem) {
       const dispatchQty = 1;
 
@@ -286,15 +301,25 @@ export default function TableSummaryLayout({
                 const dispatchQty = selectedItem?.dispatchQty ?? 0;
                 const total = Number((dispatchQty * item.unitPrice).toFixed(2));
 
+                const disabledRow = item?.isFullyDispatched;
+
                 return (
                   <TableRow
                     key={item.id}
-                    className={cn('cursor-pointer', selected && 'bg-primary/5')}
-                    onClick={() => handleToggleItem(item)}
+                    className={cn(
+                      'cursor-pointer',
+                      selected && 'bg-primary/5',
+                      disabledRow && 'cursor-not-allowed opacity-60',
+                    )}
+                    onClick={() => {
+                      if (disabledRow) return;
+                      handleToggleItem(item);
+                    }}
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selected}
+                        disabled={disabledRow}
                         onCheckedChange={() => handleToggleItem(item)}
                       />
                     </TableCell>
@@ -304,9 +329,18 @@ export default function TableSummaryLayout({
                         <span className="font-medium text-gray-900">
                           {item.productName}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          {item.skuId}
-                        </span>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {item.skuId}
+                          </span>
+
+                          {disabledRow && (
+                            <span className="text-xs font-medium text-red-600">
+                              Fully dispatched
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
 
@@ -322,7 +356,9 @@ export default function TableSummaryLayout({
                           variant="outline"
                           className="h-7 w-7"
                           onClick={() => handleQtyAdjust(item, -1)}
-                          disabled={!selected || dispatchQty <= 0}
+                          disabled={
+                            disabledRow || !selected || dispatchQty <= 0
+                          }
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -330,7 +366,7 @@ export default function TableSummaryLayout({
                         <Input
                           type="number"
                           value={dispatchQty}
-                          disabled={!selected}
+                          disabled={disabledRow || !selected}
                           onChange={(e) => updateQty(item, e.target.value)}
                           className="h-7 w-16 text-center"
                           min={0}
@@ -347,7 +383,7 @@ export default function TableSummaryLayout({
                           variant="outline"
                           className="h-7 w-7"
                           onClick={() => handleQtyAdjust(item, 1)}
-                          disabled={dispatchQty >= item.quantity}
+                          disabled={disabledRow || dispatchQty >= item.quantity}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>

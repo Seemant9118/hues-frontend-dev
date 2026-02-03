@@ -25,13 +25,13 @@ export default function SearchListLayout({
 
   const [filterData, setFilterData] = useState({});
 
-  // ✅ selection view (selected invoice only)
+  // selection view (selected invoice only)
   const [isSelectionView, setIsSelectionView] = useState(false);
 
-  // ✅ infinite scroll ref
+  // infinite scroll ref
   const loaderRef = useRef(null);
 
-  // ✅ stable key (safe when filterData is null/undefined)
+  // stable key (safe when filterData is null/undefined)
   const stableFilterKey = useMemo(() => {
     return JSON.stringify(filterData || {});
   }, [filterData]);
@@ -72,7 +72,7 @@ export default function SearchListLayout({
     placeholderData: keepPreviousData,
   });
 
-  // ✅ Flatten + Deduplicate invoices
+  // Flatten + Deduplicate invoices
   const invoiceListing = useMemo(() => {
     const flattened =
       data?.pages?.map((page) => page?.data?.data?.data || []).flat() || [];
@@ -86,7 +86,7 @@ export default function SearchListLayout({
     return unique;
   }, [data]);
 
-  // ✅ Items format for UI
+  // Items format for UI
   const items = useMemo(() => {
     return invoiceListing.map((inv) => ({
       value: inv?.invoiceId || inv?.id,
@@ -97,15 +97,23 @@ export default function SearchListLayout({
       date: inv?.invoiceDate
         ? moment(inv.invoiceDate).format('DD/MM/YYYY')
         : '',
+
+      // NEW: Fully dispatched flag
+      isFullyDispatched: Boolean(inv?.isFullyDispatched),
+
+      // optional badge support
+      badge: inv?.isFullyDispatched
+        ? { text: 'Fully Dispatched', variant: 'destructive' }
+        : null,
     }));
   }, [invoiceListing]);
 
-  // ✅ selected invoice
+  // selected invoice
   const selectedInvoice = useMemo(() => {
     return items.find((it) => it.value === selectedValue) || null;
   }, [items, selectedValue]);
 
-  // ✅ infinite scroll (only list view)
+  // infinite scroll (only list view)
   useEffect(() => {
     if (isSelectionView) return;
     if (!loaderRef.current) return;
@@ -125,7 +133,10 @@ export default function SearchListLayout({
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isSelectionView]);
 
-  const handleSelectInvoice = (invoiceId, orderId) => {
+  const handleSelectInvoice = (invoiceId, orderId, isFullyDispatched) => {
+    // block selection
+    if (isFullyDispatched) return;
+
     onSelect(invoiceId, orderId);
     setIsSelectionView(true);
   };
@@ -143,7 +154,8 @@ export default function SearchListLayout({
           variant="danger"
         />
       )}
-      {/* ✅ Selected invoice view */}
+
+      {/* Selected invoice view */}
       {isSelectionView && selectedInvoice ? (
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -158,9 +170,16 @@ export default function SearchListLayout({
             <div className="flex flex-1 flex-col gap-1">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h4 className="font-semibold text-gray-900">
-                    {selectedInvoice.title}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-gray-900">
+                      {selectedInvoice.title}
+                    </h4>
+
+                    {selectedInvoice.isFullyDispatched && (
+                      <Badge variant="destructive">Fully Dispatched</Badge>
+                    )}
+                  </div>
+
                   <p className="text-sm text-muted-foreground">
                     {selectedInvoice.subtitle}
                   </p>
@@ -180,17 +199,17 @@ export default function SearchListLayout({
         </div>
       ) : (
         <>
-          {/* ✅ Header */}
+          {/* Header */}
           <div className="flex items-center justify-between border-b p-2">
             <h2 className="font-medium">Search and filter</h2>
 
             <FilterInvoices
               isSalesFilter={true}
-              setFilterData={(val) => setFilterData(val || {})} // ✅ safe always object
+              setFilterData={(val) => setFilterData(val || {})}
             />
           </div>
 
-          {/* ✅ Loading */}
+          {/* Loading */}
           {isInvoiceLoading ? (
             <div className="py-10 text-center text-muted-foreground">
               Loading invoices...
@@ -212,10 +231,15 @@ export default function SearchListLayout({
                 ) : (
                   items.map((item) => {
                     const isSelected = selectedValue === item.value;
+                    const disabledInvoice = item.isFullyDispatched;
 
                     if (renderItem) {
                       return renderItem(item, isSelected, () =>
-                        handleSelectInvoice(item.value, item.orderId),
+                        handleSelectInvoice(
+                          item.value,
+                          item.orderId,
+                          item.isFullyDispatched,
+                        ),
                       );
                     }
 
@@ -223,11 +247,18 @@ export default function SearchListLayout({
                       <Card
                         key={item.value}
                         onClick={() =>
-                          handleSelectInvoice(item.value, item.orderId)
+                          handleSelectInvoice(
+                            item.value,
+                            item.orderId,
+                            item.isFullyDispatched,
+                          )
                         }
                         className={cn(
-                          'flex cursor-pointer items-center gap-4 p-4 transition-all hover:border-primary hover:bg-accent hover:shadow-md',
-                          isSelected
+                          'flex items-center gap-4 p-4 transition-all',
+                          disabledInvoice
+                            ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-70'
+                            : 'cursor-pointer hover:border-primary hover:bg-accent hover:shadow-md',
+                          isSelected && !disabledInvoice
                             ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                             : 'border-gray-200 hover:border-gray-300',
                         )}
@@ -235,9 +266,18 @@ export default function SearchListLayout({
                         <div className="flex flex-1 flex-col gap-1">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <h4 className="font-semibold text-gray-900">
-                                {item.title}
-                              </h4>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold text-gray-900">
+                                  {item.title}
+                                </h4>
+
+                                {disabledInvoice && (
+                                  <Badge variant="destructive">
+                                    Fully Dispatched
+                                  </Badge>
+                                )}
+                              </div>
+
                               <p className="text-sm text-muted-foreground">
                                 {item.subtitle}
                               </p>
@@ -253,12 +293,21 @@ export default function SearchListLayout({
                             </div>
                           </div>
 
-                          {item.badge && (
+                          {/* If you still want to show custom badge support */}
+                          {item.badge && !disabledInvoice && (
                             <div className="mt-1">
                               <Badge variant={item.badge.variant || 'default'}>
                                 {item.badge.text}
                               </Badge>
                             </div>
+                          )}
+
+                          {/* Extra line: reason */}
+                          {disabledInvoice && (
+                            <p className="mt-1 text-xs text-red-600">
+                              This invoice is already fully dispatched and
+                              cannot be selected.
+                            </p>
                           )}
                         </div>
                       </Card>
