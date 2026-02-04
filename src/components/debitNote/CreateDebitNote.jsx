@@ -30,7 +30,7 @@ const CreateDebitNote = ({
 
   const normalizeItems = (data = []) =>
     (data || []).map((item) => {
-      const product = item.metaData?.productDetails || {};
+      const product = item.metaData?.productDetails || item?.metaData || {};
 
       const defectQty = item.defectedQuantity;
       const remainingDefectedQty = item.remainingDefectedQuantity;

@@ -25,7 +25,10 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
-import { getGRNs } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import {
+  adhocCreateGRN,
+  getGRNs,
+} from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import {
   getInvoice,
   getItemsToCreateDebitNote,
@@ -35,12 +38,14 @@ import {
   getDocument,
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { Download, Eye, MoveUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import ModifyQuantityDialog from '@/components/deliveryManagement/ModifyItems';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useGrnColumns } from '../../../transport/grn/GRNColumns';
 import { debitNoteColumns } from './debitNoteColumns';
@@ -64,6 +69,11 @@ const ViewInvoice = () => {
   const [paginationData, setPaginationData] = useState(false);
   const [isCreatingDebitNote, setIsCreatingDebitNote] = useState(false);
   const [showAllDebitNotes, setShowAllDebitNotes] = useState(false);
+  const [isIssuingGRN, setIsIssuingGRN] = useState(false);
+  const [grnItems, setGrnItems] = useState([]);
+  const [remarks, setRemarks] = useState('');
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const [dispatchId, setDispatchId] = useState('');
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -169,7 +179,7 @@ const ViewInvoice = () => {
 
   // fetch grns for invoice
   const grnsQuery = useInfiniteQuery({
-    queryKey: [deliveryProcess.getGRNs.endpointKey],
+    queryKey: [deliveryProcess.getGRNs.endpointKey, params.invoiceId],
     queryFn: async ({ pageParam = 1 }) => {
       return getGRNs({
         page: pageParam,
@@ -182,9 +192,6 @@ const ViewInvoice = () => {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    staleTime: Infinity, // data never becomes stale
-    refetchOnMount: false, // don’t refetch on remount
-    refetchOnWindowFocus: false, // already correct
     enabled: tab === 'grns',
   });
 
@@ -215,6 +222,123 @@ const ViewInvoice = () => {
     select: (data) => data.data.data,
     enabled: tab === 'debitNotes',
   });
+
+  // GRNS
+  const handleOpenIssueGRNModal = () => {
+    if (!invoiceDetails?.invoiceDetails?.invoiceId) {
+      toast.error('Invoice not found');
+      return;
+    }
+
+    const normalized = (invoiceDetails?.invoiceItemDetails || [])
+      .filter((item) => !item?.isFullyDispatched) // ✅ skip fully dispatched
+      .map((item) => {
+        const product = item?.orderItemId?.productDetails || {};
+
+        const quantity = Number(
+          (item?.quantity || 0) - (item?.dispatchedQuantity || 0),
+        );
+        const unitPrice = Number(item?.unitPrice || 0);
+        const gstPerUnit = Number(item?.gstPerUnit || 0);
+
+        return {
+          id: item?.id,
+
+          invoiceItemId: Number(item?.id),
+          orderItemId: Number(item?.orderItemId?.id),
+
+          skuId: product?.skuId || '-',
+          itemName: product?.productName || product?.serviceName || '-',
+
+          unitPrice,
+          gstPerUnit,
+
+          quantity,
+          dispatchQuantity: 0,
+          acceptedQty: 0,
+          rejectedQty: 0,
+
+          metaData: product || {},
+          itemRemarks: '',
+        };
+      });
+
+    setGrnItems(normalized);
+    setRemarks('');
+    setAttachedFiles([]);
+    setIsIssuingGRN(true);
+  };
+
+  const adhocIssueGRNMutation = useMutation({
+    mutationFn: adhocCreateGRN,
+    onSuccess: (data) => {
+      toast.success('GRN Issued Successfully');
+      router.push(`/dashboard/transport/grn/${data?.data?.data?.grnId}`);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message || 'Something went wrong');
+    },
+  });
+
+  const handleIssueGRNSubmit = () => {
+    if (!invoiceDetails?.invoiceDetails?.invoiceId) {
+      toast.error('Invoice not found');
+      return;
+    }
+
+    // only include dispatched items
+    const validItems = (grnItems || []).filter(
+      (item) => Number(item.dispatchQuantity || 0) > 0,
+    );
+
+    const totalAmount = validItems.reduce(
+      (sum, item) =>
+        sum + Number(item.unitPrice || 0) * Number(item.acceptedQty || 0),
+      0,
+    );
+
+    const totalGstAmount = validItems.reduce(
+      (sum, item) =>
+        sum + Number(item.gstPerUnit || 0) * Number(item.acceptedQty || 0),
+      0,
+    );
+
+    const payload = {
+      invoiceId: Number(invoiceDetails.invoiceDetails.invoiceId),
+      sellerEnterpriseId: Number(
+        invoiceDetails.invoiceDetails.sellerEnterpriseId,
+      ),
+
+      remarks: remarks?.trim() || 'GRN created from invoice',
+
+      totalAmount,
+      totalGstAmount,
+
+      dispatchNoteRefrence: dispatchId || '',
+
+      grnItems: validItems.map((item) => ({
+        orderItemId: Number(item.orderItemId),
+        invoiceItemId: Number(item.invoiceItemId),
+
+        dispatchQuantity: Number(item.dispatchQuantity || 0),
+
+        acceptedQuantity: Number(item.acceptedQty || 0),
+        rejectedQuantity: Number(
+          item.dispatchQuantity - (item.acceptedQty || 0),
+        ),
+
+        remarks: item?.itemRemarks?.trim() || '',
+
+        metadata: item?.metaData || {},
+
+        amount: Number(item.unitPrice || 0) * Number(item.acceptedQty || 0),
+        gstAmount: Number(item.gstPerUnit || 0) * Number(item.acceptedQty || 0),
+      })),
+    };
+
+    adhocIssueGRNMutation.mutate({ data: payload });
+    setIsIssuingGRN(false);
+  };
 
   // Statuses
   const paymentStatus = ConditionalRenderingStatus({
@@ -350,6 +474,19 @@ const ViewInvoice = () => {
                         Create Debit Note
                       </Button>
                     </ProtectedWrapper>
+                  )}
+
+                {invoiceDetails?.invoiceDetails?.sellerType ===
+                  'UNINVITED-ENTERPRISE' &&
+                  !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
+                    <Button
+                      size="sm"
+                      variant="blue_outline"
+                      onClick={handleOpenIssueGRNModal}
+                      className="font-bold"
+                    >
+                      Issue GRN
+                    </Button>
                   )}
 
                 {!isPaymentAdvicing &&
@@ -578,6 +715,25 @@ const ViewInvoice = () => {
                 id={params.invoiceId}
               />
             )}
+
+            <ModifyQuantityDialog
+              open={isIssuingGRN}
+              onOpenChange={setIsIssuingGRN}
+              title="Modify & Issue GRN"
+              description="Update accepted quantities and confirm to proceed."
+              tableTitle="Items to Issue GRN"
+              dispatchId={dispatchId}
+              setDispatchId={setDispatchId}
+              isDispatchIdRequired={true}
+              items={grnItems}
+              setItems={setGrnItems}
+              remarks={remarks}
+              setRemarks={setRemarks}
+              attachedFiles={attachedFiles}
+              setAttachedFiles={setAttachedFiles}
+              confirmText="Issue GRN"
+              onConfirm={handleIssueGRNSubmit}
+            />
           </>
         )}
       </Wrapper>

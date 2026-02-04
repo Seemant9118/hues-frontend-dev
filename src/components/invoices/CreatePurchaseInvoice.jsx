@@ -49,14 +49,11 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
   const translations = useTranslations('components.create_edit_order');
   const enterpriseId = getEnterpriseId();
 
-  // ✅ changed key (optional)
   const purchaseInvoiceDraft = SessionStorageService.get(
     'purchaseInvoiceDraft',
   );
 
   const router = useRouter();
-  // const pathName = usePathname();
-  // const isPurchasePage = pathName.includes('purchases');
 
   const [isPINError, setIsPINError] = useState(false);
   const [url, setUrl] = useState(null);
@@ -98,7 +95,9 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
     selectedGstNumber: null,
     getAddressRelatedData: purchaseInvoiceDraft?.getAddressRelatedData || null,
     invoiceDate: purchaseInvoiceDraft?.invoiceDate || null,
+    refrenceNumber: purchaseInvoiceDraft?.refrenceNumber || '',
   });
+
   const [
     isGstApplicableForSelectedVendor,
     setIsGstApplicableForSelectedVendor,
@@ -122,16 +121,11 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
   const vendorOptions = [
     ...(vendorData?.map((vendor) => {
-      // Always unconfirmed vendor
       const vendorId = vendor?.id;
-
-      // name can come from active enterprise or invitation userDetails
       const label = vendor?.invitation?.userDetails?.name || 'Unknown Vendor';
-
       const gstNumber = vendor?.invitation?.userDetails?.gstNumber || null;
 
       return {
-        // always unique + always present
         value: vendorId,
         label,
         gstNumber,
@@ -199,17 +193,20 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
       ? vendorsGoodsOptions
       : vendorsServicesOptions;
 
-  // validations
+  // ✅ validations
   const validation = ({ order }) => {
     const errorObj = {};
 
-    // vendor validation
-    if (order.vendorType === 'B2B' && order?.sellerEnterpriseId == null) {
-      errorObj.buyerId = 'Please select vendor';
+    if (order?.sellerEnterpriseId == null) {
+      errorObj.sellerEnterpriseId = '*Please select vendor';
     }
 
     if (!order.invoiceType) {
       errorObj.invoiceType = translations('form.errorMsg.item_type');
+    }
+
+    if (!order?.refrenceNumber || String(order.refrenceNumber).trim() === '') {
+      errorObj.refrenceNumber = '*Please enter Invoice No.';
     }
 
     if (!order?.invoiceDate) {
@@ -260,10 +257,8 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
         translations('form.successMsg.invoice_created_successfully'),
       );
 
-      // clear draft
       SessionStorageService.remove('purchaseInvoiceDraft');
 
-      // go to purchase invoice route (adjust if your route differs)
       router.push(`/dashboard/purchases/purchase-invoices/${res.data.data.id}`);
     },
     onError: (error) => {
@@ -358,7 +353,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
       {!isInvoicePreview && (
         <>
-          <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
+          <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
             {/* Vendor Select */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
@@ -371,7 +366,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                   placeholder="Select vendor"
                   options={vendorOptions}
                   styles={getStylesForSelectComponent()}
-                  className="max-w-xs text-sm"
+                  className="text-sm"
                   classNamePrefix="select"
                   value={
                     vendorOptions?.find(
@@ -425,7 +420,9 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                   />
                 )}
 
-                {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+                {errorMsg.sellerEnterpriseId && (
+                  <ErrorBox msg={errorMsg.sellerEnterpriseId} />
+                )}
               </div>
             </div>
 
@@ -441,7 +438,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                 placeholder={translations('form.input.item_type.placeholder')}
                 options={itemTypeOptions}
                 styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
+                className="text-sm"
                 classNamePrefix="select"
                 value={
                   itemTypeOptions?.find(
@@ -488,6 +485,49 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
               />
 
               {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
+            </div>
+
+            {/* ✅ Invoice ID */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.invoiceNo')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <Input
+                type="text"
+                placeholder="Enter Invoice No."
+                value={order?.refrenceNumber || ''}
+                onChange={(e) => {
+                  const { value } = e.target;
+
+                  const updatedOrder = {
+                    ...order,
+                    refrenceNumber: value,
+                  };
+
+                  setOrder(updatedOrder);
+
+                  saveDraftToSession({
+                    key: 'purchaseInvoiceDraft',
+                    data: {
+                      ...updatedOrder,
+                      isGstApplicableForSelectedVendor,
+                    },
+                  });
+
+                  if (errorMsg?.refrenceNumber) {
+                    setErrorMsg((prev) => ({
+                      ...prev,
+                      refrenceNumber: '',
+                    }));
+                  }
+                }}
+              />
+
+              {errorMsg.refrenceNumber && (
+                <ErrorBox msg={errorMsg.refrenceNumber} />
+              )}
             </div>
 
             {/* Invoice Date */}

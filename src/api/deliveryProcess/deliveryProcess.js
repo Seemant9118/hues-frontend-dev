@@ -121,6 +121,10 @@ export const deliveryProcess = {
     endpoint: `/grn/document/`,
     endpointKey: 'preview_grn',
   },
+  adHocCreateGRN: {
+    endpoint: `/grn/create/from-invoice`,
+    endpointKey: 'adhoc_create_grn',
+  },
   // getItemsToCreateDebitNote: {
   //   endpoint: `/grn/debit-notes/grn-items/`,
   //   endpointKey: 'get_item_to_create_debit_note_for_grn',

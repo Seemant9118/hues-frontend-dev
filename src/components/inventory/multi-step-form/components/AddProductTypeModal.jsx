@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-export default function AddProductTypeModal({ open, onClose }) {
+export default function AddProductTypeModal({ open, onClose, onSuccess }) {
   const enterpriseId = getEnterpriseId();
   const [formData, setFormData] = useState({
     itemName: '',
@@ -74,8 +74,21 @@ export default function AddProductTypeModal({ open, onClose }) {
 
   const AddProductTypeMutation = useMutation({
     mutationFn: addProductType,
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success('Product Type Created Successfully');
+
+      const created = res?.data?.data;
+
+      // send fallback names also
+      const createdItem = {
+        ...(created || {}),
+
+        // from modal inputs (fallback for UI)
+        categoryName: formData?.categoryName || '',
+        subCategoryName: formData?.subCategoryName || '',
+      };
+
+      onSuccess?.(createdItem);
       onClose?.();
     },
     onError: (error) => {

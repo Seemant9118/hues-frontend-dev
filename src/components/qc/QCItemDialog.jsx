@@ -53,6 +53,16 @@ export default function QCItemsDialog({
     enabled: !!enterpriseId,
   });
 
+  const allowedBucketTypes = ['RAW_MATERIALS', 'FINISHED_GOODS'];
+
+  const formattedBucketOptions =
+    (bucketOptions || [])
+      .filter((b) => allowedBucketTypes.includes(b.bucketType))
+      .map((bucket) => ({
+        value: bucket.id,
+        label: bucket.displayName,
+      })) || [];
+
   // Map QC items
   useEffect(() => {
     if (!qcDetails?.items?.length) {
@@ -343,17 +353,17 @@ export default function QCItemsDialog({
                               <SelectItem value="loading" disabled>
                                 Loading buckets...
                               </SelectItem>
-                            ) : !bucketOptions?.length ? (
+                            ) : !formattedBucketOptions?.length ? (
                               <SelectItem value="no-data" disabled>
                                 No buckets found
                               </SelectItem>
                             ) : (
-                              bucketOptions.map((bucket) => (
+                              formattedBucketOptions?.map((bucket) => (
                                 <SelectItem
-                                  key={bucket.id}
-                                  value={String(bucket.id)}
+                                  key={bucket.value}
+                                  value={String(bucket.value)}
                                 >
-                                  {bucket.displayName}
+                                  {bucket.label}
                                 </SelectItem>
                               ))
                             )}

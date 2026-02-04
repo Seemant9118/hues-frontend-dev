@@ -20,7 +20,7 @@ import {
   getProductGoodsCategories,
 } from '@/services/Admin_Services/AdminServices';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { toast } from 'sonner';
 import { CustomMenuList } from '../components/AddProductCustomMenuList ';
@@ -34,25 +34,23 @@ export default function ItemOverview({
 }) {
   const [isAddProductTypeOpen, setIsAddProductTypeOpen] = useState(false);
 
+  // ✅ temporary state to apply subCategory only after categories are available
+  const [pendingCategoryIds, setPendingCategoryIds] = useState({
+    categoryId: null,
+    subCategoryId: null,
+  });
+
   // api call for search & get
   const loadProductTypeOptions = async (inputValue) => {
-    // No API call for empty / short input
-    if (!inputValue || inputValue.trim().length < 3) {
-      return [];
-    }
+    if (!inputValue || inputValue.trim().length < 3) return [];
 
     try {
       const res = await getGoodsType({ searchString: inputValue });
-
-      // Correct list extraction
       const list = res?.data?.data?.data || [];
 
-      // Map to react-select format
       return list.map((item) => ({
         label: `${capitalize(item.item)}`,
         value: item.id,
-
-        // optional: keep full object for later use
         meta: {
           huesItemId: item.huesItemId,
           gstRate: item.gstRate,
@@ -69,8 +67,9 @@ export default function ItemOverview({
       return [];
     }
   };
+
   // selectedOptions - good type
-  const selectedProductTypeOption = React.useMemo(() => {
+  const selectedProductTypeOption = useMemo(() => {
     if (!formData?.goodsTypeId) return null;
 
     return {
@@ -87,20 +86,20 @@ export default function ItemOverview({
   });
 
   /* Options */
-  const categoryOptions = React.useMemo(() => {
+  const categoryOptions = useMemo(() => {
     return categories.map((c) => ({
       label: c.categoryName,
       value: String(c.id),
     }));
   }, [categories]);
 
-  const selectedCategory = React.useMemo(() => {
+  const selectedCategory = useMemo(() => {
     return categories.find(
       (c) => String(c.id) === String(formData?.categoryId),
     );
   }, [categories, formData?.categoryId]);
 
-  const subCategoryOptions = React.useMemo(() => {
+  const subCategoryOptions = useMemo(() => {
     if (!selectedCategory?.subCategories) return [];
 
     return selectedCategory.subCategories.map((sc) => ({
@@ -108,6 +107,27 @@ export default function ItemOverview({
       value: String(sc.id),
     }));
   }, [selectedCategory]);
+
+  // ✅ IMPORTANT: apply pending subCategory only after category exists
+  useEffect(() => {
+    if (!pendingCategoryIds?.categoryId) return;
+    if (!categories?.length) return;
+
+    const catExists = categories.find(
+      (c) => String(c.id) === String(pendingCategoryIds.categoryId),
+    );
+
+    if (!catExists) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      categoryId: pendingCategoryIds.categoryId,
+      subCategoryId: pendingCategoryIds.subCategoryId,
+    }));
+
+    // clear pending after applying
+    setPendingCategoryIds({ categoryId: null, subCategoryId: null });
+  }, [pendingCategoryIds, categories, setFormData]);
 
   /* Handlers */
   const handleChange = (key) => (value) => {
@@ -119,13 +139,13 @@ export default function ItemOverview({
     }));
   };
 
-  const handleCategoryChange = (value) => {
-    setFormData((prev) => ({
-      ...prev,
-      categoryId: value,
-      subCategoryId: null, // reset sub-category
-    }));
-  };
+  // const handleCategoryChange = (value) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     categoryId: value,
+  //     subCategoryId: null,
+  //   }));
+  // };
 
   return (
     <div className="flex flex-col gap-4">
@@ -139,10 +159,11 @@ export default function ItemOverview({
           <Label>
             Product Type <span className="text-red-600">*</span>
           </Label>
+
           {formData?.goodsType?.item ? (
             <Input
               disabled
-              placeholder="Enter  Product Type"
+              placeholder="Enter Product Type"
               value={formData?.goodsType?.item}
             />
           ) : (
@@ -168,29 +189,43 @@ export default function ItemOverview({
                     goodsTypeId: null,
                     productTypeLabel: '',
 
-                    // remove prefilled data
+                    // clear goodsType object too
+                    goodsType: null,
+
                     hsnCode: '',
                     gstPercentage: '',
                     categoryId: null,
                     subCategoryId: null,
-                    huesItemId: null,
+                    huesItemId: '',
                     description: '',
+
+                    categoryName: '',
+                    subCategoryName: '',
                   }));
+
+                  setPendingCategoryIds({
+                    categoryId: null,
+                    subCategoryId: null,
+                  });
+
                   return;
                 }
 
+                // else: set selected values
                 setFormData((prev) => ({
                   ...prev,
                   goodsTypeId: selectedOption.value,
                   productTypeLabel: selectedOption.label,
 
-                  // auto-fill new data
                   hsnCode: selectedOption.meta?.hsnCode || '',
                   gstPercentage: selectedOption.meta?.gstRate || '',
                   categoryId: selectedOption.meta?.categoryId || null,
                   subCategoryId: selectedOption.meta?.subCategoryId || null,
-                  huesItemId: selectedOption.meta?.huesItemId || null,
+                  huesItemId: selectedOption.meta?.huesItemId || '',
                   description: selectedOption.meta?.description || '',
+
+                  categoryName: selectedOption.meta?.categoryName || '',
+                  subCategoryName: selectedOption.meta?.subCategoryName || '',
                 }));
               }}
             />
@@ -238,13 +273,15 @@ export default function ItemOverview({
           <Label>
             Category <span className="text-red-600">*</span>
           </Label>
-          <Select
-            disabled
-            value={String(formData?.categoryId || '')}
-            onValueChange={handleCategoryChange}
-          >
+          <Select disabled value={String(formData?.categoryId || '')}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select category" />
+              <SelectValue
+                placeholder={
+                  formData?.categoryName
+                    ? formData.categoryName
+                    : 'Select category'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -256,6 +293,7 @@ export default function ItemOverview({
               </SelectGroup>
             </SelectContent>
           </Select>
+
           {errors?.categoryId && <ErrorBox msg={errors.categoryId} />}
         </div>
 
@@ -264,13 +302,15 @@ export default function ItemOverview({
           <Label>
             Sub Category <span className="text-red-600">*</span>
           </Label>
-          <Select
-            value={String(formData?.subCategoryId || '')}
-            onValueChange={handleChange('subCategoryId')}
-            disabled
-          >
+          <Select disabled value={String(formData?.subCategoryId || '')}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select sub category" />
+              <SelectValue
+                placeholder={
+                  formData?.subCategoryName
+                    ? formData.subCategoryName
+                    : 'Select sub category'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -304,7 +344,7 @@ export default function ItemOverview({
           <Input
             disabled
             placeholder="Auto-generated"
-            value={formData?.huesItemId || formData?.goodsType?.huesItemId}
+            value={formData?.huesItemId || ''}
           />
         </div>
 
@@ -336,9 +376,36 @@ export default function ItemOverview({
           {errors?.description && <ErrorBox msg={errors.description} />}
         </div>
 
+        {/* Modal */}
         <AddProductTypeModal
           open={isAddProductTypeOpen}
           onClose={() => setIsAddProductTypeOpen(false)}
+          onSuccess={(createdItem) => {
+            if (!createdItem) return;
+
+            // set everything except dependent category/subCategory first
+            setFormData((prev) => ({
+              ...prev,
+              goodsTypeId: createdItem?.id || null,
+              productTypeLabel:
+                createdItem?.itemName || createdItem?.item || '',
+
+              hsnCode: createdItem?.hsnCode || '',
+              gstPercentage: createdItem?.gstRate || '',
+              huesItemId: createdItem?.huesItemId || '',
+              description: createdItem?.description || '',
+
+              // store labels also (for UI fallback)
+              categoryName: createdItem?.categoryName || '',
+              subCategoryName: createdItem?.subCategoryName || '',
+            }));
+
+            // apply category/subCategory after categories arrive
+            setPendingCategoryIds({
+              categoryId: createdItem?.categoryId || null,
+              subCategoryId: createdItem?.subCategoryId || null,
+            });
+          }}
         />
       </div>
     </div>

@@ -22,7 +22,10 @@ export const useGRNColumnsItems = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('header.skuId')} />
       ),
-      cell: ({ row }) => row.original?.metaData?.productDetails?.skuId || '--',
+      cell: ({ row }) =>
+        row.original?.metaData?.productDetails?.skuId ||
+        row.original?.metaData?.skuId ||
+        '--',
     },
 
     /* Item Name */
@@ -32,7 +35,9 @@ export const useGRNColumnsItems = () => {
         <DataTableColumnHeader column={column} title={t('header.itemName')} />
       ),
       cell: ({ row }) =>
-        row.original?.metaData?.productDetails?.productName || '--',
+        row.original?.metaData?.productDetails?.productName ||
+        row.original?.metaData?.productName ||
+        '--',
     },
 
     /* Qty Received */
