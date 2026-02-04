@@ -2,15 +2,17 @@ import { Package, Truck } from 'lucide-react';
 
 // Step components
 import AddressSelectionLayout from './layouts/AddressSelectionLayout';
-import ConfirmAndReviewLayout from './layouts/ConfirmAndReviewLayout';
 import SearchListLayout from './layouts/SearchListLayout';
 import SelectionCardLayout from './layouts/SelectionCardLayout';
 import StockItemLayout from './layouts/StockItemLayout';
 import TableSummaryLayout from './layouts/TableSummaryLayout';
 
+const INWARD = 'INWARD';
+const OUTWARD = 'OUTWARD';
+
 const movementTypeOptions = [
   {
-    value: 'Supply for sale (final delivery to customer)',
+    value: OUTWARD,
     icon: (props) => <Package {...props} />,
     title: 'Supply for Sale',
     description: 'Final delivery to customer based on invoice',
@@ -21,7 +23,7 @@ const movementTypeOptions = [
     ],
   },
   {
-    value: 'Internal logistics (stock transfer / repositioning)',
+    value: INWARD,
     icon: (props) => <Truck {...props} />,
     title: 'Internal Logistic',
     description: 'Stock transfer between warehouses',
@@ -79,6 +81,7 @@ function Step2FindStockItems({ formData, setFormData, errors }) {
           items: updatedItems,
         }))
       }
+      onChange={(key, value) => setFormData((p) => ({ ...p, [key]: value }))}
       formData={formData}
       errors={errors}
     />
@@ -87,9 +90,7 @@ function Step2FindStockItems({ formData, setFormData, errors }) {
 
 /** Common step */
 function Step3Address({ formData, setFormData, errors }) {
-  const isInternalLogistics =
-    formData.movementType ===
-    'Internal logistics (stock transfer / repositioning)';
+  const isInternalLogistics = formData.movementType === INWARD;
 
   return (
     <AddressSelectionLayout
@@ -138,11 +139,6 @@ function Step4SelectItems({ formData, setFormData, errors }) {
   );
 }
 
-/** Internal logistics flow - Step 4 */
-function Step4ConfirmAndReview({ formData, errors }) {
-  return <ConfirmAndReviewLayout formData={formData} errors={errors} />;
-}
-
 /* --- VALIDATIONS ------*/
 const validateMovementType = (formData) => {
   if (!formData.movementType) {
@@ -168,9 +164,7 @@ const validateStockItems = (formData) => {
 const validateAddress = (formData) => {
   const errors = {};
 
-  const isInternalLogistics =
-    formData.movementType ===
-    'Internal logistics (stock transfer / repositioning)';
+  const isInternalLogistics = formData.movementType === INWARD;
 
   if (!formData.dispatchFromAddressId) {
     errors.dispatchFromAddressId = 'Please select Dispatch From address';
@@ -194,17 +188,10 @@ const validateInvoiceItems = (formData) => {
   return {};
 };
 
-const validateFinalReview = () => {
-  // Optional validation for review step
-  return {};
-};
-
 /* --------- DYNAMIC STEPS EXPORT ----------*/
 
 export const getCreateDispatchSteps = (formData) => {
-  const isInternalLogistics =
-    formData.movementType ===
-    'Internal logistics (stock transfer / repositioning)';
+  const isInternalLogistics = formData.movementType === INWARD;
 
   // Step 1 always same
   const step1 = {
@@ -267,14 +254,5 @@ export const getCreateDispatchSteps = (formData) => {
       validate: validateStockItems,
     },
     step3,
-    {
-      key: 'confirm-review',
-      label: 'Review',
-      description: 'Confirm & create',
-      title: 'Confirm & Review',
-      subtitle: 'Review stock items and addresses before creating dispatch',
-      component: Step4ConfirmAndReview,
-      validate: validateFinalReview,
-    },
   ];
 };

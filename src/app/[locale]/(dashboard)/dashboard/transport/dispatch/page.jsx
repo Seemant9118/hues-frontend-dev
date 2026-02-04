@@ -35,6 +35,7 @@ import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
 const PAGE_LIMIT = 10;
+const INWARD = 'INWARD';
 
 const DispatchedNotes = () => {
   useMetaData('Hues! - Dispatch Notes', 'HUES Dispatch Notes');
@@ -183,7 +184,7 @@ const DispatchedNotes = () => {
     }
   };
 
-  // create directe dispatch note
+  // OUTWARD : create directe dispatch note
   const createDispatchNoteMutation = useMutation({
     mutationKey: [deliveryProcess.createDispatchNote.endpointKey],
     mutationFn: createDispatchNote,
@@ -208,11 +209,49 @@ const DispatchedNotes = () => {
   const isSubmitting = createDispatchNoteMutation.isPending;
 
   const handleSubmit = async () => {
+    const movementType = formData?.movementType;
+
+    const isInternalLogistics = movementType === INWARD;
+
+    // ✅ CASE 1: Internal Logistics
+    if (isInternalLogistics) {
+      const items = formData?.items || []; // ✅ from StockItemLayout
+      if (!items.length) return;
+
+      // eslint-disable-next-line no-unused-vars
+      const payload = {
+        movementType,
+        dispatchFromAddressId: Number(formData?.dispatchFromAddressId),
+        dispatchToAddressId: Number(formData?.dispatchToAddressId),
+
+        items: items.map((it) => ({
+          inventoryId: Number(it.inventoryId),
+          bucketId: Number(it.bucketId),
+          quantity: Number(it.quantity),
+        })),
+      };
+
+      // console.log('✅ Internal Logistics Payload:', payload);
+
+      // TODO:Api
+      // createDispatchNoteMutation.mutate({
+      //   id: formData?.orderId, // if your API needs id, else remove
+      //   data: payload,
+      // });
+
+      return;
+    }
+
+    // CASE 2: Supply for sale (Final Delivery)
     const selectedItems = formData?.selectedItems || [];
     if (!selectedItems.length) return;
 
     const payload = {
-      ...formData,
+      movementType,
+      invoiceId: Number(formData?.invoiceId),
+      orderId: Number(formData?.orderId),
+      dispatchFromAddressId: Number(formData?.dispatchFromAddressId),
+      billingFromAddressId: Number(formData?.billingFromAddressId),
 
       items: selectedItems.map((item) => ({
         orderItemId: Number(item.id),
@@ -226,13 +265,12 @@ const DispatchedNotes = () => {
         (acc, item) => acc + Number(item.amount || 0),
         0,
       ),
+
       totalGstAmount: selectedItems.reduce(
         (acc, item) => acc + Number(item.gstAmount || 0),
         0,
       ),
     };
-
-    delete payload.selectedItems;
 
     createDispatchNoteMutation.mutate({
       id: formData?.orderId,
