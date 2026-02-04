@@ -16,6 +16,7 @@ export const stepsGoodsConfig = [
         newErrors.goodsTypeId = 'Product type is required';
       if (!form?.productName)
         newErrors.productName = 'Product name is required';
+      if (!form?.skuId) newErrors.skuId = 'SKU ID is required';
       if (!form?.categoryId) newErrors.categoryId = 'Category is required';
       if (!form?.subCategoryId)
         newErrors.subCategoryId = 'Sub Category is required';
@@ -38,9 +39,9 @@ export const stepsGoodsConfig = [
         newErrors.salesPrice = 'Sales price is required';
       }
 
-      if (!form?.costPrice || Number(form.costPrice) <= 0) {
-        newErrors.costPrice = 'Cost price is required';
-      }
+      // if (!form?.costPrice || Number(form.costPrice) <= 0) {
+      //   newErrors.costPrice = 'Cost price is required';
+      // }
 
       if (!form?.mrp || Number(form.mrp) <= 0) {
         newErrors.mrp = 'MRP is required';
