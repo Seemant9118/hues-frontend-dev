@@ -246,11 +246,12 @@ const DispatchedNotes = () => {
         movementType,
         dispatchFromAddressId: Number(formData?.dispatchFromAddressId),
         dispatchToAddressId: Number(formData?.dispatchToAddressId),
-
+        totalAmount: Number(formData?.totalAmount),
         items: items.map((it) => ({
           inventoryId: Number(it.inventoryId),
           bucketId: Number(it.bucketId),
           quantity: Number(it.quantity),
+          amount: Number(it.amount),
         })),
       };
 

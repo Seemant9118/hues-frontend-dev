@@ -46,9 +46,9 @@ export const stockItemColumns = ({ onDelete }) => [
     cell: ({ row }) => row?.original?.unitPrice ?? '-',
   },
   {
-    accessorKey: 'totalAmount',
+    accessorKey: 'amount',
     header: 'Amount',
-    cell: ({ row }) => formattedAmount(row?.original?.totalAmount) ?? '-',
+    cell: ({ row }) => formattedAmount(row?.original?.amount) ?? '-',
   },
   {
     id: 'actions',
@@ -72,7 +72,7 @@ const getEmptyItem = () => ({
   quantity: null,
   unitId: null,
   unitPrice: 0,
-  totalAmount: 0,
+  amount: 0,
 });
 
 const StockItemLayout = ({
@@ -203,7 +203,7 @@ const StockItemLayout = ({
       inventoryId: selectedItemData.id,
       unitPrice,
       quantity: null,
-      totalAmount: 0,
+      amount: 0,
     }));
 
     setErrorMsg((prev) => ({ ...prev, orderItem: '' }));
@@ -216,7 +216,7 @@ const StockItemLayout = ({
       setSelectedItem((prev) => ({
         ...prev,
         quantity: null,
-        totalAmount: 0,
+        amount: 0,
       }));
       return;
     }
@@ -226,14 +226,14 @@ const StockItemLayout = ({
     const qty = Number(inputValue);
     if (qty < 1) return;
 
-    const totalAmount = parseFloat(
+    const amount = parseFloat(
       (qty * (Number(selectedItem.unitPrice) || 0)).toFixed(2),
     );
 
     setSelectedItem((prev) => ({
       ...prev,
       quantity: qty,
-      totalAmount,
+      amount,
     }));
 
     setErrorMsg((prev) => ({ ...prev, quantity: '' }));
@@ -253,15 +253,31 @@ const StockItemLayout = ({
       return;
     }
 
-    // ONLY REQUIRED DATA
+    const qty = Number(selectedItem.quantity || 0);
+    const unitPrice = Number(selectedItem.unitPrice || 0);
+
+    const amount = parseFloat((qty * unitPrice).toFixed(2));
+
+    // ✅ store correct amount
     const newItem = {
       inventoryId,
       bucketId: Number(formData.bucketId),
-      quantity: Number(selectedItem.quantity),
+      quantity: qty,
+      amount, // ✅ qty * unitPrice
     };
 
     const updatedItems = [...(formData?.items || []), newItem];
+
+    // ✅ update items in parent
     onChangeItems(updatedItems);
+
+    // ✅ update totalAmount in parent
+    const totalAmount = updatedItems.reduce(
+      (sum, it) => sum + Number(it.amount || 0),
+      0,
+    );
+
+    onChange('totalAmount', parseFloat(totalAmount.toFixed(2)));
 
     setSelectedItem(getEmptyItem());
     setErrorMsg({});
@@ -273,6 +289,13 @@ const StockItemLayout = ({
     );
 
     onChangeItems(updatedItems);
+
+    const totalAmount = updatedItems.reduce(
+      (sum, it) => sum + Number(it.amount || 0),
+      0,
+    );
+
+    onChange('totalAmount', parseFloat(totalAmount.toFixed(2)));
   };
 
   const handleCancel = () => {
@@ -298,7 +321,7 @@ const StockItemLayout = ({
         bucketName: stockItem?.bucketname || '-', // for table
         quantity: qty,
         unitPrice,
-        totalAmount: qty * unitPrice,
+        amount: qty * unitPrice,
         productName: stockItem?.productname || '-',
       };
     });
@@ -426,7 +449,7 @@ const StockItemLayout = ({
             <Label className="flex gap-1">
               Amount <span className="text-red-600">*</span>
             </Label>
-            <Input disabled value={selectedItem.totalAmount || ''} />
+            <Input disabled value={selectedItem.amount || ''} />
           </div>
         </div>
 

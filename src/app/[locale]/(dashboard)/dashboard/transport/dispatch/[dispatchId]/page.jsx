@@ -259,13 +259,15 @@ const ViewDispatchNote = () => {
 
     return dispatchDetails?.items?.map((item) => ({
       productName:
-        item?.invoiceItem?.orderItemId?.productDetails?.productName ?? '--',
+        item?.invoiceItem?.orderItemId?.productDetails?.productName ||
+        item?.product?.name ||
+        '--',
 
       invoiceQuantity: item?.invoiceItem?.quantity ?? 0,
 
       dispatchedQuantity: item?.dispatchedQuantity ?? 0,
 
-      rate: item?.invoiceItem?.unitPrice ?? 0,
+      rate: item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
 
       amount: Number(item?.amount ?? 0),
     }));
@@ -292,7 +294,7 @@ const ViewDispatchNote = () => {
     // transporter: dispatchDetails?.transporterName || '-',
     dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
     ...(dispatchDetails?.dispatchToAddress?.address
-      ? { dispatchTo: dispatchDetails?.dispatchToAddress?.address }
+      ? { dispatchTo: capitalize(dispatchDetails?.dispatchToAddress?.address) }
       : {}),
     ...(dispatchDetails?.billingFromAddress?.address
       ? { billingFrom: dispatchDetails?.billingFromAddress?.address }
@@ -888,7 +890,9 @@ const ViewDispatchNote = () => {
   };
 
   // columns
-  const dispatchedItemDetailsColumns = useDispatchedItemColumns();
+  const dispatchedItemDetailsColumns = useDispatchedItemColumns({
+    movementType: dispatchDetails?.movementType,
+  });
   const deliveryChallansColumns = useDeliveryChallansColumns();
 
   if (isDispatchDetailsLoading) {
