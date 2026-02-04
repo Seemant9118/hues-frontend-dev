@@ -16,6 +16,7 @@ export const DICTIONARY_MODULES = [
   'client',
   'vendor',
   'customers',
+  'enterprise-profile',
   'members',
   'notification',
   'landing-page',

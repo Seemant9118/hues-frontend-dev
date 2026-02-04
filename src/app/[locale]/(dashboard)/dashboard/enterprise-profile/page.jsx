@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -26,10 +27,7 @@ import {
   updateEnterpriseFields,
   updateEnterpriseIdentificationDetails,
 } from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import {
-  addUpdateAddress,
-  uploadLogo,
-} from '@/services/Settings_Services/SettingsService';
+import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -47,13 +45,12 @@ import {
   PlusCircle,
   QrCode,
   Settings,
-  Upload,
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 function EnterpriseProfile() {
@@ -61,10 +58,10 @@ function EnterpriseProfile() {
   const enterpriseId = getEnterpriseId();
   useMetaData(`Enterprise Profile`, 'HUES ENTEPRRISE PROFILE');
 
-  const translations = useTranslations('settings');
+  const translations = useTranslations('enterpriseProfile');
   const queryClient = useQueryClient();
   const router = useRouter();
-  const fileInputRef = useRef(null);
+
   const { hasPermission } = usePermission();
   const [tab, setTab] = useState('enterpriseOverview');
 
@@ -87,10 +84,6 @@ function EnterpriseProfile() {
   const [addressId, setAddressId] = useState(null);
 
   const onTabChange = (value) => setTab(value);
-
-  const openFilePicker = () => {
-    if (fileInputRef.current) fileInputRef.current.click();
-  };
 
   // update enterprise mutation
   const updateEnterpriseMutation = useMutation({
@@ -157,24 +150,6 @@ function EnterpriseProfile() {
     enabled: !!pvtUrl,
     select: (res) => res.data.data,
   });
-
-  const uploadLogoMutation = useMutation({
-    mutationFn: uploadLogo,
-    onSuccess: () => {
-      toast.success(translations('tabs.content.tab1.toasts.logo.successMsg'));
-      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
-    },
-    onError: () => {
-      toast.error(translations('tabs.content.tab1.toasts.logo.errorMsg'));
-    },
-  });
-
-  const uploadFile = (file) => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    uploadLogoMutation.mutate({ data: formData });
-  };
 
   const isAnyEditing =
     isEditing.gst || isEditing.udyam || isEditing.mobile || isEditing.email;
@@ -412,7 +387,7 @@ function EnterpriseProfile() {
                   {/* <Separator className="my-4" /> */}
 
                   {/* TODO: (move to enterprise settings )Upload Logo button (kept from your old UI) */}
-                  <div className="flex items-center justify-between gap-3">
+                  {/* <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold">
                         {translations(
@@ -455,7 +430,7 @@ function EnterpriseProfile() {
                         </span>
                       </Button>
                     </div>
-                  </div>
+                  </div> */}
                 </Card>
 
                 {/* ✅ MAIN GRID LIKE SCREENSHOT */}
@@ -467,7 +442,7 @@ function EnterpriseProfile() {
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
                         About the enterprise
                       </h3>
-                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      <p className="mt-3 text-sm leading-relaxed">
                         {enterprise?.description ||
                           `${enterprise?.name || 'This enterprise'} is a leading provider of enterprise IT solutions, telecom infrastructure, and electrical equipment across Maharashtra and Gujarat.`}
                       </p>
@@ -481,23 +456,24 @@ function EnterpriseProfile() {
 
                       <div className="mt-4 flex flex-col gap-4">
                         {complianceItems.map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex items-center justify-between"
-                          >
-                            <span className="text-sm text-muted-foreground">
-                              {item.label}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                <CheckCircle2 size={14} />
-                                {item.status}
-                              </Badge>
-                              <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                Active
-                              </Badge>
+                          <>
+                            <div
+                              key={item.label}
+                              className="flex items-center justify-between"
+                            >
+                              <span className="text-sm">{item.label}</span>
+                              <div className="flex items-center gap-2">
+                                <Badge className="gap-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                                  <CheckCircle2 size={14} />
+                                  {item.status}
+                                </Badge>
+                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                                  Active
+                                </Badge>
+                              </div>
                             </div>
-                          </div>
+                            <Separator />
+                          </>
                         ))}
                       </div>
                     </Card>
@@ -510,12 +486,12 @@ function EnterpriseProfile() {
 
                       <div className="mt-4">
                         <Badge
-                          variant="secondary"
-                          className="rounded-full px-4 py-2 text-sm"
+                          variant="outline"
+                          className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
                         >
                           Provides GTA services
                         </Badge>
-                        <p className="mt-2 text-xs text-muted-foreground">
+                        <p className="mt-2 text-xs italic text-muted-foreground">
                           Self-declared by the enterprise. Used for GST
                           decisioning.
                         </p>
@@ -528,8 +504,8 @@ function EnterpriseProfile() {
                         Commercial overview
                       </h3>
 
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
+                      <div className="mt-4 flex items-center gap-2">
+                        <span className="text-sm font-bold text-muted-foreground">
                           Annual Turnover:
                         </span>
                         <span className="text-sm font-semibold text-black">
@@ -550,7 +526,7 @@ function EnterpriseProfile() {
 
                       <div className="mt-4 flex flex-col gap-4">
                         {/* You can map these from your backend later */}
-                        <Card className="rounded-2xl border p-5">
+                        <Card className="rounded-2xl border bg-gray-50 p-5">
                           <div className="flex items-center justify-between">
                             <h4 className="text-base font-semibold">
                               Maharashtra
@@ -571,7 +547,7 @@ function EnterpriseProfile() {
                             </div>
 
                             <div className="flex flex-col gap-2">
-                              <span className="text-xs text-muted-foreground">
+                              <span className="px-2 text-xs text-muted-foreground">
                                 GST status
                               </span>
                               <div className="flex flex-wrap items-center gap-2">
@@ -591,65 +567,14 @@ function EnterpriseProfile() {
                             </div>
                           </div>
 
-                          <div className="mt-4 flex items-start gap-2 text-sm text-muted-foreground">
-                            <MapPin
-                              size={16}
-                              className="mt-[2px] text-primary"
-                            />
+                          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin size={14} />
+                            <p>Principal place of business</p>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
                             <p>
                               Shop No. 5, Laxmi Industrial Estate, Andheri East,
                               Mumbai - 400069, Maharashtra
-                            </p>
-                          </div>
-                        </Card>
-
-                        <Card className="rounded-2xl border p-5">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-base font-semibold">Gujarat</h4>
-                            <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                              Active
-                            </Badge>
-                          </div>
-
-                          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs text-muted-foreground">
-                                GSTIN
-                              </span>
-                              <span className="text-lg font-semibold">
-                                24AAFCR7299K1ZD
-                              </span>
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                GST status
-                              </span>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  GST registered
-                                </Badge>
-                                <Badge
-                                  variant="secondary"
-                                  className="rounded-full"
-                                >
-                                  Normal / Regular
-                                </Badge>
-                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  Active
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 flex items-start gap-2 text-sm text-muted-foreground">
-                            <MapPin
-                              size={16}
-                              className="mt-[2px] text-primary"
-                            />
-                            <p>
-                              Plot 45, GIDC Estate, Vatva, Ahmedabad - 382445,
-                              Gujarat
                             </p>
                           </div>
                         </Card>
@@ -1080,10 +1005,10 @@ function EnterpriseProfile() {
                         </h3>
 
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button disabled variant="outline" size="sm">
                             <Copy size={14} /> Copy link
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button disabled variant="outline" size="icon">
                             <QrCode size={16} />
                           </Button>
                         </div>
