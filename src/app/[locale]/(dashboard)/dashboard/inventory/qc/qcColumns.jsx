@@ -37,7 +37,9 @@ export const useQCColumns = ({ enterpriseId }) => {
         <DataTableColumnHeader column={column} title="Invoice ID" />
       ),
       cell: ({ row }) =>
-        row.original?.metaData?.invoiceDetails?.referenceNumber || '--',
+        row.original?.metaData?.invoiceDetails?.referenceNumber ||
+        row.original?.invoice?.referenceNumber ||
+        '-',
     },
 
     /* QC Received */
@@ -109,7 +111,11 @@ export const useQCColumns = ({ enterpriseId }) => {
       cell: ({ row }) => {
         const status = row.original?.qcSummary?.parentStatus;
 
-        return <ConditionalRenderingStatus status={status} isQC />;
+        return status ? (
+          <ConditionalRenderingStatus status={status} isQC />
+        ) : (
+          '-'
+        );
       },
     },
   ];

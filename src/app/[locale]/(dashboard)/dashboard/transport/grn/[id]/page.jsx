@@ -72,7 +72,7 @@ export default function GRN() {
 
   const overviewData = {
     grnId: grnDetails?.referenceNumber,
-    vendorName: iamSeller ? buyerName : sellerName,
+    vendorName: iamSeller ? buyerName || 'Self' : sellerName || 'Self',
     grnDate: moment(grnDetails?.createdAt).format('DD/MM/YYYY'),
     defects: '',
     podId: grnDetails?.podReferenceNumber,
@@ -133,14 +133,17 @@ export default function GRN() {
               <MoveUpRight size={14} />
             </>
           ) : (
-            '--'
+            '-'
           )}
         </p>
       );
     },
     invoiceId: () => {
-      const invoiceId = grnDetails?.metaData?.invoiceDetails?.id;
-      const invoiceRef = grnDetails?.metaData?.invoiceDetails?.referenceNumber;
+      const invoiceId =
+        grnDetails?.metaData?.invoiceDetails?.id || grnDetails?.invoice?.id;
+      const invoiceRef =
+        grnDetails?.metaData?.invoiceDetails?.referenceNumber ||
+        grnDetails?.invoice?.referenceNumber;
 
       return (
         <p

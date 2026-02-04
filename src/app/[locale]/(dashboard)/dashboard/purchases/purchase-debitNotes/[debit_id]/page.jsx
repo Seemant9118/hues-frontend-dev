@@ -35,7 +35,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { BookOpen, Eye, MoveUpRight, Save } from 'lucide-react';
+import { BookOpen, Eye, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -436,14 +436,14 @@ const ViewDebitNote = () => {
 
             {debitNoteDetails?.status === 'DRAFT' && (
               <div className="flex items-center gap-2">
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   disabled={updateDebitNoteMutation?.isPending}
                   onClick={() => handleSubmit('DRAFT')}
                 >
                   <Save size={14} /> Save as Draft
-                </Button>
+                </Button> */}
                 <Button
                   disabled={updateDebitNoteMutation?.isPending}
                   size="sm"

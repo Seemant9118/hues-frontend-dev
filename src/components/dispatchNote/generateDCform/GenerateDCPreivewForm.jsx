@@ -1,16 +1,22 @@
 'use client';
 
+import { addressAPIs } from '@/api/addressApi/addressApis';
+import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import { settingsAPI } from '@/api/settings/settingsApi';
+import InfoBanner from '@/components/auth/InfoBanner';
 import DynamicForm from '@/components/DynamicForm/DynamicForm';
 import {
   validateBookingPreview,
   validateDynamicForm,
 } from '@/components/DynamicForm/validators';
+import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import AddModal from '@/components/Modals/AddModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import DynamicPdfPreviewLayout from '@/components/pdf/DynamicPdfPreviewLayout';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { LocalStorageService } from '@/lib/utils';
+import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
 import {
   generateDeliveryChallan,
   previewDeliveryChallan,
@@ -19,28 +25,37 @@ import {
   createVendor,
   getVendors,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
+import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { addressAPIs } from '@/api/addressApi/addressApis';
-import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
-import AddNewAddress from '@/components/enterprise/AddNewAddress';
-import { settingsAPI } from '@/api/settings/settingsApi';
-import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
-import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
-import moment from 'moment';
 
 export const FormSchema = [
   {
-    type: 'radio',
-    label: 'Is EWB required?',
-    name: 'isEWBRequired',
-    options: [
-      { label: 'Yes', value: 'true' },
-      { label: 'No', value: 'false' },
-    ],
+    type: 'custom',
+    name: 'ewbBanner',
+    component: ({ dispatchDetails }) => {
+      const totalAmount = Number(dispatchDetails?.totalAmount || 0);
+      const totalGstAmount = Number(dispatchDetails?.totalGstAmount || 0);
+      const amount = totalAmount + totalGstAmount;
+
+      const isEwbRequired = amount > 50000;
+
+      return (
+        <InfoBanner
+          text={
+            isEwbRequired
+              ? 'E-Way Bill is required for this Delivery Challan'
+              : 'E-Way Bill is optional. You can generate it later if needed.'
+          }
+          variant={'warning'}
+          showSupportLink={false}
+        />
+      );
+    },
   },
   { headLabel: 'Leg Details' },
   {
