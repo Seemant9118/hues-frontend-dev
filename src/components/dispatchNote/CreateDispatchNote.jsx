@@ -760,18 +760,14 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
               )}
             </Table>
           </div>
-          <div className="flex justify-end gap-4 border-t pt-4">
-            <div className="mt-auto h-[1px] bg-neutral-300"></div>
-
+          <div className="sticky bottom-0 z-20 flex justify-end gap-4 border-t bg-white px-4 py-3">
             <Button size="sm" variant="outline" onClick={() => onHandleClose()}>
               {translations('ctas.discard')}
             </Button>
 
             <Button
               size="sm"
-              onClick={() => {
-                handleSubmit(dispatchedData);
-              }}
+              onClick={() => handleSubmit(dispatchedData)}
               disabled={createDispatchNoteMutation.isPending}
             >
               {createDispatchNoteMutation.isPending ? (

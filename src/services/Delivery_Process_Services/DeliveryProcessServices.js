@@ -204,6 +204,10 @@ export const previewGRN = ({ id }) => {
   return APIinstance.post(`${deliveryProcess.previewGRN.endpoint}${id}`);
 };
 
+export const adhocCreateGRN = ({ data }) => {
+  return APIinstance.post(deliveryProcess.adHocCreateGRN.endpoint, data);
+};
+
 // export const getItemsToCreateDebitNote = ({ id }) => {
 //   return APIinstance.get(
 //     `${deliveryProcess.getItemsToCreateDebitNote.endpoint}${id}`,

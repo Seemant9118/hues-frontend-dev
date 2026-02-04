@@ -64,7 +64,7 @@ const ViewQC = () => {
       qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.referenceNumber ||
       '-',
     vendorName:
-      qcDetails?.items?.[0]?.grn?.metaData?.sellerDetails?.name || '-',
+      qcDetails?.items?.[0]?.grn?.metaData?.sellerDetails?.name || 'Self',
     status: qcDetails?.parentStatus || '-',
   };
   const overviewLabels = {
@@ -91,22 +91,27 @@ const ViewQC = () => {
       );
     },
     invoiceId: () => {
-      return (
-        <p
-          className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
-          onClick={() => {
-            router.push(
-              `/dashboard/purchases/purchase-invoices/${qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.id}`,
-            );
-          }}
-        >
-          {
-            qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails
-              ?.referenceNumber
-          }
-          <MoveUpRight size={12} />
-        </p>
-      );
+      if (
+        qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.referenceNumber ||
+        qcDetails?.items?.[0]?.grn?.invoice?.referenceNumber
+      ) {
+        return (
+          <p
+            className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+            onClick={() => {
+              router.push(
+                `/dashboard/purchases/purchase-invoices/${qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.id || qcDetails?.items?.[0]?.grn?.invoice?.id}`,
+              );
+            }}
+          >
+            {qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails
+              ?.referenceNumber ||
+              qcDetails?.items?.[0]?.grn?.invoice?.referenceNumber}
+            <MoveUpRight size={12} />
+          </p>
+        );
+      }
+      return '-';
     },
   };
 

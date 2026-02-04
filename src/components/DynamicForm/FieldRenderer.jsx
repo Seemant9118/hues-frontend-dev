@@ -18,6 +18,8 @@ const FieldRenderer = React.memo(function FieldRenderer({
   value,
   onChange,
   error,
+  formData,
+  dispatchDetails,
 }) {
   const {
     name,
@@ -31,17 +33,27 @@ const FieldRenderer = React.memo(function FieldRenderer({
     rows,
     tableData,
     tableColumns,
+    component: CustomComponent,
   } = field;
 
   return (
     <div className="flex flex-col gap-1">
-      {/* HEAD LABLE */}
+      {/* HEAD LABEL */}
       {headLabel && <div className="text-md mt-4 font-bold">{headLabel}</div>}
+
       {/* LABEL */}
       {label && (
         <Label className="text-sm font-medium">
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
+      )}
+
+      {/* ✅ CUSTOM FIELD */}
+      {type === 'custom' && CustomComponent && (
+        <CustomComponent
+          formData={formData}
+          dispatchDetails={dispatchDetails}
+        />
       )}
 
       {/* INPUT TYPES */}
@@ -81,6 +93,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
           <SelectTrigger>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
+
           <SelectContent className="max-h-44">
             {options?.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
