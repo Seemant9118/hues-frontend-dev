@@ -64,6 +64,7 @@
                     "delivery_challan_no": "Delivery challan no.",
                     "ewb": "EWB",
                     "dispatch_from": "Dispatch From",
+                    "dispatch_to": "Dispatch To",
                     "billing_from": "Billing From",
                     "billing_address": "Billing Address",
                     "shipping_address": "Shipping Address"

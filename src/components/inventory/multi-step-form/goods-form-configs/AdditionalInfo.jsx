@@ -46,7 +46,7 @@ export default function AdditionalInfo({
           {errors?.salesPrice && <ErrorBox msg={errors?.salesPrice} />}
         </div>
 
-        <div>
+        {/* <div>
           <Label>Cost Price</Label> <span className="text-red-600">*</span>
           <Input
             placeholder="0.00"
@@ -55,7 +55,7 @@ export default function AdditionalInfo({
             onChange={(e) => handleChange('costPrice')(e)}
           />
           {errors?.costPrice && <ErrorBox msg={errors?.costPrice} />}
-        </div>
+        </div> */}
 
         <div>
           <Label>MRP</Label> <span className="text-red-600">*</span>

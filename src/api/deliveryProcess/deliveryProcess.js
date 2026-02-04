@@ -51,6 +51,10 @@ export const deliveryProcess = {
     endpoint: `/dispatchnote/eway-bills/list-by-dispatch-note`,
     endpointKey: 'get_ewbs',
   },
+  createInwardDispatchNote: {
+    endpoint: `dispatchnote/create-internal-logistics`,
+    endpointKey: 'create_inward_dispatch_note',
+  },
 
   // delivery challan
   previewDeliveryChallan: {

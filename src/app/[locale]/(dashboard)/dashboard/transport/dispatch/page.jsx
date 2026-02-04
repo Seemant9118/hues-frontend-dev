@@ -1,8 +1,14 @@
 'use client';
 
 import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
+import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfoBanner from '@/components/auth/InfoBanner';
+import { MultiStepForm } from '@/components/shared/MultiStepForm';
+import { getCreateDispatchSteps } from '@/components/shared/MultiStepForm/example-config';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
+import { Button } from '@/components/ui/button';
+import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -13,20 +19,24 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
-import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import {
+  createDispatchNote,
+  createInwardDispatchNote,
+  getDispatchNotes,
+} from '@/services/Delivery_Process_Services/DeliveryProcessServices';
+import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
-import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
-import DebouncedInput from '@/components/ui/DebouncedSearchInput';
-import InfoBanner from '@/components/auth/InfoBanner';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
 const PAGE_LIMIT = 10;
+const INWARD = 'INWARD';
 
 const DispatchedNotes = () => {
   useMetaData('Hues! - Dispatch Notes', 'HUES Dispatch Notes');
@@ -44,11 +54,16 @@ const DispatchedNotes = () => {
   ];
   const { hasPermission } = usePermission();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const action = searchParams.get('action');
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCycle, setSearchCycle] = useState(0);
   const [paginationData, setPaginationData] = useState(null);
   const [tab, setTab] = useState('ALL');
+  const [isCreatingDispatch, setIsCreatingDispatch] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
 
   const isSearching = searchTerm?.length > 0;
   const hasData = dispatchedNotes?.length > 0;
@@ -57,6 +72,25 @@ const DispatchedNotes = () => {
   const onTabChange = (value) => {
     setTab(value);
   };
+
+  useEffect(() => {
+    setIsCreatingDispatch(action === 'create');
+  }, [action]);
+
+  const dispatchBreadCrumbs = [
+    {
+      id: 1,
+      name: translations('title'),
+      path: '/dashboard/transport/dispatch',
+      show: true,
+    },
+    {
+      id: 2,
+      name: 'Create Dispatch Note',
+      path: '/dashboard/transport/dispatch?action=create',
+      show: action === 'create',
+    },
+  ];
 
   const handleSearchChange = (val) => {
     setSearchTerm(val.trim() ?? '');
@@ -151,6 +185,128 @@ const DispatchedNotes = () => {
     }
   };
 
+  // OUTWARD : create direct dispatch note
+  const createDispatchNoteMutation = useMutation({
+    mutationKey: [deliveryProcess.createDispatchNote.endpointKey],
+    mutationFn: createDispatchNote,
+    onSuccess: (data) => {
+      toast.success('Dispatch Note Created Successfully');
+
+      setIsCreatingDispatch(false);
+      setFormData({});
+      setErrors({});
+
+      router.push(
+        `/dashboard/transport/dispatch/${data?.data?.data?.data?.dispatchNoteId}`,
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
+  // INWARD : create direct dispatch note
+  const createInwardDispatchNoteMutation = useMutation({
+    mutationKey: [deliveryProcess.createInwardDispatchNote.endpointKey],
+    mutationFn: createInwardDispatchNote,
+    onSuccess: (data) => {
+      toast.success('Dispatch Note Created Successfully');
+
+      setIsCreatingDispatch(false);
+      setFormData({});
+      setErrors({});
+
+      router.push(
+        `/dashboard/transport/dispatch/${data?.data?.data?.dispatchNoteId}`,
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
+  const isSubmitting = createDispatchNoteMutation.isPending;
+
+  const handleSubmit = async () => {
+    const movementType = formData?.movementType;
+
+    const isInternalLogistics = movementType === INWARD;
+
+    // CASE 1: Internal Logistics
+    if (isInternalLogistics) {
+      const items = formData?.items || []; // from StockItemLayout
+      if (!items.length) return;
+
+      // eslint-disable-next-line no-unused-vars
+      const payload = {
+        movementType,
+        dispatchFromAddressId: Number(formData?.dispatchFromAddressId),
+        dispatchToAddressId: Number(formData?.dispatchToAddressId),
+        totalAmount: Number(formData?.totalAmount),
+        items: items.map((it) => ({
+          inventoryId: Number(it.inventoryId),
+          bucketId: Number(it.bucketId),
+          quantity: Number(it.quantity),
+          amount: Number(it.amount),
+        })),
+      };
+
+      createInwardDispatchNoteMutation.mutate({
+        data: payload,
+      });
+
+      return;
+    }
+
+    // CASE 2: Supply for sale (Final Delivery)
+    const selectedItems = formData?.selectedItems || [];
+    if (!selectedItems.length) return;
+
+    const payload = {
+      movementType,
+      invoiceId: Number(formData?.invoiceId),
+      orderId: Number(formData?.orderId),
+      dispatchFromAddressId: Number(formData?.dispatchFromAddressId),
+      billingFromAddressId: Number(formData?.billingFromAddressId),
+
+      items: selectedItems.map((item) => ({
+        orderItemId: Number(item.id),
+        invoiceItemId: Number(item.invoiceItemId),
+        quantity: Number(item.dispatchQty),
+        amount: Number(item.amount),
+        gstAmount: Number(item.gstAmount),
+      })),
+
+      totalAmount: selectedItems.reduce(
+        (acc, item) => acc + Number(item.amount || 0),
+        0,
+      ),
+
+      totalGstAmount: selectedItems.reduce(
+        (acc, item) => acc + Number(item.gstAmount || 0),
+        0,
+      ),
+    };
+
+    createDispatchNoteMutation.mutate({
+      id: formData?.orderId,
+      data: payload,
+    });
+  };
+
+  const handleCancel = () => {
+    setFormData({});
+    setErrors({});
+    router.push('/dashboard/transport/dispatch');
+  };
+
+  const directDispatchSteps = getCreateDispatchSteps(formData);
+
+  // columns
   const dispatchedNotesColumns = useDispatchedNotes();
 
   return (
@@ -164,134 +320,178 @@ const DispatchedNotes = () => {
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-screen overflow-hidden">
-          {/* Headers */}
-          <SubHeader
-            name={translations('title')}
-            className="sticky top-0 z-10 flex items-center justify-between bg-white"
-          >
-            <div className="flex items-center justify-center gap-2">
-              <DebouncedInput
-                value={searchTerm}
-                delay={400}
-                onDebouncedChange={handleSearchChange}
-                placeholder="Search Dispatch note"
-              />
-            </div>
-          </SubHeader>
-          {/* Banner */}
-          <InfoBanner
-            showSupportLink={false}
-            text={
-              <>
-                {`To create a Dispatch Note, go to Sales > Invoices, and select
+          {!isCreatingDispatch && (
+            <>
+              {/* Headers */}
+              <SubHeader
+                name={translations('title')}
+                className="sticky top-0 z-10 flex items-center justify-between bg-white"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <DebouncedInput
+                    value={searchTerm}
+                    delay={400}
+                    onDebouncedChange={handleSearchChange}
+                    placeholder="Search Dispatch note"
+                  />
+
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      router.push('/dashboard/transport/dispatch?action=create')
+                    }
+                  >
+                    <PlusCircle size={14} /> Create Dispatch Note
+                  </Button>
+                </div>
+              </SubHeader>
+              {/* Banner */}
+              <InfoBanner
+                showSupportLink={false}
+                text={
+                  <>
+                    {`To create a Dispatch Note, go to Sales > Invoices, and select
                 the appropriate Invoice.`}
-              </>
-            }
-          />
-          <Tabs
-            value={tab}
-            onValueChange={onTabChange}
-            defaultValue={'ALL'}
-            className="flex flex-grow flex-col overflow-hidden"
-          >
-            <section className="flex w-full justify-between py-2">
-              <TabsList className="border">
-                <TabsTrigger value="ALL">
-                  {translations('tabs.tab1.label')}
-                </TabsTrigger>
-                <TabsTrigger value="INWARD">
-                  {translations('tabs.tab2.label')}
-                </TabsTrigger>
-                <TabsTrigger value="OUTWARD">
-                  {translations('tabs.tab3.label')}
-                </TabsTrigger>
-              </TabsList>
-            </section>
+                  </>
+                }
+              />
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'ALL'}
+                className="flex flex-grow flex-col overflow-hidden"
+              >
+                <section className="flex w-full justify-between py-2">
+                  <TabsList className="border">
+                    <TabsTrigger value="ALL">
+                      {translations('tabs.tab1.label')}
+                    </TabsTrigger>
+                    <TabsTrigger value="INWARD">
+                      {translations('tabs.tab2.label')}
+                    </TabsTrigger>
+                    <TabsTrigger value="OUTWARD">
+                      {translations('tabs.tab3.label')}
+                    </TabsTrigger>
+                  </TabsList>
+                </section>
 
-            <TabsContent value="ALL" className="flex-grow overflow-hidden">
-              {isDispatchLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emtpyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                <TabsContent value="ALL" className="flex-grow overflow-hidden">
+                  {isDispatchLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="dispatch-table"
-                      columns={dispatchedNotesColumns}
-                      data={hasData ? dispatchedNotes : []}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="dispatch-table"
+                          columns={dispatchedNotesColumns}
+                          data={hasData ? dispatchedNotes : []}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="INWARD" className="flex-grow overflow-hidden">
-              {isDispatchLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emtpyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                <TabsContent
+                  value="INWARD"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isDispatchLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="dispatch-table"
-                      columns={dispatchedNotesColumns}
-                      data={hasData ? dispatchedNotes : []}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="dispatch-table"
+                          columns={dispatchedNotesColumns}
+                          data={hasData ? dispatchedNotes : []}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="OUTWARD" className="flex-grow overflow-hidden">
-              {isDispatchLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {/* Case 1: No search term, and no data → Empty stage */}
-                  {!hasData && !isSearching ? (
-                    <EmptyStageComponent
-                      heading={translations('emtpyStateComponent.heading')}
-                      subItems={keys}
-                    />
+                <TabsContent
+                  value="OUTWARD"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isDispatchLoading ? (
+                    <Loading />
                   ) : (
-                    // Case 2: data is available → Show Table
-                    <InfiniteDataTable
-                      id="dispatch-table"
-                      columns={dispatchedNotesColumns}
-                      data={hasData ? dispatchedNotes : []}
-                      fetchNextPage={fetchNextPage}
-                      isFetching={isFetching}
-                      totalPages={paginationData?.totalPages}
-                      currFetchedPage={paginationData?.currFetchedPage}
-                      onRowClick={onRowClick}
-                    />
+                    <>
+                      {/* Case 1: No search term, and no data → Empty stage */}
+                      {!hasData && !isSearching ? (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ) : (
+                        // Case 2: data is available → Show Table
+                        <InfiniteDataTable
+                          id="dispatch-table"
+                          columns={dispatchedNotesColumns}
+                          data={hasData ? dispatchedNotes : []}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      )}
+                    </>
                   )}
-                </>
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+          {isCreatingDispatch && (
+            <MultiStepForm
+              steps={directDispatchSteps}
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              setErrors={setErrors}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              isSubmitting={isSubmitting}
+              breadcrumbs={dispatchBreadCrumbs}
+              breadcrumbHome="/dashboard/transport/dispatch"
+              breadcrumbHomeText="Dispatch Notes"
+              breadcrumbTitle="Create Dispatch Note"
+              finalStepActions={({ handleFinalSubmit, isSubmitting }) => (
+                <Button
+                  size="sm"
+                  onClick={() => handleFinalSubmit('submit')}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating...' : '✓ Create Dispatch Note'}
+                </Button>
               )}
-            </TabsContent>
-          </Tabs>
+            />
+          )}
         </Wrapper>
       )}
     </ProtectedWrapper>

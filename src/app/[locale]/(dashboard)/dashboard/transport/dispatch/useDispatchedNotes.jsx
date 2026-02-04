@@ -55,6 +55,9 @@ export const useDispatchedNotes = () => {
           title={translations('customers')}
         />
       ),
+      cell: ({ row }) => {
+        return row?.original?.buyerName || '-';
+      },
     },
     {
       accessorKey: 'supply',
@@ -62,9 +65,9 @@ export const useDispatchedNotes = () => {
         <DataTableColumnHeader column={column} title={translations('supply')} />
       ),
       cell: ({ row }) => {
-        const supply = row.original?.supply;
-
-        return supply || 'Outward Supply';
+        const { movementType } = row.original;
+        if (movementType === 'INWARD') return 'Inward Supply' || '-';
+        return 'Outward Supply' || '-';
       },
     },
     {
@@ -77,10 +80,12 @@ export const useDispatchedNotes = () => {
       ),
       cell: ({ row }) => {
         const invoiceReferenceNumber = row.original?.invoice?.referenceNumber;
-        return (
+        return invoiceReferenceNumber ? (
           <div className="w-48 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
             {invoiceReferenceNumber}
           </div>
+        ) : (
+          '-'
         );
       },
     },
@@ -95,7 +100,7 @@ export const useDispatchedNotes = () => {
       ),
       cell: ({ row }) => {
         const { totalAmount } = row.original;
-        return formattedAmount(totalAmount);
+        return totalAmount ? formattedAmount(totalAmount) : '-';
       },
     },
   ];

@@ -25,7 +25,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     manufacturerName: '',
     description: '',
     hsnCode: '',
-    costPrice: '',
+    // costPrice: '',
     salesPrice: '',
     mrp: '',
     gstPercentage: '',

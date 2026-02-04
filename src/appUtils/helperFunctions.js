@@ -98,7 +98,7 @@ export const getStylesForSelectComponent = () => {
 export const formattedAmount = (amount, fallback = '-') => {
   const value = Number(amount);
 
-  if (!Number.isFinite(value)) return fallback;
+  if (!Number(value)) return fallback;
 
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',

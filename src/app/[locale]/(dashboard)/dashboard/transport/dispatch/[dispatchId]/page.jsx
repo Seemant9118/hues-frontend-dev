@@ -259,13 +259,15 @@ const ViewDispatchNote = () => {
 
     return dispatchDetails?.items?.map((item) => ({
       productName:
-        item?.invoiceItem?.orderItemId?.productDetails?.productName ?? '--',
+        item?.invoiceItem?.orderItemId?.productDetails?.productName ||
+        item?.product?.name ||
+        '--',
 
       invoiceQuantity: item?.invoiceItem?.quantity ?? 0,
 
       dispatchedQuantity: item?.dispatchedQuantity ?? 0,
 
-      rate: item?.invoiceItem?.unitPrice ?? 0,
+      rate: item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
 
       amount: Number(item?.amount ?? 0),
     }));
@@ -279,17 +281,34 @@ const ViewDispatchNote = () => {
     dispatchId: dispatchDetails?.referenceNumber || '-',
     consignor: dispatchDetails?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.buyerName || '-',
-    supply: dispatchDetails?.movementType || 'Outward Supply',
+    supply:
+      dispatchDetails?.movementType === 'OUTWARD'
+        ? 'Outward Supply'
+        : 'Inward Supply',
     deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
-    invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
+    ...(dispatchDetails?.invoice?.referenceNumber
+      ? { invoiceId: dispatchDetails?.invoice?.referenceNumber }
+      : {}),
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
     // EWB: dispatchDetails?.ewb || '-',
     // transporter: dispatchDetails?.transporterName || '-',
     dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
-    billingFrom: dispatchDetails?.billingFromAddress?.address || '-',
-    billingAddress: capitalize(dispatchDetails?.billingAddress?.address) || '-',
-    shippingAddress:
-      capitalize(dispatchDetails?.shippingAddress?.address) || '-',
+    ...(dispatchDetails?.dispatchToAddress?.address
+      ? { dispatchTo: capitalize(dispatchDetails?.dispatchToAddress?.address) }
+      : {}),
+    ...(dispatchDetails?.billingFromAddress?.address
+      ? { billingFrom: dispatchDetails?.billingFromAddress?.address }
+      : {}),
+    ...(dispatchDetails?.billingAddress?.address
+      ? { billingAddress: capitalize(dispatchDetails?.billingAddress?.address) }
+      : {}),
+    ...(dispatchDetails?.shippingAddress?.address
+      ? {
+          shippingAddress: capitalize(
+            dispatchDetails?.shippingAddress?.address,
+          ),
+        }
+      : {}),
   };
   const overviewLabels = {
     dispatchId: translations('overview_labels.dispatchId'),
@@ -302,6 +321,7 @@ const ViewDispatchNote = () => {
     // EWB: translations('overview_labels.ewb'),
     // transporter: translations('overview_labels.transporter'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
+    dispatchTo: translations('overview_labels.dispatch_to'),
     billingFrom: translations('overview_labels.billing_from'),
     billingAddress: translations('overview_labels.billing_address'),
     shippingAddress: translations('overview_labels.shipping_address'),
@@ -870,7 +890,9 @@ const ViewDispatchNote = () => {
   };
 
   // columns
-  const dispatchedItemDetailsColumns = useDispatchedItemColumns();
+  const dispatchedItemDetailsColumns = useDispatchedItemColumns({
+    movementType: dispatchDetails?.movementType,
+  });
   const deliveryChallansColumns = useDeliveryChallansColumns();
 
   if (isDispatchDetailsLoading) {

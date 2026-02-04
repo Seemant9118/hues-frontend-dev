@@ -4,7 +4,7 @@ import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { useTranslations } from 'next-intl';
 
-export const useDispatchedItemColumns = () => {
+export const useDispatchedItemColumns = ({ movementType }) => {
   const translations = useTranslations(
     'transport.dispatched-notes.dispatch_details.tabs.tab2.table.header',
   );
@@ -19,24 +19,25 @@ export const useDispatchedItemColumns = () => {
         />
       ),
       cell: ({ row }) => {
-        const { productName } = row.original;
-        return <span>{productName}</span>;
+        const { productName, product } = row.original;
+        return <span>{productName || product?.name}</span>;
       },
     },
 
-    {
-      accessorKey: 'invoiceQuantity',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('invoiceQty')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { invoiceQuantity } = row.original;
-        return invoiceQuantity;
-      },
-    },
+    ...(movementType === 'OUTWARD'
+      ? [
+          {
+            accessorKey: 'invoiceQuantity',
+            header: ({ column }) => (
+              <DataTableColumnHeader
+                column={column}
+                title={translations('invoiceQty')}
+              />
+            ),
+            cell: ({ row }) => row.original.invoiceQuantity ?? '-',
+          },
+        ]
+      : []),
 
     {
       accessorKey: 'dispatchedQuantity',

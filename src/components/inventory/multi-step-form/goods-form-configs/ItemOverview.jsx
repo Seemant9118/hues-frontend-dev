@@ -249,12 +249,13 @@ export default function ItemOverview({
 
         {/* SKU */}
         <div>
-          <Label>SKU ID</Label>
+          <Label>SKU ID</Label> <span className="text-red-600">*</span>
           <Input
             placeholder="SKU ID"
             value={formData?.skuId || ''}
             onChange={handleChange('skuId')}
           />
+          {errors?.skuId && <ErrorBox msg={errors.skuId} />}
         </div>
 
         {/* Manufacturer */}

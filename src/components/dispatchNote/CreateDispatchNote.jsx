@@ -39,6 +39,9 @@ import {
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
 
+const INWARD = 'INWARD';
+const OUTWARD = 'OUTWARD';
+
 const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations('components.createDispatchNote.form');
@@ -50,7 +53,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [selectBilling, setSelectBilling] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
-    movementType: 'Supply for sale (final delivery to customer)',
+    movementType: OUTWARD,
     dispatchFromAddressId: '',
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
@@ -397,10 +400,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
               </h1>
               <section className="flex flex-col gap-4">
                 <div className="mt-1 flex flex-col gap-3">
-                  {[
-                    'Internal logistics (stock transfer / repositioning)',
-                    'Supply for sale (final delivery to customer)',
-                  ].map((option) => (
+                  {[INWARD, OUTWARD].map((option) => (
                     <label
                       key={option}
                       className="flex cursor-pointer items-center gap-2 text-sm"
