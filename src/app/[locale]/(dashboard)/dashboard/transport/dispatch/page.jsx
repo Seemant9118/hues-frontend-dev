@@ -21,6 +21,7 @@ import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import {
   createDispatchNote,
+  createInwardDispatchNote,
   getDispatchNotes,
 } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
@@ -184,12 +185,12 @@ const DispatchedNotes = () => {
     }
   };
 
-  // OUTWARD : create directe dispatch note
+  // OUTWARD : create direct dispatch note
   const createDispatchNoteMutation = useMutation({
     mutationKey: [deliveryProcess.createDispatchNote.endpointKey],
     mutationFn: createDispatchNote,
     onSuccess: (data) => {
-      toast.success(translations('successMsg.dispatach_created_success'));
+      toast.success('Dispatch Note Created Successfully');
 
       setIsCreatingDispatch(false);
       setFormData({});
@@ -206,6 +207,28 @@ const DispatchedNotes = () => {
     },
   });
 
+  // INWARD : create direct dispatch note
+  const createInwardDispatchNoteMutation = useMutation({
+    mutationKey: [deliveryProcess.createInwardDispatchNote.endpointKey],
+    mutationFn: createInwardDispatchNote,
+    onSuccess: (data) => {
+      toast.success('Dispatch Note Created Successfully');
+
+      setIsCreatingDispatch(false);
+      setFormData({});
+      setErrors({});
+
+      router.push(
+        `/dashboard/transport/dispatch/${data?.data?.data?.dispatchNoteId}`,
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
   const isSubmitting = createDispatchNoteMutation.isPending;
 
   const handleSubmit = async () => {
@@ -213,9 +236,9 @@ const DispatchedNotes = () => {
 
     const isInternalLogistics = movementType === INWARD;
 
-    // ✅ CASE 1: Internal Logistics
+    // CASE 1: Internal Logistics
     if (isInternalLogistics) {
-      const items = formData?.items || []; // ✅ from StockItemLayout
+      const items = formData?.items || []; // from StockItemLayout
       if (!items.length) return;
 
       // eslint-disable-next-line no-unused-vars
@@ -231,13 +254,9 @@ const DispatchedNotes = () => {
         })),
       };
 
-      // console.log('✅ Internal Logistics Payload:', payload);
-
-      // TODO:Api
-      // createDispatchNoteMutation.mutate({
-      //   id: formData?.orderId, // if your API needs id, else remove
-      //   data: payload,
-      // });
+      createInwardDispatchNoteMutation.mutate({
+        data: payload,
+      });
 
       return;
     }

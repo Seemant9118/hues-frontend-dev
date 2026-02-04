@@ -44,6 +44,13 @@ export const previewDispatchNote = ({ id, data }) => {
   );
 };
 
+export const createInwardDispatchNote = ({ data }) => {
+  return APIinstance.post(
+    deliveryProcess.createInwardDispatchNote.endpoint,
+    data,
+  );
+};
+
 export const addTransporterToDispatchNote = ({ dispatchNoteId, data }) => {
   return APIinstance.put(
     `${deliveryProcess.addTransporter.endpoint}${dispatchNoteId}`,

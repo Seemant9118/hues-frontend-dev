@@ -34,6 +34,7 @@ export default function TableSummaryLayout({
   });
 
   // ✅ Normalize API invoice items (gstPerUnit is %)
+  // ✅ remainingQty = invoiceQty - dispatchedQty
   const tableItems = useMemo(() => {
     const rawItems = invoiceDetails?.invoiceItemDetails || [];
 
@@ -42,6 +43,11 @@ export default function TableSummaryLayout({
       const id = String(it?.orderItemId?.id); // UI selection key
 
       const invoiceQty = Number(it?.quantity || it?.invoiceQty || 0);
+      const dispatchedQty = Number(it?.dispatchedQuantity || 0);
+
+      // ✅ dispatchable qty should always be remaining
+      const remainingQty = Math.max(0, invoiceQty - dispatchedQty);
+
       const unitPrice = Number(it?.unitPrice || it?.price || 0);
 
       // ✅ this is % in your old component (example: 18)
@@ -53,12 +59,16 @@ export default function TableSummaryLayout({
         productName:
           it?.orderItemId?.productDetails?.productName || it?.name || 'Item',
         skuId: it?.orderItemId?.productDetails?.skuId || it?.code || '-',
+
         quantity: invoiceQty,
+        dispatchedQty,
+        remainingQty,
+
         unitPrice,
         gstPerUnit, // ✅ percent
 
-        // ✅ IMPORTANT: disabled if fully dispatched
-        isFullyDispatched: Boolean(it?.isFullyDispatched),
+        // ✅ IMPORTANT: disabled if fully dispatched OR no remaining qty
+        isFullyDispatched: Boolean(it?.isFullyDispatched) || remainingQty === 0,
       };
     });
   }, [invoiceDetails]);
@@ -112,7 +122,8 @@ export default function TableSummaryLayout({
     }
 
     const all = selectableItems.map((item) => {
-      const dispatchQty = item.quantity;
+      // ✅ dispatch qty always remaining
+      const dispatchQty = item.remainingQty;
 
       // ✅ SAME AS OLD COMPONENT
       const amount = Number((dispatchQty * item.unitPrice).toFixed(2));
@@ -148,7 +159,8 @@ export default function TableSummaryLayout({
       return;
     }
 
-    const dispatchQty = item.quantity;
+    // ✅ dispatch qty always remaining
+    const dispatchQty = item.remainingQty;
 
     // ✅ SAME AS OLD COMPONENT
     const amount = Number((dispatchQty * item.unitPrice).toFixed(2));
@@ -176,7 +188,11 @@ export default function TableSummaryLayout({
   const updateQty = (item, newQty) => {
     if (item?.isFullyDispatched) return;
 
-    const safeQty = Math.max(0, Math.min(item.quantity, Number(newQty || 0)));
+    // ✅ max should be remainingQty (not invoice qty)
+    const safeQty = Math.max(
+      0,
+      Math.min(item.remainingQty, Number(newQty || 0)),
+    );
 
     const updated = selectedItems.map((x) => {
       if (x.id !== item.id) return x;
@@ -370,7 +386,7 @@ export default function TableSummaryLayout({
                           onChange={(e) => updateQty(item, e.target.value)}
                           className="h-7 w-16 text-center"
                           min={0}
-                          max={item.quantity}
+                          max={item.remainingQty}
                         />
 
                         <span className="text-sm text-muted-foreground">
@@ -383,10 +399,17 @@ export default function TableSummaryLayout({
                           variant="outline"
                           className="h-7 w-7"
                           onClick={() => handleQtyAdjust(item, 1)}
-                          disabled={disabledRow || dispatchQty >= item.quantity}
+                          disabled={
+                            disabledRow || dispatchQty >= item.remainingQty
+                          }
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
+                      </div>
+
+                      {/* ✅ Optional: show remaining info */}
+                      <div className="mt-1 text-center text-[11px] text-muted-foreground">
+                        Remaining: {item.remainingQty} / {item.quantity}
                       </div>
                     </TableCell>
 
