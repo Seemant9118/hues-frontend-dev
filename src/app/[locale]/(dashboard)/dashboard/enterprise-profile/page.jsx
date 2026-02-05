@@ -184,16 +184,24 @@ function EnterpriseProfile() {
   const links = [
     {
       label: 'Website',
-      value: enterprise?.websiteUrl || 'https://yourdomain.com',
+      value: enterprise?.metaData?.website || 'https://yourdomain.com',
       icon: Globe,
     },
     {
       label: 'LinkedIn',
       value:
-        enterprise?.linkedinUrl || 'https://linkedin.com/company/your-company',
+        enterprise?.metaData?.linkedin ||
+        'https://linkedin.com/company/your-company',
       icon: Link2,
     },
   ];
+
+  const getExternalLink = (url) => {
+    if (!url) return '#';
+    return url.startsWith('http://') || url.startsWith('https://')
+      ? url
+      : `https://${url}`;
+  };
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
@@ -509,7 +517,8 @@ function EnterpriseProfile() {
                           Annual Turnover:
                         </span>
                         <span className="text-sm font-semibold text-black">
-                          ₹40 lakh – ₹1.5 crore
+                          {enterprise?.metaData?.commercialOverview ||
+                            '₹40 lakh – ₹1.5 crore'}
                         </span>
                       </div>
                     </Card>
@@ -610,7 +619,7 @@ function EnterpriseProfile() {
                       </div>
                     </Card>
 
-                    {/* ✅ KEEP YOUR EDITABLE FIELDS SECTION (EMAIL/MOBILE/GST/UDYAM + ADDRESS) */}
+                    {/* KEEP YOUR EDITABLE FIELDS SECTION (EMAIL/MOBILE/GST/UDYAM + ADDRESS) */}
                     <Card className="rounded-2xl border p-5">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
                         Enterprise information
@@ -1067,6 +1076,7 @@ function EnterpriseProfile() {
                                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
                                   <Icon size={16} />
                                 </div>
+
                                 <div className="flex flex-col">
                                   <span className="text-xs text-muted-foreground">
                                     {link.label}
@@ -1077,9 +1087,15 @@ function EnterpriseProfile() {
                                 </div>
                               </div>
 
-                              <Button variant="outline" size="icon">
-                                <ExternalLink size={16} />
-                              </Button>
+                              <a
+                                href={getExternalLink(link.value)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button variant="outline" size="icon">
+                                  <ExternalLink size={16} />
+                                </Button>
+                              </a>
                             </div>
                           );
                         })}

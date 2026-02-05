@@ -29,4 +29,9 @@ export const settingsAPI = {
     endpoint: `/enterprise/upload-logo`,
     endpointKey: 'upload_logo',
   },
+  // update enterprise data
+  updateEnterpriseData: {
+    endpoint: `/enterprise/update/metadata`,
+    endpointKey: 'update_enterprise_data',
+  },
 };

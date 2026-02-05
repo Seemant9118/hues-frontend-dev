@@ -11,6 +11,7 @@ import AddBankAccount from '@/components/settings/AddBankAccount';
 import AddEWBConfig from '@/components/settings/AddEWBConfig';
 import EnterpriseSettings from '@/components/settings/EnterpriseSettings';
 import EwbConfigDetails from '@/components/settings/EWBConfigDetails';
+import GstRegistrations from '@/components/settings/GSTRegistrationsSettings';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
 import { DataTable } from '@/components/table/data-table';
@@ -34,7 +35,6 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import GstRegistrations from '@/components/settings/GSTRegistrationsSettings';
 import { usePINAuditLogsColumns } from '../usePINAuditLogsColumns';
 
 const TAB_CONTEXT_MAP = {
@@ -165,6 +165,7 @@ const Settings = () => {
     enabled:
       tab === 'pinSettings' && hasPermission('permission:view-dashboard'),
   });
+
   // columns for pin audit logs table
   const PINAuditLogsColumns = usePINAuditLogsColumns();
 

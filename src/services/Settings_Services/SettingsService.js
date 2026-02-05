@@ -28,3 +28,7 @@ export const addUpdateAddress = ({ data }) => {
 export const uploadLogo = ({ data }) => {
   return APIinstance.post(`${settingsAPI.uploadLogo.endpoint}`, data);
 };
+
+export const updateEnterpriseData = ({ data }) => {
+  return APIinstance.post(settingsAPI.updateEnterpriseData.endpoint, data);
+};

@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -11,20 +10,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { templateApi } from '@/api/templates_api/template_api';
 import { userAuth } from '@/api/user_auth/Users';
-import { uploadLogo } from '@/services/Settings_Services/SettingsService';
+import {
+  updateEnterpriseData,
+  uploadLogo,
+} from '@/services/Settings_Services/SettingsService';
 import { getDocument } from '@/services/Template_Services/Template_Services';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Building2, Pencil, Save, ShieldCheck, Upload, X } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Lock, Pencil, Save, ShieldCheck, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import Avatar from '../ui/Avatar';
+import Wrapper from '../wrappers/Wrapper';
 
 const turnoverOptions = [
   'Below ₹10 lakh',
@@ -43,31 +45,64 @@ const defaultEnterpriseData = {
   incorporationDate: '15 Mar 2020',
   about: '',
   annualTurnoverRange: '₹40 lakh – ₹1.5 crore',
+
+  // LINKS
+  website: '',
+  linkedin: '',
+  twitter: '',
+  instagram: '',
+  youTube: '',
 };
 
-export default function EnterpriseSettings({
-  translations,
-  queryClient,
-  profileDetails,
-}) {
+export default function EnterpriseSettings({ translations, profileDetails }) {
+  const enterpriseDetails = profileDetails?.enterpriseDetails;
+  const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const [savedData, setSavedData] = useState(defaultEnterpriseData);
   const [draftData, setDraftData] = useState(defaultEnterpriseData);
 
-  const profileCompletion = useMemo(() => {
-    // Simple logic for demo (you can change this as per backend)
-    let score = 0;
-    const total = 4;
+  useEffect(() => {
+    if (!enterpriseDetails) return;
 
-    if (savedData?.logoUrl || savedData?.logoText) score++;
-    if (savedData?.about?.trim()?.length > 0) score++;
-    if (savedData?.annualTurnoverRange) score++;
-    if (savedData?.entityName) score++;
+    setSavedData((prev) => ({
+      ...prev,
+      about: enterpriseDetails?.metaData?.description || '',
+      annualTurnoverRange: enterpriseDetails?.commercialOverview || '',
 
-    return Math.round((score / total) * 100);
-  }, [savedData]);
+      website: enterpriseDetails?.website || '',
+      linkedin: enterpriseDetails?.linkedin || '',
+      twitter: enterpriseDetails?.twitter || '',
+      instagram: enterpriseDetails?.instagram || '',
+      youTube: enterpriseDetails?.youTube || '',
+    }));
+
+    setDraftData((prev) => ({
+      ...prev,
+      about: enterpriseDetails?.metaData?.description || '',
+      annualTurnoverRange: enterpriseDetails?.commercialOverview || '',
+
+      website: enterpriseDetails?.website || '',
+      linkedin: enterpriseDetails?.linkedin || '',
+      twitter: enterpriseDetails?.twitter || '',
+      instagram: enterpriseDetails?.instagram || '',
+      youTube: enterpriseDetails?.youTube || '',
+    }));
+  }, [enterpriseDetails]);
+
+  // const profileCompletion = useMemo(() => {
+  //   // Simple logic for demo (you can change this as per backend)
+  //   let score = 0;
+  //   const total = 4;
+
+  //   if (savedData?.logoUrl || savedData?.logoText) score++;
+  //   if (savedData?.about?.trim()?.length > 0) score++;
+  //   if (savedData?.annualTurnoverRange) score++;
+  //   if (savedData?.entityName) score++;
+
+  //   return Math.round((score / total) * 100);
+  // }, [savedData]);
 
   const handleEdit = () => {
     setDraftData(savedData);
@@ -77,13 +112,6 @@ export default function EnterpriseSettings({
   const handleCancel = () => {
     setDraftData(savedData);
     setIsEditing(false);
-  };
-
-  const handleSave = () => {
-    setSavedData(draftData);
-    setIsEditing(false);
-    // TODO: API integration here
-    // toast.success("Enterprise details updated successfully")
   };
 
   const handleChange = (key, value) => {
@@ -129,12 +157,59 @@ export default function EnterpriseSettings({
     uploadLogoMutation.mutate({ data: formData });
   };
 
+  const updateEnterpriseMutation = useMutation({
+    mutationFn: updateEnterpriseData,
+    onSuccess: () => {
+      toast.success('Enterprise details updated successfully');
+      queryClient.invalidateQueries({
+        queryKey: [userAuth.getProfileDetails.endpointKey],
+        exact: false,
+      });
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Update failed');
+    },
+  });
+
+  const handleSave = () => {
+    const payload = {};
+
+    // ABOUT
+    if (draftData.about !== savedData.about) {
+      payload.description = draftData.about;
+    }
+
+    // COMMERCIAL OVERVIEW
+    if (draftData.annualTurnoverRange !== savedData.annualTurnoverRange) {
+      payload.commercialOverview = draftData.annualTurnoverRange;
+    }
+
+    // LINKS
+    const linkKeys = ['website', 'linkedin', 'twitter', 'instagram', 'youTube'];
+
+    linkKeys.forEach((key) => {
+      if (draftData[key] !== savedData[key]) {
+        payload[key] = draftData[key] || null;
+      }
+    });
+
+    if (!Object.keys(payload).length) {
+      setIsEditing(false);
+      return;
+    }
+
+    updateEnterpriseMutation.mutate({ data: payload });
+
+    setSavedData(draftData);
+    setIsEditing(false);
+  };
+
   return (
-    <div className="w-full space-y-6">
+    <Wrapper>
       {/* Top Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* LOGO CARD */}
-        <Card className="flex rounded-2xl bg-white p-4 shadow-sm lg:col-span-2">
+        <Card className="flex rounded-2xl bg-white p-4 shadow-sm lg:col-span-3">
           <div className="flex w-full items-center justify-start gap-4">
             {profileDetails?.enterpriseDetails?.logoUrl ? (
               <Image
@@ -192,7 +267,7 @@ export default function EnterpriseSettings({
         </Card>
 
         {/* PROFILE COMPLETION */}
-        <Card className="rounded-2xl border bg-white p-6 shadow-sm">
+        {/* <Card className="rounded-2xl border bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-semibold tracking-wide text-blue-600">
@@ -215,7 +290,7 @@ export default function EnterpriseSettings({
 
           <Separator className="my-5" />
 
-          {/* <div className="space-y-3">
+          <div className="space-y-3">
             <p className="text-sm font-medium text-muted-foreground">
               Suggested actions
             </p>
@@ -227,8 +302,8 @@ export default function EnterpriseSettings({
               Upload an enterprise logo
               <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             </button>
-          </div> */}
-        </Card>
+          </div>
+        </Card> */}
       </div>
 
       {/* Legal Identity */}
@@ -247,12 +322,24 @@ export default function EnterpriseSettings({
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4">
-          <InfoBlock label="Entity name" value={savedData.entityName} locked />
-          <InfoBlock label="Entity type" value={savedData.entityType} locked />
-          <InfoBlock label="PAN" value={savedData.pan} locked />
+          <InfoBlock
+            label="Entity name"
+            value={enterpriseDetails?.name || savedData.entityName}
+            locked
+          />
+          <InfoBlock
+            label="Entity type"
+            value={enterpriseDetails?.type || savedData.entityType}
+            locked
+          />
+          <InfoBlock
+            label="PAN"
+            value={enterpriseDetails?.panNumber || savedData.pan}
+            locked
+          />
           <InfoBlock
             label="Date of incorporation"
-            value={savedData.incorporationDate}
+            value={enterpriseDetails?.doi || savedData.incorporationDate}
             locked
           />
         </div>
@@ -266,7 +353,12 @@ export default function EnterpriseSettings({
           </p>
 
           {!isEditing ? (
-            <Button variant="outline" className="gap-2" onClick={handleEdit}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={handleEdit}
+            >
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
@@ -279,7 +371,7 @@ export default function EnterpriseSettings({
 
         <div className="mt-5">
           <Textarea
-            value={draftData.about}
+            value={enterpriseDetails?.metaData?.description || draftData.about}
             placeholder="Write something about your enterprise..."
             disabled={!isEditing}
             onChange={(e) => handleChange('about', e.target.value)}
@@ -293,11 +385,109 @@ export default function EnterpriseSettings({
         {/* Actions */}
         {isEditing ? (
           <div className="mt-4 flex items-center justify-end gap-3">
-            <Button variant="outline" className="gap-2" onClick={handleCancel}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={handleCancel}
+            >
               <X className="h-4 w-4" />
               Cancel
             </Button>
-            <Button className="gap-2" onClick={handleSave} disabled={!isDirty}>
+            <Button
+              size="sm"
+              className="gap-2"
+              onClick={handleSave}
+              disabled={!isDirty}
+            >
+              <Save className="h-4 w-4" />
+              Save changes
+            </Button>
+          </div>
+        ) : null}
+      </Card>
+
+      {/* LINKS */}
+      <Card className="rounded-2xl border bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold tracking-wide text-blue-600">
+            LINKS
+          </p>
+
+          {!isEditing ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={handleEdit}
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Button>
+          ) : null}
+        </div>
+
+        <div className="mt-6 max-w-2xl space-y-5">
+          <LinkInput
+            label="Website"
+            value={enterpriseDetails?.metaData?.website || draftData.website}
+            placeholder="https://yourcompany.com"
+            disabled={!isEditing}
+            onChange={(v) => handleChange('website', v)}
+          />
+
+          <LinkInput
+            label="LinkedIn"
+            value={enterpriseDetails?.metaData?.linkedin || draftData.linkedin}
+            placeholder="https://linkedin.com/company/..."
+            disabled={!isEditing}
+            onChange={(v) => handleChange('linkedin', v)}
+          />
+
+          <LinkInput
+            label="X"
+            value={enterpriseDetails?.metaData?.twitter || draftData.twitter}
+            placeholder="https://x.com/..."
+            disabled={!isEditing}
+            onChange={(v) => handleChange('twitter', v)}
+          />
+
+          <LinkInput
+            label="Instagram"
+            value={
+              enterpriseDetails?.metaData?.instagram || draftData.instagram
+            }
+            placeholder="https://instagram.com/..."
+            disabled={!isEditing}
+            onChange={(v) => handleChange('instagram', v)}
+          />
+
+          <LinkInput
+            label="YouTube"
+            value={enterpriseDetails?.metaData?.youTube || draftData.youTube}
+            placeholder="https://youtube.com/@..."
+            disabled={!isEditing}
+            onChange={(v) => handleChange('youTube', v)}
+          />
+        </div>
+
+        {isEditing ? (
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={handleCancel}
+            >
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="gap-2"
+              onClick={handleSave}
+              disabled={!isDirty}
+            >
               <Save className="h-4 w-4" />
               Save changes
             </Button>
@@ -313,7 +503,12 @@ export default function EnterpriseSettings({
           </p>
 
           {!isEditing ? (
-            <Button variant="outline" className="gap-2" onClick={handleEdit}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={handleEdit}
+            >
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
@@ -329,7 +524,10 @@ export default function EnterpriseSettings({
           <Label className="text-sm font-medium">Annual Turnover (Range)</Label>
 
           <Select
-            value={draftData.annualTurnoverRange}
+            value={
+              enterpriseDetails?.commercialOverview ||
+              draftData.annualTurnoverRange
+            }
             onValueChange={(v) => handleChange('annualTurnoverRange', v)}
             disabled={!isEditing}
           >
@@ -349,42 +547,60 @@ export default function EnterpriseSettings({
         {/* Actions */}
         {isEditing ? (
           <div className="mt-6 flex items-center justify-end gap-3">
-            <Button variant="outline" className="gap-2" onClick={handleCancel}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={handleCancel}
+            >
               <X className="h-4 w-4" />
               Cancel
             </Button>
-            <Button className="gap-2" onClick={handleSave} disabled={!isDirty}>
+            <Button
+              size="sm"
+              className="gap-2"
+              onClick={handleSave}
+              disabled={!isDirty}
+            >
               <Save className="h-4 w-4" />
               Save changes
             </Button>
           </div>
         ) : null}
       </Card>
-    </div>
+    </Wrapper>
   );
 }
 
-/* ------------------------- */
 /* Small helper UI blocks    */
-/* ------------------------- */
-
 function InfoBlock({ label, value, locked }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span>{label}</span>
-        {locked ? <LockChip /> : null}
+        {locked ? <Lock size={14} /> : null}
       </div>
       <div className="text-base font-semibold text-foreground">{value}</div>
     </div>
   );
 }
 
-function LockChip() {
+function LinkInput({ label, value, placeholder, disabled, onChange }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-      <Building2 className="h-3 w-3" />
-      Locked
-    </span>
+    <div className="space-y-2">
+      <Label className="text-sm font-medium">{label}</Label>
+      <input
+        type="url"
+        value={value || ''}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          'h-12 w-full rounded-xl border bg-background px-4 text-sm outline-none transition',
+          'focus:ring-2 focus:ring-blue-500',
+          disabled && 'cursor-not-allowed opacity-70',
+        )}
+      />
+    </div>
   );
 }
