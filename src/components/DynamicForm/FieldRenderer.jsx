@@ -39,7 +39,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
   return (
     <div className="flex flex-col gap-1">
       {/* HEAD LABEL */}
-      {headLabel && <div className="text-md mt-4 font-bold">{headLabel}</div>}
+      {headLabel && <div className="text-md font-bold">{headLabel}</div>}
 
       {/* LABEL */}
       {label && (

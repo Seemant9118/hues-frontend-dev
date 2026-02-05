@@ -29,11 +29,7 @@ export default function DynamicPdfPreviewLayout({
             errors={errors}
             onChange={onChange}
           />
-          <div className="sticky bottom-0 flex w-full items-center bg-white pt-2">
-            <Button className="w-full" size="sm" onClick={onApplyChanges}>
-              Apply changes
-            </Button>
-          </div>
+          <div className="sticky bottom-0 flex w-full items-center bg-white pt-2"></div>
         </div>
 
         {/* Right PDF Preview */}
@@ -43,13 +39,20 @@ export default function DynamicPdfPreviewLayout({
       </div>
 
       {/* Footer Buttons (Sticky Bottom) */}
-      <div className="flex items-center justify-end gap-2 border-t bg-white p-3">
-        <Button variant="outline" size="sm" onClick={onDiscard}>
-          Discard
-        </Button>
-        <Button size="sm" onClick={onCreate} disabled={isCreating}>
-          {isCreating ? <Loading /> : `Create`}
-        </Button>
+      <div className="flex w-full items-center justify-between gap-2 border-t pt-2">
+        <div className="w-1/3 px-2">
+          <Button className="w-full" size="sm" onClick={onApplyChanges}>
+            Apply changes
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={onDiscard}>
+            Discard
+          </Button>
+          <Button size="sm" onClick={onCreate} disabled={isCreating}>
+            {isCreating ? <Loading /> : `Create`}
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -468,40 +468,7 @@ const InvoicePreview = ({
               </div>
             )}
 
-            <div className="sticky bottom-0 z-10 border-t bg-white pt-2 shadow-md">
-              <Button
-                className="w-full"
-                size="sm"
-                onClick={() => {
-                  const formatDate = moment(selectedDate).format('DD-MM-yyyy');
-                  const updatedOrder = {
-                    ...order,
-                    remarks,
-                    bankAccountId: bankAccount,
-                    socialLinks: socialLink,
-                    billingAddressId: billingAddress,
-                    shippingAddressId: shippingAddress,
-                    dueDate: formatDate,
-                    selectedGstNumber: selectedGst?.gstNumber,
-                    paymentTerms,
-                  };
-
-                  if (order?.clientType === 'B2B') {
-                    const errors = validation(updatedOrder);
-                    if (Object.keys(errors).length > 0) {
-                      setErrorMsg(errors);
-                    } else {
-                      handlePreview(updatedOrder);
-                      setErrorMsg(null); // Clear previous errors if any
-                    }
-                  } else {
-                    handlePreview(updatedOrder);
-                  }
-                }}
-              >
-                Apply changes
-              </Button>
-            </div>
+            {/* <div className="sticky bottom-0 z-10 border-t bg-white pt-2 shadow-md"></div> */}
           </div>
         )}
 
@@ -512,38 +479,13 @@ const InvoicePreview = ({
       </div>
 
       {/* Footer CTA for downloading the PDF */}
-      <div className="flex w-full items-center justify-end gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setIsPreviewOpen(false)}
-        >
-          Cancel
-        </Button>
-        {isDownloadable && (
-          <Button size="sm" asChild>
-            <a href={url} download={getFilenameFromUrl(url)}>
-              Download
-            </a>
-          </Button>
-        )}
-
-        {isSelectable && (
+      <div className="flex w-full items-center justify-between gap-2 border-t pt-2">
+        <div className="w-1/3 px-2">
           <Button
+            className="w-full"
             size="sm"
             onClick={() => {
-              handleSelectFn();
-              setIsPreviewOpen(false);
-            }}
-          >
-            Select
-          </Button>
-        )}
-
-        {isCreatable && (
-          <Button
-            size="sm"
-            onClick={() => {
+              const formatDate = moment(selectedDate).format('DD-MM-yyyy');
               const updatedOrder = {
                 ...order,
                 remarks,
@@ -551,7 +493,9 @@ const InvoicePreview = ({
                 socialLinks: socialLink,
                 billingAddressId: billingAddress,
                 shippingAddressId: shippingAddress,
+                dueDate: formatDate,
                 selectedGstNumber: selectedGst?.gstNumber,
+                paymentTerms,
               };
 
               if (order?.clientType === 'B2B') {
@@ -559,17 +503,76 @@ const InvoicePreview = ({
                 if (Object.keys(errors).length > 0) {
                   setErrorMsg(errors);
                 } else {
-                  setOpen(true);
+                  handlePreview(updatedOrder);
                   setErrorMsg(null); // Clear previous errors if any
                 }
               } else {
-                setOpen(true);
+                handlePreview(updatedOrder);
               }
             }}
           >
-            Create Invoice
+            Apply changes
           </Button>
-        )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsPreviewOpen(false)}
+          >
+            Cancel
+          </Button>
+          {isDownloadable && (
+            <Button size="sm" asChild>
+              <a href={url} download={getFilenameFromUrl(url)}>
+                Download
+              </a>
+            </Button>
+          )}
+
+          {isSelectable && (
+            <Button
+              size="sm"
+              onClick={() => {
+                handleSelectFn();
+                setIsPreviewOpen(false);
+              }}
+            >
+              Select
+            </Button>
+          )}
+
+          {isCreatable && (
+            <Button
+              size="sm"
+              onClick={() => {
+                const updatedOrder = {
+                  ...order,
+                  remarks,
+                  bankAccountId: bankAccount,
+                  socialLinks: socialLink,
+                  billingAddressId: billingAddress,
+                  shippingAddressId: shippingAddress,
+                  selectedGstNumber: selectedGst?.gstNumber,
+                };
+
+                if (order?.clientType === 'B2B') {
+                  const errors = validation(updatedOrder);
+                  if (Object.keys(errors).length > 0) {
+                    setErrorMsg(errors);
+                  } else {
+                    setOpen(true);
+                    setErrorMsg(null); // Clear previous errors if any
+                  }
+                } else {
+                  setOpen(true);
+                }
+              }}
+            >
+              Create Invoice
+            </Button>
+          )}
+        </div>
       </div>
       {isCreatable && (
         <PINVerifyModal

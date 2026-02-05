@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
 import { Package } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,7 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import RemarkBox from '../remarks/RemarkBox';
+import { Label } from '../ui/label';
 import {
   Table,
   TableBody,
@@ -21,9 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import RemarkBox from '../remarks/RemarkBox';
-import ErrorBox from '../ui/ErrorBox';
-import { Label } from '../ui/label';
+import InfoBanner from '../auth/InfoBanner';
 
 export default function ModifyQuantityDialog({
   open,
@@ -36,13 +36,16 @@ export default function ModifyQuantityDialog({
   confirmText = 'Confirm Changes',
   cancelText = 'Cancel',
 
-  // ✅ Dispatch Id Input
-  showDispatchIdInput = true,
-  dispatchId,
-  setDispatchId,
-  dispatchIdLabel = 'Dispatch ID',
-  dispatchIdPlaceholder = 'Enter Dispatch ID',
-  isDispatchIdRequired = true,
+  showInput = true,
+  deliveryChallan,
+  setDeliveryChallan,
+  dcIdLabel = 'Delivery Challan No.',
+  dcIdLabelPlaceholder = 'Enter Delivery Challan No.',
+
+  ewb,
+  setEwb,
+  ewbLabel = 'E-way bill No.',
+  ewbPlaceholder = 'Enter E-way bill No.',
 
   items = [],
   setItems,
@@ -50,8 +53,6 @@ export default function ModifyQuantityDialog({
   showRemarks = true,
   remarks,
   setRemarks,
-  attachedFiles,
-  setAttachedFiles,
 
   // Events
   onConfirm,
@@ -61,20 +62,14 @@ export default function ModifyQuantityDialog({
 
   footerRightSlot = null,
 }) {
-  const [dispatchIdError, setDispatchIdError] = useState('');
+  // Block submit if no item was modified
+  const [submitError, setSubmitError] = useState('');
 
-  const isDispatchIdInvalid =
-    showDispatchIdInput &&
-    isDispatchIdRequired &&
-    (!dispatchId || !dispatchId.trim());
+  const hasAnyItemChanged = useMemo(() => {
+    return items.some((item) => Number(item.dispatchQuantity || 0) > 0);
+  }, [items]);
 
-  useEffect(() => {
-    if (!open) {
-      setDispatchIdError('');
-    }
-  }, [open]);
-
-  // ✅ Totals (Gross + GST)
+  // Totals (Gross + GST)
   const totals = useMemo(() => {
     const totalAmount = items.reduce(
       (sum, item) =>
@@ -95,7 +90,7 @@ export default function ModifyQuantityDialog({
     };
   }, [items]);
 
-  // ✅ Dispatch Qty change (max = remaining qty)
+  // Dispatch Qty change (max = remaining qty)
   const updateDispatchQty = (index, value) => {
     setItems((prev) =>
       prev.map((item, i) => {
@@ -124,7 +119,7 @@ export default function ModifyQuantityDialog({
     );
   };
 
-  // ✅ Accepted Qty change (max = dispatch qty)
+  // Accepted Qty change (max = dispatch qty)
   const updateAcceptedQty = (index, value) => {
     setItems((prev) =>
       prev.map((item, i) => {
@@ -145,20 +140,23 @@ export default function ModifyQuantityDialog({
     );
   };
 
-  // ✅ Confirm (validate dispatch id)
+  // Confirm
   const handleConfirm = () => {
-    if (isDispatchIdInvalid) {
-      setDispatchIdError('Dispatch ID is required');
+    if (!hasAnyItemChanged) {
+      setSubmitError(
+        'Please modify at least one item quantity before submitting.',
+      );
       return;
     }
 
+    setSubmitError('');
     onConfirm?.();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-[80vh] max-w-4xl flex-col p-0">
-        {/* ✅ Header */}
+        {/* Header */}
         <DialogHeader className="border-b p-4">
           <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
 
@@ -166,33 +164,42 @@ export default function ModifyQuantityDialog({
             <p className="text-sm text-muted-foreground">{description}</p>
           ) : null}
 
-          {/* ✅ Dispatch ID Input (Always visible even if items are empty) */}
-          {showDispatchIdInput && (
-            <div className="mt-6">
-              <div className="flex items-center gap-2">
-                <Label>{dispatchIdLabel}</Label>
-                {isDispatchIdRequired && (
-                  <span className="text-red-500">*</span>
-                )}
+          {/* Input : DC and EWB (Always visible even if items are empty) */}
+          {showInput && (
+            <div className="flex gap-2 pt-5">
+              <div className="flex w-full flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Label>{dcIdLabel}</Label>
+                </div>
+
+                <Input
+                  value={deliveryChallan || ''}
+                  placeholder={dcIdLabelPlaceholder}
+                  onChange={(e) => {
+                    setDeliveryChallan?.(e.target.value);
+                  }}
+                />
               </div>
+              <div className="flex w-full flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Label>{ewbLabel}</Label>
+                </div>
 
-              <Input
-                value={dispatchId || ''}
-                placeholder={dispatchIdPlaceholder}
-                onChange={(e) => {
-                  setDispatchId?.(e.target.value);
-                  if (dispatchIdError) setDispatchIdError('');
-                }}
-              />
-
-              {dispatchIdError && <ErrorBox msg={dispatchIdError} />}
+                <Input
+                  value={ewb || ''}
+                  placeholder={ewbPlaceholder}
+                  onChange={(e) => {
+                    setEwb?.(e.target.value);
+                  }}
+                />
+              </div>
             </div>
           )}
         </DialogHeader>
 
-        {/* ✅ Scrollable Content */}
+        {/* Scrollable Content */}
         <div className="scrollBarStyles flex-1 overflow-auto p-2">
-          {/* ✅ Empty State */}
+          {/* Empty State */}
           {items?.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 rounded-sm border bg-muted/30 p-6 text-center">
               <Package size={22} className="text-muted-foreground" />
@@ -216,10 +223,11 @@ export default function ModifyQuantityDialog({
                   <TableRow>
                     <TableHead className="p-3">SKU ID</TableHead>
                     <TableHead className="p-3">Item Name</TableHead>
+                    <TableHead className="p-3">Invoice Qty</TableHead>
                     <TableHead className="p-3">Remaining Qty</TableHead>
                     <TableHead className="p-3">Dispatch Qty</TableHead>
-                    <TableHead className="p-3">Qty Accepted</TableHead>
-                    <TableHead className="p-3">Qty Rejected</TableHead>
+                    <TableHead className="p-3">Qty Received</TableHead>
+                    {/* <TableHead className="p-3">Qty Rejected</TableHead> */}
                     <TableHead className="p-3">Price</TableHead>
                     <TableHead className="p-3 text-right">Amount</TableHead>
                   </TableRow>
@@ -231,6 +239,10 @@ export default function ModifyQuantityDialog({
                       <TableCell className="p-3">{item.skuId}</TableCell>
                       <TableCell className="p-3 font-medium">
                         {item.itemName}
+                      </TableCell>
+
+                      <TableCell className="p-3 font-medium">
+                        {item.invoiceQty}
                       </TableCell>
 
                       <TableCell className="p-3 font-medium">
@@ -298,15 +310,15 @@ export default function ModifyQuantityDialog({
                         </div>
                       </TableCell>
 
-                      {/* ✅ Rejected Qty */}
-                      <TableCell className="p-3">
+                      {/* Rejected Qty */}
+                      {/* <TableCell className="p-3">
                         <Input
                           type="number"
                           className="w-20 text-center"
                           value={item.rejectedQty}
                           disabled
                         />
-                      </TableCell>
+                      </TableCell> */}
 
                       <TableCell className="p-3">₹{item.unitPrice}</TableCell>
 
@@ -322,7 +334,7 @@ export default function ModifyQuantityDialog({
                 </TableBody>
               </Table>
 
-              {/* ✅ Total */}
+              {/* Total */}
               <div className="flex items-center justify-end gap-2 border-t p-4 text-sm">
                 <span className="font-semibold">Total:</span>
                 <span className="text-lg font-bold text-primary">
@@ -332,19 +344,21 @@ export default function ModifyQuantityDialog({
             </div>
           )}
 
-          {/* ✅ Remarks + Attachments */}
+          {/* Remarks + Attachments */}
           {showRemarks && (
             <RemarkBox
               remarks={remarks}
               setRemarks={setRemarks}
-              attachedFiles={attachedFiles}
-              setAttachedFiles={setAttachedFiles}
               isAttachmentDisabled={true}
             />
           )}
         </div>
 
-        {/* ✅ Footer */}
+        {submitError && (
+          <InfoBanner text={submitError} showSupportLink={false} />
+        )}
+
+        {/* Footer */}
         <DialogFooter className="border-t p-4">
           <Button
             size="sm"
@@ -361,7 +375,7 @@ export default function ModifyQuantityDialog({
             {footerRightSlot}
             <Button
               size="sm"
-              disabled={isConfirmDisabled}
+              disabled={isConfirmDisabled || !hasAnyItemChanged}
               onClick={handleConfirm}
             >
               {confirmText}

@@ -167,8 +167,8 @@
                     "errorMsg": "Uh-oh, we hit a snag. Retry?"
                 },
                 "invoice": {
-                    "cta":"Create Vendor Invoice",
-                    "tooltip": "Create a Vendor Invoice"
+                    "cta":"Record Vendor Invoice",
+                    "tooltip": "Record a Vendor Invoice"
                 },
                 "search": {
                     "placeholder": "Search by Vendor..."

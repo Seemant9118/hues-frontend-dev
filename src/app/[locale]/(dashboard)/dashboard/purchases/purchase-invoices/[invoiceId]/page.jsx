@@ -73,7 +73,8 @@ const ViewInvoice = () => {
   const [grnItems, setGrnItems] = useState([]);
   const [remarks, setRemarks] = useState('');
   const [attachedFiles, setAttachedFiles] = useState([]);
-  const [dispatchId, setDispatchId] = useState('');
+  const [deliveryChallan, setDeliveryChallan] = useState('');
+  const [ewb, setEwb] = useState('');
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -231,10 +232,11 @@ const ViewInvoice = () => {
     }
 
     const normalized = (invoiceDetails?.invoiceItemDetails || [])
-      .filter((item) => !item?.isFullyDispatched) // ✅ skip fully dispatched
+      .filter((item) => !item?.isFullyDispatched) // skip fully dispatched
       .map((item) => {
         const product = item?.orderItemId?.productDetails || {};
 
+        // remaingQty
         const quantity = Number(
           (item?.quantity || 0) - (item?.dispatchedQuantity || 0),
         );
@@ -252,8 +254,8 @@ const ViewInvoice = () => {
 
           unitPrice,
           gstPerUnit,
-
-          quantity,
+          invoiceQty: item?.quantity,
+          quantity, // remaingQty
           dispatchQuantity: 0,
           acceptedQty: 0,
           rejectedQty: 0,
@@ -273,6 +275,7 @@ const ViewInvoice = () => {
     mutationFn: adhocCreateGRN,
     onSuccess: (data) => {
       toast.success('GRN Issued Successfully');
+      setIsIssuingGRN(false);
       router.push(`/dashboard/transport/grn/${data?.data?.data?.grnId}`);
     },
     onError: (error) => {
@@ -314,7 +317,8 @@ const ViewInvoice = () => {
       totalAmount,
       totalGstAmount,
 
-      dispatchNoteRefrence: dispatchId || '',
+      deliveryChallanNumber: deliveryChallan || '',
+      ewayBillNumber: ewb || '',
 
       grnItems: validItems.map((item) => ({
         orderItemId: Number(item.orderItemId),
@@ -335,9 +339,7 @@ const ViewInvoice = () => {
         gstAmount: Number(item.gstPerUnit || 0) * Number(item.acceptedQty || 0),
       })),
     };
-
     adhocIssueGRNMutation.mutate({ data: payload });
-    setIsIssuingGRN(false);
   };
 
   // Statuses
@@ -722,8 +724,10 @@ const ViewInvoice = () => {
               title="Modify & Issue GRN"
               description="Update accepted quantities and confirm to proceed."
               tableTitle="Items to Issue GRN"
-              dispatchId={dispatchId}
-              setDispatchId={setDispatchId}
+              deliveryChallan={deliveryChallan}
+              setDeliveryChallan={setDeliveryChallan}
+              ewb={ewb}
+              setEwb={setEwb}
               isDispatchIdRequired={true}
               items={grnItems}
               setItems={setGrnItems}

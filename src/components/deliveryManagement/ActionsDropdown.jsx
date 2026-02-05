@@ -14,7 +14,7 @@ export default function ActionsDropdown({
   actions = [],
   disabled = false,
   label = 'Actions',
-  variant = 'outline',
+  variant = 'default',
 }) {
   const [open, setOpen] = useState(false);
 

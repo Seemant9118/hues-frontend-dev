@@ -387,6 +387,45 @@ const CreateB2BInvoice = ({
           <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
+                {translations('form.label.invoice_date')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <div className="relative flex items-center rounded-sm border p-2">
+                <DatePickers
+                  selected={
+                    order.invoiceDate ? new Date(order.invoiceDate) : null
+                  }
+                  onChange={(date) => {
+                    const formattedForAPI = date
+                      ? moment(date).format('YYYY-MM-DD')
+                      : null;
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      invoiceDate: formattedForAPI,
+                    }));
+
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: {
+                        ...order,
+                        invoiceDate: formattedForAPI,
+                      },
+                    });
+                  }}
+                  popperPlacement="end"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/mm/yyyy"
+                  className="max-w-xs"
+                />
+              </div>
+
+              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
                 {translations('form.label.client')}
                 <span className="text-red-600">*</span>
               </Label>
@@ -397,7 +436,7 @@ const CreateB2BInvoice = ({
                   placeholder={translations('form.input.client.placeholder')}
                   options={clientOptions}
                   styles={getStylesForSelectComponent()}
-                  className="max-w-xs text-sm"
+                  className="text-sm"
                   classNamePrefix="select"
                   value={
                     clientOptions?.find(
@@ -467,7 +506,7 @@ const CreateB2BInvoice = ({
                 placeholder={translations('form.input.item_type.placeholder')}
                 options={itemTypeOptions}
                 styles={getStylesForSelectComponent()}
-                className="max-w-xs text-sm"
+                className="text-sm"
                 classNamePrefix="select"
                 value={
                   itemTypeOptions?.find(
@@ -510,44 +549,6 @@ const CreateB2BInvoice = ({
               />
 
               {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.invoice_date')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <div className="relative flex items-center rounded-sm border p-2">
-                <DatePickers
-                  selected={
-                    order.invoiceDate ? new Date(order.invoiceDate) : null
-                  }
-                  onChange={(date) => {
-                    const formattedForAPI = date
-                      ? moment(date).format('YYYY-MM-DD')
-                      : null;
-
-                    setOrder((prev) => ({
-                      ...prev,
-                      invoiceDate: formattedForAPI,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2bInvoiceDraft',
-                      data: {
-                        ...order,
-                        invoiceDate: formattedForAPI,
-                      },
-                    });
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/mm/yyyy"
-                  className="w-full"
-                />
-              </div>
-
-              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
             </div>
           </div>
 

@@ -286,44 +286,36 @@ export const getCurrentFinancialYearPeriods = (date = new Date()) => {
   const currentMonth = date.getMonth(); // 0 = Jan
   const currentYear = date.getFullYear();
 
-  // FY Start year logic
-  // Apr (3) to Dec (11) => FY starts same year
-  // Jan (0) to Mar (2)  => FY starts previous year
+  // FY starts in April
   const fyStartYear = currentMonth >= 3 ? currentYear : currentYear - 1;
 
   const periods = [];
 
-  // Start from April of FY start year
   const startMonth = 3; // April
   const endMonth = currentMonth;
-  const endYear = currentYear;
-
-  // If current month is Jan/Feb/Mar, end month is that month (same year)
-  // If current month is Apr-Dec, end month is currentMonth (same year)
-  // (works with both cases)
+  const endYear = currentMonth >= 3 ? currentYear : currentYear;
 
   let m = startMonth;
   let y = fyStartYear;
 
   while (y < endYear || (y === endYear && m <= endMonth)) {
-    const monthNumber = String(m + 1).padStart(2, '0'); // 01 to 12
-    const value = `${monthNumber}${y}`; // MMYYYY
+    const monthNumber = String(m + 1).padStart(2, '0');
 
     periods.push({
       label: `${months[m]} ${y}`,
-      value,
+      value: `${monthNumber}${y}`, // MMYYYY
     });
 
     m++;
 
-    // Move to next year after Dec
     if (m > 11) {
       m = 0;
       y++;
     }
   }
 
-  return periods;
+  // Decreasing order (latest first)
+  return periods.reverse();
 };
 
 export const maskPanNumber = (pan = '') => {

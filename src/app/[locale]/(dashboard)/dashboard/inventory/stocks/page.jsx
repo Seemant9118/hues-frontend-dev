@@ -2,9 +2,9 @@
 
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import AdHocStock from '@/components/inventory/AdHocStock';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
-import { Button } from '@/components/ui/button';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -18,7 +18,7 @@ import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle } from 'lucide-react';
+import { MinusCircle, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -49,7 +49,7 @@ const Stocks = () => {
   const [filter, setFilter] = useState(null);
   const [tab, setTab] = useState('ALL');
   const [isAddingAdHocStockIn, setIsAddingAdHocStockIn] = useState(false);
-  // const [isAddingAdHocStockOut, setIsAddingAdHocStockOut] = useState(false);
+  const [isAddingAdHocStockOut, setIsAddingAdHocStockOut] = useState(false);
 
   const isSearching = searchTerm?.length > 0;
   const hasData = stocksList?.length > 0;
@@ -138,7 +138,7 @@ const Stocks = () => {
         </>
       ) : (
         <>
-          {!isAddingAdHocStockIn && (
+          {!isAddingAdHocStockIn && !isAddingAdHocStockOut && (
             <Wrapper>
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-2">
@@ -149,14 +149,29 @@ const Stocks = () => {
                     placeholder="Search Stock..."
                   />
 
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setIsAddingAdHocStockIn(true);
-                    }}
-                  >
-                    <CheckCircle size={14} /> Stock In
-                  </Button>
+                  <ActionsDropdown
+                    label="Adjust Inventory"
+                    // variant="outline"
+                    actions={[
+                      {
+                        key: 'add-stock',
+                        label: 'Stock-In',
+                        icon: PlusCircle,
+                        onClick: () => {
+                          setIsAddingAdHocStockIn(true);
+                        },
+                        className: 'text-primary',
+                      },
+                      {
+                        key: 'reduce-stock',
+                        label: 'Stock Correction',
+                        icon: MinusCircle,
+                        onClick: () => {
+                          setIsAddingAdHocStockOut(true);
+                        },
+                      },
+                    ]}
+                  />
                 </div>
               </SubHeader>
 
@@ -354,10 +369,10 @@ const Stocks = () => {
             </Wrapper>
           )}
 
-          {isAddingAdHocStockIn && (
+          {isAddingAdHocStockIn && !isAddingAdHocStockOut && (
             <AdHocStock
               isStockIn={true}
-              name={'AdHoc - (Stock In)'}
+              name={'Stock In'}
               onClose={() => {
                 setIsAddingAdHocStockIn((prev) => !prev);
                 queryClient.invalidateQueries([
@@ -367,10 +382,10 @@ const Stocks = () => {
             />
           )}
 
-          {/* {isAddingAdHocStockOut && !isAddingAdHocStockIn && (
+          {isAddingAdHocStockOut && !isAddingAdHocStockIn && (
             <AdHocStock
               isStockIn={false}
-              name={'AdHoc - (Stock Out)'}
+              name={'Stock Correction'}
               onClose={() => {
                 setIsAddingAdHocStockOut((prev) => !prev);
                 queryClient.invalidateQueries([
@@ -378,7 +393,7 @@ const Stocks = () => {
                 ]);
               }}
             />
-          )} */}
+          )}
         </>
       )}
     </ProtectedWrapper>
