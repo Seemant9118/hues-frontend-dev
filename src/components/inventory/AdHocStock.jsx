@@ -47,7 +47,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     productName: '',
     skuId: '',
     hsnCode: '',
-    targetBucketId: '', // ✅ NEW
+    targetBucketId: '', // NEW
     quantity: '',
     unitId: null,
     unitPrice: '',
@@ -59,7 +59,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   });
 
   const [formData, setFormData] = useState({
-    adjustmentReason: '',
+    adjustmentReason: !isStockIn ? 'MANUAL_CORRECTION' : '',
     items: [],
   });
 
@@ -71,9 +71,11 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
         { label: 'Initial Setup', value: 'INITIAL_SETUP' },
       ]
     : [
-        { label: 'Damage', value: 'DAMAGE' },
-        { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },
-        { label: 'Expiry', value: 'EXPIRY' },
+        { label: 'Manual Correction', value: 'MANUAL_CORRECTION' },
+
+        // { label: 'Damage', value: 'DAMAGE' },
+        // { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },
+        // { label: 'Expiry', value: 'EXPIRY' },
       ];
 
   const selectedReasonOption = useMemo(() => {
@@ -86,7 +88,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const isItemAlreadyAdded = (itemId) =>
     formData.items?.some((item) => item.itemId === itemId);
 
-  // ✅ Fetch goods list
+  // Fetch goods list
   const { data: goods } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () =>
@@ -97,7 +99,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     enabled: !!enterpriseId,
   });
 
-  // ✅ Fetch buckets list
+  // Fetch buckets list
   const { data: bucketOptions = [], isLoading: isBucketLoading } = useQuery({
     queryKey: [qcApis.bucketOptions.endpointKey, enterpriseId],
     queryFn: () => getBuckets({ enterpriseId }),
@@ -142,7 +144,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     );
   }, [selectedItem.productId, GoodsOptions]);
 
-  // ✅ fetch units - GOODS
+  // fetch units - GOODS
   const { data: units } = useQuery({
     queryKey: [stockInOutAPIs.getUnits.endpointKey],
     queryFn: getUnits,
@@ -219,7 +221,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
         {
           // identifiers
           itemId: selectedItem.productId,
-          targetBucketId: Number(selectedItem.targetBucketId), // ✅ NEW
+          targetBucketId: Number(selectedItem.targetBucketId), // NEW
           productName: selectedItem.productName,
           skuId: selectedItem.skuId,
 
@@ -243,7 +245,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       productName: '',
       skuId: '',
       hsnCode: '',
-      targetBucketId: '', // ✅ NEW
+      targetBucketId: '', // NEW
       quantity: '',
       unitId: null,
       unitPrice: '',
@@ -261,7 +263,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     const itemToEdit = formData.items[index];
     if (!itemToEdit) return;
 
-    // 1️⃣ Load item into form
+    // Load item into form
     setSelectedItem({
       productId: itemToEdit.itemId,
       productType: 'GOODS',
@@ -281,7 +283,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       ...calculateAmounts(itemToEdit),
     });
 
-    // 2️⃣ Remove it from table
+    // Remove it from table
     setFormData((prev) => ({
       ...prev,
       items: prev.items.filter((_, i) => i !== index),
@@ -298,7 +300,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const adHocStockInMutation = useMutation({
     mutationFn: adHocStockIn,
     onSuccess: () => {
-      toast.success('Ad Hoc Stock in Successfully');
+      toast.success('Stock in Successfully');
       onClose();
     },
     onError: (error) => {
@@ -309,7 +311,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const adHocStockOutMutation = useMutation({
     mutationFn: adHocStockOut,
     onSuccess: () => {
-      toast.success('Ad Hoc Stock out Successfully');
+      toast.success('Stock out Successfully');
       onClose();
     },
     onError: (error) => {
@@ -334,7 +336,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       adjustmentReason: formData.adjustmentReason,
       items: formData.items.map((item) => ({
         itemId: item.itemId,
-        targetBucketId: item.targetBucketId, // ✅ NEW
+        targetBucketId: item.targetBucketId, //  NEW
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice),
         gstAmountPerUnit: Number(item.gstPerUnit),
@@ -356,7 +358,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   });
 
   return (
-    <Wrapper className="flex flex-col gap-4">
+    <Wrapper className="flex h-full min-h-screen flex-col">
       {!isAdding && (
         <>
           <SubHeader name={name} />
@@ -427,7 +429,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                         productName: meta.productName,
                         skuId: meta.skuId,
                         hsnCode: meta.hsnCode,
-                        targetBucketId: '', // ✅ reset bucket when selecting new item
+                        targetBucketId: '', // reset bucket when selecting new item
                         quantity: '',
                         unitId: null,
                         unitPrice: meta.unitPrice,
@@ -446,7 +448,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                 </div>
               </div>
 
-              {/* ✅ Bucket Select */}
+              {/* Bucket Select */}
               <div className="flex w-full max-w-xs flex-col gap-2">
                 <Label className="flex gap-1">
                   Select Bucket
@@ -639,21 +641,23 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
           <DataTable data={formData?.items} columns={adHocItemsColumns} />
 
           {/* submit */}
-          <div className="sticky bottom-0 flex justify-end gap-2">
-            <Button size="sm" onClick={onClose} variant={'outline'}>
-              Cancel
-            </Button>
+          <div className="sticky bottom-0 z-10 border-t bg-white px-4 py-3">
+            <div className="flex justify-end gap-2">
+              <Button size="sm" onClick={onClose} variant="outline">
+                Cancel
+              </Button>
 
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={
-                adHocStockInMutation?.isPending ||
-                adHocStockOutMutation?.isPending
-              }
-            >
-              {isStockIn ? 'Complete Stock-in' : 'Complete Stock-out'}
-            </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmit}
+                disabled={
+                  adHocStockInMutation?.isPending ||
+                  adHocStockOutMutation?.isPending
+                }
+              >
+                {isStockIn ? 'Add Stock' : 'Complete Stock Correction'}
+              </Button>
+            </div>
           </div>
         </>
       )}

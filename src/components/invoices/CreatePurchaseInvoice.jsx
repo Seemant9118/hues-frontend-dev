@@ -354,6 +354,89 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
       {!isInvoicePreview && (
         <>
           <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
+            {/* Invoice ID */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.invoiceNo')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <Input
+                type="text"
+                placeholder="Enter Invoice No."
+                value={order?.refrenceNumber || ''}
+                onChange={(e) => {
+                  const { value } = e.target;
+
+                  const updatedOrder = {
+                    ...order,
+                    refrenceNumber: value,
+                  };
+
+                  setOrder(updatedOrder);
+
+                  saveDraftToSession({
+                    key: 'purchaseInvoiceDraft',
+                    data: {
+                      ...updatedOrder,
+                      isGstApplicableForSelectedVendor,
+                    },
+                  });
+
+                  if (errorMsg?.refrenceNumber) {
+                    setErrorMsg((prev) => ({
+                      ...prev,
+                      refrenceNumber: '',
+                    }));
+                  }
+                }}
+              />
+
+              {errorMsg.refrenceNumber && (
+                <ErrorBox msg={errorMsg.refrenceNumber} />
+              )}
+            </div>
+
+            {/* Invoice Date */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.invoice_date')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <div className="relative flex items-center rounded-sm border p-2">
+                <DatePickers
+                  selected={
+                    order.invoiceDate ? new Date(order.invoiceDate) : null
+                  }
+                  onChange={(date) => {
+                    const formattedForAPI = date
+                      ? moment(date).format('YYYY-MM-DD')
+                      : null;
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      invoiceDate: formattedForAPI,
+                    }));
+
+                    saveDraftToSession({
+                      key: 'purchaseInvoiceDraft',
+                      data: {
+                        ...order,
+                        invoiceDate: formattedForAPI,
+                        isGstApplicableForSelectedVendor,
+                      },
+                    });
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/mm/yyyy"
+                  className="w-full"
+                />
+              </div>
+
+              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
+            </div>
+
             {/* Vendor Select */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
@@ -485,89 +568,6 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
               />
 
               {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
-            </div>
-
-            {/* ✅ Invoice ID */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.invoiceNo')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <Input
-                type="text"
-                placeholder="Enter Invoice No."
-                value={order?.refrenceNumber || ''}
-                onChange={(e) => {
-                  const { value } = e.target;
-
-                  const updatedOrder = {
-                    ...order,
-                    refrenceNumber: value,
-                  };
-
-                  setOrder(updatedOrder);
-
-                  saveDraftToSession({
-                    key: 'purchaseInvoiceDraft',
-                    data: {
-                      ...updatedOrder,
-                      isGstApplicableForSelectedVendor,
-                    },
-                  });
-
-                  if (errorMsg?.refrenceNumber) {
-                    setErrorMsg((prev) => ({
-                      ...prev,
-                      refrenceNumber: '',
-                    }));
-                  }
-                }}
-              />
-
-              {errorMsg.refrenceNumber && (
-                <ErrorBox msg={errorMsg.refrenceNumber} />
-              )}
-            </div>
-
-            {/* Invoice Date */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.invoice_date')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <div className="relative flex items-center rounded-sm border p-2">
-                <DatePickers
-                  selected={
-                    order.invoiceDate ? new Date(order.invoiceDate) : null
-                  }
-                  onChange={(date) => {
-                    const formattedForAPI = date
-                      ? moment(date).format('YYYY-MM-DD')
-                      : null;
-
-                    setOrder((prev) => ({
-                      ...prev,
-                      invoiceDate: formattedForAPI,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'purchaseInvoiceDraft',
-                      data: {
-                        ...order,
-                        invoiceDate: formattedForAPI,
-                        isGstApplicableForSelectedVendor,
-                      },
-                    });
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/mm/yyyy"
-                  className="w-full"
-                />
-              </div>
-
-              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
             </div>
           </div>
 
