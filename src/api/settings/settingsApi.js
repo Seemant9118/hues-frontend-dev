@@ -34,4 +34,16 @@ export const settingsAPI = {
     endpoint: `/enterprise/update/metadata`,
     endpointKey: 'update_enterprise_data',
   },
+  getGstSettings: {
+    endpoint: `/enterprise-settings/gstsetting/`,
+    endpointKey: 'get_gst_Settings',
+  },
+  updateGst: {
+    endpoint: `/enterprise/update/gst/`,
+    endpointKey: 'update_gst',
+  },
+  addWareHouse: {
+    endpoint: `/warehouse/create`,
+    endpointKey: 'add_warehouse',
+  },
 };

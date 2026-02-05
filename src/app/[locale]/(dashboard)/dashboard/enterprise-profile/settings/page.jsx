@@ -35,6 +35,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { usePINAuditLogsColumns } from '../usePINAuditLogsColumns';
 
 const TAB_CONTEXT_MAP = {
@@ -45,7 +46,7 @@ const TAB_CONTEXT_MAP = {
 
 const Settings = () => {
   const userId = LocalStorageService.get('user_profile');
-
+  const enterpriseId = getEnterpriseId();
   const translations = useTranslations('settings');
   const translationsTab4 = useTranslations(
     'components.generate_pin_modal.audit_logs',
@@ -225,7 +226,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="gstRegistration" className="">
-            <GstRegistrations />
+            <GstRegistrations enterpriseId={enterpriseId} />
           </TabsContent>
 
           <TabsContent value="bankAccount" className="flex flex-col gap-4">

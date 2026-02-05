@@ -1,21 +1,15 @@
 'use client';
 
-import { enterpriseUser } from '@/api/enterprises_user/Enterprises_users';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import { templateApi } from '@/api/templates_api/template_api';
 import { userAuth } from '@/api/user_auth/Users';
-import { validateEmail } from '@/appUtils/ValidationUtils';
 import { capitalize, getEnterpriseId } from '@/appUtils/helperFunctions';
-import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import Avatar from '@/components/ui/Avatar';
-import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -23,14 +17,10 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
-import {
-  updateEnterpriseFields,
-  updateEnterpriseIdentificationDetails,
-} from '@/services/Enterprises_Users_Service/EnterprisesUsersService';
-import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
+import { getGstSettings } from '@/services/Settings_Services/SettingsService';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   CheckCircle2,
   Copy,
@@ -39,19 +29,15 @@ import {
   Link2,
   Mail,
   MapPin,
-  Pencil,
-  PencilIcon,
   Phone,
-  PlusCircle,
   QrCode,
   Settings,
-  X,
 } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 function EnterpriseProfile() {
   const userId = LocalStorageService.get('user_profile');
@@ -59,75 +45,70 @@ function EnterpriseProfile() {
   useMetaData(`Enterprise Profile`, 'HUES ENTEPRRISE PROFILE');
 
   const translations = useTranslations('enterpriseProfile');
-  const queryClient = useQueryClient();
   const router = useRouter();
 
   const { hasPermission } = usePermission();
   const [tab, setTab] = useState('enterpriseOverview');
 
-  const [isEditing, setIsEditing] = useState({
-    gst: false,
-    udyam: false,
-    mobile: false,
-    email: false,
-  });
+  // const [isEditing, setIsEditing] = useState({
+  //   gst: false,
+  //   udyam: false,
+  //   mobile: false,
+  //   email: false,
+  // });
 
-  const [updateEnterpriseDetails, setUpdateEnterpriseDetails] = useState({
-    identifierType: '',
-    identifierNum: '',
-  });
+  // const [updateEnterpriseDetails, setUpdateEnterpriseDetails] = useState({
+  //   identifierType: '',
+  //   identifierNum: '',
+  // });
 
-  const [enterpriseDataUpdate, setEnterpriseDataUpdate] = useState(null);
-
-  const [isAddressAdding, setIsAddressAdding] = useState(false);
-  const [editingAddress, setEditingAddress] = useState(null);
-  const [addressId, setAddressId] = useState(null);
+  // const [enterpriseDataUpdate, setEnterpriseDataUpdate] = useState(null);
 
   const onTabChange = (value) => setTab(value);
 
   // update enterprise mutation
-  const updateEnterpriseMutation = useMutation({
-    mutationKey: [
-      enterpriseUser.updateEnterpriseIdentificationDetails.endpointKey,
-      enterpriseId,
-    ],
-    mutationFn: () =>
-      updateEnterpriseIdentificationDetails(
-        enterpriseId,
-        updateEnterpriseDetails?.identifierType,
-        updateEnterpriseDetails?.identifierNum,
-      ),
-    onSuccess: () => {
-      toast.success(translations('toasts.update.successMsg'));
-      setUpdateEnterpriseDetails({ identifierType: '', identifierNum: '' });
-      setIsEditing({ gst: false, udyam: false, mobile: false, email: false });
-      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
-    },
-    onError: () => {
-      toast.error(
-        translations('toasts.update.errorMsg', {
-          type: updateEnterpriseDetails?.identifierType,
-        }),
-      );
-    },
-  });
+  // const updateEnterpriseMutation = useMutation({
+  //   mutationKey: [
+  //     enterpriseUser.updateEnterpriseIdentificationDetails.endpointKey,
+  //     enterpriseId,
+  //   ],
+  //   mutationFn: () =>
+  //     updateEnterpriseIdentificationDetails(
+  //       enterpriseId,
+  //       updateEnterpriseDetails?.identifierType,
+  //       updateEnterpriseDetails?.identifierNum,
+  //     ),
+  //   onSuccess: () => {
+  //     toast.success(translations('toasts.update.successMsg'));
+  //     setUpdateEnterpriseDetails({ identifierType: '', identifierNum: '' });
+  //     setIsEditing({ gst: false, udyam: false, mobile: false, email: false });
+  //     queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
+  //   },
+  //   onError: () => {
+  //     toast.error(
+  //       translations('toasts.update.errorMsg', {
+  //         type: updateEnterpriseDetails?.identifierType,
+  //       }),
+  //     );
+  //   },
+  // });
 
   // update enterprise fields mutation
-  const updateEnterpriseFieldsMutation = useMutation({
-    mutationKey: [enterpriseUser.updateEnterpriseFields.endpointKey],
-    mutationFn: updateEnterpriseFields,
-    onSuccess: () => {
-      toast.success(translations('toasts.update.successMsg'));
-      setEnterpriseDataUpdate(null);
-      setIsEditing({ gst: false, udyam: false, mobile: false, email: false });
-      queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
-    },
-    onError: (error) => {
-      toast.error(
-        translations(error.response.data.message || 'toasts.update.errorMsg'),
-      );
-    },
-  });
+  // const updateEnterpriseFieldsMutation = useMutation({
+  //   mutationKey: [enterpriseUser.updateEnterpriseFields.endpointKey],
+  //   mutationFn: updateEnterpriseFields,
+  //   onSuccess: () => {
+  //     toast.success(translations('toasts.update.successMsg'));
+  //     setEnterpriseDataUpdate(null);
+  //     setIsEditing({ gst: false, udyam: false, mobile: false, email: false });
+  //     queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
+  //   },
+  //   onError: (error) => {
+  //     toast.error(
+  //       translations(error.response.data.message || 'toasts.update.errorMsg'),
+  //     );
+  //   },
+  // });
 
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -151,18 +132,24 @@ function EnterpriseProfile() {
     select: (res) => res.data.data,
   });
 
-  const isAnyEditing =
-    isEditing.gst || isEditing.udyam || isEditing.mobile || isEditing.email;
+  const { data: gstRegistrations } = useQuery({
+    queryKey: [settingsAPI.getGstSettings.endpointKey],
+    queryFn: () => getGstSettings({ id: enterpriseId }),
+    select: (data) => data.data.data,
+  });
+
+  // const isAnyEditing =
+  //   isEditing.gst || isEditing.udyam || isEditing.mobile || isEditing.email;
 
   // Fake derived UI values (you can connect to backend later)
-  const profileCompleteness = enterprise?.id ? 70 : 10;
-  const completenessLabel = profileCompleteness > 60 ? 'Strong' : 'Weak';
+  // const profileCompleteness = enterprise?.id ? 70 : 10;
+  // const completenessLabel = profileCompleteness > 60 ? 'Strong' : 'Weak';
 
   const complianceItems = [
     {
       label: 'GST',
       status: enterprise?.gstNumber ? 'Registered' : 'Not Added',
-      active: true,
+      active: false,
     },
     {
       label: 'Income Tax (PAN)',
@@ -320,24 +307,20 @@ function EnterpriseProfile() {
                             {enterprise?.name || '-'}
                           </h2>
 
-                          <Badge variant="secondary" className="rounded-full">
-                            {capitalize(enterprise?.type) || 'Body Corporate'}
-                          </Badge>
-
                           <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
                             Verified
                           </Badge>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                          <span className="font-medium">
-                            CIN:{' '}
-                            <span className="font-semibold text-black">
-                              {enterprise?.cinNumber || '-'}
+                          {enterprise?.cinNumber && (
+                            <span className="font-medium">
+                              CIN:{' '}
+                              <span className="font-semibold text-black">
+                                {enterprise?.cinNumber || '-'}
+                              </span>
                             </span>
-                          </span>
-
-                          <span className="hidden md:inline">•</span>
+                          )}
 
                           <span>
                             {capitalize(enterprise?.type) || 'Private Limited'}
@@ -370,7 +353,7 @@ function EnterpriseProfile() {
 
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col items-end gap-1">
-                          <span className="text-xs text-muted-foreground">
+                          {/* <span className="text-xs text-muted-foreground">
                             Profile completeness
                           </span>
 
@@ -382,10 +365,12 @@ function EnterpriseProfile() {
                             <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
                               {completenessLabel}
                             </Badge>
-                          </div>
+                          </div> */}
 
                           <span className="text-xs text-muted-foreground">
-                            Last updated • 28 Jan 2026
+                            {moment(enterprise?.updatedAt).format(
+                              'DD/MM/YYYY HH:mm',
+                            )}
                           </span>
                         </div>
                       </div>
@@ -451,8 +436,8 @@ function EnterpriseProfile() {
                         About the enterprise
                       </h3>
                       <p className="mt-3 text-sm leading-relaxed">
-                        {enterprise?.description ||
-                          `${enterprise?.name || 'This enterprise'} is a leading provider of enterprise IT solutions, telecom infrastructure, and electrical equipment across Maharashtra and Gujarat.`}
+                        {enterprise?.metaData?.description ||
+                          `${enterprise?.name || 'This enterprise'} is a leading provider of enterprise IT solutions.`}
                       </p>
                     </Card>
 
@@ -487,108 +472,143 @@ function EnterpriseProfile() {
                     </Card>
 
                     {/* TAX BEHAVIOUR MARKERS */}
-                    <Card className="rounded-2xl border p-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        Tax behaviour markers
-                      </h3>
+                    {enterprise?.isGtaService ||
+                      (enterprise?.isLegalService && (
+                        <Card className="rounded-2xl border p-5">
+                          <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
+                            Tax behaviour markers
+                          </h3>
 
-                      <div className="mt-4">
-                        <Badge
-                          variant="outline"
-                          className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
-                        >
-                          Provides GTA services
-                        </Badge>
-                        <p className="mt-2 text-xs italic text-muted-foreground">
-                          Self-declared by the enterprise. Used for GST
-                          decisioning.
-                        </p>
-                      </div>
-                    </Card>
-
-                    {/* COMMERCIAL OVERVIEW */}
-                    <Card className="rounded-2xl border p-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        Commercial overview
-                      </h3>
-
-                      <div className="mt-4 flex items-center gap-2">
-                        <span className="text-sm font-bold text-muted-foreground">
-                          Annual Turnover:
-                        </span>
-                        <span className="text-sm font-semibold text-black">
-                          {enterprise?.metaData?.commercialOverview ||
-                            '₹40 lakh – ₹1.5 crore'}
-                        </span>
-                      </div>
-                    </Card>
-
-                    {/* GST REGISTRATIONS */}
-                    <Card className="rounded-2xl border p-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        GST registrations
-                      </h3>
-
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        GST registrations are displayed state-wise.
-                      </p>
-
-                      <div className="mt-4 flex flex-col gap-4">
-                        {/* You can map these from your backend later */}
-                        <Card className="rounded-2xl border bg-gray-50 p-5">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-base font-semibold">
-                              Maharashtra
-                            </h4>
-                            <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                              Active
-                            </Badge>
-                          </div>
-
-                          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs text-muted-foreground">
-                                GSTIN
-                              </span>
-                              <span className="text-lg font-semibold">
-                                {enterprise?.gstNumber || '27AAFCR7299K2ZC'}
-                              </span>
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                              <span className="px-2 text-xs text-muted-foreground">
-                                GST status
-                              </span>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  GST registered
-                                </Badge>
-                                <Badge
-                                  variant="secondary"
-                                  className="rounded-full"
-                                >
-                                  Normal / Regular
-                                </Badge>
-                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  Active
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin size={14} />
-                            <p>Principal place of business</p>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <p>
-                              Shop No. 5, Laxmi Industrial Estate, Andheri East,
-                              Mumbai - 400069, Maharashtra
+                          <div className="mt-4">
+                            {enterprise?.isGtaService && (
+                              <Badge
+                                variant="outline"
+                                className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
+                              >
+                                Provides GTA services
+                              </Badge>
+                            )}
+                            {enterprise?.isLegalService && (
+                              <Badge
+                                variant="outline"
+                                className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
+                              >
+                                Provides Legal services
+                              </Badge>
+                            )}
+                            <p className="mt-2 text-xs italic text-muted-foreground">
+                              Self-declared by the enterprise. Used for GST
+                              decisioning.
                             </p>
                           </div>
                         </Card>
-                      </div>
-                    </Card>
+                      ))}
+
+                    {/* COMMERCIAL OVERVIEW */}
+                    {enterprise?.metaData?.commercialOverview && (
+                      <Card className="rounded-2xl border p-5">
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
+                          Commercial overview
+                        </h3>
+
+                        <div className="mt-4 flex items-center gap-2">
+                          <span className="text-sm font-bold text-muted-foreground">
+                            Annual Turnover:
+                          </span>
+                          <span className="text-sm font-semibold text-black">
+                            {enterprise?.metaData?.commercialOverview ||
+                              '₹40 lakh – ₹1.5 crore'}
+                          </span>
+                        </div>
+                      </Card>
+                    )}
+
+                    {/* GST REGISTRATIONS */}
+                    {/* GST REGISTRATIONS */}
+                    {gstRegistrations?.gsts?.length > 0 &&
+                      gstRegistrations.gsts.map((gst) => {
+                        const principalAddress =
+                          gst?.addresses?.find(
+                            (addr) =>
+                              addr.subType === 'PRINCIPAL_PLACE_OF_BUSINESS',
+                          ) || null;
+
+                        return (
+                          <Card key={gst.id} className="rounded-2xl border p-5">
+                            <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
+                              GST registrations
+                            </h3>
+
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              GST registrations are displayed state-wise.
+                            </p>
+
+                            <div className="mt-4 flex flex-col gap-4">
+                              <Card className="rounded-2xl border bg-gray-50 p-5">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="text-base font-semibold">
+                                    {principalAddress?.pincodeEntity?.state ||
+                                      'State'}
+                                  </h4>
+
+                                  {gst?.isVerified && (
+                                    <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                                      Active
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-muted-foreground">
+                                      GSTIN
+                                    </span>
+
+                                    <span className="text-lg font-semibold">
+                                      {gst?.gst || '—'}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <span className="px-2 text-xs text-muted-foreground">
+                                      GST status
+                                    </span>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      {gst?.isVerified && (
+                                        <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                                          GST registered
+                                        </Badge>
+                                      )}
+
+                                      <Badge
+                                        variant="secondary"
+                                        className="rounded-full"
+                                      >
+                                        {gst?.registrationType ||
+                                          'Normal / Regular'}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {principalAddress && (
+                                  <div className="mt-4 flex flex-col items-start gap-2 text-sm">
+                                    <div className="flex items-center gap-1">
+                                      <MapPin size={14} />
+                                      <p>Principal place of business</p>
+                                    </div>
+                                    <p>
+                                      {principalAddress?.address ||
+                                        'Principal address not available'}
+                                    </p>
+                                  </div>
+                                )}
+                              </Card>
+                            </div>
+                          </Card>
+                        );
+                      })}
 
                     {/* BUSINESS AREAS */}
                     <Card className="rounded-2xl border p-5">
@@ -620,13 +640,12 @@ function EnterpriseProfile() {
                     </Card>
 
                     {/* KEEP YOUR EDITABLE FIELDS SECTION (EMAIL/MOBILE/GST/UDYAM + ADDRESS) */}
-                    <Card className="rounded-2xl border p-5">
+                    {/* <Card className="rounded-2xl border p-5">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
                         Enterprise information
                       </h3>
 
                       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {/* Mobile */}
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
                             <Label className="text-xs">
@@ -680,7 +699,6 @@ function EnterpriseProfile() {
                           )}
                         </div>
 
-                        {/* Email */}
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
                             <Label className="text-xs">
@@ -734,7 +752,6 @@ function EnterpriseProfile() {
                           )}
                         </div>
 
-                        {/* PAN */}
                         <div className="flex flex-col gap-1">
                           <Label className="text-xs">
                             {translations('tabs.content.tab1.label.pan')}
@@ -744,7 +761,6 @@ function EnterpriseProfile() {
                           </span>
                         </div>
 
-                        {/* GST */}
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
                             <Label className="text-xs">
@@ -806,7 +822,6 @@ function EnterpriseProfile() {
                           )}
                         </div>
 
-                        {/* UDYAM */}
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
                             <Label className="text-xs">
@@ -868,7 +883,6 @@ function EnterpriseProfile() {
                           )}
                         </div>
 
-                        {/* Address List */}
                         <div className="flex flex-col gap-2 lg:col-span-3">
                           <div className="flex items-center justify-between">
                             <Label className="text-xs">
@@ -940,7 +954,6 @@ function EnterpriseProfile() {
                         </div>
                       </div>
 
-                      {/* Save / Cancel */}
                       {isAnyEditing && (
                         <div className="mt-4 flex w-full justify-end gap-2">
                           <Button
@@ -993,7 +1006,7 @@ function EnterpriseProfile() {
                             }}
                           >
                             {updateEnterpriseMutation.isPending ||
-                            updateEnterpriseFieldsMutation.isPending ? (
+                              updateEnterpriseFieldsMutation.isPending ? (
                               <Loading />
                             ) : (
                               translations('tabs.content.tab1.ctas.update')
@@ -1001,7 +1014,7 @@ function EnterpriseProfile() {
                           </Button>
                         </div>
                       )}
-                    </Card>
+                    </Card> */}
                   </div>
 
                   {/* RIGHT SIDE (1/3) */}

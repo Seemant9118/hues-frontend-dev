@@ -32,6 +32,7 @@ export default function AddNewAddress({
   setEditingAddress,
   editingAddressId,
   setEditingAddressId,
+  dataToAddNewPOB,
 }) {
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState('');
@@ -330,6 +331,7 @@ export default function AddNewAddress({
                 ...(isLegAddressAdding && {
                   addressType: 'LEG_ADDRESS',
                 }),
+                ...(dataToAddNewPOB || {}),
               };
 
               const mutationPayload = enterpriseId
