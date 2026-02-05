@@ -1,17 +1,9 @@
 {
-    "settings": {
+    "enterpriseProfile": {
         "title": "Enterprise Profile",
-        "title2": "Enterprise Settings",
         "tabs": {
             "label": {
-                "tab1": "Enterprise Profile",
-                "tab2": "GST Registrations",
-                "tab3": "Bank Account",
-                "tab4": "Invoices",
-                "tab5": "Payment Terms",
-                "tab6": "Offers",
-                "tab7": "E-way bill config",
-                "tab8": "PIN Settings"
+                "tab1": "Overview"
             },
             "content": {
                 "tab1": {
@@ -57,35 +49,6 @@
                             "successMsg": "Logo Updated Successfully",
                             "errorMsg": "Something went wrong while uploading logo"
                         }
-                    }
-                },
-                "tab3": {
-                    "bankAccount": {
-                        "add_bank_heading": "Add a bank account",
-                        "add_bank_subtitle": "Add a bank account to your Hues account",
-                        "add_bank_button": "Add Bank Account",
-                        "list_heading": "Bank Accounts"
-                    }
-                },
-                "tab4": {
-                    "coming_soon": "Coming Soon...",
-                    "settingsUpdate": {
-                        "successMsg": "Settings Updated Successfully",
-                        "errorMsg": "Something went wrong while updating settings"
-                    }
-                },
-                "tab5": {
-                    "coming_soon": "Coming Soon..."
-                },
-                "tab6": {
-                    "coming_soon": "Coming Soon..."
-                },
-                "tab7": {
-                     "ewbConfig": {
-                        "add_ewbConfig_heading": "Add your E-Way Bill Configuration",
-                        "add_ewbConfig_subtitle": "Securely manage your E-Way Bill credentials. All data is encrypted and stored safely.",
-                        "add_ewbConfig_button": "Add E-Way Bill Configuration",
-                        "ewb_heading": "E-Way Bill Configuration"
                     }
                 }
             }

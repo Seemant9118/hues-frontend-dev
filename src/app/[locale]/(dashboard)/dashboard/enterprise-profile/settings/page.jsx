@@ -9,7 +9,9 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AccountDetails from '@/components/settings/AccountDetails';
 import AddBankAccount from '@/components/settings/AddBankAccount';
 import AddEWBConfig from '@/components/settings/AddEWBConfig';
+import EnterpriseSettings from '@/components/settings/EnterpriseSettings';
 import EwbConfigDetails from '@/components/settings/EWBConfigDetails';
+import GstRegistrations from '@/components/settings/GSTRegistrationsSettings';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
 import { DataTable } from '@/components/table/data-table';
@@ -27,12 +29,13 @@ import {
   getTemplateForSettings,
 } from '@/services/Settings_Services/SettingsService';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { usePINAuditLogsColumns } from '../usePINAuditLogsColumns';
 
 const TAB_CONTEXT_MAP = {
@@ -43,16 +46,16 @@ const TAB_CONTEXT_MAP = {
 
 const Settings = () => {
   const userId = LocalStorageService.get('user_profile');
-
+  const enterpriseId = getEnterpriseId();
   const translations = useTranslations('settings');
   const translationsTab4 = useTranslations(
     'components.generate_pin_modal.audit_logs',
   );
-
+  const queryClient = useQueryClient();
   const { hasPermission } = usePermission();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState('bankAccount');
+  const [tab, setTab] = useState('enterprise');
   const [context, setContext] = useState();
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
   const [isEWBConfigAdding, setIsEWBConfigAdded] = useState(false);
@@ -65,7 +68,7 @@ const Settings = () => {
     setContext(mappedContext);
 
     router.push(
-      `/dashboard/enterprise-profile/settings?tab=${value || 'bankAccount'}`,
+      `/dashboard/enterprise-profile/settings?tab=${value || 'enterprise'}`,
     );
   };
 
@@ -163,6 +166,7 @@ const Settings = () => {
     enabled:
       tab === 'pinSettings' && hasPermission('permission:view-dashboard'),
   });
+
   // columns for pin audit logs table
   const PINAuditLogsColumns = usePINAuditLogsColumns();
 
@@ -187,37 +191,55 @@ const Settings = () => {
           defaultValue={'bankAccount'}
         >
           <TabsList className="w-fit border">
-            <TabsTrigger value="bankAccount">
+            <TabsTrigger value="enterprise">
+              {translations('tabs.label.tab1')}
+            </TabsTrigger>
+            <TabsTrigger value="gstRegistration">
               {translations('tabs.label.tab2')}
             </TabsTrigger>
-            <TabsTrigger value="invoice">
+            <TabsTrigger value="bankAccount">
               {translations('tabs.label.tab3')}
             </TabsTrigger>
-            <TabsTrigger value="paymentTerms">
+            <TabsTrigger value="invoice">
               {translations('tabs.label.tab4')}
             </TabsTrigger>
-            <TabsTrigger value="offers">
+            <TabsTrigger value="paymentTerms">
               {translations('tabs.label.tab5')}
             </TabsTrigger>
-            <TabsTrigger value="ewb">
+            <TabsTrigger value="offers">
               {translations('tabs.label.tab6')}
             </TabsTrigger>
-            <TabsTrigger value="pinSettings">
+            <TabsTrigger value="ewb">
               {translations('tabs.label.tab7')}
+            </TabsTrigger>
+            <TabsTrigger value="pinSettings">
+              {translations('tabs.label.tab8')}
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="enterprise" className="flex flex-col gap-10">
+            <EnterpriseSettings
+              translations={translations}
+              queryClient={queryClient}
+              profileDetails={profileDetails}
+            />
+          </TabsContent>
+
+          <TabsContent value="gstRegistration" className="">
+            <GstRegistrations enterpriseId={enterpriseId} />
+          </TabsContent>
+
           <TabsContent value="bankAccount" className="flex flex-col gap-4">
-            <div className="mt-5 flex w-full items-center justify-between gap-2 rounded-md border p-4">
+            <div className="flex w-full items-center justify-between gap-2 rounded-md border p-4">
               <div className="flex flex-col items-start gap-1 text-sm">
                 <p className="font-bold">
                   {translations(
-                    'tabs.content.tab2.bankAccount.add_bank_heading',
+                    'tabs.content.tab3.bankAccount.add_bank_heading',
                   )}
                 </p>
                 <p className="text-gray-400">
                   {translations(
-                    'tabs.content.tab2.bankAccount.add_bank_subtitle',
+                    'tabs.content.tab3.bankAccount.add_bank_subtitle',
                   )}
                 </p>
               </div>
@@ -226,7 +248,7 @@ const Settings = () => {
                 variant="blue_outline"
                 onClick={() => setIsBankAccountAdding(true)}
               >
-                {translations('tabs.content.tab2.bankAccount.add_bank_button')}
+                {translations('tabs.content.tab3.bankAccount.add_bank_button')}
               </Button>
             </div>
             <AddBankAccount
@@ -237,7 +259,7 @@ const Settings = () => {
             {bankAccounts?.length > 0 && (
               <>
                 <h1 className="text-xl font-semibold">
-                  {translations('tabs.content.tab2.bankAccount.list_heading')}
+                  {translations('tabs.content.tab3.bankAccount.list_heading')}
                 </h1>
                 <div className="flex w-full flex-wrap gap-3">
                   {bankAccounts?.map((account) => (
@@ -265,7 +287,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="offers">
-            {translations('tabs.content.tab5.coming_soon')}
+            {translations('tabs.content.tab6.coming_soon')}
           </TabsContent>
 
           <TabsContent value="ewb">
@@ -274,12 +296,12 @@ const Settings = () => {
                 <div className="flex flex-col items-start gap-1 text-sm">
                   <p className="font-bold">
                     {translations(
-                      'tabs.content.tab6.ewbConfig.add_ewbConfig_heading',
+                      'tabs.content.tab7.ewbConfig.add_ewbConfig_heading',
                     )}
                   </p>
                   <p className="text-gray-400">
                     {translations(
-                      'tabs.content.tab6.ewbConfig.add_ewbConfig_subtitle',
+                      'tabs.content.tab7.ewbConfig.add_ewbConfig_subtitle',
                     )}
                   </p>
                 </div>
@@ -289,7 +311,7 @@ const Settings = () => {
                   onClick={() => setIsEWBConfigAdded(true)}
                 >
                   {translations(
-                    'tabs.content.tab6.ewbConfig.add_ewbConfig_button',
+                    'tabs.content.tab7.ewbConfig.add_ewbConfig_button',
                   )}
                 </Button>
               </div>
