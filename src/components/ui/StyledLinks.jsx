@@ -5,14 +5,11 @@ import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
 import { useEffect, useState } from 'react';
 
 const StyledLinks = ({ link }) => {
-  const translations = useTranslations();
-
+  const t = useTranslations('sidebar');
   const { totalUnreadNotifications } = useNotificationsCount();
-
   const pathname = usePathname();
   const [isSubTabShow, setIsSubTabShow] = useState(null);
 
@@ -20,7 +17,20 @@ const StyledLinks = ({ link }) => {
     setIsSubTabShow(true);
   }, [pathname]);
 
-  // Check if current pathname matches the main tab or starts with the sub-tab path
+  const getLabel = (key) => {
+    if (!key) return '';
+
+    if (key.startsWith('sidebar.subTabs.')) {
+      return t(key.replace('sidebar.', ''));
+    }
+
+    if (key.startsWith('sidebar.')) {
+      return t(key.replace('sidebar.', ''));
+    }
+
+    return key;
+  };
+
   const isActive =
     pathname === link.path ||
     link.subTab?.some((subtab) => pathname.startsWith(subtab.path));
@@ -36,7 +46,6 @@ const StyledLinks = ({ link }) => {
 
   return (
     <>
-      {/* Main Tab */}
       <div className="flex w-full items-center justify-between rounded-sm text-xs">
         <Link
           href={link.path}
@@ -56,7 +65,7 @@ const StyledLinks = ({ link }) => {
           >
             <span className="flex items-center gap-2">
               {link.icon}
-              {translations(link.name)}
+              {getLabel(link.name)}
             </span>
 
             {link.name === 'sidebar.notifications' &&
@@ -69,26 +78,18 @@ const StyledLinks = ({ link }) => {
         </Link>
 
         {link?.subTab?.length > 0 && (
-          <span
-            className={cn(
-              'cursor-pointer',
-              isSubTabActive ? 'text-[#363940]' : 'text-grey',
-            )}
-          >
-            {isActive && link?.subTab?.length > 0 ? (
-              isSubTabShow && isActive ? (
+          <span className="cursor-pointer">
+            {isActive ? (
+              isSubTabShow ? (
                 <ChevronUp size={14} onClick={() => setIsSubTabShow(false)} />
               ) : (
                 <ChevronDown size={14} onClick={() => setIsSubTabShow(true)} />
               )
-            ) : (
-              ''
-            )}
+            ) : null}
           </span>
         )}
       </div>
 
-      {/* Sub Tabs */}
       {isSubTabShow && isActive && link.subTab?.length > 0 && (
         <ul className="flex w-full flex-col gap-2 pl-10">
           {link.subTab.map((subtab) => (
@@ -103,7 +104,7 @@ const StyledLinks = ({ link }) => {
                 )}
               >
                 {subtab.icon}
-                {translations(subtab.name)}
+                {getLabel(subtab.name)}
               </Link>
             </li>
           ))}

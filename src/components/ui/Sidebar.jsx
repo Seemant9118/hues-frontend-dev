@@ -335,7 +335,7 @@ const Sidebar = () => {
             <nav className="flex flex-col gap-2 border-b py-1">
               <span className="text-sm font-semibold">Admin</span>
               {adminLinks.map((link) => (
-                <StyledLinks key={link.name} link={link} />
+                <StyledLinks key={link?.name} link={link} />
               ))}
 
               <EnterpriseSelectorPopUp />
@@ -348,7 +348,7 @@ const Sidebar = () => {
             !hasPermission('permission:admin-dashboard-view')) && (
             <div className="flex flex-col gap-2">
               {links.map((link) => (
-                <StyledLinks key={link.name} link={link} />
+                <StyledLinks key={link?.name} link={link} />
               ))}
             </div>
           )}
@@ -361,7 +361,7 @@ const Sidebar = () => {
             !hasPermission('permission:admin-dashboard-view')) && (
             <>
               {actionLinks.map((link) => (
-                <StyledLinks key={link.name} link={link} />
+                <StyledLinks key={link?.name} link={link} />
               ))}
             </>
           )}
@@ -391,7 +391,7 @@ const Sidebar = () => {
                 className="cursor-pointer truncate text-sm font-semibold leading-tight hover:underline"
                 onClick={() => router.push('/dashboard/profile')}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') router.push('/dashboard/profile');
+                  if (e?.key === 'Enter') router.push('/dashboard/profile');
                 }}
               >
                 {capitalize(name)}

@@ -3,9 +3,9 @@ import { useTranslations } from 'next-intl';
 import Wrapper from '../wrappers/Wrapper';
 
 const EmptyStageComponent = ({
-  heading,
-  subHeading,
-  subItems,
+  heading = '-',
+  subHeading = '-',
+  subItems = [],
   actionBtn, // ReactNode
 }) => {
   const translations = useTranslations();

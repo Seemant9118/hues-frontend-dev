@@ -144,7 +144,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
     },
   ];
 
-  // ✅ Conditionally add actions column
+  // Conditionally add actions column
   const canShowActions = hasAnyPermission([
     'permission:item-masters-edit',
     'permission:item-masters-delete',
@@ -156,7 +156,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       enableHiding: false,
       cell: ({ row }) => {
         const { id } = row.original;
-        const name = row.original.productName;
+        const name = row.original?.productName;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
