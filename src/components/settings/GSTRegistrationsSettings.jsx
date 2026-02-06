@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,13 +37,18 @@ import {
   addUpdateAddress,
   addWareHouse,
   getGstSettings,
+  updateEnterpriseData,
   updateGst,
 } from '@/services/Settings_Services/SettingsService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, MapPin, Plus, Trash2, Warehouse } from 'lucide-react';
 import { toast } from 'sonner';
+import { userAuth } from '@/api/user_auth/Users';
+import { gstVerify } from '@/services/User_Auth_Service/UserAuthServices';
 import AddNewAddress from '../enterprise/AddNewAddress';
+import { Checkbox } from '../ui/checkbox';
 import AddStorageLocationModal from './AddStoragLocations';
+import AddDocRegistrations from './AddDocRegistrations';
 
 const gstCategoryOptions = [
   'Normal / Regular',
@@ -67,6 +72,11 @@ export default function GstRegistrations({ enterpriseId }) {
   });
   const [isAddressAdding, setIsAddressAdding] = useState(false);
   const [dataToAddNewPOB, setDataToAddNewPOB] = useState(null);
+  const [markers, setMarkers] = useState({
+    isGtaService: false,
+    isLegalService: false,
+  });
+  const [isAddingGst, setIsAddingGst] = useState(false);
 
   // get gst data
   const { data: gstRegistrations } = useQuery({
@@ -75,6 +85,15 @@ export default function GstRegistrations({ enterpriseId }) {
     select: (data) => data.data.data,
   });
   const gstList = gstRegistrations?.gsts || [];
+
+  useEffect(() => {
+    if (!gstRegistrations) return;
+
+    setMarkers({
+      isGtaService: gstRegistrations.isGtaService ?? false,
+      isLegalService: gstRegistrations.isLegalService ?? false,
+    });
+  }, [gstRegistrations]);
 
   // update gst related metadata
   const updateGstMutation = useMutation({
@@ -117,6 +136,60 @@ export default function GstRegistrations({ enterpriseId }) {
     addWareHouseMutation.mutate({ data: newLocation });
   };
 
+  const updateEnterpriseMutation = useMutation({
+    mutationFn: updateEnterpriseData,
+    onSuccess: () => {
+      toast.success('Enterprise details updated successfully');
+      queryClient.invalidateQueries({
+        queryKey: [settingsAPI.getGstSettings.endpointKey],
+        exact: false,
+      });
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Update failed');
+    },
+  });
+
+  const handleMarkerChange = (key) => {
+    const updatedValue = !markers[key];
+
+    // optimistic UI update
+    setMarkers((prev) => ({
+      ...prev,
+      [key]: updatedValue,
+    }));
+
+    // API call
+    updateEnterpriseMutation.mutate({
+      data: {
+        [key]: updatedValue,
+      },
+    });
+  };
+
+  const gstVerifyMutation = useMutation({
+    mutationKey: [userAuth.gstVerify.endpointKey],
+    mutationFn: gstVerify,
+    onSuccess: () => {
+      toast.success('GST verified and added Successfully');
+      setIsAddingGst(false);
+      queryClient.invalidateQueries([settingsAPI.getGstSettings.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message);
+    },
+  });
+
+  const handleGSTVerifyMutation = (form) => {
+    gstVerifyMutation.mutate({
+      data: {
+        gstNumber: form.registrationNumber,
+        enterpriseId: form.enterpriseId,
+        type: form.type,
+      },
+    });
+  };
+
   return (
     <>
       <div className="w-full">
@@ -131,7 +204,12 @@ export default function GstRegistrations({ enterpriseId }) {
               Add GSTIN to enable tax compliance and storage configuration.
             </p>
 
-            <Button variant="outline" className="gap-2 rounded-xl">
+            <Button
+              onClick={() => setIsAddingGst(true)}
+              size="sm"
+              variant="outline"
+              className="gap-2"
+            >
               <Plus className="h-4 w-4" />
               Add GSTIN
             </Button>
@@ -142,209 +220,232 @@ export default function GstRegistrations({ enterpriseId }) {
               (addr) => addr.subType === 'PRINCIPAL_PLACE_OF_BUSINESS',
             );
 
-            const additionalPlacesCount =
+            const additionalPlaces =
               gst?.addresses?.filter(
                 (addr) => addr.subType === 'ADDITIONAL_ADDRESS',
-              )?.length || 0;
+              ) || [];
 
-            const additionalPlaces = gst?.addresses?.find(
-              (addr) => addr.subType === 'ADDITIONAL_ADDRESS',
-            );
+            const additionalPlacesCount = additionalPlaces.length;
 
             return (
-              <Card
-                key={gst.id}
-                className="rounded-2xl border bg-white p-5 shadow-none"
-              >
-                {/* Top row */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      {principalAddress?.pincodeEntity?.state && (
-                        <p className="text-base font-semibold">
-                          {principalAddress?.pincodeEntity?.state}
+              <>
+                <Card
+                  key={gst.id}
+                  className="rounded-2xl border bg-white p-5 shadow-none"
+                >
+                  {/* Top row */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        {principalAddress?.pincodeEntity?.state && (
+                          <p className="text-base font-semibold">
+                            {principalAddress?.pincodeEntity?.state}
+                          </p>
+                        )}
+
+                        {gst?.isVerified && (
+                          <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                            Verified
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">GSTIN</p>
+                        <p className="text-lg font-semibold tracking-wide">
+                          {gst?.gst || '—'}
                         </p>
-                      )}
-
-                      {gst?.isVerified && (
-                        <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                          Verified
-                        </Badge>
-                      )}
+                      </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">GSTIN</p>
-                      <p className="text-lg font-semibold tracking-wide">
-                        {gst?.gst || '—'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* <Button
+                    {/* <Button
                   variant="ghost"
                   className="h-auto justify-start gap-2 rounded-xl px-0 text-red-600 hover:bg-transparent hover:text-red-600"
                 >
                   <Trash2 className="h-4 w-4" />
                   Remove GSTIN
                 </Button> */}
-                </div>
-
-                {/* GSTID - Public classifiers */}
-                <Card className="mt-5 rounded-2xl border bg-muted/20 p-5 shadow-none">
-                  <p className="text-sm font-semibold">
-                    GSTID – Public classifiers
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    {gst?.isVerified && (
-                      <>
-                        <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                          <CheckCircle2 className="mr-1 h-4 w-4" />
-                          GST registered
-                        </Badge>
-
-                        <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                          <CheckCircle2 className="mr-1 h-4 w-4" />
-                          Active
-                        </Badge>
-                      </>
-                    )}
                   </div>
 
-                  <div className="mt-5 max-w-sm space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      GST registration category
-                    </Label>
-
-                    <Select
-                      value={gst?.registrationType ?? ''}
-                      onValueChange={(v) => {
-                        updateGstMutation.mutate({
-                          id: gst.id,
-                          data: {
-                            registrationType: v,
-                          },
-                        });
-                      }}
-                    >
-                      <SelectTrigger className="h-11 rounded-xl bg-white">
-                        <SelectValue placeholder="Select Registration Type" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {gstCategoryOptions.map((opt) => (
-                          <SelectItem key={opt} value={opt}>
-                            {opt}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <p className="text-xs text-muted-foreground">
-                      Used for compliance classification and counter-party
-                      clarity.
+                  {/* GSTID - Public classifiers */}
+                  <Card className="mt-5 rounded-2xl border bg-muted/20 p-5 shadow-none">
+                    <p className="text-sm font-semibold">
+                      GSTID – Public classifiers
                     </p>
-                  </div>
-                </Card>
 
-                {/* Principal Place */}
-                {principalAddress && (
-                  <Card className="mt-6 rounded-2xl border bg-muted/20 p-5 shadow-none">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        Principal place of business
-                      </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      {gst?.isVerified && (
+                        <>
+                          <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                            <CheckCircle2 className="mr-1 h-4 w-4" />
+                            GST registered
+                          </Badge>
 
-                      <p className="text-sm text-muted-foreground">
-                        {principalAddress?.address}
+                          <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                            <CheckCircle2 className="mr-1 h-4 w-4" />
+                            Active
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="mt-5 max-w-sm space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        GST registration category
+                      </Label>
+
+                      <Select
+                        value={gst?.registrationType ?? ''}
+                        onValueChange={(v) => {
+                          updateGstMutation.mutate({
+                            id: gst.id,
+                            data: {
+                              registrationType: v,
+                            },
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="h-11 rounded-xl bg-white">
+                          <SelectValue placeholder="Select Registration Type" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {gstCategoryOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt}>
+                              {opt}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <p className="text-xs text-muted-foreground">
+                        Used for compliance classification and counter-party
+                        clarity.
                       </p>
+                    </div>
+                  </Card>
 
-                      <Separator />
+                  {/* Principal Place */}
+                  {principalAddress && (
+                    <Card className="mt-6 rounded-2xl border bg-muted/20 p-5 shadow-none">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          Principal place of business
+                        </div>
 
-                      {/* Storage locations (nested block) */}
-                      {principalAddress?.warehouses?.length > 0 ? (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 text-sm font-medium">
-                            <Warehouse className="h-4 w-4 text-muted-foreground" />
-                            Storage locations
-                          </div>
+                        <p className="text-sm text-muted-foreground">
+                          {principalAddress?.address}
+                        </p>
 
-                          <p className="text-sm text-muted-foreground">
-                            Storage locations help you track stock across
-                            different areas within the same premises (e.g.,
-                            Warehouse vs Production floor). They do not create a
-                            new GST location.
-                          </p>
+                        <Separator />
 
-                          <Card className="border bg-white p-0 shadow-none">
-                            <Table className="rounded-sm">
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead className="w-[30%]">
-                                    Name
-                                  </TableHead>
-                                  <TableHead className="w-[18%]">
-                                    Code
-                                  </TableHead>
-                                  <TableHead className="w-[32%]">
-                                    Type
-                                  </TableHead>
-                                  <TableHead className="w-[15%]">
-                                    Premises
-                                  </TableHead>
-                                  <TableHead className="w-[5%]" />
-                                </TableRow>
-                              </TableHeader>
+                        {/* Storage locations (nested block) */}
+                        {principalAddress?.warehouses?.length > 0 ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                              <Warehouse className="h-4 w-4 text-muted-foreground" />
+                              Storage locations
+                            </div>
 
-                              <TableBody>
-                                {principalAddress?.warehouses?.length ? (
-                                  principalAddress?.warehouses?.map((row) => (
-                                    <TableRow key={row.id}>
-                                      <TableCell className="font-medium">
-                                        {row.name}
-                                      </TableCell>
-                                      <TableCell className="text-muted-foreground">
-                                        {row.code}
-                                      </TableCell>
-                                      <TableCell className="text-muted-foreground">
-                                        {row.type}
-                                      </TableCell>
-                                      <TableCell>
-                                        <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                                          {row.isSamePremises
-                                            ? 'Same'
-                                            : 'Different'}
-                                        </Badge>
-                                      </TableCell>
-                                      <TableCell className="text-right">
-                                        <Button
-                                          disabled
-                                          variant="ghost"
-                                          size="icon"
-                                          className="text-red-600"
-                                          onClick={() => {}}
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
+                            <p className="text-sm text-muted-foreground">
+                              Storage locations help you track stock across
+                              different areas within the same premises (e.g.,
+                              Warehouse vs Production floor). They do not create
+                              a new GST location.
+                            </p>
+
+                            <Card className="border bg-white p-0 shadow-none">
+                              <Table className="rounded-sm">
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="w-[30%]">
+                                      Name
+                                    </TableHead>
+                                    <TableHead className="w-[18%]">
+                                      Code
+                                    </TableHead>
+                                    <TableHead className="w-[32%]">
+                                      Type
+                                    </TableHead>
+                                    <TableHead className="w-[15%]">
+                                      Premises
+                                    </TableHead>
+                                    <TableHead className="w-[5%]" />
+                                  </TableRow>
+                                </TableHeader>
+
+                                <TableBody>
+                                  {principalAddress?.warehouses?.length ? (
+                                    principalAddress?.warehouses?.map((row) => (
+                                      <TableRow key={row.id}>
+                                        <TableCell className="font-medium">
+                                          {row.name}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                          {row.code}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                          {row.type}
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                                            {row.isSamePremises
+                                              ? 'Same'
+                                              : 'Different'}
+                                          </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          <Button
+                                            disabled
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-red-600"
+                                            onClick={() => {}}
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell
+                                        colSpan={5}
+                                        className="py-8 text-center text-sm text-muted-foreground"
+                                      >
+                                        No storage locations added.
                                       </TableCell>
                                     </TableRow>
-                                  ))
-                                ) : (
-                                  <TableRow>
-                                    <TableCell
-                                      colSpan={5}
-                                      className="py-8 text-center text-sm text-muted-foreground"
-                                    >
-                                      No storage locations added.
-                                    </TableCell>
-                                  </TableRow>
-                                )}
-                              </TableBody>
-                            </Table>
-                          </Card>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Card>
 
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsAddOpen(true);
+
+                                setNewLocation((prev) => ({
+                                  ...prev,
+                                  addressId: principalAddress?.id,
+                                  address: principalAddress?.address,
+                                }));
+                              }}
+                              className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Add storage location
+                            </button>
+
+                            <p className="text-xs italic text-muted-foreground">
+                              Transfers between storage locations under the same
+                              premises are inventory-only and do not create
+                              invoices or GST impact.
+                            </p>
+                          </div>
+                        ) : (
                           <button
                             type="button"
                             onClick={() => {
@@ -361,207 +462,203 @@ export default function GstRegistrations({ enterpriseId }) {
                             <Plus className="h-4 w-4" />
                             Add storage location
                           </button>
+                        )}
+                      </div>
+                    </Card>
+                  )}
 
-                          <p className="text-xs italic text-muted-foreground">
-                            Transfers between storage locations under the same
-                            premises are inventory-only and do not create
-                            invoices or GST impact.
-                          </p>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsAddOpen(true);
+                  <Separator className="my-6" />
 
-                            setNewLocation((prev) => ({
-                              ...prev,
-                              addressId: principalAddress?.id,
-                              address: principalAddress?.address,
-                            }));
-                          }}
-                          className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add storage location
-                        </button>
-                      )}
-                    </div>
-                  </Card>
-                )}
+                  {/* Additional places */}
+                  {additionalPlaces.length > 0 && (
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem
+                        value={`additionalPlaces-${gst.id}`}
+                        className="border-none"
+                      >
+                        <AccordionTrigger className="rounded-xl px-2 text-sm font-medium hover:no-underline">
+                          Additional places of business ({additionalPlacesCount}
+                          )
+                        </AccordionTrigger>
 
-                <Separator className="my-6" />
-
-                {/* Additional places */}
-                {additionalPlaces && (
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem
-                      value={`additionalPlaces-${gst.id}`}
-                      className="border-none"
-                    >
-                      <AccordionTrigger className="rounded-xl px-2 text-sm font-medium hover:no-underline">
-                        Additional places of business ({additionalPlacesCount})
-                      </AccordionTrigger>
-                      <AccordionContent className="px-2">
-                        <Card className="mt-6 rounded-2xl border bg-muted/20 p-5 shadow-none">
-                          <div className="space-y-4">
-                            <p className="text-sm text-muted-foreground">
-                              {additionalPlaces?.address}
-                            </p>
-
-                            <Separator />
-
-                            {additionalPlaces?.warehouses?.length > 0 ? (
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-sm font-medium">
-                                  <Warehouse className="h-4 w-4 text-muted-foreground" />
-                                  Storage locations
-                                </div>
-
-                                <p className="text-sm text-muted-foreground">
-                                  Storage locations help you track stock across
-                                  different areas within the same premises
-                                  (e.g., Warehouse vs Production floor). They do
-                                  not create a new GST location.
-                                </p>
-
-                                <Card className="border bg-white p-0 shadow-none">
-                                  <Table className="rounded-sm">
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead className="w-[30%]">
-                                          Name
-                                        </TableHead>
-                                        <TableHead className="w-[18%]">
-                                          Code
-                                        </TableHead>
-                                        <TableHead className="w-[32%]">
-                                          Type
-                                        </TableHead>
-                                        <TableHead className="w-[15%]">
-                                          Premises
-                                        </TableHead>
-                                        <TableHead className="w-[5%]" />
-                                      </TableRow>
-                                    </TableHeader>
-
-                                    <TableBody>
-                                      {additionalPlaces?.warehouses?.length ? (
-                                        additionalPlaces?.warehouses?.map(
-                                          (row) => (
-                                            <TableRow key={row.id}>
-                                              <TableCell className="font-medium">
-                                                {row.name}
-                                              </TableCell>
-                                              <TableCell className="text-muted-foreground">
-                                                {row.code}
-                                              </TableCell>
-                                              <TableCell className="text-muted-foreground">
-                                                {row.type}
-                                              </TableCell>
-                                              <TableCell>
-                                                <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                                                  {row.isSamePremises
-                                                    ? 'Same'
-                                                    : 'Different'}
-                                                </Badge>
-                                              </TableCell>
-                                              <TableCell className="text-right">
-                                                <Button
-                                                  disabled
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="text-red-600"
-                                                  onClick={() => {}}
-                                                >
-                                                  <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                              </TableCell>
-                                            </TableRow>
-                                          ),
-                                        )
-                                      ) : (
-                                        <TableRow>
-                                          <TableCell
-                                            colSpan={5}
-                                            className="py-8 text-center text-sm text-muted-foreground"
-                                          >
-                                            No storage locations added.
-                                          </TableCell>
-                                        </TableRow>
-                                      )}
-                                    </TableBody>
-                                  </Table>
-                                </Card>
-
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setIsAddOpen(true);
-
-                                    setNewLocation((prev) => ({
-                                      ...prev,
-                                      addressId: additionalPlaces?.id,
-                                      address: additionalPlaces?.address,
-                                    }));
-                                  }}
-                                  className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                                >
-                                  <Plus className="h-4 w-4" />
-                                  Add storage location
-                                </button>
-
-                                <p className="text-xs italic text-muted-foreground">
-                                  Transfers between storage locations under the
-                                  same premises are inventory-only and do not
-                                  create invoices or GST impact.
-                                </p>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsAddOpen(true);
-
-                                  setNewLocation((prev) => ({
-                                    ...prev,
-                                    addressId: additionalPlaces?.id,
-                                    address: additionalPlaces?.address,
-                                  }));
-                                }}
-                                className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                        <AccordionContent className="px-2">
+                          <div className="space-y-6">
+                            {additionalPlaces.map((place) => (
+                              <Card
+                                key={place.id}
+                                className="rounded-2xl border bg-muted/20 p-5 shadow-none"
                               >
-                                <Plus className="h-4 w-4" />
-                                Add storage location
-                              </button>
-                            )}
-                          </div>
-                        </Card>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddressAdding(true);
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-2 text-sm font-medium">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                    Additional place of business
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {place.address}
+                                  </p>
 
-                    setDataToAddNewPOB({
-                      gstId: gst.id,
-                      addressType: 'GST_ADDRESS',
-                    });
-                  }}
-                  className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                >
-                  <Plus className="h-4 w-4" />
-                  {principalAddress
-                    ? 'Add additional place of business'
-                    : 'Add principal place of business'}
-                </button>
-              </Card>
+                                  <Separator />
+
+                                  {/* Storage locations */}
+                                  {place?.warehouses?.length > 0 ? (
+                                    <div className="space-y-3">
+                                      <div className="flex items-center gap-2 text-sm font-medium">
+                                        <Warehouse className="h-4 w-4 text-muted-foreground" />
+                                        Storage locations
+                                      </div>
+
+                                      <Card className="border bg-white p-0 shadow-none">
+                                        <Table className="rounded-sm">
+                                          <TableHeader>
+                                            <TableRow>
+                                              <TableHead>Name</TableHead>
+                                              <TableHead>Code</TableHead>
+                                              <TableHead>Type</TableHead>
+                                              <TableHead>Premises</TableHead>
+                                              <TableHead />
+                                            </TableRow>
+                                          </TableHeader>
+
+                                          <TableBody>
+                                            {place.warehouses.map((row) => (
+                                              <TableRow key={row.id}>
+                                                <TableCell className="font-medium">
+                                                  {row.name}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                  {row.code}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                  {row.type}
+                                                </TableCell>
+                                                <TableCell>
+                                                  <Badge className="rounded-full bg-emerald-50 text-emerald-700">
+                                                    {row.isSamePremises
+                                                      ? 'Same'
+                                                      : 'Different'}
+                                                  </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                  <Button
+                                                    disabled
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-600"
+                                                  >
+                                                    <Trash2 className="h-4 w-4" />
+                                                  </Button>
+                                                </TableCell>
+                                              </TableRow>
+                                            ))}
+                                          </TableBody>
+                                        </Table>
+                                      </Card>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setIsAddOpen(true);
+                                          setNewLocation((prev) => ({
+                                            ...prev,
+                                            addressId: place.id,
+                                            address: place.address,
+                                          }));
+                                        }}
+                                        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                        Add storage location
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setIsAddOpen(true);
+                                        setNewLocation((prev) => ({
+                                          ...prev,
+                                          addressId: place.id,
+                                          address: place.address,
+                                        }));
+                                      }}
+                                      className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                      Add storage location
+                                    </button>
+                                  )}
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddressAdding(true);
+
+                      setDataToAddNewPOB({
+                        gstId: gst.id,
+                        addressType: 'GST_ADDRESS',
+                      });
+                    }}
+                    className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {principalAddress
+                      ? 'Add additional place of business'
+                      : 'Add principal place of business'}
+                  </button>
+                </Card>
+              </>
             );
           })
         )}
+        {/* RCM supplier markers Markers */}
+        <Card className="mt-2 flex flex-col gap-2 rounded-2xl border bg-white p-6">
+          <div className="flex flex-col items-start gap-2">
+            <p className="text-sm font-semibold tracking-wide text-primary">
+              RCM SUPPLIER MARKERS
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Self-declared service types. Used for GST decisioning (GSTR-1
+              4A/4B routing).
+            </p>
+          </div>
+          {/* GTA */}
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="isGtaService"
+              checked={markers.isGtaService}
+              onCheckedChange={() => handleMarkerChange('isGtaService')}
+            />
+            <Label
+              htmlFor="isGtaService"
+              className="cursor-pointer text-sm leading-snug"
+            >
+              We provide GTA services (Goods Transport Agency)
+            </Label>
+          </div>
+
+          {/* Legal Services */}
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="isLegalService"
+              checked={markers.isLegalService}
+              onCheckedChange={() => handleMarkerChange('isLegalService')}
+            />
+            <Label
+              htmlFor="isLegalService"
+              className="cursor-pointer text-sm leading-snug"
+            >
+              We provide legal services as an Advocate / Law Firm
+            </Label>
+          </div>
+        </Card>
       </div>
       <AddStorageLocationModal
         open={isAddOpen}
@@ -578,6 +675,14 @@ export default function GstRegistrations({ enterpriseId }) {
         mutationKey={settingsAPI.addUpdateAddress.endpointKey}
         mutationFn={addUpdateAddress}
         invalidateKey={settingsAPI.getGstSettings.endpointKey}
+      />
+
+      <AddDocRegistrations
+        open={isAddingGst}
+        onClose={setIsAddingGst}
+        enterpriseId={enterpriseId}
+        type={gstRegistrations?.type}
+        onSubmit={handleGSTVerifyMutation}
       />
     </>
   );
