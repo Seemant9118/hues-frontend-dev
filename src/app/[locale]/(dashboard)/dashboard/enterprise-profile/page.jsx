@@ -352,9 +352,9 @@ function EnterpriseProfile() {
                             {enterprise?.name || '-'}
                           </h2>
 
-                          {(enterprise?.type === 'propritorship' &&
+                          {(enterprise?.type === 'proprietorship' &&
                             enterprise.isUdyamVerified) ||
-                            (enterprise?.type !== 'propritorship' &&
+                            (enterprise?.type !== 'proprietorship' &&
                               enterprise.isCinVerified && (
                                 <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
                                   Verified
@@ -549,37 +549,37 @@ function EnterpriseProfile() {
                     </Card>
 
                     {/* TAX BEHAVIOUR MARKERS */}
-                    {enterprise?.isGtaService ||
-                      (enterprise?.isLegalService && (
-                        <Card className="rounded-2xl border p-5">
-                          <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                            Tax behaviour markers
-                          </h3>
+                    {(enterprise?.isGtaService ||
+                      enterprise?.isLegalService) && (
+                      <Card className="rounded-2xl border p-5">
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
+                          Tax behaviour markers
+                        </h3>
 
-                          <div className="mt-4">
-                            {enterprise?.isGtaService && (
-                              <Badge
-                                variant="outline"
-                                className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
-                              >
-                                Provides GTA services
-                              </Badge>
-                            )}
-                            {enterprise?.isLegalService && (
-                              <Badge
-                                variant="outline"
-                                className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
-                              >
-                                Provides Legal services
-                              </Badge>
-                            )}
-                            <p className="mt-2 text-xs italic text-muted-foreground">
-                              Self-declared by the enterprise. Used for GST
-                              decisioning.
-                            </p>
-                          </div>
-                        </Card>
-                      ))}
+                        <div className="mt-4 flex items-center gap-2">
+                          {enterprise?.isGtaService && (
+                            <Badge
+                              variant="outline"
+                              className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
+                            >
+                              Provides GTA services
+                            </Badge>
+                          )}
+                          {enterprise?.isLegalService && (
+                            <Badge
+                              variant="outline"
+                              className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
+                            >
+                              Provides Legal services
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="mt-2 text-xs italic text-muted-foreground">
+                          Self-declared by the enterprise. Used for GST
+                          decisioning.
+                        </p>
+                      </Card>
+                    )}
 
                     {/* COMMERCIAL OVERVIEW */}
                     {enterprise?.metaData?.commercialOverview && (
