@@ -17,37 +17,93 @@
             "gst": "जीएसटीआईएन",
             "udyam": "उद्यम"
           },
-          "input": {
-            "gst": {
-              "placeholder": "जीएसटीआईएन अपडेट करें"
-            },
-            "udyam": {
-              "placeholder": "उद्यम अपडेट करें"
-            }
-          },
-          "ctas": {
-            "cancel": "रद्द करें",
-            "update": "अपडेट करें"
-          },
-          "dummyData": {
-            "name": "आपके एंटरप्राइज़ का नाम",
-            "type": "प्राइवेट लिमिटेड"
-          },
-          "profilePicSection": {
-            "title": "एंटरप्राइज़ लोगो",
-            "format": "JPEG और PNG फ़ॉर्मेट",
-            "ctas": {
-              "upload": "अपलोड करें",
-              "update": "अपडेट करें",
-              "delete": "हटाएँ"
-            }
-          },
           "heading1": "एंटरप्राइज़ जानकारी",
           "heading2": "व्यवसाय पहचान",
           "toasts": {
             "logo": {
-              "successMsg": "लोगो सफलतापूर्वक अपडेट हो गया",
+              "successMsg": "लोगो सफलतापूर्वक अपडेट किया गया",
               "errorMsg": "लोगो अपलोड करते समय कुछ गलत हो गया"
+            }
+          },
+          "header": {
+            "verified": "सत्यापित",
+            "cin": "सीआईएन:",
+            "catalogue": "कैटलॉग",
+            "settings": "सेटिंग्स",
+            "profileCompleteness": "प्रोफ़ाइल पूर्णता"
+          },
+          "sections": {
+            "about": {
+              "title": "एंटरप्राइज़ के बारे में",
+              "noDescription": "अभी तक कोई विवरण नहीं जोड़ा गया",
+              "addDescription": "से एक छोटा विवरण जोड़ें",
+              "settingsLink": "सेटिंग्स",
+              "helpText": "ताकि ग्राहक और पार्टनर आपके व्यवसाय को बेहतर समझ सकें।"
+            },
+            "compliance": {
+              "title": "अनुपालन सारांश",
+              "items": {
+                "gst": "जीएसटी",
+                "pan": "आयकर (पैन)",
+                "cin": "कॉरपोरेट पहचान (सीआईएन)",
+                "udyam": "एमएसएमई (उद्यम)"
+              },
+              "status": {
+                "registered": "पंजीकृत",
+                "verified": "सत्यापित",
+                "active": "सक्रिय"
+              }
+            },
+            "taxBehaviour": {
+              "title": "कर व्यवहार संकेतक",
+              "gtaService": "जीटीए सेवाएँ प्रदान करता है",
+              "legalService": "कानूनी सेवाएँ प्रदान करता है",
+              "disclaimer": "एंटरप्राइज़ द्वारा स्वयं घोषित। जीएसटी निर्णय के लिए उपयोग किया जाता है।"
+            },
+            "commercialOverview": {
+              "title": "व्यावसायिक अवलोकन",
+              "annualTurnover": "वार्षिक टर्नओवर:",
+              "defaultValue": "₹40 लाख – ₹1.5 करोड़"
+            },
+            "gstRegistrations": {
+              "title": "जीएसटी पंजीकरण",
+              "description": "जीएसटी पंजीकरण राज्य के अनुसार दिखाए जाते हैं।",
+              "state": "राज्य",
+              "gstin": "जीएसटीआईएन",
+              "gstStatus": "जीएसटी स्थिति",
+              "gstRegistered": "जीएसटी पंजीकृत",
+              "registrationType": "नॉर्मल / रेगुलर",
+              "principalPlace": "मुख्य व्यवसाय स्थल",
+              "addressNotAvailable": "मुख्य पता उपलब्ध नहीं है",
+              "active": "सक्रिय"
+            },
+            "businessAreas": {
+              "title": "व्यवसाय क्षेत्र",
+              "description": "हाल की जीएसटी फाइलिंग और घोषित व्यावसायिक गतिविधि के आधार पर।"
+            },
+            "contact": {
+              "title": "संपर्क",
+              "email": "ईमेल",
+              "phone": "फोन",
+              "copyContact": "संपर्क कॉपी करें",
+              "defaultEmail": "contact@yourcompany.com",
+              "defaultPhone": "XXXXXXXXXX",
+              "phonePrefix": "+91"
+            },
+            "links": {
+              "title": "लिंक्स",
+              "description": "एंटरप्राइज़ द्वारा साझा किए गए आधिकारिक लिंक।",
+              "noLinks": "अभी तक कोई सार्वजनिक लिंक नहीं जोड़ा गया",
+              "addLinks": "से अपनी वेबसाइट या सोशल प्रोफ़ाइल जोड़ें",
+              "settingsLink": "सेटिंग्स",
+              "helpText": "ताकि ग्राहक और पार्टनर आपके व्यवसाय को खोज सकें और उस पर भरोसा कर सकें।",
+              "labels": {
+                "website": "वेबसाइट",
+                "linkedin": "लिंक्डइन",
+                "twitter": "ट्विटर",
+                "instagram": "इंस्टाग्राम",
+                "youtube": "यूट्यूब"
+              }
             }
           }
         }
@@ -55,8 +111,16 @@
     },
     "toasts": {
       "update": {
-        "successMsg": "एंटरप्राइज़ विवरण सफलतापूर्वक अपडेट हो गया",
+        "successMsg": "एंटरप्राइज़ विवरण सफलतापूर्वक अपडेट किए गए",
         "errorMsg": "अमान्य {type}"
+      },
+      "contact": {
+        "noContact": "संपर्क विवरण कॉपी करने के लिए ईमेल या फोन नंबर जोड़ें",
+        "copied": "संपर्क विवरण कॉपी किए गए",
+        "copyFailed": "संपर्क विवरण कॉपी करने में विफल"
+      },
+      "email": {
+        "invalidEmail": "कृपया एक मान्य ईमेल पता दर्ज करें"
       }
     }
   }

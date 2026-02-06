@@ -35,7 +35,9 @@
                     },
                     "ctas": {
                         "cancel": "Cancel",
-                        "update": "Update"
+                        "update": "Update",
+                        "edit": "Edit",
+                        "saveChanges": "Save changes"
                     },
                     "dummyData": {
                         "name": "Your Enterprise Name",
@@ -56,6 +58,135 @@
                         "logo": {
                             "successMsg": "Logo Updated Successfully",
                             "errorMsg": "Something went wrong while uploading logo"
+                        },
+                        "update": {
+                            "successMsg": "Enterprise details updated successfully",
+                            "errorMsg": "Update failed"
+                        }
+                    },
+                    "sections": {
+                        "legalIdentity": {
+                            "title": "LEGAL IDENTITY",
+                            "subtitle": "Managed via verified agency records",
+                            "fields": {
+                                "entityName": "Entity name",
+                                "entityType": "Entity type",
+                                "pan": "PAN",
+                                "dateOfIncorporation": "Date of incorporation"
+                            }
+                        },
+                        "about": {
+                            "title": "ABOUT THE ENTERPRISE",
+                            "subtitle": "Shown on your public profile. Max 1000 characters. Links allowed.",
+                            "placeholder": "Write something about your enterprise..."
+                        },
+                        "links": {
+                            "title": "LINKS",
+                            "fields": {
+                                "website": "Website",
+                                "linkedin": "LinkedIn",
+                                "twitter": "X",
+                                "instagram": "Instagram",
+                                "youtube": "YouTube"
+                            },
+                            "placeholders": {
+                                "website": "https://yourcompany.com",
+                                "linkedin": "https://linkedin.com/company/...",
+                                "twitter": "https://x.com/...",
+                                "instagram": "https://instagram.com/...",
+                                "youtube": "https://youtube.com/@..."
+                            }
+                        },
+                        "commercialOverview": {
+                            "title": "COMMERCIAL OVERVIEW",
+                            "subtitle": "Used for public profile display. Select the range that best represents your enterprise.",
+                            "annualTurnover": "Annual Turnover (Range)",
+                            "selectPlaceholder": "Select turnover range",
+                            "turnoverOptions": {
+                                "option1": "Below ₹10 lakh",
+                                "option2": "₹10 lakh – ₹40 lakh",
+                                "option3": "₹40 lakh – ₹1.5 crore",
+                                "option4": "₹1.5 crore – ₹5 crore",
+                                "option5": "Above ₹5 crore"
+                            }
+                        }
+                    }
+                },
+                "tab2": {
+                    "emptyState": {
+                        "title": "No GST registration found",
+                        "subtitle": "Add GSTIN to enable tax compliance and storage configuration.",
+                        "addButton": "Add GSTIN"
+                    },
+                    "badges": {
+                        "verified": "Verified",
+                        "gstRegistered": "GST registered",
+                        "active": "Active",
+                        "same": "Same",
+                        "different": "Different"
+                    },
+                    "gstCard": {
+                        "gstinLabel": "GSTIN",
+                        "removeButton": "Remove GSTIN"
+                    },
+                    "publicClassifiers": {
+                        "title": "GSTID – Public classifiers",
+                        "registrationCategory": "GST registration category",
+                        "selectPlaceholder": "Select Registration Type",
+                        "subtitle": "Used for compliance classification and counter-party clarity.",
+                        "categoryOptions": {
+                            "option1": "Normal / Regular",
+                            "option2": "Composition",
+                            "option3": "SEZ Unit",
+                            "option4": "SEZ Developer",
+                            "option5": "Input Service Distributor (ISD)"
+                        }
+                    },
+                    "addresses": {
+                        "principal": {
+                            "title": "Principal place of business",
+                            "addButton": "Add principal place of business"
+                        },
+                        "additional": {
+                            "title": "Additional place of business",
+                            "titleWithCount": "Additional places of business",
+                            "addButton": "Add additional place of business"
+                        }
+                    },
+                    "storageLocations": {
+                        "title": "Storage locations",
+                        "subtitle": "Storage locations help you track stock across different areas within the same premises (e.g., Warehouse vs Production floor). They do not create a new GST location.",
+                        "addButton": "Add storage location",
+                        "emptyState": "No storage locations added.",
+                        "transferNote": "Transfers between storage locations under the same premises are inventory-only and do not create invoices or GST impact.",
+                        "tableHeaders": {
+                            "name": "Name",
+                            "code": "Code",
+                            "type": "Type",
+                            "premises": "Premises"
+                        }
+                    },
+                    "rcmMarkers": {
+                        "title": "RCM SUPPLIER MARKERS",
+                        "subtitle": "Self-declared service types. Used for GST decisioning (GSTR-1 4A/4B routing).",
+                        "gtaService": "We provide GTA services (Goods Transport Agency)",
+                        "legalService": "We provide legal services as an Advocate / Law Firm"
+                    },
+                    "toasts": {
+                        "gstUpdate": {
+                            "successMsg": "GST updated Successfully",
+                            "errorMsg": "Something went wrong"
+                        },
+                        "warehouseAdd": {
+                            "successMsg": "WareHouse added Successfully",
+                            "errorMsg": "Something went wrong"
+                        },
+                        "enterpriseUpdate": {
+                            "successMsg": "Enterprise details updated successfully",
+                            "errorMsg": "Update failed"
+                        },
+                        "gstVerify": {
+                            "successMsg": "GST verified and added Successfully"
                         }
                     }
                 },
@@ -65,14 +196,14 @@
                         "add_bank_subtitle": "Add a bank account to your Hues account",
                         "add_bank_button": "Add Bank Account",
                         "list_heading": "Bank Accounts"
-                    }
-                },
-                "tab4": {
-                    "coming_soon": "Coming Soon...",
+                    },
                     "settingsUpdate": {
                         "successMsg": "Settings Updated Successfully",
                         "errorMsg": "Something went wrong while updating settings"
                     }
+                },
+                "tab4": {
+                    "coming_soon": "Coming Soon..."
                 },
                 "tab5": {
                     "coming_soon": "Coming Soon..."
@@ -81,7 +212,7 @@
                     "coming_soon": "Coming Soon..."
                 },
                 "tab7": {
-                     "ewbConfig": {
+                    "ewbConfig": {
                         "add_ewbConfig_heading": "Add your E-Way Bill Configuration",
                         "add_ewbConfig_subtitle": "Securely manage your E-Way Bill credentials. All data is encrypted and stored safely.",
                         "add_ewbConfig_button": "Add E-Way Bill Configuration",

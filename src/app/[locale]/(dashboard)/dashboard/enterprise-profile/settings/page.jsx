@@ -227,7 +227,10 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="gstRegistration" className="">
-            <GstRegistrations enterpriseId={enterpriseId} />
+            <GstRegistrations
+              enterpriseId={enterpriseId}
+              translations={translations}
+            />
           </TabsContent>
 
           <TabsContent value="bankAccount" className="flex flex-col gap-4">

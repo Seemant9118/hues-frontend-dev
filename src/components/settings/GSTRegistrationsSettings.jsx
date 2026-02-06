@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/accordion';
 
 import { settingsAPI } from '@/api/settings/settingsApi';
+import { userAuth } from '@/api/user_auth/Users';
 import {
   addUpdateAddress,
   addWareHouse,
@@ -40,25 +41,16 @@ import {
   updateEnterpriseData,
   updateGst,
 } from '@/services/Settings_Services/SettingsService';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, MapPin, Plus, Trash2, Warehouse } from 'lucide-react';
-import { toast } from 'sonner';
-import { userAuth } from '@/api/user_auth/Users';
 import { gstVerify } from '@/services/User_Auth_Service/UserAuthServices';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2, MapPin, Plus, Warehouse } from 'lucide-react';
+import { toast } from 'sonner';
 import AddNewAddress from '../enterprise/AddNewAddress';
 import { Checkbox } from '../ui/checkbox';
-import AddStorageLocationModal from './AddStoragLocations';
 import AddDocRegistrations from './AddDocRegistrations';
+import AddStorageLocationModal from './AddStoragLocations';
 
-const gstCategoryOptions = [
-  'Normal / Regular',
-  'Composition',
-  'SEZ Unit',
-  'SEZ Developer',
-  'Input Service Distributor (ISD)',
-];
-
-export default function GstRegistrations({ enterpriseId }) {
+export default function GstRegistrations({ enterpriseId, translations }) {
   const queryClient = useQueryClient();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -77,6 +69,14 @@ export default function GstRegistrations({ enterpriseId }) {
     isLegalService: false,
   });
   const [isAddingGst, setIsAddingGst] = useState(false);
+
+  const gstCategoryOptions = [
+    translations('tabs.content.tab2.publicClassifiers.categoryOptions.option1'),
+    translations('tabs.content.tab2.publicClassifiers.categoryOptions.option2'),
+    translations('tabs.content.tab2.publicClassifiers.categoryOptions.option3'),
+    translations('tabs.content.tab2.publicClassifiers.categoryOptions.option4'),
+    translations('tabs.content.tab2.publicClassifiers.categoryOptions.option5'),
+  ];
 
   // get gst data
   const { data: gstRegistrations } = useQuery({
@@ -99,21 +99,28 @@ export default function GstRegistrations({ enterpriseId }) {
   const updateGstMutation = useMutation({
     mutationFn: updateGst,
     onSuccess: () => {
-      toast.success('GST updated Successfully');
+      toast.success(
+        translations('tabs.content.tab2.toasts.gstUpdate.successMsg'),
+      );
 
       queryClient.invalidateQueries({
         queryKey: [settingsAPI.getGstSettings.endpointKey],
       });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error.response?.data?.message ||
+          translations('tabs.content.tab2.toasts.gstUpdate.errorMsg'),
+      );
     },
   });
 
   const addWareHouseMutation = useMutation({
     mutationFn: addWareHouse,
     onSuccess: () => {
-      toast.success('WareHouse added Successfully');
+      toast.success(
+        translations('tabs.content.tab2.toasts.warehouseAdd.successMsg'),
+      );
       // reset
       setNewLocation({
         name: '',
@@ -128,7 +135,10 @@ export default function GstRegistrations({ enterpriseId }) {
       });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(
+        error.response?.data?.message ||
+          translations('tabs.content.tab2.toasts.warehouseAdd.errorMsg'),
+      );
     },
   });
 
@@ -139,14 +149,19 @@ export default function GstRegistrations({ enterpriseId }) {
   const updateEnterpriseMutation = useMutation({
     mutationFn: updateEnterpriseData,
     onSuccess: () => {
-      toast.success('Enterprise details updated successfully');
+      toast.success(
+        translations('tabs.content.tab2.toasts.enterpriseUpdate.successMsg'),
+      );
       queryClient.invalidateQueries({
         queryKey: [settingsAPI.getGstSettings.endpointKey],
         exact: false,
       });
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || 'Update failed');
+      toast.error(
+        err?.response?.data?.message ||
+          translations('tabs.content.tab2.toasts.enterpriseUpdate.errorMsg'),
+      );
     },
   });
 
@@ -171,7 +186,9 @@ export default function GstRegistrations({ enterpriseId }) {
     mutationKey: [userAuth.gstVerify.endpointKey],
     mutationFn: gstVerify,
     onSuccess: () => {
-      toast.success('GST verified and added Successfully');
+      toast.success(
+        translations('tabs.content.tab2.toasts.gstVerify.successMsg'),
+      );
       setIsAddingGst(false);
       queryClient.invalidateQueries([settingsAPI.getGstSettings.endpointKey]);
     },
@@ -197,11 +214,11 @@ export default function GstRegistrations({ enterpriseId }) {
         {gstList.length === 0 ? (
           <Card className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed bg-muted/20 p-10 text-center shadow-none">
             <p className="text-sm font-medium text-muted-foreground">
-              No GST registration found
+              {translations('tabs.content.tab2.emptyState.title')}
             </p>
 
             <p className="text-xs text-muted-foreground">
-              Add GSTIN to enable tax compliance and storage configuration.
+              {translations('tabs.content.tab2.emptyState.subtitle')}
             </p>
 
             <Button
@@ -211,7 +228,7 @@ export default function GstRegistrations({ enterpriseId }) {
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              Add GSTIN
+              {translations('tabs.content.tab2.emptyState.addButton')}
             </Button>
           </Card>
         ) : (
@@ -245,13 +262,15 @@ export default function GstRegistrations({ enterpriseId }) {
 
                         {gst?.isVerified && (
                           <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                            Verified
+                            {translations('tabs.content.tab2.badges.verified')}
                           </Badge>
                         )}
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">GSTIN</p>
+                        <p className="text-xs text-muted-foreground">
+                          {translations('tabs.content.tab2.gstCard.gstinLabel')}
+                        </p>
                         <p className="text-lg font-semibold tracking-wide">
                           {gst?.gst || '—'}
                         </p>
@@ -270,7 +289,9 @@ export default function GstRegistrations({ enterpriseId }) {
                   {/* GSTID - Public classifiers */}
                   <Card className="mt-5 rounded-2xl border bg-muted/20 p-5 shadow-none">
                     <p className="text-sm font-semibold">
-                      GSTID – Public classifiers
+                      {translations(
+                        'tabs.content.tab2.publicClassifiers.title',
+                      )}
                     </p>
 
                     <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -278,12 +299,14 @@ export default function GstRegistrations({ enterpriseId }) {
                         <>
                           <Badge className="rounded-full bg-emerald-50 text-emerald-700">
                             <CheckCircle2 className="mr-1 h-4 w-4" />
-                            GST registered
+                            {translations(
+                              'tabs.content.tab2.badges.gstRegistered',
+                            )}
                           </Badge>
 
                           <Badge className="rounded-full bg-emerald-50 text-emerald-700">
                             <CheckCircle2 className="mr-1 h-4 w-4" />
-                            Active
+                            {translations('tabs.content.tab2.badges.active')}
                           </Badge>
                         </>
                       )}
@@ -291,7 +314,9 @@ export default function GstRegistrations({ enterpriseId }) {
 
                     <div className="mt-5 max-w-sm space-y-2">
                       <Label className="text-sm text-muted-foreground">
-                        GST registration category
+                        {translations(
+                          'tabs.content.tab2.publicClassifiers.registrationCategory',
+                        )}
                       </Label>
 
                       <Select
@@ -306,7 +331,11 @@ export default function GstRegistrations({ enterpriseId }) {
                         }}
                       >
                         <SelectTrigger className="h-11 rounded-xl bg-white">
-                          <SelectValue placeholder="Select Registration Type" />
+                          <SelectValue
+                            placeholder={translations(
+                              'tabs.content.tab2.publicClassifiers.selectPlaceholder',
+                            )}
+                          />
                         </SelectTrigger>
 
                         <SelectContent>
@@ -319,8 +348,9 @@ export default function GstRegistrations({ enterpriseId }) {
                       </Select>
 
                       <p className="text-xs text-muted-foreground">
-                        Used for compliance classification and counter-party
-                        clarity.
+                        {translations(
+                          'tabs.content.tab2.publicClassifiers.subtitle',
+                        )}
                       </p>
                     </div>
                   </Card>
@@ -331,7 +361,9 @@ export default function GstRegistrations({ enterpriseId }) {
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 text-sm font-medium">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          Principal place of business
+                          {translations(
+                            'tabs.content.tab2.addresses.principal.title',
+                          )}
                         </div>
 
                         <p className="text-sm text-muted-foreground">
@@ -345,14 +377,15 @@ export default function GstRegistrations({ enterpriseId }) {
                           <div className="space-y-3">
                             <div className="flex items-center gap-2 text-sm font-medium">
                               <Warehouse className="h-4 w-4 text-muted-foreground" />
-                              Storage locations
+                              {translations(
+                                'tabs.content.tab2.storageLocations.title',
+                              )}
                             </div>
 
                             <p className="text-sm text-muted-foreground">
-                              Storage locations help you track stock across
-                              different areas within the same premises (e.g.,
-                              Warehouse vs Production floor). They do not create
-                              a new GST location.
+                              {translations(
+                                'tabs.content.tab2.storageLocations.subtitle',
+                              )}
                             </p>
 
                             <Card className="border bg-white p-0 shadow-none">
@@ -360,16 +393,24 @@ export default function GstRegistrations({ enterpriseId }) {
                                 <TableHeader>
                                   <TableRow>
                                     <TableHead className="w-[30%]">
-                                      Name
+                                      {translations(
+                                        'tabs.content.tab2.storageLocations.tableHeaders.name',
+                                      )}
                                     </TableHead>
                                     <TableHead className="w-[18%]">
-                                      Code
+                                      {translations(
+                                        'tabs.content.tab2.storageLocations.tableHeaders.code',
+                                      )}
                                     </TableHead>
                                     <TableHead className="w-[32%]">
-                                      Type
+                                      {translations(
+                                        'tabs.content.tab2.storageLocations.tableHeaders.type',
+                                      )}
                                     </TableHead>
                                     <TableHead className="w-[15%]">
-                                      Premises
+                                      {translations(
+                                        'tabs.content.tab2.storageLocations.tableHeaders.premises',
+                                      )}
                                     </TableHead>
                                     <TableHead className="w-[5%]" />
                                   </TableRow>
@@ -391,21 +432,25 @@ export default function GstRegistrations({ enterpriseId }) {
                                         <TableCell>
                                           <Badge className="rounded-full bg-emerald-50 text-emerald-700">
                                             {row.isSamePremises
-                                              ? 'Same'
-                                              : 'Different'}
+                                              ? translations(
+                                                  'tabs.content.tab2.badges.same',
+                                                )
+                                              : translations(
+                                                  'tabs.content.tab2.badges.different',
+                                                )}
                                           </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        {/* <TableCell className="text-right">
                                           <Button
                                             disabled
                                             variant="ghost"
                                             size="icon"
                                             className="text-red-600"
-                                            onClick={() => {}}
+                                            onClick={() => { }}
                                           >
                                             <Trash2 className="h-4 w-4" />
                                           </Button>
-                                        </TableCell>
+                                        </TableCell> */}
                                       </TableRow>
                                     ))
                                   ) : (
@@ -414,7 +459,9 @@ export default function GstRegistrations({ enterpriseId }) {
                                         colSpan={5}
                                         className="py-8 text-center text-sm text-muted-foreground"
                                       >
-                                        No storage locations added.
+                                        {translations(
+                                          'tabs.content.tab2.storageLocations.emptyState',
+                                        )}
                                       </TableCell>
                                     </TableRow>
                                   )}
@@ -436,13 +483,15 @@ export default function GstRegistrations({ enterpriseId }) {
                               className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
                             >
                               <Plus className="h-4 w-4" />
-                              Add storage location
+                              {translations(
+                                'tabs.content.tab2.storageLocations.addButton',
+                              )}
                             </button>
 
                             <p className="text-xs italic text-muted-foreground">
-                              Transfers between storage locations under the same
-                              premises are inventory-only and do not create
-                              invoices or GST impact.
+                              {translations(
+                                'tabs.content.tab2.storageLocations.transferNote',
+                              )}
                             </p>
                           </div>
                         ) : (
@@ -460,7 +509,9 @@ export default function GstRegistrations({ enterpriseId }) {
                             className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
                           >
                             <Plus className="h-4 w-4" />
-                            Add storage location
+                            {translations(
+                              'tabs.content.tab2.storageLocations.addButton',
+                            )}
                           </button>
                         )}
                       </div>
@@ -477,8 +528,10 @@ export default function GstRegistrations({ enterpriseId }) {
                         className="border-none"
                       >
                         <AccordionTrigger className="rounded-xl px-2 text-sm font-medium hover:no-underline">
-                          Additional places of business ({additionalPlacesCount}
-                          )
+                          {translations(
+                            'tabs.content.tab2.addresses.additional.titleWithCount',
+                          )}{' '}
+                          ({additionalPlacesCount})
                         </AccordionTrigger>
 
                         <AccordionContent className="px-2">
@@ -491,7 +544,9 @@ export default function GstRegistrations({ enterpriseId }) {
                                 <div className="space-y-4">
                                   <div className="flex items-center gap-2 text-sm font-medium">
                                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                                    Additional place of business
+                                    {translations(
+                                      'tabs.content.tab2.addresses.additional.title',
+                                    )}
                                   </div>
                                   <p className="text-sm text-muted-foreground">
                                     {place.address}
@@ -504,17 +559,35 @@ export default function GstRegistrations({ enterpriseId }) {
                                     <div className="space-y-3">
                                       <div className="flex items-center gap-2 text-sm font-medium">
                                         <Warehouse className="h-4 w-4 text-muted-foreground" />
-                                        Storage locations
+                                        {translations(
+                                          'tabs.content.tab2.storageLocations.title',
+                                        )}
                                       </div>
 
                                       <Card className="border bg-white p-0 shadow-none">
                                         <Table className="rounded-sm">
                                           <TableHeader>
                                             <TableRow>
-                                              <TableHead>Name</TableHead>
-                                              <TableHead>Code</TableHead>
-                                              <TableHead>Type</TableHead>
-                                              <TableHead>Premises</TableHead>
+                                              <TableHead>
+                                                {translations(
+                                                  'tabs.content.tab2.storageLocations.tableHeaders.name',
+                                                )}
+                                              </TableHead>
+                                              <TableHead>
+                                                {translations(
+                                                  'tabs.content.tab2.storageLocations.tableHeaders.code',
+                                                )}
+                                              </TableHead>
+                                              <TableHead>
+                                                {translations(
+                                                  'tabs.content.tab2.storageLocations.tableHeaders.type',
+                                                )}
+                                              </TableHead>
+                                              <TableHead>
+                                                {translations(
+                                                  'tabs.content.tab2.storageLocations.tableHeaders.premises',
+                                                )}
+                                              </TableHead>
                                               <TableHead />
                                             </TableRow>
                                           </TableHeader>
@@ -534,11 +607,15 @@ export default function GstRegistrations({ enterpriseId }) {
                                                 <TableCell>
                                                   <Badge className="rounded-full bg-emerald-50 text-emerald-700">
                                                     {row.isSamePremises
-                                                      ? 'Same'
-                                                      : 'Different'}
+                                                      ? translations(
+                                                          'tabs.content.tab2.badges.same',
+                                                        )
+                                                      : translations(
+                                                          'tabs.content.tab2.badges.different',
+                                                        )}
                                                   </Badge>
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                {/* <TableCell className="text-right">
                                                   <Button
                                                     disabled
                                                     variant="ghost"
@@ -547,7 +624,7 @@ export default function GstRegistrations({ enterpriseId }) {
                                                   >
                                                     <Trash2 className="h-4 w-4" />
                                                   </Button>
-                                                </TableCell>
+                                                </TableCell> */}
                                               </TableRow>
                                             ))}
                                           </TableBody>
@@ -567,7 +644,9 @@ export default function GstRegistrations({ enterpriseId }) {
                                         className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
                                       >
                                         <Plus className="h-4 w-4" />
-                                        Add storage location
+                                        {translations(
+                                          'tabs.content.tab2.storageLocations.addButton',
+                                        )}
                                       </button>
                                     </div>
                                   ) : (
@@ -584,7 +663,9 @@ export default function GstRegistrations({ enterpriseId }) {
                                       className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
                                     >
                                       <Plus className="h-4 w-4" />
-                                      Add storage location
+                                      {translations(
+                                        'tabs.content.tab2.storageLocations.addButton',
+                                      )}
                                     </button>
                                   )}
                                 </div>
@@ -610,8 +691,12 @@ export default function GstRegistrations({ enterpriseId }) {
                   >
                     <Plus className="h-4 w-4" />
                     {principalAddress
-                      ? 'Add additional place of business'
-                      : 'Add principal place of business'}
+                      ? translations(
+                          'tabs.content.tab2.addresses.additional.addButton',
+                        )
+                      : translations(
+                          'tabs.content.tab2.addresses.principal.addButton',
+                        )}
                   </button>
                 </Card>
               </>
@@ -622,11 +707,10 @@ export default function GstRegistrations({ enterpriseId }) {
         <Card className="mt-2 flex flex-col gap-2 rounded-2xl border bg-white p-6">
           <div className="flex flex-col items-start gap-2">
             <p className="text-sm font-semibold tracking-wide text-primary">
-              RCM SUPPLIER MARKERS
+              {translations('tabs.content.tab2.rcmMarkers.title')}
             </p>
             <p className="text-xs text-muted-foreground">
-              Self-declared service types. Used for GST decisioning (GSTR-1
-              4A/4B routing).
+              {translations('tabs.content.tab2.rcmMarkers.subtitle')}
             </p>
           </div>
           {/* GTA */}
@@ -640,7 +724,7 @@ export default function GstRegistrations({ enterpriseId }) {
               htmlFor="isGtaService"
               className="cursor-pointer text-sm leading-snug"
             >
-              We provide GTA services (Goods Transport Agency)
+              {translations('tabs.content.tab2.rcmMarkers.gtaService')}
             </Label>
           </div>
 
@@ -655,7 +739,7 @@ export default function GstRegistrations({ enterpriseId }) {
               htmlFor="isLegalService"
               className="cursor-pointer text-sm leading-snug"
             >
-              We provide legal services as an Advocate / Law Firm
+              {translations('tabs.content.tab2.rcmMarkers.legalService')}
             </Label>
           </div>
         </Card>

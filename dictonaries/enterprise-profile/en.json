@@ -17,37 +17,93 @@
                         "gst": "GST IN",
                         "udyam": "UDYAM"
                     },
-                    "input": {
-                        "gst": {
-                            "placeholder": "Update GST IN"
-                        },
-                        "udyam": {
-                            "placeholder": "Update UDYAM"
-                        }
-                    },
-                    "ctas": {
-                        "cancel": "Cancel",
-                        "update": "Update"
-                    },
-                    "dummyData": {
-                        "name": "Your Enterprise Name",
-                        "type": "pvt. ltd."
-                    },
-                    "profilePicSection": {
-                        "title": "Enterprise Logo",
-                        "format": "JPEG and PNG format",
-                        "ctas": {
-                            "upload": "Upload",
-                            "update": "Update",
-                            "delete": "Delete"
-                        }
-                    },
                     "heading1": "Enterprise Information",
                     "heading2": "Business Identification",
                     "toasts": {
                         "logo": {
                             "successMsg": "Logo Updated Successfully",
                             "errorMsg": "Something went wrong while uploading logo"
+                        }
+                    },
+                    "header": {
+                        "verified": "Verified",
+                        "cin": "CIN:",
+                        "catalogue": "Catalogue",
+                        "settings": "Settings",
+                        "profileCompleteness": "Profile completeness"
+                    },
+                    "sections": {
+                        "about": {
+                            "title": "About the enterprise",
+                            "noDescription": "No description added yet",
+                            "addDescription": "Add a short description from",
+                            "settingsLink": "Settings",
+                            "helpText": "to help customers and partners understand your business better."
+                        },
+                        "compliance": {
+                            "title": "Compliance snapshot",
+                            "items": {
+                                "gst": "GST",
+                                "pan": "Income Tax (PAN)",
+                                "cin": "Corporate Identity (CIN)",
+                                "udyam": "MSME (UDYAM)"
+                            },
+                            "status": {
+                                "registered": "Registered",
+                                "verified": "Verified",
+                                "active": "Active"
+                            }
+                        },
+                        "taxBehaviour": {
+                            "title": "Tax behaviour markers",
+                            "gtaService": "Provides GTA services",
+                            "legalService": "Provides Legal services",
+                            "disclaimer": "Self-declared by the enterprise. Used for GST decisioning."
+                        },
+                        "commercialOverview": {
+                            "title": "Commercial overview",
+                            "annualTurnover": "Annual Turnover:",
+                            "defaultValue": "₹40 lakh – ₹1.5 crore"
+                        },
+                        "gstRegistrations": {
+                            "title": "GST registrations",
+                            "description": "GST registrations are displayed state-wise.",
+                            "state": "State",
+                            "gstin": "GSTIN",
+                            "gstStatus": "GST status",
+                            "gstRegistered": "GST registered",
+                            "registrationType": "Normal / Regular",
+                            "principalPlace": "Principal place of business",
+                            "addressNotAvailable": "Principal address not available",
+                            "active": "Active"
+                        },
+                        "businessAreas": {
+                            "title": "Business areas",
+                            "description": "Based on recent GST filings and declared business activity."
+                        },
+                        "contact": {
+                            "title": "Contact",
+                            "email": "Email",
+                            "phone": "Phone",
+                            "copyContact": "Copy contact",
+                            "defaultEmail": "contact@yourcompany.com",
+                            "defaultPhone": "XXXXXXXXXX",
+                            "phonePrefix": "+91"
+                        },
+                        "links": {
+                            "title": "Links",
+                            "description": "Official links shared by the enterprise.",
+                            "noLinks": "No public links added yet",
+                            "addLinks": "Add your website or social profiles from",
+                            "settingsLink": "Settings",
+                            "helpText": "to help customers and partners discover and trust your business.",
+                            "labels": {
+                                "website": "Website",
+                                "linkedin": "LinkedIn",
+                                "twitter": "Twitter",
+                                "instagram": "Instagram",
+                                "youtube": "YouTube"
+                            }
                         }
                     }
                 }
@@ -57,6 +113,14 @@
             "update": {
                 "successMsg": "Enterprise Details Updated Successfully",
                 "errorMsg": "Invalid {type}"
+            },
+            "contact": {
+                "noContact": "Add email or phone number to copy contact details",
+                "copied": "Contact details copied",
+                "copyFailed": "Failed to copy contact details"
+            },
+            "email": {
+                "invalidEmail": "Please Enter a valid Email address"
             }
         }
     }

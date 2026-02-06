@@ -28,14 +28,6 @@ import { toast } from 'sonner';
 import Avatar from '../ui/Avatar';
 import Wrapper from '../wrappers/Wrapper';
 
-const turnoverOptions = [
-  'Below ₹10 lakh',
-  '₹10 lakh – ₹40 lakh',
-  '₹40 lakh – ₹1.5 crore',
-  '₹1.5 crore – ₹5 crore',
-  'Above ₹5 crore',
-];
-
 const defaultEnterpriseData = {
   logoText: 'PT',
   logoUrl: '',
@@ -65,6 +57,24 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
   const [draftData, setDraftData] = useState(defaultEnterpriseData);
 
   const enterpriseDetails = profileDetails?.enterpriseDetails;
+
+  const turnoverOptions = [
+    translations(
+      'tabs.content.tab1.sections.commercialOverview.turnoverOptions.option1',
+    ),
+    translations(
+      'tabs.content.tab1.sections.commercialOverview.turnoverOptions.option2',
+    ),
+    translations(
+      'tabs.content.tab1.sections.commercialOverview.turnoverOptions.option3',
+    ),
+    translations(
+      'tabs.content.tab1.sections.commercialOverview.turnoverOptions.option4',
+    ),
+    translations(
+      'tabs.content.tab1.sections.commercialOverview.turnoverOptions.option5',
+    ),
+  ];
 
   useEffect(() => {
     if (!enterpriseDetails) return;
@@ -165,14 +175,17 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
   const updateEnterpriseMutation = useMutation({
     mutationFn: updateEnterpriseData,
     onSuccess: () => {
-      toast.success('Enterprise details updated successfully');
+      toast.success(translations('tabs.content.tab1.toasts.update.successMsg'));
       queryClient.invalidateQueries({
         queryKey: [userAuth.getProfileDetails.endpointKey],
         exact: false,
       });
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || 'Update failed');
+      toast.error(
+        err?.response?.data?.message ||
+          translations('tabs.content.tab1.toasts.update.errorMsg'),
+      );
     },
   });
 
@@ -316,34 +329,42 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold tracking-wide text-primary">
-              LEGAL IDENTITY
+              {translations('tabs.content.tab1.sections.legalIdentity.title')}
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <ShieldCheck className="h-4 w-4" />
-            Managed via verified agency records
+            {translations('tabs.content.tab1.sections.legalIdentity.subtitle')}
           </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4">
           <InfoBlock
-            label="Entity name"
+            label={translations(
+              'tabs.content.tab1.sections.legalIdentity.fields.entityName',
+            )}
             value={enterpriseDetails?.name || savedData.entityName}
             locked
           />
           <InfoBlock
-            label="Entity type"
+            label={translations(
+              'tabs.content.tab1.sections.legalIdentity.fields.entityType',
+            )}
             value={enterpriseDetails?.type || savedData.entityType}
             locked
           />
           <InfoBlock
-            label="PAN"
+            label={translations(
+              'tabs.content.tab1.sections.legalIdentity.fields.pan',
+            )}
             value={enterpriseDetails?.panNumber || savedData.pan}
             locked
           />
           <InfoBlock
-            label="Date of incorporation"
+            label={translations(
+              'tabs.content.tab1.sections.legalIdentity.fields.dateOfIncorporation',
+            )}
             value={enterpriseDetails?.doi || savedData.incorporationDate}
             locked
           />
@@ -354,7 +375,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold tracking-wide text-primary">
-            ABOUT THE ENTERPRISE
+            {translations('tabs.content.tab1.sections.about.title')}
           </p>
 
           {!isAboutEditing ? (
@@ -365,19 +386,21 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               onClick={() => handleEdit({ setIsEditing: setIsAboutEditing })}
             >
               <Pencil className="h-4 w-4" />
-              Edit
+              {translations('tabs.content.tab1.ctas.edit')}
             </Button>
           ) : null}
         </div>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Shown on your public profile. Max 1000 characters. Links allowed.
+          {translations('tabs.content.tab1.sections.about.subtitle')}
         </p>
 
         <div className="mt-5">
           <Textarea
             value={draftData.about}
-            placeholder="Write something about your enterprise..."
+            placeholder={translations(
+              'tabs.content.tab1.sections.about.placeholder',
+            )}
             disabled={!isAboutEditing}
             onChange={(e) => handleChange('about', e.target.value)}
             className={cn(
@@ -397,7 +420,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               onClick={() => handleCancel({ setIsEditing: setIsAboutEditing })}
             >
               <X className="h-4 w-4" />
-              Cancel
+              {translations('tabs.content.tab1.ctas.cancel')}
             </Button>
             <Button
               size="sm"
@@ -406,7 +429,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               disabled={!isDirty}
             >
               <Save className="h-4 w-4" />
-              Save changes
+              {translations('tabs.content.tab1.ctas.saveChanges')}
             </Button>
           </div>
         ) : null}
@@ -416,7 +439,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold tracking-wide text-primary">
-            LINKS
+            {translations('tabs.content.tab1.sections.links.title')}
           </p>
 
           {!isLinksEditings ? (
@@ -427,48 +450,68 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               onClick={() => handleEdit({ setIsEditing: setIsLinksEditing })}
             >
               <Pencil className="h-4 w-4" />
-              Edit
+              {translations('tabs.content.tab1.ctas.edit')}
             </Button>
           ) : null}
         </div>
 
         <div className="mt-6 max-w-2xl space-y-5">
           <LinkInput
-            label="Website"
+            label={translations(
+              'tabs.content.tab1.sections.links.fields.website',
+            )}
             value={draftData.website}
-            placeholder="https://yourcompany.com"
+            placeholder={translations(
+              'tabs.content.tab1.sections.links.placeholders.website',
+            )}
             disabled={!isLinksEditings}
             onChange={(v) => handleChange('website', v)}
           />
 
           <LinkInput
-            label="LinkedIn"
+            label={translations(
+              'tabs.content.tab1.sections.links.fields.linkedin',
+            )}
             value={draftData.linkedin}
-            placeholder="https://linkedin.com/company/..."
+            placeholder={translations(
+              'tabs.content.tab1.sections.links.placeholders.linkedin',
+            )}
             disabled={!isLinksEditings}
             onChange={(v) => handleChange('linkedin', v)}
           />
 
           <LinkInput
-            label="X"
+            label={translations(
+              'tabs.content.tab1.sections.links.fields.twitter',
+            )}
             value={draftData.twitter}
-            placeholder="https://x.com/..."
+            placeholder={translations(
+              'tabs.content.tab1.sections.links.placeholders.twitter',
+            )}
             disabled={!isLinksEditings}
             onChange={(v) => handleChange('twitter', v)}
           />
 
           <LinkInput
-            label="Instagram"
+            label={translations(
+              'tabs.content.tab1.sections.links.fields.instagram',
+            )}
             value={draftData.instagram}
-            placeholder="https://instagram.com/..."
+            placeholder={translations(
+              'tabs.content.tab1.sections.links.placeholders.instagram',
+            )}
             disabled={!isLinksEditings}
             onChange={(v) => handleChange('instagram', v)}
           />
 
           <LinkInput
-            label="YouTube"
+            label={translations(
+              'tabs.content.tab1.sections.links.fields.youtube',
+            )}
             value={draftData.youTube}
-            placeholder="https://youtube.com/@..."
+            placeholder={translations(
+              'tabs.content.tab1.sections.links.placeholders.youtube',
+            )}
             disabled={!isLinksEditings}
             onChange={(v) => handleChange('youTube', v)}
           />
@@ -483,7 +526,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               onClick={() => handleCancel({ setIsEditing: setIsLinksEditing })}
             >
               <X className="h-4 w-4" />
-              Cancel
+              {translations('tabs.content.tab1.ctas.cancel')}
             </Button>
             <Button
               size="sm"
@@ -492,7 +535,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               disabled={!isDirty}
             >
               <Save className="h-4 w-4" />
-              Save changes
+              {translations('tabs.content.tab1.ctas.saveChanges')}
             </Button>
           </div>
         ) : null}
@@ -502,7 +545,9 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold tracking-wide text-primary">
-            COMMERCIAL OVERVIEW
+            {translations(
+              'tabs.content.tab1.sections.commercialOverview.title',
+            )}
           </p>
 
           {!isCommercialSettings ? (
@@ -515,18 +560,23 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               }
             >
               <Pencil className="h-4 w-4" />
-              Edit
+              {translations('tabs.content.tab1.ctas.edit')}
             </Button>
           ) : null}
         </div>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Used for public profile display. Select the range that best represents
-          your enterprise.
+          {translations(
+            'tabs.content.tab1.sections.commercialOverview.subtitle',
+          )}
         </p>
 
         <div className="mt-5 max-w-lg space-y-2">
-          <Label className="text-sm font-medium">Annual Turnover (Range)</Label>
+          <Label className="text-sm font-medium">
+            {translations(
+              'tabs.content.tab1.sections.commercialOverview.annualTurnover',
+            )}
+          </Label>
 
           <Select
             value={
@@ -537,7 +587,11 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
             disabled={!isCommercialSettings}
           >
             <SelectTrigger className="h-12 rounded-xl">
-              <SelectValue placeholder="Select turnover range" />
+              <SelectValue
+                placeholder={translations(
+                  'tabs.content.tab1.sections.commercialOverview.selectPlaceholder',
+                )}
+              />
             </SelectTrigger>
             <SelectContent>
               {turnoverOptions.map((opt) => (
@@ -561,7 +615,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               }
             >
               <X className="h-4 w-4" />
-              Cancel
+              {translations('tabs.content.tab1.ctas.cancel')}
             </Button>
             <Button
               size="sm"
@@ -572,7 +626,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               disabled={!isDirty}
             >
               <Save className="h-4 w-4" />
-              Save changes
+              {translations('tabs.content.tab1.ctas.saveChanges')}
             </Button>
           </div>
         ) : null}

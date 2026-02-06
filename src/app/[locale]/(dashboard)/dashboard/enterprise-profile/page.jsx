@@ -38,75 +38,15 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 function EnterpriseProfile() {
+  useMetaData(`Enterprise Profile`, 'HUES ENTEPRRISE PROFILE');
   const userId = LocalStorageService.get('user_profile');
   const enterpriseId = getEnterpriseId();
-  useMetaData(`Enterprise Profile`, 'HUES ENTEPRRISE PROFILE');
-
   const translations = useTranslations('enterpriseProfile');
-  const router = useRouter();
-
   const { hasPermission } = usePermission();
+  const router = useRouter();
   const [tab, setTab] = useState('enterpriseOverview');
 
-  // const [isEditing, setIsEditing] = useState({
-  //   gst: false,
-  //   udyam: false,
-  //   mobile: false,
-  //   email: false,
-  // });
-
-  // const [updateEnterpriseDetails, setUpdateEnterpriseDetails] = useState({
-  //   identifierType: '',
-  //   identifierNum: '',
-  // });
-
-  // const [enterpriseDataUpdate, setEnterpriseDataUpdate] = useState(null);
-
   const onTabChange = (value) => setTab(value);
-
-  // update enterprise mutation
-  // const updateEnterpriseMutation = useMutation({
-  //   mutationKey: [
-  //     enterpriseUser.updateEnterpriseIdentificationDetails.endpointKey,
-  //     enterpriseId,
-  //   ],
-  //   mutationFn: () =>
-  //     updateEnterpriseIdentificationDetails(
-  //       enterpriseId,
-  //       updateEnterpriseDetails?.identifierType,
-  //       updateEnterpriseDetails?.identifierNum,
-  //     ),
-  //   onSuccess: () => {
-  //     toast.success(translations('toasts.update.successMsg'));
-  //     setUpdateEnterpriseDetails({ identifierType: '', identifierNum: '' });
-  //     setIsEditing({ gst: false, udyam: false, mobile: false, email: false });
-  //     queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
-  //   },
-  //   onError: () => {
-  //     toast.error(
-  //       translations('toasts.update.errorMsg', {
-  //         type: updateEnterpriseDetails?.identifierType,
-  //       }),
-  //     );
-  //   },
-  // });
-
-  // update enterprise fields mutation
-  // const updateEnterpriseFieldsMutation = useMutation({
-  //   mutationKey: [enterpriseUser.updateEnterpriseFields.endpointKey],
-  //   mutationFn: updateEnterpriseFields,
-  //   onSuccess: () => {
-  //     toast.success(translations('toasts.update.successMsg'));
-  //     setEnterpriseDataUpdate(null);
-  //     setIsEditing({ gst: false, udyam: false, mobile: false, email: false });
-  //     queryClient.invalidateQueries([userAuth.getProfileDetails.endpointKey]);
-  //   },
-  //   onError: (error) => {
-  //     toast.error(
-  //       translations(error.response.data.message || 'toasts.update.errorMsg'),
-  //     );
-  //   },
-  // });
 
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -117,11 +57,11 @@ function EnterpriseProfile() {
       tab === 'enterpriseOverview' &&
       hasPermission('permission:view-dashboard'),
   });
-
+  // enterprieDetails
   const enterprise = profileDetails?.enterpriseDetails;
 
+  // logo: pvt url
   const pvtUrl = enterprise?.logoUrl;
-
   // Fetch the public logo url
   const { data: publicUrl } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, pvtUrl],
@@ -130,18 +70,12 @@ function EnterpriseProfile() {
     select: (res) => res.data.data,
   });
 
+  // fetch gst related data
   const { data: gstRegistrations } = useQuery({
     queryKey: [settingsAPI.getGstSettings.endpointKey],
     queryFn: () => getGstSettings({ id: enterpriseId }),
     select: (data) => data.data.data,
   });
-
-  // const isAnyEditing =
-  //   isEditing.gst || isEditing.udyam || isEditing.mobile || isEditing.email;
-
-  // Fake derived UI values (you can connect to backend later)
-  // const profileCompleteness = enterprise?.id ? 70 : 10;
-  // const completenessLabel = profileCompleteness > 60 ? 'Strong' : 'Weak';
 
   const complianceItems = [
     {
@@ -204,51 +138,10 @@ function EnterpriseProfile() {
       : `https://${url}`;
   };
 
-  // const handleCopyContact = async () => {
-  //   const email = enterprise?.email;
-  //   const phone = enterprise?.mobileNumber;
-
-  //   if (!email && !phone) {
-  //     toast.error('Add email or phone number to copy contact details');
-  //     return;
-  //   }
-
-  //   const parts = [];
-
-  //   if (email) {
-  //     parts.push(`Email: ${email}`);
-  //   }
-
-  //   if (phone) {
-  //     parts.push(`Phone: +91 ${phone}`);
-  //   }
-
-  //   const textToCopy = parts.join('\n');
-
-  //   try {
-  //     await navigator.clipboard.writeText(textToCopy);
-  //     toast.success('Contact details copied');
-  //   } catch {
-  //     toast.error('Failed to copy contact details');
-  //   }
-  // };
-
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
       <Wrapper className="h-full">
-        <SubHeader name={'Enterprise profile'}>
-          <div className="flex items-center gap-2">
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                router.push(`/dashboard/enterprise-profile/settings`)
-              }
-            >
-              <Settings size={14} /> Settings
-            </Button> */}
-          </div>
-        </SubHeader>
+        <SubHeader name={translations('title')}></SubHeader>
 
         <Tabs
           className="flex flex-col"
@@ -355,7 +248,9 @@ function EnterpriseProfile() {
                             (enterprise?.type !== 'proprietorship' &&
                               enterprise.isCinVerified && (
                                 <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  Verified
+                                  {translations(
+                                    'tabs.content.tab1.header.verified',
+                                  )}
                                 </Badge>
                               ))}
                         </div>
@@ -363,7 +258,7 @@ function EnterpriseProfile() {
                         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                           {enterprise?.cin && (
                             <span className="font-medium">
-                              CIN:{' '}
+                              {translations('tabs.content.tab1.header.cin')}{' '}
                               <span className="font-semibold text-black">
                                 {enterprise?.cin || '-'}
                               </span>
@@ -382,7 +277,7 @@ function EnterpriseProfile() {
                       <div className="flex items-center gap-2">
                         <Button disabled variant="outline" size="sm">
                           <ExternalLink size={14} />
-                          Catalogue
+                          {translations('tabs.content.tab1.header.catalogue')}
                         </Button>
 
                         <Button
@@ -395,26 +290,12 @@ function EnterpriseProfile() {
                           }
                         >
                           <Settings size={14} />
-                          Settings
+                          {translations('tabs.content.tab1.header.settings')}
                         </Button>
                       </div>
 
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col items-end gap-1">
-                          {/* <span className="text-xs text-muted-foreground">
-                            Profile completeness
-                          </span>
-
-                          <div className="flex items-center gap-3">
-                            <Progress
-                              value={profileCompleteness}
-                              className="h-2 w-28"
-                            />
-                            <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                              {completenessLabel}
-                            </Badge>
-                          </div> */}
-
                           <span className="text-xs text-muted-foreground">
                             {moment(enterprise?.updatedAt).format(
                               'DD/MM/YYYY HH:mm',
@@ -424,54 +305,6 @@ function EnterpriseProfile() {
                       </div>
                     </div>
                   </div>
-
-                  {/* <Separator className="my-4" /> */}
-
-                  {/* TODO: (move to enterprise settings )Upload Logo button (kept from your old UI) */}
-                  {/* <div className="flex items-center justify-between gap-3">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold">
-                        {translations(
-                          'tabs.content.tab1.profilePicSection.title',
-                        )}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {translations(
-                          'tabs.content.tab1.profilePicSection.format',
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        id="logoUpload"
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/png, image/jpeg"
-                        onChange={(e) => uploadFile(e.target.files?.[0])}
-                        className="hidden"
-                      />
-
-                      <Button
-                        debounceTime={1000}
-                        size="sm"
-                        variant="blue_outline"
-                        type="button"
-                        onClick={openFilePicker}
-                      >
-                        <span className="flex items-center gap-2">
-                          <Upload size={16} />
-                          {enterprise?.logoUrl
-                            ? translations(
-                                'tabs.content.tab1.profilePicSection.ctas.update',
-                              )
-                            : translations(
-                                'tabs.content.tab1.profilePicSection.ctas.upload',
-                              )}
-                        </span>
-                      </Button>
-                    </div>
-                  </div> */}
                 </Card>
 
                 {/* MAIN GRID */}
@@ -481,7 +314,7 @@ function EnterpriseProfile() {
                     {/* ABOUT THE ENTERPRISE */}
                     <Card className="rounded-2xl border p-5">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        About the enterprise
+                        {translations('tabs.content.tab1.sections.about.title')}
                       </h3>
 
                       {enterprise?.metaData?.description?.trim() ? (
@@ -491,10 +324,14 @@ function EnterpriseProfile() {
                       ) : (
                         <div className="mt-3 rounded-xl border border-dashed bg-muted/30 px-4 py-3">
                           <p className="text-sm font-medium">
-                            No description added yet
+                            {translations(
+                              'tabs.content.tab1.sections.about.noDescription',
+                            )}
                           </p>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            Add a short description from{' '}
+                            {translations(
+                              'tabs.content.tab1.sections.about.addDescription',
+                            )}{' '}
                             <span
                               onClick={() =>
                                 router.push(
@@ -503,10 +340,13 @@ function EnterpriseProfile() {
                               }
                               className="cursor-pointer font-medium text-foreground hover:underline"
                             >
-                              Settings
+                              {translations(
+                                'tabs.content.tab1.sections.about.settingsLink',
+                              )}
                             </span>{' '}
-                            to help customers and partners understand your
-                            business better.
+                            {translations(
+                              'tabs.content.tab1.sections.about.helpText',
+                            )}
                           </p>
                         </div>
                       )}
@@ -515,7 +355,9 @@ function EnterpriseProfile() {
                     {/* COMPLIANCE SNAPSHOT */}
                     <Card className="rounded-2xl border p-5">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        Compliance snapshot
+                        {translations(
+                          'tabs.content.tab1.sections.compliance.title',
+                        )}
                       </h3>
 
                       <div className="mt-4 flex flex-col gap-4">
@@ -535,7 +377,9 @@ function EnterpriseProfile() {
                                   )}
 
                                   <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                    Active
+                                    {translations(
+                                      'tabs.content.tab1.sections.compliance.status.active',
+                                    )}
                                   </Badge>
                                 </div>
                               </div>
@@ -551,7 +395,9 @@ function EnterpriseProfile() {
                       enterprise?.isLegalService) && (
                       <Card className="rounded-2xl border p-5">
                         <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                          Tax behaviour markers
+                          {translations(
+                            'tabs.content.tab1.sections.taxBehaviour.title',
+                          )}
                         </h3>
 
                         <div className="mt-4 flex items-center gap-2">
@@ -560,7 +406,9 @@ function EnterpriseProfile() {
                               variant="outline"
                               className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
                             >
-                              Provides GTA services
+                              {translations(
+                                'tabs.content.tab1.sections.taxBehaviour.gtaService',
+                              )}
                             </Badge>
                           )}
                           {enterprise?.isLegalService && (
@@ -568,13 +416,16 @@ function EnterpriseProfile() {
                               variant="outline"
                               className="rounded-full border border-primary px-4 py-2 text-sm text-primary"
                             >
-                              Provides Legal services
+                              {translations(
+                                'tabs.content.tab1.sections.taxBehaviour.legalService',
+                              )}
                             </Badge>
                           )}
                         </div>
                         <p className="mt-2 text-xs italic text-muted-foreground">
-                          Self-declared by the enterprise. Used for GST
-                          decisioning.
+                          {translations(
+                            'tabs.content.tab1.sections.taxBehaviour.disclaimer',
+                          )}
                         </p>
                       </Card>
                     )}
@@ -583,12 +434,16 @@ function EnterpriseProfile() {
                     {enterprise?.metaData?.commercialOverview && (
                       <Card className="rounded-2xl border p-5">
                         <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                          Commercial overview
+                          {translations(
+                            'tabs.content.tab1.sections.commercialOverview.title',
+                          )}
                         </h3>
 
                         <div className="mt-4 flex items-center gap-2">
                           <span className="text-sm font-bold text-muted-foreground">
-                            Annual Turnover:
+                            {translations(
+                              'tabs.content.tab1.sections.commercialOverview.annualTurnover',
+                            )}
                           </span>
                           <span className="text-sm font-semibold text-black">
                             {enterprise?.metaData?.commercialOverview ||
@@ -610,11 +465,15 @@ function EnterpriseProfile() {
                         return (
                           <Card key={gst.id} className="rounded-2xl border p-5">
                             <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                              GST registrations
+                              {translations(
+                                'tabs.content.tab1.sections.gstRegistrations.title',
+                              )}
                             </h3>
 
                             <p className="mt-2 text-xs text-muted-foreground">
-                              GST registrations are displayed state-wise.
+                              {translations(
+                                'tabs.content.tab1.sections.gstRegistrations.description',
+                              )}
                             </p>
 
                             <div className="mt-4 flex flex-col gap-4">
@@ -627,7 +486,9 @@ function EnterpriseProfile() {
 
                                   {gst?.isVerified && (
                                     <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                                      Active
+                                      {translations(
+                                        'tabs.content.tab1.sections.gstRegistrations.active',
+                                      )}
                                     </Badge>
                                   )}
                                 </div>
@@ -635,7 +496,9 @@ function EnterpriseProfile() {
                                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                                   <div className="flex flex-col gap-1">
                                     <span className="text-xs text-muted-foreground">
-                                      GSTIN
+                                      {translations(
+                                        'tabs.content.tab1.sections.gstRegistrations.gstin',
+                                      )}
                                     </span>
 
                                     <span className="text-lg font-semibold">
@@ -645,13 +508,17 @@ function EnterpriseProfile() {
 
                                   <div className="flex flex-col gap-2">
                                     <span className="px-2 text-xs text-muted-foreground">
-                                      GST status
+                                      {translations(
+                                        'tabs.content.tab1.sections.gstRegistrations.gstStatus',
+                                      )}
                                     </span>
 
                                     <div className="flex flex-wrap items-center gap-2">
                                       {gst?.isVerified && (
                                         <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                                          GST registered
+                                          {translations(
+                                            'tabs.content.tab1.sections.gstRegistrations.gstRegistered',
+                                          )}
                                         </Badge>
                                       )}
 
@@ -670,7 +537,11 @@ function EnterpriseProfile() {
                                   <div className="mt-4 flex flex-col items-start gap-2 text-sm">
                                     <div className="flex items-center gap-1">
                                       <MapPin size={14} />
-                                      <p>Principal place of business</p>
+                                      <p>
+                                        {translations(
+                                          'tabs.content.tab1.sections.gstRegistrations.principalPlace',
+                                        )}
+                                      </p>
                                     </div>
                                     <p>
                                       {principalAddress?.address ||
@@ -683,412 +554,6 @@ function EnterpriseProfile() {
                           </Card>
                         );
                       })}
-
-                    {/* BUSINESS AREAS */}
-                    {/* <Card className="rounded-2xl border p-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        Business areas
-                      </h3>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Based on recent GST filings and declared business
-                        activity.
-                      </p>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {[
-                          'Computers & IT equipment',
-                          'Telecom devices',
-                          'Electrical transformers',
-                          'Office furniture',
-                          'Wires & cables',
-                        ].map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="secondary"
-                            className="rounded-full px-4 py-2"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </Card> */}
-
-                    {/* KEEP YOUR EDITABLE FIELDS SECTION (EMAIL/MOBILE/GST/UDYAM + ADDRESS) */}
-                    {/* <Card className="rounded-2xl border p-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        Enterprise information
-                      </h3>
-
-                      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <Label className="text-xs">
-                              {translations('tabs.content.tab1.label.mobile')}
-                            </Label>
-                            {isEditing.mobile ? (
-                              <X
-                                className="cursor-pointer"
-                                size={14}
-                                onClick={() => {
-                                  setIsEditing((prev) => ({
-                                    ...prev,
-                                    mobile: false,
-                                  }));
-                                  setEnterpriseDataUpdate(null);
-                                }}
-                              />
-                            ) : (
-                              <Pencil
-                                className="cursor-pointer"
-                                size={12}
-                                onClick={() => {
-                                  setIsEditing((prev) => ({
-                                    ...prev,
-                                    mobile: true,
-                                  }));
-                                  setEnterpriseDataUpdate(() => ({
-                                    mobileNumber: enterprise?.mobileNumber,
-                                  }));
-                                }}
-                              />
-                            )}
-                          </div>
-
-                          {isEditing.mobile ? (
-                            <Input
-                              type="number"
-                              placeholder="+91 XXXXXXXXXX"
-                              value={enterpriseDataUpdate?.mobileNumber || ''}
-                              onChange={(e) =>
-                                setEnterpriseDataUpdate((prev) => ({
-                                  ...prev,
-                                  mobileNumber: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              +91 {enterprise?.mobileNumber || '-'}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <Label className="text-xs">
-                              {translations('tabs.content.tab1.label.email')}
-                            </Label>
-                            {isEditing.email ? (
-                              <X
-                                className="cursor-pointer"
-                                size={14}
-                                onClick={() => {
-                                  setIsEditing((prev) => ({
-                                    ...prev,
-                                    email: false,
-                                  }));
-                                  setEnterpriseDataUpdate(null);
-                                }}
-                              />
-                            ) : (
-                              <Pencil
-                                className="cursor-pointer"
-                                size={12}
-                                onClick={() => {
-                                  setIsEditing((prev) => ({
-                                    ...prev,
-                                    email: true,
-                                  }));
-                                  setEnterpriseDataUpdate(() => ({
-                                    email: enterprise?.email,
-                                  }));
-                                }}
-                              />
-                            )}
-                          </div>
-
-                          {isEditing.email ? (
-                            <Input
-                              type="email"
-                              placeholder="your@email.com"
-                              value={enterpriseDataUpdate?.email || ''}
-                              onChange={(e) =>
-                                setEnterpriseDataUpdate((prev) => ({
-                                  ...prev,
-                                  email: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {enterprise?.email || '-'}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <Label className="text-xs">
-                            {translations('tabs.content.tab1.label.pan')}
-                          </Label>
-                          <span className="text-sm font-semibold">
-                            {enterprise?.panNumber || '-'}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <Label className="text-xs">
-                              {translations('tabs.content.tab1.label.gst')}
-                            </Label>
-
-                            {!enterprise?.gstNumber && !isEditing.udyam ? (
-                              isEditing.gst ? (
-                                <X
-                                  className="cursor-pointer"
-                                  size={14}
-                                  onClick={() => {
-                                    setIsEditing((prev) => ({
-                                      ...prev,
-                                      gst: false,
-                                    }));
-                                    setUpdateEnterpriseDetails({
-                                      identifierType: '',
-                                      identifierNum: '',
-                                    });
-                                  }}
-                                />
-                              ) : (
-                                <Pencil
-                                  size={12}
-                                  className="cursor-pointer"
-                                  onClick={() =>
-                                    setIsEditing((prev) => ({
-                                      ...prev,
-                                      gst: true,
-                                    }))
-                                  }
-                                />
-                              )
-                            ) : null}
-                          </div>
-
-                          {isEditing.gst ? (
-                            <Input
-                              type="text"
-                              placeholder={translations(
-                                'tabs.content.tab1.input.gst.placeholder',
-                              )}
-                              value={
-                                updateEnterpriseDetails?.identifierNum || ''
-                              }
-                              onChange={(e) => {
-                                setUpdateEnterpriseDetails((prev) => ({
-                                  ...prev,
-                                  identifierType: 'gst',
-                                  identifierNum: e.target.value,
-                                }));
-                              }}
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {enterprise?.gstNumber || '-'}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <Label className="text-xs">
-                              {translations('tabs.content.tab1.label.udyam')}
-                            </Label>
-
-                            {!enterprise?.udyam && !isEditing.gst ? (
-                              isEditing.udyam ? (
-                                <X
-                                  className="cursor-pointer"
-                                  size={14}
-                                  onClick={() => {
-                                    setIsEditing((prev) => ({
-                                      ...prev,
-                                      udyam: false,
-                                    }));
-                                    setUpdateEnterpriseDetails({
-                                      identifierType: '',
-                                      identifierNum: '',
-                                    });
-                                  }}
-                                />
-                              ) : (
-                                <Pencil
-                                  size={12}
-                                  className="cursor-pointer"
-                                  onClick={() =>
-                                    setIsEditing((prev) => ({
-                                      ...prev,
-                                      udyam: true,
-                                    }))
-                                  }
-                                />
-                              )
-                            ) : null}
-                          </div>
-
-                          {isEditing.udyam ? (
-                            <Input
-                              type="text"
-                              placeholder={translations(
-                                'tabs.content.tab1.input.udyam.placeholder',
-                              )}
-                              value={
-                                updateEnterpriseDetails?.identifierNum || ''
-                              }
-                              onChange={(e) => {
-                                setUpdateEnterpriseDetails((prev) => ({
-                                  ...prev,
-                                  identifierType: 'udyam',
-                                  identifierNum: e.target.value,
-                                }));
-                              }}
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {enterprise?.udyam || '-'}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col gap-2 lg:col-span-3">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs">
-                              {translations('tabs.content.tab1.label.address')}
-                            </Label>
-
-                            <button
-                              onClick={() => setIsAddressAdding(true)}
-                              className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                            >
-                              <PlusCircle size={12} /> add
-                            </button>
-                          </div>
-
-                          <AddNewAddress
-                            isAddressAdding={isAddressAdding}
-                            setIsAddressAdding={setIsAddressAdding}
-                            mutationKey={
-                              settingsAPI.addUpdateAddress.endpointKey
-                            }
-                            mutationFn={addUpdateAddress}
-                            invalidateKey={
-                              userAuth.getProfileDetails.endpointKey
-                            }
-                            editingAddress={editingAddress}
-                            setEditingAddress={setEditingAddress}
-                            editingAddressId={addressId}
-                            setEditingAddressId={setAddressId}
-                          />
-
-                          <div className="scrollBarStyles flex max-h-[140px] flex-col gap-2 overflow-auto">
-                            {enterprise?.addressList?.length > 0 ? (
-                              enterprise?.addressList.map((addr) => (
-                                <div
-                                  key={addr.id}
-                                  className="flex w-full items-center justify-between gap-2 rounded-2xl border bg-white px-3 py-2 pr-5"
-                                >
-                                  <div className="flex w-full items-center gap-2">
-                                    <MapPin
-                                      size={14}
-                                      className="shrink-0 text-primary"
-                                    />
-                                    <p
-                                      className="truncate text-sm font-medium"
-                                      title={addr.address}
-                                    >
-                                      {addr.address || '-'}
-                                    </p>
-                                  </div>
-
-                                  <button
-                                    onClick={() => {
-                                      setIsAddressAdding(true);
-                                      setEditingAddress(addr);
-                                      setAddressId(addr.id);
-                                    }}
-                                    className="text-primary"
-                                  >
-                                    <PencilIcon size={14} />
-                                  </button>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-sm font-medium text-muted-foreground">
-                                -
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {isAnyEditing && (
-                        <div className="mt-4 flex w-full justify-end gap-2">
-                          <Button
-                            disabled={
-                              updateEnterpriseMutation.isPending ||
-                              updateEnterpriseFieldsMutation.isPending
-                            }
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setIsEditing({
-                                gst: false,
-                                udyam: false,
-                                mobile: false,
-                                email: false,
-                              });
-                              setUpdateEnterpriseDetails({
-                                identifierType: '',
-                                identifierNum: '',
-                              });
-                              setEnterpriseDataUpdate(null);
-                            }}
-                          >
-                            {translations('tabs.content.tab1.ctas.cancel')}
-                          </Button>
-
-                          <Button
-                            disabled={
-                              updateEnterpriseMutation.isPending ||
-                              updateEnterpriseFieldsMutation.isPending
-                            }
-                            size="sm"
-                            onClick={() => {
-                              if (isEditing.email || isEditing.mobile) {
-                                const isValidEmail = validateEmail(
-                                  enterpriseDataUpdate?.email,
-                                );
-                                if (isValidEmail) {
-                                  toast.error(
-                                    'Please Enter a valid Email address',
-                                  );
-                                } else {
-                                  updateEnterpriseFieldsMutation.mutate(
-                                    enterpriseDataUpdate,
-                                  );
-                                }
-                              } else {
-                                updateEnterpriseMutation.mutate();
-                              }
-                            }}
-                          >
-                            {updateEnterpriseMutation.isPending ||
-                              updateEnterpriseFieldsMutation.isPending ? (
-                              <Loading />
-                            ) : (
-                              translations('tabs.content.tab1.ctas.update')
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                    </Card> */}
                   </div>
 
                   {/* RIGHT SIDE (1/3) */}
@@ -1097,7 +562,9 @@ function EnterpriseProfile() {
                     <Card className="rounded-2xl border p-5">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                          Contact
+                          {translations(
+                            'tabs.content.tab1.sections.contact.title',
+                          )}
                         </h3>
 
                         <div className="flex items-center gap-2">
@@ -1122,7 +589,9 @@ function EnterpriseProfile() {
                           </div>
                           <div className="flex flex-col">
                             <span className="text-xs text-muted-foreground">
-                              Email
+                              {translations(
+                                'tabs.content.tab1.sections.contact.email',
+                              )}
                             </span>
                             <span className="text-sm font-semibold">
                               {enterprise?.email || 'contact@yourcompany.com'}
@@ -1136,11 +605,19 @@ function EnterpriseProfile() {
                           </div>
                           <div className="flex flex-col">
                             <span className="text-xs text-muted-foreground">
-                              Phone
+                              {translations(
+                                'tabs.content.tab1.sections.contact.phone',
+                              )}
                             </span>
                             {enterprise?.mobileNumber ? (
                               <span className="text-sm font-semibold">
-                                +91 {enterprise?.mobileNumber || 'XXXXXXXXXX'}
+                                {translations(
+                                  'tabs.content.tab1.sections.contact.phonePrefix',
+                                )}{' '}
+                                {enterprise?.mobileNumber ||
+                                  translations(
+                                    'tabs.content.tab1.sections.contact.defaultPhone',
+                                  )}
                               </span>
                             ) : (
                               <span>-</span>
@@ -1153,11 +630,13 @@ function EnterpriseProfile() {
                     {/* LINKS */}
                     <Card className="rounded-2xl border p-5">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                        Links
+                        {translations('tabs.content.tab1.sections.links.title')}
                       </h3>
 
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Official links shared by the enterprise.
+                        {translations(
+                          'tabs.content.tab1.sections.links.description',
+                        )}
                       </p>
 
                       <div className="mt-4">
@@ -1202,10 +681,14 @@ function EnterpriseProfile() {
                         ) : (
                           <div className="rounded-2xl border border-dashed bg-muted/30 px-4 py-6 text-center">
                             <p className="text-sm font-medium">
-                              No public links added yet
+                              {translations(
+                                'tabs.content.tab1.sections.links.noLinks',
+                              )}
                             </p>
                             <p className="mt-1 text-sm text-muted-foreground">
-                              Add your website or social profiles from{' '}
+                              {translations(
+                                'tabs.content.tab1.sections.links.addLinks',
+                              )}{' '}
                               <span
                                 onClick={() =>
                                   router.push(
@@ -1214,10 +697,13 @@ function EnterpriseProfile() {
                                 }
                                 className="cursor-pointer font-medium text-foreground hover:underline"
                               >
-                                Settings
+                                {translations(
+                                  'tabs.content.tab1.sections.links.settingsLink',
+                                )}
                               </span>{' '}
-                              to help customers and partners discover and trust
-                              your business.
+                              {translations(
+                                'tabs.content.tab1.sections.links.helpText',
+                              )}
                             </p>
                           </div>
                         )}
