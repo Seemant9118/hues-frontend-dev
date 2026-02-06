@@ -489,9 +489,9 @@
                             "header": {
                                 "skuId": "SKU ID",
                                 "itemName": "Item name",
-                                "qtyReceived": "Qty. Recieved",
-                                "qtyAccepted": "Qty. Accepted",
-                                "qtyRejected": "Qty. Rejected"
+                                "dispatchQty": "Dispatch Qty.",
+                                "qtyRecieved": "Recieved Qty.",
+                                "qtyMissing": "Missing Qty."
                             }
                         }
                     }

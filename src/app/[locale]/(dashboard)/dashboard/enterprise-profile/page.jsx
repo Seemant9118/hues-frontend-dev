@@ -23,7 +23,6 @@ import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices
 import { useQuery } from '@tanstack/react-query';
 import {
   CheckCircle2,
-  Copy,
   ExternalLink,
   Globe,
   Link2,
@@ -37,7 +36,6 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 function EnterpriseProfile() {
   const userId = LocalStorageService.get('user_profile');
@@ -206,34 +204,34 @@ function EnterpriseProfile() {
       : `https://${url}`;
   };
 
-  const handleCopyContact = async () => {
-    const email = enterprise?.email;
-    const phone = enterprise?.mobileNumber;
+  // const handleCopyContact = async () => {
+  //   const email = enterprise?.email;
+  //   const phone = enterprise?.mobileNumber;
 
-    if (!email && !phone) {
-      toast.error('Add email or phone number to copy contact details');
-      return;
-    }
+  //   if (!email && !phone) {
+  //     toast.error('Add email or phone number to copy contact details');
+  //     return;
+  //   }
 
-    const parts = [];
+  //   const parts = [];
 
-    if (email) {
-      parts.push(`Email: ${email}`);
-    }
+  //   if (email) {
+  //     parts.push(`Email: ${email}`);
+  //   }
 
-    if (phone) {
-      parts.push(`Phone: +91 ${phone}`);
-    }
+  //   if (phone) {
+  //     parts.push(`Phone: +91 ${phone}`);
+  //   }
 
-    const textToCopy = parts.join('\n');
+  //   const textToCopy = parts.join('\n');
 
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      toast.success('Contact details copied');
-    } catch {
-      toast.error('Failed to copy contact details');
-    }
-  };
+  //   try {
+  //     await navigator.clipboard.writeText(textToCopy);
+  //     toast.success('Contact details copied');
+  //   } catch {
+  //     toast.error('Failed to copy contact details');
+  //   }
+  // };
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
@@ -325,7 +323,7 @@ function EnterpriseProfile() {
             {/* If enterprise exists */}
             {enterprise?.id && (
               <div className="flex flex-col gap-4">
-                {/* ✅  TOP ENTERPRISE HEADER CARD */}
+                {/* TOP ENTERPRISE HEADER CARD */}
                 <Card className="rounded-2xl border p-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     {/* left: logo + title */}
@@ -476,7 +474,7 @@ function EnterpriseProfile() {
                   </div> */}
                 </Card>
 
-                {/* ✅ MAIN GRID LIKE SCREENSHOT */}
+                {/* MAIN GRID */}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                   {/* LEFT SIDE (2/3) */}
                   <div className="flex flex-col gap-4 lg:col-span-2">
@@ -1103,13 +1101,13 @@ function EnterpriseProfile() {
                         </h3>
 
                         <div className="flex items-center gap-2">
-                          <Button
+                          {/* <Button
                             variant="outline"
                             size="sm"
                             onClick={handleCopyContact}
                           >
                             <Copy size={14} /> Copy contact
-                          </Button>
+                          </Button> */}
 
                           {/* <Button disabled variant="outline" size="icon">
                             <QrCode size={16} />

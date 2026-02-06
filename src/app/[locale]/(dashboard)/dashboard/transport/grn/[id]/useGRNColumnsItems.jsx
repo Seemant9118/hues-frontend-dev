@@ -46,7 +46,7 @@ export const useGRNColumnsItems = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('header.qtyReceived')}
+          title={t('header.dispatchQty')}
         />
       ),
       cell: ({ row }) => {
@@ -61,7 +61,7 @@ export const useGRNColumnsItems = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('header.qtyAccepted')}
+          title={t('header.qtyRecieved')}
         />
       ),
       cell: ({ row }) => {
@@ -73,10 +73,7 @@ export const useGRNColumnsItems = () => {
     {
       id: 'qtyRejected',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('header.qtyRejected')}
-        />
+        <DataTableColumnHeader column={column} title={t('header.qtyMissing')} />
       ),
       cell: ({ row }) => {
         const rejectQty = row.original?.rejectedQuantity || 0;

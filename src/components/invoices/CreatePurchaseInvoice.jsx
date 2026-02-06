@@ -616,7 +616,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                               productType: selectedItemData.productType,
                               hsnCode: selectedItemData.hsnCode,
                               productName: selectedItemData.productName,
-                              unitPrice: selectedItemData.salesPrice,
+                              unitPrice: null,
                               gstPerUnit,
                             }
                           : {
@@ -625,7 +625,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                               productType: selectedItemData.productType,
                               sac: selectedItemData.sacCode,
                               serviceName: selectedItemData.serviceName,
-                              unitPrice: selectedItemData.rate,
+                              unitPrice: null,
                               gstPerUnit,
                             };
 

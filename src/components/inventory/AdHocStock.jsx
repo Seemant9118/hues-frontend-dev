@@ -56,6 +56,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     amount: 0, // qty * unitPrice
     totalGstAmount: 0, // qty * gstAmountPerUnit
     totalAmount: 0, // amount + totalGstAmount
+    isQcOkay: true,
   });
 
   const [formData, setFormData] = useState({
@@ -219,21 +220,20 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       items: [
         ...prev.items,
         {
-          // identifiers
           itemId: selectedItem.productId,
-          targetBucketId: Number(selectedItem.targetBucketId), // NEW
+          targetBucketId: Number(selectedItem.targetBucketId),
           productName: selectedItem.productName,
           skuId: selectedItem.skuId,
 
-          // pricing
           quantity: selectedItem.quantity,
           unitPrice: selectedItem.unitPrice,
           gstPerUnit: selectedItem.gstPerUnit,
 
-          // calculated values
           amount: selectedItem.amount,
           totalGstAmount: selectedItem.totalGstAmount,
           totalAmount: selectedItem.totalAmount,
+
+          isQcOkay: selectedItem.isQcOkay,
         },
       ],
     }));
@@ -245,7 +245,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       productName: '',
       skuId: '',
       hsnCode: '',
-      targetBucketId: '', // NEW
+      targetBucketId: '',
       quantity: '',
       unitId: null,
       unitPrice: '',
@@ -254,6 +254,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       amount: 0,
       totalGstAmount: 0,
       totalAmount: 0,
+      isQcOkay: true, // reset to default
     });
 
     setErrors({});
@@ -281,6 +282,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       totalGstAmount: itemToEdit.totalGstAmount,
       totalAmount: itemToEdit.totalAmount,
       ...calculateAmounts(itemToEdit),
+      isQcOkay: itemToEdit.isQcOkay ?? true,
     });
 
     // Remove it from table
@@ -342,6 +344,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
         gstAmountPerUnit: Number(item.gstPerUnit),
         totalGstAmount: Number(item.totalGstAmount),
         totalAmount: Number(item.totalAmount),
+        isQcOkay: item.isQcOkay,
       })),
     };
 
@@ -438,6 +441,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                         amount: 0,
                         totalAmount: 0,
                         totalGstAmount: 0,
+                        isQcOkay: true,
                       });
                     }}
                   />
@@ -590,6 +594,28 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                   <Input disabled value={selectedItem.totalAmount || ''} />
                 </div>
               </div>
+
+              {isStockIn && (
+                <div className="flex flex-col gap-1">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      checked={selectedItem.isQcOkay}
+                      onChange={(e) => {
+                        setSelectedItem((prev) => ({
+                          ...prev,
+                          isQcOkay: e.target.checked,
+                        }));
+                        setErrors((prev) => ({ ...prev, qcOkay: undefined }));
+                      }}
+                      className="h-4 w-4"
+                    />
+                    QC Okay <span className="text-red-600">*</span>
+                  </label>
+
+                  {errors.qcOkay && <ErrorBox msg={errors.qcOkay} />}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-4">
@@ -612,6 +638,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                     amount: 0,
                     totalGstAmount: 0,
                     totalAmount: 0,
+                    isQcOkay: true,
                   });
                   setErrors({});
                 }}

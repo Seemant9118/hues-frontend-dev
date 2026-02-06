@@ -467,9 +467,9 @@
               "header": {
                 "skuId": "SKU आईडी",
                 "itemName": "आइटम नाम",
-                "qtyReceived": "प्राप्त मात्रा",
-                "qtyAccepted": "स्वीकृत मात्रा",
-                "qtyRejected": "अस्वीकृत मात्रा"
+                "dispatchQty": "प्रेषित मात्रा",
+                "qtyRecieved": "प्राप्त मात्रा",
+                "qtyMissing": "अनुपस्थित मात्रा"
               }
             }
           }
