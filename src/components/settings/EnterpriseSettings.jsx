@@ -55,13 +55,16 @@ const defaultEnterpriseData = {
 };
 
 export default function EnterpriseSettings({ translations, profileDetails }) {
-  const enterpriseDetails = profileDetails?.enterpriseDetails;
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isAboutEditing, setIsAboutEditing] = useState(false);
+  const [isLinksEditings, setIsLinksEditing] = useState(false);
+  const [isCommercialSettings, setIsCommercialSettings] = useState(false);
 
   const [savedData, setSavedData] = useState(defaultEnterpriseData);
   const [draftData, setDraftData] = useState(defaultEnterpriseData);
+
+  const enterpriseDetails = profileDetails?.enterpriseDetails;
 
   useEffect(() => {
     if (!enterpriseDetails) return;
@@ -69,25 +72,27 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
     setSavedData((prev) => ({
       ...prev,
       about: enterpriseDetails?.metaData?.description || '',
-      annualTurnoverRange: enterpriseDetails?.commercialOverview || '',
+      annualTurnoverRange:
+        enterpriseDetails?.metaData?.commercialOverview || '',
 
-      website: enterpriseDetails?.website || '',
-      linkedin: enterpriseDetails?.linkedin || '',
-      twitter: enterpriseDetails?.twitter || '',
-      instagram: enterpriseDetails?.instagram || '',
-      youTube: enterpriseDetails?.youTube || '',
+      website: enterpriseDetails?.metaData?.website || '',
+      linkedin: enterpriseDetails?.metaData?.linkedin || '',
+      twitter: enterpriseDetails?.metaData?.twitter || '',
+      instagram: enterpriseDetails?.metaData?.instagram || '',
+      youTube: enterpriseDetails?.metaData?.youTube || '',
     }));
 
     setDraftData((prev) => ({
       ...prev,
       about: enterpriseDetails?.metaData?.description || '',
-      annualTurnoverRange: enterpriseDetails?.commercialOverview || '',
+      annualTurnoverRange:
+        enterpriseDetails?.metaData?.commercialOverview || '',
 
-      website: enterpriseDetails?.website || '',
-      linkedin: enterpriseDetails?.linkedin || '',
-      twitter: enterpriseDetails?.twitter || '',
-      instagram: enterpriseDetails?.instagram || '',
-      youTube: enterpriseDetails?.youTube || '',
+      website: enterpriseDetails?.metaData?.website || '',
+      linkedin: enterpriseDetails?.metaData?.linkedin || '',
+      twitter: enterpriseDetails?.metaData?.twitter || '',
+      instagram: enterpriseDetails?.metaData?.instagram || '',
+      youTube: enterpriseDetails?.metaData?.youTube || '',
     }));
   }, [enterpriseDetails]);
 
@@ -104,12 +109,12 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
   //   return Math.round((score / total) * 100);
   // }, [savedData]);
 
-  const handleEdit = () => {
+  const handleEdit = ({ setIsEditing }) => {
     setDraftData(savedData);
     setIsEditing(true);
   };
 
-  const handleCancel = () => {
+  const handleCancel = ({ setIsEditing }) => {
     setDraftData(savedData);
     setIsEditing(false);
   };
@@ -171,7 +176,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
     },
   });
 
-  const handleSave = () => {
+  const handleSave = ({ setIsEditing }) => {
     const payload = {};
 
     // ABOUT
@@ -270,7 +275,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
         {/* <Card className="rounded-2xl border bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-semibold tracking-wide text-blue-600">
+              <p className="text-sm font-semibold tracking-wide text-primary">
                 PROFILE COMPLETION
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -310,7 +315,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold tracking-wide text-blue-600">
+            <p className="text-sm font-semibold tracking-wide text-primary">
               LEGAL IDENTITY
             </p>
           </div>
@@ -348,16 +353,16 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       {/* About the enterprise */}
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold tracking-wide text-blue-600">
+          <p className="text-sm font-semibold tracking-wide text-primary">
             ABOUT THE ENTERPRISE
           </p>
 
-          {!isEditing ? (
+          {!isAboutEditing ? (
             <Button
               size="sm"
               variant="outline"
               className="gap-2"
-              onClick={handleEdit}
+              onClick={() => handleEdit({ setIsEditing: setIsAboutEditing })}
             >
               <Pencil className="h-4 w-4" />
               Edit
@@ -371,25 +376,25 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
 
         <div className="mt-5">
           <Textarea
-            value={enterpriseDetails?.metaData?.description || draftData.about}
+            value={draftData.about}
             placeholder="Write something about your enterprise..."
-            disabled={!isEditing}
+            disabled={!isAboutEditing}
             onChange={(e) => handleChange('about', e.target.value)}
             className={cn(
               'min-h-[120px] rounded-xl',
-              !isEditing && 'opacity-90',
+              !isAboutEditing && 'opacity-90',
             )}
           />
         </div>
 
         {/* Actions */}
-        {isEditing ? (
+        {isAboutEditing ? (
           <div className="mt-4 flex items-center justify-end gap-3">
             <Button
               size="sm"
               variant="outline"
               className="gap-2"
-              onClick={handleCancel}
+              onClick={() => handleCancel({ setIsEditing: setIsAboutEditing })}
             >
               <X className="h-4 w-4" />
               Cancel
@@ -397,7 +402,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
             <Button
               size="sm"
               className="gap-2"
-              onClick={handleSave}
+              onClick={() => handleSave({ setIsEditing: setIsAboutEditing })}
               disabled={!isDirty}
             >
               <Save className="h-4 w-4" />
@@ -410,16 +415,16 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       {/* LINKS */}
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold tracking-wide text-blue-600">
+          <p className="text-sm font-semibold tracking-wide text-primary">
             LINKS
           </p>
 
-          {!isEditing ? (
+          {!isLinksEditings ? (
             <Button
               size="sm"
               variant="outline"
               className="gap-2"
-              onClick={handleEdit}
+              onClick={() => handleEdit({ setIsEditing: setIsLinksEditing })}
             >
               <Pencil className="h-4 w-4" />
               Edit
@@ -430,54 +435,52 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
         <div className="mt-6 max-w-2xl space-y-5">
           <LinkInput
             label="Website"
-            value={enterpriseDetails?.metaData?.website || draftData.website}
+            value={draftData.website}
             placeholder="https://yourcompany.com"
-            disabled={!isEditing}
+            disabled={!isLinksEditings}
             onChange={(v) => handleChange('website', v)}
           />
 
           <LinkInput
             label="LinkedIn"
-            value={enterpriseDetails?.metaData?.linkedin || draftData.linkedin}
+            value={draftData.linkedin}
             placeholder="https://linkedin.com/company/..."
-            disabled={!isEditing}
+            disabled={!isLinksEditings}
             onChange={(v) => handleChange('linkedin', v)}
           />
 
           <LinkInput
             label="X"
-            value={enterpriseDetails?.metaData?.twitter || draftData.twitter}
+            value={draftData.twitter}
             placeholder="https://x.com/..."
-            disabled={!isEditing}
+            disabled={!isLinksEditings}
             onChange={(v) => handleChange('twitter', v)}
           />
 
           <LinkInput
             label="Instagram"
-            value={
-              enterpriseDetails?.metaData?.instagram || draftData.instagram
-            }
+            value={draftData.instagram}
             placeholder="https://instagram.com/..."
-            disabled={!isEditing}
+            disabled={!isLinksEditings}
             onChange={(v) => handleChange('instagram', v)}
           />
 
           <LinkInput
             label="YouTube"
-            value={enterpriseDetails?.metaData?.youTube || draftData.youTube}
+            value={draftData.youTube}
             placeholder="https://youtube.com/@..."
-            disabled={!isEditing}
+            disabled={!isLinksEditings}
             onChange={(v) => handleChange('youTube', v)}
           />
         </div>
 
-        {isEditing ? (
+        {isLinksEditings ? (
           <div className="mt-6 flex items-center justify-end gap-3">
             <Button
               size="sm"
               variant="outline"
               className="gap-2"
-              onClick={handleCancel}
+              onClick={() => handleCancel({ setIsEditing: setIsLinksEditing })}
             >
               <X className="h-4 w-4" />
               Cancel
@@ -485,7 +488,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
             <Button
               size="sm"
               className="gap-2"
-              onClick={handleSave}
+              onClick={() => handleSave({ setIsEditing: setIsLinksEditing })}
               disabled={!isDirty}
             >
               <Save className="h-4 w-4" />
@@ -498,16 +501,18 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
       {/* Commercial Overview */}
       <Card className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold tracking-wide text-blue-600">
+          <p className="text-sm font-semibold tracking-wide text-primary">
             COMMERCIAL OVERVIEW
           </p>
 
-          {!isEditing ? (
+          {!isCommercialSettings ? (
             <Button
               size="sm"
               variant="outline"
               className="gap-2"
-              onClick={handleEdit}
+              onClick={() =>
+                handleEdit({ setIsEditing: setIsCommercialSettings })
+              }
             >
               <Pencil className="h-4 w-4" />
               Edit
@@ -529,7 +534,7 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
               draftData.annualTurnoverRange
             }
             onValueChange={(v) => handleChange('annualTurnoverRange', v)}
-            disabled={!isEditing}
+            disabled={!isCommercialSettings}
           >
             <SelectTrigger className="h-12 rounded-xl">
               <SelectValue placeholder="Select turnover range" />
@@ -545,13 +550,15 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
         </div>
 
         {/* Actions */}
-        {isEditing ? (
+        {isCommercialSettings ? (
           <div className="mt-6 flex items-center justify-end gap-3">
             <Button
               size="sm"
               variant="outline"
               className="gap-2"
-              onClick={handleCancel}
+              onClick={() =>
+                handleCancel({ setIsEditing: setIsCommercialSettings })
+              }
             >
               <X className="h-4 w-4" />
               Cancel
@@ -559,7 +566,9 @@ export default function EnterpriseSettings({ translations, profileDetails }) {
             <Button
               size="sm"
               className="gap-2"
-              onClick={handleSave}
+              onClick={() =>
+                handleSave({ setIsEditing: setIsCommercialSettings })
+              }
               disabled={!isDirty}
             >
               <Save className="h-4 w-4" />

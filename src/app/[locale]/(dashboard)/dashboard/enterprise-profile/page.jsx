@@ -30,7 +30,6 @@ import {
   Mail,
   MapPin,
   Phone,
-  QrCode,
   Settings,
 } from 'lucide-react';
 import moment from 'moment';
@@ -38,6 +37,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 function EnterpriseProfile() {
   const userId = LocalStorageService.get('user_profile');
@@ -148,46 +148,91 @@ function EnterpriseProfile() {
   const complianceItems = [
     {
       label: 'GST',
-      status: enterprise?.gstNumber ? 'Registered' : 'Not Added',
-      active: false,
+      status: enterprise?.isGstVerified ? 'Registered' : null,
+      active: !!enterprise?.gstNumber,
     },
     {
       label: 'Income Tax (PAN)',
-      status: enterprise?.panNumber ? 'Verified' : 'Not Added',
-      active: true,
+      status: enterprise?.isCinVerified ? 'Verified' : null,
+      active: !!enterprise?.panNumber,
     },
     {
       label: 'Corporate Identity (CIN)',
-      status: enterprise?.cinNumber ? 'Verified' : 'Not Added',
-      active: true,
+      status: enterprise?.cin ? 'Verified' : null,
+      active: !!enterprise?.cin,
     },
     {
       label: 'MSME (UDYAM)',
-      status: enterprise?.udyam ? 'Verified' : 'Not Added',
-      active: true,
+      status: enterprise?.isUdyamVerified ? 'Verified' : null,
+      active: !!enterprise?.udyam,
     },
   ];
 
   const links = [
     {
       label: 'Website',
-      value: enterprise?.metaData?.website || 'https://yourdomain.com',
+      value: enterprise?.metaData?.website || '-',
       icon: Globe,
     },
     {
       label: 'LinkedIn',
-      value:
-        enterprise?.metaData?.linkedin ||
-        'https://linkedin.com/company/your-company',
+      value: enterprise?.metaData?.linkedin || '-',
+      icon: Link2,
+    },
+    {
+      label: 'Twitter',
+      value: enterprise?.metaData?.twitter || '-',
+      icon: Link2,
+    },
+    {
+      label: 'Instagram',
+      value: enterprise?.metaData?.instagram || '-',
+      icon: Link2,
+    },
+    {
+      label: 'YouTube',
+      value: enterprise?.metaData?.youTube || '-',
       icon: Link2,
     },
   ];
+  const visibleLinks = links.filter(
+    (link) => link.value && link.value !== '-' && link.value.trim() !== '',
+  );
 
   const getExternalLink = (url) => {
     if (!url) return '#';
     return url.startsWith('http://') || url.startsWith('https://')
       ? url
       : `https://${url}`;
+  };
+
+  const handleCopyContact = async () => {
+    const email = enterprise?.email;
+    const phone = enterprise?.mobileNumber;
+
+    if (!email && !phone) {
+      toast.error('Add email or phone number to copy contact details');
+      return;
+    }
+
+    const parts = [];
+
+    if (email) {
+      parts.push(`Email: ${email}`);
+    }
+
+    if (phone) {
+      parts.push(`Phone: +91 ${phone}`);
+    }
+
+    const textToCopy = parts.join('\n');
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success('Contact details copied');
+    } catch {
+      toast.error('Failed to copy contact details');
+    }
   };
 
   return (
@@ -307,17 +352,22 @@ function EnterpriseProfile() {
                             {enterprise?.name || '-'}
                           </h2>
 
-                          <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                            Verified
-                          </Badge>
+                          {(enterprise?.type === 'propritorship' &&
+                            enterprise.isUdyamVerified) ||
+                            (enterprise?.type !== 'propritorship' &&
+                              enterprise.isCinVerified && (
+                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                                  Verified
+                                </Badge>
+                              ))}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                          {enterprise?.cinNumber && (
+                          {enterprise?.cin && (
                             <span className="font-medium">
                               CIN:{' '}
                               <span className="font-semibold text-black">
-                                {enterprise?.cinNumber || '-'}
+                                {enterprise?.cin || '-'}
                               </span>
                             </span>
                           )}
@@ -435,10 +485,33 @@ function EnterpriseProfile() {
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
                         About the enterprise
                       </h3>
-                      <p className="mt-3 text-sm leading-relaxed">
-                        {enterprise?.metaData?.description ||
-                          `${enterprise?.name || 'This enterprise'} is a leading provider of enterprise IT solutions.`}
-                      </p>
+
+                      {enterprise?.metaData?.description?.trim() ? (
+                        <p className="mt-3 text-sm leading-relaxed">
+                          {enterprise.metaData.description}
+                        </p>
+                      ) : (
+                        <div className="mt-3 rounded-xl border border-dashed bg-muted/30 px-4 py-3">
+                          <p className="text-sm font-medium">
+                            No description added yet
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Add a short description from{' '}
+                            <span
+                              onClick={() =>
+                                router.push(
+                                  `/dashboard/enterprise-profile/settings`,
+                                )
+                              }
+                              className="cursor-pointer font-medium text-foreground hover:underline"
+                            >
+                              Settings
+                            </span>{' '}
+                            to help customers and partners understand your
+                            business better.
+                          </p>
+                        </div>
+                      )}
                     </Card>
 
                     {/* COMPLIANCE SNAPSHOT */}
@@ -448,26 +521,30 @@ function EnterpriseProfile() {
                       </h3>
 
                       <div className="mt-4 flex flex-col gap-4">
-                        {complianceItems.map((item) => (
-                          <>
-                            <div
-                              key={item.label}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="text-sm">{item.label}</span>
-                              <div className="flex items-center gap-2">
-                                <Badge className="gap-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  <CheckCircle2 size={14} />
-                                  {item.status}
-                                </Badge>
-                                <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                  Active
-                                </Badge>
+                        {complianceItems
+                          .filter((item) => item.active)
+                          .map((item) => (
+                            <div key={item.label}>
+                              <div className="flex items-center justify-between py-2">
+                                <span className="text-sm">{item.label}</span>
+
+                                <div className="flex items-center gap-2">
+                                  {item.status && (
+                                    <Badge className="gap-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                                      <CheckCircle2 size={14} />
+                                      {item.status}
+                                    </Badge>
+                                  )}
+
+                                  <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                                    Active
+                                  </Badge>
+                                </div>
                               </div>
+
+                              <Separator />
                             </div>
-                            <Separator />
-                          </>
-                        ))}
+                          ))}
                       </div>
                     </Card>
 
@@ -523,7 +600,6 @@ function EnterpriseProfile() {
                       </Card>
                     )}
 
-                    {/* GST REGISTRATIONS */}
                     {/* GST REGISTRATIONS */}
                     {gstRegistrations?.gsts?.length > 0 &&
                       gstRegistrations.gsts.map((gst) => {
@@ -611,7 +687,7 @@ function EnterpriseProfile() {
                       })}
 
                     {/* BUSINESS AREAS */}
-                    <Card className="rounded-2xl border p-5">
+                    {/* <Card className="rounded-2xl border p-5">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
                         Business areas
                       </h3>
@@ -637,7 +713,7 @@ function EnterpriseProfile() {
                           </Badge>
                         ))}
                       </div>
-                    </Card>
+                    </Card> */}
 
                     {/* KEEP YOUR EDITABLE FIELDS SECTION (EMAIL/MOBILE/GST/UDYAM + ADDRESS) */}
                     {/* <Card className="rounded-2xl border p-5">
@@ -1027,12 +1103,17 @@ function EnterpriseProfile() {
                         </h3>
 
                         <div className="flex items-center gap-2">
-                          <Button disabled variant="outline" size="sm">
-                            <Copy size={14} /> Copy link
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyContact}
+                          >
+                            <Copy size={14} /> Copy contact
                           </Button>
-                          <Button disabled variant="outline" size="icon">
+
+                          {/* <Button disabled variant="outline" size="icon">
                             <QrCode size={16} />
-                          </Button>
+                          </Button> */}
                         </div>
                       </div>
 
@@ -1059,9 +1140,13 @@ function EnterpriseProfile() {
                             <span className="text-xs text-muted-foreground">
                               Phone
                             </span>
-                            <span className="text-sm font-semibold">
-                              +91 {enterprise?.mobileNumber || 'XXXXXXXXXX'}
-                            </span>
+                            {enterprise?.mobileNumber ? (
+                              <span className="text-sm font-semibold">
+                                +91 {enterprise?.mobileNumber || 'XXXXXXXXXX'}
+                              </span>
+                            ) : (
+                              <span>-</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1077,41 +1162,67 @@ function EnterpriseProfile() {
                         Official links shared by the enterprise.
                       </p>
 
-                      <div className="mt-4 flex flex-col gap-3">
-                        {links.map((link) => {
-                          const Icon = link.icon;
-                          return (
-                            <div
-                              key={link.label}
-                              className="flex items-center justify-between rounded-2xl border bg-white px-4 py-3"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
-                                  <Icon size={16} />
-                                </div>
+                      <div className="mt-4">
+                        {visibleLinks.length > 0 ? (
+                          <div className="flex flex-col gap-3">
+                            {visibleLinks.map((link) => {
+                              const Icon = link.icon;
 
-                                <div className="flex flex-col">
-                                  <span className="text-xs text-muted-foreground">
-                                    {link.label}
-                                  </span>
-                                  <span className="max-w-[180px] truncate text-sm font-semibold">
-                                    {link.value}
-                                  </span>
-                                </div>
-                              </div>
+                              return (
+                                <div
+                                  key={link.label}
+                                  className="flex items-center justify-between rounded-2xl border bg-white px-4 py-3"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+                                      <Icon size={16} />
+                                    </div>
 
-                              <a
-                                href={getExternalLink(link.value)}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                                    <div className="flex flex-col">
+                                      <span className="text-xs text-muted-foreground">
+                                        {link.label}
+                                      </span>
+                                      <span className="max-w-[180px] truncate text-sm font-semibold">
+                                        {link.value}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <a
+                                    href={getExternalLink(link.value)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Button variant="outline" size="icon">
+                                      <ExternalLink size={16} />
+                                    </Button>
+                                  </a>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="rounded-2xl border border-dashed bg-muted/30 px-4 py-6 text-center">
+                            <p className="text-sm font-medium">
+                              No public links added yet
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              Add your website or social profiles from{' '}
+                              <span
+                                onClick={() =>
+                                  router.push(
+                                    `/dashboard/enterprise-profile/settings`,
+                                  )
+                                }
+                                className="cursor-pointer font-medium text-foreground hover:underline"
                               >
-                                <Button variant="outline" size="icon">
-                                  <ExternalLink size={16} />
-                                </Button>
-                              </a>
-                            </div>
-                          );
-                        })}
+                                Settings
+                              </span>{' '}
+                              to help customers and partners discover and trust
+                              your business.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </Card>
                   </div>

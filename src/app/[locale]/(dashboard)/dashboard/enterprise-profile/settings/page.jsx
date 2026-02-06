@@ -155,7 +155,8 @@ const Settings = () => {
     queryFn: () => getProfileDetails(userId),
     select: (data) => data.data.data,
     enabled:
-      tab === 'pinSettings' && hasPermission('permission:view-dashboard'),
+      (tab === 'pinSettings' || tab === 'enterprise') &&
+      hasPermission('permission:view-dashboard'),
   });
 
   // api - fetch pin audit logs
