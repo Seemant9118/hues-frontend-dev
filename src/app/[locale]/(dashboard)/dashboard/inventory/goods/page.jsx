@@ -58,7 +58,6 @@ function Goods() {
   const [productGoods, setProductGoods] = useState([]);
   const [paginationData, setPaginationData] = useState({});
 
-  /* FIX: Always pass translated strings to EmptyStageComponent */
   const emptyStateSubItems = useMemo(() => {
     return [
       translations('emptyStateComponent.subItems.subItem1.value'),
@@ -218,7 +217,7 @@ function Goods() {
               <div className="flex-grow overflow-hidden">
                 {goodsQuery.isLoading || searchQuery.isLoading ? (
                   <Loading />
-                ) : !searchTerm && [].length === 0 ? (
+                ) : !searchTerm && productGoods?.length === 0 ? (
                   <EmptyStageComponent
                     heading={translations('emptyStateComponent.heading')}
                     subItems={emptyStateSubItems}
