@@ -95,14 +95,15 @@ export const getStylesForSelectComponent = () => {
 };
 
 // formatAmount in Indian Rupee currency
-export const formattedAmount = (amount, fallback = '-') => {
+export const formattedAmount = (amount, fallback = '₹0.00') => {
   const value = Number(amount);
 
-  if (!Number(value)) return fallback;
+  if (Number.isNaN(value)) return fallback;
 
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 };
