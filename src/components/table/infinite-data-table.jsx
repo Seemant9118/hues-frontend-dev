@@ -69,7 +69,9 @@ export default function InfiniteDataTable({
       <div
         ref={tableContainerRef}
         id={id}
-        className="infinite-datatable-scrollable-body scrollBarStyles overflow-auto rounded-sm sm:h-[75dvh]"
+        className={
+          'infinite-datatable-scrollable-body scrollBarStyles overflow-auto rounded-sm sm:h-[75dvh]'
+        }
       >
         <div className="inline-block min-w-full align-middle">
           <Table>

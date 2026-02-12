@@ -45,3 +45,25 @@ export const GetProductGoodsVendor = (id) => {
 export const GetGoodsSampleFile = () => {
   return APIinstance.get(goodsApi.getGoodsSample.endpoint);
 };
+
+export const getItemsTypes = ({ id, page, limit }) => {
+  return APIinstance.get(
+    `${goodsApi.getItemTypes.endpoint}${id}?page=${page}&limit=${limit}`,
+  );
+};
+
+export const getItemType = ({ id }) => {
+  return APIinstance.get(`${goodsApi.getItemType.endpoint}${id}`);
+};
+
+export const createItemTypeManually = ({ data }) => {
+  return APIinstance.post(goodsApi.createItemTypeManually.endpoint, data);
+};
+
+export const fetchItemTypes = ({ data }) => {
+  return APIinstance.post(goodsApi.fetchItemTypes.endpoint, data);
+};
+
+export const addIntoTypes = ({ data }) => {
+  return APIinstance.post(goodsApi.addIntoItemTypes.endpoint, data);
+};

@@ -1,7 +1,5 @@
 import AdditionalInfo from './AdditionalInfo';
 import ItemOverview from './ItemOverview';
-import PromotionalContents from './PromotionalContents';
-import TradePromotions from './TradePromotions';
 
 // Services
 export const stepsGoodsConfig = [
@@ -74,14 +72,14 @@ export const stepsGoodsConfig = [
       return newErrors;
     },
   },
-  {
-    key: 'tradePromotions',
-    title: 'Trade Promotions',
-    component: TradePromotions,
-  },
-  {
-    key: 'promotionalContents',
-    title: 'Promotional Content',
-    component: PromotionalContents,
-  },
+  // {
+  //   key: 'tradePromotions',
+  //   title: 'Trade Promotions',
+  //   component: TradePromotions,
+  // },
+  // {
+  //   key: 'promotionalContents',
+  //   title: 'Promotional Content',
+  //   component: PromotionalContents,
+  // },
 ];

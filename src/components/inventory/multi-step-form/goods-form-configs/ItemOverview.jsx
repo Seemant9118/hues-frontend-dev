@@ -333,6 +333,7 @@ export default function ItemOverview({
           <Input
             placeholder="HSN Code"
             value={formData?.hsnCode || ''}
+            disabled
             onChange={handleChange('hsnCode')}
           />
           {errors?.hsnCode && <ErrorBox msg={errors.hsnCode} />}

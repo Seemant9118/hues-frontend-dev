@@ -95,6 +95,14 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     setGoods((prev) => ({
       ...prev,
       ...goodsToEdit,
+      goodsType: {
+        item: goodsToEdit?.goodsHsnMasterDetails?.item,
+      },
+      categoryId: goodsToEdit?.goodsHsnMasterDetails?.category?.id,
+      categoryName: goodsToEdit?.goodsHsnMasterDetails?.category?.categoryName,
+      subCategoryId: goodsToEdit?.goodsHsnMasterDetails?.subCategory?.id,
+      subCategoryName:
+        goodsToEdit?.goodsHsnMasterDetails?.subCategory?.subCategoryName,
 
       // ARRAY → ARRAY
       offers:
@@ -138,10 +146,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     onSuccess: () => {
       toast.success('Goods Updated Successfully');
       queryClient.invalidateQueries({
-        queryKey: [goodsApi.getAllProductGoods.endpointKey],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getProductGoods.endpointKey],
+        queryKey: [goodsApi.getItemType.endpointKey],
       });
       setIsCreatingGoods(false);
       SessionStorageService.remove(`${enterpriseId}_GoodsData`);

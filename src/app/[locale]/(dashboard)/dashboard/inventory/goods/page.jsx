@@ -29,12 +29,24 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGoodsColumns } from './GoodsColumns';
 import { GoodsTable } from './GoodsTable';
 
-const AddGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
-  loading: () => <Loading />,
-});
-const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
-  loading: () => <Loading />,
-});
+const AddProductType = dynamic(
+  () => import('@/components/inventory/goods/AddProductType'),
+  {
+    loading: () => <Loading />,
+  },
+);
+const EditProductType = dynamic(
+  () => import('@/components/inventory/goods/AddProductType'),
+  {
+    loading: () => <Loading />,
+  },
+);
+const AddProducts = dynamic(
+  () => import('@/components/inventory/goods/AddProducts'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 const PAGE_LIMIT = 10;
 
@@ -57,6 +69,8 @@ function Goods() {
   const [goodsToEdit, setGoodsToEdit] = useState(null);
   const [productGoods, setProductGoods] = useState([]);
   const [paginationData, setPaginationData] = useState({});
+  const [isAddingProducts, setIsAddingProducts] = useState(false);
+  const [itemTypeReference, setItemTypeReference] = useState(null);
 
   const emptyStateSubItems = useMemo(() => {
     return [
@@ -156,7 +170,12 @@ function Goods() {
     router.push(`/dashboard/inventory/goods/${row.id}`);
   };
 
-  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
+  const GoodsColumns = useGoodsColumns(
+    setIsEditing,
+    setGoodsToEdit,
+    setIsAddingProducts,
+    setItemTypeReference,
+  );
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -167,7 +186,7 @@ function Goods() {
         </>
       ) : (
         <div>
-          {!isAdding && !isEditing && (
+          {!isAdding && !isEditing && !isAddingProducts && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center gap-2">
@@ -201,9 +220,16 @@ function Goods() {
                   </ProtectedWrapper>
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
-                    <Button onClick={() => setIsAdding(true)} size="sm">
+                    <Button
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/inventory/goods/item-master-builder`,
+                        )
+                      }
+                      size="sm"
+                    >
                       <CircleFadingPlus size={14} />
-                      {translations('ctas.add')}
+                      Open Item master Builder
                     </Button>
                   </ProtectedWrapper>
                 </div>
@@ -217,7 +243,7 @@ function Goods() {
               <div className="flex-grow overflow-hidden">
                 {goodsQuery.isLoading || searchQuery.isLoading ? (
                   <Loading />
-                ) : !searchTerm && productGoods?.length === 0 ? (
+                ) : !searchTerm && productGoods.length === 0 ? (
                   <EmptyStageComponent
                     heading={translations('emptyStateComponent.heading')}
                     subItems={emptyStateSubItems}
@@ -246,12 +272,19 @@ function Goods() {
             </Wrapper>
           )}
 
-          {isAdding && <AddGoods setIsCreatingGoods={setIsAdding} />}
+          {isAdding && <AddProductType setIsCreatingGoods={setIsAdding} />}
 
           {isEditing && (
-            <EditGoods
+            <EditProductType
               setIsCreatingGoods={setIsEditing}
               goodsToEdit={goodsToEdit}
+            />
+          )}
+
+          {isAddingProducts && (
+            <AddProducts
+              itemTypeReference={itemTypeReference}
+              isAddingProducts={isAddingProducts}
             />
           )}
         </div>

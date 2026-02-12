@@ -44,4 +44,29 @@ export const goodsApi = {
     endpoint: `/master-material/productgoods/downloadsamplefile`,
     endpointKey: 'get_goods_sample_file',
   },
+  // 9. item type list
+  getItemTypes: {
+    endpoint: `/master-material/productgoods/goods/list-types/`,
+    endpointKey: 'item_types',
+  },
+  // 10. item type details
+  getItemType: {
+    endpoint: `/master-material/productgoods/goods/type-details/`,
+    endpointKey: 'get_item_type',
+  },
+  // 11. item type manually creation
+  createItemTypeManually: {
+    endpoint: `/master-material/productgoods/goods/create-type`,
+    endpointKey: 'create_Item_Types',
+  },
+  // 12. fetch item types
+  fetchItemTypes: {
+    endpoint: `/enterprise/fetch-goods-by-registration`,
+    endpointKey: 'fetch_item_types',
+  },
+  // 13. add into item types
+  addIntoItemTypes: {
+    endpoint: `/master-material/productgoods/goods/bulk-create-type`,
+    endpointKey: 'add_into_item_types',
+  },
 };

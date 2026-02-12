@@ -68,6 +68,9 @@
         },
         "table": {
             "header": {
+                "itemType": "Item Type",
+                "category": "Category",
+                "products": "Product(s) Added",
                 "product": "Product",
                 "manufacturer": "Manufacturer",
                 "hsnCode": "HSN Code",
@@ -85,6 +88,9 @@
                     "cancel": "Cancel",
                     "infoText": "You're about to remove {name} from inventory. Sure?",
                     "successMsg": "Deleted successfully"
+                },
+                "addProduct": {
+                    "cta": "Add Product"
                 }
             }
         },
