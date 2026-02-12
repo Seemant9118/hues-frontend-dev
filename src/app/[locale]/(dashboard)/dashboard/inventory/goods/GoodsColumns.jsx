@@ -1,7 +1,7 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { capitalize } from '@/appUtils/helperFunctions';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -31,27 +31,60 @@ export const useGoodsColumns = (
 
   const baseColumns = [
     {
-      accessorKey: 'produtType',
+      accessorKey: 'productName',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('table.header.itemType')}
+          title={translations('table.header.product')}
         />
       ),
       cell: ({ row }) => {
-        // eslint-disable-next-line no-unsafe-optional-chaining
-        const itemType = row.original?.goodsType?.item || '-';
-        const description = row.original?.goodsType?.description || '-';
+        const { description, productName } = row.original;
         return (
           <div className="flex items-center gap-1">
             <span className="hover:text-primary hover:underline">
-              {capitalize(itemType)}
+              {productName}
             </span>
             <Tooltips trigger={<Info size={14} />} content={description} />
           </div>
         );
       },
     },
+    {
+      accessorKey: 'manufacturerName',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.manufacturer')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { manufacturerName } = row.original;
+        return manufacturerName || '-';
+      },
+    },
+    // {
+    //   accessorKey: 'produtType',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader
+    //       column={column}
+    //       title={translations('table.header.itemType')}
+    //     />
+    //   ),
+    //   cell: ({ row }) => {
+    //     // eslint-disable-next-line no-unsafe-optional-chaining
+    //     const itemType = row.original?.goodsType?.item || '-';
+    //     const description = row.original?.goodsType?.description || '-';
+    //     return (
+    //       <div className="flex items-center gap-1">
+    //         <span className="hover:text-primary hover:underline">
+    //           {capitalize(itemType)}
+    //         </span>
+    //         <Tooltips trigger={<Info size={14} />} content={description} />
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       accessorKey: 'hsnCode',
       header: ({ column }) => (
@@ -80,19 +113,19 @@ export const useGoodsColumns = (
       },
     },
 
-    {
-      accessorKey: 'products',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('table.header.products')}
-        />
-      ),
-      cell: () => {
-        // dyanamically
-        return <Badge variant="secondary">{1 || '-'}</Badge>;
-      },
-    },
+    // {
+    //   accessorKey: 'products',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader
+    //       column={column}
+    //       title={translations('table.header.products')}
+    //     />
+    //   ),
+    //   cell: () => {
+    //     // dyanamically
+    //     return <Badge variant="secondary">{1 || '-'}</Badge>;
+    //   },
+    // },
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
@@ -107,101 +140,68 @@ export const useGoodsColumns = (
         return <div>{date}</div>;
       },
     },
-    // {
-    //   accessorKey: 'rate',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.rate')}
-    //     />
-    //   ),
-    // },
-    // {
-    //   accessorKey: 'costPrice',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.costPrice')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const value = row.getValue('costPrice');
-    //     return formattedAmount(value);
-    //   },
-    // },
-    // {
-    //   accessorKey: 'salesPrice',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.salesPrice')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const value = row.getValue('salesPrice');
-    //     return formattedAmount(value);
-    //   },
-    // },
-    // {
-    //   accessorKey: 'mrp',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.mrp')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const value = row.getValue('mrp');
-    //     return formattedAmount(value);
-    //   },
-    // },
+    {
+      accessorKey: 'rate',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.rate')}
+        />
+      ),
+    },
+    {
+      accessorKey: 'costPrice',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.costPrice')}
+        />
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('costPrice');
+        return formattedAmount(value);
+      },
+    },
+    {
+      accessorKey: 'salesPrice',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.salesPrice')}
+        />
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('salesPrice');
+        return formattedAmount(value);
+      },
+    },
+    {
+      accessorKey: 'mrp',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.mrp')}
+        />
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('mrp');
+        return formattedAmount(value);
+      },
+    },
 
-    // {
-    //   accessorKey: 'gstPercentage',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.gst')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const value = row.getValue('gstPercentage');
-    //     return `${value} %`;
-    //   },
-    // },
-    // {
-    //   accessorKey: 'productName',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.product')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const { description, productName } = row.original;
-    //     return (
-    //       <div className="flex items-center gap-1">
-    //         <span className="hover:text-primary hover:underline">
-    //           {productName}
-    //         </span>
-    //         <Tooltips trigger={<Info size={14} />} content={description} />
-    //       </div>
-    //     );
-    //   },
-    // },
-    // {
-    //   accessorKey: 'manufacturerName',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.manufacturer')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     const { manufacturerName } = row.original;
-    //     return manufacturerName || '-';
-    //   },
-    // },
+    {
+      accessorKey: 'gstPercentage',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.gst')}
+        />
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('gstPercentage');
+        return `${value} %`;
+      },
+    },
   ];
 
   // Conditionally add actions column

@@ -220,9 +220,16 @@ function Goods() {
                   </ProtectedWrapper>
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
-                    <Button onClick={() => setIsAdding(true)} size="sm">
+                    <Button
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/inventory/goods/item-master-builder`,
+                        )
+                      }
+                      size="sm"
+                    >
                       <CircleFadingPlus size={14} />
-                      {translations('ctas.add')}
+                      Open Item master Builder
                     </Button>
                   </ProtectedWrapper>
                 </div>
@@ -275,7 +282,10 @@ function Goods() {
           )}
 
           {isAddingProducts && (
-            <AddProducts itemTypeReference={itemTypeReference} />
+            <AddProducts
+              itemTypeReference={itemTypeReference}
+              isAddingProducts={isAddingProducts}
+            />
           )}
         </div>
       )}

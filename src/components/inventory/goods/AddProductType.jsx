@@ -3,7 +3,6 @@ import { goodsApi } from '@/api/inventories/goods/goods';
 import {
   capitalize,
   getStylesForSelectComponent,
-  saveDraftToSession,
 } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -18,48 +17,43 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import SubHeader from '@/components/ui/Sub-header';
+import { Textarea } from '@/components/ui/textarea';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import { LocalStorageService } from '@/lib/utils';
 import {
   getGoodsType,
   getProductGoodsCategories,
 } from '@/services/Admin_Services/AdminServices';
-import {
-  CreateProductGoods,
-  UpdateProductGoods,
-} from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
+import { createItemTypeManually } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { toast } from 'sonner';
-import { Textarea } from '@/components/ui/textarea';
 import { CustomMenuList } from '../multi-step-form/components/AddProductCustomMenuList ';
 import AddProductTypeModal from '../multi-step-form/components/AddProductTypeModal';
 
-const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
+const AddProductType = ({ setIsCreatingGoods }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const queryClient = useQueryClient();
-  const hasRestoredDraftRef = useRef(false);
 
   const [formData, setFormData] = useState({
-    goodsTypeId: null,
+    goodsHsnMasterId: null,
+    name: '',
+    description: '',
     productTypeLabel: '',
     goodsType: null,
 
-    description: '',
+    // frontend only
     hsnCode: '',
     gstPercentage: '',
     huesItemId: '',
-
     categoryId: null,
     subCategoryId: null,
     categoryName: '',
     subCategoryName: '',
-
-    enterpriseId,
   });
 
-  const [errors, setErrors] = useState(null);
+  const [errors, setErrors] = useState({});
   const [isAddProductTypeOpen, setIsAddProductTypeOpen] = useState(false);
 
   // temporary state to apply subCategory only after categories are available
@@ -67,33 +61,6 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
     categoryId: null,
     subCategoryId: null,
   });
-  const draftData = SessionStorageService.get(
-    `${enterpriseId}_ItemMasterDraft`,
-  );
-
-  /* ------------------ RESTORE DRAFT ------------------ */
-  useEffect(() => {
-    if (goodsToEdit) return;
-    if (!draftData || hasRestoredDraftRef.current) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      ...draftData,
-    }));
-
-    hasRestoredDraftRef.current = true;
-  }, [draftData, goodsToEdit]);
-
-  /* ------------------ EDIT MODE PREFILL ------------------ */
-  useEffect(() => {
-    if (!goodsToEdit) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      ...goodsToEdit,
-      goodsType: goodsToEdit?.goodsType || null,
-    }));
-  }, [goodsToEdit]);
 
   // api call for search & get
   const loadProductTypeOptions = async (inputValue) => {
@@ -125,13 +92,13 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
 
   // selectedOptions - good type
   const selectedProductTypeOption = useMemo(() => {
-    if (!formData?.goodsTypeId) return null;
+    if (!formData?.goodsHsnMasterId) return null;
 
     return {
       label: formData.productTypeLabel,
-      value: formData.goodsTypeId,
+      value: formData.goodsHsnMasterId,
     };
-  }, [formData?.goodsTypeId, formData?.productTypeLabel]);
+  }, [formData?.goodsHsnMasterId, formData?.productTypeLabel]);
 
   /* Fetch categories */
   const { data: categories = [] } = useQuery({
@@ -204,23 +171,15 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
   const validateForm = (data) => {
     const newErrors = {};
 
-    if (!data.goodsTypeId) {
-      newErrors.goodsTypeId = 'Product Type is required';
+    if (!data.goodsHsnMasterId) {
+      newErrors.goodsHsnMasterId = 'Product Type is required';
     }
 
-    if (!data.categoryId) {
-      newErrors.categoryId = 'Category is required';
+    if (!data.name?.trim()) {
+      newErrors.name = 'Name is required';
     }
 
-    if (!data.subCategoryId) {
-      newErrors.subCategoryId = 'Sub Category is required';
-    }
-
-    if (!data.hsnCode || !data.hsnCode.trim()) {
-      newErrors.hsnCode = 'HSN Code is required';
-    }
-
-    if (!data.description || !data.description.trim()) {
+    if (!data.description?.trim()) {
       newErrors.description = 'Description is required';
     }
 
@@ -229,31 +188,12 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
 
   /* ------------------ MUTATIONS ------------------ */
   const addMutation = useMutation({
-    mutationFn: CreateProductGoods,
+    mutationFn: createItemTypeManually,
     onSuccess: () => {
-      toast.success('Item Master created successfully');
+      toast.success('Item Type created successfully');
       queryClient.invalidateQueries({
-        queryKey: [goodsApi.getAllProductGoods.endpointKey],
+        queryKey: [goodsApi.getItemTypes.endpointKey],
       });
-      SessionStorageService.remove(`${enterpriseId}_ItemMasterDraft`);
-      setIsCreatingGoods(false);
-    },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message || 'Something went wrong');
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: UpdateProductGoods,
-    onSuccess: () => {
-      toast.success('Item Master updated successfully');
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getAllProductGoods.endpointKey],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getProductGoods.endpointKey],
-      });
-      SessionStorageService.remove(`${enterpriseId}_ItemMasterDraft`);
       setIsCreatingGoods(false);
     },
     onError: (err) => {
@@ -262,50 +202,28 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
   });
 
   /* ------------------ SUBMIT HANDLER ------------------ */
-  const handleSubmit = (type = 'submit') => {
-    if (type === 'save') {
-      saveDraftToSession({
-        key: `${enterpriseId}_ItemMasterDraft`,
-        data: formData,
-      });
-      toast.success('Draft saved');
-      setIsCreatingGoods(false);
-      return;
-    }
-
-    // RUN VALIDATION FIRST
+  const handleSubmit = () => {
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
-    // STOP if errors exist
     if (Object.keys(validationErrors).length > 0) {
       toast.error('Please fix the errors before submitting');
       return;
     }
 
-    // BUILD PAYLOAD
-    const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        payload.append(key, String(value));
-      }
-    });
+    const payload = {
+      enterpriseId: Number(enterpriseId),
+      goodsHsnMasterId: Number(formData.goodsHsnMasterId),
+      name: formData.name.trim(),
+      description: formData.description.trim(),
+    };
 
-    // ADD / UPDATE
-    if (goodsToEdit) {
-      updateMutation.mutate({
-        id: goodsToEdit.id,
-        data: payload,
-      });
-      return;
-    }
-
-    addMutation.mutate(payload);
+    addMutation.mutate({ data: payload });
   };
 
   return (
     <Wrapper className="flex min-h-screen flex-col">
-      <SubHeader name={goodsToEdit ? 'Edit Item Type' : 'Add Item Type'} />
+      <SubHeader name={'Creating Item Type (Manually)'} />
 
       {/* ---------------- CONTENT (SCROLLABLE) ---------------- */}
       <section className="mt-4 flex-1 overflow-y-auto px-2">
@@ -338,24 +256,25 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
                 isClearable
                 onAddNewProductType={() => setIsAddProductTypeOpen(true)}
                 onChange={(selectedOption) => {
-                  setErrors(null);
+                  setErrors({});
                   // if user clears the select
                   if (!selectedOption) {
                     setFormData((prev) => ({
                       ...prev,
-                      goodsTypeId: null,
+                      // api need
+                      enterpriseId,
+                      goodsHsnMasterId: null,
+                      name: '',
+                      description: '',
                       productTypeLabel: '',
-
-                      // clear goodsType object too
                       goodsType: null,
 
+                      // api not need : only for frontend
                       hsnCode: '',
                       gstPercentage: '',
+                      huesItemId: '',
                       categoryId: null,
                       subCategoryId: null,
-                      huesItemId: '',
-                      description: '',
-
                       categoryName: '',
                       subCategoryName: '',
                     }));
@@ -371,7 +290,9 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
                   // else: set selected values
                   setFormData((prev) => ({
                     ...prev,
-                    goodsTypeId: selectedOption.value,
+                    goodsHsnMasterId: selectedOption.value,
+                    name: selectedOption.label,
+                    description: selectedOption.meta?.description || '',
                     productTypeLabel: selectedOption.label,
 
                     hsnCode: selectedOption.meta?.hsnCode || '',
@@ -379,8 +300,6 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
                     categoryId: selectedOption.meta?.categoryId || null,
                     subCategoryId: selectedOption.meta?.subCategoryId || null,
                     huesItemId: selectedOption.meta?.huesItemId || '',
-                    description: selectedOption.meta?.description || '',
-
                     categoryName: selectedOption.meta?.categoryName || '',
                     subCategoryName: selectedOption.meta?.subCategoryName || '',
                   }));
@@ -388,42 +307,10 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
               />
             )}
 
-            {errors?.goodsTypeId && <ErrorBox msg={errors.goodsTypeId} />}
+            {errors?.goodsHsnMasterId && (
+              <ErrorBox msg={errors.goodsHsnMasterId} />
+            )}
           </div>
-
-          {/* Product Name */}
-          {/* <div>
-          <Label>
-            Product Name <span className="text-red-600">*</span>
-          </Label>
-          <Input
-            placeholder="Product Name"
-            value={formData?.productName || ''}
-            onChange={handleChange('productName')}
-          />
-          {errors?.productName && <ErrorBox msg={errors.productName} />}
-        </div> */}
-
-          {/* SKU */}
-          {/* <div>
-          <Label>SKU ID</Label> <span className="text-red-600">*</span>
-          <Input
-            placeholder="SKU ID"
-            value={formData?.skuId || ''}
-            onChange={handleChange('skuId')}
-          />
-          {errors?.skuId && <ErrorBox msg={errors.skuId} />}
-        </div> */}
-
-          {/* Manufacturer */}
-          {/* <div>
-          <Label>Manufacturer&apos;s Name</Label>
-          <Input
-            placeholder="Manufacturer's name"
-            value={formData?.manufacturerName || ''}
-            onChange={handleChange('manufacturerName')}
-          />
-        </div> */}
 
           {/* Category */}
           <div>
@@ -505,20 +392,6 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
             />
           </div>
 
-          {/* GST */}
-          {/* <div>
-          <Label>
-            GST (%) <span className="text-red-600">*</span>
-          </Label>
-          <Input
-            type="number"
-            placeholder="00.00%"
-            value={formData?.gstPercentage || ''}
-            onChange={handleChange('gstPercentage')}
-          />
-          {errors?.gstPercentage && <ErrorBox msg={errors.gstPercentage} />}
-        </div> */}
-
           {/* Description */}
           <div className="col-span-3">
             <Label>
@@ -543,15 +416,15 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
               // set everything except dependent category/subCategory first
               setFormData((prev) => ({
                 ...prev,
-                goodsTypeId: createdItem?.id || null,
+                goodsHsnMasterId: createdItem?.id || null,
+                name: createdItem?.itemName || createdItem?.item || '',
+                description: createdItem?.description || '',
                 productTypeLabel:
                   createdItem?.itemName || createdItem?.item || '',
 
                 hsnCode: createdItem?.hsnCode || '',
                 gstPercentage: createdItem?.gstRate || '',
                 huesItemId: createdItem?.huesItemId || '',
-                description: createdItem?.description || '',
-
                 // store labels also (for UI fallback)
                 categoryName: createdItem?.categoryName || '',
                 subCategoryName: createdItem?.subCategoryName || '',
@@ -581,18 +454,10 @@ const AddProductType = ({ setIsCreatingGoods, goodsToEdit }) => {
 
           <Button
             size="sm"
-            variant="secondary"
-            onClick={() => handleSubmit('save')}
-          >
-            Save Draft
-          </Button>
-
-          <Button
-            size="sm"
-            disabled={addMutation.isPending || updateMutation.isPending}
+            disabled={addMutation.isPending}
             onClick={() => handleSubmit('submit')}
           >
-            {goodsToEdit ? 'Update' : 'Create'}
+            {'Create'}
           </Button>
         </div>
       </section>

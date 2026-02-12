@@ -1,157 +1,267 @@
-'use client';
-
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
+import Wrapper from '@/components/wrappers/Wrapper';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import ErrorBox from '@/components/ui/ErrorBox';
 import { toast } from 'sonner';
+import ItemTypeHeader from './ItemTypeHeader';
+import { useAddedProductColumns } from './addproductsColumns';
 
-export default function AddProducts() {
-  const [skuId, setSkuId] = useState('');
-  const [productName, setProductName] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function AddProducts({
+  itemTypeReference,
+  hsnCode = '330510',
+  onSave,
+  isAddingProducts,
+}) {
+  const [products, setProducts] = useState([]);
 
-  const [products, setProducts] = useState([
+  const [formData, setFormData] = useState({
+    skuId: '',
+    productName: '',
+    salesPrice: '',
+    mrp: '',
+  });
+  const [isMrpSameAsSales, setIsMrpSameAsSales] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const addProductsBreadCrumbs = [
     {
-      id: '1',
-      skuId: 'HNS-SHAM-001',
-      name: 'Head & Shoulders Shampoo',
-      salesPrice: 180,
-      mrp: 199,
-      createdOn: '15 Jan 2024',
+      id: 1,
+      name: 'Item Master',
+      path: '/dashboard/inventory/goods',
+      show: true, // Always show
     },
-  ]);
+    {
+      id: 2,
+      name: 'Add Products',
+      path: `/dashboard/inventory/goods`,
+      show: isAddingProducts, // Always show
+    },
+  ];
 
-  const handleAddProduct = async () => {
-    if (!skuId || !productName) return;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    const tempId = `temp-${Date.now()}`;
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
 
-    const optimisticProduct = {
-      id: tempId,
-      skuId,
-      name: productName,
-      createdOn: new Date().toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      }),
-      isOptimistic: true,
-    };
+      if (name === 'salesPrice' && isMrpSameAsSales) {
+        updated.mrp = value;
+      }
 
-    // Optimistic UI update
-    setProducts((prev) => [optimisticProduct, ...prev]);
-    setLoading(true);
+      return updated;
+    });
+
+    setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  const handleMrpCheckbox = (checked) => {
+    setIsMrpSameAsSales(checked);
+
+    setFormData((prev) => ({
+      ...prev,
+      mrp: checked ? prev.salesPrice : '',
+    }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.skuId.trim()) {
+      newErrors.skuId = 'SKU ID is required';
+    }
+
+    if (!formData.productName.trim()) {
+      newErrors.productName = 'Product name is required';
+    }
+
+    if (!formData.salesPrice) {
+      newErrors.salesPrice = 'Sales price is required';
+    }
+
+    if (!formData.mrp) {
+      newErrors.mrp = 'MRP is required';
+    }
+
+    if (
+      formData.salesPrice &&
+      formData.mrp &&
+      Number(formData.mrp) < Number(formData.salesPrice)
+    ) {
+      newErrors.mrp = 'MRP cannot be less than Sales Price';
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = async () => {
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     try {
-      // API call
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          skuId,
-          name: productName,
-          hsn: '330510',
-        }),
+      const payload = {
+        ...formData,
+        hsnCode,
+        salesPrice: Number(formData.salesPrice),
+        mrp: Number(formData.mrp),
+      };
+
+      let savedProduct = payload;
+
+      if (onSave) {
+        const response = await onSave(payload);
+        savedProduct = response?.data ?? payload;
+      }
+
+      setProducts((prev) => [
+        ...prev,
+        {
+          id: savedProduct?.id ?? Date.now(),
+          ...savedProduct,
+        },
+      ]);
+
+      // Reset form properly
+      setFormData({
+        skuId: '',
+        productName: '',
+        salesPrice: '',
+        mrp: '',
       });
 
-      if (!res.ok) throw new Error('Failed to create product');
-
-      const savedProduct = await res.json();
-
-      // Replace optimistic row with real data
-      setProducts((prev) =>
-        prev.map((p) => (p.id === tempId ? savedProduct : p)),
-      );
-
-      setSkuId('');
-      setProductName('');
-    } catch (err) {
-      // Rollback on failure
-      setProducts((prev) => prev.filter((p) => p.id !== tempId));
-      toast.error('Failed to add product');
-    } finally {
-      setLoading(false);
+      setIsMrpSameAsSales(false);
+      setErrors({});
+    } catch (error) {
+      toast.error('Error saving product:', error);
     }
   };
 
+  const addedProductsColumns = useAddedProductColumns();
+
   return (
-    <div className="space-y-6">
-      {/* Quick Add Product */}
-      <div className="rounded-xl border bg-blue-50 p-6">
-        <h3 className="mb-4 text-lg font-semibold">Quick Add Product</h3>
+    <Wrapper className="flex h-full flex-col gap-2 py-2">
+      {/* header */}
+      <OrderBreadCrumbs possiblePagesBreadcrumbs={addProductsBreadCrumbs} />
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Input
-            className="rounded-md border px-3 py-2"
-            placeholder="e.g. SHAM-001"
-            value={skuId}
-            onChange={(e) => setSkuId(e.target.value)}
-          />
+      {/* item type info */}
+      <ItemTypeHeader
+        title={itemTypeReference?.category?.categoryName || 'Category'}
+        status="Active"
+        hsn={itemTypeReference?.hsnCode}
+        categoryPath={[
+          itemTypeReference?.category?.categoryName,
+          itemTypeReference?.subCategory?.subCategoryName,
+        ]}
+      />
 
-          <Input
-            className="rounded-md border px-3 py-2"
-            placeholder="e.g. Head & Shoulders Shampoo"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-          />
+      {/* quick add */}
+      <div className="space-y-6 rounded-xl border bg-white p-6 shadow-sm">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-blue-100 p-2">
+            <Plus size={18} className="text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Quick Add Product</h2>
+            <p className="text-sm text-gray-500">
+              Add products rapidly under this item type
+            </p>
+          </div>
         </div>
 
-        <div className="mt-4 flex justify-end">
-          <Button
-            onClick={handleAddProduct}
-            disabled={loading}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
-          >
-            {loading ? 'Saving...' : 'Save Product'}
+        {/* Form */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* SKU */}
+          <div className="col-span-1">
+            <Label className="mb-1 block text-sm font-medium">
+              SKU ID <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              name="skuId"
+              value={formData.skuId}
+              onChange={handleChange}
+              placeholder="e.g., SHAM-001"
+            />
+            {errors.skuId && <ErrorBox msg={errors.skuId} />}
+          </div>
+
+          {/* Product Name */}
+          <div className="col-span-1">
+            <Label className="mb-1 block text-sm font-medium">
+              Product Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              name="productName"
+              value={formData.productName}
+              onChange={handleChange}
+              placeholder="e.g., Head & Shoulders Shampoo"
+            />
+            {errors.productName && <ErrorBox msg={errors.productName} />}
+          </div>
+
+          {/* Sales Price */}
+          <div>
+            <Label className="mb-1 block text-sm font-medium">
+              Sales Price <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              type="number"
+              name="salesPrice"
+              value={formData.salesPrice}
+              onChange={handleChange}
+              placeholder="Enter sales price"
+            />
+            {errors.salesPrice && <ErrorBox msg={errors.salesPrice} />}
+          </div>
+
+          {/* MRP */}
+          <div>
+            <Label className="mb-1 block text-sm font-medium">
+              MRP <span className="text-red-500">*</span>
+            </Label>
+
+            <Input
+              type="number"
+              name="mrp"
+              value={formData.mrp}
+              onChange={handleChange}
+              placeholder="Enter MRP"
+              disabled={isMrpSameAsSales}
+            />
+
+            {errors.mrp && <ErrorBox msg={errors.mrp} />}
+
+            {/* Checkbox */}
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={isMrpSameAsSales}
+                onChange={(e) => handleMrpCheckbox(e.target.checked)}
+                className="h-4 w-4 cursor-pointer"
+              />
+              <label className="cursor-pointer text-sm text-gray-600">
+                Same as Sales Price
+              </label>
+            </div>
+          </div>
+        </div>
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button size="sm" onClick={handleSubmit}>
+            Save Product
           </Button>
         </div>
       </div>
 
-      {/* Products Table */}
-      <div className="rounded-xl border">
-        <Table className="w-full border-collapse text-sm">
-          <TableHeader className="bg-gray-50">
-            <TableRow>
-              <TableHead className="px-4 py-3 text-left">SKU ID</TableHead>
-              <TableHead className="px-4 py-3 text-left">
-                Product Name
-              </TableHead>
-              <TableHead className="px-4 py-3 text-left">Sales Price</TableHead>
-              <TableHead className="px-4 py-3 text-left">MRP</TableHead>
-              <TableHead className="px-4 py-3 text-left">Created On</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {products.map((p) => (
-              <TableRow
-                key={p.id}
-                className={`border-t ${p.isOptimistic ? 'opacity-60' : ''}`}
-              >
-                <TableCell className="px-4 py-3">{p.skuId}</TableCell>
-                <TableCell className="px-4 py-3 font-medium">
-                  {p.name}
-                </TableCell>
-                <TableCell className="px-4 py-3">
-                  {p.salesPrice ? `₹${p.salesPrice}` : '—'}
-                </TableCell>
-                <TableCell className="px-4 py-3">
-                  {p.mrp ? `₹${p.mrp}` : '—'}
-                </TableCell>
-                <TableCell className="px-4 py-3">{p.createdOn}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+      <DataTable data={products} columns={addedProductsColumns} />
+    </Wrapper>
   );
 }
