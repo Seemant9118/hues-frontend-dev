@@ -23,7 +23,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { Download, Plus } from 'lucide-react';
+import { ArrowLeft, Download, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -159,9 +159,16 @@ const ItemMasterBuilder = () => {
         {!isAddingItemType && (
           <div>
             {/* header */}
-            <section className="flex items-center justify-between py-2">
-              <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
-
+            <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => router.push(`/dashboard/inventory/goods/`)}
+                  className="rounded-sm p-2 hover:bg-gray-100"
+                >
+                  <ArrowLeft size={16} />
+                </button>
+                <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
+              </div>
               <div className="flex items-center gap-2">
                 <ProtectedWrapper permissionCode="permission:item-masters-create">
                   <Button onClick={() => setIsFetchModalOpen(true)} size="sm">

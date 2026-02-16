@@ -1,7 +1,7 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
@@ -16,16 +16,11 @@ import {
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import { DeleteProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import { Info, MoreVertical, Pencil, PlusCircle } from 'lucide-react';
+import { Info, MoreVertical, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
-export const useGoodsColumns = (
-  setIsEditing,
-  setGoodsToEdit,
-  setIsAddingProducts,
-  setItemTypeReference,
-) => {
+export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
   const translations = useTranslations('goods');
   const { hasAnyPermission } = usePermission();
 
@@ -39,52 +34,52 @@ export const useGoodsColumns = (
         />
       ),
       cell: ({ row }) => {
-        const { description, productName } = row.original;
+        const { productName } = row.original;
         return (
           <div className="flex items-center gap-1">
             <span className="hover:text-primary hover:underline">
               {productName}
+            </span>
+          </div>
+        );
+      },
+    },
+    // {
+    //   accessorKey: 'manufacturerName',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader
+    //       column={column}
+    //       title={translations('table.header.manufacturer')}
+    //     />
+    //   ),
+    //   cell: ({ row }) => {
+    //     const { manufacturerName } = row.original;
+    //     return manufacturerName || '-';
+    //   },
+    // },
+    {
+      accessorKey: 'produtType',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.prodType')}
+        />
+      ),
+      cell: ({ row }) => {
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        const itemType = row.original?.goodsType?.goodsHsnMaster?.item || '-';
+        const description =
+          row.original?.goodsType?.goodsHsnMaster?.description || '-';
+        return (
+          <div className="flex items-center gap-1">
+            <span className="hover:text-primary hover:underline">
+              {capitalize(itemType)}
             </span>
             <Tooltips trigger={<Info size={14} />} content={description} />
           </div>
         );
       },
     },
-    {
-      accessorKey: 'manufacturerName',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('table.header.manufacturer')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { manufacturerName } = row.original;
-        return manufacturerName || '-';
-      },
-    },
-    // {
-    //   accessorKey: 'produtType',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.itemType')}
-    //     />
-    //   ),
-    //   cell: ({ row }) => {
-    //     // eslint-disable-next-line no-unsafe-optional-chaining
-    //     const itemType = row.original?.goodsType?.item || '-';
-    //     const description = row.original?.goodsType?.description || '-';
-    //     return (
-    //       <div className="flex items-center gap-1">
-    //         <span className="hover:text-primary hover:underline">
-    //           {capitalize(itemType)}
-    //         </span>
-    //         <Tooltips trigger={<Info size={14} />} content={description} />
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       accessorKey: 'hsnCode',
       header: ({ column }) => (
@@ -108,58 +103,9 @@ export const useGoodsColumns = (
         />
       ),
       cell: ({ row }) => {
-        const category = row.original?.category?.categoryName;
+        const category =
+          row.original?.goodsType?.goodsHsnMaster?.category?.categoryName;
         return category || '-';
-      },
-    },
-
-    // {
-    //   accessorKey: 'products',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.products')}
-    //     />
-    //   ),
-    //   cell: () => {
-    //     // dyanamically
-    //     return <Badge variant="secondary">{1 || '-'}</Badge>;
-    //   },
-    // },
-    {
-      accessorKey: 'createdAt',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('table.header.addedOn')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { createdAt } = row.original;
-        const date = moment(createdAt).format('DD-MM-YYYY');
-        return <div>{date}</div>;
-      },
-    },
-    {
-      accessorKey: 'rate',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('table.header.rate')}
-        />
-      ),
-    },
-    {
-      accessorKey: 'costPrice',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('table.header.costPrice')}
-        />
-      ),
-      cell: ({ row }) => {
-        const value = row.getValue('costPrice');
-        return formattedAmount(value);
       },
     },
     {
@@ -202,6 +148,20 @@ export const useGoodsColumns = (
         return `${value} %`;
       },
     },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('table.header.addedOn')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { createdAt } = row.original;
+        const date = moment(createdAt).format('DD-MM-YYYY');
+        return <div>{date}</div>;
+      },
+    },
   ];
 
   // Conditionally add actions column
@@ -227,17 +187,6 @@ export const useGoodsColumns = (
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-fit">
               <ProtectedWrapper permissionCode="permission:item-masters-edit">
-                <DropdownMenuItem
-                  className="flex items-center justify-center gap-2"
-                  onClick={(e) => {
-                    setIsAddingProducts((prev) => !prev);
-                    e.stopPropagation();
-                    setItemTypeReference(row.original);
-                  }}
-                >
-                  <PlusCircle size={12} />
-                  {translations('table.columnActions.addProduct.cta')}
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
                   onClick={(e) => {

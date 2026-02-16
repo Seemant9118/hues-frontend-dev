@@ -7,7 +7,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TruncateAndShowInfo } from '@/components/ui/TruncateAndShowInfo';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
@@ -32,7 +32,6 @@ const ViewItem = () => {
   const translations = useTranslations('goods.goodDetails');
   const router = useRouter();
   const params = useParams();
-  const [tab, setTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
 
@@ -51,10 +50,6 @@ const ViewItem = () => {
     },
   ];
 
-  const onTabChange = (tab) => {
-    setTab(tab);
-  };
-
   // item details fetching
   const { data: itemDetails } = useQuery({
     queryKey: [goodsApi.getProductGoods.endpointKey, params.good_id],
@@ -63,46 +58,52 @@ const ViewItem = () => {
     enabled: true,
   });
 
-  const overviewData = {
-    productName: `${itemDetails?.productName} (${itemDetails?.manufacturerName})`,
-    huesId: itemDetails?.huesId,
-    skuId: itemDetails?.skuId || '--',
-    hsnCode: itemDetails?.hsnCode,
-    costPrice: formattedAmount(itemDetails?.costPrice),
-    salesPrice: formattedAmount(itemDetails?.salesPrice),
-    mrp: formattedAmount(itemDetails?.mrp),
-    gstPercentage: `${itemDetails?.gstPercentage}%`,
+  const productInfoData = {
+    productName: itemDetails?.productName,
+    skuId: itemDetails?.skuId || 'Not available',
+    huesId: itemDetails?.huesId || 'Not available',
     createdAt: moment(itemDetails?.createdAt).format('DD-MM-YYYY'),
     updatedAt: moment(itemDetails?.updatedAt).format('DD-MM-YYYY'),
-    weight: itemDetails?.weight,
-    length: itemDetails?.length,
-    breadth: itemDetails?.breadth,
-    height: itemDetails?.height,
     description: itemDetails?.description,
   };
 
-  const overviewLabels = {
+  const productInfoLabel = {
     productName: translations('overview_labels.productName'),
-    huesId: translations('overview_labels.huesId'),
     skuId: translations('overview_labels.skuId'),
-    hsnCode: translations('overview_labels.hsnCode'),
-    costPrice: translations('overview_labels.costPrice'),
-    salesPrice: translations('overview_labels.salesPrice'),
-    mrp: translations('overview_labels.mrp'),
-    gstPercentage: translations('overview_labels.gstPercentage'),
+    huesId: translations('overview_labels.huesId'),
     createdAt: translations('overview_labels.createdAt'),
     updatedAt: translations('overview_labels.updatedAt'),
-    weight: translations('overview_labels.weight'), // todo : with units
-    length: translations('overview_labels.length'), // todo : with units
-    breadth: translations('overview_labels.breadth'), // todo : with units
-    height: translations('overview_labels.height'), // todo :with units
     description: translations('overview_labels.description'),
+  };
+
+  const customRender = {
+    description: (value) => <TruncateAndShowInfo text={value} />,
+  };
+
+  const pricingData = {
+    salesPrice: formattedAmount(itemDetails?.salesPrice),
+    mrp: formattedAmount(itemDetails?.mrp),
+    unit: itemDetails?.unit || 'Not available',
+  };
+  const pricingLabel = {
+    salesPrice: translations('overview_labels.salesPrice'),
+    mrp: translations('overview_labels.mrp'),
+    unit: 'Unit',
+  };
+
+  const taxComplianceData = {
+    hsnCode: itemDetails?.hsnCode,
+    gstPercentage: `${itemDetails?.gstPercentage}%`,
+  };
+  const taxComplianceLabel = {
+    hsnCode: translations('overview_labels.hsnCode'),
+    gstPercentage: translations('overview_labels.gstPercentage'),
   };
 
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
       {!isEditing && (
-        <Wrapper className="h-full py-2">
+        <Wrapper className="h-full py-1">
           {/* Headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex items-center gap-1">
@@ -149,21 +150,54 @@ const ViewItem = () => {
             </div>
           </section>
 
-          {/* Content */}
-          <Tabs
-            value={tab}
-            onValueChange={onTabChange}
-            defaultValue={'overview'}
-          >
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview">
-              <Overview data={overviewData} labelMap={overviewLabels} />
-            </TabsContent>
-          </Tabs>
+          <section className="flex flex-col gap-3">
+            {/* BASIC INFORMATION */}
+            <section className="flex flex-col gap-0.5 px-2">
+              <h1 className="text-xl font-semibold text-primary">
+                Basic Information
+              </h1>
+              <span className="text-sm text-gray-400">
+                Core product details
+              </span>
+            </section>
+
+            <Overview
+              sectionClass="grid grid-cols-1 md:grid-cols-3 gap-6"
+              data={productInfoData}
+              labelMap={productInfoLabel}
+              customRender={customRender}
+            />
+
+            {/* PRICING */}
+            <section className="flex flex-col gap-0.5 px-2">
+              <h1 className="text-xl font-semibold text-primary">Pricing</h1>
+              <span className="text-sm text-gray-400">
+                Sales price and MRP details
+              </span>
+            </section>
+
+            <Overview
+              sectionClass="grid grid-cols-1 md:grid-cols-3 gap-6"
+              data={pricingData}
+              labelMap={pricingLabel}
+            />
+
+            {/* TAX & COMPLIANCE */}
+            <section className="flex flex-col gap-0.5 px-2">
+              <h1 className="text-xl font-semibold text-primary">
+                Tax & Compliance
+              </h1>
+              <span className="text-sm text-gray-400">
+                Auto-derived from HSN {itemDetails?.hsnCode} mapping
+              </span>
+            </section>
+
+            <Overview
+              sectionClass="grid grid-cols-1 md:grid-cols-3 gap-6"
+              data={taxComplianceData}
+              labelMap={taxComplianceLabel}
+            />
+          </section>
         </Wrapper>
       )}
       {isEditing && (

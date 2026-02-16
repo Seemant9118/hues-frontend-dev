@@ -249,7 +249,9 @@
           "dispatch_from": "डिस्पैच स्थान",
           "billing_from": "बिलिंग स्थान",
           "billing_address": "बिलिंग पता",
-          "shipping_address": "शिपिंग पता"
+          "shipping_address": "शिपिंग पता",
+          "legFrom": "प्रस्थान स्थान",
+          "legTo": "गंतव्य स्थान"
         },
         "overview_inputs": {
           "transporter": "ट्रांसपोर्टर चुनें",

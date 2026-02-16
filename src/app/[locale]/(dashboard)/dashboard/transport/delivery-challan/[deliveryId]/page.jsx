@@ -328,10 +328,12 @@ const ViewDelivery = () => {
     dispatchFrom:
       dispatchDetails?.metaData?.dispatchFromAddress?.address || '-',
     billingFrom: dispatchDetails?.metaData?.billingFromAddress?.address || '-',
-    billingAddress:
-      capitalize(dispatchDetails?.metaData?.billingAddress?.address) || '-',
-    shippingAddress:
-      capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
+    legFrom: capitalize(dispatchDetails?.transportBookings[0]?.legFrom) || '-',
+    legTo: capitalize(dispatchDetails?.transportBookings[0]?.legTo) || '-',
+    // billingAddress:
+    //   capitalize(dispatchDetails?.metaData?.billingAddress?.address) || '-',
+    // shippingAddress:
+    //   capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
     deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
@@ -346,8 +348,10 @@ const ViewDelivery = () => {
     EWB: translations('overview_labels.ewb'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
     billingFrom: translations('overview_labels.billing_from'),
-    billingAddress: translations('overview_labels.billing_address'),
-    shippingAddress: translations('overview_labels.shipping_address'),
+    legFrom: translations('overview_labels.legFrom'),
+    legTo: translations('overview_labels.legTo'),
+    // billingAddress: translations('overview_labels.billing_address'),
+    // shippingAddress: translations('overview_labels.shipping_address'),
   };
 
   // overview custom label render
