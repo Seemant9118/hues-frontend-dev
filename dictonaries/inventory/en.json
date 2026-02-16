@@ -68,6 +68,7 @@
         },
         "table": {
             "header": {
+                "prodType":"Product Type",
                 "itemType": "Item Type",
                 "category": "Category",
                 "products": "Product(s) Added",

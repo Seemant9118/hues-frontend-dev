@@ -2,12 +2,14 @@ import { formattedAmount } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export const useAddedProductColumns = ({
   setIsEditingProduct,
   goodsHsnMasterDetails,
   setProductsToEdit,
 }) => {
+  const router = useRouter();
   return [
     {
       accessorKey: 'skuId',
@@ -15,7 +17,12 @@ export const useAddedProductColumns = ({
         <DataTableColumnHeader column={column} title={'SKU ID'} />
       ),
       cell: ({ row }) => (
-        <span className="font-medium text-gray-800">
+        <span
+          onClick={() => {
+            router.push(`/dashboard/inventory/goods/${row.id}`);
+          }}
+          className="cursor-pointer font-medium text-gray-800 hover:text-primary hover:underline"
+        >
           {row.original.skuId || '-'}
         </span>
       ),

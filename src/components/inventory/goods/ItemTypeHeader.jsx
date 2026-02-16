@@ -25,7 +25,7 @@ export default function ItemTypeHeader({
 
         {/* HSN + Breadcrumb */}
         <div className="flex items-center gap-4 text-sm text-gray-600">
-          <span className="rounded-sm bg-green-100 px-3 py-1 font-medium text-green-700">
+          <span className="rounded-sm border border-green-600 bg-green-100 p-1 text-sm text-green-600">
             HSN: {hsn}
           </span>
 

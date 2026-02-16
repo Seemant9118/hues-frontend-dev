@@ -29,24 +29,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGoodsColumns } from './GoodsColumns';
 import { GoodsTable } from './GoodsTable';
 
-const AddProductType = dynamic(
-  () => import('@/components/inventory/goods/AddProductType'),
-  {
-    loading: () => <Loading />,
-  },
-);
-const EditProductType = dynamic(
-  () => import('@/components/inventory/goods/AddProductType'),
-  {
-    loading: () => <Loading />,
-  },
-);
-const AddProducts = dynamic(
-  () => import('@/components/inventory/goods/AddProducts'),
-  {
-    loading: () => <Loading />,
-  },
-);
+const EditProduct = dynamic(() => import('@/components/inventory/AddGoods'), {
+  loading: () => <Loading />,
+});
 
 const PAGE_LIMIT = 10;
 
@@ -69,8 +54,6 @@ function Goods() {
   const [goodsToEdit, setGoodsToEdit] = useState(null);
   const [productGoods, setProductGoods] = useState([]);
   const [paginationData, setPaginationData] = useState({});
-  const [isAddingProducts, setIsAddingProducts] = useState(false);
-  const [itemTypeReference, setItemTypeReference] = useState(null);
 
   const emptyStateSubItems = useMemo(() => {
     return [
@@ -170,12 +153,7 @@ function Goods() {
     router.push(`/dashboard/inventory/goods/${row.id}`);
   };
 
-  const GoodsColumns = useGoodsColumns(
-    setIsEditing,
-    setGoodsToEdit,
-    setIsAddingProducts,
-    setItemTypeReference,
-  );
+  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -186,7 +164,7 @@ function Goods() {
         </>
       ) : (
         <div>
-          {!isAdding && !isEditing && !isAddingProducts && (
+          {!isAdding && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center gap-2">
@@ -272,19 +250,10 @@ function Goods() {
             </Wrapper>
           )}
 
-          {isAdding && <AddProductType setIsCreatingGoods={setIsAdding} />}
-
           {isEditing && (
-            <EditProductType
+            <EditProduct
               setIsCreatingGoods={setIsEditing}
               goodsToEdit={goodsToEdit}
-            />
-          )}
-
-          {isAddingProducts && (
-            <AddProducts
-              itemTypeReference={itemTypeReference}
-              isAddingProducts={isAddingProducts}
             />
           )}
         </div>

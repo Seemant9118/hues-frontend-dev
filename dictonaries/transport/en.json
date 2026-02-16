@@ -260,7 +260,9 @@
                     "dispatch_from": "Dispatch From",
                     "billing_from": "Billing From",
                     "billing_address": "Billing Address",
-                    "shipping_address": "Shipping Address"
+                    "shipping_address": "Shipping Address",
+                    "legFrom": "Leg From",
+                    "legTo": "Leg To"
                 },
                 "overview_inputs": {
                     "transporter": "Select Transporter",

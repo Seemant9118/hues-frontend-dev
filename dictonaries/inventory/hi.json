@@ -68,15 +68,19 @@
         },
         "table": {
             "header": {
+                "prodType": "उत्पाद प्रकार",
+                "itemType": "आइटम प्रकार",
+                "category": "श्रेणी",
+                "products": "जोड़े गए उत्पाद",
                 "product": "उत्पाद",
                 "manufacturer": "निर्माता",
-                "hsnCode": "HSN कोड",
+                "hsnCode": "एचएसएन कोड",
                 "rate": "दर",
                 "costPrice": "लागत मूल्य",
-                "salesPrice": "बिक्री मूल्य",
-                "mrp": "अधिकतम खुदरा मूल्य",
-                "gst": "GST (%)",
-                "addedOn": "जोड़ा गया"
+                "salesPrice": "विक्रय मूल्य",
+                "mrp": "एमआरपी",
+                "gst": "जीएसटी (%)",
+                "addedOn": "जोड़ा गया दिनांक"
             },
             "columnActions": {
                 "edit": "संपादित करें",

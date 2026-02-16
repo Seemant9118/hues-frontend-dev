@@ -96,13 +96,22 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
       ...prev,
       ...goodsToEdit,
       goodsType: {
-        item: goodsToEdit?.goodsHsnMasterDetails?.item,
+        item:
+          goodsToEdit?.goodsHsnMasterDetails?.item ||
+          goodsToEdit?.goodsType?.goodsHsnMaster?.item,
       },
-      categoryId: goodsToEdit?.goodsHsnMasterDetails?.category?.id,
-      categoryName: goodsToEdit?.goodsHsnMasterDetails?.category?.categoryName,
-      subCategoryId: goodsToEdit?.goodsHsnMasterDetails?.subCategory?.id,
+      categoryId:
+        goodsToEdit?.goodsHsnMasterDetails?.category?.id ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.category?.id,
+      categoryName:
+        goodsToEdit?.goodsHsnMasterDetails?.category?.categoryName ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.category?.categoryName,
+      subCategoryId:
+        goodsToEdit?.goodsHsnMasterDetails?.subCategory?.id ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.subCategory?.id,
       subCategoryName:
-        goodsToEdit?.goodsHsnMasterDetails?.subCategory?.subCategoryName,
+        goodsToEdit?.goodsHsnMasterDetails?.subCategory?.subCategoryName ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.subCategory?.subCategoryName,
 
       // ARRAY → ARRAY
       offers:
@@ -145,9 +154,23 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     mutationFn: UpdateProductGoods,
     onSuccess: () => {
       toast.success('Goods Updated Successfully');
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getItemType.endpointKey],
-      });
+      // types -> items refetch
+      if (goodsToEdit?.goodsHsnMasterDetails?.item) {
+        queryClient.invalidateQueries({
+          queryKey: [goodsApi.getItemType.endpointKey],
+        });
+      }
+      if (goodsToEdit?.goodsType?.goodsHsnMaster?.item) {
+        // product listing refectch
+        queryClient.invalidateQueries({
+          queryKey: [goodsApi.getAllProductGoods.endpointKey],
+        });
+        // product details
+        queryClient.invalidateQueries({
+          queryKey: [goodsApi.getProductGoods.endpointKey],
+        });
+      }
+
       setIsCreatingGoods(false);
       SessionStorageService.remove(`${enterpriseId}_GoodsData`);
     },
