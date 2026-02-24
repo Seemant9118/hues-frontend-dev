@@ -4,8 +4,6 @@ import { deliveryProcess } from '@/api/deliveryProcess/deliveryProcess';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import InfoBanner from '@/components/auth/InfoBanner';
-import { MultiStepForm } from '@/components/shared/MultiStepForm';
-import { getCreateDispatchSteps } from '@/components/shared/MultiStepForm/example-config';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { Button } from '@/components/ui/button';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
@@ -32,6 +30,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { getCreateDispatchSteps } from '@/components/dispatchNote/Direct_Dispatch_Notes_MultiStep_Form/dispatch-notes-config';
+import MultiStepForm from '@/components/shared/MultiStepForm/MultiStepForm';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
