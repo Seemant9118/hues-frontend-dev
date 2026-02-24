@@ -5,6 +5,7 @@ import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import CreateOrderService from '@/components/orders/CreateOrderService';
 import FilterModal from '@/components/orders/FilterModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -37,6 +38,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
@@ -72,6 +74,7 @@ const SalesOrder = () => {
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
+  const [isCreatingSalesService, setIsCreatingSalesService] = useState(false);
   // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
@@ -82,10 +85,31 @@ const SalesOrder = () => {
   const [filterData, setFilterData] = useState(null);
   const [referenceOrderId, setReferenceOrderId] = useState(null);
 
+  const action = searchParams.get('action');
+
+  const createSalesServiceBreadCrumbs = [
+    {
+      id: 1,
+      name: 'Sales',
+      path: '/dashboard/sales/sales-orders',
+      show: true,
+    },
+    {
+      id: 2,
+      name: 'Create Sales Service',
+      path: '/dashboard/sales/sales-orders?action=create',
+      show: action === 'create',
+    },
+  ];
+
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value); // Update the tab state
   };
+
+  useEffect(() => {
+    setIsCreatingSalesService(action === 'create');
+  }, [action]);
 
   useEffect(() => {
     if (isCreatingSales && referenceOrderId) {
@@ -137,12 +161,12 @@ const SalesOrder = () => {
           : null;
     }
 
-    // ✅ Conditionally add clientIds only if they exist
+    // Conditionally add clientIds only if they exist
     if (filterData?.clientIds?.length > 0) {
       newFilterData.clientIds = filterData.clientIds;
     }
 
-    // ✅ Update only if meaningfully different
+    // Update only if meaningfully different
     setFilterData((prev) => {
       if (JSON.stringify(prev) !== JSON.stringify(newFilterData)) {
         return newFilterData;
@@ -274,7 +298,7 @@ const SalesOrder = () => {
     });
   };
 
-  // [updateReadTracker Mutation : onRowClick] ✅
+  // [updateReadTracker Mutation : onRowClick]
   const updateReadTrackerMutation = useMutation({
     mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
     mutationFn: updateReadTracker,
@@ -294,7 +318,7 @@ const SalesOrder = () => {
     }
   };
 
-  // [EXPORT ORDER Fn] ✅
+  // [EXPORT ORDER Fn]
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
     const el = document.createElement('a');
@@ -344,7 +368,7 @@ const SalesOrder = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          {!isCreatingSales && !isEditingOrder && (
+          {!isCreatingSales && !isEditingOrder && !isCreatingSalesService && (
             <Wrapper className="h-screen overflow-hidden">
               {/* Headers */}
               <SubHeader
@@ -371,17 +395,31 @@ const SalesOrder = () => {
                   />
 
                   <ProtectedWrapper permissionCode={'permission:sales-create'}>
-                    <Tooltips
-                      trigger={
-                        <Button
-                          onClick={() => setIsCreatingSales(true)}
-                          size="sm"
-                        >
-                          <PlusCircle size={14} />
-                          {translations('ctas.offer.cta')}
-                        </Button>
-                      }
-                      content={translations('ctas.offer.placeholder')}
+                    <ActionsDropdown
+                      label="Create Offer"
+                      // variant="outline"
+                      actions={[
+                        {
+                          key: 'offer-goods',
+                          label: 'Goods',
+                          icon: PlusCircle,
+                          onClick: () => {
+                            setIsCreatingSales(true);
+                          },
+                          className: 'text-primary',
+                        },
+                        {
+                          key: 'offer-service',
+                          label: 'Service',
+                          icon: PlusCircle,
+                          onClick: () => {
+                            router.push(
+                              '/dashboard/sales/sales-orders?action=create',
+                            );
+                            setIsCreatingSalesService(true);
+                          },
+                        },
+                      ]}
                     />
                   </ProtectedWrapper>
                 </div>
@@ -537,7 +575,7 @@ const SalesOrder = () => {
           )}
 
           {/* create order component */}
-          {isCreatingSales && !isEditingOrder && (
+          {isCreatingSales && !isEditingOrder && !isCreatingSalesService && (
             <CreateOrder
               type="sales"
               name="Offer"
@@ -552,12 +590,20 @@ const SalesOrder = () => {
           )}
 
           {/* editOrder Component */}
-          {isEditingOrder && !isCreatingSales && (
+          {isEditingOrder && !isCreatingSales && !isCreatingSalesService && (
             <EditOrder
               cta="offer"
               isOrder="order"
               orderId={orderId}
               onCancel={() => setIsEditingOrder(false)}
+            />
+          )}
+
+          {/* create sales service component */}
+          {isCreatingSalesService && !isEditingOrder && !isCreatingSales && (
+            <CreateOrderService
+              createSalesServiceBreadCrumbs={createSalesServiceBreadCrumbs}
+              setIsCreatingSalesService={setIsCreatingSalesService}
             />
           )}
         </>
