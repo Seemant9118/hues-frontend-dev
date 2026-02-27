@@ -51,18 +51,31 @@ export const getStylesForSelectComponent = () => {
   return {
     control: (base, state) => ({
       ...base,
-      border: state.isFocused
-        ? '2.5px solid #298AFAFF' // Bold border when focused (color: blue)
-        : '1px solid #E2E8F0', // Default border
-      borderRadius: '9px',
-      boxShadow: 'none', // Removes focus outline shadow
-      height: '40px',
-      transition: 'border-color 0.2s', // Smooth transition for focus
+      minHeight: '40px',
+      borderColor: state.isFocused ? '#3B90F2' : base.borderColor,
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: '#3B90F2',
+      },
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? '#3B90F2' // selected
+        : state.isFocused
+          ? '#e0e7ff' // focused (light)
+          : 'white',
+      color: state.isSelected ? 'white' : 'black',
+      cursor: 'pointer',
+    }),
+
+    singleValue: (base) => ({
+      ...base,
+      color: '#111827',
     }),
     menu: (base) => ({
       ...base,
-      borderRadius: '9px',
-      zIndex: 10,
+      zIndex: 50,
     }),
     menuList: (base) => ({
       ...base,

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import DynamicForm from '@/components/DynamicForm/DynamicForm';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -15,17 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Trash2, Plus } from 'lucide-react';
-import DynamicForm from '@/components/DynamicForm/DynamicForm';
+import { Plus, Trash2 } from 'lucide-react';
 
-// api-driven
+/*  SCHEMA  */
 const GST_FILING_SCHEMA = [
   {
     name: 'serviceCode',
     label: 'Service Code',
     type: 'input',
     disabled: true,
+    required: true,
   },
   {
     name: 'description',
@@ -33,12 +33,6 @@ const GST_FILING_SCHEMA = [
     type: 'textarea',
     disabled: true,
     helperText: 'Auto-populated from Service Master (read-only)',
-  },
-  {
-    name: 'longDescription',
-    label: 'Long Description',
-    type: 'textarea',
-    disabled: true,
   },
   {
     name: 'quantity',
@@ -79,27 +73,39 @@ const GST_FILING_SCHEMA = [
   },
 ];
 
-export default function ServicesLineItems() {
-  const [items, setItems] = useState([]);
+export default function ServicesLineItems({
+  formData = {},
+  setFormData,
+  errors = {},
+}) {
+  const items = formData.services || [];
+
+  /*  helpers */
+  const updateServices = (updater) => {
+    setFormData((prev) => ({
+      ...prev,
+      services: updater(prev.services || []),
+    }));
+  };
 
   const addItem = () => {
-    setItems((prev) => [
+    updateServices((prev) => [
       ...prev,
       {
         id: crypto.randomUUID(),
+        serviceType: '',
         schema: [],
         formData: {},
-        errors: {},
       },
     ]);
   };
 
   const removeItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    updateServices((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleServiceSelect = (id, serviceType) => {
-    setItems((prev) =>
+    updateServices((prev) =>
       prev.map((item) =>
         item.id === id
           ? {
@@ -109,8 +115,10 @@ export default function ServicesLineItems() {
               formData: {
                 serviceCode: 'SV-COMP-GST',
                 description: 'Professional GST return filing services',
+                longDescription: '',
                 gst: 18,
                 quantity: 1,
+                unit: 'nos',
                 rate: 0,
                 discount: 0,
                 lineTotal: '₹0.00',
@@ -121,10 +129,15 @@ export default function ServicesLineItems() {
     );
   };
 
-  const updateFormData = (id, updater) => {
-    setItems((prev) =>
+  const updateItemFormData = (id, updater) => {
+    updateServices((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, formData: updater(item.formData) } : item,
+        item.id === id
+          ? {
+              ...item,
+              formData: updater(item.formData),
+            }
+          : item,
       ),
     );
   };
@@ -132,7 +145,7 @@ export default function ServicesLineItems() {
   return (
     <section className="space-y-6">
       <Accordion type="multiple" className="space-y-4">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <AccordionItem
             key={item.id}
             value={item.id}
@@ -145,7 +158,7 @@ export default function ServicesLineItems() {
                     {item.serviceType || 'New Service'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {item?.serviceCode || 'Service Code'}
+                    {item.formData?.serviceCode || 'Service Code'}
                   </p>
                 </div>
               </AccordionTrigger>
@@ -166,6 +179,7 @@ export default function ServicesLineItems() {
                   Service <span className="text-red-500">*</span>
                 </Label>
                 <Select
+                  value={item.serviceType}
                   onValueChange={(val) => handleServiceSelect(item.id, val)}
                 >
                   <SelectTrigger>
@@ -180,12 +194,12 @@ export default function ServicesLineItems() {
               </div>
 
               {/* Dynamic Fields */}
-              {item.schema.length > 0 && (
+              {GST_FILING_SCHEMA.length > 0 && (
                 <DynamicForm
-                  schema={item.schema}
+                  schema={GST_FILING_SCHEMA}
                   formData={item.formData}
-                  setFormData={(fn) => updateFormData(item.id, fn)}
-                  errors={item.errors}
+                  setFormData={(fn) => updateItemFormData(item.id, fn)}
+                  errors={errors?.[index] || {}}
                 />
               )}
             </AccordionContent>

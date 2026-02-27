@@ -8,7 +8,26 @@ import { getSalesServiceFormSteps } from './Sales_Service_MultiStep_Form/Create-
 const CreateOrderService = ({ createSalesServiceBreadCrumbs }) => {
   const directServiceOrderSteps = getSalesServiceFormSteps();
 
-  const [formData, setFormData] = React.useState({});
+  const [formData, setFormData] = React.useState({
+    buyerContext: {
+      buyerId: '',
+      contactPerson: '',
+      email: '',
+      mobile: '',
+      billingAddress: '',
+      serviceLocation: '',
+    },
+    services: [],
+    offerTerms: {
+      paymentTerms: '',
+      offerValidity: '',
+      notes: '',
+      customerNotes: '',
+      governingLaw: '',
+      disputeResolution: '',
+      deliveryAcceptance: '',
+    },
+  });
   const [errors, setErrors] = React.useState({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
