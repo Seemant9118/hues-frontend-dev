@@ -23,6 +23,7 @@ export default function MultiStepForm({
   breadcrumbHome = '/',
   breadcrumbHomeText = 'Home',
   breadcrumbTitle = 'Multi-Step Form',
+  translation,
 
   finalStepActions,
 }) {
@@ -81,7 +82,7 @@ export default function MultiStepForm({
 
   return (
     <div className="flex h-full flex-col gap-3 py-4">
-      {/* ✅ Breadcrumbs */}
+      {/* Breadcrumbs */}
       {shouldRenderBreadcrumbList ? (
         <OrderBreadCrumbs possiblePagesBreadcrumbs={breadcrumbs} />
       ) : (
@@ -105,7 +106,7 @@ export default function MultiStepForm({
       />
 
       {/* Main Content Card */}
-      <Card className="flex flex-1 flex-col overflow-hidden border shadow-sm">
+      <Card className="flex max-h-[550px] flex-1 flex-col overflow-hidden border shadow-sm">
         <CardContent className="scrollBarStyles flex-1 overflow-y-auto p-0">
           {/* Sticky Header */}
           <div className="sticky top-0 z-10 border-b bg-white px-6 py-4">
@@ -126,6 +127,7 @@ export default function MultiStepForm({
               formData={formData}
               setFormData={setFormData}
               errors={errors}
+              translation={translation}
             />
           </div>
         </CardContent>

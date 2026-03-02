@@ -1,0 +1,115 @@
+import FieldRenderer from '@/components/DynamicForm/FieldRenderer';
+import FieldToggler from '@/components/fieldToggler/FieldToggler';
+import React, { useEffect, useState } from 'react';
+
+const formSectionsForPolicies = [
+  /* ================= Standard SLA ================= */
+  {
+    key: 'standardSLA',
+    label: 'Standard SLA',
+    description: 'Delivery commitment',
+    enabledByDefault: false, // user manually toggles
+    fields: [
+      {
+        type: 'text',
+        name: 'standard_sla',
+        label: 'Standard SLA',
+        defaultValue: 'Training delivered as per scheduled date and time',
+      },
+    ],
+  },
+
+  /* ================= Cancellation Policy ================= */
+  {
+    key: 'cancellationPolicy',
+    label: 'Cancellation Policy',
+    description: 'Cancellation terms',
+    enabledByDefault: false, // user manually toggles
+    fields: [
+      {
+        type: 'textarea',
+        name: 'cancellation_policy',
+        label: 'Cancellation Policy',
+        rows: 2,
+        defaultValue:
+          '48 hours notice required for rescheduling without charges',
+      },
+    ],
+  },
+];
+
+export default function SLAAndWarranty({
+  formData,
+  setFormData,
+  errors,
+  translation,
+}) {
+  const [enabledSections, setEnabledSections] = useState(() =>
+    Object.fromEntries(
+      formSectionsForPolicies.map((s) => [s.key, s.enabledByDefault]),
+    ),
+  );
+
+  useEffect(() => {
+    formSectionsForPolicies.forEach((section) => {
+      if (!enabledSections[section.key]) return;
+
+      section.fields.forEach((field) => {
+        if (formData[field.name] == null && field.defaultValue !== undefined) {
+          setFormData((prev) => ({
+            ...prev,
+            [field.name]: field.defaultValue,
+          }));
+        }
+      });
+    });
+  }, [enabledSections, formSectionsForPolicies]);
+
+  const toggleSection = (key, value) => {
+    setEnabledSections((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleChange = (key) => (e) => {
+    const value = e?.target ? e.target.value : e;
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className="lex flex-col gap-6">
+      {/* --------------------------- SERVICE LEVEL AGREEMENT --------------------------- */}
+      <h2 className="text-sm font-bold text-primary">
+        {translation('multiStepForm.sla.section1.title') ||
+          'Service Level Agreement'}
+      </h2>
+
+      <div className="space-y-2">
+        {formSectionsForPolicies.map((section) => (
+          <FieldToggler
+            key={section.key}
+            section={section}
+            enabled={enabledSections[section.key]}
+            onToggle={(val) => toggleSection(section.key, val)}
+            renderFields={(fields, isDisabled) =>
+              fields.map((field) => (
+                <FieldRenderer
+                  key={field.name}
+                  field={{
+                    ...field,
+                    disabled: isDisabled || field.disabled,
+                  }}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  error={errors[field.name]}
+                  formData={formData}
+                />
+              ))
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
