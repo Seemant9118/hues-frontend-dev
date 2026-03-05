@@ -128,10 +128,17 @@ export default function TermsAndControls({
       if (!enabledSections[section.key]) return;
 
       section.fields.forEach((field) => {
-        if (formData[field.name] == null && field.defaultValue !== undefined) {
+        const currentData = formData.defaultFieldsWithValues[field.name];
+        if (!currentData || currentData.defaultValue === undefined) {
           setFormData((prev) => ({
             ...prev,
-            [field.name]: field.defaultValue,
+            defaultFieldsWithValues: {
+              ...prev.defaultFieldsWithValues,
+              [field.name]: {
+                ...field,
+                defaultValue: field.defaultValue ?? '',
+              },
+            },
           }));
         }
       });
@@ -145,9 +152,18 @@ export default function TermsAndControls({
     }));
   };
 
-  const handleChange = (key) => (e) => {
+  const handleChange = (key, e) => {
     const value = e?.target ? e.target.value : e;
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      defaultFieldsWithValues: {
+        ...prev.defaultFieldsWithValues,
+        [key]: {
+          ...(prev.defaultFieldsWithValues[key] || {}),
+          defaultValue: value,
+        },
+      },
+    }));
   };
 
   return (
@@ -173,7 +189,12 @@ export default function TermsAndControls({
                     ...field,
                     disabled: isDisabled || field.disabled,
                   }}
-                  value={formData[field.name]}
+                  value={
+                    formData.defaultFieldsWithValues[field.name]
+                      ?.defaultValue ??
+                    formData.defaultFieldsWithValues[field.name] ??
+                    ''
+                  }
                   onChange={handleChange}
                   error={errors[field.name]}
                   formData={formData}

@@ -20,7 +20,7 @@ const formSectionsForAddOnsAndBundles = [
           { label: 'SV-TRN-CERT', value: 'SV-TRN-CERT' },
           { label: 'Nil', value: 'NIL' },
         ],
-        defaultValue: ['SV-TRN-COACHING', 'SV-TRN-WORKSHOP', 'SV-TRN-CERT'], // matches screenshot
+        defaultValue: 'NIL',
       },
     ],
   },
@@ -42,7 +42,7 @@ const formSectionsForAddOnsAndBundles = [
           { label: 'BDL-TRN-ANNUAL', value: 'BDL-TRN-ANNUAL' },
           { label: 'Nil', value: 'NIL' },
         ],
-        defaultValue: ['BDL-TRN-BASIC', 'BDL-TRN-PREMIUM', 'BDL-TRN-ANNUAL'], // matches screenshot
+        defaultValue: 'NIL',
       },
     ],
   },
@@ -59,10 +59,17 @@ const AddOns = ({ formData, setFormData, translation, errors }) => {
       if (!enabledSections[section.key]) return;
 
       section.fields.forEach((field) => {
-        if (formData[field.name] == null && field.defaultValue !== undefined) {
+        const currentData = formData.defaultFieldsWithValues[field.name];
+        if (!currentData || currentData.defaultValue === undefined) {
           setFormData((prev) => ({
             ...prev,
-            [field.name]: field.defaultValue,
+            defaultFieldsWithValues: {
+              ...prev.defaultFieldsWithValues,
+              [field.name]: {
+                ...field,
+                defaultValue: field.defaultValue ?? '',
+              },
+            },
           }));
         }
       });
@@ -76,9 +83,18 @@ const AddOns = ({ formData, setFormData, translation, errors }) => {
     }));
   };
 
-  const handleChange = (key) => (e) => {
+  const handleChange = (key, e) => {
     const value = e?.target ? e.target.value : e;
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      defaultFieldsWithValues: {
+        ...prev.defaultFieldsWithValues,
+        [key]: {
+          ...(prev.defaultFieldsWithValues[key] || {}),
+          defaultValue: value,
+        },
+      },
+    }));
   };
 
   return (
@@ -104,7 +120,12 @@ const AddOns = ({ formData, setFormData, translation, errors }) => {
                     ...field,
                     disabled: isDisabled || field.disabled,
                   }}
-                  value={formData[field.name]}
+                  value={
+                    formData.defaultFieldsWithValues[field.name]
+                      ?.defaultValue ??
+                    formData.defaultFieldsWithValues[field.name] ??
+                    ''
+                  }
                   onChange={handleChange}
                   error={errors[field.name]}
                   formData={formData}

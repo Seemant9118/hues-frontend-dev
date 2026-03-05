@@ -33,7 +33,7 @@ export const formSections = [
     key: 'deliveryMode',
     label: 'Delivery Mode',
     description: 'Training delivery method',
-    enabledByDefault: true,
+    enabledByDefault: false,
     fields: [
       {
         type: 'select',
@@ -54,7 +54,7 @@ export const formSections = [
     key: 'unitOfMeasure',
     label: 'Unit of Measure',
     description: 'How training is billed',
-    enabledByDefault: true,
+    enabledByDefault: false,
     fields: [
       {
         type: 'select',
@@ -76,7 +76,7 @@ export const formSections = [
     key: 'trainingTopic',
     label: 'Training Topic',
     description: 'Subject areas covered',
-    enabledByDefault: true,
+    enabledByDefault: false,
     fields: [
       {
         type: 'select',
@@ -101,7 +101,7 @@ export const formSections = [
     key: 'maxParticipants',
     label: 'Max Participants per Batch',
     description: 'Capacity constraint per session',
-    enabledByDefault: true,
+    enabledByDefault: false,
     fields: [
       {
         type: 'number',
@@ -117,7 +117,7 @@ export const formSections = [
     key: 'defaultDuration',
     label: 'Default Duration (Hours)',
     description: 'Standard session duration',
-    enabledByDefault: true,
+    enabledByDefault: false,
     fields: [
       {
         type: 'number',
@@ -144,10 +144,17 @@ export default function Overview({
       if (!enabledSections[section.key]) return;
 
       section.fields.forEach((field) => {
-        if (formData[field.name] == null && field.defaultValue !== undefined) {
+        const currentData = formData.defaultFieldsWithValues[field.name];
+        if (!currentData || currentData.defaultValue === undefined) {
           setFormData((prev) => ({
             ...prev,
-            [field.name]: field.defaultValue,
+            defaultFieldsWithValues: {
+              ...prev.defaultFieldsWithValues,
+              [field.name]: {
+                ...field,
+                defaultValue: field.defaultValue ?? '',
+              },
+            },
           }));
         }
       });
@@ -160,12 +167,31 @@ export default function Overview({
       [key]: value,
     }));
   };
-  const handleChange = (key) => (e) => {
-    const value = e && e.target ? e.target.value : e;
 
-    const updates = { [key]: value };
+  const handleChange = (key, val) => {
+    const value = val && val.target ? val.target.value : val;
 
-    setFormData((prev) => ({ ...prev, ...updates }));
+    const topLevelFields = [
+      'serviceName',
+      'serviceCode',
+      'serviceCategory',
+      'serviceSubType',
+    ];
+
+    if (topLevelFields.includes(key)) {
+      setFormData((prev) => ({ ...prev, [key]: value }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        defaultFieldsWithValues: {
+          ...prev.defaultFieldsWithValues,
+          [key]: {
+            ...(prev.defaultFieldsWithValues[key] || {}),
+            defaultValue: value,
+          },
+        },
+      }));
+    }
   };
 
   return (
@@ -182,7 +208,7 @@ export default function Overview({
           <Input
             placeholder="Service name"
             value={formData?.serviceName}
-            onChange={(e) => handleChange('serviceName')(e)}
+            onChange={(e) => handleChange('serviceName', e)}
           />
           {errors?.serviceName && <ErrorBox msg={errors?.serviceName} />}
         </div>
@@ -194,7 +220,7 @@ export default function Overview({
           <Input
             placeholder="Service code"
             value={formData?.serviceCode}
-            onChange={(e) => handleChange('serviceCode')(e)}
+            onChange={(e) => handleChange('serviceCode', e)}
           />
           {errors?.serviceCode && <ErrorBox msg={errors?.serviceCode} />}
         </div>
@@ -210,7 +236,7 @@ export default function Overview({
           </Label>
           <Select
             value={formData?.serviceCategory}
-            onValueChange={(v) => handleChange('serviceCategory')(v)}
+            onValueChange={(v) => handleChange('serviceCategory', v)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="eg. Compliance, IT Consultancy etc" />
@@ -235,7 +261,7 @@ export default function Overview({
           <Input
             placeholder="e.g. Return filling, Deep Cleaning"
             value={formData?.serviceSubType}
-            onChange={(e) => handleChange('serviceSubType')(e)}
+            onChange={(e) => handleChange('serviceSubType', e)}
           />
         </div>
       </div>
@@ -259,7 +285,12 @@ export default function Overview({
                     ...field,
                     disabled: isDisabled || field.disabled,
                   }}
-                  value={formData[field.name]}
+                  value={
+                    formData.defaultFieldsWithValues[field.name]
+                      ?.defaultValue ??
+                    formData.defaultFieldsWithValues[field.name] ??
+                    formData[field.name]
+                  }
                   onChange={handleChange}
                   error={errors[field.name]}
                   formData={formData}

@@ -60,14 +60,7 @@ const formSectionsForContent = [
           { label: 'Post-training feedback', value: 'POST_TRAINING_FEEDBACK' },
           { label: 'Nil', value: 'NIL' },
         ],
-        defaultValue: [
-          'PRE_TRAINING_ASSESSMENT',
-          'CUSTOMIZED_CONTENT',
-          'TRAINING_DELIVERY',
-          'MATERIALS',
-          'CERTIFICATES',
-          'POST_TRAINING_FEEDBACK',
-        ], // matches screenshot
+        defaultValue: 'PRE_TRAINING_ASSESSMENT',
       },
     ],
   },
@@ -90,12 +83,7 @@ const formSectionsForContent = [
           { label: 'Post-training coaching', value: 'POST_TRAINING_COACHING' },
           { label: 'Nil', value: 'NIL' },
         ],
-        defaultValue: [
-          'VENUE_ARRANGEMENTS',
-          'PARTICIPANT_TRAVEL',
-          'REFRESHMENTS',
-          'POST_TRAINING_COACHING',
-        ], // Nil remains optional
+        defaultValue: 'NIL',
       },
     ],
   },
@@ -118,10 +106,17 @@ export default function Description({
       if (!enabledSections[section.key]) return;
 
       section.fields.forEach((field) => {
-        if (formData[field.name] == null && field.defaultValue !== undefined) {
+        const currentData = formData.defaultFieldsWithValues[field.name];
+        if (!currentData || currentData.defaultValue === undefined) {
           setFormData((prev) => ({
             ...prev,
-            [field.name]: field.defaultValue,
+            defaultFieldsWithValues: {
+              ...prev.defaultFieldsWithValues,
+              [field.name]: {
+                ...field,
+                defaultValue: field.defaultValue ?? '',
+              },
+            },
           }));
         }
       });
@@ -135,9 +130,18 @@ export default function Description({
     }));
   };
 
-  const handleChange = (key) => (e) => {
+  const handleChange = (key, e) => {
     const value = e?.target ? e.target.value : e;
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      defaultFieldsWithValues: {
+        ...prev.defaultFieldsWithValues,
+        [key]: {
+          ...(prev.defaultFieldsWithValues[key] || {}),
+          defaultValue: value,
+        },
+      },
+    }));
   };
 
   return (
@@ -162,7 +166,12 @@ export default function Description({
                     ...field,
                     disabled: isDisabled || field.disabled,
                   }}
-                  value={formData[field.name]}
+                  value={
+                    formData.defaultFieldsWithValues[field.name]
+                      ?.defaultValue ??
+                    formData.defaultFieldsWithValues[field.name] ??
+                    ''
+                  }
                   onChange={handleChange}
                   error={errors[field.name]}
                   formData={formData}

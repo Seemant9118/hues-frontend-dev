@@ -19,7 +19,7 @@ const formSectionsForAgreementsAndConsents = [
           { label: 'Workshop Agreement', value: 'WORKSHOP_AGREEMENT' },
           { label: 'Program Agreement', value: 'PROGRAM_AGREEMENT' },
         ],
-        defaultValue: 'TRAINING_AGREEMENT', // ⭐ default
+        defaultValue: 'TRAINING_AGREEMENT',
       },
     ],
   },
@@ -32,7 +32,7 @@ const formSectionsForAgreementsAndConsents = [
     enabledByDefault: false, // user manually toggles
     fields: [
       {
-        type: 'multi-select',
+        type: 'select',
         name: 'required_consents',
         label: 'Required Consents',
         options: [
@@ -43,11 +43,7 @@ const formSectionsForAgreementsAndConsents = [
             value: 'FEEDBACK_USAGE_CONSENT',
           },
         ],
-        defaultValue: [
-          'RECORDING_CONSENT',
-          'PHOTO_CONSENT',
-          'FEEDBACK_USAGE_CONSENT',
-        ], // matches screenshot
+        defaultValue: 'RECORDING_CONSENT',
       },
     ],
   },
@@ -73,10 +69,17 @@ export default function ContractsAndConsents({
       if (!enabledSections[section.key]) return;
 
       section.fields.forEach((field) => {
-        if (formData[field.name] == null && field.defaultValue !== undefined) {
+        const currentData = formData.defaultFieldsWithValues[field.name];
+        if (!currentData || currentData.defaultValue === undefined) {
           setFormData((prev) => ({
             ...prev,
-            [field.name]: field.defaultValue,
+            defaultFieldsWithValues: {
+              ...prev.defaultFieldsWithValues,
+              [field.name]: {
+                ...field,
+                defaultValue: field.defaultValue ?? '',
+              },
+            },
           }));
         }
       });
@@ -90,9 +93,18 @@ export default function ContractsAndConsents({
     }));
   };
 
-  const handleChange = (key) => (e) => {
+  const handleChange = (key, e) => {
     const value = e?.target ? e.target.value : e;
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      defaultFieldsWithValues: {
+        ...prev.defaultFieldsWithValues,
+        [key]: {
+          ...(prev.defaultFieldsWithValues[key] || {}),
+          defaultValue: value,
+        },
+      },
+    }));
   };
 
   return (
@@ -118,7 +130,12 @@ export default function ContractsAndConsents({
                     ...field,
                     disabled: isDisabled || field.disabled,
                   }}
-                  value={formData[field.name]}
+                  value={
+                    formData.defaultFieldsWithValues[field.name]
+                      ?.defaultValue ??
+                    formData.defaultFieldsWithValues[field.name] ??
+                    ''
+                  }
                   onChange={handleChange}
                   error={errors[field.name]}
                   formData={formData}

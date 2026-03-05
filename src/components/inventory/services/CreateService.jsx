@@ -10,23 +10,57 @@ import { stepsServiceConfig } from './ServiceConfig';
 const CreateService = ({ createServiceBreadCrumbs }) => {
   const translation = useTranslations('components.addService');
   const [formData, setFormData] = React.useState({
-    buyerContext: {
-      buyerId: '',
-      contactPerson: '',
-      email: '',
-      mobile: '',
-      billingAddress: '',
-      serviceLocation: '',
-    },
-    services: [],
-    offerTerms: {
-      paymentTerms: '',
-      offerValidity: '',
-      notes: '',
-      customerNotes: '',
-      governingLaw: '',
-      disputeResolution: '',
-      deliveryAcceptance: '',
+    // Overview Step top-level fields
+    serviceName: '',
+    serviceCode: '',
+    serviceCategory: '',
+    serviceSubType: '',
+
+    defaultFieldsWithValues: {
+      // Overview
+      delivery_mode: null,
+      unit: null,
+      training_topics: [],
+      max_participants: null,
+      default_duration_hours: null,
+
+      // Pricing Step
+      base_price: '',
+      pricing_model: '',
+      per_participant_rate: '',
+      gst_percentage: '',
+      sac_code: '',
+
+      // Operations Step
+      roles_required: [],
+      materials_provided: [],
+      equipment_needed: [],
+      requires_execution_record: null,
+
+      // SLA & Warranty Step
+      standard_sla: '',
+      cancellation_policy: '',
+
+      // Description Step
+      short_description: '',
+      long_description: '',
+      whats_included: [],
+      whats_not_included: [],
+
+      // Add-ons Step
+      addon_service_codes: [],
+      bundle_codes: [],
+
+      // Terms & Controls Step
+      payment_terms: '',
+      offer_validity: '',
+      governing_law: '',
+      dispute_resolution: '',
+      delivery_acceptance_reference: '',
+
+      // Contracts and Consents Step
+      contract_template: '',
+      required_consents: [],
     },
   });
   const [errors, setErrors] = React.useState({});
@@ -34,6 +68,9 @@ const CreateService = ({ createServiceBreadCrumbs }) => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    // console.log('--- Final Service Creation Payload ---');
+    // console.log(JSON.stringify(formData, null, 2));
+
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));

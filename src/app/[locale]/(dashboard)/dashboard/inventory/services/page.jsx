@@ -20,7 +20,7 @@ import {
   GetSearchedServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { CircleFadingPlus, Download, Upload } from 'lucide-react';
+import { CircleFadingPlus, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -70,7 +70,7 @@ function Services() {
   const [isCreatingService, setIsCreatingService] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  // const [isUploading, setIsUploading] = useState(false);
   // const [files, setFiles] = useState([]);
   const [services, setServices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
@@ -96,7 +96,7 @@ function Services() {
     const state = searchParams.get('action');
     setIsCreatingService(state === 'create');
     setIsEditing(state === 'edit');
-    setIsUploading(state === 'upload');
+    // setIsUploading(state === 'upload');
   }, [searchParams]);
 
   useEffect(() => {
@@ -105,14 +105,12 @@ function Services() {
       newPath += `?action=create`;
     } else if (isEditing) {
       newPath += `?action=edit`;
-    } else if (isUploading) {
-      newPath += `?action=upload`;
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [router, isCreatingService, isEditing, isUploading]);
+  }, [router, isCreatingService, isEditing]);
 
   const servicesQuery = useInfiniteQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
@@ -206,7 +204,7 @@ function Services() {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
-          {!isCreatingService && !isUploading && !isEditing && (
+          {!isCreatingService && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-2">
@@ -255,7 +253,7 @@ function Services() {
                       content={translations('ctas.export')}
                     />
                   </ProtectedWrapper>
-                  <ProtectedWrapper permissionCode="permission:item-masters-upload">
+                  {/* <ProtectedWrapper permissionCode="permission:item-masters-upload">
                     <Button
                       onClick={() => setIsUploading(true)}
                       variant={'blue_outline'}
@@ -264,7 +262,7 @@ function Services() {
                       <Upload size={14} />
                       {translations('ctas.upload')}
                     </Button>
-                  </ProtectedWrapper>
+                  </ProtectedWrapper> */}
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
                     <Button
