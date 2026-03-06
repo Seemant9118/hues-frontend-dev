@@ -103,7 +103,13 @@ export default function Operations({
 }) {
   const [enabledSections, setEnabledSections] = useState(() =>
     Object.fromEntries(
-      formSectionsForOperations.map((s) => [s.key, s.enabledByDefault]),
+      formSectionsForOperations.map((s) => {
+        const hasValue = s.fields?.some((f) => {
+          const val = formData.defaultFieldsWithValues?.[f.name];
+          return val !== undefined && val !== null && val !== '';
+        });
+        return [s.key, hasValue || s.enabledByDefault];
+      }),
     ),
   );
 
@@ -129,11 +135,24 @@ export default function Operations({
     });
   }, [enabledSections, formSectionsForOperations]);
 
-  const toggleSection = (key, value) => {
+  const toggleSection = (section, value) => {
     setEnabledSections((prev) => ({
       ...prev,
-      [key]: value,
+      [section.key]: value,
     }));
+
+    if (!value) {
+      setFormData((prev) => {
+        const updatedDefaultFields = { ...prev.defaultFieldsWithValues };
+        section.fields.forEach((field) => {
+          updatedDefaultFields[field.name] = null;
+        });
+        return {
+          ...prev,
+          defaultFieldsWithValues: updatedDefaultFields,
+        };
+      });
+    }
   };
 
   const handleChange = (key, e) => {
@@ -164,7 +183,7 @@ export default function Operations({
             key={section.key}
             section={section}
             enabled={enabledSections[section.key]}
-            onToggle={(val) => toggleSection(section.key, val)}
+            onToggle={(val) => toggleSection(section, val)}
             renderFields={(fields, isDisabled) =>
               fields.map((field) => (
                 <FieldRenderer

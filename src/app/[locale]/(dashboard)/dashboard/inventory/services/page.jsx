@@ -29,9 +29,6 @@ import { useServicesColumns } from './ServicesColumns';
 import { ServicesTable } from './ServicesTable';
 
 // dynamic imports
-const EditService = dynamic(() => import('@/components/inventory/AddService'), {
-  loading: () => <Loading />,
-});
 const CreateService = dynamic(
   () => import('@/components/inventory/services/CreateService'),
   { loading: () => <Loading /> },
@@ -48,7 +45,6 @@ function Services() {
   useMetaData('Hues! - Services', 'HUES SERVICES'); // dynamic title
 
   const translations = useTranslations('services');
-
   // next-intl supports only object keys, not arrays. Use object keys for subItems.
   const keys = [
     'services.emptyStateComponent.subItems.subItem1',
@@ -89,6 +85,12 @@ function Services() {
       path: '/dashboard/inventory/services?action=create',
       show: action === 'create',
     },
+    {
+      id: 3,
+      name: 'Edit Service',
+      path: '/dashboard/inventory/services?action=edit',
+      show: action === 'edit',
+    },
   ];
 
   useEffect(() => {
@@ -98,19 +100,6 @@ function Services() {
     setIsEditing(state === 'edit');
     // setIsUploading(state === 'upload');
   }, [searchParams]);
-
-  useEffect(() => {
-    let newPath = `/dashboard/inventory/services`;
-    if (isCreatingService) {
-      newPath += `?action=create`;
-    } else if (isEditing) {
-      newPath += `?action=edit`;
-    } else {
-      newPath += '';
-    }
-
-    router.push(newPath);
-  }, [router, isCreatingService, isEditing]);
 
   const servicesQuery = useInfiniteQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
@@ -192,7 +181,11 @@ function Services() {
   };
 
   // columns
-  const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
+  const ServicesColumns = useServicesColumns(
+    setIsEditing,
+    setServicesToEdit,
+    router,
+  );
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -267,9 +260,9 @@ function Services() {
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
                     <Button
                       onClick={() => {
-                        // router.push(
-                        //   '/dashboard/inventory/services?action=create',
-                        // );
+                        router.push(
+                          '/dashboard/inventory/services?action=create',
+                        );
                         setIsCreatingService(true);
                       }}
                       size="sm"
@@ -323,8 +316,8 @@ function Services() {
             />
           )}
           {isEditing && (
-            <EditService
-              setIsCreatingService={setIsEditing}
+            <CreateService
+              createServiceBreadCrumbs={createServiceBreadCrumbs}
               servicesToEdit={servicesToEdit}
             />
           )}
