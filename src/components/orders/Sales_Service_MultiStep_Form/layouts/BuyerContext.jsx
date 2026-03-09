@@ -23,7 +23,6 @@ export default function BuyerContext({
   errors = {},
 }) {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const buyerContext = formData.buyerContext || {};
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   /* ---------------- FETCH CLIENTS ---------------- */
@@ -62,13 +61,10 @@ export default function BuyerContext({
 
   /* ---------------- HELPERS ---------------- */
 
-  const updateBuyerContext = (updates) => {
+  const updateFormData = (updates) => {
     setFormData((prev) => ({
       ...prev,
-      buyerContext: {
-        ...prev.buyerContext,
-        ...updates,
-      },
+      ...updates,
     }));
   };
 
@@ -82,13 +78,13 @@ export default function BuyerContext({
 
     const data = selected.data || {};
 
-    updateBuyerContext({
-      clientId: selected.clientId, // ✅ for UI selection
-      buyerId: selected.value, // ✅ for API payload
+    updateFormData({
+      clientId: selected.clientId, // Keep for UI selection reference if needed
+      buyerId: selected.value,
       contactPerson: data.contactPerson || '',
       email: data.email || '',
       mobile: data.mobileNumber || '',
-      billingAddress: data.address || '',
+      billingAddressText: data.address || '',
       serviceLocation: data.serviceLocation || '',
     });
   };
@@ -109,9 +105,12 @@ export default function BuyerContext({
           placeholder="Select Client"
           getOptionValue={(option) => option.clientId}
           getOptionLabel={(option) => option.label}
+          isDisabled={formData.isEditing}
           value={
             clientOptions.find(
-              (opt) => opt.clientId === buyerContext.clientId,
+              (opt) =>
+                opt.clientId === formData.clientId ||
+                opt.value === formData.buyerId,
             ) || null
           }
           onChange={handleClientSelect}
@@ -139,10 +138,9 @@ export default function BuyerContext({
             Contact Person <span className="text-red-500">*</span>
           </Label>
           <Input
-            value={buyerContext.contactPerson || ''}
-            onChange={(e) =>
-              updateBuyerContext({ contactPerson: e.target.value })
-            }
+            placeholder="Enter Contact Person"
+            value={formData.contactPerson || ''}
+            onChange={(e) => updateFormData({ contactPerson: e.target.value })}
           />
           {errors.contactPerson && <ErrorBox msg={errors.contactPerson} />}
         </div>
@@ -153,8 +151,9 @@ export default function BuyerContext({
           </Label>
           <Input
             type="email"
-            value={buyerContext.email || ''}
-            onChange={(e) => updateBuyerContext({ email: e.target.value })}
+            placeholder="Enter Email"
+            value={formData.email || ''}
+            onChange={(e) => updateFormData({ email: e.target.value })}
           />
           {errors.email && <ErrorBox msg={errors.email} />}
         </div>
@@ -164,8 +163,9 @@ export default function BuyerContext({
             Mobile <span className="text-red-500">*</span>
           </Label>
           <Input
-            value={buyerContext.mobile || ''}
-            onChange={(e) => updateBuyerContext({ mobile: e.target.value })}
+            placeholder="Enter Mobile"
+            value={formData.mobile || ''}
+            onChange={(e) => updateFormData({ mobile: e.target.value })}
           />
           {errors.mobile && <ErrorBox msg={errors.mobile} />}
         </div>
@@ -178,11 +178,12 @@ export default function BuyerContext({
             Billing Address <span className="text-red-500">*</span>
           </Label>
           <Textarea
+            placeholder="Enter Billing Address"
             rows={3}
-            value={buyerContext.billingAddress || ''}
+            value={formData.billingAddressText || ''}
             onChange={(e) =>
-              updateBuyerContext({
-                billingAddress: e.target.value,
+              updateFormData({
+                billingAddressText: e.target.value,
               })
             }
           />
@@ -194,10 +195,11 @@ export default function BuyerContext({
             Service Location <span className="text-red-500">*</span>
           </Label>
           <Textarea
+            placeholder="Enter Service Location"
             rows={3}
-            value={buyerContext.serviceLocation || ''}
+            value={formData.serviceLocation || ''}
             onChange={(e) =>
-              updateBuyerContext({
+              updateFormData({
                 serviceLocation: e.target.value,
               })
             }

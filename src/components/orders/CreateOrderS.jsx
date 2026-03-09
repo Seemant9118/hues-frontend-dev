@@ -19,9 +19,7 @@ import useOrderTotals from '@/hooks/useOrderTotals';
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getProductCatalogue,
-  getServiceCatalogue,
   getVendorProductCatalogue,
-  getVendorServiceCatalogue,
 } from '@/services/Catalogue_Services/CatalogueServices';
 import {
   createClient,
@@ -51,31 +49,7 @@ import InputWithSelect from '../ui/InputWithSelect';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
 import Wrapper from '../wrappers/Wrapper';
-
-const unitForService = [
-  { id: 'PER_HOUR', abbreviation: 'per hour' },
-  { id: 'PER_DAY', abbreviation: 'per day' },
-  { id: 'PER_MONTH', abbreviation: 'per month' },
-  { id: 'PER_VISIT', abbreviation: 'per visit' },
-  { id: 'PER_PROJECT', abbreviation: 'per project' },
-  { id: 'PER_CONSULTATION', abbreviation: 'per consultation' },
-  { id: 'FIXED', abbreviation: 'fixed' },
-];
-
-const deliveryModes = [
-  { label: 'On-site', value: 'onsite' },
-  { label: 'Remote', value: 'remote' },
-  { label: 'Hybrid', value: 'hybrid' },
-];
-
-const timeWindows = [
-  { value: 'MOR_9_to_12', label: 'Morning (9 AM - 12 PM)' },
-  { value: 'AFTERNOON_12_TO_4', label: 'Afternoon (12 PM - 4 PM)' },
-  { value: 'EVENING_4_TO_7', label: 'Evening (4 PM - 7 PM)' },
-  { value: 'CUSTOM', label: 'Custom Slot' },
-];
 
 const CreateOrderS = ({
   isCreatingSales,
@@ -104,47 +78,25 @@ const CreateOrderS = ({
           clientType: 'B2B',
           sellerEnterpriseId: enterpriseId,
           buyerId: orderDraft?.buyerId || null,
-          contactPerson: orderDraft?.contactPerson || '',
-          email: orderDraft?.email || '',
-          mobile: orderDraft?.mobile || '',
-          billingAddressText: orderDraft?.billingAddressText || '',
-          serviceLocation: orderDraft?.serviceLocation || '',
           selectedValue: orderDraft?.selectedValue || null,
           gstAmount: orderDraft?.gstAmount || null,
           amount: orderDraft?.amount || null,
           orderType: 'SALES',
-          invoiceType: orderDraft?.invoiceType || '',
+          invoiceType: 'GOODS',
           orderItems: orderDraft?.orderItems || [],
-          expectedStartDate: orderDraft?.expectedStartDate || '',
-          expectedCompletionDate: orderDraft?.expectedCompletionDate || '',
-          deliveryMode: orderDraft?.deliveryMode || null,
-          preferredTimeWindow: orderDraft?.preferredTimeWindow || null,
-          offerValidity: orderDraft?.offerValidity || '',
-          paymentTermsService: orderDraft?.paymentTermsService || '',
           notesToCustomer: orderDraft?.notesToCustomer || '',
         }
       : {
           clientType: 'B2B',
           sellerEnterpriseId: bidDraft?.sellerEnterpriseId || null,
           buyerId: enterpriseId,
-          contactPerson: bidDraft?.contactPerson || '',
-          email: bidDraft?.email || '',
-          mobile: bidDraft?.mobile || '',
-          billingAddressText: bidDraft?.billingAddressText || '',
-          serviceLocation: bidDraft?.serviceLocation || '',
           selectedValue: bidDraft?.selectedValue || null,
           gstAmount: bidDraft?.gstAmount || null,
           amount: bidDraft?.amount || null,
           orderType: 'PURCHASE',
-          invoiceType: bidDraft?.invoiceType || '',
+          invoiceType: 'GOODS',
           orderItems: bidDraft?.orderItems || [],
-          expectedStartDate: bidDraft?.expectedStartDate || '',
-          expectedCompletionDate: bidDraft?.expectedCompletionDate || '',
-          deliveryMode: bidDraft?.deliveryMode || null,
-          preferredTimeWindow: bidDraft?.preferredTimeWindow || null,
-          offerValidity: orderDraft?.offerValidity || '',
-          paymentTermsService: orderDraft?.paymentTermsService || '',
-          notesToCustomer: orderDraft?.notesToCustomer || '',
+          notesToCustomer: bidDraft?.notesToCustomer || '',
         },
   );
 
@@ -155,30 +107,11 @@ const CreateOrderS = ({
     cta === 'offer'
       ? {
           productName: orderDraft?.itemDraft?.productName || '',
-          productType: orderDraft?.itemDraft?.productType || '',
+          productType: 'GOODS',
           productId: orderDraft?.itemDraft?.productId || null,
           quantity: orderDraft?.itemDraft?.quantity || null,
           unitPrice: orderDraft?.itemDraft?.unitPrice || null,
-          unitId:
-            isOfferType === 'GOODS'
-              ? orderDraft?.itemDraft?.unitId || null
-              : null,
-          discountPercentage:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.discountPercentage || null
-              : null,
-          discountAmount:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.discountPercentage || null
-              : null,
-          unit:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.unit || 'PER_HOUR'
-              : null,
-          description:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.description || null
-              : null,
+          unitId: orderDraft?.itemDraft?.unitId || null,
           gstPerUnit: orderDraft?.itemDraft?.gstPerUnit || null,
           totalAmount: orderDraft?.itemDraft?.totalAmount || null,
           totalGstAmount: orderDraft?.itemDraft?.totalGstAmount || null,
@@ -186,27 +119,11 @@ const CreateOrderS = ({
         }
       : {
           productName: bidDraft?.itemDraft?.productName || '',
-          productType: bidDraft?.itemDraft?.productType || '',
+          productType: 'GOODS',
           productId: bidDraft?.itemDraft?.productId || null,
           quantity: bidDraft?.itemDraft?.quantity || null,
           unitPrice: bidDraft?.itemDraft?.unitPrice || null,
-          unitId:
-            isOfferType === 'GOODS'
-              ? orderDraft?.itemDraft?.unitId || null
-              : null,
-          discountPercentage:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.discountPercentage || null
-              : null,
-          unit:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.unit || 'PER_HOUR'
-              : null,
-          description:
-            isOfferType === 'SERVICE'
-              ? orderDraft?.itemDraft?.description || null
-              : null,
-          discount: orderDraft?.itemDraft?.discount || null,
+          unitId: bidDraft?.itemDraft?.unitId || null,
           gstPerUnit: bidDraft?.itemDraft?.gstPerUnit || null,
           totalAmount: bidDraft?.itemDraft?.totalAmount || null,
           totalGstAmount: bidDraft?.itemDraft?.totalGstAmount || null,
@@ -225,20 +142,6 @@ const CreateOrderS = ({
     SessionStorageService.set(key, data);
   }
 
-  // Convert DD/MM/YYYY → YYYY-MM-DD
-  const toInputDate = (dateStr) => {
-    if (!dateStr) return '';
-    const [dd, mm, yyyy] = dateStr.split('/');
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
-  // Convert YYYY-MM-DD → DD/MM/YYYY
-  const toDisplayDate = (dateStr) => {
-    if (!dateStr) return '';
-    const [yyyy, mm, dd] = dateStr.split('-');
-    return `${dd}/${mm}/${yyyy}`;
-  };
-
   // [GST/NON-GST Checking]
   // fetch profileDetails API
   const { data: profileDetails } = useQuery({
@@ -251,50 +154,28 @@ const CreateOrderS = ({
   const isGstApplicableForSalesOrders =
     isPurchasePage === false && !!profileDetails?.enterpriseDetails?.gstNumber;
 
-  const calculateItem = (item, isService, gstApplicable) => {
+  const calculateItem = (item, gstApplicable) => {
     const qty = Number(item.quantity) || 0;
     const price = Number(item.unitPrice) || 0;
     const gst = gstApplicable ? Number(item.gstPerUnit || 0) : 0;
-    const discount = isService ? Number(item.discountPercentage || 0) : 0;
 
     // Base value
     const baseValue = qty * price;
 
-    // Service discount
-    const discountAmount = isService ? (baseValue * discount) / 100 : 0;
-
-    const valueAfterDiscount = baseValue - discountAmount;
-
     // GST
-    const gstAmount = (valueAfterDiscount * gst) / 100;
+    const gstAmount = (baseValue * gst) / 100;
 
     // Final Amount
-    const finalAmount = valueAfterDiscount + gstAmount;
+    const finalAmount = baseValue + gstAmount;
 
     return {
       ...item,
-
-      // ALWAYS STORE THESE IN BACKEND
-      discountPercentage: discount,
-      discountAmount: Number(discountAmount.toFixed(2)),
+      discountPercentage: 0,
+      discountAmount: 0,
       totalAmount: Number(baseValue.toFixed(2)),
       totalGstAmount: Number(gstAmount.toFixed(2)),
-      finalAmount: Number(finalAmount.toFixed(2)), // final with gst
+      finalAmount: Number(finalAmount.toFixed(2)),
     };
-  };
-
-  const handleOrderChange = (field, value) => {
-    const updatedOrder = {
-      ...order,
-      [field]: value,
-    };
-
-    setOrder(updatedOrder);
-
-    saveDraftToSession({
-      cta,
-      data: updatedOrder,
-    });
   };
 
   const handleQuantityChange = (e) => {
@@ -319,7 +200,6 @@ const CreateOrderS = ({
 
     const calculated = calculateItem(
       updatedItem,
-      isOfferType === 'SERVICE',
       isGstApplicable(
         isPurchasePage
           ? isGstApplicableForPurchaseOrders
@@ -354,7 +234,6 @@ const CreateOrderS = ({
 
     const calculated = calculateItem(
       updatedItem,
-      isOfferType === 'SERVICE',
       isGstApplicable(
         isPurchasePage
           ? isGstApplicableForPurchaseOrders
@@ -364,28 +243,6 @@ const CreateOrderS = ({
 
     setSelectedItem(calculated);
     saveDraftToSession({ cta, data: { ...order, itemDraft: calculated } });
-  };
-
-  const handleDiscountChange = (e) => {
-    const discount = Number(e.target.value) || 0;
-    const isService = isOfferType === 'SERVICE';
-
-    const updated = calculateItem(
-      { ...selectedItem, discountPercentage: discount },
-      isService,
-      isGstApplicable(
-        isPurchasePage
-          ? isGstApplicableForPurchaseOrders
-          : isGstApplicableForSalesOrders,
-      ),
-    );
-
-    setSelectedItem(updated);
-
-    saveDraftToSession({
-      cta,
-      data: { ...order, itemDraft: updated },
-    });
   };
 
   // fetch units - GOODS
@@ -425,10 +282,7 @@ const CreateOrderS = ({
             totalGstAmount: item.totalGstAmount,
             hsnCode: productDetails?.hsnCode,
             serviceName: productDetails?.serviceName,
-            sac:
-              item.productType === 'SERVICES'
-                ? productDetails?.sacCode
-                : undefined,
+            sac: undefined,
             // Add any other fields you want to bring up
           };
         },
@@ -438,8 +292,8 @@ const CreateOrderS = ({
         ...prevOrder,
         sellerEnterpriseId: orderDetails?.sellerEnterpriseId,
         buyerId: orderDetails?.buyerId,
-        invoiceType: orderDetails?.invoiceType,
-        orderItems: flattenedOrderItems, // ⬅️ Use transformed array
+        invoiceType: 'GOODS',
+        orderItems: flattenedOrderItems,
         amount: orderDetails?.amount,
         gstAmount: orderDetails?.gstAmount,
         referenceOrderId: Number(referenceOrderId),
@@ -539,18 +393,6 @@ const CreateOrderS = ({
     },
   ];
 
-  // [item type]
-  const itemTypeOptions = [
-    {
-      value: 'GOODS',
-      label: translations('form.input.item_type.goods'),
-    },
-    // {
-    //   value: 'SERVICE',
-    //   label: translations('form.input.item_type.services'),
-    // },
-  ];
-
   // Items fetching
   // util fn to check it item is already present in orderItems or not?
   const isItemAlreadyAdded = (itemId) =>
@@ -572,30 +414,9 @@ const CreateOrderS = ({
 
     return { value, label, disabled };
   });
-  // client catalogue services fetching
-  const { data: servicesData } = useQuery({
-    queryKey: [catalogueApis.getServiceCatalogue.endpointKey, enterpriseId],
-    queryFn: () => getServiceCatalogue(enterpriseId),
-    select: (res) => res.data.data,
-    enabled: cta === 'offer' && isOfferType === 'SERVICE',
-  });
-  // client's services options
-  const clientsServicesOptions = servicesData?.map((service) => {
-    const value = {
-      ...service,
-      productType: 'SERVICE',
-      serviceName: service.name,
-    };
-    const label = service.name;
-    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label, disabled };
-  });
   // itemClientListingOptions on the basis of item type
-  const itemClientListingOptions =
-    order.invoiceType === 'GOODS'
-      ? clientsGoodsOptions
-      : clientsServicesOptions;
+  const itemClientListingOptions = clientsGoodsOptions;
 
   // [Vendor's Goods and Services]
   // vendor catalogue goods fetching
@@ -617,32 +438,9 @@ const CreateOrderS = ({
 
     return { value, label, disabled };
   });
-  // vendor's catalogue services fetching
-  const { data: vendorServicesData } = useQuery({
-    queryKey: [
-      catalogueApis.getVendorServiceCatalogue.endpointKey,
-      order.sellerEnterpriseId,
-    ],
-    queryFn: () => getVendorServiceCatalogue(order.sellerEnterpriseId),
-    select: (res) => res.data.data,
-    enabled:
-      isPurchasePage && isOfferType === 'SERVICE' && !!order.sellerEnterpriseId,
-  });
-  // vendor's service options
-  const vendorServiceOptions = vendorServicesData?.map((service) => {
-    const value = {
-      ...service,
-      productType: 'SERVICE',
-      serviceName: service.name,
-    };
-    const label = service.name;
-    const disabled = isItemAlreadyAdded(service.id); // disable if already added
 
-    return { value, label, disabled };
-  });
   // itemVendorListingOptions on the basis of item type
-  const itemVendorListingOptions =
-    order.invoiceType === 'GOODS' ? vendorGoodsOptions : vendorServiceOptions;
+  const itemVendorListingOptions = vendorGoodsOptions;
 
   // mutation - create order
   const orderMutation = useMutation({
@@ -663,7 +461,7 @@ const CreateOrderS = ({
           gstAmount: null,
           amount: null,
           orderType: 'PURCHASE',
-          invoiceType: '',
+          invoiceType: 'GOODS',
           orderItems: [],
           bankAccountId: null,
           socialLinks: null,
@@ -684,7 +482,7 @@ const CreateOrderS = ({
           gstAmount: null,
           amount: null,
           orderType: 'SALES',
-          invoiceType: '',
+          invoiceType: 'GOODS',
           orderItems: [],
           bankAccountId: null,
           socialLinks: null,
@@ -715,21 +513,6 @@ const CreateOrderS = ({
       }
       if (order.invoiceType === '') {
         errorObj.invoiceType = translations('form.errorMsg.item_type');
-      }
-      if (isOfferType === 'SERVICE' && order?.mobile === '') {
-        errorObj.mobile = '*Please enterprise mobile number';
-      }
-      if (isOfferType === 'SERVICE' && order?.email === '') {
-        errorObj.email = '*Please enterprise email';
-      }
-      if (isOfferType === 'SERVICE' && order?.billingAddressText === '') {
-        errorObj.billingAddressText = '*Please Billing Address';
-      }
-      if (isOfferType === 'SERVICE' && order?.offerValidity === '') {
-        errorObj.offerValidity = '*Please enter Offer validity';
-      }
-      if (isOfferType === 'SERVICE' && order?.paymentTermsService === '') {
-        errorObj.paymentTermsService = '*Please enter Payment Terms';
       }
       if (order?.orderItems?.length === 0) {
         errorObj.orderItem =
@@ -764,21 +547,6 @@ const CreateOrderS = ({
       if (order?.orderItems?.length === 0) {
         errorObj.orderItem = translations('form.errorMsg.itemBid');
       }
-      if (isOfferType === 'SERVICE' && order?.mobile === '') {
-        errorObj.mobile = '*Please enterprise mobile number';
-      }
-      if (isOfferType === 'SERVICE' && order?.email === '') {
-        errorObj.email = '*Please enter enterprise email';
-      }
-      if (isOfferType === 'SERVICE' && order?.billingAddressText === '') {
-        errorObj.billingAddressText = '*Please enter Billing Address';
-      }
-      if (isOfferType === 'SERVICE' && order?.offerValidity === '') {
-        errorObj.offerValidity = '*Please enter Offer validity';
-      }
-      if (isOfferType === 'SERVICE' && order?.paymentTermsService === '') {
-        errorObj.paymentTermsService = '*Please enter Payment Terms';
-      }
       if (order?.orderItems?.length < 0) {
         if (selectedItem.quantity === null) {
           errorObj.quantity = translations('form.errorMsg.quantity');
@@ -807,8 +575,10 @@ const CreateOrderS = ({
       : isGstApplicableForSalesOrders,
   );
 
-  const { grossAmount, totalDiscountAmount, totalGstAmount, finalAmount } =
-    useOrderTotals(order?.orderItems || [], gstApplicable);
+  const { grossAmount, totalGstAmount, finalAmount } = useOrderTotals(
+    order?.orderItems || [],
+    gstApplicable,
+  );
 
   // handling submit fn
   const handleSubmit = () => {
@@ -822,43 +592,30 @@ const CreateOrderS = ({
     // Safe parsed numbers
     const parsedAmount = Number(grossAmount.toFixed(2)) || 0;
     const parsedGst = Number(totalGstAmount.toFixed(2)) || 0;
-    const parsedDiscount = Number(totalDiscountAmount.toFixed(2)) || 0;
 
     let payload = {};
 
-    if (isOfferType === 'GOODS') {
-      // GOODS OFFER → Send ONLY these fields
-      payload = {
-        clientType: order.clientType,
-        sellerEnterpriseId: order.sellerEnterpriseId,
-        buyerId: Number(order.buyerId),
-        selectedValue: order.selectedValue || null,
-        gstAmount: parsedGst,
-        amount: parsedAmount,
-        orderType: order.orderType,
-        invoiceType: 'GOODS',
+    // GOODS OFFER → Send ONLY these fields
+    payload = {
+      clientType: order.clientType,
+      sellerEnterpriseId: order.sellerEnterpriseId,
+      buyerId: Number(order.buyerId),
+      selectedValue: order.selectedValue || null,
+      gstAmount: parsedGst,
+      amount: parsedAmount,
+      orderType: order.orderType,
+      invoiceType: 'GOODS',
 
-        orderItems: [...order.orderItems],
+      orderItems: [...order.orderItems],
 
-        bankAccountId: null,
-        socialLinks: null,
-        remarks: order.remarks || null,
-        pin: null,
-        billingAddressId: order.billingAddressId || null,
-        shippingAddressId: order.shippingAddressId || null,
-        buyerType: order.buyerType,
-      };
-    } else {
-      // NON-GOODS (SERVICES, etc.)
-      // SEND FULL PAYLOAD
-      payload = {
-        ...order,
-        buyerId: Number(order.buyerId),
-        discountAmount: parsedDiscount,
-        amount: parsedAmount,
-        gstAmount: parsedGst,
-      };
-    }
+      bankAccountId: null,
+      socialLinks: null,
+      remarks: order.remarks || null,
+      pin: null,
+      billingAddressId: order.billingAddressId || null,
+      shippingAddressId: order.shippingAddressId || null,
+      buyerType: order.buyerType,
+    };
 
     // API Call
     orderMutation.mutate(payload);
@@ -907,79 +664,11 @@ const CreateOrderS = ({
       <SubHeader name={name} />
       <section className="flex flex-col gap-4">
         {/* offer type */}
-        <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-          <div className="flex w-1/2 flex-col gap-2">
-            <Label className="flex gap-1">
-              {'Offer Type'}
-              <span className="text-red-600">*</span>
-            </Label>
-            <Select
-              name="itemType"
-              placeholder={translations('form.input.item_type.placeholder')}
-              options={itemTypeOptions}
-              styles={getStylesForSelectComponent()}
-              className="max-w-xs text-sm"
-              classNamePrefix="select"
-              value={
-                itemTypeOptions.find(
-                  (option) => option.value === order.invoiceType,
-                ) || null
-              }
-              onChange={(selectedOption) => {
-                if (!selectedOption) return;
-
-                // 1. Reset selectedItem
-                setSelectedItem({
-                  productName: '',
-                  productType: '',
-                  productId: null,
-                  quantity: null,
-                  unitPrice: null,
-                  unitId: null,
-                  discountPercentage: null,
-                  unit: null,
-                  description: null,
-                  gstPerUnit: null,
-                  totalAmount: null,
-                  totalGstAmount: null,
-                });
-
-                // 2. Create updated order object
-                const updatedOrder = {
-                  ...order,
-                  // --- ONLY UPDATED FIELD ---
-                  invoiceType: selectedOption.value,
-                  // --- RESET ONLY DYNAMIC FIELDS ---
-                  buyerId: cta === 'offer' ? null : order?.buyerId,
-                  mobile: '',
-                  contactPerson: '',
-                  email: '',
-                  serviceLocation: '',
-                  sellerEnterpriseId:
-                    cta === 'offer' ? order?.sellerEnterpriseId : null,
-                  gstAmount: null,
-                  amount: null,
-                  orderItems: [],
-                  selectedValue: '',
-                };
-
-                setOrder(updatedOrder);
-
-                // 3. Save to session
-                saveDraftToSession({
-                  cta,
-                  data: updatedOrder,
-                });
-              }}
-            />
-            {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
-          </div>
-        </div>
         {/* client/vendor */}
-        {isOfferType === 'GOODS' ? (
+        {isOfferType === 'GOODS' && (
           // goods : client/vendor details
           <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-            {cta === 'offer' ? (
+            {cta === 'offer' && (
               <div className="flex w-1/2 flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.client')}
@@ -1056,7 +745,8 @@ const CreateOrderS = ({
                   {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
                 </div>
               </div>
-            ) : (
+            )}
+            {cta !== 'offer' && (
               <div className="flex w-1/2 flex-col gap-2">
                 <Label className="flex gap-1">
                   {translations('form.label.vendor')}
@@ -1138,263 +828,6 @@ const CreateOrderS = ({
               </div>
             )}
           </div>
-        ) : (
-          // service : client/vendor details
-          <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
-            <div>
-              {/* client/vendor */}
-              {cta === 'offer' ? (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.client')}
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  <div className="flex w-full flex-col gap-1">
-                    <Select
-                      name="clients"
-                      placeholder={translations(
-                        'form.input.client.placeholder',
-                      )}
-                      options={clientOptions}
-                      styles={getStylesForSelectComponent()}
-                      className="max-w-xs text-sm"
-                      classNamePrefix="select"
-                      value={
-                        clientOptions?.find(
-                          (option) => option.value === order?.buyerId,
-                        ) || null
-                      }
-                      onChange={(selectedOption) => {
-                        if (!selectedOption) return; // Guard clause
-
-                        setSelectedItem({
-                          productName: '',
-                          productType: '',
-                          productId: null,
-                          quantity: null,
-                          unitPrice: null,
-                          gstPerUnit: null,
-                          totalAmount: null,
-                          totalGstAmount: null,
-                        });
-
-                        const {
-                          value: id,
-                          isEnterpriseActive,
-                          data,
-                        } = selectedOption;
-
-                        if (id === 'add-new-client') {
-                          setIsModalOpen(true);
-                        } else {
-                          const updatedOrder = {
-                            ...order,
-                            buyerId: id,
-                            mobile: data?.mobileNumber,
-                            email: data?.email,
-                            orderItems: [],
-                          };
-
-                          setOrder({
-                            ...updatedOrder,
-                            selectedValue: selectedOption,
-                            buyerType: isEnterpriseActive
-                              ? 'ENTERPRISE'
-                              : 'UNCONFIRMED_ENTERPRISE',
-                          });
-
-                          saveDraftToSession({
-                            cta,
-                            data: {
-                              ...updatedOrder,
-                              selectedValue: selectedOption,
-                            },
-                          });
-                        }
-                      }}
-                    />
-
-                    {/* Conditionally render the AddModal when "Add New Client" is selected */}
-                    {isModalOpen && (
-                      <AddModal
-                        type="Add"
-                        cta="client"
-                        btnName="Add a new Client"
-                        mutationFunc={createClient}
-                        isOpen={isModalOpen}
-                        setIsOpen={setIsModalOpen}
-                      />
-                    )}
-                    {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.vendor')}
-                    <span className="text-red-600">*</span>
-                  </Label>
-                  <div className="flex w-full flex-col gap-1">
-                    <Select
-                      name="vendors"
-                      placeholder={translations(
-                        'form.input.vendor.placeholder',
-                      )}
-                      options={vendorOptions}
-                      styles={getStylesForSelectComponent()}
-                      className="max-w-xs text-sm"
-                      classNamePrefix="select"
-                      value={
-                        vendorOptions?.find(
-                          (option) =>
-                            option.value === order?.selectedValue?.value,
-                        ) || null
-                      } // Match selected value
-                      onChange={(selectedOption) => {
-                        if (!selectedOption) return; // Guard clause for no selection
-
-                        setSelectedItem({
-                          productName: '',
-                          productType: '',
-                          productId: null,
-                          quantity: null,
-                          unitPrice: null,
-                          gstPerUnit: null,
-                          totalAmount: null,
-                          totalGstAmount: null,
-                        }); // Reset selected item
-
-                        const { value: id, data, gstNumber } = selectedOption; // Extract id and isAccepted from the selected option
-
-                        // Check if "Add New vendor" is selected
-                        if (selectedOption.value === 'add-new-vendor') {
-                          setIsModalOpen(true); // Open the modal when "Add New Vendor" is selected
-                        } else {
-                          setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
-
-                          const updatedOrder = {
-                            ...order,
-                            sellerEnterpriseId: id,
-                            mobile: data?.mobileNumber,
-                            email: data?.email,
-                            orderItems: [], // Clear existing order items
-                          };
-
-                          setOrder({
-                            ...updatedOrder,
-                            selectedValue: selectedOption,
-                          }); // Update selected value
-
-                          saveDraftToSession({
-                            cta,
-                            data: {
-                              ...updatedOrder,
-                              selectedValue: selectedOption,
-                            },
-                          });
-                        }
-                      }}
-                    />
-
-                    {/* Conditionally render the AddModal when "Add New Client" is selected */}
-                    {isModalOpen && (
-                      <AddModal
-                        type="Add"
-                        cta="vendor"
-                        btnName="Add a new Vendor"
-                        mutationFunc={createVendor}
-                        isOpen={isModalOpen}
-                        setIsOpen={setIsModalOpen}
-                      />
-                    )}
-                    {errorMsg.sellerEnterpriseId && (
-                      <ErrorBox msg={errorMsg.sellerEnterpriseId} />
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label className="flex">Contact Person</Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="Contact person name"
-                  value={order?.contactPerson || ''}
-                  onChange={(e) =>
-                    handleOrderChange('contactPerson', e.target.value)
-                  }
-                  className="max-w-30"
-                />
-              </div>
-            </div>
-            {/* client/vendor mobile */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">
-                Mobile Number
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="+91 9273872628"
-                  value={order?.mobile || ''}
-                  onChange={(e) => handleOrderChange('mobile', e.target.value)}
-                  className="max-w-30"
-                />
-                {errorMsg.mobile && <ErrorBox msg={errorMsg.mobile} />}
-              </div>
-            </div>
-            {/* client/vendor email */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">
-                Email
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="client@example.com"
-                  value={order?.email || ''}
-                  onChange={(e) => handleOrderChange('email', e.target.value)}
-                  className="max-w-30"
-                />
-                {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
-              </div>
-            </div>
-            {/* client/vendor billing address */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">
-                Billing Address
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="Enter billing address"
-                  value={order?.billingAddressText || ''}
-                  onChange={(e) =>
-                    handleOrderChange('billingAddressText', e.target.value)
-                  }
-                  className="max-w-30"
-                />
-                {errorMsg.billingAddressText && (
-                  <ErrorBox msg={errorMsg.billingAddressText} />
-                )}
-              </div>
-            </div>
-            {/* client/vendor service location */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">Service Location</Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="If different from billing"
-                  value={order?.serviceLocation || ''}
-                  onChange={(e) =>
-                    handleOrderChange('serviceLocation', e.target.value)
-                  }
-                  className="max-w-30"
-                />
-              </div>
-            </div>
-          </div>
         )}
 
         {/* Items/Service */}
@@ -1431,11 +864,11 @@ const CreateOrderS = ({
                       ? Number(selectedItemData.gstPercentage) || 0
                       : 0;
 
-                    // GOODS or SERVICE specific logic
+                    // GOODS specific logic
                     const updatedItem = {
                       ...selectedItem,
                       productId: selectedItemData.id,
-                      productType: selectedItemData.productType, // GOODS or SERVICE
+                      productType: 'GOODS',
                       unitPrice:
                         selectedItemData.salesPrice ??
                         selectedItemData.rate ??
@@ -1443,17 +876,8 @@ const CreateOrderS = ({
                         0, // auto fallback
 
                       gstPerUnit,
-                      ...(selectedItemData.productType === 'GOODS'
-                        ? {
-                            productName: selectedItemData.name,
-                            hsnCode: selectedItemData.hsnCode,
-                          }
-                        : {
-                            serviceName:
-                              selectedItemData.serviceName ||
-                              selectedItemData.name,
-                            sac: selectedItemData.sac,
-                          }),
+                      productName: selectedItemData.name,
+                      hsnCode: selectedItemData.hsnCode,
                     };
 
                     // Persist local state
@@ -1476,75 +900,39 @@ const CreateOrderS = ({
 
             {/* Items/Service Quantity */}
             <div className="flex flex-col gap-1">
-              {isOfferType === 'GOODS' ? (
-                <InputWithSelect
-                  id="quantity"
-                  name={translations('form.label.quantity')}
-                  required={true}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
-                  value={
-                    selectedItem.quantity == null || selectedItem.quantity === 0
-                      ? ''
-                      : selectedItem.quantity
-                  }
-                  onValueChange={handleQuantityChange}
-                  unit={selectedItem.unitId}
-                  onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unitId: Number(val) };
-                      saveDraftToSession({
-                        cta,
-                        data: {
-                          ...order,
-                          itemDraft: updated,
-                        },
-                      });
-                      return updated;
+              <InputWithSelect
+                id="quantity"
+                name={translations('form.label.quantity')}
+                required={true}
+                disabled={
+                  (cta === 'offer' && order.buyerId == null) ||
+                  order.sellerEnterpriseId == null
+                }
+                value={
+                  selectedItem.quantity == null || selectedItem.quantity === 0
+                    ? ''
+                    : selectedItem.quantity
+                }
+                onValueChange={handleQuantityChange}
+                unit={selectedItem.unitId}
+                onUnitChange={(val) => {
+                  setSelectedItem((prev) => {
+                    const updated = { ...prev, unitId: Number(val) };
+                    saveDraftToSession({
+                      cta,
+                      data: {
+                        ...order,
+                        itemDraft: updated,
+                      },
                     });
-                  }}
-                  units={units?.quantity} // todo : units for services...
-                  unitPlaceholder="Select unit"
-                  min={0}
-                  step="any" // <-- allows decimals
-                />
-              ) : (
-                <InputWithSelect
-                  id="quantity"
-                  name={translations('form.label.quantity')}
-                  required={true}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
-                  value={
-                    selectedItem.quantity == null || selectedItem.quantity === 0
-                      ? ''
-                      : selectedItem.quantity
-                  }
-                  onValueChange={handleQuantityChange}
-                  unit={selectedItem.unit}
-                  onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unit: val };
-                      saveDraftToSession({
-                        cta,
-                        data: {
-                          ...order,
-                          itemDraft: updated,
-                        },
-                      });
-                      return updated;
-                    });
-                  }}
-                  units={unitForService} // todo : units for services...
-                  unitPlaceholder="Select unit"
-                  min={0}
-                  step="any" // <-- allows decimals
-                />
-              )}
+                    return updated;
+                  });
+                }}
+                units={units?.quantity}
+                unitPlaceholder="Select unit"
+                min={0}
+                step="any"
+              />
 
               {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
@@ -1577,27 +965,6 @@ const CreateOrderS = ({
                 {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
               </div>
             </div>
-
-            {/* Items/Service Discount */}
-            {isOfferType === 'SERVICE' && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex">
-                  {translations('form.label.discount')}
-                  <span className="text-xs"> (%)</span>
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    value={selectedItem.discountPercentage || 0}
-                    className="max-w-30"
-                    onChange={handleDiscountChange}
-                  />
-                  {errorMsg.discountPercentage && (
-                    <ErrorBox msg={errorMsg.discountPercentage} />
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Items/Service GST% */}
             {isGstApplicable(
@@ -1686,28 +1053,6 @@ const CreateOrderS = ({
                 </div>
               </div>
             )}
-
-            {/* Items/Service Description */}
-            {isOfferType === 'SERVICE' && (
-              <div className="col-span-4 flex flex-col gap-2">
-                <Label className="flex gap-1">Description</Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    value={selectedItem.description || ''}
-                    className="max-w-30"
-                    onChange={(e) =>
-                      setSelectedItem((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                  />
-                  {errorMsg.description && (
-                    <ErrorBox msg={errorMsg.description} />
-                  )}
-                </div>
-              </div>
-            )}
           </div>
           <div className="flex items-center justify-end gap-4">
             <Button
@@ -1716,15 +1061,11 @@ const CreateOrderS = ({
               onClick={() => {
                 // Reset selected item
                 const updatedItem = {
-                  serviceName: '',
                   productName: '',
-                  productType: '',
+                  productType: 'GOODS',
                   productId: null,
                   quantity: null,
-                  unitId: isOfferType === 'SERVICE' && null,
-                  unit: null,
-                  discountPercentage: null,
-                  description: null,
+                  unitId: null,
                   unitPrice: null,
                   gstPerUnit: null,
                   totalAmount: null,
@@ -1773,15 +1114,11 @@ const CreateOrderS = ({
 
                 // Clear the selected item (itemDraft in UI)
                 const clearedItem = {
-                  serviceName: '',
                   productName: '',
-                  productType: '',
+                  productType: 'GOODS',
                   productId: null,
                   quantity: null,
-                  unitId: isOfferType === 'SERVICE' && null,
-                  unit: null,
-                  discountPercentage: null,
-                  description: null,
+                  unitId: null,
                   unitPrice: null,
                   gstPerUnit: null,
                   totalAmount: null,
@@ -1813,173 +1150,6 @@ const CreateOrderS = ({
         {/* selected item table */}
         <DataTable data={order.orderItems} columns={createSalesColumns} />
 
-        {/* Scheduling & Delivery Expectations  */}
-        {isOfferType === 'SERVICE' && (
-          <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* TOP ROW */}
-            <div className="grid grid-cols-3 gap-6">
-              {/* Expected Start Date */}
-              <div className="flex flex-col gap-2">
-                <Label>Expected Start Date</Label>
-                <Input
-                  type="date"
-                  value={toInputDate(order.expectedStartDate)}
-                  onChange={(e) => {
-                    setOrder((prev) => ({
-                      ...prev,
-                      expectedStartDate: toDisplayDate(e.target.value),
-                    }));
-                  }}
-                />
-              </div>
-
-              {/* Expected Completion Date */}
-              <div className="flex flex-col gap-2">
-                <Label>Expected Completion Date</Label>
-                <Input
-                  type="date"
-                  value={toInputDate(order.expectedCompletionDate)}
-                  onChange={(e) => {
-                    setOrder((prev) => ({
-                      ...prev,
-                      expectedCompletionDate: toDisplayDate(e.target.value),
-                    }));
-                  }}
-                />
-              </div>
-
-              {/* Delivery Mode (Custom Select) */}
-              <div className="flex flex-col gap-2">
-                <Label>Delivery Mode</Label>
-                <Select
-                  name="deliveryMode"
-                  placeholder="Select mode"
-                  options={deliveryModes}
-                  styles={getStylesForSelectComponent()}
-                  className="max-w-xs text-sm"
-                  classNamePrefix="select"
-                  menuPlacement="top"
-                  value={
-                    deliveryModes.find(
-                      (option) => option.value === order.deliveryMode,
-                    ) || null
-                  }
-                  onChange={(selectedOption) => {
-                    if (!selectedOption) return;
-                    setOrder((prev) => ({
-                      ...prev,
-                      deliveryMode: selectedOption.value,
-                    }));
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* PREFERRED TIME WINDOW */}
-            <div className="flex flex-col gap-2">
-              <Label>Preferred Time Window</Label>
-              <Select
-                name="preferredTimeWindow"
-                placeholder="Select time window"
-                options={timeWindows}
-                styles={getStylesForSelectComponent()}
-                className="w-full text-sm"
-                classNamePrefix="select"
-                menuPlacement="top"
-                value={
-                  timeWindows.find(
-                    (option) => option.value === order.preferredTimeWindow,
-                  ) || null
-                }
-                onChange={(selectedOption) => {
-                  if (!selectedOption) return;
-                  setOrder((prev) => ({
-                    ...prev,
-                    preferredTimeWindow: selectedOption.value,
-                  }));
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Offer Terms */}
-        {isOfferType === 'SERVICE' && (
-          <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* Offer Validity + Payment Terms */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Offer Validity */}
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {`Offer Validity`}
-                  <span className="text-red-600">*</span>
-                </Label>
-
-                <Input
-                  placeholder="e.g., Valid for 30 days"
-                  value={order.offerValidity || ''}
-                  onChange={(e) =>
-                    setOrder((prev) => ({
-                      ...prev,
-                      offerValidity: e.target.value,
-                    }))
-                  }
-                />
-
-                {errorMsg.offerValidity && (
-                  <ErrorBox msg={errorMsg.offerValidity} />
-                )}
-              </div>
-
-              {/* Payment Terms */}
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {`Payment Terms`}
-                  <span className="text-red-600">*</span>
-                </Label>
-
-                <Textarea
-                  placeholder="e.g., 50% advance, 50% on completion"
-                  className="h-24"
-                  value={order.paymentTermsService || ''}
-                  onChange={(e) =>
-                    setOrder((prev) => ({
-                      ...prev,
-                      paymentTermsService: e.target.value,
-                    }))
-                  }
-                />
-
-                {errorMsg.paymentTermsService && (
-                  <ErrorBox msg={errorMsg.paymentTermsService} />
-                )}
-              </div>
-            </div>
-
-            {/* Notes to Customer */}
-            <div className="flex flex-col gap-2">
-              <Label>{`Notes to Customer`}</Label>
-
-              <Textarea
-                placeholder="Any additional notes or terms..."
-                className="h-28"
-                value={order.notesToCustomer || ''}
-                onChange={(e) =>
-                  setOrder((prev) => ({
-                    ...prev,
-                    notesToCustomer: e.target.value,
-                  }))
-                }
-              />
-
-              {errorMsg.notesToCustomer && (
-                <p className="text-sm text-red-600">
-                  {errorMsg.notesToCustomer}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
         <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
         {/* Footers : with info and ctas */}
@@ -2008,16 +1178,6 @@ const CreateOrderS = ({
                   </span>
                 </div>
               </>
-            )}
-            {isOfferType === 'SERVICE' && (
-              <div className="flex items-center gap-2">
-                <span className="font-bold">
-                  {translations('form.footer.discountAmount')} :{' '}
-                </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalDiscountAmount?.toFixed(2)}
-                </span>
-              </div>
             )}
             <div className="flex items-center gap-2">
               <span className="font-bold">

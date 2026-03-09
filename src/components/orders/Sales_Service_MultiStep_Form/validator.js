@@ -18,29 +18,30 @@ export const validateObject = (data, rules) => {
 };
 
 export const validateBuyerContext = (formData) => {
-  return validateObject(formData.buyerContext, {
+  return validateObject(formData, {
     buyerId: required,
     contactPerson: required,
     email: required,
     mobile: required,
-    billingAddress: required,
+    billingAddressText: required,
     serviceLocation: required,
   });
 };
 
 export const validateServices = (formData) => {
   const errors = {};
-  const services = formData.services || [];
+  const orderItems = formData.orderItems || [];
 
-  if (services.length === 0) {
+  if (orderItems.length === 0) {
     return { _error: 'At least one service is required' };
   }
 
-  services.forEach((item, index) => {
+  orderItems.forEach((item, index) => {
     const itemErrors = {};
 
-    if (!item.serviceType) itemErrors.serviceType = 'Required';
+    if (!item.productId) itemErrors.productId = 'Required';
     if (!item.quantity) itemErrors.quantity = 'Required';
+    if (!item.unitPrice) itemErrors.unitPrice = 'Required';
 
     if (Object.keys(itemErrors).length) {
       errors[index] = itemErrors;
@@ -51,7 +52,7 @@ export const validateServices = (formData) => {
 };
 
 export const validateOfferTerms = (formData) => {
-  return validateObject(formData.offerTerms, {
+  return validateObject(formData, {
     paymentTerms: required,
     offerValidity: required,
     notes: required,

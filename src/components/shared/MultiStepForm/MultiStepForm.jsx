@@ -13,7 +13,7 @@ export default function MultiStepForm({
   errors = {},
   setErrors,
   onSubmit,
-  // onCancel,
+  onCancel,
   isSubmitting = false,
 
   // ✅ NEW generic prop
@@ -133,7 +133,20 @@ export default function MultiStepForm({
         </CardContent>
 
         {/* Footer */}
-        <CardFooter className="flex items-center justify-end border-t bg-white p-4">
+        <CardFooter className="flex items-center justify-between border-t bg-white p-4">
+          <div>
+            {onCancel && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onCancel}
+                className="text-muted-foreground transition-colors hover:text-destructive"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <Button
               debounceTime={0}
