@@ -18,33 +18,25 @@ import { LocalStorageService, exportTableToExcel } from '@/lib/utils';
 import {
   GetAllProductServices,
   GetSearchedServices,
-  UploadProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import {
-  keepPreviousData,
-  useInfiniteQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { CircleFadingPlus, Download, Upload } from 'lucide-react';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { CircleFadingPlus, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { useServicesColumns } from './ServicesColumns';
 import { ServicesTable } from './ServicesTable';
 
 // dynamic imports
-const AddService = dynamic(() => import('@/components/inventory/AddService'), {
-  loading: () => <Loading />,
-});
-const EditService = dynamic(() => import('@/components/inventory/AddService'), {
-  loading: () => <Loading />,
-});
-const UploadItems = dynamic(
-  () => import('@/components/inventory/UploadItems'),
+const CreateService = dynamic(
+  () => import('@/components/inventory/services/CreateService'),
   { loading: () => <Loading /> },
 );
+// const UploadItems = dynamic(
+//   () => import('@/components/inventory/UploadItems'),
+//   { loading: () => <Loading /> },
+// );
 
 // MACROS
 const PAGE_LIMIT = 10;
@@ -53,7 +45,6 @@ function Services() {
   useMetaData('Hues! - Services', 'HUES SERVICES'); // dynamic title
 
   const translations = useTranslations('services');
-
   // next-intl supports only object keys, not arrays. Use object keys for subItems.
   const keys = [
     'services.emptyStateComponent.subItems.subItem1',
@@ -66,42 +57,49 @@ function Services() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-  const templateId = 1;
+  // const templateId = 1;
   const { hasPermission } = usePermission();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreatingService, setIsCreatingService] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [servicesToEdit, setServicesToEdit] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [files, setFiles] = useState([]);
+  // const [isUploading, setIsUploading] = useState(false);
+  // const [files, setFiles] = useState([]);
   const [services, setServices] = useState([]);
   const [paginationData, setPaginationData] = useState({});
+  const action = searchParams.get('action');
+
+  const createServiceBreadCrumbs = [
+    {
+      id: 1,
+      name: 'Services',
+      path: '/dashboard/inventory/services',
+      show: true,
+    },
+    {
+      id: 2,
+      name: 'Create Service',
+      path: '/dashboard/inventory/services?action=create',
+      show: action === 'create',
+    },
+    {
+      id: 3,
+      name: 'Edit Service',
+      path: '/dashboard/inventory/services?action=edit',
+      show: action === 'edit',
+    },
+  ];
 
   useEffect(() => {
     // Read the state from the query parameters
     const state = searchParams.get('action');
-    setIsCreatingService(state === 'add');
+    setIsCreatingService(state === 'create');
     setIsEditing(state === 'edit');
-    setIsUploading(state === 'upload');
+    // setIsUploading(state === 'upload');
   }, [searchParams]);
-
-  useEffect(() => {
-    let newPath = `/dashboard/inventory/services`;
-    if (isCreatingService) {
-      newPath += `?action=add`;
-    } else if (isEditing) {
-      newPath += `?action=edit`;
-    } else if (isUploading) {
-      newPath += `?action=upload`;
-    } else {
-      newPath += '';
-    }
-
-    router.push(newPath);
-  }, [router, isCreatingService, isEditing, isUploading]);
 
   const servicesQuery = useInfiniteQuery({
     queryKey: [servicesApi.getAllProductServices.endpointKey],
@@ -160,30 +158,34 @@ function Services() {
   }, [searchTerm, servicesQuery.data, searchQuery.data]);
 
   // handleUploadfile
-  const uploadFile = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('enterpriseId', enterpriseId);
-    formData.append('templateId', templateId);
+  // const uploadFile = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   formData.append('enterpriseId', enterpriseId);
+  //   formData.append('templateId', templateId);
 
-    try {
-      await UploadProductServices(formData);
-      toast.success(translations('messages.uploadSuccessMsg'));
-      setFiles((prev) => [...prev, file]);
-      queryClient.invalidateQueries([
-        servicesApi.getAllProductServices.endpointKey,
-      ]);
-    } catch (error) {
-      toast.error(error.response.data.message || 'Something went wrong');
-    }
-  };
+  //   try {
+  //     await UploadProductServices(formData);
+  //     toast.success(translations('messages.uploadSuccessMsg'));
+  //     setFiles((prev) => [...prev, file]);
+  //     queryClient.invalidateQueries([
+  //       servicesApi.getAllProductServices.endpointKey,
+  //     ]);
+  //   } catch (error) {
+  //     toast.error(error.response.data.message || 'Something went wrong');
+  //   }
+  // };
 
   const onRowClick = (row) => {
     return router.push(`/dashboard/inventory/services/${row.id}`);
   };
 
   // columns
-  const ServicesColumns = useServicesColumns(setIsEditing, setServicesToEdit);
+  const ServicesColumns = useServicesColumns(
+    setIsEditing,
+    setServicesToEdit,
+    router,
+  );
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
@@ -195,7 +197,7 @@ function Services() {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
-          {!isCreatingService && !isUploading && !isEditing && (
+          {!isCreatingService && !isEditing && (
             <Wrapper className="h-screen">
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-2">
@@ -244,7 +246,7 @@ function Services() {
                       content={translations('ctas.export')}
                     />
                   </ProtectedWrapper>
-                  <ProtectedWrapper permissionCode="permission:item-masters-upload">
+                  {/* <ProtectedWrapper permissionCode="permission:item-masters-upload">
                     <Button
                       onClick={() => setIsUploading(true)}
                       variant={'blue_outline'}
@@ -253,11 +255,16 @@ function Services() {
                       <Upload size={14} />
                       {translations('ctas.upload')}
                     </Button>
-                  </ProtectedWrapper>
+                  </ProtectedWrapper> */}
 
                   <ProtectedWrapper permissionCode="permission:item-masters-create">
                     <Button
-                      onClick={() => setIsCreatingService(true)}
+                      onClick={() => {
+                        router.push(
+                          '/dashboard/inventory/services?action=create',
+                        );
+                        setIsCreatingService(true);
+                      }}
                       size="sm"
                     >
                       <CircleFadingPlus size={14} />
@@ -304,15 +311,17 @@ function Services() {
             </Wrapper>
           )}
           {isCreatingService && (
-            <AddService setIsCreatingService={setIsCreatingService} />
+            <CreateService
+              createServiceBreadCrumbs={createServiceBreadCrumbs}
+            />
           )}
           {isEditing && (
-            <EditService
-              setIsCreatingService={setIsEditing}
+            <CreateService
+              createServiceBreadCrumbs={createServiceBreadCrumbs}
               servicesToEdit={servicesToEdit}
             />
           )}
-          {isUploading && (
+          {/* {isUploading && (
             <UploadItems
               type="services"
               uploadFile={uploadFile}
@@ -320,7 +329,7 @@ function Services() {
               setisUploading={setIsUploading}
               setFiles={setFiles}
             />
-          )}
+          )} */}
         </div>
       )}
     </ProtectedWrapper>

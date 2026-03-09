@@ -1,0 +1,166 @@
+import FieldRenderer from '@/components/DynamicForm/FieldRenderer';
+import FieldToggler from '@/components/fieldToggler/FieldToggler';
+import React, { useEffect, useState } from 'react';
+
+const formSectionsForAgreementsAndConsents = [
+  /* ================= Contract Template ================= */
+  {
+    key: 'contractTemplate',
+    label: 'Contract Template',
+    description: 'Agreement template',
+    enabledByDefault: false, // user manually toggles
+    fields: [
+      {
+        type: 'select',
+        name: 'contract_template',
+        label: 'Contract Template',
+        options: [
+          { label: 'Training Agreement', value: 'TRAINING_AGREEMENT' },
+          { label: 'Workshop Agreement', value: 'WORKSHOP_AGREEMENT' },
+          { label: 'Program Agreement', value: 'PROGRAM_AGREEMENT' },
+        ],
+        defaultValue: 'TRAINING_AGREEMENT',
+      },
+    ],
+  },
+
+  /* ================= Required Consents ================= */
+  {
+    key: 'requiredConsents',
+    label: 'Required Consents',
+    description: 'Required consents',
+    enabledByDefault: false, // user manually toggles
+    fields: [
+      {
+        type: 'select',
+        name: 'required_consents',
+        label: 'Required Consents',
+        options: [
+          { label: 'Recording Consent', value: 'RECORDING_CONSENT' },
+          { label: 'Photo Consent', value: 'PHOTO_CONSENT' },
+          {
+            label: 'Feedback Usage Consent',
+            value: 'FEEDBACK_USAGE_CONSENT',
+          },
+        ],
+        defaultValue: 'RECORDING_CONSENT',
+      },
+    ],
+  },
+];
+
+export default function ContractsAndConsents({
+  formData,
+  setFormData,
+  errors,
+  translation,
+}) {
+  const [enabledSections, setEnabledSections] = useState(() =>
+    Object.fromEntries(
+      formSectionsForAgreementsAndConsents.map((s) => {
+        const hasValue = s.fields?.some((f) => {
+          const val = formData.defaultFieldsWithValues?.[f.name];
+          return val !== undefined && val !== null && val !== '';
+        });
+        return [s.key, hasValue || s.enabledByDefault];
+      }),
+    ),
+  );
+
+  useEffect(() => {
+    formSectionsForAgreementsAndConsents.forEach((section) => {
+      if (!enabledSections[section.key]) return;
+
+      section.fields.forEach((field) => {
+        const currentData = formData.defaultFieldsWithValues[field.name];
+        if (!currentData || currentData.defaultValue === undefined) {
+          setFormData((prev) => ({
+            ...prev,
+            defaultFieldsWithValues: {
+              ...prev.defaultFieldsWithValues,
+              [field.name]: {
+                ...field,
+                defaultValue: field.defaultValue ?? '',
+              },
+            },
+          }));
+        }
+      });
+    });
+  }, [enabledSections, formSectionsForAgreementsAndConsents]);
+
+  const toggleSection = (section, value) => {
+    setEnabledSections((prev) => ({
+      ...prev,
+      [section.key]: value,
+    }));
+
+    if (!value) {
+      setFormData((prev) => {
+        const updatedDefaultFields = { ...prev.defaultFieldsWithValues };
+        section.fields.forEach((field) => {
+          updatedDefaultFields[field.name] = null;
+        });
+        return {
+          ...prev,
+          defaultFieldsWithValues: updatedDefaultFields,
+        };
+      });
+    }
+  };
+
+  const handleChange = (key, e) => {
+    const value = e?.target ? e.target.value : e;
+    setFormData((prev) => ({
+      ...prev,
+      defaultFieldsWithValues: {
+        ...prev.defaultFieldsWithValues,
+        [key]: {
+          ...(prev.defaultFieldsWithValues[key] || {}),
+          defaultValue: value,
+        },
+      },
+    }));
+  };
+
+  return (
+    <div className="mt-2 flex flex-col gap-6">
+      {/* --------------------------- SERVICE AGREEMENT --------------------------- */}
+      <h2 className="text-sm font-bold text-primary">
+        {translation('multiStepForm.contracts.section1.title') ||
+          'Service Agreement'}
+      </h2>
+
+      <div className="space-y-2">
+        {formSectionsForAgreementsAndConsents.map((section) => (
+          <FieldToggler
+            key={section.key}
+            section={section}
+            enabled={enabledSections[section.key]}
+            onToggle={(val) => toggleSection(section, val)}
+            renderFields={(fields, isDisabled) =>
+              fields.map((field) => (
+                <FieldRenderer
+                  key={field.name}
+                  field={{
+                    ...field,
+                    disabled: isDisabled || field.disabled,
+                  }}
+                  value={
+                    formData.defaultFieldsWithValues[field.name]
+                      ?.defaultValue ??
+                    formData.defaultFieldsWithValues[field.name] ??
+                    ''
+                  }
+                  onChange={handleChange}
+                  error={errors[field.name]}
+                  formData={formData}
+                />
+              ))
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

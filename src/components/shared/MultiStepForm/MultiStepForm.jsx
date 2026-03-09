@@ -13,7 +13,7 @@ export default function MultiStepForm({
   errors = {},
   setErrors,
   onSubmit,
-  // onCancel,
+  onCancel,
   isSubmitting = false,
 
   // ✅ NEW generic prop
@@ -23,6 +23,7 @@ export default function MultiStepForm({
   breadcrumbHome = '/',
   breadcrumbHomeText = 'Home',
   breadcrumbTitle = 'Multi-Step Form',
+  translation,
 
   finalStepActions,
 }) {
@@ -80,8 +81,8 @@ export default function MultiStepForm({
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="flex h-full flex-col gap-6 py-4">
-      {/* ✅ Breadcrumbs */}
+    <div className="flex h-full flex-col gap-3 py-4">
+      {/* Breadcrumbs */}
       {shouldRenderBreadcrumbList ? (
         <OrderBreadCrumbs possiblePagesBreadcrumbs={breadcrumbs} />
       ) : (
@@ -105,11 +106,11 @@ export default function MultiStepForm({
       />
 
       {/* Main Content Card */}
-      <Card className="flex flex-1 flex-col overflow-hidden border shadow-sm">
+      <Card className="flex max-h-[550px] flex-1 flex-col overflow-hidden border shadow-sm">
         <CardContent className="scrollBarStyles flex-1 overflow-y-auto p-0">
-          {/* ✅ Sticky Header */}
+          {/* Sticky Header */}
           <div className="sticky top-0 z-10 border-b bg-white px-6 py-4">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900">
               {steps[currentStep].title || steps[currentStep].label}
             </h2>
 
@@ -126,12 +127,26 @@ export default function MultiStepForm({
               formData={formData}
               setFormData={setFormData}
               errors={errors}
+              translation={translation}
             />
           </div>
         </CardContent>
 
         {/* Footer */}
-        <CardFooter className="flex items-center justify-end border-t bg-white p-4">
+        <CardFooter className="flex items-center justify-between border-t bg-white p-4">
+          <div>
+            {onCancel && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onCancel}
+                className="text-muted-foreground transition-colors hover:text-destructive"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <Button
               debounceTime={0}

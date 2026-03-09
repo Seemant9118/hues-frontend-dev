@@ -37,17 +37,32 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
 // dynamic imports
+// GOODS
 const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
   loading: () => <Loading />,
 });
-
 const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });
+
+// SERVICES
+const CreateOrderServices = dynamic(
+  () => import('@/components/orders/CreateOrderServices'),
+  {
+    loading: () => <Loading />,
+  },
+);
+const EditOrderServices = dynamic(
+  () => import('@/components/orders/CreateOrderServices'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 // macros
 const PAGE_LIMIT = 10;
@@ -72,8 +87,10 @@ const SalesOrder = () => {
   const router = useRouter();
   const [tab, setTab] = useState('all');
   const [isCreatingSales, setIsCreatingSales] = useState(false);
-  // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
+  const [isCreatingSalesService, setIsCreatingSalesService] = useState(false);
+  const [isEditingSalesService, setIsEditingSalesService] = useState(false);
+  // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({});
@@ -82,10 +99,31 @@ const SalesOrder = () => {
   const [filterData, setFilterData] = useState(null);
   const [referenceOrderId, setReferenceOrderId] = useState(null);
 
+  const action = searchParams.get('action');
+
+  const createSalesServiceBreadCrumbs = [
+    {
+      id: 1,
+      name: 'Sales',
+      path: '/dashboard/sales/sales-orders',
+      show: true,
+    },
+    {
+      id: 2,
+      name: 'Create Sales Service',
+      path: '/dashboard/sales/sales-orders?action=create',
+      show: action === 'create',
+    },
+  ];
+
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value); // Update the tab state
   };
+
+  useEffect(() => {
+    setIsCreatingSalesService(action === 'create');
+  }, [action]);
 
   useEffect(() => {
     if (isCreatingSales && referenceOrderId) {
@@ -137,12 +175,12 @@ const SalesOrder = () => {
           : null;
     }
 
-    // ✅ Conditionally add clientIds only if they exist
+    // Conditionally add clientIds only if they exist
     if (filterData?.clientIds?.length > 0) {
       newFilterData.clientIds = filterData.clientIds;
     }
 
-    // ✅ Update only if meaningfully different
+    // Update only if meaningfully different
     setFilterData((prev) => {
       if (JSON.stringify(prev) !== JSON.stringify(newFilterData)) {
         return newFilterData;
@@ -274,7 +312,7 @@ const SalesOrder = () => {
     });
   };
 
-  // [updateReadTracker Mutation : onRowClick] ✅
+  // [updateReadTracker Mutation : onRowClick]
   const updateReadTrackerMutation = useMutation({
     mutationKey: [readTrackerApi.updateTrackerState.endpointKey],
     mutationFn: updateReadTracker,
@@ -294,7 +332,7 @@ const SalesOrder = () => {
     }
   };
 
-  // [EXPORT ORDER Fn] ✅
+  // [EXPORT ORDER Fn]
   // Function to trigger the download of a .xlsx file from Blob data
   const downloadBlobFile = (blobData, fileName) => {
     const el = document.createElement('a');
@@ -330,6 +368,7 @@ const SalesOrder = () => {
   // columns
   const SalesColumns = useSalesColumns(
     setIsEditingOrder,
+    setIsEditingSalesService,
     setOrderId,
     setSelectedOrders,
   );
@@ -344,222 +383,275 @@ const SalesOrder = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          {!isCreatingSales && !isEditingOrder && (
-            <Wrapper className="h-screen overflow-hidden">
-              {/* Headers */}
-              <SubHeader
-                name={translations('title')}
-                className="sticky top-0 z-10 flex items-center justify-between bg-white"
-              >
-                <div className="flex items-center justify-center gap-3">
-                  <Tooltips
-                    trigger={
-                      <Button
-                        disabled={
-                          selectedOrders?.length === 0 ||
-                          exportOrderMutation.isPending
-                        }
-                        onClick={handleExportOrder}
-                        variant="outline"
-                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                        size="sm"
-                      >
-                        <Upload size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.export.placeholder')}
-                  />
-
-                  <ProtectedWrapper permissionCode={'permission:sales-create'}>
+          {!isCreatingSales &&
+            !isEditingOrder &&
+            !isCreatingSalesService &&
+            !isEditingSalesService && (
+              <Wrapper className="h-screen overflow-hidden">
+                {/* Headers */}
+                <SubHeader
+                  name={translations('title')}
+                  className="sticky top-0 z-10 flex items-center justify-between bg-white"
+                >
+                  <div className="flex items-center justify-center gap-3">
                     <Tooltips
                       trigger={
                         <Button
-                          onClick={() => setIsCreatingSales(true)}
+                          disabled={
+                            selectedOrders?.length === 0 ||
+                            exportOrderMutation.isPending
+                          }
+                          onClick={handleExportOrder}
+                          variant="outline"
+                          className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                           size="sm"
                         >
-                          <PlusCircle size={14} />
-                          {translations('ctas.offer.cta')}
+                          <Upload size={14} />
                         </Button>
                       }
-                      content={translations('ctas.offer.placeholder')}
+                      content={translations('ctas.export.placeholder')}
                     />
-                  </ProtectedWrapper>
-                </div>
-              </SubHeader>
 
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'all'}
-                className="flex flex-grow flex-col overflow-hidden"
-              >
-                <section className="flex w-full justify-between py-2">
-                  <TabsList className="border">
-                    <TabsTrigger value="all">
-                      {translations('tabs.label.tab1')}
-                    </TabsTrigger>
-                    <TabsTrigger value="underReview">
-                      {translations('tabs.label.tab2')}
-                    </TabsTrigger>
-                    <TabsTrigger value="confirmedOrders">
-                      {translations('tabs.label.tab3')}
-                    </TabsTrigger>
-                    <TabsTrigger value="receivables">
-                      {translations('tabs.label.tab4')}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <div className="flex items-center gap-2">
-                    {/* Search by Customer */}
-                    <Select
-                      name="clientIds"
-                      isClearable
-                      isLoading={isClientLoad}
-                      placeholder={translations('ctas.search.placeholder')}
-                      options={updatedClientData}
-                      className="w-64 min-w-64 text-sm"
-                      classNamePrefix="select"
-                      value={valueClient}
-                      onChange={handleChangeForClient}
-                      onMenuOpen={() => {
-                        setClientDropdownOpen(true);
-                        fetchClients();
-                      }}
-                    />
-                    {/* filters */}
-                    <FilterModal
-                      isSalesFilter={true}
-                      tab={tab}
-                      setFilterData={setFilterData}
-                      setPaginationData={setPaginationData}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create'}
+                    >
+                      <ActionsDropdown
+                        label="Create Offer"
+                        // variant="outline"
+                        actions={[
+                          {
+                            key: 'offer-goods',
+                            label: 'Goods',
+                            icon: PlusCircle,
+                            onClick: () => {
+                              setIsCreatingSales(true);
+                            },
+                            className: 'text-primary',
+                          },
+                          {
+                            key: 'offer-service',
+                            label: 'Service',
+                            icon: PlusCircle,
+                            onClick: () => {
+                              router.push(
+                                '/dashboard/sales/sales-orders?action=create',
+                              );
+                              setIsCreatingSalesService(true);
+                            },
+                          },
+                        ]}
+                      />
+                    </ProtectedWrapper>
                   </div>
-                </section>
+                </SubHeader>
 
-                <TabsContent value="all" className="flex-grow overflow-hidden">
-                  {isLoading && <Loading />}
-                  {!isLoading &&
-                    (salesListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-orders"
-                        columns={SalesColumns}
-                        data={salesListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emtpyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
-
-                <TabsContent
-                  value="underReview"
-                  className="flex-grow overflow-hidden"
+                <Tabs
+                  value={tab}
+                  onValueChange={onTabChange}
+                  defaultValue={'all'}
+                  className="flex flex-grow flex-col overflow-hidden"
                 >
-                  {isLoading && <Loading />}
-                  {!isLoading &&
-                    (salesListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-orders"
-                        columns={SalesColumns}
-                        data={salesListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emtpyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
+                  <section className="flex w-full justify-between py-2">
+                    <TabsList className="border">
+                      <TabsTrigger value="all">
+                        {translations('tabs.label.tab1')}
+                      </TabsTrigger>
+                      <TabsTrigger value="underReview">
+                        {translations('tabs.label.tab2')}
+                      </TabsTrigger>
+                      <TabsTrigger value="confirmedOrders">
+                        {translations('tabs.label.tab3')}
+                      </TabsTrigger>
+                      <TabsTrigger value="receivables">
+                        {translations('tabs.label.tab4')}
+                      </TabsTrigger>
+                    </TabsList>
 
-                <TabsContent
-                  value="confirmedOrders"
-                  className="flex-grow overflow-hidden"
-                >
-                  {isLoading && <Loading />}
-                  {!isLoading &&
-                    (salesListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-orders"
-                        columns={SalesColumns}
-                        data={salesListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
+                    <div className="flex items-center gap-2">
+                      {/* Search by Customer */}
+                      <Select
+                        name="clientIds"
+                        isClearable
+                        isLoading={isClientLoad}
+                        placeholder={translations('ctas.search.placeholder')}
+                        options={updatedClientData}
+                        className="w-64 min-w-64 text-sm"
+                        classNamePrefix="select"
+                        value={valueClient}
+                        onChange={handleChangeForClient}
+                        onMenuOpen={() => {
+                          setClientDropdownOpen(true);
+                          fetchClients();
+                        }}
                       />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emtpyStateComponent.heading')}
-                        subItems={keys}
+                      {/* filters */}
+                      <FilterModal
+                        isSalesFilter={true}
+                        tab={tab}
+                        setFilterData={setFilterData}
+                        setPaginationData={setPaginationData}
                       />
-                    ))}
-                </TabsContent>
+                    </div>
+                  </section>
 
-                <TabsContent
-                  value="receivables"
-                  className="flex-grow overflow-hidden"
-                >
-                  {isLoading && <Loading />}
-                  {!isLoading &&
-                    (salesListing?.length > 0 ? (
-                      <SalesTable
-                        id="sale-orders"
-                        columns={SalesColumns}
-                        data={salesListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emtpyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
-              </Tabs>
-            </Wrapper>
-          )}
+                  <TabsContent
+                    value="all"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <SalesTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          data={salesListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent
+                    value="underReview"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <SalesTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          data={salesListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent
+                    value="confirmedOrders"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <SalesTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          data={salesListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent
+                    value="receivables"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
+                    {!isLoading &&
+                      (salesListing?.length > 0 ? (
+                        <SalesTable
+                          id="sale-orders"
+                          columns={SalesColumns}
+                          data={salesListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emtpyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+                </Tabs>
+              </Wrapper>
+            )}
 
           {/* create order component */}
-          {isCreatingSales && !isEditingOrder && (
-            <CreateOrder
-              type="sales"
-              name="Offer"
-              cta="offer"
-              isOrder="order"
-              isCreatingSales={isCreatingSales}
-              setIsCreatingSales={setIsCreatingSales}
-              setSalesListing={setSalesListing}
-              onCancel={() => setIsCreatingSales(false)}
-              referenceOrderId={referenceOrderId}
-            />
-          )}
+          {isCreatingSales &&
+            !isEditingOrder &&
+            !isCreatingSalesService &&
+            !isEditingSalesService && (
+              <CreateOrder
+                type="sales"
+                name="Offer"
+                cta="offer"
+                isOrder="order"
+                isCreatingSales={isCreatingSales}
+                setIsCreatingSales={setIsCreatingSales}
+                setSalesListing={setSalesListing}
+                onCancel={() => setIsCreatingSales(false)}
+                referenceOrderId={referenceOrderId}
+              />
+            )}
 
           {/* editOrder Component */}
-          {isEditingOrder && !isCreatingSales && (
-            <EditOrder
-              cta="offer"
-              isOrder="order"
-              orderId={orderId}
-              onCancel={() => setIsEditingOrder(false)}
-            />
-          )}
+          {isEditingOrder &&
+            !isCreatingSales &&
+            !isCreatingSalesService &&
+            !isEditingSalesService && (
+              <EditOrder
+                cta="offer"
+                isOrder="order"
+                orderId={orderId}
+                onCancel={() => setIsEditingOrder(false)}
+              />
+            )}
+
+          {/* create sales service component */}
+          {isCreatingSalesService &&
+            !isEditingOrder &&
+            !isCreatingSales &&
+            !isEditingSalesService && (
+              <CreateOrderServices
+                createSalesServiceBreadCrumbs={createSalesServiceBreadCrumbs}
+                setIsCreatingSalesService={setIsCreatingSalesService}
+                cta="offer"
+              />
+            )}
+
+          {/* edit sales service component */}
+          {isEditingSalesService &&
+            !isCreatingSalesService &&
+            !isCreatingSales &&
+            !isEditingOrder && (
+              <EditOrderServices
+                createSalesServiceBreadCrumbs={createSalesServiceBreadCrumbs}
+                setIsCreatingSalesService={setIsEditingSalesService}
+                cta="offer"
+                orderId={orderId}
+              />
+            )}
         </>
       )}
     </ProtectedWrapper>

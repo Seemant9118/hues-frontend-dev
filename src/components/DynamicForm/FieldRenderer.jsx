@@ -48,7 +48,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         </Label>
       )}
 
-      {/* ✅ CUSTOM FIELD */}
+      {/* CUSTOM FIELD */}
       {type === 'custom' && CustomComponent && (
         <CustomComponent
           formData={formData}
@@ -66,7 +66,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         />
       )}
 
-      {type === 'number' && (
+      {(type === 'number' || type === 'input') && (
         <Input
           type="number"
           placeholder={placeholder}

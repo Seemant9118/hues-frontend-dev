@@ -19,7 +19,7 @@ import { usePermission } from '@/hooks/usePermissions';
 import Tooltips from '@/components/auth/Tooltips';
 import { formattedAmount } from '@/appUtils/helperFunctions';
 
-export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
+export const useServicesColumns = (setIsEditing, setServicesToEdit, router) => {
   const translations = useTranslations('services');
   const { hasAnyPermission } = usePermission();
 
@@ -104,7 +104,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
     },
   ];
 
-  // ✅ Conditionally add actions column
+  // Conditionally add actions column
   const canShowActions = hasAnyPermission([
     'permission:item-masters-edit',
     'permission:item-masters-delete',
@@ -131,9 +131,10 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
                   onClick={(e) => {
-                    setIsEditing(true);
                     e.stopPropagation();
                     setServicesToEdit(row.original);
+                    router.push('/dashboard/inventory/services?action=edit');
+                    setIsEditing(true);
                   }}
                 >
                   <Pencil size={12} />

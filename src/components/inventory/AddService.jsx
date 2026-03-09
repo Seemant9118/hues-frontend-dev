@@ -11,7 +11,7 @@ import {
 import { servicesApi } from '@/api/inventories/services/services';
 import Wrapper from '../wrappers/Wrapper';
 import MultiStepForm from './multi-step-form/MultiStepForm';
-import { stepsServiceConfig } from './multi-step-form/services-form-configs/stepsConfig';
+import { stepsServiceConfig } from './services/ServiceConfig';
 
 const AddService = ({ setIsCreatingService, servicesToEdit }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');

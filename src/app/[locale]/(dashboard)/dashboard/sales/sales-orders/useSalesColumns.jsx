@@ -22,6 +22,7 @@ import { useTranslations } from 'next-intl';
 
 export const useSalesColumns = (
   setIsEditingOrder,
+  setIsEditingSalesService,
   setOrderId,
   setSelectedOrders,
 ) => {
@@ -196,7 +197,7 @@ export const useSalesColumns = (
     },
   ];
 
-  // ✅ Conditionally add actions column
+  // Conditionally add actions column
   const canShowActions = hasAnyPermission([
     'permission:sales-edit',
     'permission:sales-delete',
@@ -207,7 +208,7 @@ export const useSalesColumns = (
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const { id, createdBy, referenceNumber } = row.original;
+        const { id, createdBy, referenceNumber, invoiceType } = row.original;
         const status = row.original.negotiationStatus;
 
         if (status === 'NEGOTIATION' || status === 'ACCEPTED') return null;
@@ -226,9 +227,13 @@ export const useSalesColumns = (
                   userId.toString() === createdBy.toString() && (
                     <span
                       onClick={(e) => {
-                        setIsEditingOrder(true);
                         e.stopPropagation();
                         setOrderId(row.original.id);
+                        if (invoiceType === 'GOODS') {
+                          setIsEditingOrder(true);
+                        } else {
+                          setIsEditingSalesService(true);
+                        }
                       }}
                       className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
                     >
