@@ -42,7 +42,7 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
         // Overview
         delivery_mode: null,
         unit: null,
-        training_topics: [],
+        training_topics: null,
         max_participants: null,
         default_duration_hours: null,
 
