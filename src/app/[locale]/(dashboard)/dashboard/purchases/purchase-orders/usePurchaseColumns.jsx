@@ -22,6 +22,7 @@ import { useTranslations } from 'next-intl';
 
 export const usePurchaseColumns = (
   setIsEditingOrder,
+  setIsEditingPurchaseService,
   setOrderId,
   setSelectedOrders,
 ) => {
@@ -216,8 +217,12 @@ export const usePurchaseColumns = (
                   userId.toString() === createdBy.toString() && (
                     <span
                       onClick={(e) => {
-                        setIsEditingOrder(true);
                         e.stopPropagation();
+                        if (row.original.invoiceType === 'SERVICE') {
+                          setIsEditingPurchaseService(true);
+                        } else {
+                          setIsEditingOrder(true);
+                        }
                         setOrderId(row.original.id);
                       }}
                       className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"

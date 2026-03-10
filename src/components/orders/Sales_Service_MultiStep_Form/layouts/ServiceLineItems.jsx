@@ -94,7 +94,7 @@ export default function ServicesLineItems({
     const totalAmount = qty * discountedPrice;
 
     // 3. GST Calculations
-    const gstPerUnit = discountedPrice * (gstPct / 100);
+    const gstPerUnit = gstPct;
     const totalGstAmount = totalAmount * (gstPct / 100);
 
     // 4. Final Total
@@ -249,15 +249,10 @@ export default function ServicesLineItems({
             value={item.id}
             className="rounded-lg border"
           >
-            <div className="flex items-center justify-between px-4">
+            <div className="flex items-center justify-between gap-2 px-4">
               <AccordionTrigger className="hover:no-underline">
                 <div className="text-left font-medium">
                   {item.serviceName || 'New Service'}
-                  {item.serviceCode && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({item.serviceCode})
-                    </span>
-                  )}
                 </div>
               </AccordionTrigger>
 

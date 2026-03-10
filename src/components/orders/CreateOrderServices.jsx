@@ -28,7 +28,7 @@ const CreateOrderServices = ({
     clientType: 'B2B',
     sellerEnterpriseId: cta === 'offer' ? enterpriseId : null,
     buyerId: cta === 'offer' ? null : enterpriseId,
-    orderType: 'SALES',
+    orderType: cta === 'offer' ? 'SALES' : 'PURCHASE',
     invoiceType: 'SERVICE',
     contactPerson: '',
     email: '',
@@ -128,7 +128,6 @@ const CreateOrderServices = ({
         router.push(`/dashboard/sales/sales-orders/${orderId}`);
       }
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-      setIsCreatingSalesService(false);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -151,7 +150,6 @@ const CreateOrderServices = ({
         );
       }
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-      setIsCreatingSalesService(false);
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -169,6 +167,7 @@ const CreateOrderServices = ({
         updateOrderMutation.mutate({ ...formData, orderId });
       }
     } else {
+      // console.log('formData', formData);
       orderMutation.mutate(formData);
     }
   };
@@ -181,7 +180,7 @@ const CreateOrderServices = ({
     }
   };
 
-  const directServiceOrderSteps = getSalesServiceFormSteps();
+  const directServiceOrderSteps = getSalesServiceFormSteps({ cta });
 
   return (
     <MultiStepForm
@@ -198,9 +197,15 @@ const CreateOrderServices = ({
         updateOrderForUnRepliedSalesMutation.isPending
       }
       breadcrumbs={createSalesServiceBreadCrumbs}
-      breadcrumbHome="/dashboard/sales/sales-orders"
-      breadcrumbHomeText="Sales Orders"
-      breadcrumbTitle="Create Sales Service"
+      breadcrumbHome={
+        cta === 'offer'
+          ? '/dashboard/sales/sales-orders'
+          : '/dashboard/purchases/purchase-orders'
+      }
+      breadcrumbHomeText={cta === 'offer' ? 'Sales Orders' : 'Purchase Orders'}
+      breadcrumbTitle={
+        cta === 'offer' ? 'Create Sales Service' : 'Create Purchase Service'
+      }
       finalStepActions={({ handleFinalSubmit, isSubmitting }) => (
         <Button
           size="sm"
@@ -212,8 +217,12 @@ const CreateOrderServices = ({
               ? 'Updating...'
               : 'Creating...'
             : orderId
-              ? '✓ Update Sales Service'
-              : '✓ Create Sales Service'}
+              ? cta === 'offer'
+                ? '✓ Update Sales Service'
+                : '✓ Update Purchase Service'
+              : cta === 'offer'
+                ? '✓ Create Sales Service'
+                : '✓ Create Purchase Service'}
         </Button>
       )}
     />

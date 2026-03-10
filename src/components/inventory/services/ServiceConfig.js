@@ -20,7 +20,8 @@ export const stepsServiceConfig = [
         newErrors.serviceCategory = 'Service category is required';
       if (!form?.serviceName)
         newErrors.serviceName = 'Service name is required';
-
+      if (!form?.serviceCode)
+        newErrors.serviceCode = 'Service code is required';
       return newErrors;
     },
   },

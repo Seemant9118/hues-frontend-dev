@@ -2,11 +2,11 @@ import BuyerContext from './layouts/BuyerContext';
 import ServicesLineItems from './layouts/ServiceLineItems';
 import { validateBuyerContext, validateServices } from './validator';
 
-export const getSalesServiceFormSteps = () => {
+export const getSalesServiceFormSteps = ({ cta }) => {
   return [
     {
       key: 'buyer-context',
-      label: 'Buyer Context',
+      label: cta === 'offer' ? 'Client Context' : 'Vendor Context',
       component: BuyerContext,
       validate: validateBuyerContext,
     },

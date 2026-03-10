@@ -37,17 +37,33 @@ import dynamic from 'next/dynamic';
 import React, { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import { PurchaseTable } from '../purchasetable/PurchaseTable';
 import { usePurchaseColumns } from './usePurchaseColumns';
 
 // dynamic imports
+// GOODS
 const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
   loading: () => <Loading />,
 });
-
 const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });
+
+// SERVICES
+const CreateOrderServices = dynamic(
+  () => import('@/components/orders/CreateOrderServices'),
+  {
+    loading: () => <Loading />,
+  },
+);
+const EditOrderServices = dynamic(
+  () => import('@/components/orders/CreateOrderServices'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 // macros
 const PAGE_LIMIT = 10;
@@ -71,9 +87,14 @@ const PurchaseOrders = () => {
 
   const { hasPermission } = usePermission();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState('all');
   const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
+  const [isCreatingPurchaseService, setIsCreatingPurchaseService] =
+    useState(false);
+  const [isEditingPurchaseService, setIsEditingPurchaseService] =
+    useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [paginationData, setPaginationData] = useState({}); // Ensure default structure
@@ -84,6 +105,23 @@ const PurchaseOrders = () => {
   );
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
   const [filterData, setFilterData] = useState(null); // Initialize with default filterPayload
+
+  const action = searchParams.get('action');
+
+  const createPurchaseServiceBreadCrumbs = [
+    {
+      id: 1,
+      name: 'Purchase',
+      path: '/dashboard/purchases/purchase-orders',
+      show: true,
+    },
+    {
+      id: 2,
+      name: 'Create Purchase Service',
+      path: '/dashboard/purchases/purchase-orders?action=create',
+      show: action === 'create',
+    },
+  ];
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -369,6 +407,7 @@ const PurchaseOrders = () => {
 
   const PurchaseColumns = usePurchaseColumns(
     setIsEditingOrder,
+    setIsEditingPurchaseService,
     setOrderId,
     setSelectedOrders,
   );
@@ -384,249 +423,302 @@ const PurchaseOrders = () => {
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          {!isCreatingPurchase && !isEditingOrder && (
-            <Wrapper className="h-screen overflow-hidden">
-              {/* headers */}
-              <SubHeader name={translations('title')} className="z-10 bg-white">
-                <div className="flex items-center justify-center gap-3">
-                  <Tooltips
-                    trigger={
-                      <Button
-                        disabled={
-                          selectedOrders?.length === 0 ||
-                          exportOrderMutation.isPending
-                        }
-                        onClick={handleExportOrder}
-                        variant="outline"
-                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
-                        size="sm"
-                      >
-                        <Upload size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.export.placeholder')}
-                  />
-
-                  <ProtectedWrapper
-                    permissionCode={'permission:purchase-create'}
-                  >
+          {!isCreatingPurchase &&
+            !isEditingOrder &&
+            !isCreatingPurchaseService &&
+            !isEditingPurchaseService && (
+              <Wrapper className="h-screen overflow-hidden">
+                {/* headers */}
+                <SubHeader
+                  name={translations('title')}
+                  className="z-10 bg-white"
+                >
+                  <div className="flex items-center justify-center gap-3">
                     <Tooltips
                       trigger={
                         <Button
-                          onClick={() => setIsCreatingPurchase(true)}
-                          className="w-24 bg-[#288AF9] text-white hover:bg-primary hover:text-white"
+                          disabled={
+                            selectedOrders?.length === 0 ||
+                            exportOrderMutation.isPending
+                          }
+                          onClick={handleExportOrder}
+                          variant="outline"
+                          className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                           size="sm"
                         >
-                          <PlusCircle size={14} />
-                          {translations('ctas.bid.cta')}
+                          <Upload size={14} />
                         </Button>
                       }
-                      content={translations('ctas.bid.placeholder')}
+                      content={translations('ctas.export.placeholder')}
                     />
-                  </ProtectedWrapper>
-                </div>
-              </SubHeader>
 
-              <Tabs
-                value={tab}
-                onValueChange={onTabChange}
-                defaultValue={'all'}
-                className="flex flex-grow flex-col overflow-hidden"
-              >
-                <section className="flex w-full justify-between py-2">
-                  <TabsList className="border">
-                    <TabsTrigger value="all">
-                      {translations('tabs.label.tab1')}
-                    </TabsTrigger>
-                    <TabsTrigger value="underReview">
-                      {translations('tabs.label.tab2')}
-                    </TabsTrigger>
-                    <TabsTrigger value="confirmed">
-                      {translations('tabs.label.tab3')}
-                    </TabsTrigger>
-                    <TabsTrigger value="payables">
-                      {translations('tabs.label.tab4')}
-                    </TabsTrigger>
-                    <TabsTrigger value="unconfirmed">
-                      {translations('tabs.label.tab5')}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <div className="flex items-center gap-2">
-                    {/* Search by Customer */}
-                    <Select
-                      name="clientIds"
-                      isClearable
-                      isLoading={isVendorLoad}
-                      placeholder={translations('ctas.search.placeholder')}
-                      options={updatedVendorData}
-                      className="w-64 min-w-64 text-sm"
-                      classNamePrefix="select"
-                      value={valueVendor}
-                      onChange={handleChangeForVendor}
-                      onMenuOpen={() => {
-                        setVendorDropdownOpen(true);
-                        fetchVendors();
-                      }}
-                    />
-                    {/* filters */}
-                    <FilterModal
-                      isSalesFilter={false}
-                      tab={tab}
-                      setFilterData={setFilterData}
-                      setPaginationData={setPaginationData}
-                    />
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create'}
+                    >
+                      <ActionsDropdown
+                        label="Create Offer"
+                        // variant="outline"
+                        actions={[
+                          {
+                            key: 'offer-goods',
+                            label: 'Goods',
+                            icon: PlusCircle,
+                            onClick: () => {
+                              setIsCreatingPurchase(true);
+                            },
+                            className: 'text-primary',
+                          },
+                          {
+                            key: 'offer-service',
+                            label: 'Service',
+                            icon: PlusCircle,
+                            onClick: () => {
+                              router.push(
+                                '/dashboard/purchases/purchase-orders?action=create',
+                              );
+                              setIsCreatingPurchaseService(true);
+                            },
+                          },
+                        ]}
+                      />
+                    </ProtectedWrapper>
                   </div>
-                </section>
+                </SubHeader>
 
-                <TabsContent value="all" className="flex-grow overflow-hidden">
-                  {isLoading && <Loading />}
-
-                  {!isLoading &&
-                    (purchaseListing?.length > 0 ? (
-                      <PurchaseTable
-                        id="purchase-orders"
-                        columns={PurchaseColumns}
-                        data={purchaseListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
-                <TabsContent
-                  value="underReview"
-                  className="flex-grow overflow-hidden"
+                <Tabs
+                  value={tab}
+                  onValueChange={onTabChange}
+                  defaultValue={'all'}
+                  className="flex flex-grow flex-col overflow-hidden"
                 >
-                  {isLoading && <Loading />}
+                  <section className="flex w-full justify-between py-2">
+                    <TabsList className="border">
+                      <TabsTrigger value="all">
+                        {translations('tabs.label.tab1')}
+                      </TabsTrigger>
+                      <TabsTrigger value="underReview">
+                        {translations('tabs.label.tab2')}
+                      </TabsTrigger>
+                      <TabsTrigger value="confirmed">
+                        {translations('tabs.label.tab3')}
+                      </TabsTrigger>
+                      <TabsTrigger value="payables">
+                        {translations('tabs.label.tab4')}
+                      </TabsTrigger>
+                      <TabsTrigger value="unconfirmed">
+                        {translations('tabs.label.tab5')}
+                      </TabsTrigger>
+                    </TabsList>
 
-                  {!isLoading &&
-                    (purchaseListing?.length > 0 ? (
-                      <PurchaseTable
-                        id="purchase-orders"
-                        columns={PurchaseColumns}
-                        data={purchaseListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
+                    <div className="flex items-center gap-2">
+                      {/* Search by Customer */}
+                      <Select
+                        name="clientIds"
+                        isClearable
+                        isLoading={isVendorLoad}
+                        placeholder={translations('ctas.search.placeholder')}
+                        options={updatedVendorData}
+                        className="w-64 min-w-64 text-sm"
+                        classNamePrefix="select"
+                        value={valueVendor}
+                        onChange={handleChangeForVendor}
+                        onMenuOpen={() => {
+                          setVendorDropdownOpen(true);
+                          fetchVendors();
+                        }}
                       />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
+                      {/* filters */}
+                      <FilterModal
+                        isSalesFilter={false}
+                        tab={tab}
+                        setFilterData={setFilterData}
+                        setPaginationData={setPaginationData}
                       />
-                    ))}
-                </TabsContent>
-                <TabsContent
-                  value="confirmed"
-                  className="flex-grow overflow-hidden"
-                >
-                  {isLoading && <Loading />}
+                    </div>
+                  </section>
 
-                  {!isLoading &&
-                    (purchaseListing?.length > 0 ? (
-                      <PurchaseTable
-                        id="purchase-orders"
-                        columns={PurchaseColumns}
-                        data={purchaseListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
-                <TabsContent
-                  value="payables"
-                  className="flex-grow overflow-hidden"
-                >
-                  {isLoading && <Loading />}
+                  <TabsContent
+                    value="all"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
 
-                  {!isLoading &&
-                    (purchaseListing?.length > 0 ? (
-                      <PurchaseTable
-                        id="purchase-orders"
-                        columns={PurchaseColumns}
-                        data={purchaseListing}
-                        fetchNextPage={fetchNextPage}
-                        isFetching={isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-orders"
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent
+                    value="underReview"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
 
-                <TabsContent
-                  value="unconfirmed"
-                  className="flex-grow overflow-hidden"
-                >
-                  {unconfirmedPurchaseListsIsLoading && <Loading />}
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-orders"
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent
+                    value="confirmed"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
 
-                  {!unconfirmedPurchaseListsIsLoading &&
-                    (unconfirmedPurchaseListing?.length > 0 ? (
-                      <PurchaseTable
-                        id="purchase-uncofirmed-orders"
-                        columns={PurchaseColumns}
-                        data={unconfirmedPurchaseListing}
-                        fetchNextPage={unconfirmedPurchaseFetchNextPage}
-                        isFetching={unconfirmedPurchaseListsIsFetching}
-                        totalPages={
-                          unconfimedPaginationData?.totalPagesUnconfirmed
-                        }
-                        currFetchedPage={
-                          unconfimedPaginationData?.currFetchedPageUnconfirmed
-                        }
-                        onRowClick={onRowClick}
-                      />
-                    ) : (
-                      <EmptyStageComponent
-                        heading={translations('emptyStateComponent.heading')}
-                        subItems={keys}
-                      />
-                    ))}
-                </TabsContent>
-              </Tabs>
-            </Wrapper>
-          )}
-          {isCreatingPurchase && !isEditingOrder && (
-            <CreateOrder
-              name={'Bid'}
-              cta="bid"
-              isOrder="order"
-              isCreatingPurchase={isCreatingPurchase}
-              onCancel={() => setIsCreatingPurchase(false)}
-            />
-          )}
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-orders"
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+                  <TabsContent
+                    value="payables"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {isLoading && <Loading />}
 
-          {isEditingOrder && !isCreatingPurchase && (
-            <EditOrder
-              cta="bid"
-              isOrder="order"
-              orderId={orderId}
-              onCancel={() => setIsEditingOrder(false)}
-            />
-          )}
+                    {!isLoading &&
+                      (purchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-orders"
+                          columns={PurchaseColumns}
+                          data={purchaseListing}
+                          fetchNextPage={fetchNextPage}
+                          isFetching={isFetching}
+                          totalPages={paginationData?.totalPages}
+                          currFetchedPage={paginationData?.currFetchedPage}
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent
+                    value="unconfirmed"
+                    className="flex-grow overflow-hidden"
+                  >
+                    {unconfirmedPurchaseListsIsLoading && <Loading />}
+
+                    {!unconfirmedPurchaseListsIsLoading &&
+                      (unconfirmedPurchaseListing?.length > 0 ? (
+                        <PurchaseTable
+                          id="purchase-uncofirmed-orders"
+                          columns={PurchaseColumns}
+                          data={unconfirmedPurchaseListing}
+                          fetchNextPage={unconfirmedPurchaseFetchNextPage}
+                          isFetching={unconfirmedPurchaseListsIsFetching}
+                          totalPages={
+                            unconfimedPaginationData?.totalPagesUnconfirmed
+                          }
+                          currFetchedPage={
+                            unconfimedPaginationData?.currFetchedPageUnconfirmed
+                          }
+                          onRowClick={onRowClick}
+                        />
+                      ) : (
+                        <EmptyStageComponent
+                          heading={translations('emptyStateComponent.heading')}
+                          subItems={keys}
+                        />
+                      ))}
+                  </TabsContent>
+                </Tabs>
+              </Wrapper>
+            )}
+          {isCreatingPurchase &&
+            !isEditingOrder &&
+            !isCreatingPurchaseService &&
+            !isEditingPurchaseService && (
+              <CreateOrder
+                name={'Bid'}
+                cta="bid"
+                isOrder="order"
+                isCreatingPurchase={isCreatingPurchase}
+                onCancel={() => setIsCreatingPurchase(false)}
+              />
+            )}
+
+          {isEditingOrder &&
+            !isCreatingPurchase &&
+            !isCreatingPurchaseService &&
+            !isEditingPurchaseService && (
+              <EditOrder
+                cta="bid"
+                isOrder="order"
+                orderId={orderId}
+                onCancel={() => setIsEditingOrder(false)}
+              />
+            )}
+
+          {/* create sales service component */}
+          {isCreatingPurchaseService &&
+            !isEditingPurchaseService &&
+            !isCreatingPurchase &&
+            !isEditingOrder && (
+              <CreateOrderServices
+                createSalesServiceBreadCrumbs={createPurchaseServiceBreadCrumbs}
+                setIsCreatingSalesService={setIsCreatingPurchaseService}
+                cta="bid"
+              />
+            )}
+
+          {/* edit sales service component */}
+          {!isCreatingPurchaseService &&
+            isEditingPurchaseService &&
+            !isCreatingPurchase &&
+            !isEditingOrder && (
+              <EditOrderServices
+                createSalesServiceBreadCrumbs={createPurchaseServiceBreadCrumbs}
+                setIsCreatingSalesService={setIsEditingPurchaseService}
+                cta="bid"
+                orderId={orderId}
+              />
+            )}
         </>
       )}
     </ProtectedWrapper>

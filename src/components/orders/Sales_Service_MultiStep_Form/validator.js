@@ -18,14 +18,21 @@ export const validateObject = (data, rules) => {
 };
 
 export const validateBuyerContext = (formData) => {
-  return validateObject(formData, {
-    buyerId: required,
+  const rules = {
     contactPerson: required,
     email: required,
     mobile: required,
     billingAddressText: required,
     serviceLocation: required,
-  });
+  };
+
+  if (formData.cta === 'offer') {
+    rules.buyerId = required;
+  } else {
+    rules.sellerEnterpriseId = required;
+  }
+
+  return validateObject(formData, rules);
 };
 
 export const validateServices = (formData) => {
