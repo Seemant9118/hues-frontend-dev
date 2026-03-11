@@ -82,8 +82,8 @@ const ViewService = () => {
 
   const overviewData = {
     serviceName: capitalize(itemDetails?.serviceName),
-    serviceCategory: capitalize(itemDetails?.serviceCategory),
-    serviceSubType: capitalize(itemDetails?.serviceSubType),
+    serviceCategory: capitalize(itemDetails?.serviceCategory?.serviceTypeName),
+    serviceSubType: capitalize(itemDetails?.serviceSubType?.serviceSubTypeName),
     status: itemDetails?.isActive,
     basePrice: formattedAmount(itemDetails?.basePrice),
     gstPercentage: itemDetails?.gstPercentage ?? '-', // null → show "-"

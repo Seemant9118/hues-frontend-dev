@@ -177,6 +177,11 @@ export const AdminAPIs = {
     endpointKey: 'get_goods_master',
   },
 
+  getServicesMasterTypes: {
+    endpoint: `/admin-panel/hsn-master/service-types`,
+    endpointKey: 'get_services_master_types',
+  },
+
   createServiceMaster: {
     endpoint: `/admin-panel/hsn-master/services-sac-master/add-item`,
     endpointKey: 'get_goods_master',

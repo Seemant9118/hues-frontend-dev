@@ -16,8 +16,10 @@ export const stepsServiceConfig = [
     validate: (form) => {
       const newErrors = {};
 
-      if (!form?.serviceCategory)
-        newErrors.serviceCategory = 'Service category is required';
+      if (!form?.serviceCategoryId)
+        newErrors.serviceCategoryId = 'Service category is required';
+      if (!form?.serviceSubTypeId)
+        newErrors.serviceSubTypeId = 'Service type is required';
       if (!form?.serviceName)
         newErrors.serviceName = 'Service name is required';
       if (!form?.serviceCode)

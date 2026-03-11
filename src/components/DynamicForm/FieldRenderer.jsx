@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import DatePickers from '@/components/ui/DatePickers';
+import { Pencil, Trash2 } from 'lucide-react';
 import { DataTable } from '../table/data-table';
 import ErrorBox from '../ui/ErrorBox';
 
@@ -20,6 +21,11 @@ const FieldRenderer = React.memo(function FieldRenderer({
   error,
   formData,
   dispatchDetails,
+
+  /* optional props */
+  enableOptionCrud = false,
+  onEditOption,
+  onDeleteOption,
 }) {
   const {
     name,
@@ -56,7 +62,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         />
       )}
 
-      {/* INPUT TYPES */}
+      {/* TEXT */}
       {type === 'text' && (
         <Input
           placeholder={placeholder}
@@ -66,6 +72,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         />
       )}
 
+      {/* NUMBER */}
       {(type === 'number' || type === 'input') && (
         <Input
           type="number"
@@ -75,6 +82,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         />
       )}
 
+      {/* TEXTAREA */}
       {type === 'textarea' && (
         <Textarea
           rows={rows || 2}
@@ -84,10 +92,11 @@ const FieldRenderer = React.memo(function FieldRenderer({
         />
       )}
 
+      {/* SELECT */}
       {type === 'select' && (
         <Select
           value={value}
-          onValueChange={(v) => onChange(name, v)}
+          onValueChange={(v) => onChange(name, v, field)}
           disabled={disabled}
         >
           <SelectTrigger>
@@ -95,15 +104,53 @@ const FieldRenderer = React.memo(function FieldRenderer({
           </SelectTrigger>
 
           <SelectContent className="max-h-44">
-            {options?.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
+            {options?.map((opt) => {
+              const isAddOption = opt.value === 'ADD';
+
+              return (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="flex items-center justify-between gap-2 pr-2"
+                >
+                  {/* label */}
+                  <span className="">{opt.label}</span>
+
+                  {/* CRUD icons */}
+                  {enableOptionCrud && !isAddOption && (
+                    <div className="ml-auto flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="text-blue-500 hover:text-blue-700"
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onEditOption?.(opt, field);
+                        }}
+                      >
+                        <Pencil size={14} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="text-red-500 hover:text-red-700"
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onDeleteOption?.(opt, field);
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       )}
-
+      {/* DATE */}
       {type === 'date' && (
         <div className="relative flex items-center rounded-sm border p-2">
           <DatePickers
@@ -117,6 +164,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         </div>
       )}
 
+      {/* RADIO */}
       {type === 'radio' && options && (
         <div className="mt-1 flex flex-col gap-4">
           {options.map((opt) => (
@@ -138,6 +186,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         </div>
       )}
 
+      {/* CHECKBOX */}
       {type === 'checkbox' && (
         <div className="flex items-center gap-2">
           <input
@@ -149,6 +198,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
         </div>
       )}
 
+      {/* TABLE */}
       {type === 'table' && (
         <DataTable data={tableData} columns={tableColumns} />
       )}
