@@ -224,8 +224,8 @@ export default function ModifyQuantityDialog({
                     <TableHead className="p-3">SKU ID</TableHead>
                     <TableHead className="p-3">Item Name</TableHead>
                     <TableHead className="p-3">Invoice Qty</TableHead>
-                    <TableHead className="p-3">Remaining Qty</TableHead>
                     <TableHead className="p-3">Dispatch Qty</TableHead>
+                    <TableHead className="p-3">Remaining Qty</TableHead>
                     <TableHead className="p-3">Qty Received</TableHead>
                     {/* <TableHead className="p-3">Qty Rejected</TableHead> */}
                     <TableHead className="p-3">Price</TableHead>
@@ -243,10 +243,6 @@ export default function ModifyQuantityDialog({
 
                       <TableCell className="p-3 font-medium">
                         {item.invoiceQty}
-                      </TableCell>
-
-                      <TableCell className="p-3 font-medium">
-                        {item.quantity}
                       </TableCell>
 
                       {/* Dispatch Qty input */}
@@ -268,6 +264,10 @@ export default function ModifyQuantityDialog({
                             {item.quantity}
                           </p>
                         </div>
+                      </TableCell>
+
+                      <TableCell className="p-3 font-medium">
+                        {item.quantity}
                       </TableCell>
 
                       {/* Accepted Qty input */}
