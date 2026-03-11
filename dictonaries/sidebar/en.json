@@ -22,7 +22,7 @@
             "goods-category": "Category",
             "goods-subCategory": "Sub Category",
             "goods": "Item Master",
-            "services": "Item Master",
+            "services": "Service Master",
             "transactions": "Stock Movements",
             "stocks": "Stock in Hand",
             "qc": "Quality Control",
@@ -38,7 +38,7 @@
             "clients": "Clients",
             "vendors": "Vendors",
             "customers": "Customers",
-            "gst":"GST"
+            "gst": "GST"
         }
     }
 }

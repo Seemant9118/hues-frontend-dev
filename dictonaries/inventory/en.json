@@ -68,7 +68,7 @@
         },
         "table": {
             "header": {
-                "prodType":"Product Type",
+                "prodType": "Product Type",
                 "itemType": "Item Type",
                 "category": "Category",
                 "products": "Product(s) Added",
@@ -364,7 +364,7 @@
         }
     },
     "services": {
-        "title": "Item Master",
+        "title": "Service Master",
         "emptyStateComponent": {
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
@@ -422,6 +422,7 @@
             "header": {
                 "serviceName": "Service Name",
                 "sac": "SAC",
+                "serviceCode": "Service Code",
                 "description": "Description",
                 "rate": "Rate",
                 "salesPrice": "Sales Price",

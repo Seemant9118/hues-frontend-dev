@@ -209,6 +209,10 @@ export const getServicesMaster = ({ page, limit }) => {
   return APIinstance.get(baseEndpoint, { params });
 };
 
+export const getServicesMasterTypes = () => {
+  return APIinstance.get(AdminAPIs.getServicesMasterTypes.endpoint);
+};
+
 export const createServiceMaster = ({ data }) => {
   return APIinstance.post(AdminAPIs.createServiceMaster.endpoint, data);
 };

@@ -24,9 +24,14 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
         enterpriseId,
         serviceName: servicesToEdit.serviceName || '',
         serviceCode: servicesToEdit.serviceCode || '',
-        serviceCategory: servicesToEdit.serviceCategory || '',
-        serviceSubType: servicesToEdit.serviceSubType || '',
-        defaultFieldsWithValues: { ...servicesToEdit.config } || {},
+        serviceCategoryId: servicesToEdit.serviceCategoryId || '',
+        serviceSubTypeId: servicesToEdit.serviceSubTypeId || '',
+        defaultFieldsWithValues: Object.fromEntries(
+          Object.entries(servicesToEdit.config || {}).map(([key, value]) => [
+            key,
+            typeof value === 'object' ? value : { defaultValue: value },
+          ]),
+        ),
       };
     }
 
@@ -35,8 +40,8 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
       // Overview Step top-level fields
       serviceName: '',
       serviceCode: '',
-      serviceCategory: '',
-      serviceSubType: '',
+      serviceCategoryId: '',
+      serviceSubTypeId: '',
 
       defaultFieldsWithValues: {
         // Overview
@@ -166,16 +171,28 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
     },
   });
 
-  const removeNullValues = (obj) => {
+  const removeRedundantValues = (obj) => {
     const cleanedRoot = Object.fromEntries(
       Object.entries(obj).filter(([, value]) => value !== null),
     );
 
     if (cleanedRoot.defaultFieldsWithValues) {
       cleanedRoot.defaultFieldsWithValues = Object.fromEntries(
-        Object.entries(cleanedRoot.defaultFieldsWithValues).filter(
-          ([, value]) => value !== null,
-        ),
+        Object.entries(cleanedRoot.defaultFieldsWithValues)
+          .filter(([, value]) => value !== null)
+          .map(([key, value]) => {
+            if (value?.options) {
+              return [
+                key,
+                {
+                  ...value,
+                  options: value.options.filter((opt) => opt.value !== 'ADD'),
+                },
+              ];
+            }
+
+            return [key, value];
+          }),
       );
     }
 
@@ -183,7 +200,7 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
   };
 
   const handleSubmit = () => {
-    const cleanedPayload = removeNullValues(formData);
+    const cleanedPayload = removeRedundantValues(formData);
 
     if (servicesToEdit) {
       updateServiceMutation.mutate({
@@ -196,19 +213,7 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
   };
 
   const handleCancel = () => {
-    if (
-      toast.warning(
-        'Are you sure you want to cancel? All changes will be lost.',
-        {
-          action: {
-            label: 'Cancel',
-            onClick: () => toast.dismiss(),
-          },
-        },
-      )
-    ) {
-      // Reset form or redirect as needed
-    }
+    router.push('/dashboard/inventory/services');
   };
 
   return (
