@@ -444,7 +444,8 @@
         "serviceDetails": {
             "title": {
                 "items": "Item Master",
-                "item_details": "Details"
+                "item_details": "Details",
+                "edit_item": "Edit Service"
             },
             "ctas": {
                 "edit": "Edit",

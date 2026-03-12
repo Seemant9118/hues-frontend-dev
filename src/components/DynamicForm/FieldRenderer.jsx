@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import DatePickers from '@/components/ui/DatePickers';
 import { Pencil, Trash2 } from 'lucide-react';
+import MultiSelects from '@/components/ui/MultiSelects';
 import { DataTable } from '../table/data-table';
 import ErrorBox from '../ui/ErrorBox';
 
@@ -149,6 +150,45 @@ const FieldRenderer = React.memo(function FieldRenderer({
             })}
           </SelectContent>
         </Select>
+      )}
+
+      {/* MULTI-SELECT */}
+      {type === 'multi-select' && (
+        <MultiSelects
+          placeholder={placeholder || 'Select multiple...'}
+          option={options || []}
+          value={
+            Array.isArray(value)
+              ? value.every((v) => typeof v === 'object')
+                ? value
+                : value
+                    .map(
+                      (valStr) =>
+                        options?.find((opt) => opt.value === valStr) || {
+                          label: valStr,
+                          value: valStr,
+                        },
+                    )
+                    .filter(Boolean)
+              : typeof value === 'string' && value
+                ? value
+                    .split(',')
+                    .map(
+                      (valStr) =>
+                        options?.find((opt) => opt.value === valStr.trim()) || {
+                          label: valStr.trim(),
+                          value: valStr.trim(),
+                        },
+                    )
+                    .filter(Boolean)
+                : null
+          }
+          handleChange={(v) => {
+            // v is either an array of objects for selected items or null
+            const updatedValues = v ? v.map((item) => item.value) : [];
+            onChange(name, updatedValues);
+          }}
+        />
       )}
       {/* DATE */}
       {type === 'date' && (

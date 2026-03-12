@@ -1,20 +1,27 @@
 /* eslint-disable no-promise-executor-return */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { toast } from 'sonner';
 
 import MultiStepForm from '@/components/shared/MultiStepForm/MultiStepForm';
 import { Button } from '@/components/ui/button';
 import {
   CreateProductServices,
+  getServiceConfigFields,
   UpdateProductServices,
 } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { LocalStorageService } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { servicesApi } from '@/api/inventories/services/services';
+import { capitalize } from '@/appUtils/helperFunctions';
 import { stepsServiceConfig } from './ServiceConfig';
 
-const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
+const CreateService = ({
+  createServiceBreadCrumbs,
+  setIsEditing,
+  servicesToEdit,
+}) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translation = useTranslations('components.addService');
   const router = useRouter();
@@ -42,116 +49,123 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
       serviceCode: '',
       serviceCategoryId: '',
       serviceSubTypeId: '',
-
-      defaultFieldsWithValues: {
-        // Overview
-        delivery_mode: null,
-        unit: null,
-        training_topics: null,
-        max_participants: null,
-        default_duration_hours: null,
-
-        // Pricing Step
-        base_price: null,
-        pricing_model: null,
-        per_participant_rate: null,
-        gst_percentage: null,
-        sac_code: null,
-
-        // Operations Step
-        roles_required: null,
-        materials_provided: null,
-        equipment_needed: null,
-        requires_execution_record: null,
-
-        // SLA & Warranty Step
-        standard_sla: null,
-        cancellation_policy: null,
-
-        // Description Step
-        short_description: null,
-        long_description: null,
-        whats_included: null,
-        whats_not_included: null,
-
-        // Add-ons Step
-        addon_service_codes: null,
-        bundle_codes: null,
-
-        // Terms & Controls Step
-        payment_terms: null,
-        offer_validity: null,
-        governing_law: null,
-        dispute_resolution: null,
-        delivery_acceptance_reference: null,
-
-        // Contracts and Consents Step
-        contract_template: null,
-        required_consents: null,
-      },
+      defaultFieldsWithValues: {},
     };
   });
   const [errors, setErrors] = React.useState({});
+
+  // Fetch config fields when serviceSubTypeId changes
+  const { data: configFieldsData, isLoading: isConfigLoading } = useQuery({
+    queryKey: [
+      servicesApi.getServiceConfigFields.endpointKey,
+      formData.serviceSubTypeId,
+    ],
+    queryFn: () => getServiceConfigFields({ id: formData.serviceSubTypeId }),
+    enabled: !!formData.serviceSubTypeId,
+  });
+
+  // Transform API response into step-grouped sections for Layout components
+  const configFields = useMemo(() => {
+    // Utility to find the object containing "config" inside potentially nested layers
+    const findConfigTarget = (obj) => {
+      if (!obj || typeof obj !== 'object') return null;
+      if (obj.config && obj.config.fields) return obj;
+      // Also check if obj.data has it
+      if (obj.data) return findConfigTarget(obj.data);
+      // Also check obj.data.data .. etc. Just a simple check up to a few levels
+      return null;
+    };
+
+    const actualData = findConfigTarget(configFieldsData);
+    if (!actualData?.config?.fields) return null;
+
+    let allFields = actualData.config.fields;
+
+    // Safety check just in case it's a JSON string
+    if (typeof allFields === 'string') {
+      try {
+        allFields = JSON.parse(allFields);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    const stepMapping = {
+      overview: [], // `service_name` and `service_code` are handled by top-level state
+      pricing: [
+        'pricing_model',
+        'unit_of_measure',
+        'base_price',
+        'gst_rate_percent',
+        'sac_hsn_code',
+      ],
+      operations: ['delivery_mode', 'default_duration_minutes'],
+      SLAAndWarranty: ['sla_response_hours', 'sla_completion_hours'],
+      description: [
+        'whats_included',
+        'whats_not_included',
+        'input_requirements',
+      ],
+      addOns: ['add_on_service_codes', 'bundle_codes'],
+      termsAndControls: [
+        'requires_internal_approval',
+        'requires_client_signoff',
+        'is_active',
+      ],
+      contracts: [
+        'contract_template_id',
+        'required_consents',
+        'execution_form_template_id',
+        'requires_execution_record',
+        'execution_source',
+      ],
+    };
+
+    const transformed = {};
+
+    Object.keys(stepMapping).forEach((stepKey) => {
+      const fieldNames = stepMapping[stepKey];
+      const stepFields = allFields.filter((f) => fieldNames.includes(f.name));
+
+      if (stepFields.length > 0) {
+        transformed[stepKey] = stepFields.map((field) => {
+          const processedField = { ...field, required: field.isRequired };
+          if (processedField.options && Array.isArray(processedField.options)) {
+            processedField.options = processedField.options.map((opt) => ({
+              ...opt,
+              label: opt.label ? capitalize(opt.label) : opt.label,
+            }));
+          }
+
+          return {
+            key: field.name,
+            label: capitalize(field.label) || capitalize(field.name),
+            enabledByDefault: false,
+            isRequired: field.isRequired || false,
+            fields: [processedField],
+          };
+        });
+      } else {
+        transformed[stepKey] = [];
+      }
+    });
+
+    return transformed;
+  }, [configFieldsData]);
 
   // create service
   const createServiceMutation = useMutation({
     mutationFn: CreateProductServices,
     onSuccess: (res) => {
       toast.success('Service created successfully!');
-      // Reset form or redirect as needed
+      // Reset form
       setFormData({
-        // Overview Step top-level fields
+        enterpriseId,
         serviceName: '',
         serviceCode: '',
-        serviceCategory: '',
-        serviceSubType: '',
-
-        defaultFieldsWithValues: {
-          // Overview
-          delivery_mode: null,
-          unit: null,
-          training_topics: [],
-          max_participants: null,
-          default_duration_hours: null,
-
-          // Pricing Step
-          base_price: '',
-          pricing_model: '',
-          per_participant_rate: '',
-          gst_percentage: '',
-          sac_code: '',
-
-          // Operations Step
-          roles_required: [],
-          materials_provided: [],
-          equipment_needed: [],
-          requires_execution_record: null,
-
-          // SLA & Warranty Step
-          standard_sla: '',
-          cancellation_policy: '',
-
-          // Description Step
-          short_description: '',
-          long_description: '',
-          whats_included: [],
-          whats_not_included: [],
-
-          // Add-ons Step
-          addon_service_codes: [],
-          bundle_codes: [],
-
-          // Terms & Controls Step
-          payment_terms: '',
-          offer_validity: '',
-          governing_law: '',
-          dispute_resolution: '',
-          delivery_acceptance_reference: '',
-
-          // Contracts and Consents Step
-          contract_template: '',
-          required_consents: [],
-        },
+        serviceCategoryId: '',
+        serviceSubTypeId: '',
+        defaultFieldsWithValues: {},
       });
       router.push(`/dashboard/inventory/services/${res?.data?.data?.id}`);
     },
@@ -200,6 +214,41 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
   };
 
   const handleSubmit = () => {
+    const newErrors = {};
+    let hasErrors = false;
+
+    if (configFields) {
+      Object.values(configFields).forEach((stepSections) => {
+        stepSections.forEach((section) => {
+          section.fields.forEach((field) => {
+            if (field.isRequired || field.required) {
+              const fieldState = formData.defaultFieldsWithValues?.[field.name];
+              const value = fieldState?.defaultValue;
+              const isEnabled = !!fieldState;
+
+              if (
+                !isEnabled ||
+                value === '' ||
+                value === null ||
+                value === undefined ||
+                value?.length === 0
+              ) {
+                newErrors[field.name] =
+                  `${field.label || field.name} is required`;
+                hasErrors = true;
+              }
+            }
+          });
+        });
+      });
+    }
+
+    if (hasErrors) {
+      setErrors((prev) => ({ ...prev, ...newErrors }));
+      toast.error('Please fill all required fields');
+      return;
+    }
+
     const cleanedPayload = removeRedundantValues(formData);
 
     if (servicesToEdit) {
@@ -213,6 +262,10 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
   };
 
   const handleCancel = () => {
+    if (setIsEditing) {
+      setIsEditing(false);
+      return;
+    }
     router.push('/dashboard/inventory/services');
   };
 
@@ -230,6 +283,8 @@ const CreateService = ({ createServiceBreadCrumbs, servicesToEdit }) => {
       breadcrumbHomeText="Create Service Master"
       breadcrumbTitle="Service Master"
       translation={translation}
+      configFields={configFields}
+      isConfigLoading={isConfigLoading}
       finalStepActions={({ handleFinalSubmit }) => (
         <Button
           size="sm"

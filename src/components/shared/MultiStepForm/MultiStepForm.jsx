@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import StepIndicator from './StepIndicator';
 
@@ -25,6 +26,9 @@ export default function MultiStepForm({
   breadcrumbTitle = 'Multi-Step Form',
   translation,
 
+  configFields,
+  isConfigLoading,
+
   finalStepActions,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -39,14 +43,53 @@ export default function MultiStepForm({
 
   const validateCurrentStep = () => {
     const currentStepConfig = steps[currentStep];
+    let stepErrors = {};
+    let hasStepError = false;
+
     if (currentStepConfig.validate) {
-      const stepErrors = currentStepConfig.validate(formData);
-      if (Object.keys(stepErrors).length > 0) {
-        setErrors?.(stepErrors);
-        return false;
+      const explicitErrors = currentStepConfig.validate(formData);
+      if (Object.keys(explicitErrors).length > 0) {
+        stepErrors = { ...stepErrors, ...explicitErrors };
+        hasStepError = true;
       }
-      setErrors?.({});
     }
+
+    // Validate dynamic steps based on configuration
+    if (configFields && currentStepConfig.key !== 'overview') {
+      const stepKey = currentStepConfig.key;
+      const stepSections = configFields[stepKey];
+      if (stepSections) {
+        stepSections.forEach((section) => {
+          section.fields.forEach((field) => {
+            if (field.isRequired || field.required) {
+              const fieldState = formData.defaultFieldsWithValues?.[field.name];
+              const value = fieldState?.defaultValue;
+              const isEnabled = !!fieldState;
+
+              if (
+                !isEnabled ||
+                value === '' ||
+                value === null ||
+                value === undefined ||
+                value?.length === 0
+              ) {
+                stepErrors[field.name] =
+                  `${field.label || field.name} is required`;
+                hasStepError = true;
+              }
+            }
+          });
+        });
+      }
+    }
+
+    if (hasStepError) {
+      setErrors?.(stepErrors);
+      toast.error('Please fill all required fields before proceeding');
+      return false;
+    }
+
+    setErrors?.({});
     return true;
   };
 
@@ -128,6 +171,8 @@ export default function MultiStepForm({
               setFormData={setFormData}
               errors={errors}
               translation={translation}
+              configFields={configFields}
+              isConfigLoading={isConfigLoading}
             />
           </div>
         </CardContent>

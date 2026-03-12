@@ -318,6 +318,7 @@ function Services() {
           {isEditing && (
             <CreateService
               createServiceBreadCrumbs={createServiceBreadCrumbs}
+              setIsEditing={setIsEditing}
               servicesToEdit={servicesToEdit}
             />
           )}

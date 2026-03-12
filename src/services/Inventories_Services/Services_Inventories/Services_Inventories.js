@@ -46,3 +46,7 @@ export const GetServicesVendor = (id) => {
 export const GetServiceSampleFile = () => {
   return APIinstance.get(servicesApi.getServicesSample.endpoint);
 };
+
+export const getServiceConfigFields = ({ id }) => {
+  return APIinstance.get(`${servicesApi.getServiceConfigFields.endpoint}${id}`);
+};
