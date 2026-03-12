@@ -87,7 +87,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit, router) => {
         />
       ),
       cell: ({ row }) => {
-        const value = row.original?.config?.gst_percentage?.defaultValue;
+        const value = row.original?.config?.gst_rate_percent?.defaultValue;
         return value ? `${value}%` : '-';
       },
     },

@@ -44,4 +44,8 @@ export const servicesApi = {
     endpoint: `/master-material/services/downloadsamplefile`,
     endpointKey: 'get_services_sample_file',
   },
+  getServiceConfigFields: {
+    endpoint: `/admin-panel/hsn-master/service-sub-types/`,
+    endpointKey: 'get_service_config_fields',
+  },
 };
