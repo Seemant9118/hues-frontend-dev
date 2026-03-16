@@ -147,6 +147,10 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
       value: 'GOODS',
       label: translations('form.input.item_type.goods'),
     },
+    {
+      value: 'SERVICE',
+      label: translations('form.input.item_type.services'),
+    },
   ];
 
   const isItemAlreadyAdded = (itemId) =>
@@ -623,7 +627,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                               ...selectedItem,
                               productId: selectedItemData.id,
                               productType: selectedItemData.productType,
-                              sac: selectedItemData.sacCode,
+                              sac: selectedItemData.sac,
                               serviceName: selectedItemData.serviceName,
                               unitPrice: null,
                               gstPerUnit,
