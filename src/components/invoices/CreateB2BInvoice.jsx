@@ -9,6 +9,7 @@ import {
   getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
+  saveDraftToSession,
 } from '@/appUtils/helperFunctions';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
@@ -108,11 +109,6 @@ const CreateB2BInvoice = ({
     invoiceDate: b2bInvoiceDraft?.invoiceDate || null,
   });
 
-  // save draft to session storage
-  function saveDraftToSession({ key, data }) {
-    SessionStorageService.set(key, data);
-  }
-
   // fetch units
   const { data: units } = useQuery({
     queryKey: [stockInOutAPIs.getUnits.endpointKey],
@@ -172,6 +168,10 @@ const CreateB2BInvoice = ({
     {
       value: 'GOODS',
       label: translations('form.input.item_type.goods'),
+    },
+    {
+      value: 'SERVICE',
+      label: translations('form.input.item_type.services'),
     },
   ];
 
@@ -604,7 +604,7 @@ const CreateB2BInvoice = ({
                               ...selectedItem,
                               productId: selectedItemData.id,
                               productType: selectedItemData.productType,
-                              sac: selectedItemData.sacCode,
+                              sac: selectedItemData.sac,
                               serviceName: selectedItemData.serviceName,
                               unitPrice: selectedItemData.rate,
                               gstPerUnit,
@@ -889,7 +889,11 @@ const CreateB2BInvoice = ({
                     ...(order?.orderItems || []),
                     {
                       ...selectedItem,
-                      gstPercentage: selectedItem.gstPerUnit ?? 0,
+                      sac: Number(selectedItem.sac),
+                      unitPrice: Number(selectedItem.unitPrice),
+                      totalAmount: Number(selectedItem.totalAmount),
+                      totalGstAmount: Number(selectedItem.totalGstAmount),
+                      gstPercentage: Number(selectedItem.gstPerUnit ?? 0),
                     },
                   ];
 
