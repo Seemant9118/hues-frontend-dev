@@ -22,6 +22,8 @@ import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import InfoBanner from '@/components/auth/InfoBanner';
+import { Button } from '@/components/ui/button';
+import DirectDC from '@/components/dispatchNote/DirectDC';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -48,6 +50,7 @@ const DeliveryChallan = () => {
   const [searchCycle, setSearchCycle] = useState(0);
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
+  const [isCreatingDC, setIsCreatingDC] = useState(false);
 
   const isSearching = searchTerm?.length > 0;
   const hasData = dispatchedNotes?.length > 0;
@@ -172,6 +175,10 @@ const DeliveryChallan = () => {
                 onDebouncedChange={handleSearchChange}
                 placeholder="Search Delivery Challan"
               />
+
+              <Button size="sm" onClick={() => setIsCreatingDC(true)}>
+                Generate Delivery Challans
+              </Button>
             </div>
           </SubHeader>
           {/* Banner */}
@@ -184,31 +191,37 @@ const DeliveryChallan = () => {
             }
           />
 
-          {isDeliveryChallanLoading ? (
-            <Loading />
-          ) : (
+          {!isCreatingDC && (
             <>
-              {/* Case 1: No search term, and no data → Empty stage */}
-              {!hasData && !isSearching ? (
-                <EmptyStageComponent
-                  heading={translations('emtpyStateComponent.heading')}
-                  subItems={keys}
-                />
+              {isDeliveryChallanLoading ? (
+                <Loading />
               ) : (
-                // Case 2: data is available → Show Table
-                <InfiniteDataTable
-                  id="delivery-challan-table"
-                  columns={dispatchedNotesColumns}
-                  data={hasData ? dispatchedNotes : []}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                />
+                <>
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!hasData && !isSearching ? (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: data is available → Show Table
+                    <InfiniteDataTable
+                      id="delivery-challan-table"
+                      columns={dispatchedNotesColumns}
+                      data={hasData ? dispatchedNotes : []}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
+
+          {isCreatingDC && <DirectDC setIsOpen={setIsCreatingDC} />}
         </Wrapper>
       )}
     </ProtectedWrapper>
