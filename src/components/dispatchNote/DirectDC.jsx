@@ -33,7 +33,7 @@ import {
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { addUpdateAddress } from '@/services/Settings_Services/SettingsService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search } from 'lucide-react';
+import { Package, Plus, Search } from 'lucide-react';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -524,7 +524,7 @@ const DirectDC = ({ setIsOpen }) => {
   const isDispatchNoteSelected = Boolean(selectedDispatchNoteId);
 
   return (
-    <Wrapper className="flex h-full min-h-0 flex-col gap-4 overflow-hidden py-2">
+    <Wrapper className="flex h-full min-h-0 flex-col gap-4 overflow-hidden px-1 py-2">
       {isAddingNewTransport && (
         <AddModal
           type="Add"
@@ -545,45 +545,40 @@ const DirectDC = ({ setIsOpen }) => {
         invalidateKey={addressAPIs.getAddressByEnterprise.endpointKey}
       />
 
-      <section className="shrink-0 rounded-md border p-3 sm:p-4">
-        <div className="rounded border p-3">
-          <Label>
-            Select Dispatch Notes <span className="text-red-500">*</span>
-          </Label>
+      <div className="flex flex-col gap-2">
+        <Label>
+          Select Dispatch Notes <span className="text-red-500">*</span>
+        </Label>
 
-          <Select
-            value={formData.dispatchNoteId}
-            onValueChange={handleDispatchNoteChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select dispatch note" />
-            </SelectTrigger>
+        <Select
+          value={formData.dispatchNoteId}
+          onValueChange={handleDispatchNoteChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select dispatch note" />
+          </SelectTrigger>
 
-            <SelectContent>
-              <div className="flex items-center gap-2 p-2">
-                <Search size={14} />
-                <Input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search by dispatch note number"
-                  className="pl-9"
-                />
-              </div>
+          <SelectContent>
+            <div className="flex items-center gap-2 p-2">
+              <Search size={14} />
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search by dispatch note number"
+                className="pl-9"
+              />
+            </div>
 
-              {dispatchNotes.map((dispatchNote) => (
-                <SelectItem
-                  key={dispatchNote.id}
-                  value={String(dispatchNote.id)}
-                >
-                  {dispatchNote.referenceNumber ||
-                    dispatchNote.reference ||
-                    `Dispatch Note #${dispatchNote.id}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </section>
+            {dispatchNotes.map((dispatchNote) => (
+              <SelectItem key={dispatchNote.id} value={String(dispatchNote.id)}>
+                {dispatchNote.referenceNumber ||
+                  dispatchNote.reference ||
+                  `Dispatch Note #${dispatchNote.id}`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {isDispatchNoteSelected && dispatchDetails && (
         <InfoBanner
@@ -599,7 +594,8 @@ const DirectDC = ({ setIsOpen }) => {
 
       <section className="scrollBarStyles min-h-0 flex-1 overflow-y-auto rounded-md border p-3 sm:p-4">
         {!isDispatchNoteSelected && (
-          <div className="text-sm text-muted-foreground">
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-sm text-muted-foreground">
+            <Package size={40} />
             Select a dispatch note to load its booking details.
           </div>
         )}

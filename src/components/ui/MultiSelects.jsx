@@ -15,6 +15,7 @@ const MultiSelects = ({ placeholder, option, value, handleChange }) => {
       isClearable={true}
       onChange={handleChange}
       options={option}
+      classNames="max-h-48"
     />
   );
 };

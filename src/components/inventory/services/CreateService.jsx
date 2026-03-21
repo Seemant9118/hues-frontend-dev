@@ -128,23 +128,86 @@ const CreateService = ({
       const stepFields = allFields.filter((f) => fieldNames.includes(f.name));
 
       if (stepFields.length > 0) {
-        transformed[stepKey] = stepFields.map((field) => {
-          const processedField = { ...field, required: field.isRequired };
-          if (processedField.options && Array.isArray(processedField.options)) {
-            processedField.options = processedField.options.map((opt) => ({
+        // Grouping logic for Better Visual Hierarchy (UX Point 2)
+        const groups = [];
+        if (stepKey === 'pricing') {
+          const basePricingGroup = {
+            key: 'base_pricing',
+            label: 'Base Pricing',
+            fields: stepFields.filter((f) =>
+              ['pricing_model', 'unit_of_measure', 'base_price'].includes(
+                f.name,
+              ),
+            ),
+          };
+          const taxGroup = {
+            key: 'tax_details',
+            label: 'Tax Details',
+            fields: stepFields.filter((f) =>
+              ['gst_rate_percent', 'sac_hsn_code'].includes(f.name),
+            ),
+          };
+          if (basePricingGroup.fields.length > 0) groups.push(basePricingGroup);
+          if (taxGroup.fields.length > 0) groups.push(taxGroup);
+        } else if (stepKey === 'operations') {
+          groups.push({
+            key: 'ops_config',
+            label: 'Operations',
+            fields: stepFields,
+          });
+        } else if (stepKey === 'SLAAndWarranty') {
+          groups.push({
+            key: 'sla_config',
+            label: 'SLA Details',
+            fields: stepFields,
+          });
+        } else if (stepKey === 'description') {
+          groups.push({
+            key: 'desc_groups',
+            label: 'Service Contents',
+            fields: stepFields,
+          });
+        } else if (stepKey === 'addOns') {
+          groups.push({
+            key: 'addons_groups',
+            label: 'Add-ons',
+            fields: stepFields,
+          });
+        } else if (stepKey === 'termsAndControls') {
+          groups.push({
+            key: 'terms_config',
+            label: 'Terms and Controls',
+            fields: stepFields,
+          });
+        } else if (stepKey === 'contracts') {
+          groups.push({
+            key: 'contracts_config',
+            label: 'Contracts and Consents',
+            fields: stepFields,
+          });
+        } else {
+          // Default grouping for others
+          groups.push({
+            key: 'general_config',
+            label: 'Configuration',
+            fields: stepFields,
+          });
+        }
+
+        transformed[stepKey] = groups.map((group) => ({
+          ...group,
+          enabledByDefault: true, // Grouped sections enabled by default
+          isRequired: group.fields.some((f) => f.isRequired),
+          fields: group.fields.map((field) => ({
+            ...field,
+            required: field.isRequired,
+            label: capitalize(field.label) || capitalize(field.name),
+            options: field.options?.map((opt) => ({
               ...opt,
               label: opt.label ? capitalize(opt.label) : opt.label,
-            }));
-          }
-
-          return {
-            key: field.name,
-            label: capitalize(field.label) || capitalize(field.name),
-            enabledByDefault: false,
-            isRequired: field.isRequired || false,
-            fields: [processedField],
-          };
-        });
+            })),
+          })),
+        }));
       } else {
         transformed[stepKey] = [];
       }

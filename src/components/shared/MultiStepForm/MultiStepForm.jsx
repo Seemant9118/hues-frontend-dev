@@ -1,10 +1,9 @@
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import StepIndicator from './StepIndicator';
 
 export default function MultiStepForm({
@@ -124,7 +123,7 @@ export default function MultiStepForm({
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="flex h-full flex-col gap-3 py-4">
+    <div className="flex h-[calc(100vh-0px)] flex-col gap-2 py-2">
       {/* Breadcrumbs */}
       {shouldRenderBreadcrumbList ? (
         <OrderBreadCrumbs possiblePagesBreadcrumbs={breadcrumbs} />
@@ -146,39 +145,29 @@ export default function MultiStepForm({
         steps={steps}
         currentStep={currentStep}
         onStepClick={handleJumpToStep}
+        errors={errors}
       />
 
       {/* Main Content Card */}
-      <Card className="flex max-h-[550px] flex-1 flex-col overflow-hidden border shadow-sm">
-        <CardContent className="scrollBarStyles flex-1 overflow-y-auto p-0">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 border-b bg-white px-6 py-4">
-            <h2 className="text-lg font-bold text-gray-900">
-              {steps[currentStep].title || steps[currentStep].label}
-            </h2>
-
-            {steps[currentStep].subtitle && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                {steps[currentStep].subtitle}
-              </p>
-            )}
-          </div>
-
+      <div className="flex w-full flex-1 flex-col overflow-hidden border-t bg-white">
+        <div className="scrollBarStyles flex-1 overflow-y-auto">
           {/* Step Component */}
-          <div className="p-6">
-            <CurrentStepComponent
-              formData={formData}
-              setFormData={setFormData}
-              errors={errors}
-              translation={translation}
-              configFields={configFields}
-              isConfigLoading={isConfigLoading}
-            />
+          <div className="flex h-full flex-col px-4 py-6">
+            <div className="flex-1">
+              <CurrentStepComponent
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+                translation={translation}
+                configFields={configFields}
+                isConfigLoading={isConfigLoading}
+              />
+            </div>
           </div>
-        </CardContent>
+        </div>
 
         {/* Footer */}
-        <CardFooter className="flex items-center justify-between border-t bg-white p-4">
+        <div className="flex items-center justify-between border-t bg-white p-4 shadow-md">
           <div>
             {onCancel && (
               <Button
@@ -223,8 +212,8 @@ export default function MultiStepForm({
               </Button>
             )}
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

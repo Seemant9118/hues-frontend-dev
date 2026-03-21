@@ -12,7 +12,7 @@ export default function Pricing({
   return (
     <DynamicServiceStep
       stepKey="pricing"
-      sectionTitle="Base Pricing"
+      sectionTitle="Pricing"
       translationKey="multiStepForm.pricing.section1.title"
       configFields={configFields}
       isConfigLoading={isConfigLoading}

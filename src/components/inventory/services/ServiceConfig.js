@@ -11,7 +11,7 @@ import TermsAndControls from './Layouts/TermsAndControls';
 export const stepsServiceConfig = [
   {
     key: 'overview',
-    label: 'Overview',
+    label: 'Basic Information',
     component: Overview,
     validate: (form) => {
       const newErrors = {};
@@ -44,7 +44,7 @@ export const stepsServiceConfig = [
   },
   {
     key: 'description',
-    label: 'Description',
+    label: 'Service Contents',
     component: Description,
   },
   {

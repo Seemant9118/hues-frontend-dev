@@ -181,15 +181,6 @@ const DeliveryChallan = () => {
               </Button>
             </div>
           </SubHeader>
-          {/* Banner */}
-          <InfoBanner
-            showSupportLink={false}
-            text={
-              <>
-                {`You can create multiple Delivery Challans against a single Dispatch Note.`}
-              </>
-            }
-          />
 
           {!isCreatingDC && (
             <>
@@ -197,6 +188,15 @@ const DeliveryChallan = () => {
                 <Loading />
               ) : (
                 <>
+                  {/* Banner */}
+                  <InfoBanner
+                    showSupportLink={false}
+                    text={
+                      <>
+                        {`You can create multiple Delivery Challans against a single Dispatch Note.`}
+                      </>
+                    }
+                  />
                   {/* Case 1: No search term, and no data → Empty stage */}
                   {!hasData && !isSearching ? (
                     <EmptyStageComponent

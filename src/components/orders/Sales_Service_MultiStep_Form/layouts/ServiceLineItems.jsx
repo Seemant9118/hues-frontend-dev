@@ -2,7 +2,6 @@
 
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
-import DynamicForm from '@/components/DynamicForm/DynamicForm';
 import {
   Accordion,
   AccordionContent,
@@ -21,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import Select from 'react-select';
+import ServiceItemDynamicStep from './ServiceItemDynamicStep';
 
 export default function ServicesLineItems({
   formData = {},
@@ -158,44 +158,40 @@ export default function ServicesLineItems({
       prev.map((item) => {
         if (item.id !== id) return item;
 
-        // 1. Get current flat values for functional updates
-        const currentConfigValues = Object.keys(
-          item.serviceConfig || {},
-        ).reduce(
-          (acc, key) => ({
-            ...acc,
-            [key]: item.serviceConfig[key]?.defaultValue,
-          }),
-          {},
-        );
+        // Resolve updater:
+        // - New path (ServiceItemDynamicStep): updater = (prevServiceConfig) => newServiceConfig
+        //   where newServiceConfig is the full field-object map.
+        // - Legacy path: plain { fieldName: value } object with flat defaultValues.
+        let newServiceConfig;
 
-        // 2. Resolve field updates (could be object or function)
-        const fieldUpdates =
-          typeof configUpdates === 'function'
-            ? configUpdates(currentConfigValues)
-            : configUpdates;
+        if (typeof configUpdates === 'function') {
+          // Updater receives and returns the FULL serviceConfig object
+          newServiceConfig = configUpdates(item.serviceConfig || {});
+        } else {
+          // Legacy: merge flat { name: value } into field objects
+          newServiceConfig = { ...(item.serviceConfig || {}) };
+          Object.keys(configUpdates).forEach((key) => {
+            if (newServiceConfig[key]) {
+              newServiceConfig[key] = {
+                ...newServiceConfig[key],
+                defaultValue: configUpdates[key],
+              };
+            }
+          });
+        }
 
-        // 3. Merge updates into serviceConfig field objects (updating defaultValue property)
-        const newServiceConfig = { ...item.serviceConfig };
-        Object.keys(fieldUpdates).forEach((key) => {
-          if (newServiceConfig[key]) {
-            newServiceConfig[key] = {
-              ...newServiceConfig[key],
-              defaultValue: fieldUpdates[key],
-            };
-          }
-        });
-
-        // 4. Sync specific fields to root level if they are present in the dynamic form
+        // Sync well-known fields up to root-level order item props
         const syncUpdates = {};
-        if (fieldUpdates.quantity !== undefined)
-          syncUpdates.quantity = Number(fieldUpdates.quantity);
-        if (fieldUpdates.base_price !== undefined)
-          syncUpdates.unitPrice = Number(fieldUpdates.base_price);
-        if (fieldUpdates.discount !== undefined)
-          syncUpdates.discountPercentage = Number(fieldUpdates.discount);
-        if (fieldUpdates.gst_percentage !== undefined)
-          syncUpdates.gstPercentage = Number(fieldUpdates.gst_percentage);
+        const qtyDV = newServiceConfig?.quantity?.defaultValue;
+        const priceDV = newServiceConfig?.base_price?.defaultValue;
+        const discDV = newServiceConfig?.discount?.defaultValue;
+        const gstDV = newServiceConfig?.gst_percentage?.defaultValue;
+
+        if (qtyDV !== undefined) syncUpdates.quantity = Number(qtyDV);
+        if (priceDV !== undefined) syncUpdates.unitPrice = Number(priceDV);
+        if (discDV !== undefined)
+          syncUpdates.discountPercentage = Number(discDV);
+        if (gstDV !== undefined) syncUpdates.gstPercentage = Number(gstDV);
 
         const updated = {
           ...item,
@@ -250,7 +246,7 @@ export default function ServicesLineItems({
             className="rounded-lg border"
           >
             <div className="flex items-center justify-between gap-2 px-4">
-              <AccordionTrigger className="hover:no-underline">
+              <AccordionTrigger className="justify-start gap-2 hover:no-underline [&>svg]:order-first">
                 <div className="text-left font-medium">
                   {item.serviceName || 'New Service'}
                 </div>
@@ -297,7 +293,7 @@ export default function ServicesLineItems({
 
               {/* Dynamic Content */}
               {item.productId && (
-                <div className="rounded-md border bg-muted/30 p-4">
+                <div className="">
                   {/* Master Controls */}
                   {/* <div className="mb-4 grid grid-cols-2 gap-4 border-b pb-4 md:grid-cols-4">
                     <div className="flex flex-col gap-1">
@@ -338,33 +334,22 @@ export default function ServicesLineItems({
                     </div>
                   </div> */}
 
-                  {/* Config Fields */}
-                  {item.serviceConfig && (
-                    <div className="py-2">
-                      <Label className="mb-2 block text-[10px] uppercase text-muted-foreground">
-                        Configuration Fields
-                      </Label>
-                      <DynamicForm
-                        schema={Object.entries(item.serviceConfig).map(
-                          ([key, f]) => ({
-                            ...f,
-                            name: key,
-                          }),
-                        )}
-                        formData={Object.keys(item.serviceConfig).reduce(
-                          (acc, key) => ({
-                            ...acc,
-                            [key]: item.serviceConfig[key].defaultValue,
-                          }),
-                          {},
-                        )}
-                        setFormData={(updates) =>
-                          updateServiceConfig(item.id, updates)
-                        }
-                        errors={errors[index]?.serviceConfig || {}}
-                      />
-                    </div>
-                  )}
+                  {/* Config Fields – section-grouped layout */}
+                  {item.serviceConfig &&
+                    Object.keys(item.serviceConfig).length > 0 && (
+                      <div className="py-2">
+                        <Label className="mb-2 block text-[10px] uppercase text-muted-foreground">
+                          Configuration Fields
+                        </Label>
+                        <ServiceItemDynamicStep
+                          item={item}
+                          onConfigChange={(updater) =>
+                            updateServiceConfig(item.id, updater)
+                          }
+                          errors={errors[index]?.serviceConfig || {}}
+                        />
+                      </div>
+                    )}
 
                   {/* Item Summary */}
                   <div className="mt-4 flex flex-col gap-1 border-t pt-4 text-xs">
