@@ -19,7 +19,7 @@ export default function Overview({
   formData,
   setFormData,
   errors,
-  translation,
+  // translation,
 }) {
   const { data: servicesMasterTypes } = useQuery({
     queryKey: [AdminAPIs.getServicesMasterTypes.endpointKey],
@@ -33,12 +33,9 @@ export default function Overview({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* ------------------- basic fields ------------------- */}
-      <h2 className="text-sm font-bold text-primary">
-        {translation('multiStepForm.overview.section1.title')}
-      </h2>
-      <div className="grid grid-cols-2 gap-4">
+    <div className="mt-2 grid gap-6">
+      <h1 className="text-sm font-bold text-primary">Basic Information</h1>
+      <div className="mt-2 grid grid-cols-2 gap-6">
         <div>
           <Label>
             Service Name <span className="text-red-600">*</span>
@@ -66,13 +63,7 @@ export default function Overview({
 
           {errors?.serviceCode && <ErrorBox msg={errors?.serviceCode} />}
         </div>
-      </div>
 
-      {/* ------------------- category ------------------- */}
-      <h2 className="text-sm font-bold text-primary">
-        {translation('multiStepForm.overview.section2.title')}
-      </h2>
-      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>
             Service Category <span className="text-red-600">*</span>
@@ -93,7 +84,7 @@ export default function Overview({
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="max-h-48">
               <SelectGroup>
                 {servicesMasterTypes?.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
@@ -128,7 +119,7 @@ export default function Overview({
               <SelectValue placeholder="Select subtype" />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="max-h-48">
               <SelectGroup>
                 {servicesMasterTypes
                   ?.find((c) => c.id === Number(formData?.serviceCategoryId))

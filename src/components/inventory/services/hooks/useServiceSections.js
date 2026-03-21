@@ -2,12 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 /**
  * Shared hook for all service layout steps (Pricing, Operations, etc.).
- *
- * Given the `configFields` map and a `stepKey` (e.g. "pricing"), this hook:
- *   1. Derives sections from the API response (+ appends "+ Add" for selects).
- *   2. Manages `enabledSections` toggle state.
- *   3. Syncs enabled field values into `formData.defaultFieldsWithValues`.
- *   4. Provides CRUD helpers for options inside select fields.
  */
 export function useServiceSections({
   stepKey,
@@ -23,20 +17,26 @@ export function useServiceSections({
       ...section,
       enabledByDefault: section.enabledByDefault ?? false,
       fields: section.fields.map((field) => {
-        let { options } = field;
+        const { options, ...restField } = field;
+
+        let updatedOptions = options;
 
         if (field.type === 'select') {
-          if (!options || options.length === 0) {
-            options = [{ label: 'NIL', value: 'NIL' }];
+          if (!updatedOptions || updatedOptions.length === 0) {
+            updatedOptions = [{ label: 'NIL', value: 'NIL' }];
           }
-          if (!options.some((o) => o.value === 'ADD')) {
-            options = [...options, { label: '+ Add', value: 'ADD' }];
+
+          if (!updatedOptions.some((o) => o.value === 'ADD')) {
+            updatedOptions = [
+              ...updatedOptions,
+              { label: '+ Add', value: 'ADD' },
+            ];
           }
         }
 
         return {
-          ...field,
-          options,
+          ...restField,
+          options: updatedOptions,
         };
       }),
     }));
@@ -54,16 +54,17 @@ export function useServiceSections({
 
     const dfv = formData?.defaultFieldsWithValues;
 
-    // Merge any saved options from formData into API sections (edit mode)
     const merged = apiSections.map((section) => ({
       ...section,
       fields: section.fields.map((field) => {
         const savedField = dfv?.[field.name];
+
         if (savedField && savedField.options && field.options) {
           const savedOptions = savedField.options.filter(
             (o) => o.value !== 'ADD',
           );
           const hasAdd = field.options.some((o) => o.value === 'ADD');
+
           return {
             ...field,
             options: hasAdd
@@ -71,6 +72,7 @@ export function useServiceSections({
               : savedOptions,
           };
         }
+
         return field;
       }),
     }));
@@ -88,7 +90,6 @@ export function useServiceSections({
         }),
       ),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiSections]);
 
   // Sync enabled field values into formData
@@ -100,6 +101,7 @@ export function useServiceSections({
 
       section.fields.forEach((field) => {
         const current = formData?.defaultFieldsWithValues?.[field.name];
+        const { ...cleanField } = field;
 
         if (!current) {
           setFormData((prev) => ({
@@ -107,7 +109,7 @@ export function useServiceSections({
             defaultFieldsWithValues: {
               ...prev.defaultFieldsWithValues,
               [field.name]: {
-                ...field,
+                ...cleanField,
                 defaultValue: field.defaultValue ?? '',
               },
             },
@@ -118,7 +120,7 @@ export function useServiceSections({
             defaultFieldsWithValues: {
               ...prev.defaultFieldsWithValues,
               [field.name]: {
-                ...field,
+                ...cleanField,
                 ...current,
                 defaultValue: current.defaultValue ?? field.defaultValue ?? '',
               },
@@ -138,9 +140,11 @@ export function useServiceSections({
     if (!value) {
       setFormData((prev) => {
         const updated = { ...prev.defaultFieldsWithValues };
+
         section.fields.forEach((field) => {
           updated[field.name] = null;
         });
+
         return { ...prev, defaultFieldsWithValues: updated };
       });
     }
@@ -202,12 +206,14 @@ export function useServiceSections({
       (opt) => opt.value !== 'ADD',
     );
 
+    const { ...cleanField } = addOptionField;
+
     setFormData((prev) => ({
       ...prev,
       defaultFieldsWithValues: {
         ...prev.defaultFieldsWithValues,
         [addOptionField.name]: {
-          ...addOptionField,
+          ...cleanField,
           options: cleanOptions,
           defaultValue: value,
         },
@@ -248,12 +254,14 @@ export function useServiceSections({
         (opt) => opt.value !== 'ADD',
       );
 
+      const { ...cleanField } = editingOption.field;
+
       setFormData((prev) => ({
         ...prev,
         defaultFieldsWithValues: {
           ...prev.defaultFieldsWithValues,
           [editingOption.field.name]: {
-            ...editingOption.field,
+            ...cleanField,
             options: cleanOptions,
             defaultValue:
               prev.defaultFieldsWithValues?.[editingOption.field.name]
@@ -276,6 +284,7 @@ export function useServiceSections({
         ...section,
         fields: section.fields.map((f) => {
           if (f.name !== fieldMeta.name) return f;
+
           return {
             ...f,
             options: f.options.filter((o) => o.value !== option.value),

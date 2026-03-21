@@ -17,7 +17,7 @@ const SelectTrigger = React.forwardRef(
     <SelectPrimitive.Trigger
       ref={ref}
       className={cn(
-        'flex h-10 w-full items-center justify-between rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-80 [&>span]:line-clamp-1',
+        'flex h-10 w-full items-center justify-between rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-80 [&>span]:truncate',
         className,
       )}
       {...props}
@@ -105,7 +105,7 @@ const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
 SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = React.forwardRef(
-  ({ className, children, ...props }, ref) => (
+  ({ className, children, actions, ...props }, ref) => (
     <SelectPrimitive.Item
       ref={ref}
       className={cn(
@@ -120,7 +120,11 @@ const SelectItem = React.forwardRef(
         </SelectPrimitive.ItemIndicator>
       </span>
 
+      {/* Only children go inside ItemText — Radix mirrors this into the trigger */}
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+
+      {/* actions are OUTSIDE ItemText so they never appear in the trigger */}
+      {actions}
     </SelectPrimitive.Item>
   ),
 );
