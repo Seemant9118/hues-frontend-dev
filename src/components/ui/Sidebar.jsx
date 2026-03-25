@@ -21,6 +21,7 @@ import {
   FileSymlink,
   FileText,
   Gauge,
+  GitGraph,
   HandCoins,
   HandPlatter,
   IndianRupee,
@@ -105,6 +106,11 @@ const Sidebar = () => {
               path: '/dashboard/admin/services-master/service-master',
             },
           ],
+        },
+        {
+          name: 'sidebar.rulesEngine',
+          icon: <GitGraph size={16} />,
+          path: `/dashboard/admin/rules-engine`,
         },
       ]
     : [];
