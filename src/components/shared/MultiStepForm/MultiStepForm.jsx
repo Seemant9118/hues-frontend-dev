@@ -54,7 +54,7 @@ export default function MultiStepForm({
     }
 
     // Validate dynamic steps based on configuration
-    if (configFields && currentStepConfig.key !== 'overview') {
+    if (configFields) {
       const stepKey = currentStepConfig.key;
       const stepSections = configFields[stepKey];
       if (stepSections) {

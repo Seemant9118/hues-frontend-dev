@@ -6,16 +6,6 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import { useServiceSections } from '../hooks/useServiceSections';
 
-/**
- * Reusable step component for API-driven service configuration steps.
- *
- * Props:
- * - stepKey: e.g. "pricing", "operations"
- * - sectionTitle: the heading text for the step
- * - translationKey: i18n key for the section title fallback
- * - configFields, isConfigLoading: from the parent (CreateService → MultiStepForm)
- * - formData, setFormData, errors, translation: standard form props
- */
 export default function DynamicServiceStep({
   stepKey,
   // sectionTitle,
@@ -26,6 +16,7 @@ export default function DynamicServiceStep({
   setFormData,
   errors,
   setErrors,
+  staticSections,
   // translation,
 }) {
   const {
@@ -49,11 +40,38 @@ export default function DynamicServiceStep({
     setFormData,
   });
 
+  const hasStaticSections =
+    Array.isArray(staticSections) && staticSections.length > 0;
+
   return (
     <div className="flex flex-col gap-6">
-      {/* <h2 className="text-sm font-bold text-primary">
-        {(translationKey && translation(translationKey)) || sectionTitle}
-      </h2> */}
+      {hasStaticSections && (
+        <div className="flex flex-col gap-4">
+          {staticSections.map((section) => (
+            <div
+              key={section.key}
+              className={cn(
+                'flex flex-col gap-4 rounded-xl border bg-card p-5 shadow-sm transition-all',
+                section.fullWidth ? 'col-span-full' : 'col-span-1',
+              )}
+            >
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-sans text-[15px] font-bold text-foreground">
+                    {section.label}
+                  </h3>
+                </div>
+                {section.required && (
+                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-500">
+                    Required Section
+                  </span>
+                )}
+              </div>
+              {section.content}
+            </div>
+          ))}
+        </div>
+      )}
 
       {isConfigLoading && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -66,7 +84,7 @@ export default function DynamicServiceStep({
         </div>
       )}
 
-      {!isConfigLoading && sections.length === 0 && (
+      {!isConfigLoading && sections.length === 0 && !hasStaticSections && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <p className="text-sm font-medium text-muted-foreground">
             No configurable fields available for this step.
@@ -149,7 +167,7 @@ export default function DynamicServiceStep({
                             setEditingOption({ option, field: fieldMeta });
                             setNewOption({
                               label: option.label,
-                              description: '',
+                              description: option.description || '',
                             });
                           }}
                           onDeleteOption={handleDeleteOption}

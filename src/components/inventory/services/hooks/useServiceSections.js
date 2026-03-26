@@ -21,7 +21,7 @@ export function useServiceSections({
 
         let updatedOptions = options;
 
-        if (field.type === 'select') {
+        if (field.type === 'select' || field.type === 'multi-select') {
           if (!updatedOptions || updatedOptions.length === 0) {
             updatedOptions = [{ label: 'NIL', value: 'NIL' }];
           }
@@ -153,6 +153,11 @@ export function useServiceSections({
   const handleChange = (key, val, fieldMeta) => {
     const value = val?.target ? val.target.value : val;
 
+    if (Array.isArray(value) && value.includes('ADD')) {
+      setAddOptionField(fieldMeta);
+      return;
+    }
+
     if (value === 'ADD') {
       setAddOptionField(fieldMeta);
       return;
@@ -174,7 +179,11 @@ export function useServiceSections({
     if (!newOption.label || !addOptionField) return;
 
     const value = newOption.label.toUpperCase().replace(/\s+/g, '_');
-    const newItem = { label: newOption.label, value };
+    const newItem = {
+      label: newOption.label,
+      value,
+      description: newOption.description || '',
+    };
 
     let updatedField;
 
@@ -207,6 +216,7 @@ export function useServiceSections({
     );
 
     const { ...cleanField } = addOptionField;
+    const isMultiSelect = addOptionField.type === 'multi-select';
 
     setFormData((prev) => ({
       ...prev,
@@ -215,7 +225,18 @@ export function useServiceSections({
         [addOptionField.name]: {
           ...cleanField,
           options: cleanOptions,
-          defaultValue: value,
+          defaultValue: isMultiSelect
+            ? Array.isArray(
+                prev.defaultFieldsWithValues?.[addOptionField.name]
+                  ?.defaultValue,
+              )
+              ? [
+                  ...prev.defaultFieldsWithValues[addOptionField.name]
+                    .defaultValue,
+                  value,
+                ]
+              : [value]
+            : value,
         },
       },
     }));
@@ -239,7 +260,12 @@ export function useServiceSections({
 
           const updatedOptions = field.options.map((opt) =>
             opt.value === editingOption.option.value
-              ? { label: newOption.label, value: newValue }
+              ? {
+                  ...opt,
+                  label: newOption.label,
+                  value: newValue,
+                  description: newOption.description || '',
+                }
               : opt,
           );
 
@@ -263,9 +289,17 @@ export function useServiceSections({
           [editingOption.field.name]: {
             ...cleanField,
             options: cleanOptions,
-            defaultValue:
+            defaultValue: Array.isArray(
               prev.defaultFieldsWithValues?.[editingOption.field.name]
-                ?.defaultValue === editingOption.option.value
+                ?.defaultValue,
+            )
+              ? prev.defaultFieldsWithValues[
+                  editingOption.field.name
+                ].defaultValue.map((val) =>
+                  val === editingOption.option.value ? newValue : val,
+                )
+              : prev.defaultFieldsWithValues?.[editingOption.field.name]
+                    ?.defaultValue === editingOption.option.value
                 ? newValue
                 : prev.defaultFieldsWithValues?.[editingOption.field.name]
                     ?.defaultValue,
@@ -301,6 +335,12 @@ export function useServiceSections({
         (o) => o.value !== option.value,
       );
 
+      const updatedDefaultValue = Array.isArray(currentField.defaultValue)
+        ? currentField.defaultValue.filter((val) => val !== option.value)
+        : currentField.defaultValue === option.value
+          ? ''
+          : currentField.defaultValue;
+
       return {
         ...prev,
         defaultFieldsWithValues: {
@@ -308,10 +348,7 @@ export function useServiceSections({
           [fieldMeta.name]: {
             ...currentField,
             options: updatedOptions,
-            defaultValue:
-              currentField.defaultValue === option.value
-                ? ''
-                : currentField.defaultValue,
+            defaultValue: updatedDefaultValue,
           },
         },
       };

@@ -10,7 +10,17 @@ const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
 
-const SelectValue = SelectPrimitive.Value;
+const SelectValue = React.forwardRef(({ className, ...props }, ref) => (
+  <SelectPrimitive.Value
+    ref={ref}
+    className={cn(
+      'data-[placeholder]:text-muted-foreground data-[placeholder]:opacity-70',
+      className,
+    )}
+    {...props}
+  />
+));
+SelectValue.displayName = SelectPrimitive.Value.displayName;
 
 const SelectTrigger = React.forwardRef(
   ({ className, children, ...props }, ref) => (
@@ -105,11 +115,11 @@ const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
 SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = React.forwardRef(
-  ({ className, children, actions, ...props }, ref) => (
+  ({ className, children, actions, description, ...props }, ref) => (
     <SelectPrimitive.Item
       ref={ref}
       className={cn(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'relative flex w-full cursor-default select-none items-start rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       )}
       {...props}
@@ -120,8 +130,15 @@ const SelectItem = React.forwardRef(
         </SelectPrimitive.ItemIndicator>
       </span>
 
-      {/* Only children go inside ItemText — Radix mirrors this into the trigger */}
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Only children go inside ItemText ? Radix mirrors this into the trigger */}
+        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+        {description && (
+          <span className="mt-0.5 text-xs text-muted-foreground">
+            {description}
+          </span>
+        )}
+      </div>
 
       {/* actions are OUTSIDE ItemText so they never appear in the trigger */}
       {actions}
