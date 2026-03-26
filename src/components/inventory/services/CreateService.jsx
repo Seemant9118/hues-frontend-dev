@@ -91,7 +91,7 @@ const CreateService = ({
     }
 
     const stepMapping = {
-      overview: [], // `service_name` and `service_code` are handled by top-level state
+      overview: ['is_active'], // top-level fields are handled outside dynamic config
       pricing: [
         'pricing_model',
         'unit_of_measure',
@@ -107,11 +107,6 @@ const CreateService = ({
         'input_requirements',
       ],
       addOns: ['add_on_service_codes', 'bundle_codes'],
-      termsAndControls: [
-        'requires_internal_approval',
-        'requires_client_signoff',
-        'is_active',
-      ],
       contracts: [
         'contract_template_id',
         'required_consents',
@@ -130,7 +125,13 @@ const CreateService = ({
       if (stepFields.length > 0) {
         // Grouping logic for Better Visual Hierarchy (UX Point 2)
         const groups = [];
-        if (stepKey === 'pricing') {
+        if (stepKey === 'overview') {
+          groups.push({
+            key: 'overview_main',
+            label: 'Visibility',
+            fields: stepFields,
+          });
+        } else if (stepKey === 'pricing') {
           const basePricingGroup = {
             key: 'base_pricing',
             label: 'Base Pricing',

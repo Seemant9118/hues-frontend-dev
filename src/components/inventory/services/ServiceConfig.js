@@ -5,7 +5,6 @@ import Operations from './Layouts/Operation';
 import Overview from './Layouts/Overview';
 import Pricing from './Layouts/Pricing';
 import SLAAndWarranty from './Layouts/SLAAndWarranty';
-import TermsAndControls from './Layouts/TermsAndControls';
 
 // Services
 export const stepsServiceConfig = [
@@ -52,11 +51,11 @@ export const stepsServiceConfig = [
     label: 'Add-ons Services',
     component: AddOns,
   },
-  {
-    key: 'termsAndControls',
-    label: 'Terms & Controls',
-    component: TermsAndControls,
-  },
+  // {
+  //   key: 'termsAndControls',
+  //   label: 'Terms & Controls',
+  //   component: TermsAndControls,
+  // },
   {
     key: 'contracts',
     label: 'Contracts and Consents',

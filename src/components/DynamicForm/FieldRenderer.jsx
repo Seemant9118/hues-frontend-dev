@@ -11,10 +11,11 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Info, Pencil, Trash2 } from 'lucide-react';
 import React from 'react';
 import { DataTable } from '../table/data-table';
 import ErrorBox from '../ui/ErrorBox';
+import Tooltips from '../auth/Tooltips';
 
 const FieldRenderer = React.memo(function FieldRenderer({
   field,
@@ -65,7 +66,13 @@ const FieldRenderer = React.memo(function FieldRenderer({
             required && 'after:ml-0.5 after:text-red-500 after:content-["*"]',
           )}
         >
-          {label}
+          {label}{' '}
+          {enableOptionCrud && (
+            <Tooltips
+              trigger={<Info size={14} />}
+              content="This will be used as the default. You can change it later."
+            />
+          )}
         </Label>
       )}
 
@@ -119,7 +126,19 @@ const FieldRenderer = React.memo(function FieldRenderer({
             disabled={disabled}
           >
             <SelectTrigger className="h-10 text-[14px]">
-              <SelectValue placeholder={placeholder || 'Select'} />
+              {value !== undefined && value !== null && value !== '' ? (
+                <div className="flex items-center gap-2 truncate">
+                  <span className="truncate">
+                    {options?.find((opt) => opt.value === value)?.label ||
+                      value}
+                  </span>
+                  <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-600">
+                    Selected
+                  </span>
+                </div>
+              ) : (
+                <SelectValue placeholder={placeholder || 'Select'} />
+              )}
             </SelectTrigger>
 
             <SelectContent className="max-h-60 min-w-[200px] p-1">
@@ -143,6 +162,7 @@ const FieldRenderer = React.memo(function FieldRenderer({
                     key={opt.value}
                     value={opt.value}
                     className="pr-1"
+                    description={opt.description}
                     actions={
                       enableOptionCrud ? (
                         <div className="ml-auto flex shrink-0 items-center gap-0.5 pl-2">
@@ -174,6 +194,11 @@ const FieldRenderer = React.memo(function FieldRenderer({
                     }
                   >
                     {opt.label}
+                    {opt.value === value && (
+                      <span className="ml-2 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-600">
+                        Selected
+                      </span>
+                    )}
                   </SelectItem>
                 );
               })}
@@ -218,8 +243,11 @@ const FieldRenderer = React.memo(function FieldRenderer({
               handleChange={(v) => {
                 // v is either an array of objects for selected items or null
                 const updatedValues = v ? v.map((item) => item.value) : [];
-                onChange(name, updatedValues);
+                onChange(name, updatedValues, field);
               }}
+              enableOptionCrud={enableOptionCrud}
+              onEditOption={(opt) => onEditOption?.(opt, field)}
+              onDeleteOption={(opt) => onDeleteOption?.(opt, field)}
             />
           </div>
         )}
