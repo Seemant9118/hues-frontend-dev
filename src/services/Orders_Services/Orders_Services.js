@@ -139,3 +139,7 @@ export const viewOrderinNewTab = async (id) => {
 export const remindOrder = (id) => {
   return APIinstance.post(`${orderApi.remindOrder.endpoint}${id}`);
 };
+
+export const previewOrderDocument = (data) => {
+  return APIinstance.post(orderApi.previewOrderDocument.endpoint, data);
+};

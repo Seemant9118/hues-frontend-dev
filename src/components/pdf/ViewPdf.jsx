@@ -19,7 +19,7 @@ const ViewPdf = ({ url, isPDF }) => {
 
   const onDocumentLoadSuccess = ({ numPages }) => setPages(numPages);
 
-  // ✅ Auto calculate width (best for zoom issues)
+  // Auto calculate width (best for zoom issues)
   useEffect(() => {
     const handleResize = () => {
       if (!containerRef.current) return;
@@ -36,7 +36,7 @@ const ViewPdf = ({ url, isPDF }) => {
 
   return (
     <section className="flex h-full w-full flex-col gap-4 p-2 sm:p-4">
-      {/* ✅ Scroll Area (only this should scroll) */}
+      {/* Scroll Area (only this should scroll) */}
       <div
         ref={containerRef}
         className="scrollBarStyles flex-1 overflow-auto bg-white p-2"
@@ -49,7 +49,7 @@ const ViewPdf = ({ url, isPDF }) => {
           >
             <Page
               pageNumber={pageNo}
-              width={pageWidth} // ✅ best fix for zoom + responsive
+              width={pageWidth} // best fix for zoom + responsive
               renderAnnotationLayer={false}
               renderTextLayer={false}
             />

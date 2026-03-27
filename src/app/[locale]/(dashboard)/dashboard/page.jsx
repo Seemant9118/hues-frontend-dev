@@ -62,9 +62,9 @@ export default function Home() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [salestab, setSalesTab] = useState('totalAmount');
   const [purchaseTab, setPurchaseTab] = useState('totalAmount');
-  const [salesDataGranularity, setSalesDataGranularity] = useState('DAILY');
+  const [salesDataGranularity, setSalesDataGranularity] = useState('MONTHLY');
   const [purchaseDataGranularity, setPurchaseDataGranularity] =
-    useState('DAILY');
+    useState('MONTHLY');
   const fromDate = new Date('2025/04/01');
   const toDate = new Date();
   const [salesDateRange, setSalesDateRange] = useState([fromDate, toDate]);
@@ -209,7 +209,7 @@ export default function Home() {
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
-      <div className="flex h-full flex-col gap-5">
+      <div className="flex h-full flex-col gap-3">
         <SubHeader name={translations('title')}></SubHeader>
 
         {/* Banner */}
@@ -295,7 +295,7 @@ export default function Home() {
                 subItems={keys}
               />
             ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <AnalyticsCard
                   title={translations('analytics.sales')}
                   tab={salestab}
