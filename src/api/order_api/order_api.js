@@ -126,4 +126,9 @@ export const orderApi = {
     endpoint: `/order/remind/`,
     endpointKey: 'remind_order',
   },
+  // 22. preview order document
+  previewOrderDocument: {
+    endpoint: `/order/preview`,
+    endpointKey: 'preview_order_document',
+  },
 };

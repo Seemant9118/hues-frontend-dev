@@ -1,6 +1,12 @@
 import BuyerContext from './layouts/BuyerContext';
+import OfferTermsControls from './layouts/OfferTermsControls';
+import PreviewFinalPage from './layouts/PreviewFinalPage';
 import ServicesLineItems from './layouts/ServiceLineItems';
-import { validateBuyerContext, validateServices } from './validator';
+import {
+  validateBuyerContext,
+  validateOfferTerms,
+  validateServices,
+} from './validator';
 
 export const getSalesServiceFormSteps = ({ cta }) => {
   return [
@@ -16,11 +22,16 @@ export const getSalesServiceFormSteps = ({ cta }) => {
       component: ServicesLineItems,
       validate: validateServices,
     },
-    // {
-    //   key: 'offer-terms-controls',
-    //   label: 'Offer Terms & Controls',
-    //   component: OfferTermsControls,
-    //   validate: validateOfferTerms,
-    // },
+    {
+      key: 'offer-terms-controls',
+      label: 'Offer Terms & Controls',
+      component: OfferTermsControls,
+      validate: validateOfferTerms,
+    },
+    {
+      key: 'preview-final',
+      label: 'Preview',
+      component: PreviewFinalPage,
+    },
   ];
 };

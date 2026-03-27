@@ -40,6 +40,8 @@ const CreateOrderServices = ({
     amount: null,
     isEditing: !!orderId,
     cta,
+    paymentTermsService: '',
+    offerValidity: '',
   });
   const [errors, setErrors] = React.useState({});
 
@@ -83,6 +85,8 @@ const CreateOrderServices = ({
         buyerType: fetchedOrderDetails.buyerType,
         isEditing: true,
         cta,
+        paymentTermsService: fetchedOrderDetails.paymentTermsService || '',
+        offerValidity: fetchedOrderDetails.offerValidity || '',
       });
     }
   }, [isOrderDetailsSuccess, fetchedOrderDetails]);

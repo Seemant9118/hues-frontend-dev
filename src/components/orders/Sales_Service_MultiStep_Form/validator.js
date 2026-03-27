@@ -60,12 +60,7 @@ export const validateServices = (formData) => {
 
 export const validateOfferTerms = (formData) => {
   return validateObject(formData, {
-    paymentTerms: required,
+    paymentTermsService: required,
     offerValidity: required,
-    notes: required,
-    customerNotes: required,
-    governingLaw: required,
-    disputeResolution: required,
-    deliveryAcceptance: required,
   });
 };
