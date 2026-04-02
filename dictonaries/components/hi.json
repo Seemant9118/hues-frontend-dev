@@ -990,6 +990,9 @@
                     "placeholder": "पता चुनें",
                     "add-new-address": "नया पता जोड़ें"
                 },
+                "dispatchNoteDate": {
+                    "label": "डिस्पैच नोट दिनांक"
+                },
                 "table": {
                     "header": {
                         "item_name": "आइटम नाम",

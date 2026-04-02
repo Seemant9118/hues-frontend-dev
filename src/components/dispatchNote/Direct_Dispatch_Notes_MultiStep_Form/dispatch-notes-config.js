@@ -97,7 +97,7 @@ function Step3Address({ formData, setFormData, errors }) {
       formData={formData}
       setFormData={setFormData}
       errorMsg={errors}
-      sectionLabel="Addresses"
+      sectionLabel="Dispatch Details"
       leftField={{
         label: 'Dispatch From',
         placeholder: 'Select dispatch from...',
@@ -166,6 +166,10 @@ const validateAddress = (formData) => {
 
   const isInternalLogistics = formData.movementType === INWARD;
 
+  if (!formData.dispatchNoteDate) {
+    errors.dispatchNoteDate = 'Please select a dispatch note date';
+  }
+
   if (!formData.dispatchFromAddressId) {
     errors.dispatchFromAddressId = 'Please select Dispatch From address';
   }
@@ -206,10 +210,10 @@ export const getCreateDispatchSteps = (formData) => {
 
   // Step 3 always same
   const step3 = {
-    key: 'address',
-    label: 'Address',
-    description: 'Dispatch locations',
-    title: 'Dispatch Address',
+    key: 'dispatchDetails',
+    label: 'Dispatch Details',
+    description: 'Dispatch Details',
+    title: 'Dispatch Details',
     subtitle: 'Select the address where items will be dispatched',
     component: Step3Address,
     validate: validateAddress,

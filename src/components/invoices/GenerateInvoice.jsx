@@ -53,6 +53,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     orderType: orderDetails?.orderType,
     discountAmount: orderDetails?.discountAmount,
     invoiceType: orderDetails?.invoiceType || 'GOODS',
+    invoiceDate: orderDetails?.invoiceDate || new Date().toISOString(),
     invoiceItems: [],
   });
   const [errorMsg, setErrorMsg] = useState(null);

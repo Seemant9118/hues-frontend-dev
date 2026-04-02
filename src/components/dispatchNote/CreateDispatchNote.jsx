@@ -18,11 +18,14 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import InfoBanner from '../auth/InfoBanner';
 import AddNewAddress from '../enterprise/AddNewAddress';
 import InvoiceOverview from '../invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
+import RemarkBox from '../remarks/RemarkBox';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+import DatePickers from '../ui/DatePickers';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import InputWithSelect from '../ui/InputWithSelect';
@@ -38,8 +41,6 @@ import {
   TableRow,
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
-import InfoBanner from '../auth/InfoBanner';
-import RemarkBox from '../remarks/RemarkBox';
 
 // macros
 const INWARD = 'INWARD';
@@ -68,6 +69,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [dispatchedData, setDispatchedData] = useState({
     movementType: OUTWARD,
     dispatchFromAddressId: '',
+    dispatchNoteDate: new Date(),
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
     totalGstAmount: null,
@@ -308,6 +310,10 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
       error.billingFrom = 'Please select a billing address';
     }
 
+    if (!disptachedData?.dispatchNoteDate) {
+      error.dispatchNoteDate = 'Please select a dispatch note date';
+    }
+
     if (!disptachedData?.items?.length) {
       error.isAnyInvoiceSelected = 'Please select at least one Item to create';
     }
@@ -386,10 +392,15 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
     // clear any previous errors
     setErrorMsg({});
 
+    const formattedData = {
+      ...updatedDispatchedData,
+      dispatchNoteDate: updatedDispatchedData.dispatchNoteDate ?? null,
+    };
+
     // proceed to API call
     createDispatchNoteMutation.mutate({
       id: invoiceDetails?.invoiceDetails?.orderId,
-      data: updatedDispatchedData,
+      data: formattedData,
     });
   };
 
@@ -542,6 +553,33 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
                   mutationFn={addUpdateAddress}
                   invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
                 />
+
+                {/* dispatch date */}
+                <div>
+                  <Label htmlFor="dispatchNoteDate">
+                    {translations('dispatchNoteDate.label')}
+                  </Label>
+                  <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    <DatePickers
+                      selected={dispatchedData.dispatchNoteDate}
+                      onChange={(date) => {
+                        setDispatchedData((prev) => ({
+                          ...prev,
+                          dispatchNoteDate: date,
+                        }));
+                        setErrorMsg((prev) => ({
+                          ...prev,
+                          dispatchNoteDate: '',
+                        }));
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      popperPlacement="right"
+                    />
+                  </div>
+                  {errorMsg?.dispatchNoteDate && (
+                    <ErrorBox msg={errorMsg.dispatchNoteDate} />
+                  )}
+                </div>
               </div>
             </div>
 

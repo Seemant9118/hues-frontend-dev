@@ -213,7 +213,7 @@
                     "client": "Client",
                     "customer": "Customer",
                     "vendor": "Vendor",
-                    "invoiceNo":"Invoice No.",
+                    "invoiceNo": "Invoice No.",
                     "invoice_date": "Invoice Date",
                     "item_type": "Item Type",
                     "item": "Item",
@@ -430,7 +430,7 @@
                 "payment_status": "Payment status",
                 "total_amount": "Total amount",
                 "debit_notes": "Debit notes",
-                "defects":"Defects"
+                "defects": "Defects"
             }
         },
         "past_invoices": {
@@ -994,6 +994,9 @@
                     "placeholder": "Select address",
                     "add-new-address": "Add new address"
                 },
+                "dispatchNoteDate": {
+                    "label": "Dispatch Note Date"
+                },
                 "table": {
                     "header": {
                         "item_name": "Item name",
@@ -1138,12 +1141,12 @@
                 "default": "Pending",
                 "isPayment_seller": "Not Acknowledged Yet",
                 "isPayment_buyer": "Not acknowledged by seller",
-                "pod":{
+                "pod": {
                     "podSeller": "PoD Sent",
-                    "podBuyer" : "PoD Pending"
+                    "podBuyer": "PoD Pending"
                 }
             },
-            "COMPLETED":"Completed",
+            "COMPLETED": "Completed",
             "NEW": "New",
             "OFFER_SENT": "Offer sent",
             "OFFER_RECEIVED": "Offer received",
@@ -1162,8 +1165,8 @@
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
             "DRAFT": "Draft",
-            "DEBIT":"Debit",
-            "CREDIT":"Credit",
+            "DEBIT": "Debit",
+            "CREDIT": "Credit",
             "FULLFILLED": "Fullfilled",
             "RECIEVED": "Recieved",
             "SENT": "Sent",

@@ -244,6 +244,7 @@ const DispatchedNotes = () => {
       // eslint-disable-next-line no-unused-vars
       const payload = {
         movementType,
+        dispatchNoteDate: formData?.dispatchNoteDate,
         dispatchFromAddressId: Number(formData?.dispatchFromAddressId),
         dispatchToAddressId: Number(formData?.dispatchToAddressId),
         totalAmount: Number(formData?.totalAmount),
@@ -268,6 +269,7 @@ const DispatchedNotes = () => {
 
     const payload = {
       movementType,
+      dispatchNoteDate: formData?.dispatchNoteDate,
       invoiceId: Number(formData?.invoiceId),
       orderId: Number(formData?.orderId),
       dispatchFromAddressId: Number(formData?.dispatchFromAddressId),

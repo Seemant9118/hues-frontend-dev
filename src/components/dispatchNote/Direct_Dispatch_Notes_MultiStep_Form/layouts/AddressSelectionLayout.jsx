@@ -2,15 +2,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, Plus } from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 
-import AddNewAddress from '@/components/enterprise/AddNewAddress';
+import DatePickers from '@/components/ui/DatePickers';
+
+import { addressAPIs } from '@/api/addressApi/addressApis';
 import {
   getEnterpriseId,
   getStylesForSelectComponent,
 } from '@/appUtils/helperFunctions';
-import { addressAPIs } from '@/api/addressApi/addressApis';
+import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Label } from '@/components/ui/label';
 import { getAddressByEnterprise } from '@/services/address_Services/AddressServices';
@@ -39,7 +41,7 @@ export default function AddressSelectionLayout({
   const [selectRight, setSelectRight] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
 
-  // ✅ fetch addresses
+  // fetch addresses
   const { data: addresses = [] } = useQuery({
     queryKey: [addressAPIs.getAddressByEnterprise.endpointKey, enterpriseId],
     queryFn: () => getAddressByEnterprise(enterpriseId),
@@ -47,7 +49,7 @@ export default function AddressSelectionLayout({
     enabled: !!enterpriseId,
   });
 
-  // ✅ dropdown options
+  // dropdown options
   const addressesOptions = useMemo(() => {
     const baseOptions = (addresses || []).map((address) => ({
       value: address?.id,
@@ -67,7 +69,7 @@ export default function AddressSelectionLayout({
     ];
   }, [addresses]);
 
-  // ✅ Keep react-select in sync when formData already has saved values
+  // Keep react-select in sync when formData already has saved values
   useEffect(() => {
     if (!addressesOptions?.length) return;
 
@@ -83,6 +85,16 @@ export default function AddressSelectionLayout({
     setSelectRight(rightOpt || null);
   }, [formData, leftField.keyName, rightField.keyName, addressesOptions]);
 
+  // Set default dispatch date if not present
+  useEffect(() => {
+    if (!formData?.dispatchNoteDate && setFormData) {
+      setFormData((prev) => ({
+        ...prev,
+        dispatchNoteDate: new Date(),
+      }));
+    }
+  }, [formData?.dispatchNoteDate, setFormData]);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Section Label */}
@@ -93,8 +105,33 @@ export default function AddressSelectionLayout({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 rounded-sm md:grid-cols-2">
-        {/* ✅ Left */}
+      <div className="grid grid-cols-1 gap-3 rounded-sm md:grid-cols-2">
+        {/* dispatch date */}
+        <div>
+          <div className="flex items-center gap-1">
+            <Label>Dispatch Note Date</Label>
+            <span className="text-red-500">*</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <DatePickers
+                selected={formData?.dispatchNoteDate || new Date()}
+                onChange={(date) => {
+                  setFormData?.((prev) => ({
+                    ...prev,
+                    dispatchNoteDate: date,
+                  }));
+                }}
+                dateFormat="dd/MM/yyyy"
+                popperPlacement="bottom-start"
+              />
+            </div>
+            {errorMsg?.dispatchNoteDate && (
+              <ErrorBox msg={errorMsg.dispatchNoteDate} />
+            )}
+          </div>
+        </div>
+
         <div>
           <div className="flex items-center gap-1">
             <Label>{leftField.label}</Label>
@@ -140,7 +177,6 @@ export default function AddressSelectionLayout({
           </div>
         </div>
 
-        {/* ✅ Right */}
         <div>
           <div className="flex items-center gap-1">
             <Label>{rightField.label}</Label>
@@ -185,8 +221,6 @@ export default function AddressSelectionLayout({
             )}
           </div>
         </div>
-
-        {/* ✅ Add New Address Modal */}
         <AddNewAddress
           isAddressAdding={isAddingNewAddress}
           setIsAddressAdding={setIsAddingNewAddress}

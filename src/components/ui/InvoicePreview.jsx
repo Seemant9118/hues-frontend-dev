@@ -58,6 +58,9 @@ const InvoicePreview = ({
   setIsPINError = false,
 }) => {
   const [open, setOpen] = useState(false);
+  const [invoiceDateState, setInvoiceDateState] = useState(() =>
+    order?.invoiceDate ? new Date(order.invoiceDate) : new Date(),
+  );
   // State to determine if the document is a PDF
   const [isPDF, setIsPDF] = useState(false);
   // State for storing customer remarks
@@ -106,12 +109,10 @@ const InvoicePreview = ({
     const dueInDays = Number(invoicePreviewConfig?.dueDate || 0);
     setPaymentDueDate(dueInDays);
 
-    // ✅ invoice date fallback
-    const baseInvoiceDate = order?.invoiceDate
-      ? new Date(order.invoiceDate)
-      : new Date();
+    // invoice date fallback
+    const baseInvoiceDate = invoiceDateState || new Date();
 
-    // ✅ Calculate selected date as invoiceDate + dueDate days
+    // Calculate selected date as invoiceDate + dueDate days
     const calculatedDate = new Date(baseInvoiceDate);
     calculatedDate.setDate(calculatedDate.getDate() + dueInDays);
 
@@ -119,7 +120,7 @@ const InvoicePreview = ({
 
     // payment terms
     setPaymentTerms(invoicePreviewConfig?.paymentTerms || '');
-  }, [invoicePreviewConfig, order?.invoiceDate]);
+  }, [invoicePreviewConfig, invoiceDateState]);
 
   const { data: gstAddressesList, isLoading: isGstAddressLoading } = useQuery({
     queryKey: [
@@ -142,6 +143,9 @@ const InvoicePreview = ({
 
   const validation = (order) => {
     const errors = {};
+    if (!order?.invoiceDate) {
+      errors.invoiceDate = '*Required! Please select invoice date';
+    }
     // address
     if (
       invoicePreviewConfig?.gstList?.length > 0 &&
@@ -159,16 +163,39 @@ const InvoicePreview = ({
   };
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
+    <div className="flex h-[calc(100dvh-60px)] w-full flex-col overflow-hidden bg-background">
       <div
         className={cn(
-          'flex h-[93%] justify-between gap-2',
-          !isActionable && 'flex items-center justify-center',
+          'flex flex-1 justify-between gap-2 overflow-hidden',
+          !isActionable && 'items-center justify-center',
         )}
       >
         {/* Left side: Controls */}
         {isBankAccountDetailsSelectable && isCustomerRemarksAddable && (
           <div className="navScrollBarStyles flex h-full w-1/3 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2">
+            {/* invoice date */}
+            {order?.clientType === 'B2B' && (
+              <div className="flex flex-col">
+                <Label className="mb-2 block text-sm font-medium">
+                  Invoice Date
+                </Label>
+                <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <DatePickers
+                    selected={invoiceDateState}
+                    onChange={(date) => {
+                      setInvoiceDateState(date);
+                      setErrorMsg((prev) => ({ ...prev, invoiceDate: '' }));
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    popperPlacement="end"
+                  />
+                  <CalendarDays className="absolute right-2 top-1/2 z-0 -translate-y-1/2 text-[#3F5575]" />
+                </div>
+                {errorMsg?.invoiceDate && (
+                  <ErrorBox msg={errorMsg.invoiceDate} />
+                )}
+              </div>
+            )}
             {/* gst list */}
             {invoicePreviewConfig?.gstList?.length > 0 && (
               <div>
@@ -473,13 +500,13 @@ const InvoicePreview = ({
         )}
 
         {/* Right side: PDF Preview */}
-        <div className="flex h-full w-full overflow-hidden bg-[#F4F4F4] md:w-2/3">
+        <div className="navScrollBarStyles flex h-full w-full overflow-y-auto overflow-x-hidden bg-[#F4F4F4] md:w-2/3">
           <ViewPdf url={url} isPDF={isPDF} />
         </div>
       </div>
 
       {/* Footer CTA for downloading the PDF */}
-      <div className="flex w-full items-center justify-between gap-2 border-t pt-2">
+      <div className="z-10 mt-auto flex w-full shrink-0 items-center justify-between gap-4 border-t bg-white py-2">
         <div className="w-1/3 px-2">
           <Button
             className="w-full"
@@ -494,6 +521,7 @@ const InvoicePreview = ({
                 billingAddressId: billingAddress,
                 shippingAddressId: shippingAddress,
                 dueDate: formatDate,
+                invoiceDate: invoiceDateState ?? null,
                 selectedGstNumber: selectedGst?.gstNumber,
                 paymentTerms,
               };
@@ -553,6 +581,7 @@ const InvoicePreview = ({
                   socialLinks: socialLink,
                   billingAddressId: billingAddress,
                   shippingAddressId: shippingAddress,
+                  invoiceDate: invoiceDateState ?? null,
                   selectedGstNumber: selectedGst?.gstNumber,
                 };
 
@@ -578,7 +607,11 @@ const InvoicePreview = ({
         <PINVerifyModal
           open={open}
           setOpen={setOpen}
-          order={{ ...order, selectedGstNumber: selectedGst?.gstNumber }}
+          order={{
+            ...order,
+            selectedGstNumber: selectedGst?.gstNumber,
+            invoiceDate: invoiceDateState ?? null,
+          }}
           customerRemarks={remarks}
           socialLinks={socialLink}
           bankAccountId={bankAccount}
