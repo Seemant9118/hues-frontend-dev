@@ -1,6 +1,6 @@
 export const FEATURE_FLAGS = {
   ACCOUNTING: {
-    enabled: true, // Disable entire module if needed
+    enabled: false, // Disable entire module if needed
     label: 'Accounting Module',
     routePrefixes: ['/dashboard/accounting'],
     subModules: {
