@@ -5,13 +5,16 @@ import React from 'react';
 import { capitalize, roleColors } from '@/appUtils/helperFunctions';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { useAuth } from '@/context/AuthContext';
+import { useFeatureFlags } from '@/context/FeatureFlagContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
 import {
   ArchiveRestore,
   ArrowRightLeft,
+  Banknote,
   Bell,
   Blocks,
+  BookOpen,
   Boxes,
   ClipboardList,
   Cuboid,
@@ -53,6 +56,7 @@ import { Badge } from './badge';
 
 const Sidebar = () => {
   const { name, roles } = useAuth();
+  const { isRouteEnabled } = useFeatureFlags();
   const router = useRouter();
 
   const { hasPermission } = usePermission();
@@ -192,33 +196,47 @@ const Sidebar = () => {
       ],
     },
     // transport
-    hasPermission('permission:sales-view') && {
-      name: 'sidebar.transport',
-      icon: <Truck size={16} />,
-      path: '/dashboard/transport/dispatch',
-      subTab: [
-        {
-          name: 'sidebar.subTabs.dispatch',
-          icon: <ArchiveRestore size={16} />,
-          path: '/dashboard/transport/dispatch',
-        },
-        {
-          name: 'sidebar.subTabs.deliveryChallan',
-          icon: <ReceiptText size={16} />,
-          path: '/dashboard/transport/delivery-challan',
-        },
-        {
-          name: 'sidebar.subTabs.pod',
-          icon: <FileSignature size={16} />,
-          path: '/dashboard/transport/pod',
-        },
-        {
-          name: 'sidebar.subTabs.grn',
-          icon: <NotepadText size={16} />,
-          path: '/dashboard/transport/grn',
-        },
-      ],
-    },
+    hasPermission('permission:sales-view') &&
+      isRouteEnabled('/dashboard/transport') && {
+        name: 'sidebar.transport',
+        icon: <Truck size={16} />,
+        path: '/dashboard/transport/dispatch',
+        subTab: [
+          isRouteEnabled('/dashboard/transport/dispatch') && {
+            name: 'sidebar.subTabs.dispatch',
+            icon: <ArchiveRestore size={16} />,
+            path: '/dashboard/transport/dispatch',
+          },
+          isRouteEnabled('/dashboard/transport/delivery-challan') && {
+            name: 'sidebar.subTabs.deliveryChallan',
+            icon: <ReceiptText size={16} />,
+            path: '/dashboard/transport/delivery-challan',
+          },
+          isRouteEnabled('/dashboard/transport/pod') && {
+            name: 'sidebar.subTabs.pod',
+            icon: <FileSignature size={16} />,
+            path: '/dashboard/transport/pod',
+          },
+          isRouteEnabled('/dashboard/transport/grn') && {
+            name: 'sidebar.subTabs.grn',
+            icon: <NotepadText size={16} />,
+            path: '/dashboard/transport/grn',
+          },
+        ].filter(Boolean),
+      },
+    hasPermission('permission:sales-view') &&
+      isRouteEnabled('/dashboard/accounting/trial-balance') && {
+        name: 'sidebar.accounting',
+        icon: <Banknote size={16} />,
+        path: '/dashboard/accounting/trial-balance',
+        subTab: [
+          {
+            name: 'sidebar.subTabs.trialBalance',
+            icon: <BookOpen size={16} />,
+            path: '/dashboard/accounting/trial-balance',
+          },
+        ],
+      },
     // statutory
     hasPermission('permission:sales-view') && {
       name: 'sidebar.statutory',

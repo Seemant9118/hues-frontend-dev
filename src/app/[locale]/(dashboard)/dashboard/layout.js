@@ -4,6 +4,7 @@ import Sidebar from '@/components/ui/Sidebar';
 import { AuthProvider } from '@/context/AuthContext';
 import { RBACProvider } from '@/context/RBACcontext';
 import { UserProvider } from '@/context/UserContext';
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 
 import { parseJwt } from '@/appUtils/helperFunctions';
 import AuthInitializer from '@/components/wrappers/AuthInitializer';
@@ -40,14 +41,16 @@ export default function DashBoardLayout({ children }) {
     <AuthProvider>
       <AuthInitializer />
       <RBACProvider userRoles={userRoles}>
-        <UserProvider>
-          <section className="scrollBarStyles relative grid h-screen flex-grow grid-cols-[225px,_1fr] overflow-y-auto">
-            <Sidebar />
-            <main className="scrollBarStyles overflow-y-auto bg-white px-4">
-              {children}
-            </main>
-          </section>
-        </UserProvider>
+        <FeatureFlagProvider>
+          <UserProvider>
+            <section className="scrollBarStyles relative grid h-screen flex-grow grid-cols-[225px,_1fr] overflow-y-auto">
+              <Sidebar />
+              <main className="scrollBarStyles overflow-y-auto bg-white px-4">
+                {children}
+              </main>
+            </section>
+          </UserProvider>
+        </FeatureFlagProvider>
       </RBACProvider>
     </AuthProvider>
   );

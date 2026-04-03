@@ -24,6 +24,7 @@ import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import DirectDC from '@/components/dispatchNote/DirectDC';
+import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -228,4 +229,9 @@ const DeliveryChallan = () => {
   );
 };
 
-export default DeliveryChallan;
+const DeliveryChallanGuarded = ({ params }) => (
+  <FeatureFlagWrapper flag="TRANSPORT.DELIVERY_CHALLAN" redirectTo="/dashboard">
+    <DeliveryChallan params={params} />
+  </FeatureFlagWrapper>
+);
+export default DeliveryChallanGuarded;

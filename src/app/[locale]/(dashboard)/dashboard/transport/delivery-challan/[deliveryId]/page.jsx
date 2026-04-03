@@ -66,6 +66,7 @@ import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import useMetaData from '@/hooks/useMetaData';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
@@ -83,6 +84,7 @@ const ViewDelivery = () => {
     'transport.delivery-challan.delivery_challan_details',
   );
 
+  const isEWBEnabled = useFeatureFlag('TRANSPORT.DELIVERY_CHALLAN.EWB');
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
@@ -131,13 +133,13 @@ const ViewDelivery = () => {
       id: 4,
       name: translations('title.createEWBA'),
       path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
-      show: isCreatingEWBA,
+      show: isEWBEnabled && isCreatingEWBA,
     },
     {
       id: 5,
       name: translations('title.createEWBB'),
       path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
-      show: isCreatingEWBB,
+      show: isEWBEnabled && isCreatingEWBB,
     },
   ];
   useEffect(() => {
@@ -1059,9 +1061,11 @@ const ViewDelivery = () => {
                   <TabsTrigger value="transports">
                     {translations('tabs.tab3.title1')}
                   </TabsTrigger>
-                  <TabsTrigger value="ewb">
-                    {translations('tabs.tab4.title')}
-                  </TabsTrigger>
+                  {isEWBEnabled && (
+                    <TabsTrigger value="ewb">
+                      {translations('tabs.tab4.title')}
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="pod">
                     {translations('tabs.tab5.title')}
                   </TabsTrigger>
@@ -1108,17 +1112,19 @@ const ViewDelivery = () => {
                       </Button>
                     )}
                   {/* generate e-way bill cta */}
-                  {showGenerateEWBCTA && dispatchDetails?.isFirstVoucher ? (
-                    <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
-                      <PlusCircle size={14} />
-                      {translations('overview_inputs.ctas.generateEWayBill')}
-                    </Button>
-                  ) : (
-                    <Button size="sm" onClick={() => setIsCreatingEWBB(true)}>
-                      <PlusCircle size={14} />
-                      {translations('overview_inputs.ctas.updatePartB')}
-                    </Button>
-                  )}
+                  {isEWBEnabled && showGenerateEWBCTA ? (
+                    dispatchDetails?.isFirstVoucher ? (
+                      <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.generateEWayBill')}
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => setIsCreatingEWBB(true)}>
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.updatePartB')}
+                      </Button>
+                    )
+                  ) : null}
                 </div>
               </section>
 
@@ -1148,7 +1154,7 @@ const ViewDelivery = () => {
                   />
                 )}
 
-                {isEWBRequired && (
+                {isEWBEnabled && isEWBRequired && (
                   <DynamicTextInfo
                     variant={totalAmount > 50000 ? 'danger' : 'warning'}
                     title={
@@ -1292,31 +1298,37 @@ const ViewDelivery = () => {
           />
         )}
 
-        {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
-          <CreateEWBA
-            dispatchNoteId={params.deliveryId}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWBA}
-            dispatchDetails={dispatchDetails?.metaData}
-          />
-        )}
-        {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
-          <CreateEWBB
-            dispatchNoteId={params.deliveryId}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWBB}
-            dispatchDetails={dispatchDetails?.metaData}
-            selectedTransportForUpdateB={selectedTransportForUpdateB}
-          />
-        )}
+        {isEWBEnabled &&
+          isCreatingEWBA &&
+          !isCreatingEWBB &&
+          !isAddingBooking && (
+            <CreateEWBA
+              dispatchNoteId={params.deliveryId}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+              setIsCreatingEWB={setIsCreatingEWBA}
+              dispatchDetails={dispatchDetails?.metaData}
+            />
+          )}
+        {isEWBEnabled &&
+          isCreatingEWBB &&
+          !isCreatingEWBA &&
+          !isAddingBooking && (
+            <CreateEWBB
+              dispatchNoteId={params.deliveryId}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+              setIsCreatingEWB={setIsCreatingEWBB}
+              dispatchDetails={dispatchDetails?.metaData}
+              selectedTransportForUpdateB={selectedTransportForUpdateB}
+            />
+          )}
       </Wrapper>
     </ProtectedWrapper>
   );
