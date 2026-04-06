@@ -1,6 +1,7 @@
 'use client';
 
 import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
+import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
@@ -12,6 +13,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNew from '@/components/payments/MakePaymentNew';
 import PaymentDetails from '@/components/payments/PaymentDetails';
 import { DataTable } from '@/components/table/data-table';
+import PINVerifyModal from '@/components/invoices/PINVerifyModal';
 import Loading from '@/components/ui/Loading';
 import TimelineItem from '@/components/ui/TimelineItem';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
+import { withDrawOrder } from '@/services/Invoice_Services/Invoice_Services';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
@@ -93,6 +96,8 @@ const ViewOrder = () => {
   const [viewNegotiationHistory, setViewNegotiationHistory] = useState(false);
   // const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   // const [files, setFiles] = useState([]);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [isPINError, setIsPINError] = useState(false);
 
   const [tab, setTab] = useState('overview');
 
@@ -240,6 +245,27 @@ const ViewOrder = () => {
     },
   });
 
+  const withdrawOrderMutation = useMutation({
+    mutationKey: [invoiceApi.withDrawOrder.endpointKey],
+    mutationFn: withDrawOrder,
+    onSuccess: () => {
+      toast.success(translations('ctas.withdraw.successMsg'));
+      setWithdrawModalOpen(false);
+      setIsPINError(false);
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+    },
+    onError: (error) => {
+      if (error?.response?.data?.message?.toLowerCase()?.includes('pin')) {
+        setIsPINError(true);
+      }
+      toast.error(
+        error.response?.data?.message ||
+          translations('ctas.withdraw.errorMsg') ||
+          translations('errorMsg.common'),
+      );
+    },
+  });
+
   const OrderColumns = usePurchaseOrderColumns();
 
   // multiStatus components
@@ -264,6 +290,25 @@ const ViewOrder = () => {
     <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       <Wrapper className="h-full py-2">
         {isLoading && !orderDetails && <Loading />}
+
+        {/* withdraw pin modal */}
+        <PINVerifyModal
+          open={withdrawModalOpen}
+          setOpen={setWithdrawModalOpen}
+          order={orderDetails}
+          handleCreateFn={(updatedOrder) => {
+            withdrawOrderMutation.mutate({
+              orderId: Number(params.order_id),
+              pin: updatedOrder.pin,
+              invoiceType:
+                orderDetails?.invoiceType ||
+                (orderDetails?.orderType === 'PURCHASE' ? 'GOODS' : 'GOODS'),
+            });
+          }}
+          isPINError={isPINError}
+          setIsPINError={setIsPINError}
+          isPendingInvoice={withdrawOrderMutation.isPending}
+        />
 
         {!isEditingOrder &&
           !isEditingPurchaseService &&
@@ -481,6 +526,23 @@ const ViewOrder = () => {
                         </DropdownMenu>
                       )}
                   </ProtectedWrapper>
+
+                  {/* withdraw cta */}
+                  {orderDetails?.negotiationStatus === 'NEW' &&
+                    orderDetails?.metaData?.buyerData?.orderStatus ===
+                      'BID_SENT' && (
+                      <ProtectedWrapper
+                        permissionCode={'permission:purchase-edit'}
+                      >
+                        <Button
+                          variant="blue_outline"
+                          size="sm"
+                          onClick={() => setWithdrawModalOpen(true)}
+                        >
+                          {translations('ctas.withdraw.cta')}
+                        </Button>
+                      </ProtectedWrapper>
+                    )}
                 </div>
               </section>
               {/* switch tabs */}

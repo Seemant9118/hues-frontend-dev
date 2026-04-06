@@ -79,6 +79,11 @@
                     "payment_advice": "Send Payment Advise",
                     "generate_invoice": "Invoice",
                     "stock-in": "Stock in",
+                    "withdraw": {
+                        "cta": "Withdraw",
+                        "successMsg": "Order withdrawn successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -167,7 +172,7 @@
                     "errorMsg": "Uh-oh, we hit a snag. Retry?"
                 },
                 "invoice": {
-                    "cta":"Record Vendor Invoice",
+                    "cta": "Record Vendor Invoice",
                     "tooltip": "Record a Vendor Invoice"
                 },
                 "search": {

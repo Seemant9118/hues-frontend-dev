@@ -40,7 +40,7 @@ const CreateOrderServices = ({
     amount: null,
     isEditing: !!orderId,
     cta,
-    paymentTermsService: '',
+    paymentTerms: '',
     offerValidity: '',
   });
   const [errors, setErrors] = React.useState({});
@@ -85,7 +85,7 @@ const CreateOrderServices = ({
         buyerType: fetchedOrderDetails.buyerType,
         isEditing: true,
         cta,
-        paymentTermsService: fetchedOrderDetails.paymentTermsService || '',
+        paymentTerms: fetchedOrderDetails.paymentTerms || '',
         offerValidity: fetchedOrderDetails.offerValidity || '',
       });
     }
@@ -101,15 +101,16 @@ const CreateOrderServices = ({
           : 'Bid Created Successfully',
       );
 
+      const targetId = res.data.data.id;
+
       if (setIsCreatingSalesService) {
         setIsCreatingSalesService(false);
+      }
+
+      if (cta !== 'offer') {
+        router.push(`/dashboard/purchases/purchase-orders/${targetId}`);
       } else {
-        const targetId = res.data.data.id;
-        if (cta !== 'offer') {
-          router.push(`/dashboard/purchases/purchase-orders/${targetId}`);
-        } else {
-          router.push(`/dashboard/sales/sales-orders/${targetId}`);
-        }
+        router.push(`/dashboard/sales/sales-orders/${targetId}`);
       }
 
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);

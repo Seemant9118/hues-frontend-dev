@@ -1,5 +1,4 @@
 import BuyerContext from './layouts/BuyerContext';
-import OfferTermsControls from './layouts/OfferTermsControls';
 import PreviewFinalPage from './layouts/PreviewFinalPage';
 import ServicesLineItems from './layouts/ServiceLineItems';
 import {
@@ -23,15 +22,10 @@ export const getSalesServiceFormSteps = ({ cta }) => {
       validate: validateServices,
     },
     {
-      key: 'offer-terms-controls',
-      label: 'Offer Terms & Controls',
-      component: OfferTermsControls,
-      validate: validateOfferTerms,
-    },
-    {
-      key: 'preview-final',
-      label: 'Preview',
+      key: 'offer-terms-preview',
+      label: 'Offer Terms & Preview',
       component: PreviewFinalPage,
+      validate: validateOfferTerms,
     },
   ];
 };

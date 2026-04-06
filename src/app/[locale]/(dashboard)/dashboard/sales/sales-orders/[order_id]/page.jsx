@@ -9,6 +9,7 @@ import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import DynamicModal from '@/components/Modals/DynamicModal';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import PINVerifyModal from '@/components/invoices/PINVerifyModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrderS';
 import NegotiationHistory from '@/components/orders/NegotiationHistory';
@@ -26,12 +27,14 @@ import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
 import { getInvitationStatus } from '@/services/Invitation_Service/Invitation_Service';
-import { acceptOrder } from '@/services/Invoice_Services/Invoice_Services';
+import {
+  acceptOrder,
+  withDrawOrder,
+} from '@/services/Invoice_Services/Invoice_Services';
 import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
   remindOrder,
-  updateOrderForUnrepliedSales,
   viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
@@ -103,6 +106,8 @@ const ViewOrder = () => {
   // const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   const [tab, setTab] = useState('overview');
   // const [files, setFiles] = useState([]);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [isPINError, setIsPINError] = useState(false);
   const [modalData, setModalData] = useState({
     isOpen: false,
     title: '',
@@ -294,21 +299,25 @@ const ViewOrder = () => {
 
   const withdrawOrderMutation = useMutation({
     mutationKey: [invoiceApi.withDrawOrder.endpointKey],
-    mutationFn: updateOrderForUnrepliedSales,
-    onSuccess: (res) => {
-      toast.success(translations('successMsg.invoice_generate_success'));
+    mutationFn: withDrawOrder,
+    onSuccess: () => {
+      toast.success(translations('ctas.withdraw.successMsg'));
       setModalData((prev) => ({
         ...prev,
         isOpen: false,
       }));
+      setWithdrawModalOpen(false);
+      setIsPINError(false);
       queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-      router.push(
-        `/dashboard/sales/sales-orders/${res?.data?.data?.newOrderId}?state=generateInvoice`,
-      );
     },
     onError: (error) => {
+      if (error?.response?.data?.message?.toLowerCase()?.includes('pin')) {
+        setIsPINError(true);
+      }
       toast.error(
-        error.response?.data?.message || translations('errorMsg.common'),
+        error.response?.data?.message ||
+          translations('ctas.withdraw.errorMsg') ||
+          translations('errorMsg.common'),
       );
     },
   });
@@ -328,49 +337,6 @@ const ViewOrder = () => {
       toast.error(error.response.data.message || 'Something went wrong');
     },
   });
-
-  // [ATTACHMENTS]
-  // handle upload proofs fn
-  // const handleAttached = async (file) => {
-  //   setFiles((prevFiles) => [...prevFiles, file]);
-  //   toast.success('File attached successfully!');
-  // };
-  // const handleFileRemove = (file) => {
-  //   setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
-  // };
-
-  // const createAttachments = useMutation({
-  //   mutationKey: [attachementsAPI.createAttachement.endpointKey],
-  //   mutationFn: createAttachements,
-  //   onSuccess: () => {
-  //     toast.success('Attachements Upload Successfully');
-  //     queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-  //     setFiles([]);
-  //   },
-  //   onError: (error) => {
-  //     toast.error(error.response.data.message || 'Something Went Wrong');
-  //   },
-  // });
-
-  // const uploadAttachements = () => {
-  //   if (files?.length === 0) {
-  //     toast.error('Please select atleast one file to upload');
-  //     return;
-  //   }
-
-  //   const formData = new FormData();
-  //   formData.append('contextType', 'ORDER'); // assuming fixed or dynamic context
-  //   formData.append('contextId', params.order_id); // use actual ID here
-
-  //   // handle files if any
-  //   if (files.length > 0) {
-  //     files.forEach((file) => {
-  //       formData.append('files', file);
-  //     });
-  //   }
-
-  //   createAttachments.mutate(formData);
-  // };
 
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
@@ -412,6 +378,25 @@ const ViewOrder = () => {
             buttons={modalData.buttons}
           />
         )}
+
+        {/* withdraw pin modal */}
+        <PINVerifyModal
+          open={withdrawModalOpen}
+          setOpen={setWithdrawModalOpen}
+          order={orderDetails}
+          handleCreateFn={(updatedOrder) => {
+            withdrawOrderMutation.mutate({
+              orderId: Number(params.order_id),
+              pin: updatedOrder.pin,
+              invoiceType:
+                orderDetails?.invoiceType ||
+                (orderDetails?.orderType === 'PURCHASE' ? 'GOODS' : 'GOODS'),
+            });
+          }}
+          isPINError={isPINError}
+          setIsPINError={setIsPINError}
+          isPendingInvoice={withdrawOrderMutation.isPending}
+        />
 
         {!isEditingOrder &&
           !isEditingServiceOrder &&
@@ -467,13 +452,6 @@ const ViewOrder = () => {
                             orderDetails?.sellerEnterpriseId ===
                               enterpriseId && (
                               <>
-                                {/* {orderDetails?.orderType === 'SALES' && (
-                        <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                          <Clock size={12} />
-                          {translations('ctas.footer_ctas.wait_response')}
-                        </span>
-                      )} */}
-
                                 {orderDetails?.orderType === 'PURCHASE' && (
                                   <div className="flex w-full justify-end gap-2">
                                     {!isNegotiation && (
@@ -706,41 +684,22 @@ const ViewOrder = () => {
                       </ProtectedWrapper>
                     )}
 
-                  {/* more ctas */}
-                  {/* {!isGenerateInvoice &&
-                  !isRecordingPayment &&
-                  !isNegotiation &&
-                  orderDetails.negotiationStatus === 'NEW' &&
-                  userId.toString() === orderDetails.createdBy.toString() && (
-                    <ProtectedWrapper permissionCode={'permission:sales-edit'}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Tooltips
-                            trigger={
-                              <Button
-                                variant="blue_outline"
-                                size="sm"
-                                className="flex items-center justify-center border border-[#DCDCDC] text-black"
-                              >
-                                <span className="sr-only">Open menu</span>
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            }
-                            content={translations('ctas.more.placeholder')}
-                          />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="max-w-fit">
-                          <span
-                            onClick={() => setIsEditingOrder(true)}
-                            className="flex items-center justify-center gap-2 rounded-sm p-1 text-sm hover:cursor-pointer hover:bg-gray-300"
-                          >
-                            <Pencil size={14} />{' '}
-                            {translations('ctas.more.revise')}
-                          </span>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </ProtectedWrapper>
-                  )} */}
+                  {/* withdraw cta */}
+                  {orderDetails?.negotiationStatus === 'NEW' &&
+                    orderDetails?.metaData?.sellerData?.orderStatus ===
+                      'OFFER_SENT' && (
+                      <ProtectedWrapper
+                        permissionCode={'permission:sales-edit'}
+                      >
+                        <Button
+                          variant="blue_outline"
+                          size="sm"
+                          onClick={() => setWithdrawModalOpen(true)}
+                        >
+                          {translations('ctas.withdraw.cta')}
+                        </Button>
+                      </ProtectedWrapper>
+                    )}
                 </div>
               </section>
 

@@ -83,6 +83,11 @@
                     "record_payment": "Log payment",
                     "generate_invoice": "Invoice",
                     "stock-out": "Stock out",
+                    "withdraw": {
+                        "cta": "Withdraw",
+                        "successMsg": "Order withdrawn successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
                     "view": {
                         "placeholder": "Preview Order"
                     },
